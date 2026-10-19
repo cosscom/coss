@@ -120,14 +120,19 @@ export async function sweepStaleSmsClaims(opts: {
   scope?: Scope;
 }): Promise<number> {
   const now = opts.now ?? new Date();
+  // Checked again by the update: the claim may have been given back (a screening hold) or taken
+  // afresh since it was selected.
+  const staleClaim = and(
+    eq(smsMessage.status, "queued"),
+    isNotNull(smsMessage.provider),
+    lt(smsMessage.updatedAt, new Date(now.getTime() - STALE_SMS_CLAIM_MS)),
+  );
   const stale = await db
     .select({ id: smsMessage.id, organizationId: smsMessage.organizationId })
     .from(smsMessage)
     .where(
       and(
-        eq(smsMessage.status, "queued"),
-        isNotNull(smsMessage.provider),
-        lt(smsMessage.updatedAt, new Date(now.getTime() - STALE_SMS_CLAIM_MS)),
+        staleClaim,
         opts.scope ? inArray(smsMessage.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
@@ -147,7 +152,7 @@ export async function sweepStaleSmsClaims(opts: {
           and(
             eq(smsMessage.id, candidate.id),
             eq(smsMessage.organizationId, candidate.organizationId),
-            eq(smsMessage.status, "queued"),
+            staleClaim,
           ),
         )
         .returning({ id: smsMessage.id });

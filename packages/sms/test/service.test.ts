@@ -5,6 +5,7 @@ import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { and, eq, sql } from "drizzle-orm";
 import { setAllowedSmsCountries } from "../src/accounts.ts";
 import { ingestSmsEvents } from "../src/events.ts";
+import type { SmsProviderEvent } from "../src/provider.ts";
 import { getSms, listSmsEvents } from "../src/read.ts";
 import { listReceivedSms, receiveSms } from "../src/received.ts";
 import { purgeExpiredReceivedSms, purgeExpiredSmsMessages } from "../src/retention.ts";
@@ -256,6 +257,43 @@ test("a number that opts out while its message waits in the queue gets nothing",
   expect(await listSmsEvents({ ...scoped, smsId: sms.id })).toMatchObject([
     { type: "sms.suppressed" },
   ]);
+});
+
+test("a send the provider accepted is never failed when recording it goes wrong", async () => {
+  const tenant = await createTestTenant();
+  const queue = memorySmsDispatchQueue();
+  const provider = new FakeSmsProvider({ log: false });
+  // Accepted, but with an event that can't be stored: recording the outcome throws.
+  const accepting = {
+    name: provider.name,
+    async send(message: { smsId: string }) {
+      const broken: SmsProviderEvent = {
+        provider: provider.name,
+        providerStatus: "delivered",
+        smsId: message.smsId,
+        providerMessageId: "accepted",
+        type: "sms.delivered",
+        occurredAt: new Date(Number.NaN),
+        sourceId: "delivered",
+        data: {},
+      };
+      return { providerMessageId: "accepted", events: [broken] };
+    },
+  };
+  const service = createSmsService({
+    liveProvider: accepting,
+    sandboxProvider: accepting,
+    queue,
+  });
+  const { sms } = await service.send({
+    environment: env(tenant.development),
+    apiKeyId: null,
+    params: params(),
+  });
+  await expect(queue.drain(service)).rejects.toThrow();
+  const [row] = await db.select().from(smsMessage).where(eq(smsMessage.id, sms.id));
+  // Still claimed: the provider's callback or the stale-claim sweep settles it.
+  expect(row).toMatchObject({ status: "queued", provider: provider.name });
 });
 
 test("an idempotency key replays the same request and refuses another", async () => {

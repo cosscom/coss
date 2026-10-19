@@ -27,6 +27,7 @@ import {
   type SmsProvider,
   type SmsProviderEvent,
   SmsRejectedError,
+  type SmsSendResult,
   UncertainSendError,
 } from "./provider.ts";
 import { SIMULATED_REPLY } from "./providers/fake.ts";
@@ -319,8 +320,9 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         return;
       }
     }
+    let result: SmsSendResult;
     try {
-      const result = await provider.send({
+      result = await provider.send({
         smsId: row.id,
         organizationId: row.organizationId,
         from: row.from,
@@ -332,19 +334,6 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
             : null,
         route,
       });
-      await finish(
-        row,
-        {
-          status: "sent",
-          providerMessageId: result.providerMessageId,
-          sentAt: new Date(),
-          // A held message that got through on a retry.
-          errorCode: null,
-          errorMessage: null,
-        },
-        result.events ?? [],
-        sandbox,
-      );
     } catch (error) {
       if (error instanceof UncertainSendError) {
         // The provider may be sending it: never fail it here, and never send it again. It stays
@@ -365,7 +354,23 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         [event],
         sandbox,
       );
+      return;
     }
+    // Accepted: a failure to record it from here on is not the provider's refusal. It throws, and
+    // the message stays claimed for the status callback or the stale-claim sweep.
+    await finish(
+      row,
+      {
+        status: "sent",
+        providerMessageId: result.providerMessageId,
+        sentAt: new Date(),
+        // A held message that got through on a retry.
+        errorCode: null,
+        errorMessage: null,
+      },
+      result.events ?? [],
+      sandbox,
+    );
   }
 
   /**
