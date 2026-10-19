@@ -633,11 +633,12 @@ async function contactsAmong(env: MigrationEnvironment, addresses: string[]): Pr
 const webhooks: Phase = async (ctx, cursor) => {
   const sources = await ctx.source.webhooks();
   return eachObject(ctx, cursor, sources, async (hook) => {
+    const url = normalizedUrl(hook.url);
     const item = await pendingItem(
       ctx,
       "webhook_endpoint",
       { id: hook.id, name: hook.name },
-      () => hook.url,
+      () => url,
     );
     if (!item) return;
     const warnings = [
@@ -647,9 +648,7 @@ const webhooks: Phase = async (ctx, cursor) => {
         : []),
     ];
     let result: ItemResult;
-    const existing = (await listWebhookEndpoints(ctx.env)).find(
-      (endpoint) => endpoint.url === hook.url,
-    );
+    const existing = (await listWebhookEndpoints(ctx.env)).find((endpoint) => endpoint.url === url);
     if (existing) {
       result = { outcome: "existing", targetId: existing.id, warnings };
     } else if (hook.eventTypes.length === 0) {
@@ -660,7 +659,7 @@ const webhooks: Phase = async (ctx, cursor) => {
         const { endpoint } = await createWebhookEndpoint(
           {
             ...ctx.env,
-            url: hook.url,
+            url,
             description: `Imported from ${PROVIDER_NAMES[ctx.row.provider]}: ${hook.name}`.slice(
               0,
               200,
@@ -689,6 +688,16 @@ const webhooks: Phase = async (ctx, cursor) => {
     await finishItem(item, result);
   });
 };
+
+/** A URL as endpoints store it (`validateWebhookUrl(…).href`), so the same endpoint matches. */
+function normalizedUrl(value: string): string {
+  try {
+    return new URL(value.trim()).href;
+  } catch {
+    // Not a URL: creating the endpoint refuses it.
+    return value.trim();
+  }
+}
 
 export const PHASES: Readonly<Record<MigrationPhase, Phase>> = {
   properties,

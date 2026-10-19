@@ -15,7 +15,7 @@ import {
 import { CreateEmailTemplateRequest } from "@coss/email/schemas";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
-import { listWebhookEndpoints } from "@coss/webhooks";
+import { createWebhookEndpoint, listWebhookEndpoints } from "@coss/webhooks";
 import { TEST_SECRETS_KEYS, testManagementDeps } from "@coss/webhooks/testing";
 import { and, eq } from "drizzle-orm";
 import { ProviderError } from "../src/http.ts";
@@ -463,6 +463,43 @@ describe("runDueMigrations", () => {
       message: expect.stringContaining("contact limit"),
     });
     expect(progress.suppressions?.state).toBe("done");
+  });
+
+  test("an endpoint already there matches its URL however the provider writes it", async () => {
+    const tenant = await createTestTenant();
+    const env = envOf(tenant);
+    const { endpoint } = await createWebhookEndpoint(
+      {
+        ...env,
+        url: "https://hooks.example.com",
+        eventTypes: [],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
+      testManagementDeps,
+    );
+    expect(endpoint.url).toBe("https://hooks.example.com/");
+    const data: FakeSourceData = {
+      webhooks: [
+        {
+          id: "wh",
+          url: "https://HOOKS.example.com",
+          name: "Main",
+          eventTypes: ["email.sent"],
+          unmapped: [],
+          notes: [],
+        },
+      ],
+    };
+    const row = await connect(tenant);
+    await settle(tenant, depsFor(data));
+    await startAll(tenant, row.id, ["webhooks"]);
+    await settle(tenant, depsFor(data));
+    expect(await listWebhookEndpoints(env)).toHaveLength(1);
+    expect((await listMigrationItems(env, row.id))[0]).toMatchObject({
+      outcome: "existing",
+      targetId: endpoint.id,
+    });
   });
 
   test("finds existing topics even when the environment is at its topic cap", async () => {
