@@ -519,6 +519,44 @@ describe("sweeps", () => {
     expect(STALE_SMS_CLAIM_MS).toBeLessThan(60 * 60 * 1000);
   });
 
+  test("a late failure callback replaces an interrupted dispatch's error, unbilled", async () => {
+    const tenant = await createTestTenant();
+    const number = await createTestSmsNumber(tenant.organization.id);
+    const queue = memorySmsDispatchQueue();
+    const provider = new FakeSmsProvider({ log: false });
+    const service = createSmsService({ liveProvider: provider, sandboxProvider: provider, queue });
+    const { sms } = await service.send({
+      environment: env(tenant.production),
+      apiKeyId: null,
+      params: params({ from: number.phoneNumber }),
+    });
+    await db
+      .update(smsMessage)
+      .set({ provider: "fake", updatedAt: sql`now() - interval '1 hour'` })
+      .where(eq(smsMessage.id, sms.id));
+    const scope = { organizationIds: [tenant.organization.id] };
+    expect(await sweepStaleSmsClaims({ scope })).toBe(1);
+    const failure = {
+      code: "opted_out",
+      message: "The recipient opted out of messages from this number (they replied STOP).",
+    };
+    await ingestSmsEvents([
+      {
+        provider: "fake",
+        providerStatus: "failed",
+        smsId: sms.id,
+        providerMessageId: "late-failure",
+        type: "sms.failed",
+        occurredAt: new Date(),
+        sourceId: "failed",
+        data: { failure },
+      },
+    ]);
+    const scoped = { organizationId: tenant.organization.id, environmentId: tenant.production.id };
+    expect(await getSms({ ...scoped, smsId: sms.id })).toMatchObject({ status: "failed", failure });
+    expect(await usageOf(tenant.organization.id)).toEqual([]);
+  });
+
   test("an unclaimed message is enqueued again, then failed", async () => {
     const tenant = await createTestTenant();
     const queue = memorySmsDispatchQueue();

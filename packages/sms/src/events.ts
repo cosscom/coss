@@ -150,8 +150,9 @@ export async function recordSmsEvent(
         errorMessage: event.data.failure?.message ?? null,
       })
       .where(and(thisMessage, inArray(smsMessage.status, move.from)));
-    if (REACHED_CARRIER.has(event.type)) {
-      // A late callback repairs a message the stale-claim sweep gave up on: it did go out.
+    if (REACHED_CARRIER.has(event.type) || (move.to === "failed" && event.data.failure)) {
+      // A late callback repairs a message the stale-claim sweep gave up on: it did go out, or the
+      // provider says why it didn't (only reaching a carrier is billed, below).
       await tx
         .update(smsMessage)
         .set({
