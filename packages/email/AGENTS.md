@@ -239,7 +239,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `withRenderedBody` never re-renders a discarded broadcast email. Every terminal transition already calls
   `purgeSendContent`: a new one must too. `recordProviderEvent` reads the subject as `''` for these emails from
   the start, so webhook payloads and event log lines never hold it; the API's request log redacts
-  `EMAIL_CONTENT_KEYS` (`@coss/logs`) on `/v1/emails*` for a `discard` environment. Not covered (documented):
+  `EMAIL_CONTENT_KEYS` (`@coss/logs`) on `/v1/emails*` for such emails (`markEmailContent` in each route that
+  returns emails) and while the environment is `discard`. Not covered (documented):
   click tracking's `email_link` URLs, received email, a broadcast's own content, tags and categories. The
   fake provider never logs subjects. `discard_body` (internal auth emails) stays a separate, body-only flag.
 - **Generated text parts** (`packages/email/src/html-text.ts`, `htmlToText`): an email sent with `html` and no

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { memoryLogWriter } from "@coss/logs/testing";
 import { Hono } from "hono";
-import { requestLog } from "../src/middleware/request-log.ts";
+import { markEmailContent, requestLog } from "../src/middleware/request-log.ts";
 import type { AppEnv } from "../src/types.ts";
 import { waitForLogLines } from "./helpers.ts";
 
@@ -109,3 +109,45 @@ for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/risk/conte
     });
   }
 }
+
+describe("email content", () => {
+  test("an email's own discard snapshot redacts the request, even when its response is too big to read", async () => {
+    const writer = memoryLogWriter();
+    const app = new Hono<AppEnv>();
+    app.use("*", async (c, next) => {
+      c.set("attemptedAuth", {
+        organizationId: "org_test",
+        projectId: "proj_test",
+        environmentId: "env_test",
+        apiKeyId: "key_test",
+        mode: "sandbox",
+      });
+      c.set("requestId", "req_test");
+      c.set("clientIp", null);
+      await next();
+    });
+    app.use("*", requestLog(writer));
+    const html = `<p>${"x".repeat(LIMIT)}</p>`;
+    app.post("/v1/emails", async (c) => {
+      const body = await c.req.json();
+      const email = { object: "email", ...body, content_storage: { mode: "discard" } };
+      markEmailContent(c, [email]);
+      return c.json(email, 202);
+    });
+
+    const response = await app.request("/v1/emails", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ subject: "Results", text: "5.1", html }),
+    });
+    expect(response.status).toBe(202);
+    const [line] = await waitForLogLines(writer, 1);
+    const logged = line?.attributes as { request: { body: unknown }; response: object };
+    expect(logged.response).not.toHaveProperty("body");
+    expect(logged.request.body).toEqual({
+      subject: "[7 characters]",
+      text: "[3 characters]",
+      html: `[${html.length} characters]`,
+    });
+  });
+});

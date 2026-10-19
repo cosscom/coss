@@ -7,6 +7,7 @@ import {
   redactBody,
 } from "@coss/logs";
 import type { RefusedKeyContext } from "@coss/tenancy";
+import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { AppEnv } from "../types.ts";
 
@@ -60,35 +61,30 @@ const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 /**
  * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule):
  * their subjects, bodies, headers, template variables and attachment filenames are redacted (the
- * log would otherwise keep what the email itself doesn't) when the environment's content storage
- * is `discard`, or when the response holds an email sent while it was (each email keeps its own
- * setting: a read or an idempotent replay after switching back to `store`). Decided at write
- * time, off the request path.
+ * log would otherwise keep what the email itself doesn't) when an email they answer with was sent
+ * without content storage (`markEmailContent`, from the email's own snapshot: a read or an
+ * idempotent replay after switching back to `store`), or when the environment's content storage
+ * is `discard` now (requests refused before any email exists).
  */
 const EMAIL_CONTENT_PATHS = /^\/v1\/emails(\/|$)/;
 
-/** Whether a response body holds an email (alone, or in `data`) sent without content storage. */
-function holdsDiscardingEmail(body: unknown): boolean {
-  if (body === null || typeof body !== "object") return false;
-  const { object, content_storage, data } = body as {
-    object?: unknown;
-    content_storage?: { mode?: unknown } | null;
-    data?: unknown;
-  };
-  if (object === "email" && content_storage?.mode === "discard") return true;
-  return Array.isArray(data) && data.some(holdsDiscardingEmail);
+/** Marks the request as answering with an email sent without content storage, if one is. */
+export function markEmailContent(
+  c: Context<AppEnv>,
+  emails: readonly { content_storage: { mode: string } }[],
+): void {
+  if (emails.some((email) => email.content_storage.mode === "discard")) {
+    c.set("discardsEmailContent", true);
+  }
 }
 
 async function contentKeysFor(
   path: string,
   auth: { organizationId: string; environmentId: string },
-  response: { body: unknown; replayed: boolean },
+  marked: boolean,
 ): Promise<readonly string[] | undefined> {
   if (!EMAIL_CONTENT_PATHS.test(path)) return undefined;
-  // A replay's body couldn't be read: the email it replays may predate a switch to `store`.
-  if (holdsDiscardingEmail(response.body) || (response.replayed && response.body === undefined)) {
-    return EMAIL_CONTENT_KEYS;
-  }
+  if (marked) return EMAIL_CONTENT_KEYS;
   const { contentStorage } = await getStorageSettings(auth);
   return contentStorage === "discard" ? EMAIL_CONTENT_KEYS : undefined;
 }
@@ -201,7 +197,7 @@ export function requestLog(writer: LogWriter) {
     const responseHeaders = loggedResponseHeaders(response.headers);
     const { requestId, clientIp } = c.var;
     const search = new URL(c.req.url).search;
-    const replayed = response.headers.get("idempotent-replayed") === "true";
+    const marked = c.get("discardsEmailContent") === true;
 
     void (async () => {
       const [requestJson, responseJson] = await Promise.all([
@@ -211,7 +207,7 @@ export function requestLog(writer: LogWriter) {
       const content =
         requestJson === undefined && responseJson === undefined
           ? undefined
-          : await contentKeysFor(path, auth, { body: responseJson, replayed });
+          : await contentKeysFor(path, auth, marked);
       const error = (responseJson as ErrorEnvelope | undefined)?.error;
       const { resourceType, resourceId } = resourceOf(path, responseJson);
       writer.write({
