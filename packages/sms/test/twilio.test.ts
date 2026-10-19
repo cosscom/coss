@@ -355,3 +355,59 @@ describe("verified callbacks", () => {
     ).toBe(true);
   });
 });
+
+test("a toll-free verification sends the business's registration and its use case categories", async () => {
+  const { fetcher, requests } = fakeFetch(() =>
+    Response.json({ sid: "HHverification" }, { status: 201 }),
+  );
+  const api = createTwilioApi(
+    createTwilioClient({
+      credentials: { accountSid: "ACparent", authToken: "secret" },
+      fetch: fetcher,
+    }),
+    { primaryCustomerProfileSid: null },
+  );
+  await api.createTollFreeVerification(
+    { accountSid: "ACsub", authToken: "subsecret" },
+    {
+      numberSid: "PNtollfree",
+      profile: {
+        legalName: "Acme Inc.",
+        companyType: "NON_PROFIT",
+        taxId: "12-3456789",
+        taxIdType: "EIN",
+        industry: "TECHNOLOGY",
+        website: "https://acme.com",
+        street: "1 Main St",
+        city: "San Francisco",
+        region: "CA",
+        postalCode: "94105",
+        country: "US",
+        contact: {
+          firstName: "Ada",
+          lastName: "Lovelace",
+          email: "ada@acme.com",
+          phone: "+14155550123",
+          title: "CTO",
+          jobPosition: "CEO",
+        },
+      },
+      campaign: {
+        useCase: "2FA",
+        description: "Sign-in codes for Acme's customers.",
+        messageFlow: "Customers enter their number at sign-up.",
+        samples: ["Your Acme code is 123456."],
+        hasEmbeddedLinks: false,
+        hasEmbeddedPhone: false,
+      },
+    },
+  );
+  const form = new URLSearchParams(await requests[0]?.text());
+  expect(form.getAll("UseCaseCategories")).toEqual(["TWO_FACTOR_AUTHENTICATION"]);
+  expect(Object.fromEntries(form)).toMatchObject({
+    BusinessType: "NON_PROFIT",
+    BusinessRegistrationNumber: "12-3456789",
+    BusinessRegistrationAuthority: "EIN",
+    BusinessRegistrationCountry: "US",
+  });
+});

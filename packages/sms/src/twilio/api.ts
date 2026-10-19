@@ -124,6 +124,39 @@ const A2P_COMPANY_TYPES: Readonly<Record<string, string>> = {
   NON_PROFIT: "non-profit",
 };
 
+/** Toll-free verification's use case categories for each A2P use case (its own enumeration). */
+const TOLL_FREE_USE_CASES: Readonly<Record<string, string[]>> = {
+  "2FA": ["TWO_FACTOR_AUTHENTICATION"],
+  ACCOUNT_NOTIFICATION: ["ACCOUNT_NOTIFICATIONS"],
+  CUSTOMER_CARE: ["CUSTOMER_CARE"],
+  DELIVERY_NOTIFICATION: ["DELIVERY_NOTIFICATIONS"],
+  FRAUD_ALERT: ["FRAUD_ALERT_MESSAGING"],
+  MARKETING: ["MARKETING"],
+  MIXED: ["ACCOUNT_NOTIFICATIONS", "CUSTOMER_CARE"],
+  LOW_VOLUME: ["ACCOUNT_NOTIFICATIONS", "CUSTOMER_CARE"],
+};
+
+/** Registration authorities toll-free verification knows; any other is `OTHER`. */
+const REGISTRATION_AUTHORITIES: ReadonlySet<string> = new Set([
+  "EIN",
+  "CBN",
+  "CRN",
+  "PROVINCIAL_NUMBER",
+  "VAT",
+  "ACN",
+  "ABN",
+  "BRN",
+  "SIREN",
+  "SIRET",
+  "NZBN",
+  "USt-IdNr",
+  "CIF",
+  "NIF",
+  "CNPJ",
+  "UID",
+  "NEQ",
+]);
+
 export function createTwilioApi(
   client: TwilioClient,
   opts: { primaryCustomerProfileSid: string | null },
@@ -462,7 +495,7 @@ export function createTwilioApi(
           BusinessName: profile.legalName,
           BusinessWebsite: profile.website,
           NotificationEmail: profile.contact.email,
-          UseCaseCategories: [campaign.useCase],
+          UseCaseCategories: TOLL_FREE_USE_CASES[campaign.useCase] ?? ["ACCOUNT_NOTIFICATIONS"],
           UseCaseSummary: campaign.description,
           ProductionMessageSample: campaign.samples[0] ?? "",
           OptInImageUrls: campaign.optInProofUrl ? [campaign.optInProofUrl] : [],
@@ -478,6 +511,12 @@ export function createTwilioApi(
           BusinessContactLastName: profile.contact.lastName,
           BusinessContactEmail: profile.contact.email,
           BusinessContactPhone: profile.contact.phone,
+          BusinessType: profile.companyType,
+          BusinessRegistrationNumber: profile.taxId,
+          BusinessRegistrationAuthority: REGISTRATION_AUTHORITIES.has(profile.taxIdType)
+            ? profile.taxIdType
+            : "OTHER",
+          BusinessRegistrationCountry: profile.country,
         },
       });
     },
