@@ -96,7 +96,7 @@ class MessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/messages",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/messages",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -167,7 +167,7 @@ class MessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/messages",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/messages",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -226,7 +226,7 @@ class MessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/messages/{$messageId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/messages/" . RawClient::encodePathParam($messageId),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -283,7 +283,7 @@ class MessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/messages/{$messageId}/deliveries",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/messages/" . RawClient::encodePathParam($messageId) . "/deliveries",
                     method: HttpMethod::GET,
                 ),
                 $options,

@@ -83,7 +83,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/deliveries/{$deliveryId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/deliveries/" . RawClient::encodePathParam($deliveryId),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -140,7 +140,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/deliveries/{$deliveryId}/attempts",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/deliveries/" . RawClient::encodePathParam($deliveryId) . "/attempts",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -200,7 +200,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/deliveries/{$deliveryId}/retry",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/deliveries/" . RawClient::encodePathParam($deliveryId) . "/retry",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),

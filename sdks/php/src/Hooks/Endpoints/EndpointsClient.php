@@ -93,7 +93,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -158,7 +158,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -217,7 +217,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -274,7 +274,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -335,7 +335,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -393,7 +393,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/secret",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/secret",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -457,7 +457,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/roll_secret",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/roll_secret",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -522,7 +522,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/recover",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/recover",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -583,7 +583,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/recoveries/{$recoveryId}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/recoveries/" . RawClient::encodePathParam($recoveryId),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -647,7 +647,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/test",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/test",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -718,7 +718,7 @@ class EndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/endpoints/{$endpointId}/deliveries",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/endpoints/" . RawClient::encodePathParam($endpointId) . "/deliveries",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

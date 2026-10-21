@@ -164,7 +164,7 @@ class AuditEventsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audit_events/{$id}",
+                    path: "v1/audit_events/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,

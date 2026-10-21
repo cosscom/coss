@@ -166,7 +166,7 @@ class WebhookListenersClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_listeners/{$id}/poll",
+                    path: "v1/webhook_listeners/" . RawClient::encodePathParam($id) . "/poll",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -223,7 +223,7 @@ class WebhookListenersClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_listeners/{$id}",
+                    path: "v1/webhook_listeners/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,

@@ -90,7 +90,7 @@ class ReportsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/dmarc/reports",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/dmarc/reports",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -148,7 +148,7 @@ class ReportsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/dmarc/reports/{$reportId}",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/dmarc/reports/" . RawClient::encodePathParam($reportId),
                     method: HttpMethod::GET,
                 ),
                 $options,

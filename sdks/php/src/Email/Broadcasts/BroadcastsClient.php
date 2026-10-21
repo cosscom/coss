@@ -225,7 +225,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -280,7 +280,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -339,7 +339,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -401,7 +401,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/send",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/send",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -460,7 +460,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/cancel",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/cancel",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),
@@ -518,7 +518,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/pause",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/pause",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),
@@ -576,7 +576,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/resume",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/resume",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),
@@ -641,7 +641,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/test",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/test",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -707,7 +707,7 @@ class BroadcastsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/broadcasts/{$id}/emails",
+                    path: "v1/broadcasts/" . RawClient::encodePathParam($id) . "/emails",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

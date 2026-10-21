@@ -87,7 +87,7 @@ class TrackingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/tracking",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/tracking",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -144,7 +144,7 @@ class TrackingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/tracking",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/tracking",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

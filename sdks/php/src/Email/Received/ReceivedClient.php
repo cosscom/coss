@@ -198,7 +198,7 @@ class ReceivedClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/received_emails/{$id}",
+                    path: "v1/received_emails/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -253,7 +253,7 @@ class ReceivedClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/received_emails/{$id}",
+                    path: "v1/received_emails/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -308,7 +308,7 @@ class ReceivedClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/received_emails/{$id}/raw",
+                    path: "v1/received_emails/" . RawClient::encodePathParam($id) . "/raw",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -359,7 +359,7 @@ class ReceivedClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/received_emails/{$id}/attachments/{$attachmentId}",
+                    path: "v1/received_emails/" . RawClient::encodePathParam($id) . "/attachments/" . RawClient::encodePathParam($attachmentId),
                     method: HttpMethod::GET,
                 ),
                 $options,

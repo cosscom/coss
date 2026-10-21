@@ -97,7 +97,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}/deliveries",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id) . "/deliveries",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -155,7 +155,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}/deliveries/{$deliveryId}",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id) . "/deliveries/" . RawClient::encodePathParam($deliveryId),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -215,7 +215,7 @@ class DeliveriesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}/deliveries/{$deliveryId}/retry",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id) . "/deliveries/" . RawClient::encodePathParam($deliveryId) . "/retry",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),

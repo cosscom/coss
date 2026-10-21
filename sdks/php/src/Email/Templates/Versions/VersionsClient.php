@@ -91,7 +91,7 @@ class VersionsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/versions",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/versions",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -149,7 +149,7 @@ class VersionsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/versions/{$version}",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/versions/" . RawClient::encodePathParam($version),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -209,7 +209,7 @@ class VersionsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/versions/{$version}/restore",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/versions/" . RawClient::encodePathParam($version) . "/restore",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),

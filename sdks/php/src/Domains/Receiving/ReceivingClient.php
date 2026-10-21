@@ -87,7 +87,7 @@ class ReceivingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/receiving",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/receiving",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -144,7 +144,7 @@ class ReceivingClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/receiving",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/receiving",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

@@ -211,7 +211,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -266,7 +266,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -323,7 +323,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -388,7 +388,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}/contacts",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id) . "/contacts",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -453,7 +453,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}/contacts",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id) . "/contacts",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -510,7 +510,7 @@ class AudiencesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/audiences/{$id}/contacts/{$contactId}",
+                    path: "v1/audiences/" . RawClient::encodePathParam($id) . "/contacts/" . RawClient::encodePathParam($contactId),
                     method: HttpMethod::DELETE,
                 ),
                 $options,

@@ -62,6 +62,8 @@ groups:
           clientName: Coss
           maxRetries: 2
           user-agent: coss-php/{version}
+          # Escape path parameters (a risk user id with `#` or `/` would address another path).
+          encode-path-params: true
           composerJson:
             description: The coss.com SDK for PHP
             license: MIT

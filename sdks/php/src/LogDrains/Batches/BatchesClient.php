@@ -93,7 +93,7 @@ class BatchesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/log_drains/{$id}/batches",
+                    path: "v1/log_drains/" . RawClient::encodePathParam($id) . "/batches",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -151,7 +151,7 @@ class BatchesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/log_drains/{$id}/batches/{$batchId}",
+                    path: "v1/log_drains/" . RawClient::encodePathParam($id) . "/batches/" . RawClient::encodePathParam($batchId),
                     method: HttpMethod::GET,
                 ),
                 $options,

@@ -252,7 +252,7 @@ class SmsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/sms/{$id}",
+                    path: "v1/sms/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -307,7 +307,7 @@ class SmsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/sms/{$id}/events",
+                    path: "v1/sms/" . RawClient::encodePathParam($id) . "/events",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -364,7 +364,7 @@ class SmsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/sms/{$id}/cancel",
+                    path: "v1/sms/" . RawClient::encodePathParam($id) . "/cancel",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),

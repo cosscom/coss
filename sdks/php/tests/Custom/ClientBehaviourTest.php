@@ -137,4 +137,15 @@ final class ClientBehaviourTest extends TestCase
         ]);
         $this->assertSame('{"field":"property","key":"seats","op":"in","value":[1,2.5]}', $condition->toJson());
     }
+
+    public function testEscapesPathParameters(): void
+    {
+        $api = new FakeApi();
+        try {
+            self::client($api)->risk->users->forget('alice#secondary/1');
+        } catch (\Throwable) {
+            // The fake answers with an email: only the request matters here.
+        }
+        $this->assertSame('/v1/risk/users/alice%23secondary%2F1', $api->requests[0]->getUri()->getPath());
+    }
 }

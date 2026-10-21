@@ -214,7 +214,7 @@ class WebhookEndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -269,7 +269,7 @@ class WebhookEndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -328,7 +328,7 @@ class WebhookEndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -391,7 +391,7 @@ class WebhookEndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}/roll_secret",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id) . "/roll_secret",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -454,7 +454,7 @@ class WebhookEndpointsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/webhook_endpoints/{$id}/recover",
+                    path: "v1/webhook_endpoints/" . RawClient::encodePathParam($id) . "/recover",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,

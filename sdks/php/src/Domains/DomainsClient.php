@@ -217,7 +217,7 @@ class DomainsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}",
+                    path: "v1/domains/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -272,7 +272,7 @@ class DomainsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}",
+                    path: "v1/domains/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -329,7 +329,7 @@ class DomainsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/domains/{$id}/verify",
+                    path: "v1/domains/" . RawClient::encodePathParam($id) . "/verify",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),

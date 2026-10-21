@@ -246,7 +246,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -301,7 +301,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -360,7 +360,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -416,7 +416,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/draft",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/draft",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -499,7 +499,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/draft",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/draft",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -561,7 +561,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/publish",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/publish",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -627,7 +627,7 @@ class TemplatesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/email_templates/{$id}/render",
+                    path: "v1/email_templates/" . RawClient::encodePathParam($id) . "/render",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,

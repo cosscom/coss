@@ -419,7 +419,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/batch/{$id}",
+                    path: "v1/emails/batch/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -474,7 +474,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/{$id}",
+                    path: "v1/emails/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -531,7 +531,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/{$id}/cancel",
+                    path: "v1/emails/" . RawClient::encodePathParam($id) . "/cancel",
                     method: HttpMethod::POST,
                     headers: $headers,
                 ),
@@ -593,7 +593,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/{$id}/reschedule",
+                    path: "v1/emails/" . RawClient::encodePathParam($id) . "/reschedule",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -650,7 +650,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/{$id}/events",
+                    path: "v1/emails/" . RawClient::encodePathParam($id) . "/events",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -705,7 +705,7 @@ class EmailClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/emails/{$id}/links",
+                    path: "v1/emails/" . RawClient::encodePathParam($id) . "/links",
                     method: HttpMethod::GET,
                 ),
                 $options,

@@ -87,7 +87,7 @@ class PortalClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}/portal_sessions",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application) . "/portal_sessions",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,

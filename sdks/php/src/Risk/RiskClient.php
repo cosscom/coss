@@ -209,7 +209,7 @@ class RiskClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/risk/assessments/{$id}/feedback",
+                    path: "v1/risk/assessments/" . RawClient::encodePathParam($id) . "/feedback",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,

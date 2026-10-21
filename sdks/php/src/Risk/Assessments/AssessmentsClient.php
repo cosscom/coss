@@ -156,7 +156,7 @@ class AssessmentsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/risk/assessments/{$id}",
+                    path: "v1/risk/assessments/" . RawClient::encodePathParam($id),
                     method: HttpMethod::GET,
                 ),
                 $options,

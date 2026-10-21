@@ -220,7 +220,7 @@ class EventTypesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/event_types/{$name}",
+                    path: "v1/hooks/event_types/" . RawClient::encodePathParam($name),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -275,7 +275,7 @@ class EventTypesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/event_types/{$name}",
+                    path: "v1/hooks/event_types/" . RawClient::encodePathParam($name),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -334,7 +334,7 @@ class EventTypesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/event_types/{$name}",
+                    path: "v1/hooks/event_types/" . RawClient::encodePathParam($name),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),

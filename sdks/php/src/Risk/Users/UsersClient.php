@@ -79,7 +79,7 @@ class UsersClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/risk/users/{$userId}",
+                    path: "v1/risk/users/" . RawClient::encodePathParam($userId),
                     method: HttpMethod::DELETE,
                 ),
                 $options,

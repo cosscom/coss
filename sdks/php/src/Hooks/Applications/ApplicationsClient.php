@@ -214,7 +214,7 @@ class ApplicationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application),
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -269,7 +269,7 @@ class ApplicationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application),
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -328,7 +328,7 @@ class ApplicationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "v1/hooks/applications/{$application}",
+                    path: "v1/hooks/applications/" . RawClient::encodePathParam($application),
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
