@@ -346,23 +346,33 @@ describe("the template", () => {
     expect(written).toEqual(expected);
   });
 
-  test("keeps an earlier application's records when later groups are applied", async () => {
-    // A provider that keeps applied-template state removes the previous instance on re-apply
-    // unless the template is multiInstance (spec, "Apply, Re-apply, and Multi-Instance").
-    const domain = domainOf("example.com");
-    const records = withStatus(recordsOf(domain), "missing");
+  test("re-applying a group replaces its records and keeps the other groups'", async () => {
+    // A provider that keeps applied-template state adds groups applied later to the instance,
+    // and on re-applying one removes that group's previous records on the same host, unless the
+    // template is multiInstance (spec, "Apply, Re-apply, and Multi-Instance").
     const tracking: DomainConnectTracking = {
       hostname: "links.example.com",
       status: "pending",
       record: { value: "track.cosslinks.com", status: "missing" },
     };
-    const instances: ReturnType<typeof applyTemplate>[] = [];
-    for (const groups of [["dkim", "mail_from"], ["tracking"]] as DomainConnectGroup[][]) {
-      if (!DOMAIN_CONNECT_TEMPLATE.multiInstance) instances.length = 0;
+    const applied = new Map<DomainConnectGroup, ReturnType<typeof applyTemplate>[]>();
+    const apply = (domain: DomainConnectDomain, groups: DomainConnectGroup[]) => {
+      const records = withStatus(recordsOf(domain), "missing");
       const variables = domainConnectVariables({ domain, records, tracking }, groups);
-      instances.push(applyTemplate({ zone: "example.com", host: "" }, groups, variables));
-    }
-    expect(instances.flat().map((record) => record.name)).toEqual([
+      for (const group of groups) {
+        const { multiInstance } = DOMAIN_CONNECT_TEMPLATE as { multiInstance?: boolean };
+        const previous = multiInstance ? (applied.get(group) ?? []) : [];
+        const written = applyTemplate({ zone: "example.com", host: "" }, [group], variables);
+        applied.set(group, [...previous, written]);
+      }
+    };
+    apply(domainOf("example.com"), ["dkim", "mail_from"]);
+    apply(domainOf("example.com"), ["tracking"]);
+    // The domain was deleted and added again: SES issued new DKIM tokens.
+    const readded = domainOf("example.com", { dkimTokens: ["dddd4444", "eeee5555", "ffff6666"] });
+    apply(readded, ["dkim"]);
+    const records = withStatus(recordsOf(readded), "missing");
+    expect([...applied.values()].flat(2).map((record) => record.name)).toEqual([
       ...records.filter((record) => record.purpose !== "dmarc").map((record) => record.name),
       "links.example.com",
     ]);

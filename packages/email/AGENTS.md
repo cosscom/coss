@@ -129,12 +129,14 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   only and always signed (`DOMAIN_CONNECT_PRIVATE_KEY`; providers check `sig` against the TXT records at
   `<DOMAIN_CONNECT_KEY_ID>.coss.com`). `domain-connect/coss.com.email.json` is the contract with every DNS provider
   (submitted to github.com/Domain-Connect/Templates; providers onboard it one by one, and until then discovery's
-  template check is a 404 and no button shows): change it only with a new `version`, the conformance test in
+  template check is a 404 and no button shows): once merged there, change it only with a new `version` (providers
+  import a version once; until then the open PR is updated in place), the conformance test in
   `test/domain-connect.test.ts` (the template applied must equal `expectedRecords` + the tracking CNAME) and a PR
   upstream. Groups: `dkim`, `mail_from`, `dmarc` (only when the domain has no DMARC record and inherits none, asked of DNS
   each time, never from the stored check — a `p=none` subdomain record would weaken an enforced parent), `tracking` (fixed target `track.cosslinks.com`);
-  only groups with unverified records are applied, so the template is `multiInstance` (providers that keep
-  applied-template state would otherwise remove an earlier application's records on the next one). Never put receiving MX records in it (they'd take over the
+  only groups with unverified records are applied, and applies are additive per group, so the template is not
+  `multiInstance` (a provider that keeps applied-template state then replaces a re-applied group's records, e.g.
+  stale DKIM CNAMEs, instead of keeping both). Never put receiving MX records in it (they'd take over the
   domain's mail). Discovery reads the customer's `_domainconnect` TXT record and fetches the URL it names, so it
   goes only through `publicHttpGetter` (https, public addresses pinned with `publicAddressLookup` from
   `@coss/webhooks`, no redirects, 16 KB, 3 s) and fails closed (`null`, never throws). The dashboard caches
