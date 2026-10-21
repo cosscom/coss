@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,27 +34,27 @@ public final class AuditEvent {
 
     private final AuditActorType actorType;
 
-    private final Optional<String> actorId;
+    private final OptionalNullable<String> actorId;
 
     private final String actorLabel;
 
     private final String action;
 
-    private final Optional<String> targetType;
+    private final OptionalNullable<String> targetType;
 
-    private final Optional<String> targetId;
+    private final OptionalNullable<String> targetId;
 
-    private final Optional<String> targetLabel;
+    private final OptionalNullable<String> targetLabel;
 
-    private final Optional<String> projectId;
+    private final OptionalNullable<String> projectId;
 
-    private final Optional<String> environmentId;
+    private final OptionalNullable<String> environmentId;
 
     private final Map<String, Object> metadata;
 
-    private final Optional<String> clientIp;
+    private final OptionalNullable<String> clientIp;
 
-    private final Optional<String> userAgent;
+    private final OptionalNullable<String> userAgent;
 
     private final Map<String, Object> additionalProperties;
 
@@ -63,17 +63,17 @@ public final class AuditEvent {
             String id,
             OffsetDateTime createdAt,
             AuditActorType actorType,
-            Optional<String> actorId,
+            OptionalNullable<String> actorId,
             String actorLabel,
             String action,
-            Optional<String> targetType,
-            Optional<String> targetId,
-            Optional<String> targetLabel,
-            Optional<String> projectId,
-            Optional<String> environmentId,
+            OptionalNullable<String> targetType,
+            OptionalNullable<String> targetId,
+            OptionalNullable<String> targetLabel,
+            OptionalNullable<String> projectId,
+            OptionalNullable<String> environmentId,
             Map<String, Object> metadata,
-            Optional<String> clientIp,
-            Optional<String> userAgent,
+            OptionalNullable<String> clientIp,
+            OptionalNullable<String> userAgent,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -116,10 +116,11 @@ public final class AuditEvent {
     /**
      * @return The user's or API key's id; <code>null</code> for the system.
      */
-    @JsonIgnore
-    public Optional<String> getActorId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("actor_id")
+    public OptionalNullable<String> getActorId() {
         if (actorId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return actorId;
     }
@@ -143,18 +144,20 @@ public final class AuditEvent {
     /**
      * @return What was changed: <code>domain</code>, <code>api_key</code>, <code>member</code>…
      */
-    @JsonIgnore
-    public Optional<String> getTargetType() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("target_type")
+    public OptionalNullable<String> getTargetType() {
         if (targetType == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return targetType;
     }
 
-    @JsonIgnore
-    public Optional<String> getTargetId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("target_id")
+    public OptionalNullable<String> getTargetId() {
         if (targetId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return targetId;
     }
@@ -162,10 +165,11 @@ public final class AuditEvent {
     /**
      * @return A readable name for the target when it was changed.
      */
-    @JsonIgnore
-    public Optional<String> getTargetLabel() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("target_label")
+    public OptionalNullable<String> getTargetLabel() {
         if (targetLabel == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return targetLabel;
     }
@@ -173,10 +177,11 @@ public final class AuditEvent {
     /**
      * @return <code>null</code> for organization-wide changes (domains, members…).
      */
-    @JsonIgnore
-    public Optional<String> getProjectId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("project_id")
+    public OptionalNullable<String> getProjectId() {
         if (projectId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return projectId;
     }
@@ -184,10 +189,11 @@ public final class AuditEvent {
     /**
      * @return <code>null</code> for organization-wide changes (domains, members…).
      */
-    @JsonIgnore
-    public Optional<String> getEnvironmentId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("environment_id")
+    public OptionalNullable<String> getEnvironmentId() {
         if (environmentId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return environmentId;
     }
@@ -200,67 +206,69 @@ public final class AuditEvent {
         return metadata;
     }
 
-    @JsonIgnore
-    public Optional<String> getClientIp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("client_ip")
+    public OptionalNullable<String> getClientIp() {
         if (clientIp == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return clientIp;
     }
 
-    @JsonIgnore
-    public Optional<String> getUserAgent() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_agent")
+    public OptionalNullable<String> getUserAgent() {
         if (userAgent == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userAgent;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("actor_id")
-    private Optional<String> _getActorId() {
+    private OptionalNullable<String> _getActorId() {
         return actorId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("target_type")
-    private Optional<String> _getTargetType() {
+    private OptionalNullable<String> _getTargetType() {
         return targetType;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("target_id")
-    private Optional<String> _getTargetId() {
+    private OptionalNullable<String> _getTargetId() {
         return targetId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("target_label")
-    private Optional<String> _getTargetLabel() {
+    private OptionalNullable<String> _getTargetLabel() {
         return targetLabel;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("project_id")
-    private Optional<String> _getProjectId() {
+    private OptionalNullable<String> _getProjectId() {
         return projectId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("environment_id")
-    private Optional<String> _getEnvironmentId() {
+    private OptionalNullable<String> _getEnvironmentId() {
         return environmentId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("client_ip")
-    private Optional<String> _getClientIp() {
+    private OptionalNullable<String> _getClientIp() {
         return clientIp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_agent")
-    private Optional<String> _getUserAgent() {
+    private OptionalNullable<String> _getUserAgent() {
         return userAgent;
     }
 
@@ -364,51 +372,63 @@ public final class AuditEvent {
         /**
          * <p>The user's or API key's id; <code>null</code> for the system.</p>
          */
-        _FinalStage actorId(Optional<String> actorId);
+        _FinalStage actorId(OptionalNullable<String> actorId);
 
         _FinalStage actorId(String actorId);
+
+        _FinalStage actorId(Optional<String> actorId);
 
         _FinalStage actorId(Nullable<String> actorId);
 
         /**
          * <p>What was changed: <code>domain</code>, <code>api_key</code>, <code>member</code>…</p>
          */
-        _FinalStage targetType(Optional<String> targetType);
+        _FinalStage targetType(OptionalNullable<String> targetType);
 
         _FinalStage targetType(String targetType);
 
+        _FinalStage targetType(Optional<String> targetType);
+
         _FinalStage targetType(Nullable<String> targetType);
 
-        _FinalStage targetId(Optional<String> targetId);
+        _FinalStage targetId(OptionalNullable<String> targetId);
 
         _FinalStage targetId(String targetId);
+
+        _FinalStage targetId(Optional<String> targetId);
 
         _FinalStage targetId(Nullable<String> targetId);
 
         /**
          * <p>A readable name for the target when it was changed.</p>
          */
-        _FinalStage targetLabel(Optional<String> targetLabel);
+        _FinalStage targetLabel(OptionalNullable<String> targetLabel);
 
         _FinalStage targetLabel(String targetLabel);
+
+        _FinalStage targetLabel(Optional<String> targetLabel);
 
         _FinalStage targetLabel(Nullable<String> targetLabel);
 
         /**
          * <p><code>null</code> for organization-wide changes (domains, members…).</p>
          */
-        _FinalStage projectId(Optional<String> projectId);
+        _FinalStage projectId(OptionalNullable<String> projectId);
 
         _FinalStage projectId(String projectId);
+
+        _FinalStage projectId(Optional<String> projectId);
 
         _FinalStage projectId(Nullable<String> projectId);
 
         /**
          * <p><code>null</code> for organization-wide changes (domains, members…).</p>
          */
-        _FinalStage environmentId(Optional<String> environmentId);
+        _FinalStage environmentId(OptionalNullable<String> environmentId);
 
         _FinalStage environmentId(String environmentId);
+
+        _FinalStage environmentId(Optional<String> environmentId);
 
         _FinalStage environmentId(Nullable<String> environmentId);
 
@@ -421,15 +441,19 @@ public final class AuditEvent {
 
         _FinalStage metadata(String key, Object value);
 
-        _FinalStage clientIp(Optional<String> clientIp);
+        _FinalStage clientIp(OptionalNullable<String> clientIp);
 
         _FinalStage clientIp(String clientIp);
 
+        _FinalStage clientIp(Optional<String> clientIp);
+
         _FinalStage clientIp(Nullable<String> clientIp);
 
-        _FinalStage userAgent(Optional<String> userAgent);
+        _FinalStage userAgent(OptionalNullable<String> userAgent);
 
         _FinalStage userAgent(String userAgent);
+
+        _FinalStage userAgent(Optional<String> userAgent);
 
         _FinalStage userAgent(Nullable<String> userAgent);
     }
@@ -449,23 +473,23 @@ public final class AuditEvent {
 
         private String action;
 
-        private Optional<String> userAgent = Optional.empty();
+        private OptionalNullable<String> userAgent = OptionalNullable.absent();
 
-        private Optional<String> clientIp = Optional.empty();
+        private OptionalNullable<String> clientIp = OptionalNullable.absent();
 
         private Map<String, Object> metadata = new LinkedHashMap<>();
 
-        private Optional<String> environmentId = Optional.empty();
+        private OptionalNullable<String> environmentId = OptionalNullable.absent();
 
-        private Optional<String> projectId = Optional.empty();
+        private OptionalNullable<String> projectId = OptionalNullable.absent();
 
-        private Optional<String> targetLabel = Optional.empty();
+        private OptionalNullable<String> targetLabel = OptionalNullable.absent();
 
-        private Optional<String> targetId = Optional.empty();
+        private OptionalNullable<String> targetId = OptionalNullable.absent();
 
-        private Optional<String> targetType = Optional.empty();
+        private OptionalNullable<String> targetType = OptionalNullable.absent();
 
-        private Optional<String> actorId = Optional.empty();
+        private OptionalNullable<String> actorId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -545,24 +569,34 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage userAgent(Nullable<String> userAgent) {
             if (userAgent.isNull()) {
-                this.userAgent = null;
+                this.userAgent = OptionalNullable.ofNull();
             } else if (userAgent.isEmpty()) {
-                this.userAgent = Optional.empty();
+                this.userAgent = OptionalNullable.absent();
             } else {
-                this.userAgent = Optional.of(userAgent.get());
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage userAgent(Optional<String> userAgent) {
+            if (userAgent.isPresent()) {
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            } else {
+                this.userAgent = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage userAgent(String userAgent) {
-            this.userAgent = Optional.ofNullable(userAgent);
+            this.userAgent = OptionalNullable.of(userAgent);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "user_agent", nulls = Nulls.SKIP)
-        public _FinalStage userAgent(Optional<String> userAgent) {
+        public _FinalStage userAgent(OptionalNullable<String> userAgent) {
             this.userAgent = userAgent;
             return this;
         }
@@ -570,24 +604,34 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage clientIp(Nullable<String> clientIp) {
             if (clientIp.isNull()) {
-                this.clientIp = null;
+                this.clientIp = OptionalNullable.ofNull();
             } else if (clientIp.isEmpty()) {
-                this.clientIp = Optional.empty();
+                this.clientIp = OptionalNullable.absent();
             } else {
-                this.clientIp = Optional.of(clientIp.get());
+                this.clientIp = OptionalNullable.of(clientIp.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage clientIp(Optional<String> clientIp) {
+            if (clientIp.isPresent()) {
+                this.clientIp = OptionalNullable.of(clientIp.get());
+            } else {
+                this.clientIp = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage clientIp(String clientIp) {
-            this.clientIp = Optional.ofNullable(clientIp);
+            this.clientIp = OptionalNullable.of(clientIp);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "client_ip", nulls = Nulls.SKIP)
-        public _FinalStage clientIp(Optional<String> clientIp) {
+        public _FinalStage clientIp(OptionalNullable<String> clientIp) {
             this.clientIp = clientIp;
             return this;
         }
@@ -634,11 +678,25 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage environmentId(Nullable<String> environmentId) {
             if (environmentId.isNull()) {
-                this.environmentId = null;
+                this.environmentId = OptionalNullable.ofNull();
             } else if (environmentId.isEmpty()) {
-                this.environmentId = Optional.empty();
+                this.environmentId = OptionalNullable.absent();
             } else {
-                this.environmentId = Optional.of(environmentId.get());
+                this.environmentId = OptionalNullable.of(environmentId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> for organization-wide changes (domains, members…).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage environmentId(Optional<String> environmentId) {
+            if (environmentId.isPresent()) {
+                this.environmentId = OptionalNullable.of(environmentId.get());
+            } else {
+                this.environmentId = OptionalNullable.absent();
             }
             return this;
         }
@@ -649,7 +707,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         public _FinalStage environmentId(String environmentId) {
-            this.environmentId = Optional.ofNullable(environmentId);
+            this.environmentId = OptionalNullable.of(environmentId);
             return this;
         }
 
@@ -658,7 +716,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "environment_id", nulls = Nulls.SKIP)
-        public _FinalStage environmentId(Optional<String> environmentId) {
+        public _FinalStage environmentId(OptionalNullable<String> environmentId) {
             this.environmentId = environmentId;
             return this;
         }
@@ -670,11 +728,25 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage projectId(Nullable<String> projectId) {
             if (projectId.isNull()) {
-                this.projectId = null;
+                this.projectId = OptionalNullable.ofNull();
             } else if (projectId.isEmpty()) {
-                this.projectId = Optional.empty();
+                this.projectId = OptionalNullable.absent();
             } else {
-                this.projectId = Optional.of(projectId.get());
+                this.projectId = OptionalNullable.of(projectId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> for organization-wide changes (domains, members…).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage projectId(Optional<String> projectId) {
+            if (projectId.isPresent()) {
+                this.projectId = OptionalNullable.of(projectId.get());
+            } else {
+                this.projectId = OptionalNullable.absent();
             }
             return this;
         }
@@ -685,7 +757,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         public _FinalStage projectId(String projectId) {
-            this.projectId = Optional.ofNullable(projectId);
+            this.projectId = OptionalNullable.of(projectId);
             return this;
         }
 
@@ -694,7 +766,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "project_id", nulls = Nulls.SKIP)
-        public _FinalStage projectId(Optional<String> projectId) {
+        public _FinalStage projectId(OptionalNullable<String> projectId) {
             this.projectId = projectId;
             return this;
         }
@@ -706,11 +778,25 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage targetLabel(Nullable<String> targetLabel) {
             if (targetLabel.isNull()) {
-                this.targetLabel = null;
+                this.targetLabel = OptionalNullable.ofNull();
             } else if (targetLabel.isEmpty()) {
-                this.targetLabel = Optional.empty();
+                this.targetLabel = OptionalNullable.absent();
             } else {
-                this.targetLabel = Optional.of(targetLabel.get());
+                this.targetLabel = OptionalNullable.of(targetLabel.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>A readable name for the target when it was changed.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage targetLabel(Optional<String> targetLabel) {
+            if (targetLabel.isPresent()) {
+                this.targetLabel = OptionalNullable.of(targetLabel.get());
+            } else {
+                this.targetLabel = OptionalNullable.absent();
             }
             return this;
         }
@@ -721,7 +807,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         public _FinalStage targetLabel(String targetLabel) {
-            this.targetLabel = Optional.ofNullable(targetLabel);
+            this.targetLabel = OptionalNullable.of(targetLabel);
             return this;
         }
 
@@ -730,7 +816,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "target_label", nulls = Nulls.SKIP)
-        public _FinalStage targetLabel(Optional<String> targetLabel) {
+        public _FinalStage targetLabel(OptionalNullable<String> targetLabel) {
             this.targetLabel = targetLabel;
             return this;
         }
@@ -738,24 +824,34 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage targetId(Nullable<String> targetId) {
             if (targetId.isNull()) {
-                this.targetId = null;
+                this.targetId = OptionalNullable.ofNull();
             } else if (targetId.isEmpty()) {
-                this.targetId = Optional.empty();
+                this.targetId = OptionalNullable.absent();
             } else {
-                this.targetId = Optional.of(targetId.get());
+                this.targetId = OptionalNullable.of(targetId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage targetId(Optional<String> targetId) {
+            if (targetId.isPresent()) {
+                this.targetId = OptionalNullable.of(targetId.get());
+            } else {
+                this.targetId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage targetId(String targetId) {
-            this.targetId = Optional.ofNullable(targetId);
+            this.targetId = OptionalNullable.of(targetId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "target_id", nulls = Nulls.SKIP)
-        public _FinalStage targetId(Optional<String> targetId) {
+        public _FinalStage targetId(OptionalNullable<String> targetId) {
             this.targetId = targetId;
             return this;
         }
@@ -767,11 +863,25 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage targetType(Nullable<String> targetType) {
             if (targetType.isNull()) {
-                this.targetType = null;
+                this.targetType = OptionalNullable.ofNull();
             } else if (targetType.isEmpty()) {
-                this.targetType = Optional.empty();
+                this.targetType = OptionalNullable.absent();
             } else {
-                this.targetType = Optional.of(targetType.get());
+                this.targetType = OptionalNullable.of(targetType.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What was changed: <code>domain</code>, <code>api_key</code>, <code>member</code>…</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage targetType(Optional<String> targetType) {
+            if (targetType.isPresent()) {
+                this.targetType = OptionalNullable.of(targetType.get());
+            } else {
+                this.targetType = OptionalNullable.absent();
             }
             return this;
         }
@@ -782,7 +892,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         public _FinalStage targetType(String targetType) {
-            this.targetType = Optional.ofNullable(targetType);
+            this.targetType = OptionalNullable.of(targetType);
             return this;
         }
 
@@ -791,7 +901,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "target_type", nulls = Nulls.SKIP)
-        public _FinalStage targetType(Optional<String> targetType) {
+        public _FinalStage targetType(OptionalNullable<String> targetType) {
             this.targetType = targetType;
             return this;
         }
@@ -803,11 +913,25 @@ public final class AuditEvent {
         @java.lang.Override
         public _FinalStage actorId(Nullable<String> actorId) {
             if (actorId.isNull()) {
-                this.actorId = null;
+                this.actorId = OptionalNullable.ofNull();
             } else if (actorId.isEmpty()) {
-                this.actorId = Optional.empty();
+                this.actorId = OptionalNullable.absent();
             } else {
-                this.actorId = Optional.of(actorId.get());
+                this.actorId = OptionalNullable.of(actorId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The user's or API key's id; <code>null</code> for the system.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage actorId(Optional<String> actorId) {
+            if (actorId.isPresent()) {
+                this.actorId = OptionalNullable.of(actorId.get());
+            } else {
+                this.actorId = OptionalNullable.absent();
             }
             return this;
         }
@@ -818,7 +942,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         public _FinalStage actorId(String actorId) {
-            this.actorId = Optional.ofNullable(actorId);
+            this.actorId = OptionalNullable.of(actorId);
             return this;
         }
 
@@ -827,7 +951,7 @@ public final class AuditEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "actor_id", nulls = Nulls.SKIP)
-        public _FinalStage actorId(Optional<String> actorId) {
+        public _FinalStage actorId(OptionalNullable<String> actorId) {
             this.actorId = actorId;
             return this;
         }

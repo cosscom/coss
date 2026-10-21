@@ -17,18 +17,21 @@ public record UpdateTrackingRuleRequest : IJsonOnDeserialized
     /// <summary>
     /// Track opens.
     /// </summary>
+    [Optional]
     [JsonPropertyName("opens")]
     public bool? Opens { get; set; }
 
     /// <summary>
     /// Track clicks.
     /// </summary>
+    [Optional]
     [JsonPropertyName("clicks")]
     public bool? Clicks { get; set; }
 
     /// <summary>
     /// Add one-click unsubscribe headers to emails with a category and a single recipient.
     /// </summary>
+    [Optional]
     [JsonPropertyName("unsubscribe")]
     public bool? Unsubscribe { get; set; }
 

@@ -90,14 +90,41 @@ class CreateRiskAssessmentRequest extends JsonSerializableType
         array $values,
     ) {
         $this->idempotencyKey = $values['idempotencyKey'] ?? null;
+        if (array_key_exists('idempotencyKey', $values)) {
+            $this->_setField('idempotencyKey');
+        }
         $this->event = $values['event'];
         $this->eventName = $values['eventName'] ?? null;
+        if (array_key_exists('eventName', $values)) {
+            $this->_setField('eventName');
+        }
         $this->user = $values['user'] ?? null;
+        if (array_key_exists('user', $values)) {
+            $this->_setField('user');
+        }
         $this->ip = $values['ip'] ?? null;
+        if (array_key_exists('ip', $values)) {
+            $this->_setField('ip');
+        }
         $this->userAgent = $values['userAgent'] ?? null;
+        if (array_key_exists('userAgent', $values)) {
+            $this->_setField('userAgent');
+        }
         $this->captcha = $values['captcha'] ?? null;
+        if (array_key_exists('captcha', $values)) {
+            $this->_setField('captcha');
+        }
         $this->checkout = $values['checkout'] ?? null;
+        if (array_key_exists('checkout', $values)) {
+            $this->_setField('checkout');
+        }
         $this->device = $values['device'] ?? null;
+        if (array_key_exists('device', $values)) {
+            $this->_setField('device');
+        }
         $this->content = $values['content'] ?? null;
+        if (array_key_exists('content', $values)) {
+            $this->_setField('content');
+        }
     }
 }

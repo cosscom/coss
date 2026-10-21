@@ -17,6 +17,7 @@ public record TemplateVariableInputFieldsItem : IJsonOnDeserialized
     [JsonPropertyName("type")]
     public required TemplateVariableInputFieldsItemType Type { get; set; }
 
+    [Optional]
     [JsonPropertyName("required")]
     public bool? Required { get; set; }
 

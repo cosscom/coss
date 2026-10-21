@@ -79,7 +79,13 @@ class EmailLink extends JsonSerializableType
         $this->url = $values['url'];
         $this->clickCount = $values['clickCount'];
         $this->firstClickedAt = $values['firstClickedAt'] ?? null;
+        if (array_key_exists('firstClickedAt', $values)) {
+            $this->_setField('firstClickedAt');
+        }
         $this->lastClickedAt = $values['lastClickedAt'] ?? null;
+        if (array_key_exists('lastClickedAt', $values)) {
+            $this->_setField('lastClickedAt');
+        }
     }
 
     /**

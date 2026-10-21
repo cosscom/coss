@@ -12,24 +12,28 @@ public record UpdateHookEventTypeRequest
     [JsonIgnore]
     public required string Name { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    public Optional<string?> Description { get; set; }
 
     /// <summary>
     /// A JSON Schema of the payload, shown to your users (not enforced).
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("schema")]
-    public Dictionary<string, object?>? Schema { get; set; }
+    public Optional<Dictionary<string, object?>?> Schema { get; set; }
 
     /// <summary>
     /// Up to 5 example payloads; the first is what a test send delivers.
     /// </summary>
+    [Optional]
     [JsonPropertyName("examples")]
     public IEnumerable<Dictionary<string, object?>>? Examples { get; set; }
 
     /// <summary>
     /// `false` restores an archived type.
     /// </summary>
+    [Optional]
     [JsonPropertyName("archived")]
     public bool? Archived { get; set; }
 

@@ -53,10 +53,28 @@ class ListAssessmentsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->event = $values['event'] ?? null;
+        if (array_key_exists('event', $values)) {
+            $this->_setField('event');
+        }
         $this->decision = $values['decision'] ?? null;
+        if (array_key_exists('decision', $values)) {
+            $this->_setField('decision');
+        }
         $this->userId = $values['userId'] ?? null;
+        if (array_key_exists('userId', $values)) {
+            $this->_setField('userId');
+        }
         $this->reviewStatus = $values['reviewStatus'] ?? null;
+        if (array_key_exists('reviewStatus', $values)) {
+            $this->_setField('reviewStatus');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

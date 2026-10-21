@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,6 +23,7 @@ import (
 type recorded struct {
 	mu       sync.Mutex
 	requests []*http.Request
+	bodies   [][]byte
 }
 
 // fakeAPI answers each request with the next status (the last one with the OpenAPI Email example).
@@ -44,8 +46,10 @@ func fakeAPI(t *testing.T, statuses ...int) (*httptest.Server, *recorded) {
 	email := openapi.Components.Schemas["Email"].Examples[0]
 	rec := &recorded{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
 		rec.mu.Lock()
 		rec.requests = append(rec.requests, r)
+		rec.bodies = append(rec.bodies, body)
 		attempt := len(rec.requests) - 1
 		rec.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
@@ -117,6 +121,16 @@ func TestNeverRetriesWhatTheAPIDoesNotDeduplicate(t *testing.T) {
 	_, err := newClient(server).WebhookEndpoints.Create(context.Background(), &coss.CreateWebhookEndpointRequest{URL: "https://example.com/hooks"})
 	if err == nil || len(rec.requests) != 1 {
 		t.Fatalf("%v after %d attempts", err, len(rec.requests))
+	}
+}
+
+func TestSendsAnExplicitNullAndLeavesOmittedFieldsOut(t *testing.T) {
+	server, rec := fakeAPI(t)
+	request := &coss.UpdateWebhookEndpointRequest{ID: "we_1"}
+	request.SetDescription(nil)
+	_, _ = newClient(server).WebhookEndpoints.Update(context.Background(), request)
+	if got := string(rec.bodies[0]); got != `{"description":null}` {
+		t.Fatalf("body %s", got)
 	}
 }
 

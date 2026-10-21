@@ -23,6 +23,7 @@ public record TrackingRule : IJsonOnDeserialized
     /// <summary>
     /// The category the rule applies to; `null` for the environment default.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("category")]
     public string? Category { get; set; }
 

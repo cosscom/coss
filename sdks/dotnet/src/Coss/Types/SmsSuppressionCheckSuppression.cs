@@ -29,6 +29,7 @@ public record SmsSuppressionCheckSuppression : IJsonOnDeserialized
     /// <summary>
     /// The message whose failure added it, if any.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("sms_id")]
     public string? SmsId { get; set; }
 

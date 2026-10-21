@@ -89,10 +89,25 @@ class Usage extends JsonSerializableType
         $this->object = $values['object'];
         $this->meter = $values['meter'];
         $this->dimension = $values['dimension'] ?? null;
+        if (array_key_exists('dimension', $values)) {
+            $this->_setField('dimension');
+        }
         $this->environmentId = $values['environmentId'] ?? null;
+        if (array_key_exists('environmentId', $values)) {
+            $this->_setField('environmentId');
+        }
         $this->projectId = $values['projectId'] ?? null;
+        if (array_key_exists('projectId', $values)) {
+            $this->_setField('projectId');
+        }
         $this->apiKeyId = $values['apiKeyId'] ?? null;
+        if (array_key_exists('apiKeyId', $values)) {
+            $this->_setField('apiKeyId');
+        }
         $this->userId = $values['userId'] ?? null;
+        if (array_key_exists('userId', $values)) {
+            $this->_setField('userId');
+        }
         $this->start = $values['start'];
         $this->end = $values['end'];
         $this->quantity = $values['quantity'];

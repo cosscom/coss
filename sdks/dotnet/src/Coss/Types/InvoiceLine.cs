@@ -26,24 +26,29 @@ public record InvoiceLine : IJsonOnDeserialized
     /// <summary>
     /// What is counted, e.g. `email.recipients`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("meter")]
     public InvoiceLineMeter? Meter { get; set; }
 
+    [Nullable]
     [JsonPropertyName("dimension")]
     public string? Dimension { get; set; }
 
+    [Nullable]
     [JsonPropertyName("quantity")]
     public long? Quantity { get; set; }
 
     /// <summary>
     /// Units covered by an allowance or committed volume (not charged).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("included_quantity")]
     public long? IncludedQuantity { get; set; }
 
     /// <summary>
     /// Dollars per unit, e.g. `0.0004`; `null` when the price varies by volume.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("unit_price")]
     public string? UnitPrice { get; set; }
 

@@ -15,12 +15,14 @@ public record CreateHookPortalSessionRequest
     /// <summary>
     /// Seconds until it expires: default 3600, at most 86400.
     /// </summary>
+    [Optional]
     [JsonPropertyName("expires_in")]
     public int? ExpiresIn { get; set; }
 
     /// <summary>
     /// The user can look but not change anything.
     /// </summary>
+    [Optional]
     [JsonPropertyName("read_only")]
     public bool? ReadOnly { get; set; }
 

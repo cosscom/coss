@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 public final class SmsWebhookEventData {
     private final Optional<SmsWebhookEventDataFailure> failure;
 
-    private final Optional<String> providerErrorCode;
+    private final OptionalNullable<String> providerErrorCode;
 
     private final Optional<SmsWebhookEventDataSuppression> suppression;
 
@@ -53,7 +53,7 @@ public final class SmsWebhookEventData {
 
     private SmsWebhookEventData(
             Optional<SmsWebhookEventDataFailure> failure,
-            Optional<String> providerErrorCode,
+            OptionalNullable<String> providerErrorCode,
             Optional<SmsWebhookEventDataSuppression> suppression,
             String smsId,
             String from,
@@ -89,10 +89,11 @@ public final class SmsWebhookEventData {
     /**
      * @return The provider's or carrier's own error code, e.g. <code>30007</code>.
      */
-    @JsonIgnore
-    public Optional<String> getProviderErrorCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("provider_error_code")
+    public OptionalNullable<String> getProviderErrorCode() {
         if (providerErrorCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return providerErrorCode;
     }
@@ -147,7 +148,7 @@ public final class SmsWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("provider_error_code")
-    private Optional<String> _getProviderErrorCode() {
+    private OptionalNullable<String> _getProviderErrorCode() {
         return providerErrorCode;
     }
 
@@ -248,9 +249,11 @@ public final class SmsWebhookEventData {
         /**
          * <p>The provider's or carrier's own error code, e.g. <code>30007</code>.</p>
          */
-        _FinalStage providerErrorCode(Optional<String> providerErrorCode);
+        _FinalStage providerErrorCode(OptionalNullable<String> providerErrorCode);
 
         _FinalStage providerErrorCode(String providerErrorCode);
+
+        _FinalStage providerErrorCode(Optional<String> providerErrorCode);
 
         _FinalStage providerErrorCode(Nullable<String> providerErrorCode);
 
@@ -296,7 +299,7 @@ public final class SmsWebhookEventData {
 
         private Optional<SmsWebhookEventDataSuppression> suppression = Optional.empty();
 
-        private Optional<String> providerErrorCode = Optional.empty();
+        private OptionalNullable<String> providerErrorCode = OptionalNullable.absent();
 
         private Optional<SmsWebhookEventDataFailure> failure = Optional.empty();
 
@@ -421,11 +424,25 @@ public final class SmsWebhookEventData {
         @java.lang.Override
         public _FinalStage providerErrorCode(Nullable<String> providerErrorCode) {
             if (providerErrorCode.isNull()) {
-                this.providerErrorCode = null;
+                this.providerErrorCode = OptionalNullable.ofNull();
             } else if (providerErrorCode.isEmpty()) {
-                this.providerErrorCode = Optional.empty();
+                this.providerErrorCode = OptionalNullable.absent();
             } else {
-                this.providerErrorCode = Optional.of(providerErrorCode.get());
+                this.providerErrorCode = OptionalNullable.of(providerErrorCode.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The provider's or carrier's own error code, e.g. <code>30007</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage providerErrorCode(Optional<String> providerErrorCode) {
+            if (providerErrorCode.isPresent()) {
+                this.providerErrorCode = OptionalNullable.of(providerErrorCode.get());
+            } else {
+                this.providerErrorCode = OptionalNullable.absent();
             }
             return this;
         }
@@ -436,7 +453,7 @@ public final class SmsWebhookEventData {
          */
         @java.lang.Override
         public _FinalStage providerErrorCode(String providerErrorCode) {
-            this.providerErrorCode = Optional.ofNullable(providerErrorCode);
+            this.providerErrorCode = OptionalNullable.of(providerErrorCode);
             return this;
         }
 
@@ -445,7 +462,7 @@ public final class SmsWebhookEventData {
          */
         @java.lang.Override
         @JsonSetter(value = "provider_error_code", nulls = Nulls.SKIP)
-        public _FinalStage providerErrorCode(Optional<String> providerErrorCode) {
+        public _FinalStage providerErrorCode(OptionalNullable<String> providerErrorCode) {
             this.providerErrorCode = providerErrorCode;
             return this;
         }

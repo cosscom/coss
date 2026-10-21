@@ -17,6 +17,7 @@ public record EmailEventDataBounce : IJsonOnDeserialized
     [JsonPropertyName("sub_type")]
     public required string SubType { get; set; }
 
+    [Nullable]
     [JsonPropertyName("diagnostic_code")]
     public string? DiagnosticCode { get; set; }
 

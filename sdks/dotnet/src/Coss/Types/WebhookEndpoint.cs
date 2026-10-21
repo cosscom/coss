@@ -20,6 +20,7 @@ public record WebhookEndpoint : IJsonOnDeserialized
     [JsonPropertyName("url")]
     public required string Url { get; set; }
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
@@ -44,21 +45,25 @@ public record WebhookEndpoint : IJsonOnDeserialized
     /// <summary>
     /// `manual`: someone disabled it. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("disabled_reason")]
     public WebhookEndpointDisabledReason? DisabledReason { get; set; }
 
+    [Nullable]
     [JsonPropertyName("disabled_at")]
     public DateTime? DisabledAt { get; set; }
 
     /// <summary>
     /// When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. `null` while healthy.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("failing_since")]
     public DateTime? FailingSince { get; set; }
 
     /// <summary>
     /// After a secret roll, deliveries are also signed with the previous secret until this time. `null` when only the current secret signs.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("previous_secret_expires_at")]
     public DateTime? PreviousSecretExpiresAt { get; set; }
 

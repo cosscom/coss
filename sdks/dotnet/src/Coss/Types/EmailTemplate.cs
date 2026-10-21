@@ -17,21 +17,25 @@ public record EmailTemplate : IJsonOnDeserialized
     [JsonPropertyName("id")]
     public required string Id { get; set; }
 
+    [Nullable]
     [JsonPropertyName("alias")]
     public string? Alias { get; set; }
 
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
     /// <summary>
     /// The version sends use; `null` until the draft is first published.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("published_version")]
     public long? PublishedVersion { get; set; }
 
+    [Nullable]
     [JsonPropertyName("published_at")]
     public DateTime? PublishedAt { get; set; }
 

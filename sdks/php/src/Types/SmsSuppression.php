@@ -63,6 +63,9 @@ class SmsSuppression extends JsonSerializableType
         $this->phoneNumber = $values['phoneNumber'];
         $this->reason = $values['reason'];
         $this->smsId = $values['smsId'] ?? null;
+        if (array_key_exists('smsId', $values)) {
+            $this->_setField('smsId');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

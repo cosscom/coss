@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ public final class RiskIpPrivacy {
 
     private final boolean relay;
 
-    private final Optional<String> service;
+    private final OptionalNullable<String> service;
 
     private final Map<String, Object> additionalProperties;
 
@@ -37,7 +37,7 @@ public final class RiskIpPrivacy {
             boolean vpn,
             boolean proxy,
             boolean relay,
-            Optional<String> service,
+            OptionalNullable<String> service,
             Map<String, Object> additionalProperties) {
         this.vpn = vpn;
         this.proxy = proxy;
@@ -64,17 +64,18 @@ public final class RiskIpPrivacy {
     /**
      * @return The VPN or proxy service.
      */
-    @JsonIgnore
-    public Optional<String> getService() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("service")
+    public OptionalNullable<String> getService() {
         if (service == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return service;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("service")
-    private Optional<String> _getService() {
+    private OptionalNullable<String> _getService() {
         return service;
     }
 
@@ -131,9 +132,11 @@ public final class RiskIpPrivacy {
         /**
          * <p>The VPN or proxy service.</p>
          */
-        _FinalStage service(Optional<String> service);
+        _FinalStage service(OptionalNullable<String> service);
 
         _FinalStage service(String service);
+
+        _FinalStage service(Optional<String> service);
 
         _FinalStage service(Nullable<String> service);
     }
@@ -146,7 +149,7 @@ public final class RiskIpPrivacy {
 
         private boolean relay;
 
-        private Optional<String> service = Optional.empty();
+        private OptionalNullable<String> service = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -190,11 +193,25 @@ public final class RiskIpPrivacy {
         @java.lang.Override
         public _FinalStage service(Nullable<String> service) {
             if (service.isNull()) {
-                this.service = null;
+                this.service = OptionalNullable.ofNull();
             } else if (service.isEmpty()) {
-                this.service = Optional.empty();
+                this.service = OptionalNullable.absent();
             } else {
-                this.service = Optional.of(service.get());
+                this.service = OptionalNullable.of(service.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The VPN or proxy service.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage service(Optional<String> service) {
+            if (service.isPresent()) {
+                this.service = OptionalNullable.of(service.get());
+            } else {
+                this.service = OptionalNullable.absent();
             }
             return this;
         }
@@ -205,7 +222,7 @@ public final class RiskIpPrivacy {
          */
         @java.lang.Override
         public _FinalStage service(String service) {
-            this.service = Optional.ofNullable(service);
+            this.service = OptionalNullable.of(service);
             return this;
         }
 
@@ -214,7 +231,7 @@ public final class RiskIpPrivacy {
          */
         @java.lang.Override
         @JsonSetter(value = "service", nulls = Nulls.SKIP)
-        public _FinalStage service(Optional<String> service) {
+        public _FinalStage service(OptionalNullable<String> service) {
             this.service = service;
             return this;
         }

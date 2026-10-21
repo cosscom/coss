@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,15 +32,15 @@ public final class EmailTracking {
 
     private final long openCount;
 
-    private final Optional<OffsetDateTime> firstOpenedAt;
+    private final OptionalNullable<OffsetDateTime> firstOpenedAt;
 
-    private final Optional<OffsetDateTime> lastOpenedAt;
+    private final OptionalNullable<OffsetDateTime> lastOpenedAt;
 
     private final long clickCount;
 
-    private final Optional<OffsetDateTime> firstClickedAt;
+    private final OptionalNullable<OffsetDateTime> firstClickedAt;
 
-    private final Optional<OffsetDateTime> lastClickedAt;
+    private final OptionalNullable<OffsetDateTime> lastClickedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -49,11 +49,11 @@ public final class EmailTracking {
             boolean clicks,
             boolean unsubscribe,
             long openCount,
-            Optional<OffsetDateTime> firstOpenedAt,
-            Optional<OffsetDateTime> lastOpenedAt,
+            OptionalNullable<OffsetDateTime> firstOpenedAt,
+            OptionalNullable<OffsetDateTime> lastOpenedAt,
             long clickCount,
-            Optional<OffsetDateTime> firstClickedAt,
-            Optional<OffsetDateTime> lastClickedAt,
+            OptionalNullable<OffsetDateTime> firstClickedAt,
+            OptionalNullable<OffsetDateTime> lastClickedAt,
             Map<String, Object> additionalProperties) {
         this.opens = opens;
         this.clicks = clicks;
@@ -96,18 +96,20 @@ public final class EmailTracking {
         return openCount;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFirstOpenedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_opened_at")
+    public OptionalNullable<OffsetDateTime> getFirstOpenedAt() {
         if (firstOpenedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstOpenedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastOpenedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_opened_at")
+    public OptionalNullable<OffsetDateTime> getLastOpenedAt() {
         if (lastOpenedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastOpenedAt;
     }
@@ -117,43 +119,45 @@ public final class EmailTracking {
         return clickCount;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFirstClickedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_clicked_at")
+    public OptionalNullable<OffsetDateTime> getFirstClickedAt() {
         if (firstClickedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstClickedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastClickedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_clicked_at")
+    public OptionalNullable<OffsetDateTime> getLastClickedAt() {
         if (lastClickedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastClickedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_opened_at")
-    private Optional<OffsetDateTime> _getFirstOpenedAt() {
+    private OptionalNullable<OffsetDateTime> _getFirstOpenedAt() {
         return firstOpenedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_opened_at")
-    private Optional<OffsetDateTime> _getLastOpenedAt() {
+    private OptionalNullable<OffsetDateTime> _getLastOpenedAt() {
         return lastOpenedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_clicked_at")
-    private Optional<OffsetDateTime> _getFirstClickedAt() {
+    private OptionalNullable<OffsetDateTime> _getFirstClickedAt() {
         return firstClickedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_clicked_at")
-    private Optional<OffsetDateTime> _getLastClickedAt() {
+    private OptionalNullable<OffsetDateTime> _getLastClickedAt() {
         return lastClickedAt;
     }
 
@@ -241,27 +245,35 @@ public final class EmailTracking {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage firstOpenedAt(Optional<OffsetDateTime> firstOpenedAt);
+        _FinalStage firstOpenedAt(OptionalNullable<OffsetDateTime> firstOpenedAt);
 
         _FinalStage firstOpenedAt(OffsetDateTime firstOpenedAt);
 
+        _FinalStage firstOpenedAt(Optional<OffsetDateTime> firstOpenedAt);
+
         _FinalStage firstOpenedAt(Nullable<OffsetDateTime> firstOpenedAt);
 
-        _FinalStage lastOpenedAt(Optional<OffsetDateTime> lastOpenedAt);
+        _FinalStage lastOpenedAt(OptionalNullable<OffsetDateTime> lastOpenedAt);
 
         _FinalStage lastOpenedAt(OffsetDateTime lastOpenedAt);
 
+        _FinalStage lastOpenedAt(Optional<OffsetDateTime> lastOpenedAt);
+
         _FinalStage lastOpenedAt(Nullable<OffsetDateTime> lastOpenedAt);
 
-        _FinalStage firstClickedAt(Optional<OffsetDateTime> firstClickedAt);
+        _FinalStage firstClickedAt(OptionalNullable<OffsetDateTime> firstClickedAt);
 
         _FinalStage firstClickedAt(OffsetDateTime firstClickedAt);
 
+        _FinalStage firstClickedAt(Optional<OffsetDateTime> firstClickedAt);
+
         _FinalStage firstClickedAt(Nullable<OffsetDateTime> firstClickedAt);
 
-        _FinalStage lastClickedAt(Optional<OffsetDateTime> lastClickedAt);
+        _FinalStage lastClickedAt(OptionalNullable<OffsetDateTime> lastClickedAt);
 
         _FinalStage lastClickedAt(OffsetDateTime lastClickedAt);
+
+        _FinalStage lastClickedAt(Optional<OffsetDateTime> lastClickedAt);
 
         _FinalStage lastClickedAt(Nullable<OffsetDateTime> lastClickedAt);
     }
@@ -279,13 +291,13 @@ public final class EmailTracking {
 
         private long clickCount;
 
-        private Optional<OffsetDateTime> lastClickedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastClickedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> firstClickedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> firstClickedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> lastOpenedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastOpenedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> firstOpenedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> firstOpenedAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -356,24 +368,34 @@ public final class EmailTracking {
         @java.lang.Override
         public _FinalStage lastClickedAt(Nullable<OffsetDateTime> lastClickedAt) {
             if (lastClickedAt.isNull()) {
-                this.lastClickedAt = null;
+                this.lastClickedAt = OptionalNullable.ofNull();
             } else if (lastClickedAt.isEmpty()) {
-                this.lastClickedAt = Optional.empty();
+                this.lastClickedAt = OptionalNullable.absent();
             } else {
-                this.lastClickedAt = Optional.of(lastClickedAt.get());
+                this.lastClickedAt = OptionalNullable.of(lastClickedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastClickedAt(Optional<OffsetDateTime> lastClickedAt) {
+            if (lastClickedAt.isPresent()) {
+                this.lastClickedAt = OptionalNullable.of(lastClickedAt.get());
+            } else {
+                this.lastClickedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastClickedAt(OffsetDateTime lastClickedAt) {
-            this.lastClickedAt = Optional.ofNullable(lastClickedAt);
+            this.lastClickedAt = OptionalNullable.of(lastClickedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_clicked_at", nulls = Nulls.SKIP)
-        public _FinalStage lastClickedAt(Optional<OffsetDateTime> lastClickedAt) {
+        public _FinalStage lastClickedAt(OptionalNullable<OffsetDateTime> lastClickedAt) {
             this.lastClickedAt = lastClickedAt;
             return this;
         }
@@ -381,24 +403,34 @@ public final class EmailTracking {
         @java.lang.Override
         public _FinalStage firstClickedAt(Nullable<OffsetDateTime> firstClickedAt) {
             if (firstClickedAt.isNull()) {
-                this.firstClickedAt = null;
+                this.firstClickedAt = OptionalNullable.ofNull();
             } else if (firstClickedAt.isEmpty()) {
-                this.firstClickedAt = Optional.empty();
+                this.firstClickedAt = OptionalNullable.absent();
             } else {
-                this.firstClickedAt = Optional.of(firstClickedAt.get());
+                this.firstClickedAt = OptionalNullable.of(firstClickedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage firstClickedAt(Optional<OffsetDateTime> firstClickedAt) {
+            if (firstClickedAt.isPresent()) {
+                this.firstClickedAt = OptionalNullable.of(firstClickedAt.get());
+            } else {
+                this.firstClickedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage firstClickedAt(OffsetDateTime firstClickedAt) {
-            this.firstClickedAt = Optional.ofNullable(firstClickedAt);
+            this.firstClickedAt = OptionalNullable.of(firstClickedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "first_clicked_at", nulls = Nulls.SKIP)
-        public _FinalStage firstClickedAt(Optional<OffsetDateTime> firstClickedAt) {
+        public _FinalStage firstClickedAt(OptionalNullable<OffsetDateTime> firstClickedAt) {
             this.firstClickedAt = firstClickedAt;
             return this;
         }
@@ -406,24 +438,34 @@ public final class EmailTracking {
         @java.lang.Override
         public _FinalStage lastOpenedAt(Nullable<OffsetDateTime> lastOpenedAt) {
             if (lastOpenedAt.isNull()) {
-                this.lastOpenedAt = null;
+                this.lastOpenedAt = OptionalNullable.ofNull();
             } else if (lastOpenedAt.isEmpty()) {
-                this.lastOpenedAt = Optional.empty();
+                this.lastOpenedAt = OptionalNullable.absent();
             } else {
-                this.lastOpenedAt = Optional.of(lastOpenedAt.get());
+                this.lastOpenedAt = OptionalNullable.of(lastOpenedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastOpenedAt(Optional<OffsetDateTime> lastOpenedAt) {
+            if (lastOpenedAt.isPresent()) {
+                this.lastOpenedAt = OptionalNullable.of(lastOpenedAt.get());
+            } else {
+                this.lastOpenedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastOpenedAt(OffsetDateTime lastOpenedAt) {
-            this.lastOpenedAt = Optional.ofNullable(lastOpenedAt);
+            this.lastOpenedAt = OptionalNullable.of(lastOpenedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_opened_at", nulls = Nulls.SKIP)
-        public _FinalStage lastOpenedAt(Optional<OffsetDateTime> lastOpenedAt) {
+        public _FinalStage lastOpenedAt(OptionalNullable<OffsetDateTime> lastOpenedAt) {
             this.lastOpenedAt = lastOpenedAt;
             return this;
         }
@@ -431,24 +473,34 @@ public final class EmailTracking {
         @java.lang.Override
         public _FinalStage firstOpenedAt(Nullable<OffsetDateTime> firstOpenedAt) {
             if (firstOpenedAt.isNull()) {
-                this.firstOpenedAt = null;
+                this.firstOpenedAt = OptionalNullable.ofNull();
             } else if (firstOpenedAt.isEmpty()) {
-                this.firstOpenedAt = Optional.empty();
+                this.firstOpenedAt = OptionalNullable.absent();
             } else {
-                this.firstOpenedAt = Optional.of(firstOpenedAt.get());
+                this.firstOpenedAt = OptionalNullable.of(firstOpenedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage firstOpenedAt(Optional<OffsetDateTime> firstOpenedAt) {
+            if (firstOpenedAt.isPresent()) {
+                this.firstOpenedAt = OptionalNullable.of(firstOpenedAt.get());
+            } else {
+                this.firstOpenedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage firstOpenedAt(OffsetDateTime firstOpenedAt) {
-            this.firstOpenedAt = Optional.ofNullable(firstOpenedAt);
+            this.firstOpenedAt = OptionalNullable.of(firstOpenedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "first_opened_at", nulls = Nulls.SKIP)
-        public _FinalStage firstOpenedAt(Optional<OffsetDateTime> firstOpenedAt) {
+        public _FinalStage firstOpenedAt(OptionalNullable<OffsetDateTime> firstOpenedAt) {
             this.firstOpenedAt = firstOpenedAt;
             return this;
         }

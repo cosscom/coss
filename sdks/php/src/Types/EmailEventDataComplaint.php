@@ -29,7 +29,13 @@ class EmailEventDataComplaint extends JsonSerializableType
         array $values = [],
     ) {
         $this->feedbackType = $values['feedbackType'] ?? null;
+        if (array_key_exists('feedbackType', $values)) {
+            $this->_setField('feedbackType');
+        }
         $this->subType = $values['subType'] ?? null;
+        if (array_key_exists('subType', $values)) {
+            $this->_setField('subType');
+        }
     }
 
     /**

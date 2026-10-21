@@ -6,29 +6,37 @@ namespace Coss.Email;
 [Serializable]
 public record UpdateMarketingSettingsRequest
 {
+    [Nullable, Optional]
     [JsonPropertyName("display_name")]
-    public string? DisplayName { get; set; }
+    public Optional<string?> DisplayName { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("mailing_address")]
-    public string? MailingAddress { get; set; }
+    public Optional<string?> MailingAddress { get; set; }
 
+    [Optional]
     [JsonPropertyName("double_opt_in_default")]
     public bool? DoubleOptInDefault { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("confirmation_from")]
-    public string? ConfirmationFrom { get; set; }
+    public Optional<string?> ConfirmationFrom { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("confirmation_subject")]
-    public string? ConfirmationSubject { get; set; }
+    public Optional<string?> ConfirmationSubject { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("confirmation_html")]
-    public string? ConfirmationHtml { get; set; }
+    public Optional<string?> ConfirmationHtml { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("confirmation_text")]
-    public string? ConfirmationText { get; set; }
+    public Optional<string?> ConfirmationText { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("confirmed_redirect_url")]
-    public string? ConfirmedRedirectUrl { get; set; }
+    public Optional<string?> ConfirmedRedirectUrl { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

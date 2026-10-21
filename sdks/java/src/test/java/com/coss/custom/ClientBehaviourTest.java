@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.coss.Coss;
 import com.coss.core.CossApiException;
+import com.coss.core.OptionalNullable;
+import com.coss.resources.webhookendpoints.requests.UpdateWebhookEndpointRequest;
 import com.coss.resources.webhookendpoints.requests.CreateWebhookEndpointRequest;
 import com.coss.types.SendEmailRequest;
 import com.coss.types.SendEmailRequestTo;
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ClientBehaviourTest {
     private HttpServer server;
     private final List<Headers> requests = Collections.synchronizedList(new ArrayList<>());
+    private final List<String> bodies = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Answers each request with the next status; then 200 with the OpenAPI Email example. No
@@ -45,6 +48,7 @@ class ClientBehaviourTest {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
             requests.add(exchange.getRequestHeaders());
+            bodies.add(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             int status = queue.isEmpty() ? 200 : queue.remove(0);
             String body = status >= 300
                     ? "{\"error\":{\"type\":\"api_error\",\"code\":\"x\",\"message\":\"No.\",\"request_id\":\"req_1\"}}"
@@ -109,5 +113,21 @@ class ClientBehaviourTest {
         assertThrows(CossApiException.class, () -> coss.webhookEndpoints()
                 .create(CreateWebhookEndpointRequest.builder().url("https://example.com/hooks").build()));
         assertEquals(1, requests.size());
+    }
+
+    @Test
+    void sendsAnExplicitNullAndLeavesOmittedFieldsOut() throws Exception {
+        Coss coss = fakeApi(200);
+        try {
+            coss.webhookEndpoints()
+                    .update(
+                            "we_1",
+                            UpdateWebhookEndpointRequest.builder()
+                                    .description(OptionalNullable.<String>ofNull())
+                                    .build());
+        } catch (RuntimeException e) {
+            // The fake answers with an email, not an endpoint: only the request matters here.
+        }
+        assertEquals("{\"description\":null}", bodies.get(0));
     }
 }

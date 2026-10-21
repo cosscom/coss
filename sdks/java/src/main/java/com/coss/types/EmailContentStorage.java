@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,13 +27,13 @@ import org.jetbrains.annotations.NotNull;
 public final class EmailContentStorage {
     private final EmailContentStorageMode mode;
 
-    private final Optional<OffsetDateTime> discardedAt;
+    private final OptionalNullable<OffsetDateTime> discardedAt;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailContentStorage(
             EmailContentStorageMode mode,
-            Optional<OffsetDateTime> discardedAt,
+            OptionalNullable<OffsetDateTime> discardedAt,
             Map<String, Object> additionalProperties) {
         this.mode = mode;
         this.discardedAt = discardedAt;
@@ -51,17 +51,18 @@ public final class EmailContentStorage {
     /**
      * @return When the content was cleared; <code>null</code> while it is kept. A cleared email has an empty <code>subject</code>, <code>html</code> and <code>text</code> <code>null</code> and no <code>headers</code>.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getDiscardedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("discarded_at")
+    public OptionalNullable<OffsetDateTime> getDiscardedAt() {
         if (discardedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return discardedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("discarded_at")
-    private Optional<OffsetDateTime> _getDiscardedAt() {
+    private OptionalNullable<OffsetDateTime> _getDiscardedAt() {
         return discardedAt;
     }
 
@@ -113,9 +114,11 @@ public final class EmailContentStorage {
         /**
          * <p>When the content was cleared; <code>null</code> while it is kept. A cleared email has an empty <code>subject</code>, <code>html</code> and <code>text</code> <code>null</code> and no <code>headers</code>.</p>
          */
-        _FinalStage discardedAt(Optional<OffsetDateTime> discardedAt);
+        _FinalStage discardedAt(OptionalNullable<OffsetDateTime> discardedAt);
 
         _FinalStage discardedAt(OffsetDateTime discardedAt);
+
+        _FinalStage discardedAt(Optional<OffsetDateTime> discardedAt);
 
         _FinalStage discardedAt(Nullable<OffsetDateTime> discardedAt);
     }
@@ -124,7 +127,7 @@ public final class EmailContentStorage {
     public static final class Builder implements ModeStage, _FinalStage {
         private EmailContentStorageMode mode;
 
-        private Optional<OffsetDateTime> discardedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> discardedAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -156,11 +159,25 @@ public final class EmailContentStorage {
         @java.lang.Override
         public _FinalStage discardedAt(Nullable<OffsetDateTime> discardedAt) {
             if (discardedAt.isNull()) {
-                this.discardedAt = null;
+                this.discardedAt = OptionalNullable.ofNull();
             } else if (discardedAt.isEmpty()) {
-                this.discardedAt = Optional.empty();
+                this.discardedAt = OptionalNullable.absent();
             } else {
-                this.discardedAt = Optional.of(discardedAt.get());
+                this.discardedAt = OptionalNullable.of(discardedAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the content was cleared; <code>null</code> while it is kept. A cleared email has an empty <code>subject</code>, <code>html</code> and <code>text</code> <code>null</code> and no <code>headers</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage discardedAt(Optional<OffsetDateTime> discardedAt) {
+            if (discardedAt.isPresent()) {
+                this.discardedAt = OptionalNullable.of(discardedAt.get());
+            } else {
+                this.discardedAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -171,7 +188,7 @@ public final class EmailContentStorage {
          */
         @java.lang.Override
         public _FinalStage discardedAt(OffsetDateTime discardedAt) {
-            this.discardedAt = Optional.ofNullable(discardedAt);
+            this.discardedAt = OptionalNullable.of(discardedAt);
             return this;
         }
 
@@ -180,7 +197,7 @@ public final class EmailContentStorage {
          */
         @java.lang.Override
         @JsonSetter(value = "discarded_at", nulls = Nulls.SKIP)
-        public _FinalStage discardedAt(Optional<OffsetDateTime> discardedAt) {
+        public _FinalStage discardedAt(OptionalNullable<OffsetDateTime> discardedAt) {
             this.discardedAt = discardedAt;
             return this;
         }

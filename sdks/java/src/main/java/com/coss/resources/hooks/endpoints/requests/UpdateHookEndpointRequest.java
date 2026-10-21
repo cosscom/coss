@@ -6,9 +6,9 @@ package com.coss.resources.hooks.endpoints.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,11 +26,11 @@ import java.util.Optional;
 public final class UpdateHookEndpointRequest {
     private final Optional<String> url;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final Optional<List<String>> filterTypes;
 
-    private final Optional<Integer> rateLimitPerSecond;
+    private final OptionalNullable<Integer> rateLimitPerSecond;
 
     private final Optional<Map<String, String>> metadata;
 
@@ -40,9 +40,9 @@ public final class UpdateHookEndpointRequest {
 
     private UpdateHookEndpointRequest(
             Optional<String> url,
-            Optional<String> description,
+            OptionalNullable<String> description,
             Optional<List<String>> filterTypes,
-            Optional<Integer> rateLimitPerSecond,
+            OptionalNullable<Integer> rateLimitPerSecond,
             Optional<Map<String, String>> metadata,
             Optional<Boolean> enabled,
             Map<String, Object> additionalProperties) {
@@ -60,10 +60,11 @@ public final class UpdateHookEndpointRequest {
         return url;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -79,10 +80,11 @@ public final class UpdateHookEndpointRequest {
     /**
      * @return At most this many requests per second to this endpoint.
      */
-    @JsonIgnore
-    public Optional<Integer> getRateLimitPerSecond() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("rate_limit_per_second")
+    public OptionalNullable<Integer> getRateLimitPerSecond() {
         if (rateLimitPerSecond == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return rateLimitPerSecond;
     }
@@ -102,13 +104,13 @@ public final class UpdateHookEndpointRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("rate_limit_per_second")
-    private Optional<Integer> _getRateLimitPerSecond() {
+    private OptionalNullable<Integer> _getRateLimitPerSecond() {
         return rateLimitPerSecond;
     }
 
@@ -151,11 +153,11 @@ public final class UpdateHookEndpointRequest {
     public static final class Builder {
         private Optional<String> url = Optional.empty();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         private Optional<List<String>> filterTypes = Optional.empty();
 
-        private Optional<Integer> rateLimitPerSecond = Optional.empty();
+        private OptionalNullable<Integer> rateLimitPerSecond = OptionalNullable.absent();
 
         private Optional<Map<String, String>> metadata = Optional.empty();
 
@@ -188,23 +190,32 @@ public final class UpdateHookEndpointRequest {
         }
 
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public Builder description(Optional<String> description) {
+        public Builder description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }
 
         public Builder description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
+            return this;
+        }
+
+        public Builder description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
             }
             return this;
         }
@@ -227,23 +238,32 @@ public final class UpdateHookEndpointRequest {
          * <p>At most this many requests per second to this endpoint.</p>
          */
         @JsonSetter(value = "rate_limit_per_second", nulls = Nulls.SKIP)
-        public Builder rateLimitPerSecond(Optional<Integer> rateLimitPerSecond) {
+        public Builder rateLimitPerSecond(OptionalNullable<Integer> rateLimitPerSecond) {
             this.rateLimitPerSecond = rateLimitPerSecond;
             return this;
         }
 
         public Builder rateLimitPerSecond(Integer rateLimitPerSecond) {
-            this.rateLimitPerSecond = Optional.ofNullable(rateLimitPerSecond);
+            this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond);
+            return this;
+        }
+
+        public Builder rateLimitPerSecond(Optional<Integer> rateLimitPerSecond) {
+            if (rateLimitPerSecond.isPresent()) {
+                this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond.get());
+            } else {
+                this.rateLimitPerSecond = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder rateLimitPerSecond(Nullable<Integer> rateLimitPerSecond) {
             if (rateLimitPerSecond.isNull()) {
-                this.rateLimitPerSecond = null;
+                this.rateLimitPerSecond = OptionalNullable.ofNull();
             } else if (rateLimitPerSecond.isEmpty()) {
-                this.rateLimitPerSecond = Optional.empty();
+                this.rateLimitPerSecond = OptionalNullable.absent();
             } else {
-                this.rateLimitPerSecond = Optional.of(rateLimitPerSecond.get());
+                this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond.get());
             }
             return this;
         }

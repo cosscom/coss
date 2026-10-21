@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,9 +31,9 @@ public final class HookEventType {
 
     private final String name;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
-    private final Optional<Map<String, Object>> schema;
+    private final OptionalNullable<Map<String, Object>> schema;
 
     private final List<Map<String, Object>> examples;
 
@@ -48,8 +48,8 @@ public final class HookEventType {
     private HookEventType(
             HookEventTypeObject object,
             String name,
-            Optional<String> description,
-            Optional<Map<String, Object>> schema,
+            OptionalNullable<String> description,
+            OptionalNullable<Map<String, Object>> schema,
             List<Map<String, Object>> examples,
             boolean archived,
             OffsetDateTime createdAt,
@@ -76,18 +76,20 @@ public final class HookEventType {
         return name;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
 
-    @JsonIgnore
-    public Optional<Map<String, Object>> getSchema() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("schema")
+    public OptionalNullable<Map<String, Object>> getSchema() {
         if (schema == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return schema;
     }
@@ -117,13 +119,13 @@ public final class HookEventType {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("schema")
-    private Optional<Map<String, Object>> _getSchema() {
+    private OptionalNullable<Map<String, Object>> _getSchema() {
         return schema;
     }
 
@@ -203,15 +205,19 @@ public final class HookEventType {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
 
+        _FinalStage description(Optional<String> description);
+
         _FinalStage description(Nullable<String> description);
 
-        _FinalStage schema(Optional<Map<String, Object>> schema);
+        _FinalStage schema(OptionalNullable<Map<String, Object>> schema);
 
         _FinalStage schema(Map<String, Object> schema);
+
+        _FinalStage schema(Optional<Map<String, Object>> schema);
 
         _FinalStage schema(Nullable<Map<String, Object>> schema);
 
@@ -237,9 +243,9 @@ public final class HookEventType {
 
         private List<Map<String, Object>> examples = new ArrayList<>();
 
-        private Optional<Map<String, Object>> schema = Optional.empty();
+        private OptionalNullable<Map<String, Object>> schema = OptionalNullable.absent();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -325,24 +331,34 @@ public final class HookEventType {
         @java.lang.Override
         public _FinalStage schema(Nullable<Map<String, Object>> schema) {
             if (schema.isNull()) {
-                this.schema = null;
+                this.schema = OptionalNullable.ofNull();
             } else if (schema.isEmpty()) {
-                this.schema = Optional.empty();
+                this.schema = OptionalNullable.absent();
             } else {
-                this.schema = Optional.of(schema.get());
+                this.schema = OptionalNullable.of(schema.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage schema(Optional<Map<String, Object>> schema) {
+            if (schema.isPresent()) {
+                this.schema = OptionalNullable.of(schema.get());
+            } else {
+                this.schema = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage schema(Map<String, Object> schema) {
-            this.schema = Optional.ofNullable(schema);
+            this.schema = OptionalNullable.of(schema);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "schema", nulls = Nulls.SKIP)
-        public _FinalStage schema(Optional<Map<String, Object>> schema) {
+        public _FinalStage schema(OptionalNullable<Map<String, Object>> schema) {
             this.schema = schema;
             return this;
         }
@@ -350,24 +366,34 @@ public final class HookEventType {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,9 +41,9 @@ public final class DomainDmarcReportSummary {
 
     private final long cossPassing;
 
-    private final Optional<OffsetDateTime> firstReportAt;
+    private final OptionalNullable<OffsetDateTime> firstReportAt;
 
-    private final Optional<OffsetDateTime> lastReportAt;
+    private final OptionalNullable<OffsetDateTime> lastReportAt;
 
     private final List<DmarcSource> sources;
 
@@ -57,8 +57,8 @@ public final class DomainDmarcReportSummary {
             long passing,
             long cossMessages,
             long cossPassing,
-            Optional<OffsetDateTime> firstReportAt,
-            Optional<OffsetDateTime> lastReportAt,
+            OptionalNullable<OffsetDateTime> firstReportAt,
+            OptionalNullable<OffsetDateTime> lastReportAt,
             List<DmarcSource> sources,
             Map<String, Object> additionalProperties) {
         this.periodStart = periodStart;
@@ -109,18 +109,20 @@ public final class DomainDmarcReportSummary {
         return cossPassing;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFirstReportAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_report_at")
+    public OptionalNullable<OffsetDateTime> getFirstReportAt() {
         if (firstReportAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstReportAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastReportAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_report_at")
+    public OptionalNullable<OffsetDateTime> getLastReportAt() {
         if (lastReportAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastReportAt;
     }
@@ -135,13 +137,13 @@ public final class DomainDmarcReportSummary {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_report_at")
-    private Optional<OffsetDateTime> _getFirstReportAt() {
+    private OptionalNullable<OffsetDateTime> _getFirstReportAt() {
         return firstReportAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_report_at")
-    private Optional<OffsetDateTime> _getLastReportAt() {
+    private OptionalNullable<OffsetDateTime> _getLastReportAt() {
         return lastReportAt;
     }
 
@@ -230,15 +232,19 @@ public final class DomainDmarcReportSummary {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage firstReportAt(Optional<OffsetDateTime> firstReportAt);
+        _FinalStage firstReportAt(OptionalNullable<OffsetDateTime> firstReportAt);
 
         _FinalStage firstReportAt(OffsetDateTime firstReportAt);
 
+        _FinalStage firstReportAt(Optional<OffsetDateTime> firstReportAt);
+
         _FinalStage firstReportAt(Nullable<OffsetDateTime> firstReportAt);
 
-        _FinalStage lastReportAt(Optional<OffsetDateTime> lastReportAt);
+        _FinalStage lastReportAt(OptionalNullable<OffsetDateTime> lastReportAt);
 
         _FinalStage lastReportAt(OffsetDateTime lastReportAt);
+
+        _FinalStage lastReportAt(Optional<OffsetDateTime> lastReportAt);
 
         _FinalStage lastReportAt(Nullable<OffsetDateTime> lastReportAt);
 
@@ -278,9 +284,9 @@ public final class DomainDmarcReportSummary {
 
         private List<DmarcSource> sources = new ArrayList<>();
 
-        private Optional<OffsetDateTime> lastReportAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastReportAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> firstReportAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> firstReportAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -389,24 +395,34 @@ public final class DomainDmarcReportSummary {
         @java.lang.Override
         public _FinalStage lastReportAt(Nullable<OffsetDateTime> lastReportAt) {
             if (lastReportAt.isNull()) {
-                this.lastReportAt = null;
+                this.lastReportAt = OptionalNullable.ofNull();
             } else if (lastReportAt.isEmpty()) {
-                this.lastReportAt = Optional.empty();
+                this.lastReportAt = OptionalNullable.absent();
             } else {
-                this.lastReportAt = Optional.of(lastReportAt.get());
+                this.lastReportAt = OptionalNullable.of(lastReportAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastReportAt(Optional<OffsetDateTime> lastReportAt) {
+            if (lastReportAt.isPresent()) {
+                this.lastReportAt = OptionalNullable.of(lastReportAt.get());
+            } else {
+                this.lastReportAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastReportAt(OffsetDateTime lastReportAt) {
-            this.lastReportAt = Optional.ofNullable(lastReportAt);
+            this.lastReportAt = OptionalNullable.of(lastReportAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_report_at", nulls = Nulls.SKIP)
-        public _FinalStage lastReportAt(Optional<OffsetDateTime> lastReportAt) {
+        public _FinalStage lastReportAt(OptionalNullable<OffsetDateTime> lastReportAt) {
             this.lastReportAt = lastReportAt;
             return this;
         }
@@ -414,24 +430,34 @@ public final class DomainDmarcReportSummary {
         @java.lang.Override
         public _FinalStage firstReportAt(Nullable<OffsetDateTime> firstReportAt) {
             if (firstReportAt.isNull()) {
-                this.firstReportAt = null;
+                this.firstReportAt = OptionalNullable.ofNull();
             } else if (firstReportAt.isEmpty()) {
-                this.firstReportAt = Optional.empty();
+                this.firstReportAt = OptionalNullable.absent();
             } else {
-                this.firstReportAt = Optional.of(firstReportAt.get());
+                this.firstReportAt = OptionalNullable.of(firstReportAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage firstReportAt(Optional<OffsetDateTime> firstReportAt) {
+            if (firstReportAt.isPresent()) {
+                this.firstReportAt = OptionalNullable.of(firstReportAt.get());
+            } else {
+                this.firstReportAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage firstReportAt(OffsetDateTime firstReportAt) {
-            this.firstReportAt = Optional.ofNullable(firstReportAt);
+            this.firstReportAt = OptionalNullable.of(firstReportAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "first_report_at", nulls = Nulls.SKIP)
-        public _FinalStage firstReportAt(Optional<OffsetDateTime> firstReportAt) {
+        public _FinalStage firstReportAt(OptionalNullable<OffsetDateTime> firstReportAt) {
             this.firstReportAt = firstReportAt;
             return this;
         }

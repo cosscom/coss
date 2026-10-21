@@ -37,7 +37,13 @@ class BillingPaymentMethod extends JsonSerializableType
     ) {
         $this->type = $values['type'];
         $this->brand = $values['brand'] ?? null;
+        if (array_key_exists('brand', $values)) {
+            $this->_setField('brand');
+        }
         $this->last4 = $values['last4'] ?? null;
+        if (array_key_exists('last4', $values)) {
+            $this->_setField('last4');
+        }
     }
 
     /**

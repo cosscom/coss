@@ -114,6 +114,7 @@ public class GetTest : BaseMockServerTest
                 "required": true
               },
               "content_thresholds": {
+                "spam": null,
                 "phishing": 0.8,
                 "malware": 0.8,
                 "fraud": 0.9

@@ -15,6 +15,7 @@ public record CreatePreferenceLinksRequest
     /// <summary>
     /// The topic your email is about: its unsubscribe link leaves just that topic.
     /// </summary>
+    [Optional]
     [JsonPropertyName("topic")]
     public string? Topic { get; set; }
 

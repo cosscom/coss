@@ -69,13 +69,40 @@ class ListAuditEventsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->action = $values['action'] ?? null;
+        if (array_key_exists('action', $values)) {
+            $this->_setField('action');
+        }
         $this->actorType = $values['actorType'] ?? null;
+        if (array_key_exists('actorType', $values)) {
+            $this->_setField('actorType');
+        }
         $this->actorId = $values['actorId'] ?? null;
+        if (array_key_exists('actorId', $values)) {
+            $this->_setField('actorId');
+        }
         $this->targetId = $values['targetId'] ?? null;
+        if (array_key_exists('targetId', $values)) {
+            $this->_setField('targetId');
+        }
         $this->environmentId = $values['environmentId'] ?? null;
+        if (array_key_exists('environmentId', $values)) {
+            $this->_setField('environmentId');
+        }
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

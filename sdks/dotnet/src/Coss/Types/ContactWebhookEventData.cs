@@ -20,6 +20,7 @@ public record ContactWebhookEventData : IJsonOnDeserialized
     /// <summary>
     /// `contact.unsubscribed` from one topic (its key); `null`: from marketing altogether.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("topic")]
     public string? Topic { get; set; }
 

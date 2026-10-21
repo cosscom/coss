@@ -87,6 +87,7 @@ public class GetTest : BaseMockServerTest
               "id": "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz",
               "name": "October newsletter",
               "status": "sent",
+              "audience_id": null,
               "segment_id": "seg_01k7c8m4q2f3e9v6t5r1n0p8yz",
               "topic": "newsletter",
               "from": "Acme <news@acme.com>",
@@ -94,15 +95,21 @@ public class GetTest : BaseMockServerTest
                 "reply_to"
               ],
               "subject": "What's new, {{{contact.first_name|there}}}",
+              "preview_text": null,
               "html": "<p>Hi {{{contact.first_name|there}}},</p>",
+              "text": null,
               "tracking": {
                 "opens": true,
                 "clicks": true
               },
+              "rate_per_second": null,
               "scheduled_at": "2026-10-20T09:00:00.000Z",
               "started_at": "2026-10-20T09:00:01.000Z",
               "completed_at": "2026-10-20T09:12:40.000Z",
+              "canceled_at": null,
               "recipients_estimated": 1200,
+              "pause_reason": null,
+              "error": null,
               "stats": {
                 "recipients": 1200,
                 "sent": 1200,

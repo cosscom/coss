@@ -26,14 +26,16 @@ public record TemplateContentInput : IJsonOnDeserialized
     /// <summary>
     /// The HTML template. Provide `html`, `text`, or both.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("html")]
-    public string? Html { get; set; }
+    public Optional<string?> Html { get; set; }
 
     /// <summary>
     /// The plain-text template.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public Optional<string?> Text { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

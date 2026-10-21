@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,21 +36,21 @@ public final class HookEndpoint {
 
     private final String url;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final List<String> filterTypes;
 
-    private final Optional<Long> rateLimitPerSecond;
+    private final OptionalNullable<Long> rateLimitPerSecond;
 
     private final boolean enabled;
 
-    private final Optional<HookEndpointDisabledReason> disabledReason;
+    private final OptionalNullable<HookEndpointDisabledReason> disabledReason;
 
-    private final Optional<OffsetDateTime> disabledAt;
+    private final OptionalNullable<OffsetDateTime> disabledAt;
 
-    private final Optional<OffsetDateTime> failingSince;
+    private final OptionalNullable<OffsetDateTime> failingSince;
 
-    private final Optional<OffsetDateTime> previousSecretExpiresAt;
+    private final OptionalNullable<OffsetDateTime> previousSecretExpiresAt;
 
     private final Map<String, String> metadata;
 
@@ -65,14 +65,14 @@ public final class HookEndpoint {
             String id,
             String applicationId,
             String url,
-            Optional<String> description,
+            OptionalNullable<String> description,
             List<String> filterTypes,
-            Optional<Long> rateLimitPerSecond,
+            OptionalNullable<Long> rateLimitPerSecond,
             boolean enabled,
-            Optional<HookEndpointDisabledReason> disabledReason,
-            Optional<OffsetDateTime> disabledAt,
-            Optional<OffsetDateTime> failingSince,
-            Optional<OffsetDateTime> previousSecretExpiresAt,
+            OptionalNullable<HookEndpointDisabledReason> disabledReason,
+            OptionalNullable<OffsetDateTime> disabledAt,
+            OptionalNullable<OffsetDateTime> failingSince,
+            OptionalNullable<OffsetDateTime> previousSecretExpiresAt,
             Map<String, String> metadata,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
@@ -115,10 +115,11 @@ public final class HookEndpoint {
         return url;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -128,10 +129,11 @@ public final class HookEndpoint {
         return filterTypes;
     }
 
-    @JsonIgnore
-    public Optional<Long> getRateLimitPerSecond() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("rate_limit_per_second")
+    public OptionalNullable<Long> getRateLimitPerSecond() {
         if (rateLimitPerSecond == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return rateLimitPerSecond;
     }
@@ -144,18 +146,20 @@ public final class HookEndpoint {
     /**
      * @return <code>manual</code>: disabled by you or its user. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.
      */
-    @JsonIgnore
-    public Optional<HookEndpointDisabledReason> getDisabledReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("disabled_reason")
+    public OptionalNullable<HookEndpointDisabledReason> getDisabledReason() {
         if (disabledReason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return disabledReason;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getDisabledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("disabled_at")
+    public OptionalNullable<OffsetDateTime> getDisabledAt() {
         if (disabledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return disabledAt;
     }
@@ -163,10 +167,11 @@ public final class HookEndpoint {
     /**
      * @return When its current run of failed deliveries began; cleared by the next success. <code>null</code> while healthy.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFailingSince() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failing_since")
+    public OptionalNullable<OffsetDateTime> getFailingSince() {
         if (failingSince == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failingSince;
     }
@@ -174,10 +179,11 @@ public final class HookEndpoint {
     /**
      * @return After a secret roll, requests are also signed with the previous secret until then.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPreviousSecretExpiresAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("previous_secret_expires_at")
+    public OptionalNullable<OffsetDateTime> getPreviousSecretExpiresAt() {
         if (previousSecretExpiresAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return previousSecretExpiresAt;
     }
@@ -199,37 +205,37 @@ public final class HookEndpoint {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("rate_limit_per_second")
-    private Optional<Long> _getRateLimitPerSecond() {
+    private OptionalNullable<Long> _getRateLimitPerSecond() {
         return rateLimitPerSecond;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("disabled_reason")
-    private Optional<HookEndpointDisabledReason> _getDisabledReason() {
+    private OptionalNullable<HookEndpointDisabledReason> _getDisabledReason() {
         return disabledReason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("disabled_at")
-    private Optional<OffsetDateTime> _getDisabledAt() {
+    private OptionalNullable<OffsetDateTime> _getDisabledAt() {
         return disabledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failing_since")
-    private Optional<OffsetDateTime> _getFailingSince() {
+    private OptionalNullable<OffsetDateTime> _getFailingSince() {
         return failingSince;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("previous_secret_expires_at")
-    private Optional<OffsetDateTime> _getPreviousSecretExpiresAt() {
+    private OptionalNullable<OffsetDateTime> _getPreviousSecretExpiresAt() {
         return previousSecretExpiresAt;
     }
 
@@ -328,9 +334,11 @@ public final class HookEndpoint {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
+
+        _FinalStage description(Optional<String> description);
 
         _FinalStage description(Nullable<String> description);
 
@@ -340,42 +348,52 @@ public final class HookEndpoint {
 
         _FinalStage addAllFilterTypes(List<String> filterTypes);
 
-        _FinalStage rateLimitPerSecond(Optional<Long> rateLimitPerSecond);
+        _FinalStage rateLimitPerSecond(OptionalNullable<Long> rateLimitPerSecond);
 
         _FinalStage rateLimitPerSecond(Long rateLimitPerSecond);
+
+        _FinalStage rateLimitPerSecond(Optional<Long> rateLimitPerSecond);
 
         _FinalStage rateLimitPerSecond(Nullable<Long> rateLimitPerSecond);
 
         /**
          * <p><code>manual</code>: disabled by you or its user. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.</p>
          */
-        _FinalStage disabledReason(Optional<HookEndpointDisabledReason> disabledReason);
+        _FinalStage disabledReason(OptionalNullable<HookEndpointDisabledReason> disabledReason);
 
         _FinalStage disabledReason(HookEndpointDisabledReason disabledReason);
 
+        _FinalStage disabledReason(Optional<HookEndpointDisabledReason> disabledReason);
+
         _FinalStage disabledReason(Nullable<HookEndpointDisabledReason> disabledReason);
 
-        _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt);
+        _FinalStage disabledAt(OptionalNullable<OffsetDateTime> disabledAt);
 
         _FinalStage disabledAt(OffsetDateTime disabledAt);
+
+        _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt);
 
         _FinalStage disabledAt(Nullable<OffsetDateTime> disabledAt);
 
         /**
          * <p>When its current run of failed deliveries began; cleared by the next success. <code>null</code> while healthy.</p>
          */
-        _FinalStage failingSince(Optional<OffsetDateTime> failingSince);
+        _FinalStage failingSince(OptionalNullable<OffsetDateTime> failingSince);
 
         _FinalStage failingSince(OffsetDateTime failingSince);
+
+        _FinalStage failingSince(Optional<OffsetDateTime> failingSince);
 
         _FinalStage failingSince(Nullable<OffsetDateTime> failingSince);
 
         /**
          * <p>After a secret roll, requests are also signed with the previous secret until then.</p>
          */
-        _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt);
+        _FinalStage previousSecretExpiresAt(OptionalNullable<OffsetDateTime> previousSecretExpiresAt);
 
         _FinalStage previousSecretExpiresAt(OffsetDateTime previousSecretExpiresAt);
+
+        _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt);
 
         _FinalStage previousSecretExpiresAt(Nullable<OffsetDateTime> previousSecretExpiresAt);
 
@@ -412,19 +430,19 @@ public final class HookEndpoint {
 
         private Map<String, String> metadata = new LinkedHashMap<>();
 
-        private Optional<OffsetDateTime> previousSecretExpiresAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> previousSecretExpiresAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> failingSince = Optional.empty();
+        private OptionalNullable<OffsetDateTime> failingSince = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> disabledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> disabledAt = OptionalNullable.absent();
 
-        private Optional<HookEndpointDisabledReason> disabledReason = Optional.empty();
+        private OptionalNullable<HookEndpointDisabledReason> disabledReason = OptionalNullable.absent();
 
-        private Optional<Long> rateLimitPerSecond = Optional.empty();
+        private OptionalNullable<Long> rateLimitPerSecond = OptionalNullable.absent();
 
         private List<String> filterTypes = new ArrayList<>();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -531,11 +549,25 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage previousSecretExpiresAt(Nullable<OffsetDateTime> previousSecretExpiresAt) {
             if (previousSecretExpiresAt.isNull()) {
-                this.previousSecretExpiresAt = null;
+                this.previousSecretExpiresAt = OptionalNullable.ofNull();
             } else if (previousSecretExpiresAt.isEmpty()) {
-                this.previousSecretExpiresAt = Optional.empty();
+                this.previousSecretExpiresAt = OptionalNullable.absent();
             } else {
-                this.previousSecretExpiresAt = Optional.of(previousSecretExpiresAt.get());
+                this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>After a secret roll, requests are also signed with the previous secret until then.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt) {
+            if (previousSecretExpiresAt.isPresent()) {
+                this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt.get());
+            } else {
+                this.previousSecretExpiresAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -546,7 +578,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         public _FinalStage previousSecretExpiresAt(OffsetDateTime previousSecretExpiresAt) {
-            this.previousSecretExpiresAt = Optional.ofNullable(previousSecretExpiresAt);
+            this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt);
             return this;
         }
 
@@ -555,7 +587,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "previous_secret_expires_at", nulls = Nulls.SKIP)
-        public _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt) {
+        public _FinalStage previousSecretExpiresAt(OptionalNullable<OffsetDateTime> previousSecretExpiresAt) {
             this.previousSecretExpiresAt = previousSecretExpiresAt;
             return this;
         }
@@ -567,11 +599,25 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage failingSince(Nullable<OffsetDateTime> failingSince) {
             if (failingSince.isNull()) {
-                this.failingSince = null;
+                this.failingSince = OptionalNullable.ofNull();
             } else if (failingSince.isEmpty()) {
-                this.failingSince = Optional.empty();
+                this.failingSince = OptionalNullable.absent();
             } else {
-                this.failingSince = Optional.of(failingSince.get());
+                this.failingSince = OptionalNullable.of(failingSince.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When its current run of failed deliveries began; cleared by the next success. <code>null</code> while healthy.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage failingSince(Optional<OffsetDateTime> failingSince) {
+            if (failingSince.isPresent()) {
+                this.failingSince = OptionalNullable.of(failingSince.get());
+            } else {
+                this.failingSince = OptionalNullable.absent();
             }
             return this;
         }
@@ -582,7 +628,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         public _FinalStage failingSince(OffsetDateTime failingSince) {
-            this.failingSince = Optional.ofNullable(failingSince);
+            this.failingSince = OptionalNullable.of(failingSince);
             return this;
         }
 
@@ -591,7 +637,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "failing_since", nulls = Nulls.SKIP)
-        public _FinalStage failingSince(Optional<OffsetDateTime> failingSince) {
+        public _FinalStage failingSince(OptionalNullable<OffsetDateTime> failingSince) {
             this.failingSince = failingSince;
             return this;
         }
@@ -599,24 +645,34 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage disabledAt(Nullable<OffsetDateTime> disabledAt) {
             if (disabledAt.isNull()) {
-                this.disabledAt = null;
+                this.disabledAt = OptionalNullable.ofNull();
             } else if (disabledAt.isEmpty()) {
-                this.disabledAt = Optional.empty();
+                this.disabledAt = OptionalNullable.absent();
             } else {
-                this.disabledAt = Optional.of(disabledAt.get());
+                this.disabledAt = OptionalNullable.of(disabledAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt) {
+            if (disabledAt.isPresent()) {
+                this.disabledAt = OptionalNullable.of(disabledAt.get());
+            } else {
+                this.disabledAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage disabledAt(OffsetDateTime disabledAt) {
-            this.disabledAt = Optional.ofNullable(disabledAt);
+            this.disabledAt = OptionalNullable.of(disabledAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "disabled_at", nulls = Nulls.SKIP)
-        public _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt) {
+        public _FinalStage disabledAt(OptionalNullable<OffsetDateTime> disabledAt) {
             this.disabledAt = disabledAt;
             return this;
         }
@@ -628,11 +684,25 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage disabledReason(Nullable<HookEndpointDisabledReason> disabledReason) {
             if (disabledReason.isNull()) {
-                this.disabledReason = null;
+                this.disabledReason = OptionalNullable.ofNull();
             } else if (disabledReason.isEmpty()) {
-                this.disabledReason = Optional.empty();
+                this.disabledReason = OptionalNullable.absent();
             } else {
-                this.disabledReason = Optional.of(disabledReason.get());
+                this.disabledReason = OptionalNullable.of(disabledReason.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>manual</code>: disabled by you or its user. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage disabledReason(Optional<HookEndpointDisabledReason> disabledReason) {
+            if (disabledReason.isPresent()) {
+                this.disabledReason = OptionalNullable.of(disabledReason.get());
+            } else {
+                this.disabledReason = OptionalNullable.absent();
             }
             return this;
         }
@@ -643,7 +713,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         public _FinalStage disabledReason(HookEndpointDisabledReason disabledReason) {
-            this.disabledReason = Optional.ofNullable(disabledReason);
+            this.disabledReason = OptionalNullable.of(disabledReason);
             return this;
         }
 
@@ -652,7 +722,7 @@ public final class HookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "disabled_reason", nulls = Nulls.SKIP)
-        public _FinalStage disabledReason(Optional<HookEndpointDisabledReason> disabledReason) {
+        public _FinalStage disabledReason(OptionalNullable<HookEndpointDisabledReason> disabledReason) {
             this.disabledReason = disabledReason;
             return this;
         }
@@ -660,24 +730,34 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage rateLimitPerSecond(Nullable<Long> rateLimitPerSecond) {
             if (rateLimitPerSecond.isNull()) {
-                this.rateLimitPerSecond = null;
+                this.rateLimitPerSecond = OptionalNullable.ofNull();
             } else if (rateLimitPerSecond.isEmpty()) {
-                this.rateLimitPerSecond = Optional.empty();
+                this.rateLimitPerSecond = OptionalNullable.absent();
             } else {
-                this.rateLimitPerSecond = Optional.of(rateLimitPerSecond.get());
+                this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage rateLimitPerSecond(Optional<Long> rateLimitPerSecond) {
+            if (rateLimitPerSecond.isPresent()) {
+                this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond.get());
+            } else {
+                this.rateLimitPerSecond = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage rateLimitPerSecond(Long rateLimitPerSecond) {
-            this.rateLimitPerSecond = Optional.ofNullable(rateLimitPerSecond);
+            this.rateLimitPerSecond = OptionalNullable.of(rateLimitPerSecond);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "rate_limit_per_second", nulls = Nulls.SKIP)
-        public _FinalStage rateLimitPerSecond(Optional<Long> rateLimitPerSecond) {
+        public _FinalStage rateLimitPerSecond(OptionalNullable<Long> rateLimitPerSecond) {
             this.rateLimitPerSecond = rateLimitPerSecond;
             return this;
         }
@@ -709,24 +789,34 @@ public final class HookEndpoint {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }

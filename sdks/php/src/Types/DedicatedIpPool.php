@@ -73,9 +73,21 @@ class DedicatedIpPool extends JsonSerializableType
         $this->status = $values['status'];
         $this->ips = $values['ips'];
         $this->dedicatedShare = $values['dedicatedShare'] ?? null;
+        if (array_key_exists('dedicatedShare', $values)) {
+            $this->_setField('dedicatedShare');
+        }
         $this->message = $values['message'] ?? null;
+        if (array_key_exists('message', $values)) {
+            $this->_setField('message');
+        }
         $this->createdAt = $values['createdAt'] ?? null;
+        if (array_key_exists('createdAt', $values)) {
+            $this->_setField('createdAt');
+        }
         $this->readyAt = $values['readyAt'] ?? null;
+        if (array_key_exists('readyAt', $values)) {
+            $this->_setField('readyAt');
+        }
     }
 
     /**

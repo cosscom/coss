@@ -17,6 +17,7 @@ public record Invoice : IJsonOnDeserialized
     [JsonPropertyName("id")]
     public required string Id { get; set; }
 
+    [Nullable]
     [JsonPropertyName("number")]
     public string? Number { get; set; }
 
@@ -77,24 +78,30 @@ public record Invoice : IJsonOnDeserialized
     [JsonPropertyName("collection_method")]
     public required InvoiceCollectionMethod CollectionMethod { get; set; }
 
+    [Nullable]
     [JsonPropertyName("due_at")]
     public DateTime? DueAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("finalized_at")]
     public DateTime? FinalizedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("paid_at")]
     public DateTime? PaidAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("voided_at")]
     public DateTime? VoidedAt { get; set; }
 
     /// <summary>
     /// A page to view (and pay) the invoice.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("hosted_url")]
     public string? HostedUrl { get; set; }
 
+    [Nullable]
     [JsonPropertyName("pdf_url")]
     public string? PdfUrl { get; set; }
 

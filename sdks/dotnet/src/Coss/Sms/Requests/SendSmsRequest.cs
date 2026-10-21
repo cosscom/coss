@@ -33,12 +33,14 @@ public record SendSmsRequest
     /// <summary>
     /// Up to 10 tags.
     /// </summary>
+    [Optional]
     [JsonPropertyName("tags")]
     public IEnumerable<SendSmsRequestTagsItem>? Tags { get; set; }
 
     /// <summary>
     /// Send at this time instead of now (ISO 8601 with an offset, at most 30 days ahead). A time that is not in the future sends immediately.
     /// </summary>
+    [Optional]
     [JsonPropertyName("scheduled_at")]
     public DateTime? ScheduledAt { get; set; }
 

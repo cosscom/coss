@@ -48,9 +48,24 @@ class UsageBillingRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->granularity = $values['granularity'] ?? null;
+        if (array_key_exists('granularity', $values)) {
+            $this->_setField('granularity');
+        }
         $this->groupBy = $values['groupBy'] ?? null;
+        if (array_key_exists('groupBy', $values)) {
+            $this->_setField('groupBy');
+        }
         $this->meter = $values['meter'] ?? null;
+        if (array_key_exists('meter', $values)) {
+            $this->_setField('meter');
+        }
     }
 }

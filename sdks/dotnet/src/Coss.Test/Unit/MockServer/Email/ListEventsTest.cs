@@ -155,6 +155,7 @@ public class ListEventsTest : BaseMockServerTest
                   "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h8",
                   "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
                   "type": "email.sent",
+                  "recipient": null,
                   "occurred_at": "2026-10-10T12:00:01.000Z",
                   "data": {}
                 },

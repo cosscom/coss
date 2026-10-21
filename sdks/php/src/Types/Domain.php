@@ -135,15 +135,33 @@ class Domain extends JsonSerializableType
         $this->status = $values['status'];
         $this->canSend = $values['canSend'];
         $this->region = $values['region'] ?? null;
+        if (array_key_exists('region', $values)) {
+            $this->_setField('region');
+        }
         $this->mailFromDomain = $values['mailFromDomain'];
         $this->mailFromStatus = $values['mailFromStatus'];
         $this->records = $values['records'];
         $this->createdAt = $values['createdAt'];
         $this->lastCheckedAt = $values['lastCheckedAt'] ?? null;
+        if (array_key_exists('lastCheckedAt', $values)) {
+            $this->_setField('lastCheckedAt');
+        }
         $this->verifiedAt = $values['verifiedAt'] ?? null;
+        if (array_key_exists('verifiedAt', $values)) {
+            $this->_setField('verifiedAt');
+        }
         $this->failedAt = $values['failedAt'] ?? null;
+        if (array_key_exists('failedAt', $values)) {
+            $this->_setField('failedAt');
+        }
         $this->tracking = $values['tracking'] ?? null;
+        if (array_key_exists('tracking', $values)) {
+            $this->_setField('tracking');
+        }
         $this->receiving = $values['receiving'] ?? null;
+        if (array_key_exists('receiving', $values)) {
+            $this->_setField('receiving');
+        }
         $this->bimi = $values['bimi'];
     }
 

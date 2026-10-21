@@ -46,6 +46,9 @@ class SmsSuppressionCheck extends JsonSerializableType
         $this->phoneNumber = $values['phoneNumber'];
         $this->suppressed = $values['suppressed'];
         $this->suppression = $values['suppression'] ?? null;
+        if (array_key_exists('suppression', $values)) {
+            $this->_setField('suppression');
+        }
     }
 
     /**

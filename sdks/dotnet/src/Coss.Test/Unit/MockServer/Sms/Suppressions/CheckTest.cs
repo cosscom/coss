@@ -55,7 +55,8 @@ public class CheckTest : BaseMockServerTest
             {
               "object": "sms_suppression_check",
               "phone_number": "+14155550199",
-              "suppressed": false
+              "suppressed": false,
+              "suppression": null
             }
             """;
 

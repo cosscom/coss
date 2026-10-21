@@ -153,7 +153,8 @@ public class GetTest : BaseMockServerTest
                 {
                   "locale": "en",
                   "subject": "Welcome, {{first_name}}",
-                  "html": "<p>Hi {{first_name}}, thanks for signing up!</p>"
+                  "html": "<p>Hi {{first_name}}, thanks for signing up!</p>",
+                  "text": null
                 }
               ],
               "problems": [

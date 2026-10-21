@@ -6,9 +6,9 @@ package com.coss.resources.hooks.applications.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,7 +25,7 @@ import java.util.Optional;
 public final class UpdateHookApplicationRequest {
     private final Optional<String> name;
 
-    private final Optional<String> uid;
+    private final OptionalNullable<String> uid;
 
     private final Optional<Map<String, String>> metadata;
 
@@ -33,7 +33,7 @@ public final class UpdateHookApplicationRequest {
 
     private UpdateHookApplicationRequest(
             Optional<String> name,
-            Optional<String> uid,
+            OptionalNullable<String> uid,
             Optional<Map<String, String>> metadata,
             Map<String, Object> additionalProperties) {
         this.name = name;
@@ -50,10 +50,11 @@ public final class UpdateHookApplicationRequest {
     /**
      * @return <code>null</code> removes it.
      */
-    @JsonIgnore
-    public Optional<String> getUid() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("uid")
+    public OptionalNullable<String> getUid() {
         if (uid == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return uid;
     }
@@ -68,7 +69,7 @@ public final class UpdateHookApplicationRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("uid")
-    private Optional<String> _getUid() {
+    private OptionalNullable<String> _getUid() {
         return uid;
     }
 
@@ -105,7 +106,7 @@ public final class UpdateHookApplicationRequest {
     public static final class Builder {
         private Optional<String> name = Optional.empty();
 
-        private Optional<String> uid = Optional.empty();
+        private OptionalNullable<String> uid = OptionalNullable.absent();
 
         private Optional<Map<String, String>> metadata = Optional.empty();
 
@@ -136,23 +137,32 @@ public final class UpdateHookApplicationRequest {
          * <p><code>null</code> removes it.</p>
          */
         @JsonSetter(value = "uid", nulls = Nulls.SKIP)
-        public Builder uid(Optional<String> uid) {
+        public Builder uid(OptionalNullable<String> uid) {
             this.uid = uid;
             return this;
         }
 
         public Builder uid(String uid) {
-            this.uid = Optional.ofNullable(uid);
+            this.uid = OptionalNullable.of(uid);
+            return this;
+        }
+
+        public Builder uid(Optional<String> uid) {
+            if (uid.isPresent()) {
+                this.uid = OptionalNullable.of(uid.get());
+            } else {
+                this.uid = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder uid(Nullable<String> uid) {
             if (uid.isNull()) {
-                this.uid = null;
+                this.uid = OptionalNullable.ofNull();
             } else if (uid.isEmpty()) {
-                this.uid = Optional.empty();
+                this.uid = OptionalNullable.absent();
             } else {
-                this.uid = Optional.of(uid.get());
+                this.uid = OptionalNullable.of(uid.get());
             }
             return this;
         }

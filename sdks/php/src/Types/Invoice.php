@@ -174,6 +174,9 @@ class Invoice extends JsonSerializableType
         $this->object = $values['object'];
         $this->id = $values['id'];
         $this->number = $values['number'] ?? null;
+        if (array_key_exists('number', $values)) {
+            $this->_setField('number');
+        }
         $this->kind = $values['kind'];
         $this->status = $values['status'];
         $this->currency = $values['currency'];
@@ -187,11 +190,29 @@ class Invoice extends JsonSerializableType
         $this->amountDue = $values['amountDue'];
         $this->collectionMethod = $values['collectionMethod'];
         $this->dueAt = $values['dueAt'] ?? null;
+        if (array_key_exists('dueAt', $values)) {
+            $this->_setField('dueAt');
+        }
         $this->finalizedAt = $values['finalizedAt'] ?? null;
+        if (array_key_exists('finalizedAt', $values)) {
+            $this->_setField('finalizedAt');
+        }
         $this->paidAt = $values['paidAt'] ?? null;
+        if (array_key_exists('paidAt', $values)) {
+            $this->_setField('paidAt');
+        }
         $this->voidedAt = $values['voidedAt'] ?? null;
+        if (array_key_exists('voidedAt', $values)) {
+            $this->_setField('voidedAt');
+        }
         $this->hostedUrl = $values['hostedUrl'] ?? null;
+        if (array_key_exists('hostedUrl', $values)) {
+            $this->_setField('hostedUrl');
+        }
         $this->pdfUrl = $values['pdfUrl'] ?? null;
+        if (array_key_exists('pdfUrl', $values)) {
+            $this->_setField('pdfUrl');
+        }
         $this->lines = $values['lines'];
     }
 

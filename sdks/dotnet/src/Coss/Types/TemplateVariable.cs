@@ -21,12 +21,15 @@ public record TemplateVariable : IJsonOnDeserialized
     [JsonPropertyName("required")]
     public required bool Required { get; set; }
 
+    [Optional]
     [JsonPropertyName("default")]
     public OneOf<string, double, bool>? Default { get; set; }
 
+    [Optional]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
+    [Optional]
     [JsonPropertyName("fields")]
     public IEnumerable<TemplateVariableFieldsItem>? Fields { get; set; }
 

@@ -33,7 +33,16 @@ class ListCreditsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
     }
 }

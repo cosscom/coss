@@ -83,6 +83,7 @@ public class AddTest : BaseMockServerTest
               "type": "domain",
               "value": "evil.example",
               "note": "Card testing",
+              "expires_at": null,
               "created_at": "2026-01-15T09:30:00.000Z"
             }
             """;

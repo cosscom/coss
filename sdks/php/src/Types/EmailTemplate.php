@@ -89,10 +89,22 @@ class EmailTemplate extends JsonSerializableType
         $this->object = $values['object'];
         $this->id = $values['id'];
         $this->alias = $values['alias'] ?? null;
+        if (array_key_exists('alias', $values)) {
+            $this->_setField('alias');
+        }
         $this->name = $values['name'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->publishedVersion = $values['publishedVersion'] ?? null;
+        if (array_key_exists('publishedVersion', $values)) {
+            $this->_setField('publishedVersion');
+        }
         $this->publishedAt = $values['publishedAt'] ?? null;
+        if (array_key_exists('publishedAt', $values)) {
+            $this->_setField('publishedAt');
+        }
         $this->hasUnpublishedChanges = $values['hasUnpublishedChanges'];
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];

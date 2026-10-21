@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,12 +28,15 @@ public final class EmailEventDataClick {
 
     private final long linkPosition;
 
-    private final Optional<String> userAgent;
+    private final OptionalNullable<String> userAgent;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailEventDataClick(
-            String url, long linkPosition, Optional<String> userAgent, Map<String, Object> additionalProperties) {
+            String url,
+            long linkPosition,
+            OptionalNullable<String> userAgent,
+            Map<String, Object> additionalProperties) {
         this.url = url;
         this.linkPosition = linkPosition;
         this.userAgent = userAgent;
@@ -56,17 +59,18 @@ public final class EmailEventDataClick {
         return linkPosition;
     }
 
-    @JsonIgnore
-    public Optional<String> getUserAgent() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_agent")
+    public OptionalNullable<String> getUserAgent() {
         if (userAgent == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userAgent;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_agent")
-    private Optional<String> _getUserAgent() {
+    private OptionalNullable<String> _getUserAgent() {
         return userAgent;
     }
 
@@ -122,9 +126,11 @@ public final class EmailEventDataClick {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage userAgent(Optional<String> userAgent);
+        _FinalStage userAgent(OptionalNullable<String> userAgent);
 
         _FinalStage userAgent(String userAgent);
+
+        _FinalStage userAgent(Optional<String> userAgent);
 
         _FinalStage userAgent(Nullable<String> userAgent);
     }
@@ -135,7 +141,7 @@ public final class EmailEventDataClick {
 
         private long linkPosition;
 
-        private Optional<String> userAgent = Optional.empty();
+        private OptionalNullable<String> userAgent = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -175,24 +181,34 @@ public final class EmailEventDataClick {
         @java.lang.Override
         public _FinalStage userAgent(Nullable<String> userAgent) {
             if (userAgent.isNull()) {
-                this.userAgent = null;
+                this.userAgent = OptionalNullable.ofNull();
             } else if (userAgent.isEmpty()) {
-                this.userAgent = Optional.empty();
+                this.userAgent = OptionalNullable.absent();
             } else {
-                this.userAgent = Optional.of(userAgent.get());
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage userAgent(Optional<String> userAgent) {
+            if (userAgent.isPresent()) {
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            } else {
+                this.userAgent = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage userAgent(String userAgent) {
-            this.userAgent = Optional.ofNullable(userAgent);
+            this.userAgent = OptionalNullable.of(userAgent);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "user_agent", nulls = Nulls.SKIP)
-        public _FinalStage userAgent(Optional<String> userAgent) {
+        public _FinalStage userAgent(OptionalNullable<String> userAgent) {
             this.userAgent = userAgent;
             return this;
         }

@@ -14,6 +14,7 @@ public record ReceivedSmsWebhookEventData : IJsonOnDeserialized
     /// <summary>
     /// The received message; `null` for an opt-out to a number whose replies go to no environment.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("received_sms_id")]
     public string? ReceivedSmsId { get; set; }
 
@@ -23,6 +24,7 @@ public record ReceivedSmsWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("to")]
     public required string To { get; set; }
 
+    [Nullable]
     [JsonPropertyName("keyword")]
     public ReceivedSmsWebhookEventDataKeyword? Keyword { get; set; }
 

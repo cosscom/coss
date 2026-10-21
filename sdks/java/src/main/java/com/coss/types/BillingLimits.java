@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,21 +23,21 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = BillingLimits.Builder.class)
 public final class BillingLimits {
-    private final Optional<Long> domains;
+    private final OptionalNullable<Long> domains;
 
-    private final Optional<Long> members;
+    private final OptionalNullable<Long> members;
 
-    private final Optional<Long> webhookEndpointsPerEnvironment;
+    private final OptionalNullable<Long> webhookEndpointsPerEnvironment;
 
-    private final Optional<Long> contactsPerEnvironment;
+    private final OptionalNullable<Long> contactsPerEnvironment;
 
     private final Map<String, Object> additionalProperties;
 
     private BillingLimits(
-            Optional<Long> domains,
-            Optional<Long> members,
-            Optional<Long> webhookEndpointsPerEnvironment,
-            Optional<Long> contactsPerEnvironment,
+            OptionalNullable<Long> domains,
+            OptionalNullable<Long> members,
+            OptionalNullable<Long> webhookEndpointsPerEnvironment,
+            OptionalNullable<Long> contactsPerEnvironment,
             Map<String, Object> additionalProperties) {
         this.domains = domains;
         this.members = members;
@@ -46,59 +46,63 @@ public final class BillingLimits {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<Long> getDomains() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("domains")
+    public OptionalNullable<Long> getDomains() {
         if (domains == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return domains;
     }
 
-    @JsonIgnore
-    public Optional<Long> getMembers() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("members")
+    public OptionalNullable<Long> getMembers() {
         if (members == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return members;
     }
 
-    @JsonIgnore
-    public Optional<Long> getWebhookEndpointsPerEnvironment() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("webhook_endpoints_per_environment")
+    public OptionalNullable<Long> getWebhookEndpointsPerEnvironment() {
         if (webhookEndpointsPerEnvironment == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return webhookEndpointsPerEnvironment;
     }
 
-    @JsonIgnore
-    public Optional<Long> getContactsPerEnvironment() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("contacts_per_environment")
+    public OptionalNullable<Long> getContactsPerEnvironment() {
         if (contactsPerEnvironment == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contactsPerEnvironment;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("domains")
-    private Optional<Long> _getDomains() {
+    private OptionalNullable<Long> _getDomains() {
         return domains;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("members")
-    private Optional<Long> _getMembers() {
+    private OptionalNullable<Long> _getMembers() {
         return members;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("webhook_endpoints_per_environment")
-    private Optional<Long> _getWebhookEndpointsPerEnvironment() {
+    private OptionalNullable<Long> _getWebhookEndpointsPerEnvironment() {
         return webhookEndpointsPerEnvironment;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("contacts_per_environment")
-    private Optional<Long> _getContactsPerEnvironment() {
+    private OptionalNullable<Long> _getContactsPerEnvironment() {
         return contactsPerEnvironment;
     }
 
@@ -137,13 +141,13 @@ public final class BillingLimits {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<Long> domains = Optional.empty();
+        private OptionalNullable<Long> domains = OptionalNullable.absent();
 
-        private Optional<Long> members = Optional.empty();
+        private OptionalNullable<Long> members = OptionalNullable.absent();
 
-        private Optional<Long> webhookEndpointsPerEnvironment = Optional.empty();
+        private OptionalNullable<Long> webhookEndpointsPerEnvironment = OptionalNullable.absent();
 
-        private Optional<Long> contactsPerEnvironment = Optional.empty();
+        private OptionalNullable<Long> contactsPerEnvironment = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -159,89 +163,125 @@ public final class BillingLimits {
         }
 
         @JsonSetter(value = "domains", nulls = Nulls.SKIP)
-        public Builder domains(Optional<Long> domains) {
+        public Builder domains(OptionalNullable<Long> domains) {
             this.domains = domains;
             return this;
         }
 
         public Builder domains(Long domains) {
-            this.domains = Optional.ofNullable(domains);
+            this.domains = OptionalNullable.of(domains);
+            return this;
+        }
+
+        public Builder domains(Optional<Long> domains) {
+            if (domains.isPresent()) {
+                this.domains = OptionalNullable.of(domains.get());
+            } else {
+                this.domains = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder domains(Nullable<Long> domains) {
             if (domains.isNull()) {
-                this.domains = null;
+                this.domains = OptionalNullable.ofNull();
             } else if (domains.isEmpty()) {
-                this.domains = Optional.empty();
+                this.domains = OptionalNullable.absent();
             } else {
-                this.domains = Optional.of(domains.get());
+                this.domains = OptionalNullable.of(domains.get());
             }
             return this;
         }
 
         @JsonSetter(value = "members", nulls = Nulls.SKIP)
-        public Builder members(Optional<Long> members) {
+        public Builder members(OptionalNullable<Long> members) {
             this.members = members;
             return this;
         }
 
         public Builder members(Long members) {
-            this.members = Optional.ofNullable(members);
+            this.members = OptionalNullable.of(members);
+            return this;
+        }
+
+        public Builder members(Optional<Long> members) {
+            if (members.isPresent()) {
+                this.members = OptionalNullable.of(members.get());
+            } else {
+                this.members = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder members(Nullable<Long> members) {
             if (members.isNull()) {
-                this.members = null;
+                this.members = OptionalNullable.ofNull();
             } else if (members.isEmpty()) {
-                this.members = Optional.empty();
+                this.members = OptionalNullable.absent();
             } else {
-                this.members = Optional.of(members.get());
+                this.members = OptionalNullable.of(members.get());
             }
             return this;
         }
 
         @JsonSetter(value = "webhook_endpoints_per_environment", nulls = Nulls.SKIP)
-        public Builder webhookEndpointsPerEnvironment(Optional<Long> webhookEndpointsPerEnvironment) {
+        public Builder webhookEndpointsPerEnvironment(OptionalNullable<Long> webhookEndpointsPerEnvironment) {
             this.webhookEndpointsPerEnvironment = webhookEndpointsPerEnvironment;
             return this;
         }
 
         public Builder webhookEndpointsPerEnvironment(Long webhookEndpointsPerEnvironment) {
-            this.webhookEndpointsPerEnvironment = Optional.ofNullable(webhookEndpointsPerEnvironment);
+            this.webhookEndpointsPerEnvironment = OptionalNullable.of(webhookEndpointsPerEnvironment);
+            return this;
+        }
+
+        public Builder webhookEndpointsPerEnvironment(Optional<Long> webhookEndpointsPerEnvironment) {
+            if (webhookEndpointsPerEnvironment.isPresent()) {
+                this.webhookEndpointsPerEnvironment = OptionalNullable.of(webhookEndpointsPerEnvironment.get());
+            } else {
+                this.webhookEndpointsPerEnvironment = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder webhookEndpointsPerEnvironment(Nullable<Long> webhookEndpointsPerEnvironment) {
             if (webhookEndpointsPerEnvironment.isNull()) {
-                this.webhookEndpointsPerEnvironment = null;
+                this.webhookEndpointsPerEnvironment = OptionalNullable.ofNull();
             } else if (webhookEndpointsPerEnvironment.isEmpty()) {
-                this.webhookEndpointsPerEnvironment = Optional.empty();
+                this.webhookEndpointsPerEnvironment = OptionalNullable.absent();
             } else {
-                this.webhookEndpointsPerEnvironment = Optional.of(webhookEndpointsPerEnvironment.get());
+                this.webhookEndpointsPerEnvironment = OptionalNullable.of(webhookEndpointsPerEnvironment.get());
             }
             return this;
         }
 
         @JsonSetter(value = "contacts_per_environment", nulls = Nulls.SKIP)
-        public Builder contactsPerEnvironment(Optional<Long> contactsPerEnvironment) {
+        public Builder contactsPerEnvironment(OptionalNullable<Long> contactsPerEnvironment) {
             this.contactsPerEnvironment = contactsPerEnvironment;
             return this;
         }
 
         public Builder contactsPerEnvironment(Long contactsPerEnvironment) {
-            this.contactsPerEnvironment = Optional.ofNullable(contactsPerEnvironment);
+            this.contactsPerEnvironment = OptionalNullable.of(contactsPerEnvironment);
+            return this;
+        }
+
+        public Builder contactsPerEnvironment(Optional<Long> contactsPerEnvironment) {
+            if (contactsPerEnvironment.isPresent()) {
+                this.contactsPerEnvironment = OptionalNullable.of(contactsPerEnvironment.get());
+            } else {
+                this.contactsPerEnvironment = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contactsPerEnvironment(Nullable<Long> contactsPerEnvironment) {
             if (contactsPerEnvironment.isNull()) {
-                this.contactsPerEnvironment = null;
+                this.contactsPerEnvironment = OptionalNullable.ofNull();
             } else if (contactsPerEnvironment.isEmpty()) {
-                this.contactsPerEnvironment = Optional.empty();
+                this.contactsPerEnvironment = OptionalNullable.absent();
             } else {
-                this.contactsPerEnvironment = Optional.of(contactsPerEnvironment.get());
+                this.contactsPerEnvironment = OptionalNullable.of(contactsPerEnvironment.get());
             }
             return this;
         }

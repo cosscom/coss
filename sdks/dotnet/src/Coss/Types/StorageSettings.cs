@@ -26,6 +26,7 @@ public record StorageSettings : IJsonOnDeserialized
     /// <summary>
     /// When the setting last changed; `null` if it never did (content is stored).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("updated_at")]
     public DateTime? UpdatedAt { get; set; }
 

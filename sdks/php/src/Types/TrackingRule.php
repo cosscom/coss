@@ -78,6 +78,9 @@ class TrackingRule extends JsonSerializableType
         $this->object = $values['object'];
         $this->id = $values['id'];
         $this->category = $values['category'] ?? null;
+        if (array_key_exists('category', $values)) {
+            $this->_setField('category');
+        }
         $this->opens = $values['opens'];
         $this->clicks = $values['clicks'];
         $this->unsubscribe = $values['unsubscribe'];

@@ -51,10 +51,28 @@ class ListReceivedRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->createdAfter = $values['createdAfter'] ?? null;
+        if (array_key_exists('createdAfter', $values)) {
+            $this->_setField('createdAfter');
+        }
         $this->createdBefore = $values['createdBefore'] ?? null;
+        if (array_key_exists('createdBefore', $values)) {
+            $this->_setField('createdBefore');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

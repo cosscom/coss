@@ -22,5 +22,8 @@ class CreatePreferenceLinksRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
     }
 }

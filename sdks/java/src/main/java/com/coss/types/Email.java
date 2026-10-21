@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,21 +44,21 @@ public final class Email {
 
     private final String subject;
 
-    private final Optional<String> html;
+    private final OptionalNullable<String> html;
 
-    private final Optional<String> text;
+    private final OptionalNullable<String> text;
 
     private final Map<String, String> headers;
 
     private final List<EmailTagsItem> tags;
 
-    private final Optional<String> category;
+    private final OptionalNullable<String> category;
 
     private final EmailStream stream;
 
     private final EmailStatus status;
 
-    private final Optional<EmailFailure> failure;
+    private final OptionalNullable<EmailFailure> failure;
 
     private final List<EmailRecipient> recipients;
 
@@ -70,15 +70,15 @@ public final class Email {
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> sentAt;
+    private final OptionalNullable<OffsetDateTime> sentAt;
 
-    private final Optional<OffsetDateTime> scheduledAt;
+    private final OptionalNullable<OffsetDateTime> scheduledAt;
 
-    private final Optional<String> batchId;
+    private final OptionalNullable<String> batchId;
 
-    private final Optional<EmailTemplateReference> template;
+    private final OptionalNullable<EmailTemplateReference> template;
 
-    private final Optional<String> broadcastId;
+    private final OptionalNullable<String> broadcastId;
 
     private final EmailContentStorage contentStorage;
 
@@ -93,24 +93,24 @@ public final class Email {
             List<String> bcc,
             List<String> replyTo,
             String subject,
-            Optional<String> html,
-            Optional<String> text,
+            OptionalNullable<String> html,
+            OptionalNullable<String> text,
             Map<String, String> headers,
             List<EmailTagsItem> tags,
-            Optional<String> category,
+            OptionalNullable<String> category,
             EmailStream stream,
             EmailStatus status,
-            Optional<EmailFailure> failure,
+            OptionalNullable<EmailFailure> failure,
             List<EmailRecipient> recipients,
             List<EmailAttachment> attachments,
             boolean sandbox,
             EmailTracking tracking,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> sentAt,
-            Optional<OffsetDateTime> scheduledAt,
-            Optional<String> batchId,
-            Optional<EmailTemplateReference> template,
-            Optional<String> broadcastId,
+            OptionalNullable<OffsetDateTime> sentAt,
+            OptionalNullable<OffsetDateTime> scheduledAt,
+            OptionalNullable<String> batchId,
+            OptionalNullable<EmailTemplateReference> template,
+            OptionalNullable<String> broadcastId,
             EmailContentStorage contentStorage,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -183,18 +183,20 @@ public final class Email {
         return subject;
     }
 
-    @JsonIgnore
-    public Optional<String> getHtml() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("html")
+    public OptionalNullable<String> getHtml() {
         if (html == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return html;
     }
 
-    @JsonIgnore
-    public Optional<String> getText() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("text")
+    public OptionalNullable<String> getText() {
         if (text == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return text;
     }
@@ -209,10 +211,11 @@ public final class Email {
         return tags;
     }
 
-    @JsonIgnore
-    public Optional<String> getCategory() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("category")
+    public OptionalNullable<String> getCategory() {
         if (category == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return category;
     }
@@ -233,10 +236,11 @@ public final class Email {
     /**
      * @return Why the email failed; <code>null</code> unless <code>status</code> is <code>failed</code>.
      */
-    @JsonIgnore
-    public Optional<EmailFailure> getFailure() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failure")
+    public OptionalNullable<EmailFailure> getFailure() {
         if (failure == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failure;
     }
@@ -272,10 +276,11 @@ public final class Email {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getSentAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sent_at")
+    public OptionalNullable<OffsetDateTime> getSentAt() {
         if (sentAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return sentAt;
     }
@@ -283,10 +288,11 @@ public final class Email {
     /**
      * @return When the email was scheduled to be sent; <code>null</code> if it was not.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getScheduledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("scheduled_at")
+    public OptionalNullable<OffsetDateTime> getScheduledAt() {
         if (scheduledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return scheduledAt;
     }
@@ -294,10 +300,11 @@ public final class Email {
     /**
      * @return The batch that sent the email; <code>null</code> if it was sent on its own.
      */
-    @JsonIgnore
-    public Optional<String> getBatchId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("batch_id")
+    public OptionalNullable<String> getBatchId() {
         if (batchId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return batchId;
     }
@@ -305,10 +312,11 @@ public final class Email {
     /**
      * @return The template the email was rendered from; <code>null</code> if it was sent without one.
      */
-    @JsonIgnore
-    public Optional<EmailTemplateReference> getTemplate() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("template")
+    public OptionalNullable<EmailTemplateReference> getTemplate() {
         if (template == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return template;
     }
@@ -316,10 +324,11 @@ public final class Email {
     /**
      * @return The broadcast the email is part of; <code>null</code> for any other email.
      */
-    @JsonIgnore
-    public Optional<String> getBroadcastId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("broadcast_id")
+    public OptionalNullable<String> getBroadcastId() {
         if (broadcastId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return broadcastId;
     }
@@ -331,55 +340,55 @@ public final class Email {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("html")
-    private Optional<String> _getHtml() {
+    private OptionalNullable<String> _getHtml() {
         return html;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("text")
-    private Optional<String> _getText() {
+    private OptionalNullable<String> _getText() {
         return text;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("category")
-    private Optional<String> _getCategory() {
+    private OptionalNullable<String> _getCategory() {
         return category;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failure")
-    private Optional<EmailFailure> _getFailure() {
+    private OptionalNullable<EmailFailure> _getFailure() {
         return failure;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sent_at")
-    private Optional<OffsetDateTime> _getSentAt() {
+    private OptionalNullable<OffsetDateTime> _getSentAt() {
         return sentAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("scheduled_at")
-    private Optional<OffsetDateTime> _getScheduledAt() {
+    private OptionalNullable<OffsetDateTime> _getScheduledAt() {
         return scheduledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("batch_id")
-    private Optional<String> _getBatchId() {
+    private OptionalNullable<String> _getBatchId() {
         return batchId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("template")
-    private Optional<EmailTemplateReference> _getTemplate() {
+    private OptionalNullable<EmailTemplateReference> _getTemplate() {
         return template;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("broadcast_id")
-    private Optional<String> _getBroadcastId() {
+    private OptionalNullable<String> _getBroadcastId() {
         return broadcastId;
     }
 
@@ -544,15 +553,19 @@ public final class Email {
 
         _FinalStage addAllReplyTo(List<String> replyTo);
 
-        _FinalStage html(Optional<String> html);
+        _FinalStage html(OptionalNullable<String> html);
 
         _FinalStage html(String html);
 
+        _FinalStage html(Optional<String> html);
+
         _FinalStage html(Nullable<String> html);
 
-        _FinalStage text(Optional<String> text);
+        _FinalStage text(OptionalNullable<String> text);
 
         _FinalStage text(String text);
+
+        _FinalStage text(Optional<String> text);
 
         _FinalStage text(Nullable<String> text);
 
@@ -568,18 +581,22 @@ public final class Email {
 
         _FinalStage addAllTags(List<EmailTagsItem> tags);
 
-        _FinalStage category(Optional<String> category);
+        _FinalStage category(OptionalNullable<String> category);
 
         _FinalStage category(String category);
+
+        _FinalStage category(Optional<String> category);
 
         _FinalStage category(Nullable<String> category);
 
         /**
          * <p>Why the email failed; <code>null</code> unless <code>status</code> is <code>failed</code>.</p>
          */
-        _FinalStage failure(Optional<EmailFailure> failure);
+        _FinalStage failure(OptionalNullable<EmailFailure> failure);
 
         _FinalStage failure(EmailFailure failure);
+
+        _FinalStage failure(Optional<EmailFailure> failure);
 
         _FinalStage failure(Nullable<EmailFailure> failure);
 
@@ -598,45 +615,55 @@ public final class Email {
 
         _FinalStage addAllAttachments(List<EmailAttachment> attachments);
 
-        _FinalStage sentAt(Optional<OffsetDateTime> sentAt);
+        _FinalStage sentAt(OptionalNullable<OffsetDateTime> sentAt);
 
         _FinalStage sentAt(OffsetDateTime sentAt);
+
+        _FinalStage sentAt(Optional<OffsetDateTime> sentAt);
 
         _FinalStage sentAt(Nullable<OffsetDateTime> sentAt);
 
         /**
          * <p>When the email was scheduled to be sent; <code>null</code> if it was not.</p>
          */
-        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
+        _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt);
 
         _FinalStage scheduledAt(OffsetDateTime scheduledAt);
+
+        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
 
         _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt);
 
         /**
          * <p>The batch that sent the email; <code>null</code> if it was sent on its own.</p>
          */
-        _FinalStage batchId(Optional<String> batchId);
+        _FinalStage batchId(OptionalNullable<String> batchId);
 
         _FinalStage batchId(String batchId);
+
+        _FinalStage batchId(Optional<String> batchId);
 
         _FinalStage batchId(Nullable<String> batchId);
 
         /**
          * <p>The template the email was rendered from; <code>null</code> if it was sent without one.</p>
          */
-        _FinalStage template(Optional<EmailTemplateReference> template);
+        _FinalStage template(OptionalNullable<EmailTemplateReference> template);
 
         _FinalStage template(EmailTemplateReference template);
+
+        _FinalStage template(Optional<EmailTemplateReference> template);
 
         _FinalStage template(Nullable<EmailTemplateReference> template);
 
         /**
          * <p>The broadcast the email is part of; <code>null</code> for any other email.</p>
          */
-        _FinalStage broadcastId(Optional<String> broadcastId);
+        _FinalStage broadcastId(OptionalNullable<String> broadcastId);
 
         _FinalStage broadcastId(String broadcastId);
+
+        _FinalStage broadcastId(Optional<String> broadcastId);
 
         _FinalStage broadcastId(Nullable<String> broadcastId);
     }
@@ -674,31 +701,31 @@ public final class Email {
 
         private EmailContentStorage contentStorage;
 
-        private Optional<String> broadcastId = Optional.empty();
+        private OptionalNullable<String> broadcastId = OptionalNullable.absent();
 
-        private Optional<EmailTemplateReference> template = Optional.empty();
+        private OptionalNullable<EmailTemplateReference> template = OptionalNullable.absent();
 
-        private Optional<String> batchId = Optional.empty();
+        private OptionalNullable<String> batchId = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> scheduledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> scheduledAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> sentAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> sentAt = OptionalNullable.absent();
 
         private List<EmailAttachment> attachments = new ArrayList<>();
 
         private List<EmailRecipient> recipients = new ArrayList<>();
 
-        private Optional<EmailFailure> failure = Optional.empty();
+        private OptionalNullable<EmailFailure> failure = OptionalNullable.absent();
 
-        private Optional<String> category = Optional.empty();
+        private OptionalNullable<String> category = OptionalNullable.absent();
 
         private List<EmailTagsItem> tags = new ArrayList<>();
 
         private Map<String, String> headers = new LinkedHashMap<>();
 
-        private Optional<String> text = Optional.empty();
+        private OptionalNullable<String> text = OptionalNullable.absent();
 
-        private Optional<String> html = Optional.empty();
+        private OptionalNullable<String> html = OptionalNullable.absent();
 
         private List<String> replyTo = new ArrayList<>();
 
@@ -830,11 +857,25 @@ public final class Email {
         @java.lang.Override
         public _FinalStage broadcastId(Nullable<String> broadcastId) {
             if (broadcastId.isNull()) {
-                this.broadcastId = null;
+                this.broadcastId = OptionalNullable.ofNull();
             } else if (broadcastId.isEmpty()) {
-                this.broadcastId = Optional.empty();
+                this.broadcastId = OptionalNullable.absent();
             } else {
-                this.broadcastId = Optional.of(broadcastId.get());
+                this.broadcastId = OptionalNullable.of(broadcastId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The broadcast the email is part of; <code>null</code> for any other email.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage broadcastId(Optional<String> broadcastId) {
+            if (broadcastId.isPresent()) {
+                this.broadcastId = OptionalNullable.of(broadcastId.get());
+            } else {
+                this.broadcastId = OptionalNullable.absent();
             }
             return this;
         }
@@ -845,7 +886,7 @@ public final class Email {
          */
         @java.lang.Override
         public _FinalStage broadcastId(String broadcastId) {
-            this.broadcastId = Optional.ofNullable(broadcastId);
+            this.broadcastId = OptionalNullable.of(broadcastId);
             return this;
         }
 
@@ -854,7 +895,7 @@ public final class Email {
          */
         @java.lang.Override
         @JsonSetter(value = "broadcast_id", nulls = Nulls.SKIP)
-        public _FinalStage broadcastId(Optional<String> broadcastId) {
+        public _FinalStage broadcastId(OptionalNullable<String> broadcastId) {
             this.broadcastId = broadcastId;
             return this;
         }
@@ -866,11 +907,25 @@ public final class Email {
         @java.lang.Override
         public _FinalStage template(Nullable<EmailTemplateReference> template) {
             if (template.isNull()) {
-                this.template = null;
+                this.template = OptionalNullable.ofNull();
             } else if (template.isEmpty()) {
-                this.template = Optional.empty();
+                this.template = OptionalNullable.absent();
             } else {
-                this.template = Optional.of(template.get());
+                this.template = OptionalNullable.of(template.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The template the email was rendered from; <code>null</code> if it was sent without one.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage template(Optional<EmailTemplateReference> template) {
+            if (template.isPresent()) {
+                this.template = OptionalNullable.of(template.get());
+            } else {
+                this.template = OptionalNullable.absent();
             }
             return this;
         }
@@ -881,7 +936,7 @@ public final class Email {
          */
         @java.lang.Override
         public _FinalStage template(EmailTemplateReference template) {
-            this.template = Optional.ofNullable(template);
+            this.template = OptionalNullable.of(template);
             return this;
         }
 
@@ -890,7 +945,7 @@ public final class Email {
          */
         @java.lang.Override
         @JsonSetter(value = "template", nulls = Nulls.SKIP)
-        public _FinalStage template(Optional<EmailTemplateReference> template) {
+        public _FinalStage template(OptionalNullable<EmailTemplateReference> template) {
             this.template = template;
             return this;
         }
@@ -902,11 +957,25 @@ public final class Email {
         @java.lang.Override
         public _FinalStage batchId(Nullable<String> batchId) {
             if (batchId.isNull()) {
-                this.batchId = null;
+                this.batchId = OptionalNullable.ofNull();
             } else if (batchId.isEmpty()) {
-                this.batchId = Optional.empty();
+                this.batchId = OptionalNullable.absent();
             } else {
-                this.batchId = Optional.of(batchId.get());
+                this.batchId = OptionalNullable.of(batchId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The batch that sent the email; <code>null</code> if it was sent on its own.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage batchId(Optional<String> batchId) {
+            if (batchId.isPresent()) {
+                this.batchId = OptionalNullable.of(batchId.get());
+            } else {
+                this.batchId = OptionalNullable.absent();
             }
             return this;
         }
@@ -917,7 +986,7 @@ public final class Email {
          */
         @java.lang.Override
         public _FinalStage batchId(String batchId) {
-            this.batchId = Optional.ofNullable(batchId);
+            this.batchId = OptionalNullable.of(batchId);
             return this;
         }
 
@@ -926,7 +995,7 @@ public final class Email {
          */
         @java.lang.Override
         @JsonSetter(value = "batch_id", nulls = Nulls.SKIP)
-        public _FinalStage batchId(Optional<String> batchId) {
+        public _FinalStage batchId(OptionalNullable<String> batchId) {
             this.batchId = batchId;
             return this;
         }
@@ -938,11 +1007,25 @@ public final class Email {
         @java.lang.Override
         public _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt) {
             if (scheduledAt.isNull()) {
-                this.scheduledAt = null;
+                this.scheduledAt = OptionalNullable.ofNull();
             } else if (scheduledAt.isEmpty()) {
-                this.scheduledAt = Optional.empty();
+                this.scheduledAt = OptionalNullable.absent();
             } else {
-                this.scheduledAt = Optional.of(scheduledAt.get());
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the email was scheduled to be sent; <code>null</code> if it was not.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+            if (scheduledAt.isPresent()) {
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            } else {
+                this.scheduledAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -953,7 +1036,7 @@ public final class Email {
          */
         @java.lang.Override
         public _FinalStage scheduledAt(OffsetDateTime scheduledAt) {
-            this.scheduledAt = Optional.ofNullable(scheduledAt);
+            this.scheduledAt = OptionalNullable.of(scheduledAt);
             return this;
         }
 
@@ -962,7 +1045,7 @@ public final class Email {
          */
         @java.lang.Override
         @JsonSetter(value = "scheduled_at", nulls = Nulls.SKIP)
-        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+        public _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt) {
             this.scheduledAt = scheduledAt;
             return this;
         }
@@ -970,24 +1053,34 @@ public final class Email {
         @java.lang.Override
         public _FinalStage sentAt(Nullable<OffsetDateTime> sentAt) {
             if (sentAt.isNull()) {
-                this.sentAt = null;
+                this.sentAt = OptionalNullable.ofNull();
             } else if (sentAt.isEmpty()) {
-                this.sentAt = Optional.empty();
+                this.sentAt = OptionalNullable.absent();
             } else {
-                this.sentAt = Optional.of(sentAt.get());
+                this.sentAt = OptionalNullable.of(sentAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage sentAt(Optional<OffsetDateTime> sentAt) {
+            if (sentAt.isPresent()) {
+                this.sentAt = OptionalNullable.of(sentAt.get());
+            } else {
+                this.sentAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage sentAt(OffsetDateTime sentAt) {
-            this.sentAt = Optional.ofNullable(sentAt);
+            this.sentAt = OptionalNullable.of(sentAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "sent_at", nulls = Nulls.SKIP)
-        public _FinalStage sentAt(Optional<OffsetDateTime> sentAt) {
+        public _FinalStage sentAt(OptionalNullable<OffsetDateTime> sentAt) {
             this.sentAt = sentAt;
             return this;
         }
@@ -1058,11 +1151,25 @@ public final class Email {
         @java.lang.Override
         public _FinalStage failure(Nullable<EmailFailure> failure) {
             if (failure.isNull()) {
-                this.failure = null;
+                this.failure = OptionalNullable.ofNull();
             } else if (failure.isEmpty()) {
-                this.failure = Optional.empty();
+                this.failure = OptionalNullable.absent();
             } else {
-                this.failure = Optional.of(failure.get());
+                this.failure = OptionalNullable.of(failure.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Why the email failed; <code>null</code> unless <code>status</code> is <code>failed</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage failure(Optional<EmailFailure> failure) {
+            if (failure.isPresent()) {
+                this.failure = OptionalNullable.of(failure.get());
+            } else {
+                this.failure = OptionalNullable.absent();
             }
             return this;
         }
@@ -1073,7 +1180,7 @@ public final class Email {
          */
         @java.lang.Override
         public _FinalStage failure(EmailFailure failure) {
-            this.failure = Optional.ofNullable(failure);
+            this.failure = OptionalNullable.of(failure);
             return this;
         }
 
@@ -1082,7 +1189,7 @@ public final class Email {
          */
         @java.lang.Override
         @JsonSetter(value = "failure", nulls = Nulls.SKIP)
-        public _FinalStage failure(Optional<EmailFailure> failure) {
+        public _FinalStage failure(OptionalNullable<EmailFailure> failure) {
             this.failure = failure;
             return this;
         }
@@ -1090,24 +1197,34 @@ public final class Email {
         @java.lang.Override
         public _FinalStage category(Nullable<String> category) {
             if (category.isNull()) {
-                this.category = null;
+                this.category = OptionalNullable.ofNull();
             } else if (category.isEmpty()) {
-                this.category = Optional.empty();
+                this.category = OptionalNullable.absent();
             } else {
-                this.category = Optional.of(category.get());
+                this.category = OptionalNullable.of(category.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage category(Optional<String> category) {
+            if (category.isPresent()) {
+                this.category = OptionalNullable.of(category.get());
+            } else {
+                this.category = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage category(String category) {
-            this.category = Optional.ofNullable(category);
+            this.category = OptionalNullable.of(category);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "category", nulls = Nulls.SKIP)
-        public _FinalStage category(Optional<String> category) {
+        public _FinalStage category(OptionalNullable<String> category) {
             this.category = category;
             return this;
         }
@@ -1163,24 +1280,34 @@ public final class Email {
         @java.lang.Override
         public _FinalStage text(Nullable<String> text) {
             if (text.isNull()) {
-                this.text = null;
+                this.text = OptionalNullable.ofNull();
             } else if (text.isEmpty()) {
-                this.text = Optional.empty();
+                this.text = OptionalNullable.absent();
             } else {
-                this.text = Optional.of(text.get());
+                this.text = OptionalNullable.of(text.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage text(Optional<String> text) {
+            if (text.isPresent()) {
+                this.text = OptionalNullable.of(text.get());
+            } else {
+                this.text = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage text(String text) {
-            this.text = Optional.ofNullable(text);
+            this.text = OptionalNullable.of(text);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "text", nulls = Nulls.SKIP)
-        public _FinalStage text(Optional<String> text) {
+        public _FinalStage text(OptionalNullable<String> text) {
             this.text = text;
             return this;
         }
@@ -1188,24 +1315,34 @@ public final class Email {
         @java.lang.Override
         public _FinalStage html(Nullable<String> html) {
             if (html.isNull()) {
-                this.html = null;
+                this.html = OptionalNullable.ofNull();
             } else if (html.isEmpty()) {
-                this.html = Optional.empty();
+                this.html = OptionalNullable.absent();
             } else {
-                this.html = Optional.of(html.get());
+                this.html = OptionalNullable.of(html.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage html(Optional<String> html) {
+            if (html.isPresent()) {
+                this.html = OptionalNullable.of(html.get());
+            } else {
+                this.html = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage html(String html) {
-            this.html = Optional.ofNullable(html);
+            this.html = OptionalNullable.of(html);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "html", nulls = Nulls.SKIP)
-        public _FinalStage html(Optional<String> html) {
+        public _FinalStage html(OptionalNullable<String> html) {
             this.html = html;
             return this;
         }

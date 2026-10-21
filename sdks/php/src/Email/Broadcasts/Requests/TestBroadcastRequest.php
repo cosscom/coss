@@ -31,5 +31,8 @@ class TestBroadcastRequest extends JsonSerializableType
     ) {
         $this->to = $values['to'];
         $this->contact = $values['contact'] ?? null;
+        if (array_key_exists('contact', $values)) {
+            $this->_setField('contact');
+        }
     }
 }

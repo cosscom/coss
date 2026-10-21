@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,9 +35,9 @@ public final class RiskListEntry {
 
     private final String value;
 
-    private final Optional<String> note;
+    private final OptionalNullable<String> note;
 
-    private final Optional<OffsetDateTime> expiresAt;
+    private final OptionalNullable<OffsetDateTime> expiresAt;
 
     private final OffsetDateTime createdAt;
 
@@ -49,8 +49,8 @@ public final class RiskListEntry {
             RiskList list,
             RiskListEntryType type,
             String value,
-            Optional<String> note,
-            Optional<OffsetDateTime> expiresAt,
+            OptionalNullable<String> note,
+            OptionalNullable<OffsetDateTime> expiresAt,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -92,18 +92,20 @@ public final class RiskListEntry {
         return value;
     }
 
-    @JsonIgnore
-    public Optional<String> getNote() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("note")
+    public OptionalNullable<String> getNote() {
         if (note == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return note;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getExpiresAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("expires_at")
+    public OptionalNullable<OffsetDateTime> getExpiresAt() {
         if (expiresAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return expiresAt;
     }
@@ -115,13 +117,13 @@ public final class RiskListEntry {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("note")
-    private Optional<String> _getNote() {
+    private OptionalNullable<String> _getNote() {
         return note;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("expires_at")
-    private Optional<OffsetDateTime> _getExpiresAt() {
+    private OptionalNullable<OffsetDateTime> _getExpiresAt() {
         return expiresAt;
     }
 
@@ -198,15 +200,19 @@ public final class RiskListEntry {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage note(Optional<String> note);
+        _FinalStage note(OptionalNullable<String> note);
 
         _FinalStage note(String note);
 
+        _FinalStage note(Optional<String> note);
+
         _FinalStage note(Nullable<String> note);
 
-        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
+        _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt);
 
         _FinalStage expiresAt(OffsetDateTime expiresAt);
+
+        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
 
         _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt);
     }
@@ -226,9 +232,9 @@ public final class RiskListEntry {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> expiresAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> expiresAt = OptionalNullable.absent();
 
-        private Optional<String> note = Optional.empty();
+        private OptionalNullable<String> note = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -297,24 +303,34 @@ public final class RiskListEntry {
         @java.lang.Override
         public _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt) {
             if (expiresAt.isNull()) {
-                this.expiresAt = null;
+                this.expiresAt = OptionalNullable.ofNull();
             } else if (expiresAt.isEmpty()) {
-                this.expiresAt = Optional.empty();
+                this.expiresAt = OptionalNullable.absent();
             } else {
-                this.expiresAt = Optional.of(expiresAt.get());
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+            if (expiresAt.isPresent()) {
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            } else {
+                this.expiresAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage expiresAt(OffsetDateTime expiresAt) {
-            this.expiresAt = Optional.ofNullable(expiresAt);
+            this.expiresAt = OptionalNullable.of(expiresAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "expires_at", nulls = Nulls.SKIP)
-        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+        public _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt) {
             this.expiresAt = expiresAt;
             return this;
         }
@@ -322,24 +338,34 @@ public final class RiskListEntry {
         @java.lang.Override
         public _FinalStage note(Nullable<String> note) {
             if (note.isNull()) {
-                this.note = null;
+                this.note = OptionalNullable.ofNull();
             } else if (note.isEmpty()) {
-                this.note = Optional.empty();
+                this.note = OptionalNullable.absent();
             } else {
-                this.note = Optional.of(note.get());
+                this.note = OptionalNullable.of(note.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage note(Optional<String> note) {
+            if (note.isPresent()) {
+                this.note = OptionalNullable.of(note.get());
+            } else {
+                this.note = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage note(String note) {
-            this.note = Optional.ofNullable(note);
+            this.note = OptionalNullable.of(note);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "note", nulls = Nulls.SKIP)
-        public _FinalStage note(Optional<String> note) {
+        public _FinalStage note(OptionalNullable<String> note) {
             this.note = note;
             return this;
         }

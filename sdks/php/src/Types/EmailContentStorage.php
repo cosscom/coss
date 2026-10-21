@@ -35,6 +35,9 @@ class EmailContentStorage extends JsonSerializableType
     ) {
         $this->mode = $values['mode'];
         $this->discardedAt = $values['discardedAt'] ?? null;
+        if (array_key_exists('discardedAt', $values)) {
+            $this->_setField('discardedAt');
+        }
     }
 
     /**

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,44 +23,48 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = EmailEventDataUnsubscribe.Builder.class)
 public final class EmailEventDataUnsubscribe {
-    private final Optional<String> contactId;
+    private final OptionalNullable<String> contactId;
 
-    private final Optional<String> topic;
+    private final OptionalNullable<String> topic;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailEventDataUnsubscribe(
-            Optional<String> contactId, Optional<String> topic, Map<String, Object> additionalProperties) {
+            OptionalNullable<String> contactId,
+            OptionalNullable<String> topic,
+            Map<String, Object> additionalProperties) {
         this.contactId = contactId;
         this.topic = topic;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getContactId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("contact_id")
+    public OptionalNullable<String> getContactId() {
         if (contactId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contactId;
     }
 
-    @JsonIgnore
-    public Optional<String> getTopic() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("topic")
+    public OptionalNullable<String> getTopic() {
         if (topic == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return topic;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("contact_id")
-    private Optional<String> _getContactId() {
+    private OptionalNullable<String> _getContactId() {
         return contactId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("topic")
-    private Optional<String> _getTopic() {
+    private OptionalNullable<String> _getTopic() {
         return topic;
     }
 
@@ -95,9 +99,9 @@ public final class EmailEventDataUnsubscribe {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> contactId = Optional.empty();
+        private OptionalNullable<String> contactId = OptionalNullable.absent();
 
-        private Optional<String> topic = Optional.empty();
+        private OptionalNullable<String> topic = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -111,45 +115,63 @@ public final class EmailEventDataUnsubscribe {
         }
 
         @JsonSetter(value = "contact_id", nulls = Nulls.SKIP)
-        public Builder contactId(Optional<String> contactId) {
+        public Builder contactId(OptionalNullable<String> contactId) {
             this.contactId = contactId;
             return this;
         }
 
         public Builder contactId(String contactId) {
-            this.contactId = Optional.ofNullable(contactId);
+            this.contactId = OptionalNullable.of(contactId);
+            return this;
+        }
+
+        public Builder contactId(Optional<String> contactId) {
+            if (contactId.isPresent()) {
+                this.contactId = OptionalNullable.of(contactId.get());
+            } else {
+                this.contactId = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contactId(Nullable<String> contactId) {
             if (contactId.isNull()) {
-                this.contactId = null;
+                this.contactId = OptionalNullable.ofNull();
             } else if (contactId.isEmpty()) {
-                this.contactId = Optional.empty();
+                this.contactId = OptionalNullable.absent();
             } else {
-                this.contactId = Optional.of(contactId.get());
+                this.contactId = OptionalNullable.of(contactId.get());
             }
             return this;
         }
 
         @JsonSetter(value = "topic", nulls = Nulls.SKIP)
-        public Builder topic(Optional<String> topic) {
+        public Builder topic(OptionalNullable<String> topic) {
             this.topic = topic;
             return this;
         }
 
         public Builder topic(String topic) {
-            this.topic = Optional.ofNullable(topic);
+            this.topic = OptionalNullable.of(topic);
+            return this;
+        }
+
+        public Builder topic(Optional<String> topic) {
+            if (topic.isPresent()) {
+                this.topic = OptionalNullable.of(topic.get());
+            } else {
+                this.topic = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder topic(Nullable<String> topic) {
             if (topic.isNull()) {
-                this.topic = null;
+                this.topic = OptionalNullable.ofNull();
             } else if (topic.isEmpty()) {
-                this.topic = Optional.empty();
+                this.topic = OptionalNullable.absent();
             } else {
-                this.topic = Optional.of(topic.get());
+                this.topic = OptionalNullable.of(topic.get());
             }
             return this;
         }

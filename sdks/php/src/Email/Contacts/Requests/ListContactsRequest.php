@@ -45,9 +45,24 @@ class ListContactsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->email = $values['email'] ?? null;
+        if (array_key_exists('email', $values)) {
+            $this->_setField('email');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

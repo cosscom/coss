@@ -66,10 +66,28 @@ class CreateHookEndpointRequest extends JsonSerializableType
     ) {
         $this->url = $values['url'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->filterTypes = $values['filterTypes'] ?? null;
+        if (array_key_exists('filterTypes', $values)) {
+            $this->_setField('filterTypes');
+        }
         $this->secret = $values['secret'] ?? null;
+        if (array_key_exists('secret', $values)) {
+            $this->_setField('secret');
+        }
         $this->rateLimitPerSecond = $values['rateLimitPerSecond'] ?? null;
+        if (array_key_exists('rateLimitPerSecond', $values)) {
+            $this->_setField('rateLimitPerSecond');
+        }
         $this->metadata = $values['metadata'] ?? null;
+        if (array_key_exists('metadata', $values)) {
+            $this->_setField('metadata');
+        }
         $this->enabled = $values['enabled'] ?? null;
+        if (array_key_exists('enabled', $values)) {
+            $this->_setField('enabled');
+        }
     }
 }

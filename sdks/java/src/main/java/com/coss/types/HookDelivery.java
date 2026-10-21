@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,15 +39,15 @@ public final class HookDelivery {
 
     private final long attemptCount;
 
-    private final Optional<OffsetDateTime> nextAttemptAt;
+    private final OptionalNullable<OffsetDateTime> nextAttemptAt;
 
-    private final Optional<Long> lastStatusCode;
+    private final OptionalNullable<Long> lastStatusCode;
 
-    private final Optional<String> lastError;
+    private final OptionalNullable<String> lastError;
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> finishedAt;
+    private final OptionalNullable<OffsetDateTime> finishedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -59,11 +59,11 @@ public final class HookDelivery {
             String endpointId,
             HookDeliveryStatus status,
             long attemptCount,
-            Optional<OffsetDateTime> nextAttemptAt,
-            Optional<Long> lastStatusCode,
-            Optional<String> lastError,
+            OptionalNullable<OffsetDateTime> nextAttemptAt,
+            OptionalNullable<Long> lastStatusCode,
+            OptionalNullable<String> lastError,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> finishedAt,
+            OptionalNullable<OffsetDateTime> finishedAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -118,26 +118,29 @@ public final class HookDelivery {
         return attemptCount;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getNextAttemptAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("next_attempt_at")
+    public OptionalNullable<OffsetDateTime> getNextAttemptAt() {
         if (nextAttemptAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return nextAttemptAt;
     }
 
-    @JsonIgnore
-    public Optional<Long> getLastStatusCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_status_code")
+    public OptionalNullable<Long> getLastStatusCode() {
         if (lastStatusCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastStatusCode;
     }
 
-    @JsonIgnore
-    public Optional<String> getLastError() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_error")
+    public OptionalNullable<String> getLastError() {
         if (lastError == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastError;
     }
@@ -147,35 +150,36 @@ public final class HookDelivery {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFinishedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("finished_at")
+    public OptionalNullable<OffsetDateTime> getFinishedAt() {
         if (finishedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return finishedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("next_attempt_at")
-    private Optional<OffsetDateTime> _getNextAttemptAt() {
+    private OptionalNullable<OffsetDateTime> _getNextAttemptAt() {
         return nextAttemptAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_status_code")
-    private Optional<Long> _getLastStatusCode() {
+    private OptionalNullable<Long> _getLastStatusCode() {
         return lastStatusCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_error")
-    private Optional<String> _getLastError() {
+    private OptionalNullable<String> _getLastError() {
         return lastError;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("finished_at")
-    private Optional<OffsetDateTime> _getFinishedAt() {
+    private OptionalNullable<OffsetDateTime> _getFinishedAt() {
         return finishedAt;
     }
 
@@ -275,27 +279,35 @@ public final class HookDelivery {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage nextAttemptAt(Optional<OffsetDateTime> nextAttemptAt);
+        _FinalStage nextAttemptAt(OptionalNullable<OffsetDateTime> nextAttemptAt);
 
         _FinalStage nextAttemptAt(OffsetDateTime nextAttemptAt);
 
+        _FinalStage nextAttemptAt(Optional<OffsetDateTime> nextAttemptAt);
+
         _FinalStage nextAttemptAt(Nullable<OffsetDateTime> nextAttemptAt);
 
-        _FinalStage lastStatusCode(Optional<Long> lastStatusCode);
+        _FinalStage lastStatusCode(OptionalNullable<Long> lastStatusCode);
 
         _FinalStage lastStatusCode(Long lastStatusCode);
 
+        _FinalStage lastStatusCode(Optional<Long> lastStatusCode);
+
         _FinalStage lastStatusCode(Nullable<Long> lastStatusCode);
 
-        _FinalStage lastError(Optional<String> lastError);
+        _FinalStage lastError(OptionalNullable<String> lastError);
 
         _FinalStage lastError(String lastError);
 
+        _FinalStage lastError(Optional<String> lastError);
+
         _FinalStage lastError(Nullable<String> lastError);
 
-        _FinalStage finishedAt(Optional<OffsetDateTime> finishedAt);
+        _FinalStage finishedAt(OptionalNullable<OffsetDateTime> finishedAt);
 
         _FinalStage finishedAt(OffsetDateTime finishedAt);
+
+        _FinalStage finishedAt(Optional<OffsetDateTime> finishedAt);
 
         _FinalStage finishedAt(Nullable<OffsetDateTime> finishedAt);
     }
@@ -327,13 +339,13 @@ public final class HookDelivery {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> finishedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> finishedAt = OptionalNullable.absent();
 
-        private Optional<String> lastError = Optional.empty();
+        private OptionalNullable<String> lastError = OptionalNullable.absent();
 
-        private Optional<Long> lastStatusCode = Optional.empty();
+        private OptionalNullable<Long> lastStatusCode = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> nextAttemptAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> nextAttemptAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -420,24 +432,34 @@ public final class HookDelivery {
         @java.lang.Override
         public _FinalStage finishedAt(Nullable<OffsetDateTime> finishedAt) {
             if (finishedAt.isNull()) {
-                this.finishedAt = null;
+                this.finishedAt = OptionalNullable.ofNull();
             } else if (finishedAt.isEmpty()) {
-                this.finishedAt = Optional.empty();
+                this.finishedAt = OptionalNullable.absent();
             } else {
-                this.finishedAt = Optional.of(finishedAt.get());
+                this.finishedAt = OptionalNullable.of(finishedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage finishedAt(Optional<OffsetDateTime> finishedAt) {
+            if (finishedAt.isPresent()) {
+                this.finishedAt = OptionalNullable.of(finishedAt.get());
+            } else {
+                this.finishedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage finishedAt(OffsetDateTime finishedAt) {
-            this.finishedAt = Optional.ofNullable(finishedAt);
+            this.finishedAt = OptionalNullable.of(finishedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "finished_at", nulls = Nulls.SKIP)
-        public _FinalStage finishedAt(Optional<OffsetDateTime> finishedAt) {
+        public _FinalStage finishedAt(OptionalNullable<OffsetDateTime> finishedAt) {
             this.finishedAt = finishedAt;
             return this;
         }
@@ -445,24 +467,34 @@ public final class HookDelivery {
         @java.lang.Override
         public _FinalStage lastError(Nullable<String> lastError) {
             if (lastError.isNull()) {
-                this.lastError = null;
+                this.lastError = OptionalNullable.ofNull();
             } else if (lastError.isEmpty()) {
-                this.lastError = Optional.empty();
+                this.lastError = OptionalNullable.absent();
             } else {
-                this.lastError = Optional.of(lastError.get());
+                this.lastError = OptionalNullable.of(lastError.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastError(Optional<String> lastError) {
+            if (lastError.isPresent()) {
+                this.lastError = OptionalNullable.of(lastError.get());
+            } else {
+                this.lastError = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastError(String lastError) {
-            this.lastError = Optional.ofNullable(lastError);
+            this.lastError = OptionalNullable.of(lastError);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_error", nulls = Nulls.SKIP)
-        public _FinalStage lastError(Optional<String> lastError) {
+        public _FinalStage lastError(OptionalNullable<String> lastError) {
             this.lastError = lastError;
             return this;
         }
@@ -470,24 +502,34 @@ public final class HookDelivery {
         @java.lang.Override
         public _FinalStage lastStatusCode(Nullable<Long> lastStatusCode) {
             if (lastStatusCode.isNull()) {
-                this.lastStatusCode = null;
+                this.lastStatusCode = OptionalNullable.ofNull();
             } else if (lastStatusCode.isEmpty()) {
-                this.lastStatusCode = Optional.empty();
+                this.lastStatusCode = OptionalNullable.absent();
             } else {
-                this.lastStatusCode = Optional.of(lastStatusCode.get());
+                this.lastStatusCode = OptionalNullable.of(lastStatusCode.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastStatusCode(Optional<Long> lastStatusCode) {
+            if (lastStatusCode.isPresent()) {
+                this.lastStatusCode = OptionalNullable.of(lastStatusCode.get());
+            } else {
+                this.lastStatusCode = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastStatusCode(Long lastStatusCode) {
-            this.lastStatusCode = Optional.ofNullable(lastStatusCode);
+            this.lastStatusCode = OptionalNullable.of(lastStatusCode);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_status_code", nulls = Nulls.SKIP)
-        public _FinalStage lastStatusCode(Optional<Long> lastStatusCode) {
+        public _FinalStage lastStatusCode(OptionalNullable<Long> lastStatusCode) {
             this.lastStatusCode = lastStatusCode;
             return this;
         }
@@ -495,24 +537,34 @@ public final class HookDelivery {
         @java.lang.Override
         public _FinalStage nextAttemptAt(Nullable<OffsetDateTime> nextAttemptAt) {
             if (nextAttemptAt.isNull()) {
-                this.nextAttemptAt = null;
+                this.nextAttemptAt = OptionalNullable.ofNull();
             } else if (nextAttemptAt.isEmpty()) {
-                this.nextAttemptAt = Optional.empty();
+                this.nextAttemptAt = OptionalNullable.absent();
             } else {
-                this.nextAttemptAt = Optional.of(nextAttemptAt.get());
+                this.nextAttemptAt = OptionalNullable.of(nextAttemptAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage nextAttemptAt(Optional<OffsetDateTime> nextAttemptAt) {
+            if (nextAttemptAt.isPresent()) {
+                this.nextAttemptAt = OptionalNullable.of(nextAttemptAt.get());
+            } else {
+                this.nextAttemptAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage nextAttemptAt(OffsetDateTime nextAttemptAt) {
-            this.nextAttemptAt = Optional.ofNullable(nextAttemptAt);
+            this.nextAttemptAt = OptionalNullable.of(nextAttemptAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "next_attempt_at", nulls = Nulls.SKIP)
-        public _FinalStage nextAttemptAt(Optional<OffsetDateTime> nextAttemptAt) {
+        public _FinalStage nextAttemptAt(OptionalNullable<OffsetDateTime> nextAttemptAt) {
             this.nextAttemptAt = nextAttemptAt;
             return this;
         }

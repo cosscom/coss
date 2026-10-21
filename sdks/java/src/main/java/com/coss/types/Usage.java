@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,15 +29,15 @@ public final class Usage {
 
     private final UsageMeter meter;
 
-    private final Optional<String> dimension;
+    private final OptionalNullable<String> dimension;
 
-    private final Optional<String> environmentId;
+    private final OptionalNullable<String> environmentId;
 
-    private final Optional<String> projectId;
+    private final OptionalNullable<String> projectId;
 
-    private final Optional<String> apiKeyId;
+    private final OptionalNullable<String> apiKeyId;
 
-    private final Optional<String> userId;
+    private final OptionalNullable<String> userId;
 
     private final OffsetDateTime start;
 
@@ -50,11 +50,11 @@ public final class Usage {
     private Usage(
             UsageObject object,
             UsageMeter meter,
-            Optional<String> dimension,
-            Optional<String> environmentId,
-            Optional<String> projectId,
-            Optional<String> apiKeyId,
-            Optional<String> userId,
+            OptionalNullable<String> dimension,
+            OptionalNullable<String> environmentId,
+            OptionalNullable<String> projectId,
+            OptionalNullable<String> apiKeyId,
+            OptionalNullable<String> userId,
             OffsetDateTime start,
             OffsetDateTime end,
             long quantity,
@@ -88,10 +88,11 @@ public final class Usage {
     /**
      * @return e.g. <code>country=US</code> for SMS; <code>null</code> for none.
      */
-    @JsonIgnore
-    public Optional<String> getDimension() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dimension")
+    public OptionalNullable<String> getDimension() {
         if (dimension == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dimension;
     }
@@ -99,10 +100,11 @@ public final class Usage {
     /**
      * @return Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).
      */
-    @JsonIgnore
-    public Optional<String> getEnvironmentId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("environment_id")
+    public OptionalNullable<String> getEnvironmentId() {
         if (environmentId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return environmentId;
     }
@@ -110,10 +112,11 @@ public final class Usage {
     /**
      * @return Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).
      */
-    @JsonIgnore
-    public Optional<String> getProjectId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("project_id")
+    public OptionalNullable<String> getProjectId() {
         if (projectId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return projectId;
     }
@@ -121,10 +124,11 @@ public final class Usage {
     /**
      * @return Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).
      */
-    @JsonIgnore
-    public Optional<String> getApiKeyId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("api_key_id")
+    public OptionalNullable<String> getApiKeyId() {
         if (apiKeyId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return apiKeyId;
     }
@@ -132,10 +136,11 @@ public final class Usage {
     /**
      * @return Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).
      */
-    @JsonIgnore
-    public Optional<String> getUserId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_id")
+    public OptionalNullable<String> getUserId() {
         if (userId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userId;
     }
@@ -157,31 +162,31 @@ public final class Usage {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dimension")
-    private Optional<String> _getDimension() {
+    private OptionalNullable<String> _getDimension() {
         return dimension;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("environment_id")
-    private Optional<String> _getEnvironmentId() {
+    private OptionalNullable<String> _getEnvironmentId() {
         return environmentId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("project_id")
-    private Optional<String> _getProjectId() {
+    private OptionalNullable<String> _getProjectId() {
         return projectId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("api_key_id")
-    private Optional<String> _getApiKeyId() {
+    private OptionalNullable<String> _getApiKeyId() {
         return apiKeyId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_id")
-    private Optional<String> _getUserId() {
+    private OptionalNullable<String> _getUserId() {
         return userId;
     }
 
@@ -268,45 +273,55 @@ public final class Usage {
         /**
          * <p>e.g. <code>country=US</code> for SMS; <code>null</code> for none.</p>
          */
-        _FinalStage dimension(Optional<String> dimension);
+        _FinalStage dimension(OptionalNullable<String> dimension);
 
         _FinalStage dimension(String dimension);
+
+        _FinalStage dimension(Optional<String> dimension);
 
         _FinalStage dimension(Nullable<String> dimension);
 
         /**
          * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
          */
-        _FinalStage environmentId(Optional<String> environmentId);
+        _FinalStage environmentId(OptionalNullable<String> environmentId);
 
         _FinalStage environmentId(String environmentId);
+
+        _FinalStage environmentId(Optional<String> environmentId);
 
         _FinalStage environmentId(Nullable<String> environmentId);
 
         /**
          * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
          */
-        _FinalStage projectId(Optional<String> projectId);
+        _FinalStage projectId(OptionalNullable<String> projectId);
 
         _FinalStage projectId(String projectId);
+
+        _FinalStage projectId(Optional<String> projectId);
 
         _FinalStage projectId(Nullable<String> projectId);
 
         /**
          * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
          */
-        _FinalStage apiKeyId(Optional<String> apiKeyId);
+        _FinalStage apiKeyId(OptionalNullable<String> apiKeyId);
 
         _FinalStage apiKeyId(String apiKeyId);
+
+        _FinalStage apiKeyId(Optional<String> apiKeyId);
 
         _FinalStage apiKeyId(Nullable<String> apiKeyId);
 
         /**
          * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
          */
-        _FinalStage userId(Optional<String> userId);
+        _FinalStage userId(OptionalNullable<String> userId);
 
         _FinalStage userId(String userId);
+
+        _FinalStage userId(Optional<String> userId);
 
         _FinalStage userId(Nullable<String> userId);
     }
@@ -324,15 +339,15 @@ public final class Usage {
 
         private long quantity;
 
-        private Optional<String> userId = Optional.empty();
+        private OptionalNullable<String> userId = OptionalNullable.absent();
 
-        private Optional<String> apiKeyId = Optional.empty();
+        private OptionalNullable<String> apiKeyId = OptionalNullable.absent();
 
-        private Optional<String> projectId = Optional.empty();
+        private OptionalNullable<String> projectId = OptionalNullable.absent();
 
-        private Optional<String> environmentId = Optional.empty();
+        private OptionalNullable<String> environmentId = OptionalNullable.absent();
 
-        private Optional<String> dimension = Optional.empty();
+        private OptionalNullable<String> dimension = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -400,11 +415,25 @@ public final class Usage {
         @java.lang.Override
         public _FinalStage userId(Nullable<String> userId) {
             if (userId.isNull()) {
-                this.userId = null;
+                this.userId = OptionalNullable.ofNull();
             } else if (userId.isEmpty()) {
-                this.userId = Optional.empty();
+                this.userId = OptionalNullable.absent();
             } else {
-                this.userId = Optional.of(userId.get());
+                this.userId = OptionalNullable.of(userId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage userId(Optional<String> userId) {
+            if (userId.isPresent()) {
+                this.userId = OptionalNullable.of(userId.get());
+            } else {
+                this.userId = OptionalNullable.absent();
             }
             return this;
         }
@@ -415,7 +444,7 @@ public final class Usage {
          */
         @java.lang.Override
         public _FinalStage userId(String userId) {
-            this.userId = Optional.ofNullable(userId);
+            this.userId = OptionalNullable.of(userId);
             return this;
         }
 
@@ -424,7 +453,7 @@ public final class Usage {
          */
         @java.lang.Override
         @JsonSetter(value = "user_id", nulls = Nulls.SKIP)
-        public _FinalStage userId(Optional<String> userId) {
+        public _FinalStage userId(OptionalNullable<String> userId) {
             this.userId = userId;
             return this;
         }
@@ -436,11 +465,25 @@ public final class Usage {
         @java.lang.Override
         public _FinalStage apiKeyId(Nullable<String> apiKeyId) {
             if (apiKeyId.isNull()) {
-                this.apiKeyId = null;
+                this.apiKeyId = OptionalNullable.ofNull();
             } else if (apiKeyId.isEmpty()) {
-                this.apiKeyId = Optional.empty();
+                this.apiKeyId = OptionalNullable.absent();
             } else {
-                this.apiKeyId = Optional.of(apiKeyId.get());
+                this.apiKeyId = OptionalNullable.of(apiKeyId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage apiKeyId(Optional<String> apiKeyId) {
+            if (apiKeyId.isPresent()) {
+                this.apiKeyId = OptionalNullable.of(apiKeyId.get());
+            } else {
+                this.apiKeyId = OptionalNullable.absent();
             }
             return this;
         }
@@ -451,7 +494,7 @@ public final class Usage {
          */
         @java.lang.Override
         public _FinalStage apiKeyId(String apiKeyId) {
-            this.apiKeyId = Optional.ofNullable(apiKeyId);
+            this.apiKeyId = OptionalNullable.of(apiKeyId);
             return this;
         }
 
@@ -460,7 +503,7 @@ public final class Usage {
          */
         @java.lang.Override
         @JsonSetter(value = "api_key_id", nulls = Nulls.SKIP)
-        public _FinalStage apiKeyId(Optional<String> apiKeyId) {
+        public _FinalStage apiKeyId(OptionalNullable<String> apiKeyId) {
             this.apiKeyId = apiKeyId;
             return this;
         }
@@ -472,11 +515,25 @@ public final class Usage {
         @java.lang.Override
         public _FinalStage projectId(Nullable<String> projectId) {
             if (projectId.isNull()) {
-                this.projectId = null;
+                this.projectId = OptionalNullable.ofNull();
             } else if (projectId.isEmpty()) {
-                this.projectId = Optional.empty();
+                this.projectId = OptionalNullable.absent();
             } else {
-                this.projectId = Optional.of(projectId.get());
+                this.projectId = OptionalNullable.of(projectId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage projectId(Optional<String> projectId) {
+            if (projectId.isPresent()) {
+                this.projectId = OptionalNullable.of(projectId.get());
+            } else {
+                this.projectId = OptionalNullable.absent();
             }
             return this;
         }
@@ -487,7 +544,7 @@ public final class Usage {
          */
         @java.lang.Override
         public _FinalStage projectId(String projectId) {
-            this.projectId = Optional.ofNullable(projectId);
+            this.projectId = OptionalNullable.of(projectId);
             return this;
         }
 
@@ -496,7 +553,7 @@ public final class Usage {
          */
         @java.lang.Override
         @JsonSetter(value = "project_id", nulls = Nulls.SKIP)
-        public _FinalStage projectId(Optional<String> projectId) {
+        public _FinalStage projectId(OptionalNullable<String> projectId) {
             this.projectId = projectId;
             return this;
         }
@@ -508,11 +565,25 @@ public final class Usage {
         @java.lang.Override
         public _FinalStage environmentId(Nullable<String> environmentId) {
             if (environmentId.isNull()) {
-                this.environmentId = null;
+                this.environmentId = OptionalNullable.ofNull();
             } else if (environmentId.isEmpty()) {
-                this.environmentId = Optional.empty();
+                this.environmentId = OptionalNullable.absent();
             } else {
-                this.environmentId = Optional.of(environmentId.get());
+                this.environmentId = OptionalNullable.of(environmentId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage environmentId(Optional<String> environmentId) {
+            if (environmentId.isPresent()) {
+                this.environmentId = OptionalNullable.of(environmentId.get());
+            } else {
+                this.environmentId = OptionalNullable.absent();
             }
             return this;
         }
@@ -523,7 +594,7 @@ public final class Usage {
          */
         @java.lang.Override
         public _FinalStage environmentId(String environmentId) {
-            this.environmentId = Optional.ofNullable(environmentId);
+            this.environmentId = OptionalNullable.of(environmentId);
             return this;
         }
 
@@ -532,7 +603,7 @@ public final class Usage {
          */
         @java.lang.Override
         @JsonSetter(value = "environment_id", nulls = Nulls.SKIP)
-        public _FinalStage environmentId(Optional<String> environmentId) {
+        public _FinalStage environmentId(OptionalNullable<String> environmentId) {
             this.environmentId = environmentId;
             return this;
         }
@@ -544,11 +615,25 @@ public final class Usage {
         @java.lang.Override
         public _FinalStage dimension(Nullable<String> dimension) {
             if (dimension.isNull()) {
-                this.dimension = null;
+                this.dimension = OptionalNullable.ofNull();
             } else if (dimension.isEmpty()) {
-                this.dimension = Optional.empty();
+                this.dimension = OptionalNullable.absent();
             } else {
-                this.dimension = Optional.of(dimension.get());
+                this.dimension = OptionalNullable.of(dimension.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>e.g. <code>country=US</code> for SMS; <code>null</code> for none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage dimension(Optional<String> dimension) {
+            if (dimension.isPresent()) {
+                this.dimension = OptionalNullable.of(dimension.get());
+            } else {
+                this.dimension = OptionalNullable.absent();
             }
             return this;
         }
@@ -559,7 +644,7 @@ public final class Usage {
          */
         @java.lang.Override
         public _FinalStage dimension(String dimension) {
-            this.dimension = Optional.ofNullable(dimension);
+            this.dimension = OptionalNullable.of(dimension);
             return this;
         }
 
@@ -568,7 +653,7 @@ public final class Usage {
          */
         @java.lang.Override
         @JsonSetter(value = "dimension", nulls = Nulls.SKIP)
-        public _FinalStage dimension(Optional<String> dimension) {
+        public _FinalStage dimension(OptionalNullable<String> dimension) {
             this.dimension = dimension;
             return this;
         }

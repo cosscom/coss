@@ -44,6 +44,7 @@ public record RiskLimit : IJsonOnDeserialized
     /// <summary>
     /// When denied: milliseconds until the same request would be allowed; `null` when it never would (`cost` above the bucket's size). 0 when allowed.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("retry_after_ms")]
     public long? RetryAfterMs { get; set; }
 

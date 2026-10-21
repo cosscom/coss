@@ -31,5 +31,8 @@ class UpdateContactPropertyRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->fallback = $values['fallback'] ?? null;
+        if (array_key_exists('fallback', $values)) {
+            $this->_setField('fallback');
+        }
     }
 }

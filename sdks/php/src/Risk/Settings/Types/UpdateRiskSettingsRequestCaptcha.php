@@ -37,7 +37,13 @@ class UpdateRiskSettingsRequestCaptcha extends JsonSerializableType
     ) {
         $this->provider = $values['provider'];
         $this->secret = $values['secret'] ?? null;
+        if (array_key_exists('secret', $values)) {
+            $this->_setField('secret');
+        }
         $this->required = $values['required'] ?? null;
+        if (array_key_exists('required', $values)) {
+            $this->_setField('required');
+        }
     }
 
     /**

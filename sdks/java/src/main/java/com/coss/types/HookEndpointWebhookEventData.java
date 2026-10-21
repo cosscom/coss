@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 public final class HookEndpointWebhookEventData {
     private final String applicationId;
 
-    private final Optional<String> applicationUid;
+    private final OptionalNullable<String> applicationUid;
 
     private final String endpointId;
 
@@ -41,7 +41,7 @@ public final class HookEndpointWebhookEventData {
 
     private HookEndpointWebhookEventData(
             String applicationId,
-            Optional<String> applicationUid,
+            OptionalNullable<String> applicationUid,
             String endpointId,
             String url,
             OffsetDateTime failingSince,
@@ -61,10 +61,11 @@ public final class HookEndpointWebhookEventData {
         return applicationId;
     }
 
-    @JsonIgnore
-    public Optional<String> getApplicationUid() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("application_uid")
+    public OptionalNullable<String> getApplicationUid() {
         if (applicationUid == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return applicationUid;
     }
@@ -91,7 +92,7 @@ public final class HookEndpointWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("application_uid")
-    private Optional<String> _getApplicationUid() {
+    private OptionalNullable<String> _getApplicationUid() {
         return applicationUid;
     }
 
@@ -159,9 +160,11 @@ public final class HookEndpointWebhookEventData {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage applicationUid(Optional<String> applicationUid);
+        _FinalStage applicationUid(OptionalNullable<String> applicationUid);
 
         _FinalStage applicationUid(String applicationUid);
+
+        _FinalStage applicationUid(Optional<String> applicationUid);
 
         _FinalStage applicationUid(Nullable<String> applicationUid);
     }
@@ -179,7 +182,7 @@ public final class HookEndpointWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<String> applicationUid = Optional.empty();
+        private OptionalNullable<String> applicationUid = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -235,24 +238,34 @@ public final class HookEndpointWebhookEventData {
         @java.lang.Override
         public _FinalStage applicationUid(Nullable<String> applicationUid) {
             if (applicationUid.isNull()) {
-                this.applicationUid = null;
+                this.applicationUid = OptionalNullable.ofNull();
             } else if (applicationUid.isEmpty()) {
-                this.applicationUid = Optional.empty();
+                this.applicationUid = OptionalNullable.absent();
             } else {
-                this.applicationUid = Optional.of(applicationUid.get());
+                this.applicationUid = OptionalNullable.of(applicationUid.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage applicationUid(Optional<String> applicationUid) {
+            if (applicationUid.isPresent()) {
+                this.applicationUid = OptionalNullable.of(applicationUid.get());
+            } else {
+                this.applicationUid = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage applicationUid(String applicationUid) {
-            this.applicationUid = Optional.ofNullable(applicationUid);
+            this.applicationUid = OptionalNullable.of(applicationUid);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "application_uid", nulls = Nulls.SKIP)
-        public _FinalStage applicationUid(Optional<String> applicationUid) {
+        public _FinalStage applicationUid(OptionalNullable<String> applicationUid) {
             this.applicationUid = applicationUid;
             return this;
         }

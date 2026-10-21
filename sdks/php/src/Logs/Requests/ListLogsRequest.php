@@ -99,18 +99,60 @@ class ListLogsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->source = $values['source'] ?? null;
+        if (array_key_exists('source', $values)) {
+            $this->_setField('source');
+        }
         $this->level = $values['level'] ?? null;
+        if (array_key_exists('level', $values)) {
+            $this->_setField('level');
+        }
         $this->type = $values['type'] ?? null;
+        if (array_key_exists('type', $values)) {
+            $this->_setField('type');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->method = $values['method'] ?? null;
+        if (array_key_exists('method', $values)) {
+            $this->_setField('method');
+        }
         $this->route = $values['route'] ?? null;
+        if (array_key_exists('route', $values)) {
+            $this->_setField('route');
+        }
         $this->apiKeyId = $values['apiKeyId'] ?? null;
+        if (array_key_exists('apiKeyId', $values)) {
+            $this->_setField('apiKeyId');
+        }
         $this->requestId = $values['requestId'] ?? null;
+        if (array_key_exists('requestId', $values)) {
+            $this->_setField('requestId');
+        }
         $this->resourceId = $values['resourceId'] ?? null;
+        if (array_key_exists('resourceId', $values)) {
+            $this->_setField('resourceId');
+        }
         $this->q = $values['q'] ?? null;
+        if (array_key_exists('q', $values)) {
+            $this->_setField('q');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

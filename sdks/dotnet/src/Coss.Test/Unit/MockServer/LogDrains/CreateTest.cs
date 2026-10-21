@@ -14,7 +14,8 @@ public class CreateTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "url": "x"
+              "url": "x",
+              "description": null
             }
             """;
 
@@ -89,6 +90,8 @@ public class CreateTest : BaseMockServerTest
                 "email"
               ],
               "enabled": true,
+              "disabled_reason": null,
+              "disabled_at": null,
               "created_at": "2026-01-15T09:30:00.000Z",
               "updated_at": "2026-01-15T09:30:00.000Z",
               "secret": "whsec_6Jk…"

@@ -77,6 +77,9 @@ class RiskLimit extends JsonSerializableType
         $this->remaining = $values['remaining'];
         $this->resetMs = $values['resetMs'];
         $this->retryAfterMs = $values['retryAfterMs'] ?? null;
+        if (array_key_exists('retryAfterMs', $values)) {
+            $this->_setField('retryAfterMs');
+        }
         $this->degraded = $values['degraded'];
     }
 

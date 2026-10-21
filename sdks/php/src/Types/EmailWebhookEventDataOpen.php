@@ -25,6 +25,9 @@ class EmailWebhookEventDataOpen extends JsonSerializableType
         array $values = [],
     ) {
         $this->userAgent = $values['userAgent'] ?? null;
+        if (array_key_exists('userAgent', $values)) {
+            $this->_setField('userAgent');
+        }
     }
 
     /**

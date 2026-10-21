@@ -44,12 +44,15 @@ public record LogDrainBatch : IJsonOnDeserialized
     /// <summary>
     /// When the next attempt is due; `null` once the batch is finished.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("next_attempt_at")]
     public DateTime? NextAttemptAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_status_code")]
     public long? LastStatusCode { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_error")]
     public string? LastError { get; set; }
 

@@ -71,6 +71,9 @@ class Suppression extends JsonSerializableType
         $this->scope = $values['scope'];
         $this->reason = $values['reason'];
         $this->emailId = $values['emailId'] ?? null;
+        if (array_key_exists('emailId', $values)) {
+            $this->_setField('emailId');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

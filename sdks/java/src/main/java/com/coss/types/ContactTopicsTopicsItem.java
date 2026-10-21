@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ public final class ContactTopicsTopicsItem {
 
     private final boolean subscribed;
 
-    private final Optional<ContactTopicsTopicsItemChoice> choice;
+    private final OptionalNullable<ContactTopicsTopicsItemChoice> choice;
 
     private final Map<String, Object> additionalProperties;
 
@@ -38,7 +38,7 @@ public final class ContactTopicsTopicsItem {
             String topic,
             String name,
             boolean subscribed,
-            Optional<ContactTopicsTopicsItemChoice> choice,
+            OptionalNullable<ContactTopicsTopicsItemChoice> choice,
             Map<String, Object> additionalProperties) {
         this.topic = topic;
         this.name = name;
@@ -68,17 +68,18 @@ public final class ContactTopicsTopicsItem {
     /**
      * @return The contact's explicit choice; <code>null</code>: the topic's default applies.
      */
-    @JsonIgnore
-    public Optional<ContactTopicsTopicsItemChoice> getChoice() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("choice")
+    public OptionalNullable<ContactTopicsTopicsItemChoice> getChoice() {
         if (choice == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return choice;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("choice")
-    private Optional<ContactTopicsTopicsItemChoice> _getChoice() {
+    private OptionalNullable<ContactTopicsTopicsItemChoice> _getChoice() {
         return choice;
     }
 
@@ -141,9 +142,11 @@ public final class ContactTopicsTopicsItem {
         /**
          * <p>The contact's explicit choice; <code>null</code>: the topic's default applies.</p>
          */
-        _FinalStage choice(Optional<ContactTopicsTopicsItemChoice> choice);
+        _FinalStage choice(OptionalNullable<ContactTopicsTopicsItemChoice> choice);
 
         _FinalStage choice(ContactTopicsTopicsItemChoice choice);
+
+        _FinalStage choice(Optional<ContactTopicsTopicsItemChoice> choice);
 
         _FinalStage choice(Nullable<ContactTopicsTopicsItemChoice> choice);
     }
@@ -156,7 +159,7 @@ public final class ContactTopicsTopicsItem {
 
         private boolean subscribed;
 
-        private Optional<ContactTopicsTopicsItemChoice> choice = Optional.empty();
+        private OptionalNullable<ContactTopicsTopicsItemChoice> choice = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -204,11 +207,25 @@ public final class ContactTopicsTopicsItem {
         @java.lang.Override
         public _FinalStage choice(Nullable<ContactTopicsTopicsItemChoice> choice) {
             if (choice.isNull()) {
-                this.choice = null;
+                this.choice = OptionalNullable.ofNull();
             } else if (choice.isEmpty()) {
-                this.choice = Optional.empty();
+                this.choice = OptionalNullable.absent();
             } else {
-                this.choice = Optional.of(choice.get());
+                this.choice = OptionalNullable.of(choice.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The contact's explicit choice; <code>null</code>: the topic's default applies.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage choice(Optional<ContactTopicsTopicsItemChoice> choice) {
+            if (choice.isPresent()) {
+                this.choice = OptionalNullable.of(choice.get());
+            } else {
+                this.choice = OptionalNullable.absent();
             }
             return this;
         }
@@ -219,7 +236,7 @@ public final class ContactTopicsTopicsItem {
          */
         @java.lang.Override
         public _FinalStage choice(ContactTopicsTopicsItemChoice choice) {
-            this.choice = Optional.ofNullable(choice);
+            this.choice = OptionalNullable.of(choice);
             return this;
         }
 
@@ -228,7 +245,7 @@ public final class ContactTopicsTopicsItem {
          */
         @java.lang.Override
         @JsonSetter(value = "choice", nulls = Nulls.SKIP)
-        public _FinalStage choice(Optional<ContactTopicsTopicsItemChoice> choice) {
+        public _FinalStage choice(OptionalNullable<ContactTopicsTopicsItemChoice> choice) {
             this.choice = choice;
             return this;
         }

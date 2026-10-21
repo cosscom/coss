@@ -15,6 +15,7 @@ public record RollWebhookEndpointSecretRequest
     /// <summary>
     /// Seconds the current secret keeps signing deliveries next to the new one, so receivers can switch without rejecting anything. Default 86400 (a day), at most 604800 (a week). `0` stops it immediately, e.g. after a leak.
     /// </summary>
+    [Optional]
     [JsonPropertyName("previous_secret_expires_in")]
     public int? PreviousSecretExpiresIn { get; set; }
 

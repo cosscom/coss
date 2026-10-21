@@ -47,6 +47,9 @@ class ContactWebhookEventData extends JsonSerializableType
         $this->contact = $values['contact'];
         $this->source = $values['source'];
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
         $this->occurredAt = $values['occurredAt'];
     }
 

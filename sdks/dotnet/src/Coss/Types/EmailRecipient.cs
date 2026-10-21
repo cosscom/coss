@@ -26,6 +26,7 @@ public record EmailRecipient : IJsonOnDeserialized
     [JsonPropertyName("status")]
     public required EmailRecipientStatus Status { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_event_at")]
     public DateTime? LastEventAt { get; set; }
 

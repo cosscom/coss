@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +32,7 @@ public final class EmailTemplateVersion {
 
     private final String templateId;
 
-    private final Optional<Long> version;
+    private final OptionalNullable<Long> version;
 
     private final long revision;
 
@@ -46,7 +46,7 @@ public final class EmailTemplateVersion {
 
     private final List<TemplateProblem> problems;
 
-    private final Optional<OffsetDateTime> publishedAt;
+    private final OptionalNullable<OffsetDateTime> publishedAt;
 
     private final OffsetDateTime createdAt;
 
@@ -57,14 +57,14 @@ public final class EmailTemplateVersion {
     private EmailTemplateVersion(
             EmailTemplateVersionObject object,
             String templateId,
-            Optional<Long> version,
+            OptionalNullable<Long> version,
             long revision,
             String defaultLocale,
             List<TemplateVariable> variables,
             Map<String, Object> sampleVariables,
             List<TemplateContent> contents,
             List<TemplateProblem> problems,
-            Optional<OffsetDateTime> publishedAt,
+            OptionalNullable<OffsetDateTime> publishedAt,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
             Map<String, Object> additionalProperties) {
@@ -96,10 +96,11 @@ public final class EmailTemplateVersion {
     /**
      * @return The version number; <code>null</code> for the draft.
      */
-    @JsonIgnore
-    public Optional<Long> getVersion() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("version")
+    public OptionalNullable<Long> getVersion() {
         if (version == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return version;
     }
@@ -140,10 +141,11 @@ public final class EmailTemplateVersion {
         return problems;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPublishedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("published_at")
+    public OptionalNullable<OffsetDateTime> getPublishedAt() {
         if (publishedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return publishedAt;
     }
@@ -160,13 +162,13 @@ public final class EmailTemplateVersion {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("version")
-    private Optional<Long> _getVersion() {
+    private OptionalNullable<Long> _getVersion() {
         return version;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("published_at")
-    private Optional<OffsetDateTime> _getPublishedAt() {
+    private OptionalNullable<OffsetDateTime> _getPublishedAt() {
         return publishedAt;
     }
 
@@ -261,9 +263,11 @@ public final class EmailTemplateVersion {
         /**
          * <p>The version number; <code>null</code> for the draft.</p>
          */
-        _FinalStage version(Optional<Long> version);
+        _FinalStage version(OptionalNullable<Long> version);
 
         _FinalStage version(Long version);
+
+        _FinalStage version(Optional<Long> version);
 
         _FinalStage version(Nullable<Long> version);
 
@@ -294,9 +298,11 @@ public final class EmailTemplateVersion {
 
         _FinalStage addAllProblems(List<TemplateProblem> problems);
 
-        _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt);
+        _FinalStage publishedAt(OptionalNullable<OffsetDateTime> publishedAt);
 
         _FinalStage publishedAt(OffsetDateTime publishedAt);
+
+        _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt);
 
         _FinalStage publishedAt(Nullable<OffsetDateTime> publishedAt);
     }
@@ -322,7 +328,7 @@ public final class EmailTemplateVersion {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<OffsetDateTime> publishedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> publishedAt = OptionalNullable.absent();
 
         private List<TemplateProblem> problems = new ArrayList<>();
 
@@ -332,7 +338,7 @@ public final class EmailTemplateVersion {
 
         private List<TemplateVariable> variables = new ArrayList<>();
 
-        private Optional<Long> version = Optional.empty();
+        private OptionalNullable<Long> version = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -405,24 +411,34 @@ public final class EmailTemplateVersion {
         @java.lang.Override
         public _FinalStage publishedAt(Nullable<OffsetDateTime> publishedAt) {
             if (publishedAt.isNull()) {
-                this.publishedAt = null;
+                this.publishedAt = OptionalNullable.ofNull();
             } else if (publishedAt.isEmpty()) {
-                this.publishedAt = Optional.empty();
+                this.publishedAt = OptionalNullable.absent();
             } else {
-                this.publishedAt = Optional.of(publishedAt.get());
+                this.publishedAt = OptionalNullable.of(publishedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt) {
+            if (publishedAt.isPresent()) {
+                this.publishedAt = OptionalNullable.of(publishedAt.get());
+            } else {
+                this.publishedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage publishedAt(OffsetDateTime publishedAt) {
-            this.publishedAt = Optional.ofNullable(publishedAt);
+            this.publishedAt = OptionalNullable.of(publishedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "published_at", nulls = Nulls.SKIP)
-        public _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt) {
+        public _FinalStage publishedAt(OptionalNullable<OffsetDateTime> publishedAt) {
             this.publishedAt = publishedAt;
             return this;
         }
@@ -541,11 +557,25 @@ public final class EmailTemplateVersion {
         @java.lang.Override
         public _FinalStage version(Nullable<Long> version) {
             if (version.isNull()) {
-                this.version = null;
+                this.version = OptionalNullable.ofNull();
             } else if (version.isEmpty()) {
-                this.version = Optional.empty();
+                this.version = OptionalNullable.absent();
             } else {
-                this.version = Optional.of(version.get());
+                this.version = OptionalNullable.of(version.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The version number; <code>null</code> for the draft.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage version(Optional<Long> version) {
+            if (version.isPresent()) {
+                this.version = OptionalNullable.of(version.get());
+            } else {
+                this.version = OptionalNullable.absent();
             }
             return this;
         }
@@ -556,7 +586,7 @@ public final class EmailTemplateVersion {
          */
         @java.lang.Override
         public _FinalStage version(Long version) {
-            this.version = Optional.ofNullable(version);
+            this.version = OptionalNullable.of(version);
             return this;
         }
 
@@ -565,7 +595,7 @@ public final class EmailTemplateVersion {
          */
         @java.lang.Override
         @JsonSetter(value = "version", nulls = Nulls.SKIP)
-        public _FinalStage version(Optional<Long> version) {
+        public _FinalStage version(OptionalNullable<Long> version) {
             this.version = version;
             return this;
         }

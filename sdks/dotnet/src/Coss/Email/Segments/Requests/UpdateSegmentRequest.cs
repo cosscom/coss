@@ -13,9 +13,11 @@ public record UpdateSegmentRequest
     [JsonIgnore]
     public required string Id { get; set; }
 
+    [Optional]
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [Optional]
     [JsonPropertyName("filter")]
     public SegmentFilter? Filter { get; set; }
 

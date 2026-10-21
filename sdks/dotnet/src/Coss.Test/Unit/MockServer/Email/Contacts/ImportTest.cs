@@ -17,10 +17,14 @@ public class ImportTest : BaseMockServerTest
             {
               "contacts": [
                 {
-                  "email": "email"
+                  "email": "email",
+                  "first_name": null,
+                  "last_name": null
                 },
                 {
-                  "email": "email"
+                  "email": "email",
+                  "first_name": null,
+                  "last_name": null
                 }
               ]
             }

@@ -18,30 +18,36 @@ public record UpdateHookEndpointRequest
     [JsonIgnore]
     public required string EndpointId { get; set; }
 
+    [Optional]
     [JsonPropertyName("url")]
     public string? Url { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    public Optional<string?> Description { get; set; }
 
     /// <summary>
     /// Event types delivered to this endpoint (existing, unarchived ones). An empty array means every type, including ones added later.
     /// </summary>
+    [Optional]
     [JsonPropertyName("filter_types")]
     public IEnumerable<string>? FilterTypes { get; set; }
 
     /// <summary>
     /// At most this many requests per second to this endpoint.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("rate_limit_per_second")]
-    public int? RateLimitPerSecond { get; set; }
+    public Optional<int?> RateLimitPerSecond { get; set; }
 
     /// <summary>
     /// Your own key-value pairs (at most 16; keys up to 40 characters, values up to 500).
     /// </summary>
+    [Optional]
     [JsonPropertyName("metadata")]
     public Dictionary<string, string>? Metadata { get; set; }
 
+    [Optional]
     [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
 

@@ -20,27 +20,32 @@ public record DomainDmarc : IJsonOnDeserialized
     /// <summary>
     /// Where the domain's DMARC aggregate reports go (`rua=mailto:…`). `null` when this deployment doesn't receive email.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("report_address")]
     public string? ReportAddress { get; set; }
 
+    [Nullable]
     [JsonPropertyName("record")]
     public DmarcPublishedRecord? Record { get; set; }
 
     /// <summary>
     /// The policy receivers apply: the record's `p` (`none` when it has none), or for a subdomain without a record of its own, its organizational domain's `sp` (else `p`).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("policy")]
     public DomainDmarcPolicy? Policy { get; set; }
 
     /// <summary>
     /// The organizational domain whose DMARC record applies, when this domain publishes none of its own.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("inherited_from")]
     public string? InheritedFrom { get; set; }
 
     /// <summary>
     /// When a DNS check first saw the current policy.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("policy_since")]
     public DateTime? PolicySince { get; set; }
 
@@ -71,6 +76,7 @@ public record DomainDmarc : IJsonOnDeserialized
     /// <summary>
     /// The next step: `publish` a first record, `add_reporting` (send reports to coss.com), `complete_rollout` (drop `pct`/`t=y`) or `tighten` to the next policy. `null` at `p=reject`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("next")]
     public DomainDmarcNext? Next { get; set; }
 

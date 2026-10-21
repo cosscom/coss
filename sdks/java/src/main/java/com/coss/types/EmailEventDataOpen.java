@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,26 +23,27 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = EmailEventDataOpen.Builder.class)
 public final class EmailEventDataOpen {
-    private final Optional<String> userAgent;
+    private final OptionalNullable<String> userAgent;
 
     private final Map<String, Object> additionalProperties;
 
-    private EmailEventDataOpen(Optional<String> userAgent, Map<String, Object> additionalProperties) {
+    private EmailEventDataOpen(OptionalNullable<String> userAgent, Map<String, Object> additionalProperties) {
         this.userAgent = userAgent;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getUserAgent() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_agent")
+    public OptionalNullable<String> getUserAgent() {
         if (userAgent == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userAgent;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_agent")
-    private Optional<String> _getUserAgent() {
+    private OptionalNullable<String> _getUserAgent() {
         return userAgent;
     }
 
@@ -77,7 +78,7 @@ public final class EmailEventDataOpen {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> userAgent = Optional.empty();
+        private OptionalNullable<String> userAgent = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -90,23 +91,32 @@ public final class EmailEventDataOpen {
         }
 
         @JsonSetter(value = "user_agent", nulls = Nulls.SKIP)
-        public Builder userAgent(Optional<String> userAgent) {
+        public Builder userAgent(OptionalNullable<String> userAgent) {
             this.userAgent = userAgent;
             return this;
         }
 
         public Builder userAgent(String userAgent) {
-            this.userAgent = Optional.ofNullable(userAgent);
+            this.userAgent = OptionalNullable.of(userAgent);
+            return this;
+        }
+
+        public Builder userAgent(Optional<String> userAgent) {
+            if (userAgent.isPresent()) {
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            } else {
+                this.userAgent = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder userAgent(Nullable<String> userAgent) {
             if (userAgent.isNull()) {
-                this.userAgent = null;
+                this.userAgent = OptionalNullable.ofNull();
             } else if (userAgent.isEmpty()) {
-                this.userAgent = Optional.empty();
+                this.userAgent = OptionalNullable.absent();
             } else {
-                this.userAgent = Optional.of(userAgent.get());
+                this.userAgent = OptionalNullable.of(userAgent.get());
             }
             return this;
         }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,15 +29,15 @@ import org.jetbrains.annotations.NotNull;
 public final class ReceivedEmailWebhookEventData {
     private final String receivedEmailId;
 
-    private final Optional<String> from;
+    private final OptionalNullable<String> from;
 
     private final List<String> to;
 
     private final List<String> recipients;
 
-    private final Optional<String> subject;
+    private final OptionalNullable<String> subject;
 
-    private final Optional<String> messageId;
+    private final OptionalNullable<String> messageId;
 
     private final long attachmentCount;
 
@@ -55,11 +55,11 @@ public final class ReceivedEmailWebhookEventData {
 
     private ReceivedEmailWebhookEventData(
             String receivedEmailId,
-            Optional<String> from,
+            OptionalNullable<String> from,
             List<String> to,
             List<String> recipients,
-            Optional<String> subject,
-            Optional<String> messageId,
+            OptionalNullable<String> subject,
+            OptionalNullable<String> messageId,
             long attachmentCount,
             long size,
             boolean spam,
@@ -87,10 +87,11 @@ public final class ReceivedEmailWebhookEventData {
         return receivedEmailId;
     }
 
-    @JsonIgnore
-    public Optional<String> getFrom() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("from")
+    public OptionalNullable<String> getFrom() {
         if (from == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return from;
     }
@@ -105,18 +106,20 @@ public final class ReceivedEmailWebhookEventData {
         return recipients;
     }
 
-    @JsonIgnore
-    public Optional<String> getSubject() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subject")
+    public OptionalNullable<String> getSubject() {
         if (subject == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return subject;
     }
 
-    @JsonIgnore
-    public Optional<String> getMessageId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("message_id")
+    public OptionalNullable<String> getMessageId() {
         if (messageId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return messageId;
     }
@@ -153,19 +156,19 @@ public final class ReceivedEmailWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("from")
-    private Optional<String> _getFrom() {
+    private OptionalNullable<String> _getFrom() {
         return from;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("subject")
-    private Optional<String> _getSubject() {
+    private OptionalNullable<String> _getSubject() {
         return subject;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("message_id")
-    private Optional<String> _getMessageId() {
+    private OptionalNullable<String> _getMessageId() {
         return messageId;
     }
 
@@ -258,9 +261,11 @@ public final class ReceivedEmailWebhookEventData {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage from(Optional<String> from);
+        _FinalStage from(OptionalNullable<String> from);
 
         _FinalStage from(String from);
+
+        _FinalStage from(Optional<String> from);
 
         _FinalStage from(Nullable<String> from);
 
@@ -276,15 +281,19 @@ public final class ReceivedEmailWebhookEventData {
 
         _FinalStage addAllRecipients(List<String> recipients);
 
-        _FinalStage subject(Optional<String> subject);
+        _FinalStage subject(OptionalNullable<String> subject);
 
         _FinalStage subject(String subject);
 
+        _FinalStage subject(Optional<String> subject);
+
         _FinalStage subject(Nullable<String> subject);
 
-        _FinalStage messageId(Optional<String> messageId);
+        _FinalStage messageId(OptionalNullable<String> messageId);
 
         _FinalStage messageId(String messageId);
+
+        _FinalStage messageId(Optional<String> messageId);
 
         _FinalStage messageId(Nullable<String> messageId);
     }
@@ -313,15 +322,15 @@ public final class ReceivedEmailWebhookEventData {
 
         private OffsetDateTime receivedAt;
 
-        private Optional<String> messageId = Optional.empty();
+        private OptionalNullable<String> messageId = OptionalNullable.absent();
 
-        private Optional<String> subject = Optional.empty();
+        private OptionalNullable<String> subject = OptionalNullable.absent();
 
         private List<String> recipients = new ArrayList<>();
 
         private List<String> to = new ArrayList<>();
 
-        private Optional<String> from = Optional.empty();
+        private OptionalNullable<String> from = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -397,24 +406,34 @@ public final class ReceivedEmailWebhookEventData {
         @java.lang.Override
         public _FinalStage messageId(Nullable<String> messageId) {
             if (messageId.isNull()) {
-                this.messageId = null;
+                this.messageId = OptionalNullable.ofNull();
             } else if (messageId.isEmpty()) {
-                this.messageId = Optional.empty();
+                this.messageId = OptionalNullable.absent();
             } else {
-                this.messageId = Optional.of(messageId.get());
+                this.messageId = OptionalNullable.of(messageId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage messageId(Optional<String> messageId) {
+            if (messageId.isPresent()) {
+                this.messageId = OptionalNullable.of(messageId.get());
+            } else {
+                this.messageId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage messageId(String messageId) {
-            this.messageId = Optional.ofNullable(messageId);
+            this.messageId = OptionalNullable.of(messageId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "message_id", nulls = Nulls.SKIP)
-        public _FinalStage messageId(Optional<String> messageId) {
+        public _FinalStage messageId(OptionalNullable<String> messageId) {
             this.messageId = messageId;
             return this;
         }
@@ -422,24 +441,34 @@ public final class ReceivedEmailWebhookEventData {
         @java.lang.Override
         public _FinalStage subject(Nullable<String> subject) {
             if (subject.isNull()) {
-                this.subject = null;
+                this.subject = OptionalNullable.ofNull();
             } else if (subject.isEmpty()) {
-                this.subject = Optional.empty();
+                this.subject = OptionalNullable.absent();
             } else {
-                this.subject = Optional.of(subject.get());
+                this.subject = OptionalNullable.of(subject.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage subject(Optional<String> subject) {
+            if (subject.isPresent()) {
+                this.subject = OptionalNullable.of(subject.get());
+            } else {
+                this.subject = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage subject(String subject) {
-            this.subject = Optional.ofNullable(subject);
+            this.subject = OptionalNullable.of(subject);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "subject", nulls = Nulls.SKIP)
-        public _FinalStage subject(Optional<String> subject) {
+        public _FinalStage subject(OptionalNullable<String> subject) {
             this.subject = subject;
             return this;
         }
@@ -495,24 +524,34 @@ public final class ReceivedEmailWebhookEventData {
         @java.lang.Override
         public _FinalStage from(Nullable<String> from) {
             if (from.isNull()) {
-                this.from = null;
+                this.from = OptionalNullable.ofNull();
             } else if (from.isEmpty()) {
-                this.from = Optional.empty();
+                this.from = OptionalNullable.absent();
             } else {
-                this.from = Optional.of(from.get());
+                this.from = OptionalNullable.of(from.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage from(Optional<String> from) {
+            if (from.isPresent()) {
+                this.from = OptionalNullable.of(from.get());
+            } else {
+                this.from = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage from(String from) {
-            this.from = Optional.ofNullable(from);
+            this.from = OptionalNullable.of(from);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "from", nulls = Nulls.SKIP)
-        public _FinalStage from(Optional<String> from) {
+        public _FinalStage from(OptionalNullable<String> from) {
             this.from = from;
             return this;
         }

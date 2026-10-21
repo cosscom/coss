@@ -20,6 +20,7 @@ public record AccountWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("previous_status")]
     public required AccountWebhookEventDataPreviousStatus PreviousStatus { get; set; }
 
+    [Nullable]
     [JsonPropertyName("reason")]
     public string? Reason { get; set; }
 

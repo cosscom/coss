@@ -20,27 +20,34 @@ public record DmarcPublishedRecord : IJsonOnDeserialized
     [JsonPropertyName("value")]
     public required string Value { get; set; }
 
+    [Nullable]
     [JsonPropertyName("p")]
     public DmarcPublishedRecordP? P { get; set; }
 
+    [Nullable]
     [JsonPropertyName("sp")]
     public DmarcPublishedRecordSp? Sp { get; set; }
 
+    [Nullable]
     [JsonPropertyName("np")]
     public DmarcPublishedRecordNp? Np { get; set; }
 
+    [Nullable]
     [JsonPropertyName("adkim")]
     public DmarcPublishedRecordAdkim? Adkim { get; set; }
 
+    [Nullable]
     [JsonPropertyName("aspf")]
     public DmarcPublishedRecordAspf? Aspf { get; set; }
 
     /// <summary>
     /// Removed by RFC 9989 but still honored by many receivers.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("pct")]
     public long? Pct { get; set; }
 
+    [Nullable]
     [JsonPropertyName("t")]
     public DmarcPublishedRecordT? T { get; set; }
 

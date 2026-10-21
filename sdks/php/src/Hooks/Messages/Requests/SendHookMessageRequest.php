@@ -36,6 +36,9 @@ class SendHookMessageRequest extends JsonSerializableType
         array $values,
     ) {
         $this->idempotencyKey = $values['idempotencyKey'] ?? null;
+        if (array_key_exists('idempotencyKey', $values)) {
+            $this->_setField('idempotencyKey');
+        }
         $this->eventType = $values['eventType'];
         $this->payload = $values['payload'];
     }

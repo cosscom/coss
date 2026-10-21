@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,13 +35,13 @@ public final class HookAttempt {
 
     private final OffsetDateTime attemptedAt;
 
-    private final Optional<Long> statusCode;
+    private final OptionalNullable<Long> statusCode;
 
     private final long durationMs;
 
-    private final Optional<String> error;
+    private final OptionalNullable<String> error;
 
-    private final Optional<String> responseExcerpt;
+    private final OptionalNullable<String> responseExcerpt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -51,10 +51,10 @@ public final class HookAttempt {
             String deliveryId,
             String endpointId,
             OffsetDateTime attemptedAt,
-            Optional<Long> statusCode,
+            OptionalNullable<Long> statusCode,
             long durationMs,
-            Optional<String> error,
-            Optional<String> responseExcerpt,
+            OptionalNullable<String> error,
+            OptionalNullable<String> responseExcerpt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -96,10 +96,11 @@ public final class HookAttempt {
     /**
      * @return The endpoint's HTTP status; <code>null</code> when no response arrived.
      */
-    @JsonIgnore
-    public Optional<Long> getStatusCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("status_code")
+    public OptionalNullable<Long> getStatusCode() {
         if (statusCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return statusCode;
     }
@@ -109,10 +110,11 @@ public final class HookAttempt {
         return durationMs;
     }
 
-    @JsonIgnore
-    public Optional<String> getError() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("error")
+    public OptionalNullable<String> getError() {
         if (error == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return error;
     }
@@ -120,29 +122,30 @@ public final class HookAttempt {
     /**
      * @return At most 1 KB of the response body, as text.
      */
-    @JsonIgnore
-    public Optional<String> getResponseExcerpt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("response_excerpt")
+    public OptionalNullable<String> getResponseExcerpt() {
         if (responseExcerpt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return responseExcerpt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("status_code")
-    private Optional<Long> _getStatusCode() {
+    private OptionalNullable<Long> _getStatusCode() {
         return statusCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("error")
-    private Optional<String> _getError() {
+    private OptionalNullable<String> _getError() {
         return error;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("response_excerpt")
-    private Optional<String> _getResponseExcerpt() {
+    private OptionalNullable<String> _getResponseExcerpt() {
         return responseExcerpt;
     }
 
@@ -228,24 +231,30 @@ public final class HookAttempt {
         /**
          * <p>The endpoint's HTTP status; <code>null</code> when no response arrived.</p>
          */
-        _FinalStage statusCode(Optional<Long> statusCode);
+        _FinalStage statusCode(OptionalNullable<Long> statusCode);
 
         _FinalStage statusCode(Long statusCode);
 
+        _FinalStage statusCode(Optional<Long> statusCode);
+
         _FinalStage statusCode(Nullable<Long> statusCode);
 
-        _FinalStage error(Optional<String> error);
+        _FinalStage error(OptionalNullable<String> error);
 
         _FinalStage error(String error);
+
+        _FinalStage error(Optional<String> error);
 
         _FinalStage error(Nullable<String> error);
 
         /**
          * <p>At most 1 KB of the response body, as text.</p>
          */
-        _FinalStage responseExcerpt(Optional<String> responseExcerpt);
+        _FinalStage responseExcerpt(OptionalNullable<String> responseExcerpt);
 
         _FinalStage responseExcerpt(String responseExcerpt);
+
+        _FinalStage responseExcerpt(Optional<String> responseExcerpt);
 
         _FinalStage responseExcerpt(Nullable<String> responseExcerpt);
     }
@@ -271,11 +280,11 @@ public final class HookAttempt {
 
         private long durationMs;
 
-        private Optional<String> responseExcerpt = Optional.empty();
+        private OptionalNullable<String> responseExcerpt = OptionalNullable.absent();
 
-        private Optional<String> error = Optional.empty();
+        private OptionalNullable<String> error = OptionalNullable.absent();
 
-        private Optional<Long> statusCode = Optional.empty();
+        private OptionalNullable<Long> statusCode = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -345,11 +354,25 @@ public final class HookAttempt {
         @java.lang.Override
         public _FinalStage responseExcerpt(Nullable<String> responseExcerpt) {
             if (responseExcerpt.isNull()) {
-                this.responseExcerpt = null;
+                this.responseExcerpt = OptionalNullable.ofNull();
             } else if (responseExcerpt.isEmpty()) {
-                this.responseExcerpt = Optional.empty();
+                this.responseExcerpt = OptionalNullable.absent();
             } else {
-                this.responseExcerpt = Optional.of(responseExcerpt.get());
+                this.responseExcerpt = OptionalNullable.of(responseExcerpt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>At most 1 KB of the response body, as text.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage responseExcerpt(Optional<String> responseExcerpt) {
+            if (responseExcerpt.isPresent()) {
+                this.responseExcerpt = OptionalNullable.of(responseExcerpt.get());
+            } else {
+                this.responseExcerpt = OptionalNullable.absent();
             }
             return this;
         }
@@ -360,7 +383,7 @@ public final class HookAttempt {
          */
         @java.lang.Override
         public _FinalStage responseExcerpt(String responseExcerpt) {
-            this.responseExcerpt = Optional.ofNullable(responseExcerpt);
+            this.responseExcerpt = OptionalNullable.of(responseExcerpt);
             return this;
         }
 
@@ -369,7 +392,7 @@ public final class HookAttempt {
          */
         @java.lang.Override
         @JsonSetter(value = "response_excerpt", nulls = Nulls.SKIP)
-        public _FinalStage responseExcerpt(Optional<String> responseExcerpt) {
+        public _FinalStage responseExcerpt(OptionalNullable<String> responseExcerpt) {
             this.responseExcerpt = responseExcerpt;
             return this;
         }
@@ -377,24 +400,34 @@ public final class HookAttempt {
         @java.lang.Override
         public _FinalStage error(Nullable<String> error) {
             if (error.isNull()) {
-                this.error = null;
+                this.error = OptionalNullable.ofNull();
             } else if (error.isEmpty()) {
-                this.error = Optional.empty();
+                this.error = OptionalNullable.absent();
             } else {
-                this.error = Optional.of(error.get());
+                this.error = OptionalNullable.of(error.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage error(Optional<String> error) {
+            if (error.isPresent()) {
+                this.error = OptionalNullable.of(error.get());
+            } else {
+                this.error = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage error(String error) {
-            this.error = Optional.ofNullable(error);
+            this.error = OptionalNullable.of(error);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "error", nulls = Nulls.SKIP)
-        public _FinalStage error(Optional<String> error) {
+        public _FinalStage error(OptionalNullable<String> error) {
             this.error = error;
             return this;
         }
@@ -406,11 +439,25 @@ public final class HookAttempt {
         @java.lang.Override
         public _FinalStage statusCode(Nullable<Long> statusCode) {
             if (statusCode.isNull()) {
-                this.statusCode = null;
+                this.statusCode = OptionalNullable.ofNull();
             } else if (statusCode.isEmpty()) {
-                this.statusCode = Optional.empty();
+                this.statusCode = OptionalNullable.absent();
             } else {
-                this.statusCode = Optional.of(statusCode.get());
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The endpoint's HTTP status; <code>null</code> when no response arrived.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage statusCode(Optional<Long> statusCode) {
+            if (statusCode.isPresent()) {
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            } else {
+                this.statusCode = OptionalNullable.absent();
             }
             return this;
         }
@@ -421,7 +468,7 @@ public final class HookAttempt {
          */
         @java.lang.Override
         public _FinalStage statusCode(Long statusCode) {
-            this.statusCode = Optional.ofNullable(statusCode);
+            this.statusCode = OptionalNullable.of(statusCode);
             return this;
         }
 
@@ -430,7 +477,7 @@ public final class HookAttempt {
          */
         @java.lang.Override
         @JsonSetter(value = "status_code", nulls = Nulls.SKIP)
-        public _FinalStage statusCode(Optional<Long> statusCode) {
+        public _FinalStage statusCode(OptionalNullable<Long> statusCode) {
             this.statusCode = statusCode;
             return this;
         }

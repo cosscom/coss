@@ -22,5 +22,8 @@ class PublishEmailTemplateRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->revision = $values['revision'] ?? null;
+        if (array_key_exists('revision', $values)) {
+            $this->_setField('revision');
+        }
     }
 }

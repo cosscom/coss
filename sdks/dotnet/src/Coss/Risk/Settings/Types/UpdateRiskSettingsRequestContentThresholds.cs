@@ -15,17 +15,21 @@ public record UpdateRiskSettingsRequestContentThresholds : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable, Optional]
     [JsonPropertyName("spam")]
-    public double? Spam { get; set; }
+    public Optional<double?> Spam { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("phishing")]
-    public double? Phishing { get; set; }
+    public Optional<double?> Phishing { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("malware")]
-    public double? Malware { get; set; }
+    public Optional<double?> Malware { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("fraud")]
-    public double? Fraud { get; set; }
+    public Optional<double?> Fraud { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

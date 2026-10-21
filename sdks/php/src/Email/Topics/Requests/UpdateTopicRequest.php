@@ -52,9 +52,24 @@ class UpdateTopicRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->defaultSubscription = $values['defaultSubscription'] ?? null;
+        if (array_key_exists('defaultSubscription', $values)) {
+            $this->_setField('defaultSubscription');
+        }
         $this->visibility = $values['visibility'] ?? null;
+        if (array_key_exists('visibility', $values)) {
+            $this->_setField('visibility');
+        }
         $this->position = $values['position'] ?? null;
+        if (array_key_exists('position', $values)) {
+            $this->_setField('position');
+        }
     }
 }

@@ -46,9 +46,21 @@ class BillingLimits extends JsonSerializableType
         array $values = [],
     ) {
         $this->domains = $values['domains'] ?? null;
+        if (array_key_exists('domains', $values)) {
+            $this->_setField('domains');
+        }
         $this->members = $values['members'] ?? null;
+        if (array_key_exists('members', $values)) {
+            $this->_setField('members');
+        }
         $this->webhookEndpointsPerEnvironment = $values['webhookEndpointsPerEnvironment'] ?? null;
+        if (array_key_exists('webhookEndpointsPerEnvironment', $values)) {
+            $this->_setField('webhookEndpointsPerEnvironment');
+        }
         $this->contactsPerEnvironment = $values['contactsPerEnvironment'] ?? null;
+        if (array_key_exists('contactsPerEnvironment', $values)) {
+            $this->_setField('contactsPerEnvironment');
+        }
     }
 
     /**

@@ -101,16 +101,52 @@ class UpdateBroadcastRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
         $this->segmentId = $values['segmentId'] ?? null;
+        if (array_key_exists('segmentId', $values)) {
+            $this->_setField('segmentId');
+        }
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->replyTo = $values['replyTo'] ?? null;
+        if (array_key_exists('replyTo', $values)) {
+            $this->_setField('replyTo');
+        }
         $this->subject = $values['subject'] ?? null;
+        if (array_key_exists('subject', $values)) {
+            $this->_setField('subject');
+        }
         $this->previewText = $values['previewText'] ?? null;
+        if (array_key_exists('previewText', $values)) {
+            $this->_setField('previewText');
+        }
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
         $this->tracking = $values['tracking'] ?? null;
+        if (array_key_exists('tracking', $values)) {
+            $this->_setField('tracking');
+        }
         $this->ratePerSecond = $values['ratePerSecond'] ?? null;
+        if (array_key_exists('ratePerSecond', $values)) {
+            $this->_setField('ratePerSecond');
+        }
     }
 }

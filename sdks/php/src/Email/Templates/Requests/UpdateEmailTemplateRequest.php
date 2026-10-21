@@ -36,7 +36,16 @@ class UpdateEmailTemplateRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->alias = $values['alias'] ?? null;
+        if (array_key_exists('alias', $values)) {
+            $this->_setField('alias');
+        }
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
     }
 }

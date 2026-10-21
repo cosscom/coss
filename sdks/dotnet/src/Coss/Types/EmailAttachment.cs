@@ -23,6 +23,7 @@ public record EmailAttachment : IJsonOnDeserialized
     /// <summary>
     /// Set for inline attachments (`cid:` references).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("content_id")]
     public string? ContentId { get; set; }
 

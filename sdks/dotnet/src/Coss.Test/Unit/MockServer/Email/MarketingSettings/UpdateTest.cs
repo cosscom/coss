@@ -13,7 +13,15 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "display_name": null,
+              "mailing_address": null,
+              "confirmation_from": null,
+              "confirmation_subject": null,
+              "confirmation_html": null,
+              "confirmation_text": null,
+              "confirmed_redirect_url": null
+            }
             """;
 
         const string mockResponse = """
@@ -78,6 +86,9 @@ public class UpdateTest : BaseMockServerTest
               "mailing_address": "Acme Inc., 548 Market St, San Francisco, CA 94104, USA",
               "double_opt_in_default": true,
               "confirmation_from": "Acme <news@acme.com>",
+              "confirmation_subject": null,
+              "confirmation_html": null,
+              "confirmation_text": null,
               "confirmed_redirect_url": "https://acme.com/welcome"
             }
             """;

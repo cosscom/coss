@@ -78,9 +78,15 @@ class RiskSettings extends JsonSerializableType
         $this->blockThreshold = $values['blockThreshold'];
         $this->disabledReasons = $values['disabledReasons'];
         $this->captcha = $values['captcha'] ?? null;
+        if (array_key_exists('captcha', $values)) {
+            $this->_setField('captcha');
+        }
         $this->contentThresholds = $values['contentThresholds'];
         $this->reasonWeights = $values['reasonWeights'];
         $this->updatedAt = $values['updatedAt'] ?? null;
+        if (array_key_exists('updatedAt', $values)) {
+            $this->_setField('updatedAt');
+        }
     }
 
     /**

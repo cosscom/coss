@@ -35,18 +35,22 @@ public record HookDelivery : IJsonOnDeserialized
     [JsonPropertyName("attempt_count")]
     public required long AttemptCount { get; set; }
 
+    [Nullable]
     [JsonPropertyName("next_attempt_at")]
     public DateTime? NextAttemptAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_status_code")]
     public long? LastStatusCode { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_error")]
     public string? LastError { get; set; }
 
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("finished_at")]
     public DateTime? FinishedAt { get; set; }
 

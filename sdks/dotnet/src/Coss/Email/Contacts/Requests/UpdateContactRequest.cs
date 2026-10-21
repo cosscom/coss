@@ -13,24 +13,29 @@ public record UpdateContactRequest
     [JsonIgnore]
     public required string Id { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("first_name")]
-    public string? FirstName { get; set; }
+    public Optional<string?> FirstName { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("last_name")]
-    public string? LastName { get; set; }
+    public Optional<string?> LastName { get; set; }
 
     /// <summary>
     /// Custom properties by key (define them first, see contact properties). Merged into the contact's existing properties; `null` removes one.
     /// </summary>
+    [Optional]
     [JsonPropertyName("properties")]
     public Dictionary<string, OneOf<string, double, bool>?>? Properties { get; set; }
 
     /// <summary>
     /// Sets the contact's consent. Omitted, a new contact is `subscribed` and an existing one keeps its status.
     /// </summary>
+    [Optional]
     [JsonPropertyName("status")]
     public UpdateContactRequestStatus? Status { get; set; }
 
+    [Optional]
     [JsonPropertyName("topics")]
     public IEnumerable<UpdateContactRequestTopicsItem>? Topics { get; set; }
 

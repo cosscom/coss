@@ -23,21 +23,25 @@ public record Reputation : IJsonOnDeserialized
     /// <summary>
     /// The trigger behind a `warning` or `suspended` status.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("reason")]
     public string? Reason { get; set; }
 
+    [Nullable]
     [JsonPropertyName("status_changed_at")]
     public DateTime? StatusChangedAt { get; set; }
 
     /// <summary>
     /// When the checks below were computed; `null` before the first evaluation.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("evaluated_at")]
     public DateTime? EvaluatedAt { get; set; }
 
     /// <summary>
     /// The period the checks cover (live environments only).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("window")]
     public ReputationWindow? Window { get; set; }
 

@@ -10,6 +10,7 @@ use Coss\Email\Requests\SendEmailBody;
 use Coss\Exceptions\CossApiException;
 use Coss\Types\SendEmailRequest;
 use Coss\WebhookEndpoints\Requests\CreateWebhookEndpointRequest;
+use Coss\WebhookEndpoints\Requests\UpdateWebhookEndpointRequest;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
@@ -112,5 +113,16 @@ final class ClientBehaviourTest extends TestCase
         } catch (CossApiException) {
         }
         $this->assertCount(1, $api->requests);
+    }
+
+    public function testSendsAnExplicitNullAndLeavesOmittedFieldsOut(): void
+    {
+        $api = new FakeApi();
+        try {
+            self::client($api)->webhookEndpoints->update('we_1', new UpdateWebhookEndpointRequest(['description' => null]));
+        } catch (\Throwable) {
+            // The fake answers with an email, not an endpoint: only the request matters here.
+        }
+        $this->assertSame('{"description":null}', (string) $api->requests[0]->getBody());
     }
 }

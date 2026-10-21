@@ -44,8 +44,20 @@ class UpdateRiskLimitBucketRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->periodSeconds = $values['periodSeconds'] ?? null;
+        if (array_key_exists('periodSeconds', $values)) {
+            $this->_setField('periodSeconds');
+        }
         $this->burst = $values['burst'] ?? null;
+        if (array_key_exists('burst', $values)) {
+            $this->_setField('burst');
+        }
         $this->onFailure = $values['onFailure'] ?? null;
+        if (array_key_exists('onFailure', $values)) {
+            $this->_setField('onFailure');
+        }
     }
 }

@@ -32,12 +32,14 @@ public record Credit : IJsonOnDeserialized
     /// <summary>
     /// What a `units` credit covers.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("meter")]
     public CreditMeter? Meter { get; set; }
 
     /// <summary>
     /// What an `amount` credit pays for (`null`: any usage).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("meters")]
     public IEnumerable<CreditMetersItem>? Meters { get; set; }
 
@@ -56,9 +58,11 @@ public record Credit : IJsonOnDeserialized
     [JsonPropertyName("effective_at")]
     public required DateTime EffectiveAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("expires_at")]
     public DateTime? ExpiresAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("voided_at")]
     public DateTime? VoidedAt { get; set; }
 

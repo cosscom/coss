@@ -21,6 +21,7 @@ public record SegmentFilterConditionsItemConditionsConditionsItemProperty : IJso
     /// <summary>
     /// A list for `in`/`not_in`; none for `exists`/`not_exists`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("value")]
     public OneOf<
         string,

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +37,7 @@ public final class SmsNumber {
 
     private final SmsNumberStatus status;
 
-    private final Optional<SmsNumberRegistrationStatus> registrationStatus;
+    private final OptionalNullable<SmsNumberRegistrationStatus> registrationStatus;
 
     private final boolean canSend;
 
@@ -54,7 +54,7 @@ public final class SmsNumber {
             SmsNumberKind kind,
             String country,
             SmsNumberStatus status,
-            Optional<SmsNumberRegistrationStatus> registrationStatus,
+            OptionalNullable<SmsNumberRegistrationStatus> registrationStatus,
             boolean canSend,
             boolean receivesHere,
             OffsetDateTime createdAt,
@@ -105,10 +105,11 @@ public final class SmsNumber {
     /**
      * @return Its carrier registration's status; live sends need <code>approved</code>.
      */
-    @JsonIgnore
-    public Optional<SmsNumberRegistrationStatus> getRegistrationStatus() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("registration_status")
+    public OptionalNullable<SmsNumberRegistrationStatus> getRegistrationStatus() {
         if (registrationStatus == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return registrationStatus;
     }
@@ -136,7 +137,7 @@ public final class SmsNumber {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("registration_status")
-    private Optional<SmsNumberRegistrationStatus> _getRegistrationStatus() {
+    private OptionalNullable<SmsNumberRegistrationStatus> _getRegistrationStatus() {
         return registrationStatus;
     }
 
@@ -242,9 +243,11 @@ public final class SmsNumber {
         /**
          * <p>Its carrier registration's status; live sends need <code>approved</code>.</p>
          */
-        _FinalStage registrationStatus(Optional<SmsNumberRegistrationStatus> registrationStatus);
+        _FinalStage registrationStatus(OptionalNullable<SmsNumberRegistrationStatus> registrationStatus);
 
         _FinalStage registrationStatus(SmsNumberRegistrationStatus registrationStatus);
+
+        _FinalStage registrationStatus(Optional<SmsNumberRegistrationStatus> registrationStatus);
 
         _FinalStage registrationStatus(Nullable<SmsNumberRegistrationStatus> registrationStatus);
     }
@@ -279,7 +282,7 @@ public final class SmsNumber {
 
         private OffsetDateTime createdAt;
 
-        private Optional<SmsNumberRegistrationStatus> registrationStatus = Optional.empty();
+        private OptionalNullable<SmsNumberRegistrationStatus> registrationStatus = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -379,11 +382,25 @@ public final class SmsNumber {
         @java.lang.Override
         public _FinalStage registrationStatus(Nullable<SmsNumberRegistrationStatus> registrationStatus) {
             if (registrationStatus.isNull()) {
-                this.registrationStatus = null;
+                this.registrationStatus = OptionalNullable.ofNull();
             } else if (registrationStatus.isEmpty()) {
-                this.registrationStatus = Optional.empty();
+                this.registrationStatus = OptionalNullable.absent();
             } else {
-                this.registrationStatus = Optional.of(registrationStatus.get());
+                this.registrationStatus = OptionalNullable.of(registrationStatus.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Its carrier registration's status; live sends need <code>approved</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage registrationStatus(Optional<SmsNumberRegistrationStatus> registrationStatus) {
+            if (registrationStatus.isPresent()) {
+                this.registrationStatus = OptionalNullable.of(registrationStatus.get());
+            } else {
+                this.registrationStatus = OptionalNullable.absent();
             }
             return this;
         }
@@ -394,7 +411,7 @@ public final class SmsNumber {
          */
         @java.lang.Override
         public _FinalStage registrationStatus(SmsNumberRegistrationStatus registrationStatus) {
-            this.registrationStatus = Optional.ofNullable(registrationStatus);
+            this.registrationStatus = OptionalNullable.of(registrationStatus);
             return this;
         }
 
@@ -403,7 +420,7 @@ public final class SmsNumber {
          */
         @java.lang.Override
         @JsonSetter(value = "registration_status", nulls = Nulls.SKIP)
-        public _FinalStage registrationStatus(Optional<SmsNumberRegistrationStatus> registrationStatus) {
+        public _FinalStage registrationStatus(OptionalNullable<SmsNumberRegistrationStatus> registrationStatus) {
             this.registrationStatus = registrationStatus;
             return this;
         }

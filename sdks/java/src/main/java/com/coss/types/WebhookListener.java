@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +35,7 @@ public final class WebhookListener {
 
     private final List<String> eventTypes;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final OffsetDateTime expiresAt;
 
@@ -48,7 +48,7 @@ public final class WebhookListener {
             String id,
             String apiVersion,
             List<String> eventTypes,
-            Optional<String> description,
+            OptionalNullable<String> description,
             OffsetDateTime expiresAt,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
@@ -88,10 +88,11 @@ public final class WebhookListener {
         return eventTypes;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -111,7 +112,7 @@ public final class WebhookListener {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
@@ -201,9 +202,11 @@ public final class WebhookListener {
 
         _FinalStage addAllEventTypes(List<String> eventTypes);
 
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
+
+        _FinalStage description(Optional<String> description);
 
         _FinalStage description(Nullable<String> description);
     }
@@ -221,7 +224,7 @@ public final class WebhookListener {
 
         private OffsetDateTime createdAt;
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         private List<String> eventTypes = new ArrayList<>();
 
@@ -288,24 +291,34 @@ public final class WebhookListener {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }

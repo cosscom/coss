@@ -70,9 +70,21 @@ class CreateRiskRuleRequest extends JsonSerializableType
     ) {
         $this->name = $values['name'];
         $this->enabled = $values['enabled'] ?? null;
+        if (array_key_exists('enabled', $values)) {
+            $this->_setField('enabled');
+        }
         $this->position = $values['position'] ?? null;
+        if (array_key_exists('position', $values)) {
+            $this->_setField('position');
+        }
         $this->events = $values['events'] ?? null;
+        if (array_key_exists('events', $values)) {
+            $this->_setField('events');
+        }
         $this->match = $values['match'] ?? null;
+        if (array_key_exists('match', $values)) {
+            $this->_setField('match');
+        }
         $this->conditions = $values['conditions'];
         $this->action = $values['action'];
     }

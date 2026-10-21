@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +35,7 @@ public final class Suppression {
 
     private final SuppressionReason reason;
 
-    private final Optional<String> emailId;
+    private final OptionalNullable<String> emailId;
 
     private final OffsetDateTime createdAt;
 
@@ -47,7 +47,7 @@ public final class Suppression {
             String address,
             String scope,
             SuppressionReason reason,
-            Optional<String> emailId,
+            OptionalNullable<String> emailId,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -97,10 +97,11 @@ public final class Suppression {
     /**
      * @return The email whose bounce or complaint added this entry.
      */
-    @JsonIgnore
-    public Optional<String> getEmailId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email_id")
+    public OptionalNullable<String> getEmailId() {
         if (emailId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailId;
     }
@@ -112,7 +113,7 @@ public final class Suppression {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email_id")
-    private Optional<String> _getEmailId() {
+    private OptionalNullable<String> _getEmailId() {
         return emailId;
     }
 
@@ -196,9 +197,11 @@ public final class Suppression {
         /**
          * <p>The email whose bounce or complaint added this entry.</p>
          */
-        _FinalStage emailId(Optional<String> emailId);
+        _FinalStage emailId(OptionalNullable<String> emailId);
 
         _FinalStage emailId(String emailId);
+
+        _FinalStage emailId(Optional<String> emailId);
 
         _FinalStage emailId(Nullable<String> emailId);
     }
@@ -218,7 +221,7 @@ public final class Suppression {
 
         private OffsetDateTime createdAt;
 
-        private Optional<String> emailId = Optional.empty();
+        private OptionalNullable<String> emailId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -298,11 +301,25 @@ public final class Suppression {
         @java.lang.Override
         public _FinalStage emailId(Nullable<String> emailId) {
             if (emailId.isNull()) {
-                this.emailId = null;
+                this.emailId = OptionalNullable.ofNull();
             } else if (emailId.isEmpty()) {
-                this.emailId = Optional.empty();
+                this.emailId = OptionalNullable.absent();
             } else {
-                this.emailId = Optional.of(emailId.get());
+                this.emailId = OptionalNullable.of(emailId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The email whose bounce or complaint added this entry.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage emailId(Optional<String> emailId) {
+            if (emailId.isPresent()) {
+                this.emailId = OptionalNullable.of(emailId.get());
+            } else {
+                this.emailId = OptionalNullable.absent();
             }
             return this;
         }
@@ -313,7 +330,7 @@ public final class Suppression {
          */
         @java.lang.Override
         public _FinalStage emailId(String emailId) {
-            this.emailId = Optional.ofNullable(emailId);
+            this.emailId = OptionalNullable.of(emailId);
             return this;
         }
 
@@ -322,7 +339,7 @@ public final class Suppression {
          */
         @java.lang.Override
         @JsonSetter(value = "email_id", nulls = Nulls.SKIP)
-        public _FinalStage emailId(Optional<String> emailId) {
+        public _FinalStage emailId(OptionalNullable<String> emailId) {
             this.emailId = emailId;
             return this;
         }

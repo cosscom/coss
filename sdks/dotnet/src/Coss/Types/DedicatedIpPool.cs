@@ -33,21 +33,25 @@ public record DedicatedIpPool : IJsonOnDeserialized
     /// <summary>
     /// Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (`null`: fewer than 1,000).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("dedicated_share")]
     public double? DedicatedShare { get; set; }
 
     /// <summary>
     /// What is holding the pool up, if anything.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("message")]
     public string? Message { get; set; }
 
+    [Nullable]
     [JsonPropertyName("created_at")]
     public DateTime? CreatedAt { get; set; }
 
     /// <summary>
     /// When it was first `ready`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("ready_at")]
     public DateTime? ReadyAt { get; set; }
 

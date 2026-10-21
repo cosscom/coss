@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,16 +27,16 @@ import org.jetbrains.annotations.NotNull;
 public final class EmailEventDataDelay {
     private final String type;
 
-    private final Optional<OffsetDateTime> expiresAt;
+    private final OptionalNullable<OffsetDateTime> expiresAt;
 
-    private final Optional<String> diagnosticCode;
+    private final OptionalNullable<String> diagnosticCode;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailEventDataDelay(
             String type,
-            Optional<OffsetDateTime> expiresAt,
-            Optional<String> diagnosticCode,
+            OptionalNullable<OffsetDateTime> expiresAt,
+            OptionalNullable<String> diagnosticCode,
             Map<String, Object> additionalProperties) {
         this.type = type;
         this.expiresAt = expiresAt;
@@ -49,31 +49,33 @@ public final class EmailEventDataDelay {
         return type;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getExpiresAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("expires_at")
+    public OptionalNullable<OffsetDateTime> getExpiresAt() {
         if (expiresAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return expiresAt;
     }
 
-    @JsonIgnore
-    public Optional<String> getDiagnosticCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("diagnostic_code")
+    public OptionalNullable<String> getDiagnosticCode() {
         if (diagnosticCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return diagnosticCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("expires_at")
-    private Optional<OffsetDateTime> _getExpiresAt() {
+    private OptionalNullable<OffsetDateTime> _getExpiresAt() {
         return expiresAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("diagnostic_code")
-    private Optional<String> _getDiagnosticCode() {
+    private OptionalNullable<String> _getDiagnosticCode() {
         return diagnosticCode;
     }
 
@@ -121,15 +123,19 @@ public final class EmailEventDataDelay {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
+        _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt);
 
         _FinalStage expiresAt(OffsetDateTime expiresAt);
 
+        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
+
         _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt);
 
-        _FinalStage diagnosticCode(Optional<String> diagnosticCode);
+        _FinalStage diagnosticCode(OptionalNullable<String> diagnosticCode);
 
         _FinalStage diagnosticCode(String diagnosticCode);
+
+        _FinalStage diagnosticCode(Optional<String> diagnosticCode);
 
         _FinalStage diagnosticCode(Nullable<String> diagnosticCode);
     }
@@ -138,9 +144,9 @@ public final class EmailEventDataDelay {
     public static final class Builder implements TypeStage, _FinalStage {
         private String type;
 
-        private Optional<String> diagnosticCode = Optional.empty();
+        private OptionalNullable<String> diagnosticCode = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> expiresAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> expiresAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -165,24 +171,34 @@ public final class EmailEventDataDelay {
         @java.lang.Override
         public _FinalStage diagnosticCode(Nullable<String> diagnosticCode) {
             if (diagnosticCode.isNull()) {
-                this.diagnosticCode = null;
+                this.diagnosticCode = OptionalNullable.ofNull();
             } else if (diagnosticCode.isEmpty()) {
-                this.diagnosticCode = Optional.empty();
+                this.diagnosticCode = OptionalNullable.absent();
             } else {
-                this.diagnosticCode = Optional.of(diagnosticCode.get());
+                this.diagnosticCode = OptionalNullable.of(diagnosticCode.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage diagnosticCode(Optional<String> diagnosticCode) {
+            if (diagnosticCode.isPresent()) {
+                this.diagnosticCode = OptionalNullable.of(diagnosticCode.get());
+            } else {
+                this.diagnosticCode = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage diagnosticCode(String diagnosticCode) {
-            this.diagnosticCode = Optional.ofNullable(diagnosticCode);
+            this.diagnosticCode = OptionalNullable.of(diagnosticCode);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "diagnostic_code", nulls = Nulls.SKIP)
-        public _FinalStage diagnosticCode(Optional<String> diagnosticCode) {
+        public _FinalStage diagnosticCode(OptionalNullable<String> diagnosticCode) {
             this.diagnosticCode = diagnosticCode;
             return this;
         }
@@ -190,24 +206,34 @@ public final class EmailEventDataDelay {
         @java.lang.Override
         public _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt) {
             if (expiresAt.isNull()) {
-                this.expiresAt = null;
+                this.expiresAt = OptionalNullable.ofNull();
             } else if (expiresAt.isEmpty()) {
-                this.expiresAt = Optional.empty();
+                this.expiresAt = OptionalNullable.absent();
             } else {
-                this.expiresAt = Optional.of(expiresAt.get());
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+            if (expiresAt.isPresent()) {
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            } else {
+                this.expiresAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage expiresAt(OffsetDateTime expiresAt) {
-            this.expiresAt = Optional.ofNullable(expiresAt);
+            this.expiresAt = OptionalNullable.of(expiresAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "expires_at", nulls = Nulls.SKIP)
-        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+        public _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt) {
             this.expiresAt = expiresAt;
             return this;
         }

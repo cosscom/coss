@@ -127,16 +127,40 @@ class AuditEvent extends JsonSerializableType
         $this->createdAt = $values['createdAt'];
         $this->actorType = $values['actorType'];
         $this->actorId = $values['actorId'] ?? null;
+        if (array_key_exists('actorId', $values)) {
+            $this->_setField('actorId');
+        }
         $this->actorLabel = $values['actorLabel'];
         $this->action = $values['action'];
         $this->targetType = $values['targetType'] ?? null;
+        if (array_key_exists('targetType', $values)) {
+            $this->_setField('targetType');
+        }
         $this->targetId = $values['targetId'] ?? null;
+        if (array_key_exists('targetId', $values)) {
+            $this->_setField('targetId');
+        }
         $this->targetLabel = $values['targetLabel'] ?? null;
+        if (array_key_exists('targetLabel', $values)) {
+            $this->_setField('targetLabel');
+        }
         $this->projectId = $values['projectId'] ?? null;
+        if (array_key_exists('projectId', $values)) {
+            $this->_setField('projectId');
+        }
         $this->environmentId = $values['environmentId'] ?? null;
+        if (array_key_exists('environmentId', $values)) {
+            $this->_setField('environmentId');
+        }
         $this->metadata = $values['metadata'];
         $this->clientIp = $values['clientIp'] ?? null;
+        if (array_key_exists('clientIp', $values)) {
+            $this->_setField('clientIp');
+        }
         $this->userAgent = $values['userAgent'] ?? null;
+        if (array_key_exists('userAgent', $values)) {
+            $this->_setField('userAgent');
+        }
     }
 
     /**

@@ -23,6 +23,7 @@ public record ReceivedEmail : IJsonOnDeserialized
     [JsonPropertyName("status")]
     public required ReceivedEmailStatus Status { get; set; }
 
+    [Nullable]
     [JsonPropertyName("blocked_reason")]
     public ReceivedEmailBlockedReason? BlockedReason { get; set; }
 
@@ -41,6 +42,7 @@ public record ReceivedEmail : IJsonOnDeserialized
     /// <summary>
     /// The `From` header.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("from")]
     public string? From { get; set; }
 
@@ -56,12 +58,14 @@ public record ReceivedEmail : IJsonOnDeserialized
     [JsonPropertyName("cc")]
     public IEnumerable<string> Cc { get; set; } = new List<string>();
 
+    [Nullable]
     [JsonPropertyName("subject")]
     public string? Subject { get; set; }
 
     /// <summary>
     /// The `Message-ID` header.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("message_id")]
     public string? MessageId { get; set; }
 
@@ -96,6 +100,7 @@ public record ReceivedEmail : IJsonOnDeserialized
     [JsonPropertyName("reply_to")]
     public IEnumerable<string> ReplyTo { get; set; } = new List<string>();
 
+    [Nullable]
     [JsonPropertyName("in_reply_to")]
     public string? InReplyTo { get; set; }
 
@@ -108,6 +113,7 @@ public record ReceivedEmail : IJsonOnDeserialized
     /// <summary>
     /// The `Date` header, when valid.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("sent_at")]
     public DateTime? SentAt { get; set; }
 
@@ -118,9 +124,11 @@ public record ReceivedEmail : IJsonOnDeserialized
     public IEnumerable<ReceivedEmailHeadersItem> Headers { get; set; } =
         new List<ReceivedEmailHeadersItem>();
 
+    [Nullable]
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 
+    [Nullable]
     [JsonPropertyName("html")]
     public string? Html { get; set; }
 

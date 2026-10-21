@@ -27,21 +27,25 @@ public record TemplateVariableInput : IJsonOnDeserialized
     /// <summary>
     /// Sends must pass it unless it has a `default`. Defaults to true.
     /// </summary>
+    [Optional]
     [JsonPropertyName("required")]
     public bool? Required { get; set; }
 
     /// <summary>
     /// Used when a send leaves it out. Not for lists.
     /// </summary>
+    [Optional]
     [JsonPropertyName("default")]
     public OneOf<string, double, bool>? Default { get; set; }
 
+    [Optional]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
     /// <summary>
     /// A list's item fields (required for lists, only for lists).
     /// </summary>
+    [Optional]
     [JsonPropertyName("fields")]
     public IEnumerable<TemplateVariableInputFieldsItem>? Fields { get; set; }
 

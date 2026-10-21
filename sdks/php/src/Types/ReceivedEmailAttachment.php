@@ -58,8 +58,14 @@ class ReceivedEmailAttachment extends JsonSerializableType
     ) {
         $this->id = $values['id'];
         $this->filename = $values['filename'] ?? null;
+        if (array_key_exists('filename', $values)) {
+            $this->_setField('filename');
+        }
         $this->contentType = $values['contentType'];
         $this->contentId = $values['contentId'] ?? null;
+        if (array_key_exists('contentId', $values)) {
+            $this->_setField('contentId');
+        }
         $this->disposition = $values['disposition'];
         $this->size = $values['size'];
     }

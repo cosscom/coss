@@ -91,6 +91,9 @@ class Topic extends JsonSerializableType
         $this->key = $values['key'];
         $this->name = $values['name'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->defaultSubscription = $values['defaultSubscription'];
         $this->visibility = $values['visibility'];
         $this->position = $values['position'];

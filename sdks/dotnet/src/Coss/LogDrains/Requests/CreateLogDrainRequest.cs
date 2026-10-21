@@ -15,12 +15,14 @@ public record CreateLogDrainRequest
     /// <summary>
     /// A note for your own reference. `null` clears it.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    public Optional<string?> Description { get; set; }
 
     /// <summary>
     /// What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source.
     /// </summary>
+    [Optional]
     [JsonPropertyName("sources")]
     public IEnumerable<LogDrainSource>? Sources { get; set; }
 

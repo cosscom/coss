@@ -100,6 +100,9 @@ class DmarcReportRecord extends JsonSerializableType
         $this->dmarcPass = $values['dmarcPass'];
         $this->headerFrom = $values['headerFrom'];
         $this->envelopeFrom = $values['envelopeFrom'] ?? null;
+        if (array_key_exists('envelopeFrom', $values)) {
+            $this->_setField('envelopeFrom');
+        }
         $this->viaCoss = $values['viaCoss'];
         $this->authResults = $values['authResults'];
         $this->reasons = $values['reasons'];

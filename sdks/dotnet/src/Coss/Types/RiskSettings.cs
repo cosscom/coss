@@ -36,6 +36,7 @@ public record RiskSettings : IJsonOnDeserialized
     /// <summary>
     /// The captcha provider assessments verify tokens with (never the secret).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("captcha")]
     public RiskSettingsCaptcha? Captcha { get; set; }
 
@@ -54,6 +55,7 @@ public record RiskSettings : IJsonOnDeserialized
     /// <summary>
     /// `null` while on the defaults.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("updated_at")]
     public DateTime? UpdatedAt { get; set; }
 

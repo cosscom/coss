@@ -48,6 +48,9 @@ class EmailRecipient extends JsonSerializableType
         $this->type = $values['type'];
         $this->status = $values['status'];
         $this->lastEventAt = $values['lastEventAt'] ?? null;
+        if (array_key_exists('lastEventAt', $values)) {
+            $this->_setField('lastEventAt');
+        }
     }
 
     /**

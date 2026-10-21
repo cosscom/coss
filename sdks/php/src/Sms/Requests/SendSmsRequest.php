@@ -60,10 +60,19 @@ class SendSmsRequest extends JsonSerializableType
         array $values,
     ) {
         $this->idempotencyKey = $values['idempotencyKey'] ?? null;
+        if (array_key_exists('idempotencyKey', $values)) {
+            $this->_setField('idempotencyKey');
+        }
         $this->from = $values['from'];
         $this->to = $values['to'];
         $this->body = $values['body'];
         $this->tags = $values['tags'] ?? null;
+        if (array_key_exists('tags', $values)) {
+            $this->_setField('tags');
+        }
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
     }
 }

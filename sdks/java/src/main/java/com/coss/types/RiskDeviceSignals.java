@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,26 +27,26 @@ public final class RiskDeviceSignals {
 
     private final boolean automation;
 
-    private final Optional<String> timezone;
+    private final OptionalNullable<String> timezone;
 
-    private final Optional<String> language;
+    private final OptionalNullable<String> language;
 
-    private final Optional<String> platform;
+    private final OptionalNullable<String> platform;
 
-    private final Optional<String> screen;
+    private final OptionalNullable<String> screen;
 
-    private final Optional<Boolean> touch;
+    private final OptionalNullable<Boolean> touch;
 
     private final Map<String, Object> additionalProperties;
 
     private RiskDeviceSignals(
             boolean valid,
             boolean automation,
-            Optional<String> timezone,
-            Optional<String> language,
-            Optional<String> platform,
-            Optional<String> screen,
-            Optional<Boolean> touch,
+            OptionalNullable<String> timezone,
+            OptionalNullable<String> language,
+            OptionalNullable<String> platform,
+            OptionalNullable<String> screen,
+            OptionalNullable<Boolean> touch,
             Map<String, Object> additionalProperties) {
         this.valid = valid;
         this.automation = automation;
@@ -77,10 +77,11 @@ public final class RiskDeviceSignals {
     /**
      * @return IANA time zone (<code>Europe/London</code>).
      */
-    @JsonIgnore
-    public Optional<String> getTimezone() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("timezone")
+    public OptionalNullable<String> getTimezone() {
         if (timezone == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return timezone;
     }
@@ -88,18 +89,20 @@ public final class RiskDeviceSignals {
     /**
      * @return The browser's first language.
      */
-    @JsonIgnore
-    public Optional<String> getLanguage() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("language")
+    public OptionalNullable<String> getLanguage() {
         if (language == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return language;
     }
 
-    @JsonIgnore
-    public Optional<String> getPlatform() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("platform")
+    public OptionalNullable<String> getPlatform() {
         if (platform == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return platform;
     }
@@ -107,49 +110,51 @@ public final class RiskDeviceSignals {
     /**
      * @return <code>&lt;width&gt;x&lt;height&gt;</code> in CSS pixels.
      */
-    @JsonIgnore
-    public Optional<String> getScreen() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("screen")
+    public OptionalNullable<String> getScreen() {
         if (screen == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return screen;
     }
 
-    @JsonIgnore
-    public Optional<Boolean> getTouch() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("touch")
+    public OptionalNullable<Boolean> getTouch() {
         if (touch == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return touch;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("timezone")
-    private Optional<String> _getTimezone() {
+    private OptionalNullable<String> _getTimezone() {
         return timezone;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("language")
-    private Optional<String> _getLanguage() {
+    private OptionalNullable<String> _getLanguage() {
         return language;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("platform")
-    private Optional<String> _getPlatform() {
+    private OptionalNullable<String> _getPlatform() {
         return platform;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("screen")
-    private Optional<String> _getScreen() {
+    private OptionalNullable<String> _getScreen() {
         return screen;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("touch")
-    private Optional<Boolean> _getTouch() {
+    private OptionalNullable<Boolean> _getTouch() {
         return touch;
     }
 
@@ -215,39 +220,49 @@ public final class RiskDeviceSignals {
         /**
          * <p>IANA time zone (<code>Europe/London</code>).</p>
          */
-        _FinalStage timezone(Optional<String> timezone);
+        _FinalStage timezone(OptionalNullable<String> timezone);
 
         _FinalStage timezone(String timezone);
+
+        _FinalStage timezone(Optional<String> timezone);
 
         _FinalStage timezone(Nullable<String> timezone);
 
         /**
          * <p>The browser's first language.</p>
          */
-        _FinalStage language(Optional<String> language);
+        _FinalStage language(OptionalNullable<String> language);
 
         _FinalStage language(String language);
 
+        _FinalStage language(Optional<String> language);
+
         _FinalStage language(Nullable<String> language);
 
-        _FinalStage platform(Optional<String> platform);
+        _FinalStage platform(OptionalNullable<String> platform);
 
         _FinalStage platform(String platform);
+
+        _FinalStage platform(Optional<String> platform);
 
         _FinalStage platform(Nullable<String> platform);
 
         /**
          * <p><code>&lt;width&gt;x&lt;height&gt;</code> in CSS pixels.</p>
          */
-        _FinalStage screen(Optional<String> screen);
+        _FinalStage screen(OptionalNullable<String> screen);
 
         _FinalStage screen(String screen);
 
+        _FinalStage screen(Optional<String> screen);
+
         _FinalStage screen(Nullable<String> screen);
 
-        _FinalStage touch(Optional<Boolean> touch);
+        _FinalStage touch(OptionalNullable<Boolean> touch);
 
         _FinalStage touch(Boolean touch);
+
+        _FinalStage touch(Optional<Boolean> touch);
 
         _FinalStage touch(Nullable<Boolean> touch);
     }
@@ -258,15 +273,15 @@ public final class RiskDeviceSignals {
 
         private boolean automation;
 
-        private Optional<Boolean> touch = Optional.empty();
+        private OptionalNullable<Boolean> touch = OptionalNullable.absent();
 
-        private Optional<String> screen = Optional.empty();
+        private OptionalNullable<String> screen = OptionalNullable.absent();
 
-        private Optional<String> platform = Optional.empty();
+        private OptionalNullable<String> platform = OptionalNullable.absent();
 
-        private Optional<String> language = Optional.empty();
+        private OptionalNullable<String> language = OptionalNullable.absent();
 
-        private Optional<String> timezone = Optional.empty();
+        private OptionalNullable<String> timezone = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -310,24 +325,34 @@ public final class RiskDeviceSignals {
         @java.lang.Override
         public _FinalStage touch(Nullable<Boolean> touch) {
             if (touch.isNull()) {
-                this.touch = null;
+                this.touch = OptionalNullable.ofNull();
             } else if (touch.isEmpty()) {
-                this.touch = Optional.empty();
+                this.touch = OptionalNullable.absent();
             } else {
-                this.touch = Optional.of(touch.get());
+                this.touch = OptionalNullable.of(touch.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage touch(Optional<Boolean> touch) {
+            if (touch.isPresent()) {
+                this.touch = OptionalNullable.of(touch.get());
+            } else {
+                this.touch = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage touch(Boolean touch) {
-            this.touch = Optional.ofNullable(touch);
+            this.touch = OptionalNullable.of(touch);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "touch", nulls = Nulls.SKIP)
-        public _FinalStage touch(Optional<Boolean> touch) {
+        public _FinalStage touch(OptionalNullable<Boolean> touch) {
             this.touch = touch;
             return this;
         }
@@ -339,11 +364,25 @@ public final class RiskDeviceSignals {
         @java.lang.Override
         public _FinalStage screen(Nullable<String> screen) {
             if (screen.isNull()) {
-                this.screen = null;
+                this.screen = OptionalNullable.ofNull();
             } else if (screen.isEmpty()) {
-                this.screen = Optional.empty();
+                this.screen = OptionalNullable.absent();
             } else {
-                this.screen = Optional.of(screen.get());
+                this.screen = OptionalNullable.of(screen.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>&lt;width&gt;x&lt;height&gt;</code> in CSS pixels.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage screen(Optional<String> screen) {
+            if (screen.isPresent()) {
+                this.screen = OptionalNullable.of(screen.get());
+            } else {
+                this.screen = OptionalNullable.absent();
             }
             return this;
         }
@@ -354,7 +393,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         public _FinalStage screen(String screen) {
-            this.screen = Optional.ofNullable(screen);
+            this.screen = OptionalNullable.of(screen);
             return this;
         }
 
@@ -363,7 +402,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "screen", nulls = Nulls.SKIP)
-        public _FinalStage screen(Optional<String> screen) {
+        public _FinalStage screen(OptionalNullable<String> screen) {
             this.screen = screen;
             return this;
         }
@@ -371,24 +410,34 @@ public final class RiskDeviceSignals {
         @java.lang.Override
         public _FinalStage platform(Nullable<String> platform) {
             if (platform.isNull()) {
-                this.platform = null;
+                this.platform = OptionalNullable.ofNull();
             } else if (platform.isEmpty()) {
-                this.platform = Optional.empty();
+                this.platform = OptionalNullable.absent();
             } else {
-                this.platform = Optional.of(platform.get());
+                this.platform = OptionalNullable.of(platform.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage platform(Optional<String> platform) {
+            if (platform.isPresent()) {
+                this.platform = OptionalNullable.of(platform.get());
+            } else {
+                this.platform = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage platform(String platform) {
-            this.platform = Optional.ofNullable(platform);
+            this.platform = OptionalNullable.of(platform);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "platform", nulls = Nulls.SKIP)
-        public _FinalStage platform(Optional<String> platform) {
+        public _FinalStage platform(OptionalNullable<String> platform) {
             this.platform = platform;
             return this;
         }
@@ -400,11 +449,25 @@ public final class RiskDeviceSignals {
         @java.lang.Override
         public _FinalStage language(Nullable<String> language) {
             if (language.isNull()) {
-                this.language = null;
+                this.language = OptionalNullable.ofNull();
             } else if (language.isEmpty()) {
-                this.language = Optional.empty();
+                this.language = OptionalNullable.absent();
             } else {
-                this.language = Optional.of(language.get());
+                this.language = OptionalNullable.of(language.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The browser's first language.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage language(Optional<String> language) {
+            if (language.isPresent()) {
+                this.language = OptionalNullable.of(language.get());
+            } else {
+                this.language = OptionalNullable.absent();
             }
             return this;
         }
@@ -415,7 +478,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         public _FinalStage language(String language) {
-            this.language = Optional.ofNullable(language);
+            this.language = OptionalNullable.of(language);
             return this;
         }
 
@@ -424,7 +487,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "language", nulls = Nulls.SKIP)
-        public _FinalStage language(Optional<String> language) {
+        public _FinalStage language(OptionalNullable<String> language) {
             this.language = language;
             return this;
         }
@@ -436,11 +499,25 @@ public final class RiskDeviceSignals {
         @java.lang.Override
         public _FinalStage timezone(Nullable<String> timezone) {
             if (timezone.isNull()) {
-                this.timezone = null;
+                this.timezone = OptionalNullable.ofNull();
             } else if (timezone.isEmpty()) {
-                this.timezone = Optional.empty();
+                this.timezone = OptionalNullable.absent();
             } else {
-                this.timezone = Optional.of(timezone.get());
+                this.timezone = OptionalNullable.of(timezone.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>IANA time zone (<code>Europe/London</code>).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage timezone(Optional<String> timezone) {
+            if (timezone.isPresent()) {
+                this.timezone = OptionalNullable.of(timezone.get());
+            } else {
+                this.timezone = OptionalNullable.absent();
             }
             return this;
         }
@@ -451,7 +528,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         public _FinalStage timezone(String timezone) {
-            this.timezone = Optional.ofNullable(timezone);
+            this.timezone = OptionalNullable.of(timezone);
             return this;
         }
 
@@ -460,7 +537,7 @@ public final class RiskDeviceSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "timezone", nulls = Nulls.SKIP)
-        public _FinalStage timezone(Optional<String> timezone) {
+        public _FinalStage timezone(OptionalNullable<String> timezone) {
             this.timezone = timezone;
             return this;
         }

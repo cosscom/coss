@@ -20,6 +20,7 @@ public record RenderedEmailTemplate : IJsonOnDeserialized
     /// <summary>
     /// The version rendered; `null` for the draft.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("version")]
     public long? Version { get; set; }
 
@@ -32,9 +33,11 @@ public record RenderedEmailTemplate : IJsonOnDeserialized
     [JsonPropertyName("subject")]
     public required string Subject { get; set; }
 
+    [Nullable]
     [JsonPropertyName("html")]
     public string? Html { get; set; }
 
+    [Nullable]
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 

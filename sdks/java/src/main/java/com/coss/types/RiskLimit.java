@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,7 +36,7 @@ public final class RiskLimit {
 
     private final long resetMs;
 
-    private final Optional<Long> retryAfterMs;
+    private final OptionalNullable<Long> retryAfterMs;
 
     private final boolean degraded;
 
@@ -49,7 +49,7 @@ public final class RiskLimit {
             long limit,
             long remaining,
             long resetMs,
-            Optional<Long> retryAfterMs,
+            OptionalNullable<Long> retryAfterMs,
             boolean degraded,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -108,10 +108,11 @@ public final class RiskLimit {
     /**
      * @return When denied: milliseconds until the same request would be allowed; <code>null</code> when it never would (<code>cost</code> above the bucket's size). 0 when allowed.
      */
-    @JsonIgnore
-    public Optional<Long> getRetryAfterMs() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("retry_after_ms")
+    public OptionalNullable<Long> getRetryAfterMs() {
         if (retryAfterMs == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return retryAfterMs;
     }
@@ -126,7 +127,7 @@ public final class RiskLimit {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("retry_after_ms")
-    private Optional<Long> _getRetryAfterMs() {
+    private OptionalNullable<Long> _getRetryAfterMs() {
         return retryAfterMs;
     }
 
@@ -229,9 +230,11 @@ public final class RiskLimit {
         /**
          * <p>When denied: milliseconds until the same request would be allowed; <code>null</code> when it never would (<code>cost</code> above the bucket's size). 0 when allowed.</p>
          */
-        _FinalStage retryAfterMs(Optional<Long> retryAfterMs);
+        _FinalStage retryAfterMs(OptionalNullable<Long> retryAfterMs);
 
         _FinalStage retryAfterMs(Long retryAfterMs);
+
+        _FinalStage retryAfterMs(Optional<Long> retryAfterMs);
 
         _FinalStage retryAfterMs(Nullable<Long> retryAfterMs);
     }
@@ -260,7 +263,7 @@ public final class RiskLimit {
 
         private boolean degraded;
 
-        private Optional<Long> retryAfterMs = Optional.empty();
+        private OptionalNullable<Long> retryAfterMs = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -356,11 +359,25 @@ public final class RiskLimit {
         @java.lang.Override
         public _FinalStage retryAfterMs(Nullable<Long> retryAfterMs) {
             if (retryAfterMs.isNull()) {
-                this.retryAfterMs = null;
+                this.retryAfterMs = OptionalNullable.ofNull();
             } else if (retryAfterMs.isEmpty()) {
-                this.retryAfterMs = Optional.empty();
+                this.retryAfterMs = OptionalNullable.absent();
             } else {
-                this.retryAfterMs = Optional.of(retryAfterMs.get());
+                this.retryAfterMs = OptionalNullable.of(retryAfterMs.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When denied: milliseconds until the same request would be allowed; <code>null</code> when it never would (<code>cost</code> above the bucket's size). 0 when allowed.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage retryAfterMs(Optional<Long> retryAfterMs) {
+            if (retryAfterMs.isPresent()) {
+                this.retryAfterMs = OptionalNullable.of(retryAfterMs.get());
+            } else {
+                this.retryAfterMs = OptionalNullable.absent();
             }
             return this;
         }
@@ -371,7 +388,7 @@ public final class RiskLimit {
          */
         @java.lang.Override
         public _FinalStage retryAfterMs(Long retryAfterMs) {
-            this.retryAfterMs = Optional.ofNullable(retryAfterMs);
+            this.retryAfterMs = OptionalNullable.of(retryAfterMs);
             return this;
         }
 
@@ -380,7 +397,7 @@ public final class RiskLimit {
          */
         @java.lang.Override
         @JsonSetter(value = "retry_after_ms", nulls = Nulls.SKIP)
-        public _FinalStage retryAfterMs(Optional<Long> retryAfterMs) {
+        public _FinalStage retryAfterMs(OptionalNullable<Long> retryAfterMs) {
             this.retryAfterMs = retryAfterMs;
             return this;
         }

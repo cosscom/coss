@@ -178,22 +178,73 @@ class SendEmailRequest extends JsonSerializableType
         $this->from = $values['from'];
         $this->to = $values['to'];
         $this->cc = $values['cc'] ?? null;
+        if (array_key_exists('cc', $values)) {
+            $this->_setField('cc');
+        }
         $this->bcc = $values['bcc'] ?? null;
+        if (array_key_exists('bcc', $values)) {
+            $this->_setField('bcc');
+        }
         $this->replyTo = $values['replyTo'] ?? null;
+        if (array_key_exists('replyTo', $values)) {
+            $this->_setField('replyTo');
+        }
         $this->subject = $values['subject'] ?? null;
+        if (array_key_exists('subject', $values)) {
+            $this->_setField('subject');
+        }
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
         $this->templateId = $values['templateId'] ?? null;
+        if (array_key_exists('templateId', $values)) {
+            $this->_setField('templateId');
+        }
         $this->templateVersion = $values['templateVersion'] ?? null;
+        if (array_key_exists('templateVersion', $values)) {
+            $this->_setField('templateVersion');
+        }
         $this->locale = $values['locale'] ?? null;
+        if (array_key_exists('locale', $values)) {
+            $this->_setField('locale');
+        }
         $this->variables = $values['variables'] ?? null;
+        if (array_key_exists('variables', $values)) {
+            $this->_setField('variables');
+        }
         $this->headers = $values['headers'] ?? null;
+        if (array_key_exists('headers', $values)) {
+            $this->_setField('headers');
+        }
         $this->tags = $values['tags'] ?? null;
+        if (array_key_exists('tags', $values)) {
+            $this->_setField('tags');
+        }
         $this->category = $values['category'] ?? null;
+        if (array_key_exists('category', $values)) {
+            $this->_setField('category');
+        }
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
         $this->attachments = $values['attachments'] ?? null;
+        if (array_key_exists('attachments', $values)) {
+            $this->_setField('attachments');
+        }
         $this->tracking = $values['tracking'] ?? null;
+        if (array_key_exists('tracking', $values)) {
+            $this->_setField('tracking');
+        }
         $this->stream = $values['stream'] ?? null;
+        if (array_key_exists('stream', $values)) {
+            $this->_setField('stream');
+        }
     }
 
     /**

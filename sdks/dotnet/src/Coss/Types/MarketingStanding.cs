@@ -20,9 +20,11 @@ public record MarketingStanding : IJsonOnDeserialized
     /// <summary>
     /// The trigger behind a pause.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("reason")]
     public string? Reason { get; set; }
 
+    [Nullable]
     [JsonPropertyName("paused_at")]
     public DateTime? PausedAt { get; set; }
 

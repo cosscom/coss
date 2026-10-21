@@ -88,6 +88,9 @@ class HookEndpointRecovery extends JsonSerializableType
         $this->requeued = $values['requeued'];
         $this->createdAt = $values['createdAt'];
         $this->completedAt = $values['completedAt'] ?? null;
+        if (array_key_exists('completedAt', $values)) {
+            $this->_setField('completedAt');
+        }
     }
 
     /**

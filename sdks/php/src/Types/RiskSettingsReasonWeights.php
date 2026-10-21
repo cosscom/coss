@@ -347,52 +347,193 @@ class RiskSettingsReasonWeights extends JsonSerializableType
         array $values = [],
     ) {
         $this->emailInvalid = $values['emailInvalid'] ?? null;
+        if (array_key_exists('emailInvalid', $values)) {
+            $this->_setField('emailInvalid');
+        }
         $this->emailDisposable = $values['emailDisposable'] ?? null;
+        if (array_key_exists('emailDisposable', $values)) {
+            $this->_setField('emailDisposable');
+        }
         $this->emailUndeliverable = $values['emailUndeliverable'] ?? null;
+        if (array_key_exists('emailUndeliverable', $values)) {
+            $this->_setField('emailUndeliverable');
+        }
         $this->emailRoleAccount = $values['emailRoleAccount'] ?? null;
+        if (array_key_exists('emailRoleAccount', $values)) {
+            $this->_setField('emailRoleAccount');
+        }
         $this->emailTypo = $values['emailTypo'] ?? null;
+        if (array_key_exists('emailTypo', $values)) {
+            $this->_setField('emailTypo');
+        }
         $this->emailDomainNew = $values['emailDomainNew'] ?? null;
+        if (array_key_exists('emailDomainNew', $values)) {
+            $this->_setField('emailDomainNew');
+        }
         $this->ipTor = $values['ipTor'] ?? null;
+        if (array_key_exists('ipTor', $values)) {
+            $this->_setField('ipTor');
+        }
         $this->ipVpnNetwork = $values['ipVpnNetwork'] ?? null;
+        if (array_key_exists('ipVpnNetwork', $values)) {
+            $this->_setField('ipVpnNetwork');
+        }
         $this->ipHostingProvider = $values['ipHostingProvider'] ?? null;
+        if (array_key_exists('ipHostingProvider', $values)) {
+            $this->_setField('ipHostingProvider');
+        }
         $this->ipVpn = $values['ipVpn'] ?? null;
+        if (array_key_exists('ipVpn', $values)) {
+            $this->_setField('ipVpn');
+        }
         $this->ipProxy = $values['ipProxy'] ?? null;
+        if (array_key_exists('ipProxy', $values)) {
+            $this->_setField('ipProxy');
+        }
         $this->ipRelay = $values['ipRelay'] ?? null;
+        if (array_key_exists('ipRelay', $values)) {
+            $this->_setField('ipRelay');
+        }
         $this->ipPrivate = $values['ipPrivate'] ?? null;
+        if (array_key_exists('ipPrivate', $values)) {
+            $this->_setField('ipPrivate');
+        }
         $this->velocitySignupsPerIp1H = $values['velocitySignupsPerIp1H'] ?? null;
+        if (array_key_exists('velocitySignupsPerIp1H', $values)) {
+            $this->_setField('velocitySignupsPerIp1H');
+        }
         $this->velocitySignupsPerIp24H = $values['velocitySignupsPerIp24H'] ?? null;
+        if (array_key_exists('velocitySignupsPerIp24H', $values)) {
+            $this->_setField('velocitySignupsPerIp24H');
+        }
         $this->velocitySignupsPerSubnet1H = $values['velocitySignupsPerSubnet1H'] ?? null;
+        if (array_key_exists('velocitySignupsPerSubnet1H', $values)) {
+            $this->_setField('velocitySignupsPerSubnet1H');
+        }
         $this->velocitySignupsPerEmailDomain1H = $values['velocitySignupsPerEmailDomain1H'] ?? null;
+        if (array_key_exists('velocitySignupsPerEmailDomain1H', $values)) {
+            $this->_setField('velocitySignupsPerEmailDomain1H');
+        }
         $this->velocitySignupsPerMailbox24H = $values['velocitySignupsPerMailbox24H'] ?? null;
+        if (array_key_exists('velocitySignupsPerMailbox24H', $values)) {
+            $this->_setField('velocitySignupsPerMailbox24H');
+        }
         $this->velocitySignupsPerDevice24H = $values['velocitySignupsPerDevice24H'] ?? null;
+        if (array_key_exists('velocitySignupsPerDevice24H', $values)) {
+            $this->_setField('velocitySignupsPerDevice24H');
+        }
         $this->velocityCheckoutsPerIp1H = $values['velocityCheckoutsPerIp1H'] ?? null;
+        if (array_key_exists('velocityCheckoutsPerIp1H', $values)) {
+            $this->_setField('velocityCheckoutsPerIp1H');
+        }
         $this->velocityCheckoutsPerUser1H = $values['velocityCheckoutsPerUser1H'] ?? null;
+        if (array_key_exists('velocityCheckoutsPerUser1H', $values)) {
+            $this->_setField('velocityCheckoutsPerUser1H');
+        }
         $this->velocityCheckoutsPerCard24H = $values['velocityCheckoutsPerCard24H'] ?? null;
+        if (array_key_exists('velocityCheckoutsPerCard24H', $values)) {
+            $this->_setField('velocityCheckoutsPerCard24H');
+        }
         $this->velocityLoginsPerIp1H = $values['velocityLoginsPerIp1H'] ?? null;
+        if (array_key_exists('velocityLoginsPerIp1H', $values)) {
+            $this->_setField('velocityLoginsPerIp1H');
+        }
         $this->velocityLoginsPerUser1H = $values['velocityLoginsPerUser1H'] ?? null;
+        if (array_key_exists('velocityLoginsPerUser1H', $values)) {
+            $this->_setField('velocityLoginsPerUser1H');
+        }
         $this->velocityEventsPerIp1H = $values['velocityEventsPerIp1H'] ?? null;
+        if (array_key_exists('velocityEventsPerIp1H', $values)) {
+            $this->_setField('velocityEventsPerIp1H');
+        }
         $this->velocityEventsPerUser1H = $values['velocityEventsPerUser1H'] ?? null;
+        if (array_key_exists('velocityEventsPerUser1H', $values)) {
+            $this->_setField('velocityEventsPerUser1H');
+        }
         $this->duplicateCanonicalMailbox = $values['duplicateCanonicalMailbox'] ?? null;
+        if (array_key_exists('duplicateCanonicalMailbox', $values)) {
+            $this->_setField('duplicateCanonicalMailbox');
+        }
         $this->duplicateDevice = $values['duplicateDevice'] ?? null;
+        if (array_key_exists('duplicateDevice', $values)) {
+            $this->_setField('duplicateDevice');
+        }
         $this->historyFraudMailbox = $values['historyFraudMailbox'] ?? null;
+        if (array_key_exists('historyFraudMailbox', $values)) {
+            $this->_setField('historyFraudMailbox');
+        }
         $this->historyFraudUser = $values['historyFraudUser'] ?? null;
+        if (array_key_exists('historyFraudUser', $values)) {
+            $this->_setField('historyFraudUser');
+        }
         $this->historyFraudIp = $values['historyFraudIp'] ?? null;
+        if (array_key_exists('historyFraudIp', $values)) {
+            $this->_setField('historyFraudIp');
+        }
         $this->historyFraudSubnet = $values['historyFraudSubnet'] ?? null;
+        if (array_key_exists('historyFraudSubnet', $values)) {
+            $this->_setField('historyFraudSubnet');
+        }
         $this->historyFraudCard = $values['historyFraudCard'] ?? null;
+        if (array_key_exists('historyFraudCard', $values)) {
+            $this->_setField('historyFraudCard');
+        }
         $this->historyFraudDevice = $values['historyFraudDevice'] ?? null;
+        if (array_key_exists('historyFraudDevice', $values)) {
+            $this->_setField('historyFraudDevice');
+        }
         $this->checkoutCardCountryMismatch = $values['checkoutCardCountryMismatch'] ?? null;
+        if (array_key_exists('checkoutCardCountryMismatch', $values)) {
+            $this->_setField('checkoutCardCountryMismatch');
+        }
         $this->checkoutBillingCountryMismatch = $values['checkoutBillingCountryMismatch'] ?? null;
+        if (array_key_exists('checkoutBillingCountryMismatch', $values)) {
+            $this->_setField('checkoutBillingCountryMismatch');
+        }
         $this->checkoutPrepaidCard = $values['checkoutPrepaidCard'] ?? null;
+        if (array_key_exists('checkoutPrepaidCard', $values)) {
+            $this->_setField('checkoutPrepaidCard');
+        }
         $this->deviceAutomation = $values['deviceAutomation'] ?? null;
+        if (array_key_exists('deviceAutomation', $values)) {
+            $this->_setField('deviceAutomation');
+        }
         $this->deviceInvalid = $values['deviceInvalid'] ?? null;
+        if (array_key_exists('deviceInvalid', $values)) {
+            $this->_setField('deviceInvalid');
+        }
         $this->loginNewCountry = $values['loginNewCountry'] ?? null;
+        if (array_key_exists('loginNewCountry', $values)) {
+            $this->_setField('loginNewCountry');
+        }
         $this->loginNewNetwork = $values['loginNewNetwork'] ?? null;
+        if (array_key_exists('loginNewNetwork', $values)) {
+            $this->_setField('loginNewNetwork');
+        }
         $this->captchaFailed = $values['captchaFailed'] ?? null;
+        if (array_key_exists('captchaFailed', $values)) {
+            $this->_setField('captchaFailed');
+        }
         $this->captchaMissing = $values['captchaMissing'] ?? null;
+        if (array_key_exists('captchaMissing', $values)) {
+            $this->_setField('captchaMissing');
+        }
         $this->contentSpam = $values['contentSpam'] ?? null;
+        if (array_key_exists('contentSpam', $values)) {
+            $this->_setField('contentSpam');
+        }
         $this->contentPhishing = $values['contentPhishing'] ?? null;
+        if (array_key_exists('contentPhishing', $values)) {
+            $this->_setField('contentPhishing');
+        }
         $this->contentMalware = $values['contentMalware'] ?? null;
+        if (array_key_exists('contentMalware', $values)) {
+            $this->_setField('contentMalware');
+        }
         $this->contentFraud = $values['contentFraud'] ?? null;
+        if (array_key_exists('contentFraud', $values)) {
+            $this->_setField('contentFraud');
+        }
     }
 
     /**

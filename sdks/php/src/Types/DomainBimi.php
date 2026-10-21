@@ -70,9 +70,21 @@ class DomainBimi extends JsonSerializableType
         $this->status = $values['status'];
         $this->name = $values['name'];
         $this->record = $values['record'] ?? null;
+        if (array_key_exists('record', $values)) {
+            $this->_setField('record');
+        }
         $this->logoUrl = $values['logoUrl'] ?? null;
+        if (array_key_exists('logoUrl', $values)) {
+            $this->_setField('logoUrl');
+        }
         $this->certificateUrl = $values['certificateUrl'] ?? null;
+        if (array_key_exists('certificateUrl', $values)) {
+            $this->_setField('certificateUrl');
+        }
         $this->dmarcPolicy = $values['dmarcPolicy'] ?? null;
+        if (array_key_exists('dmarcPolicy', $values)) {
+            $this->_setField('dmarcPolicy');
+        }
         $this->issues = $values['issues'];
     }
 

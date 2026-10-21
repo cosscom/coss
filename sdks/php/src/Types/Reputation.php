@@ -76,9 +76,21 @@ class Reputation extends JsonSerializableType
         $this->object = $values['object'];
         $this->status = $values['status'];
         $this->reason = $values['reason'] ?? null;
+        if (array_key_exists('reason', $values)) {
+            $this->_setField('reason');
+        }
         $this->statusChangedAt = $values['statusChangedAt'] ?? null;
+        if (array_key_exists('statusChangedAt', $values)) {
+            $this->_setField('statusChangedAt');
+        }
         $this->evaluatedAt = $values['evaluatedAt'] ?? null;
+        if (array_key_exists('evaluatedAt', $values)) {
+            $this->_setField('evaluatedAt');
+        }
         $this->window = $values['window'] ?? null;
+        if (array_key_exists('window', $values)) {
+            $this->_setField('window');
+        }
         $this->checks = $values['checks'];
         $this->marketing = $values['marketing'];
     }

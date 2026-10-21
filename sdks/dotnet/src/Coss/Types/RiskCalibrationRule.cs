@@ -38,6 +38,7 @@ public record RiskCalibrationRule : IJsonOnDeserialized
     /// <summary>
     /// `fraud / (fraud + legitimate)`: how often it was right when you told coss.com. `null` without feedback.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("precision")]
     public double? Precision { get; set; }
 

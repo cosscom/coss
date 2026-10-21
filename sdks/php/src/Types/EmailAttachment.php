@@ -53,6 +53,9 @@ class EmailAttachment extends JsonSerializableType
         $this->filename = $values['filename'];
         $this->contentType = $values['contentType'];
         $this->contentId = $values['contentId'] ?? null;
+        if (array_key_exists('contentId', $values)) {
+            $this->_setField('contentId');
+        }
         $this->size = $values['size'];
     }
 

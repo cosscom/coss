@@ -20,12 +20,14 @@ public record EnvironmentApiKey : IJsonOnDeserialized
     [JsonPropertyName("id")]
     public required string Id { get; set; }
 
+    [Nullable]
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
     /// <summary>
     /// The key's first characters, as shown in the dashboard.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("start")]
     public string? Start { get; set; }
 

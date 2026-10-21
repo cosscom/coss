@@ -29,6 +29,12 @@ class CreateHookPortalSessionRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->expiresIn = $values['expiresIn'] ?? null;
+        if (array_key_exists('expiresIn', $values)) {
+            $this->_setField('expiresIn');
+        }
         $this->readOnly = $values['readOnly'] ?? null;
+        if (array_key_exists('readOnly', $values)) {
+            $this->_setField('readOnly');
+        }
     }
 }

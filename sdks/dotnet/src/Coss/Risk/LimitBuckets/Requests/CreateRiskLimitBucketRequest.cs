@@ -27,12 +27,14 @@ public record CreateRiskLimitBucketRequest
     /// <summary>
     /// How many requests a key can make at once. Defaults to `limit`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("burst")]
     public int? Burst { get; set; }
 
     /// <summary>
     /// The answer while coss.com can't count. Defaults to `allow`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("on_failure")]
     public CreateRiskLimitBucketRequestOnFailure? OnFailure { get; set; }
 

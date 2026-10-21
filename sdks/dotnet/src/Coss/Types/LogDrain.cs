@@ -20,6 +20,7 @@ public record LogDrain : IJsonOnDeserialized
     [JsonPropertyName("url")]
     public required string Url { get; set; }
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
@@ -38,9 +39,11 @@ public record LogDrain : IJsonOnDeserialized
     /// <summary>
     /// `manual`: someone disabled it. `failing`: a batch failed every attempt, so coss.com disabled it. `null` while enabled.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("disabled_reason")]
     public LogDrainDisabledReason? DisabledReason { get; set; }
 
+    [Nullable]
     [JsonPropertyName("disabled_at")]
     public DateTime? DisabledAt { get; set; }
 

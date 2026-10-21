@@ -107,6 +107,17 @@ describe("deriveSdkSpec", () => {
     expect(derived.components.schemas.Email).toBeDefined();
   });
 
+  test("drops null from the C# union whose explicit nulls don't compile", () => {
+    const pointer = (doc: OpenApiDocument) =>
+      (
+        doc.components.schemas.CreateContactPropertyRequest as {
+          properties: { fallback: { anyOf: unknown[] } };
+        }
+      ).properties.fallback.anyOf;
+    expect(pointer(deriveSdkSpec(source, "csharp"))).not.toContainEqual({ type: "null" });
+    expect(pointer(derived)).toContainEqual({ type: "null" });
+  });
+
   test("leaves the public document unchanged", () => {
     expect(JSON.stringify(source)).not.toContain("x-fern");
   });

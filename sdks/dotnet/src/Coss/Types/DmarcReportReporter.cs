@@ -14,6 +14,7 @@ public record DmarcReportReporter : IJsonOnDeserialized
     [JsonPropertyName("org_name")]
     public required string OrgName { get; set; }
 
+    [Nullable]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 

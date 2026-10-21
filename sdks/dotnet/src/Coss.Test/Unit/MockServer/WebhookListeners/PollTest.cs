@@ -95,7 +95,8 @@ public class PollTest : BaseMockServerTest
                   "delivery_id": "whlisdel_01k7c8n2b5d7f9h1k3m5p7r9tv",
                   "ack_token": "mfz3k2a8",
                   "status_code": 200,
-                  "duration_ms": 12
+                  "duration_ms": 12,
+                  "error": null
                 }
               ],
               "wait_ms": 20000

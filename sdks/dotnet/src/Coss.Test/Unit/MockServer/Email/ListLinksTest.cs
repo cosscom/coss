@@ -69,7 +69,9 @@ public class ListLinksTest : BaseMockServerTest
                   "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
                   "position": 0,
                   "url": "https://acme.com/start",
-                  "click_count": 0
+                  "click_count": 0,
+                  "first_clicked_at": null,
+                  "last_clicked_at": null
                 }
               ],
               "has_more": false

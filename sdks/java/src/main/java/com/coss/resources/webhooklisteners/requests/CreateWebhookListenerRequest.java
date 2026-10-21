@@ -6,11 +6,11 @@ package com.coss.resources.webhooklisteners.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.webhooklisteners.types.CreateWebhookListenerRequestApiVersion;
 import com.coss.resources.webhooklisteners.types.CreateWebhookListenerRequestEventTypesItem;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,14 +30,14 @@ public final class CreateWebhookListenerRequest {
 
     private final Optional<CreateWebhookListenerRequestApiVersion> apiVersion;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final Map<String, Object> additionalProperties;
 
     private CreateWebhookListenerRequest(
             Optional<List<CreateWebhookListenerRequestEventTypesItem>> eventTypes,
             Optional<CreateWebhookListenerRequestApiVersion> apiVersion,
-            Optional<String> description,
+            OptionalNullable<String> description,
             Map<String, Object> additionalProperties) {
         this.eventTypes = eventTypes;
         this.apiVersion = apiVersion;
@@ -64,17 +64,18 @@ public final class CreateWebhookListenerRequest {
     /**
      * @return Where the events go, for your own reference (shown in the log).
      */
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
@@ -115,7 +116,7 @@ public final class CreateWebhookListenerRequest {
 
         private Optional<CreateWebhookListenerRequestApiVersion> apiVersion = Optional.empty();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -161,23 +162,32 @@ public final class CreateWebhookListenerRequest {
          * <p>Where the events go, for your own reference (shown in the log).</p>
          */
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public Builder description(Optional<String> description) {
+        public Builder description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }
 
         public Builder description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
+            return this;
+        }
+
+        public Builder description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
             }
             return this;
         }

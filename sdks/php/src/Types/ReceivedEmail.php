@@ -196,13 +196,25 @@ class ReceivedEmail extends JsonSerializableType
         $this->id = $values['id'];
         $this->status = $values['status'];
         $this->blockedReason = $values['blockedReason'] ?? null;
+        if (array_key_exists('blockedReason', $values)) {
+            $this->_setField('blockedReason');
+        }
         $this->mailFrom = $values['mailFrom'];
         $this->recipients = $values['recipients'];
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'];
         $this->cc = $values['cc'];
         $this->subject = $values['subject'] ?? null;
+        if (array_key_exists('subject', $values)) {
+            $this->_setField('subject');
+        }
         $this->messageId = $values['messageId'] ?? null;
+        if (array_key_exists('messageId', $values)) {
+            $this->_setField('messageId');
+        }
         $this->attachments = $values['attachments'];
         $this->size = $values['size'];
         $this->spam = $values['spam'];
@@ -211,11 +223,23 @@ class ReceivedEmail extends JsonSerializableType
         $this->receivedAt = $values['receivedAt'];
         $this->replyTo = $values['replyTo'];
         $this->inReplyTo = $values['inReplyTo'] ?? null;
+        if (array_key_exists('inReplyTo', $values)) {
+            $this->_setField('inReplyTo');
+        }
         $this->references = $values['references'];
         $this->sentAt = $values['sentAt'] ?? null;
+        if (array_key_exists('sentAt', $values)) {
+            $this->_setField('sentAt');
+        }
         $this->headers = $values['headers'];
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->truncated = $values['truncated'];
     }
 

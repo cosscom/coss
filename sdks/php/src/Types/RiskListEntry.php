@@ -78,7 +78,13 @@ class RiskListEntry extends JsonSerializableType
         $this->type = $values['type'];
         $this->value = $values['value'];
         $this->note = $values['note'] ?? null;
+        if (array_key_exists('note', $values)) {
+            $this->_setField('note');
+        }
         $this->expiresAt = $values['expiresAt'] ?? null;
+        if (array_key_exists('expiresAt', $values)) {
+            $this->_setField('expiresAt');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

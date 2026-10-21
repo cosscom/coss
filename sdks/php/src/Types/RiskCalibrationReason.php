@@ -75,9 +75,15 @@ class RiskCalibrationReason extends JsonSerializableType
         $this->fraud = $values['fraud'];
         $this->legitimate = $values['legitimate'];
         $this->precision = $values['precision'] ?? null;
+        if (array_key_exists('precision', $values)) {
+            $this->_setField('precision');
+        }
         $this->defaultWeight = $values['defaultWeight'];
         $this->weight = $values['weight'];
         $this->suggestedWeight = $values['suggestedWeight'] ?? null;
+        if (array_key_exists('suggestedWeight', $values)) {
+            $this->_setField('suggestedWeight');
+        }
     }
 
     /**

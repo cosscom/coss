@@ -29,9 +29,11 @@ public record RiskListEntry : IJsonOnDeserialized
     [JsonPropertyName("value")]
     public required string Value { get; set; }
 
+    [Nullable]
     [JsonPropertyName("note")]
     public string? Note { get; set; }
 
+    [Nullable]
     [JsonPropertyName("expires_at")]
     public DateTime? ExpiresAt { get; set; }
 

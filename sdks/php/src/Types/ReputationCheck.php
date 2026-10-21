@@ -81,11 +81,23 @@ class ReputationCheck extends JsonSerializableType
         $this->severity = $values['severity'];
         $this->message = $values['message'];
         $this->rate = $values['rate'] ?? null;
+        if (array_key_exists('rate', $values)) {
+            $this->_setField('rate');
+        }
         $this->count = $values['count'];
         $this->volume = $values['volume'];
         $this->warningThreshold = $values['warningThreshold'] ?? null;
+        if (array_key_exists('warningThreshold', $values)) {
+            $this->_setField('warningThreshold');
+        }
         $this->suspendThreshold = $values['suspendThreshold'] ?? null;
+        if (array_key_exists('suspendThreshold', $values)) {
+            $this->_setField('suspendThreshold');
+        }
         $this->minimumVolume = $values['minimumVolume'] ?? null;
+        if (array_key_exists('minimumVolume', $values)) {
+            $this->_setField('minimumVolume');
+        }
     }
 
     /**

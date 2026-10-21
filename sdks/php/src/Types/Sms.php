@@ -140,10 +140,22 @@ class Sms extends JsonSerializableType
         $this->country = $values['country'];
         $this->tags = $values['tags'];
         $this->failure = $values['failure'] ?? null;
+        if (array_key_exists('failure', $values)) {
+            $this->_setField('failure');
+        }
         $this->sandbox = $values['sandbox'];
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
         $this->sentAt = $values['sentAt'] ?? null;
+        if (array_key_exists('sentAt', $values)) {
+            $this->_setField('sentAt');
+        }
         $this->deliveredAt = $values['deliveredAt'] ?? null;
+        if (array_key_exists('deliveredAt', $values)) {
+            $this->_setField('deliveredAt');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,11 +57,11 @@ public final class EmailWebhookEventData {
 
     private final List<EmailWebhookEventDataTagsItem> tags;
 
-    private final Optional<String> category;
+    private final OptionalNullable<String> category;
 
     private final boolean sandbox;
 
-    private final Optional<String> recipient;
+    private final OptionalNullable<String> recipient;
 
     private final OffsetDateTime occurredAt;
 
@@ -83,9 +83,9 @@ public final class EmailWebhookEventData {
             List<String> to,
             String subject,
             List<EmailWebhookEventDataTagsItem> tags,
-            Optional<String> category,
+            OptionalNullable<String> category,
             boolean sandbox,
-            Optional<String> recipient,
+            OptionalNullable<String> recipient,
             OffsetDateTime occurredAt,
             Map<String, Object> additionalProperties) {
         this.bounce = bounce;
@@ -200,10 +200,11 @@ public final class EmailWebhookEventData {
         return tags;
     }
 
-    @JsonIgnore
-    public Optional<String> getCategory() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("category")
+    public OptionalNullable<String> getCategory() {
         if (category == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return category;
     }
@@ -213,10 +214,11 @@ public final class EmailWebhookEventData {
         return sandbox;
     }
 
-    @JsonIgnore
-    public Optional<String> getRecipient() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("recipient")
+    public OptionalNullable<String> getRecipient() {
         if (recipient == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return recipient;
     }
@@ -228,13 +230,13 @@ public final class EmailWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("category")
-    private Optional<String> _getCategory() {
+    private OptionalNullable<String> _getCategory() {
         return category;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("recipient")
-    private Optional<String> _getRecipient() {
+    private OptionalNullable<String> _getRecipient() {
         return recipient;
     }
 
@@ -400,15 +402,19 @@ public final class EmailWebhookEventData {
 
         _FinalStage addAllTags(List<EmailWebhookEventDataTagsItem> tags);
 
-        _FinalStage category(Optional<String> category);
+        _FinalStage category(OptionalNullable<String> category);
 
         _FinalStage category(String category);
 
+        _FinalStage category(Optional<String> category);
+
         _FinalStage category(Nullable<String> category);
 
-        _FinalStage recipient(Optional<String> recipient);
+        _FinalStage recipient(OptionalNullable<String> recipient);
 
         _FinalStage recipient(String recipient);
+
+        _FinalStage recipient(Optional<String> recipient);
 
         _FinalStage recipient(Nullable<String> recipient);
     }
@@ -426,9 +432,9 @@ public final class EmailWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<String> recipient = Optional.empty();
+        private OptionalNullable<String> recipient = OptionalNullable.absent();
 
-        private Optional<String> category = Optional.empty();
+        private OptionalNullable<String> category = OptionalNullable.absent();
 
         private List<EmailWebhookEventDataTagsItem> tags = new ArrayList<>();
 
@@ -521,24 +527,34 @@ public final class EmailWebhookEventData {
         @java.lang.Override
         public _FinalStage recipient(Nullable<String> recipient) {
             if (recipient.isNull()) {
-                this.recipient = null;
+                this.recipient = OptionalNullable.ofNull();
             } else if (recipient.isEmpty()) {
-                this.recipient = Optional.empty();
+                this.recipient = OptionalNullable.absent();
             } else {
-                this.recipient = Optional.of(recipient.get());
+                this.recipient = OptionalNullable.of(recipient.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage recipient(Optional<String> recipient) {
+            if (recipient.isPresent()) {
+                this.recipient = OptionalNullable.of(recipient.get());
+            } else {
+                this.recipient = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage recipient(String recipient) {
-            this.recipient = Optional.ofNullable(recipient);
+            this.recipient = OptionalNullable.of(recipient);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "recipient", nulls = Nulls.SKIP)
-        public _FinalStage recipient(Optional<String> recipient) {
+        public _FinalStage recipient(OptionalNullable<String> recipient) {
             this.recipient = recipient;
             return this;
         }
@@ -546,24 +562,34 @@ public final class EmailWebhookEventData {
         @java.lang.Override
         public _FinalStage category(Nullable<String> category) {
             if (category.isNull()) {
-                this.category = null;
+                this.category = OptionalNullable.ofNull();
             } else if (category.isEmpty()) {
-                this.category = Optional.empty();
+                this.category = OptionalNullable.absent();
             } else {
-                this.category = Optional.of(category.get());
+                this.category = OptionalNullable.of(category.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage category(Optional<String> category) {
+            if (category.isPresent()) {
+                this.category = OptionalNullable.of(category.get());
+            } else {
+                this.category = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage category(String category) {
-            this.category = Optional.ofNullable(category);
+            this.category = OptionalNullable.of(category);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "category", nulls = Nulls.SKIP)
-        public _FinalStage category(Optional<String> category) {
+        public _FinalStage category(OptionalNullable<String> category) {
             this.category = category;
             return this;
         }

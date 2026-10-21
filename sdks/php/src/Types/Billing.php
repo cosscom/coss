@@ -138,7 +138,13 @@ class Billing extends JsonSerializableType
         $this->organizationId = $values['organizationId'];
         $this->plan = $values['plan'];
         $this->contract = $values['contract'] ?? null;
+        if (array_key_exists('contract', $values)) {
+            $this->_setField('contract');
+        }
         $this->scheduledChange = $values['scheduledChange'] ?? null;
+        if (array_key_exists('scheduledChange', $values)) {
+            $this->_setField('scheduledChange');
+        }
         $this->status = $values['status'];
         $this->holds = $values['holds'];
         $this->currency = $values['currency'];
@@ -147,7 +153,13 @@ class Billing extends JsonSerializableType
         $this->estimate = $values['estimate'];
         $this->creditRemaining = $values['creditRemaining'];
         $this->spendLimit = $values['spendLimit'] ?? null;
+        if (array_key_exists('spendLimit', $values)) {
+            $this->_setField('spendLimit');
+        }
         $this->paymentMethod = $values['paymentMethod'] ?? null;
+        if (array_key_exists('paymentMethod', $values)) {
+            $this->_setField('paymentMethod');
+        }
         $this->addOns = $values['addOns'];
         $this->features = $values['features'];
         $this->limits = $values['limits'];

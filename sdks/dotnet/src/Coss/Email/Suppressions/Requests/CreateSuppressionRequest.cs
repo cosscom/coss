@@ -16,6 +16,7 @@ public record CreateSuppressionRequest
     /// <summary>
     /// Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
     /// </summary>
+    [Optional]
     [JsonPropertyName("scope")]
     public OneOf<
         CreateSuppressionRequestScopeZero,

@@ -151,11 +151,18 @@ public class TestTest : BaseMockServerTest
                     "sub_type": "General",
                     "diagnostic_code": "smtp; 550 5.1.1 The email account that you tried to reach does not exist"
                   },
-                  "complaint": {},
-                  "delay": {
-                    "type": "type"
+                  "complaint": {
+                    "feedback_type": null,
+                    "sub_type": null
                   },
-                  "delivery": {},
+                  "delay": {
+                    "type": "type",
+                    "expires_at": null,
+                    "diagnostic_code": null
+                  },
+                  "delivery": {
+                    "smtp_response": null
+                  },
                   "failure": {
                     "code": "code",
                     "message": "message"
@@ -165,11 +172,17 @@ public class TestTest : BaseMockServerTest
                     "scope": "scope",
                     "reason": "bounce"
                   },
-                  "unsubscribe": {},
-                  "open": {},
+                  "unsubscribe": {
+                    "contact_id": null,
+                    "topic": null
+                  },
+                  "open": {
+                    "user_agent": null
+                  },
                   "click": {
                     "url": "url",
-                    "link_position": 1000000
+                    "link_position": 1000000,
+                    "user_agent": null
                   },
                   "reschedule": {
                     "scheduled_at": "2024-01-15T09:30:00.000Z",

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 public final class TrackingSettings {
     private final TrackingSettingsObject object;
 
-    private final Optional<TrackingRule> default_;
+    private final OptionalNullable<TrackingRule> default_;
 
     private final List<TrackingRule> categories;
 
@@ -36,7 +36,7 @@ public final class TrackingSettings {
 
     private TrackingSettings(
             TrackingSettingsObject object,
-            Optional<TrackingRule> default_,
+            OptionalNullable<TrackingRule> default_,
             List<TrackingRule> categories,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -50,10 +50,11 @@ public final class TrackingSettings {
         return object;
     }
 
-    @JsonIgnore
-    public Optional<TrackingRule> getDefault() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("default")
+    public OptionalNullable<TrackingRule> getDefault() {
         if (default_ == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return default_;
     }
@@ -68,7 +69,7 @@ public final class TrackingSettings {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("default")
-    private Optional<TrackingRule> _getDefault() {
+    private OptionalNullable<TrackingRule> _getDefault() {
         return default_;
     }
 
@@ -114,9 +115,11 @@ public final class TrackingSettings {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage default_(Optional<TrackingRule> default_);
+        _FinalStage default_(OptionalNullable<TrackingRule> default_);
 
         _FinalStage default_(TrackingRule default_);
+
+        _FinalStage default_(Optional<TrackingRule> default_);
 
         _FinalStage default_(Nullable<TrackingRule> default_);
 
@@ -136,7 +139,7 @@ public final class TrackingSettings {
 
         private List<TrackingRule> categories = new ArrayList<>();
 
-        private Optional<TrackingRule> default_ = Optional.empty();
+        private OptionalNullable<TrackingRule> default_ = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -196,24 +199,34 @@ public final class TrackingSettings {
         @java.lang.Override
         public _FinalStage default_(Nullable<TrackingRule> default_) {
             if (default_.isNull()) {
-                this.default_ = null;
+                this.default_ = OptionalNullable.ofNull();
             } else if (default_.isEmpty()) {
-                this.default_ = Optional.empty();
+                this.default_ = OptionalNullable.absent();
             } else {
-                this.default_ = Optional.of(default_.get());
+                this.default_ = OptionalNullable.of(default_.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage default_(Optional<TrackingRule> default_) {
+            if (default_.isPresent()) {
+                this.default_ = OptionalNullable.of(default_.get());
+            } else {
+                this.default_ = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage default_(TrackingRule default_) {
-            this.default_ = Optional.ofNullable(default_);
+            this.default_ = OptionalNullable.of(default_);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "default", nulls = Nulls.SKIP)
-        public _FinalStage default_(Optional<TrackingRule> default_) {
+        public _FinalStage default_(OptionalNullable<TrackingRule> default_) {
             this.default_ = default_;
             return this;
         }

@@ -26,12 +26,14 @@ public record BillingOverview : IJsonOnDeserialized
     /// <summary>
     /// The contract in effect; `null` on the Free plan.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("contract")]
     public BillingOverviewContract? Contract { get; set; }
 
     /// <summary>
     /// A plan change that takes effect later (a downgrade, a cancellation).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("scheduled_change")]
     public BillingOverviewScheduledChange? ScheduledChange { get; set; }
 
@@ -76,9 +78,11 @@ public record BillingOverview : IJsonOnDeserialized
     /// <summary>
     /// Usage beyond the credit past which live sending is held; `null`: none.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("spend_limit")]
     public long? SpendLimit { get; set; }
 
+    [Nullable]
     [JsonPropertyName("payment_method")]
     public BillingOverviewPaymentMethod? PaymentMethod { get; set; }
 

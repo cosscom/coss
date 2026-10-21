@@ -98,10 +98,19 @@ class LogDrainWithSecret extends JsonSerializableType
         $this->id = $values['id'];
         $this->url = $values['url'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->sources = $values['sources'];
         $this->enabled = $values['enabled'];
         $this->disabledReason = $values['disabledReason'] ?? null;
+        if (array_key_exists('disabledReason', $values)) {
+            $this->_setField('disabledReason');
+        }
         $this->disabledAt = $values['disabledAt'] ?? null;
+        if (array_key_exists('disabledAt', $values)) {
+            $this->_setField('disabledAt');
+        }
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];
         $this->secret = $values['secret'];

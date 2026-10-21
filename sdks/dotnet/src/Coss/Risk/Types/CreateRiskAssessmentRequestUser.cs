@@ -14,12 +14,14 @@ public record CreateRiskAssessmentRequestUser : IJsonOnDeserialized
     /// <summary>
     /// Your id for the user, when it exists (logins always; sign-ups once the account is created).
     /// </summary>
+    [Optional]
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
     /// <summary>
     /// The email address the user gave. Checked as given, even if invalid.
     /// </summary>
+    [Optional]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 

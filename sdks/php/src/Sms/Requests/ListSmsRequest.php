@@ -51,10 +51,28 @@ class ListSmsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->createdAfter = $values['createdAfter'] ?? null;
+        if (array_key_exists('createdAfter', $values)) {
+            $this->_setField('createdAfter');
+        }
         $this->createdBefore = $values['createdBefore'] ?? null;
+        if (array_key_exists('createdBefore', $values)) {
+            $this->_setField('createdBefore');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

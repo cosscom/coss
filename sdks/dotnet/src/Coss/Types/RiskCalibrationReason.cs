@@ -35,6 +35,7 @@ public record RiskCalibrationReason : IJsonOnDeserialized
     /// <summary>
     /// `fraud / (fraud + legitimate)`: how often it was right when you told coss.com. `null` without feedback.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("precision")]
     public double? Precision { get; set; }
 
@@ -50,6 +51,7 @@ public record RiskCalibrationReason : IJsonOnDeserialized
     /// <summary>
     /// The weight feedback supports: its precision, pulled toward the default while there is little feedback. `null` below 20 assessments with feedback.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("suggested_weight")]
     public double? SuggestedWeight { get; set; }
 

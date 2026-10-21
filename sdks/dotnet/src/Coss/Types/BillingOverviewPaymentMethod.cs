@@ -14,9 +14,11 @@ public record BillingOverviewPaymentMethod : IJsonOnDeserialized
     [JsonPropertyName("type")]
     public required string Type { get; set; }
 
+    [Nullable]
     [JsonPropertyName("brand")]
     public string? Brand { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last4")]
     public string? Last4 { get; set; }
 

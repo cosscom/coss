@@ -53,6 +53,7 @@ public class GetTest : BaseMockServerTest
               "to": "+14155550123",
               "body": "Thanks, see you then!",
               "segments": 1,
+              "keyword": null,
               "sandbox": false,
               "created_at": "2026-11-10T12:05:00.000Z"
             }

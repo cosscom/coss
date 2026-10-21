@@ -39,6 +39,12 @@ class CreateLogDrainRequest extends JsonSerializableType
     ) {
         $this->url = $values['url'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->sources = $values['sources'] ?? null;
+        if (array_key_exists('sources', $values)) {
+            $this->_setField('sources');
+        }
     }
 }

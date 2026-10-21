@@ -26,6 +26,7 @@ public record Topic : IJsonOnDeserialized
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 

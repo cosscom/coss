@@ -140,13 +140,25 @@ class ReceivedEmailSummary extends JsonSerializableType
         $this->id = $values['id'];
         $this->status = $values['status'];
         $this->blockedReason = $values['blockedReason'] ?? null;
+        if (array_key_exists('blockedReason', $values)) {
+            $this->_setField('blockedReason');
+        }
         $this->mailFrom = $values['mailFrom'];
         $this->recipients = $values['recipients'];
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'];
         $this->cc = $values['cc'];
         $this->subject = $values['subject'] ?? null;
+        if (array_key_exists('subject', $values)) {
+            $this->_setField('subject');
+        }
         $this->messageId = $values['messageId'] ?? null;
+        if (array_key_exists('messageId', $values)) {
+            $this->_setField('messageId');
+        }
         $this->attachments = $values['attachments'];
         $this->size = $values['size'];
         $this->spam = $values['spam'];

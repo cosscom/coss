@@ -31,5 +31,8 @@ class SendHookTestRequest extends JsonSerializableType
     ) {
         $this->eventType = $values['eventType'];
         $this->payload = $values['payload'] ?? null;
+        if (array_key_exists('payload', $values)) {
+            $this->_setField('payload');
+        }
     }
 }

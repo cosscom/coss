@@ -266,6 +266,7 @@ public class ListEmailsTest : BaseMockServerTest
                   ],
                   "subject": "Welcome to Acme",
                   "html": "<p>Thanks for signing up!</p>",
+                  "text": null,
                   "headers": {
                     "key": "value"
                   },
@@ -278,6 +279,7 @@ public class ListEmailsTest : BaseMockServerTest
                   "category": "onboarding",
                   "stream": "transactional",
                   "status": "sent",
+                  "failure": null,
                   "recipients": [
                     {
                       "address": "user@example.com",
@@ -291,6 +293,7 @@ public class ListEmailsTest : BaseMockServerTest
                       "id": "att_01k7c8m4q2f3e9v6t5r1n0p8yz",
                       "filename": "filename",
                       "content_type": "content_type",
+                      "content_id": null,
                       "size": 1000000
                     }
                   ],
@@ -300,12 +303,21 @@ public class ListEmailsTest : BaseMockServerTest
                     "clicks": false,
                     "unsubscribe": false,
                     "open_count": 0,
-                    "click_count": 0
+                    "first_opened_at": null,
+                    "last_opened_at": null,
+                    "click_count": 0,
+                    "first_clicked_at": null,
+                    "last_clicked_at": null
                   },
                   "created_at": "2026-10-10T12:00:00.000Z",
                   "sent_at": "2026-10-10T12:00:01.000Z",
+                  "scheduled_at": null,
+                  "batch_id": null,
+                  "template": null,
+                  "broadcast_id": null,
                   "content_storage": {
-                    "mode": "store"
+                    "mode": "store",
+                    "discarded_at": null
                   }
                 }
               ],

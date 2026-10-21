@@ -17,6 +17,7 @@ public record EmailTemplateReference : IJsonOnDeserialized
     /// <summary>
     /// `null` for a dashboard test send of the draft.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("version")]
     public long? Version { get; set; }
 

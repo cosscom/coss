@@ -85,7 +85,9 @@ public class GetTest : BaseMockServerTest
               "event_type": "email.delivered",
               "status": "succeeded",
               "attempt_count": 1,
+              "next_attempt_at": null,
               "last_status_code": 200,
+              "last_error": null,
               "payload": {
                 "id": "evt_01k7c8n1z4c6e8g0j2l4n6q8sa",
                 "object": "event",
@@ -103,6 +105,7 @@ public class GetTest : BaseMockServerTest
                   "attempted_at": "2026-01-15T09:30:01.000Z",
                   "status_code": 200,
                   "duration_ms": 182,
+                  "error": null,
                   "response_excerpt": "ok"
                 }
               ],

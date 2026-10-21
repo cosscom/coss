@@ -123,8 +123,17 @@ class WebhookDelivery extends JsonSerializableType
         $this->status = $values['status'];
         $this->attemptCount = $values['attemptCount'];
         $this->nextAttemptAt = $values['nextAttemptAt'] ?? null;
+        if (array_key_exists('nextAttemptAt', $values)) {
+            $this->_setField('nextAttemptAt');
+        }
         $this->lastStatusCode = $values['lastStatusCode'] ?? null;
+        if (array_key_exists('lastStatusCode', $values)) {
+            $this->_setField('lastStatusCode');
+        }
         $this->lastError = $values['lastError'] ?? null;
+        if (array_key_exists('lastError', $values)) {
+            $this->_setField('lastError');
+        }
         $this->payload = $values['payload'];
         $this->attempts = $values['attempts'];
         $this->createdAt = $values['createdAt'];

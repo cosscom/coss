@@ -70,6 +70,9 @@ class EmailEvent extends JsonSerializableType
         $this->emailId = $values['emailId'];
         $this->type = $values['type'];
         $this->recipient = $values['recipient'] ?? null;
+        if (array_key_exists('recipient', $values)) {
+            $this->_setField('recipient');
+        }
         $this->occurredAt = $values['occurredAt'];
         $this->data = $values['data'];
     }

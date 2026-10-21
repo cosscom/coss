@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +41,7 @@ public final class HookEndpointRecovery {
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> completedAt;
+    private final OptionalNullable<OffsetDateTime> completedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -54,7 +54,7 @@ public final class HookEndpointRecovery {
             HookEndpointRecoveryStatus status,
             long requeued,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> completedAt,
+            OptionalNullable<OffsetDateTime> completedAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -114,17 +114,18 @@ public final class HookEndpointRecovery {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getCompletedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("completed_at")
+    public OptionalNullable<OffsetDateTime> getCompletedAt() {
         if (completedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return completedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("completed_at")
-    private Optional<OffsetDateTime> _getCompletedAt() {
+    private OptionalNullable<OffsetDateTime> _getCompletedAt() {
         return completedAt;
     }
 
@@ -221,9 +222,11 @@ public final class HookEndpointRecovery {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage completedAt(Optional<OffsetDateTime> completedAt);
+        _FinalStage completedAt(OptionalNullable<OffsetDateTime> completedAt);
 
         _FinalStage completedAt(OffsetDateTime completedAt);
+
+        _FinalStage completedAt(Optional<OffsetDateTime> completedAt);
 
         _FinalStage completedAt(Nullable<OffsetDateTime> completedAt);
     }
@@ -255,7 +258,7 @@ public final class HookEndpointRecovery {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> completedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> completedAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -343,24 +346,34 @@ public final class HookEndpointRecovery {
         @java.lang.Override
         public _FinalStage completedAt(Nullable<OffsetDateTime> completedAt) {
             if (completedAt.isNull()) {
-                this.completedAt = null;
+                this.completedAt = OptionalNullable.ofNull();
             } else if (completedAt.isEmpty()) {
-                this.completedAt = Optional.empty();
+                this.completedAt = OptionalNullable.absent();
             } else {
-                this.completedAt = Optional.of(completedAt.get());
+                this.completedAt = OptionalNullable.of(completedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage completedAt(Optional<OffsetDateTime> completedAt) {
+            if (completedAt.isPresent()) {
+                this.completedAt = OptionalNullable.of(completedAt.get());
+            } else {
+                this.completedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage completedAt(OffsetDateTime completedAt) {
-            this.completedAt = Optional.ofNullable(completedAt);
+            this.completedAt = OptionalNullable.of(completedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "completed_at", nulls = Nulls.SKIP)
-        public _FinalStage completedAt(Optional<OffsetDateTime> completedAt) {
+        public _FinalStage completedAt(OptionalNullable<OffsetDateTime> completedAt) {
             this.completedAt = completedAt;
             return this;
         }

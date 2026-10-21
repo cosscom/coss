@@ -29,18 +29,21 @@ public record RiskCheckoutRequest : IJsonOnDeserialized
     /// <summary>
     /// What your payment processor tells you about the card.
     /// </summary>
+    [Optional]
     [JsonPropertyName("card")]
     public RiskCheckoutRequestCard? Card { get; set; }
 
     /// <summary>
     /// ISO 3166-1 alpha-2, upper-case (`GB`).
     /// </summary>
+    [Optional]
     [JsonPropertyName("billing_country")]
     public string? BillingCountry { get; set; }
 
     /// <summary>
     /// ISO 3166-1 alpha-2, upper-case (`GB`).
     /// </summary>
+    [Optional]
     [JsonPropertyName("shipping_country")]
     public string? ShippingCountry { get; set; }
 

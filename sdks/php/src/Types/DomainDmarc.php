@@ -125,15 +125,33 @@ class DomainDmarc extends JsonSerializableType
         $this->object = $values['object'];
         $this->domainId = $values['domainId'];
         $this->reportAddress = $values['reportAddress'] ?? null;
+        if (array_key_exists('reportAddress', $values)) {
+            $this->_setField('reportAddress');
+        }
         $this->record = $values['record'] ?? null;
+        if (array_key_exists('record', $values)) {
+            $this->_setField('record');
+        }
         $this->policy = $values['policy'] ?? null;
+        if (array_key_exists('policy', $values)) {
+            $this->_setField('policy');
+        }
         $this->inheritedFrom = $values['inheritedFrom'] ?? null;
+        if (array_key_exists('inheritedFrom', $values)) {
+            $this->_setField('inheritedFrom');
+        }
         $this->policySince = $values['policySince'] ?? null;
+        if (array_key_exists('policySince', $values)) {
+            $this->_setField('policySince');
+        }
         $this->stage = $values['stage'];
         $this->partial = $values['partial'];
         $this->reporting = $values['reporting'];
         $this->ready = $values['ready'];
         $this->next = $values['next'] ?? null;
+        if (array_key_exists('next', $values)) {
+            $this->_setField('next');
+        }
         $this->checks = $values['checks'];
         $this->warnings = $values['warnings'];
         $this->reportSummary = $values['reportSummary'];

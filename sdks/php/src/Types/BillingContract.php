@@ -65,7 +65,13 @@ class BillingContract extends JsonSerializableType
         $this->kind = $values['kind'];
         $this->effectiveFrom = $values['effectiveFrom'];
         $this->effectiveUntil = $values['effectiveUntil'] ?? null;
+        if (array_key_exists('effectiveUntil', $values)) {
+            $this->_setField('effectiveUntil');
+        }
         $this->termEnd = $values['termEnd'] ?? null;
+        if (array_key_exists('termEnd', $values)) {
+            $this->_setField('termEnd');
+        }
         $this->autoRenew = $values['autoRenew'];
     }
 

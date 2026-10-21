@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,13 +35,13 @@ public final class RiskSettings {
 
     private final List<RiskSettingsDisabledReasonsItem> disabledReasons;
 
-    private final Optional<RiskSettingsCaptcha> captcha;
+    private final OptionalNullable<RiskSettingsCaptcha> captcha;
 
     private final RiskSettingsContentThresholds contentThresholds;
 
     private final RiskSettingsReasonWeights reasonWeights;
 
-    private final Optional<OffsetDateTime> updatedAt;
+    private final OptionalNullable<OffsetDateTime> updatedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -50,10 +50,10 @@ public final class RiskSettings {
             double reviewThreshold,
             double blockThreshold,
             List<RiskSettingsDisabledReasonsItem> disabledReasons,
-            Optional<RiskSettingsCaptcha> captcha,
+            OptionalNullable<RiskSettingsCaptcha> captcha,
             RiskSettingsContentThresholds contentThresholds,
             RiskSettingsReasonWeights reasonWeights,
-            Optional<OffsetDateTime> updatedAt,
+            OptionalNullable<OffsetDateTime> updatedAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.reviewThreshold = reviewThreshold;
@@ -98,10 +98,11 @@ public final class RiskSettings {
     /**
      * @return The captcha provider assessments verify tokens with (never the secret).
      */
-    @JsonIgnore
-    public Optional<RiskSettingsCaptcha> getCaptcha() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("captcha")
+    public OptionalNullable<RiskSettingsCaptcha> getCaptcha() {
         if (captcha == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return captcha;
     }
@@ -125,23 +126,24 @@ public final class RiskSettings {
     /**
      * @return <code>null</code> while on the defaults.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getUpdatedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("updated_at")
+    public OptionalNullable<OffsetDateTime> getUpdatedAt() {
         if (updatedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return updatedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("captcha")
-    private Optional<RiskSettingsCaptcha> _getCaptcha() {
+    private OptionalNullable<RiskSettingsCaptcha> _getCaptcha() {
         return captcha;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("updated_at")
-    private Optional<OffsetDateTime> _getUpdatedAt() {
+    private OptionalNullable<OffsetDateTime> _getUpdatedAt() {
         return updatedAt;
     }
 
@@ -242,18 +244,22 @@ public final class RiskSettings {
         /**
          * <p>The captcha provider assessments verify tokens with (never the secret).</p>
          */
-        _FinalStage captcha(Optional<RiskSettingsCaptcha> captcha);
+        _FinalStage captcha(OptionalNullable<RiskSettingsCaptcha> captcha);
 
         _FinalStage captcha(RiskSettingsCaptcha captcha);
+
+        _FinalStage captcha(Optional<RiskSettingsCaptcha> captcha);
 
         _FinalStage captcha(Nullable<RiskSettingsCaptcha> captcha);
 
         /**
          * <p><code>null</code> while on the defaults.</p>
          */
-        _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt);
+        _FinalStage updatedAt(OptionalNullable<OffsetDateTime> updatedAt);
 
         _FinalStage updatedAt(OffsetDateTime updatedAt);
+
+        _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt);
 
         _FinalStage updatedAt(Nullable<OffsetDateTime> updatedAt);
     }
@@ -276,9 +282,9 @@ public final class RiskSettings {
 
         private RiskSettingsReasonWeights reasonWeights;
 
-        private Optional<OffsetDateTime> updatedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> updatedAt = OptionalNullable.absent();
 
-        private Optional<RiskSettingsCaptcha> captcha = Optional.empty();
+        private OptionalNullable<RiskSettingsCaptcha> captcha = OptionalNullable.absent();
 
         private List<RiskSettingsDisabledReasonsItem> disabledReasons = new ArrayList<>();
 
@@ -358,11 +364,25 @@ public final class RiskSettings {
         @java.lang.Override
         public _FinalStage updatedAt(Nullable<OffsetDateTime> updatedAt) {
             if (updatedAt.isNull()) {
-                this.updatedAt = null;
+                this.updatedAt = OptionalNullable.ofNull();
             } else if (updatedAt.isEmpty()) {
-                this.updatedAt = Optional.empty();
+                this.updatedAt = OptionalNullable.absent();
             } else {
-                this.updatedAt = Optional.of(updatedAt.get());
+                this.updatedAt = OptionalNullable.of(updatedAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> while on the defaults.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt) {
+            if (updatedAt.isPresent()) {
+                this.updatedAt = OptionalNullable.of(updatedAt.get());
+            } else {
+                this.updatedAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -373,7 +393,7 @@ public final class RiskSettings {
          */
         @java.lang.Override
         public _FinalStage updatedAt(OffsetDateTime updatedAt) {
-            this.updatedAt = Optional.ofNullable(updatedAt);
+            this.updatedAt = OptionalNullable.of(updatedAt);
             return this;
         }
 
@@ -382,7 +402,7 @@ public final class RiskSettings {
          */
         @java.lang.Override
         @JsonSetter(value = "updated_at", nulls = Nulls.SKIP)
-        public _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt) {
+        public _FinalStage updatedAt(OptionalNullable<OffsetDateTime> updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }
@@ -394,11 +414,25 @@ public final class RiskSettings {
         @java.lang.Override
         public _FinalStage captcha(Nullable<RiskSettingsCaptcha> captcha) {
             if (captcha.isNull()) {
-                this.captcha = null;
+                this.captcha = OptionalNullable.ofNull();
             } else if (captcha.isEmpty()) {
-                this.captcha = Optional.empty();
+                this.captcha = OptionalNullable.absent();
             } else {
-                this.captcha = Optional.of(captcha.get());
+                this.captcha = OptionalNullable.of(captcha.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The captcha provider assessments verify tokens with (never the secret).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage captcha(Optional<RiskSettingsCaptcha> captcha) {
+            if (captcha.isPresent()) {
+                this.captcha = OptionalNullable.of(captcha.get());
+            } else {
+                this.captcha = OptionalNullable.absent();
             }
             return this;
         }
@@ -409,7 +443,7 @@ public final class RiskSettings {
          */
         @java.lang.Override
         public _FinalStage captcha(RiskSettingsCaptcha captcha) {
-            this.captcha = Optional.ofNullable(captcha);
+            this.captcha = OptionalNullable.of(captcha);
             return this;
         }
 
@@ -418,7 +452,7 @@ public final class RiskSettings {
          */
         @java.lang.Override
         @JsonSetter(value = "captcha", nulls = Nulls.SKIP)
-        public _FinalStage captcha(Optional<RiskSettingsCaptcha> captcha) {
+        public _FinalStage captcha(OptionalNullable<RiskSettingsCaptcha> captcha) {
             this.captcha = captcha;
             return this;
         }

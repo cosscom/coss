@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +37,7 @@ public final class Domain {
 
     private final boolean canSend;
 
-    private final Optional<String> region;
+    private final OptionalNullable<String> region;
 
     private final String mailFromDomain;
 
@@ -47,15 +47,15 @@ public final class Domain {
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> lastCheckedAt;
+    private final OptionalNullable<OffsetDateTime> lastCheckedAt;
 
-    private final Optional<OffsetDateTime> verifiedAt;
+    private final OptionalNullable<OffsetDateTime> verifiedAt;
 
-    private final Optional<OffsetDateTime> failedAt;
+    private final OptionalNullable<OffsetDateTime> failedAt;
 
-    private final Optional<TrackingDomain> tracking;
+    private final OptionalNullable<TrackingDomain> tracking;
 
-    private final Optional<ReceivingDomain> receiving;
+    private final OptionalNullable<ReceivingDomain> receiving;
 
     private final DomainBimi bimi;
 
@@ -67,16 +67,16 @@ public final class Domain {
             String name,
             DomainStatus status,
             boolean canSend,
-            Optional<String> region,
+            OptionalNullable<String> region,
             String mailFromDomain,
             DomainMailFromStatus mailFromStatus,
             List<DomainRecord> records,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> lastCheckedAt,
-            Optional<OffsetDateTime> verifiedAt,
-            Optional<OffsetDateTime> failedAt,
-            Optional<TrackingDomain> tracking,
-            Optional<ReceivingDomain> receiving,
+            OptionalNullable<OffsetDateTime> lastCheckedAt,
+            OptionalNullable<OffsetDateTime> verifiedAt,
+            OptionalNullable<OffsetDateTime> failedAt,
+            OptionalNullable<TrackingDomain> tracking,
+            OptionalNullable<ReceivingDomain> receiving,
             DomainBimi bimi,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -132,10 +132,11 @@ public final class Domain {
         return canSend;
     }
 
-    @JsonIgnore
-    public Optional<String> getRegion() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("region")
+    public OptionalNullable<String> getRegion() {
         if (region == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return region;
     }
@@ -166,42 +167,47 @@ public final class Domain {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastCheckedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_checked_at")
+    public OptionalNullable<OffsetDateTime> getLastCheckedAt() {
         if (lastCheckedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastCheckedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getVerifiedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("verified_at")
+    public OptionalNullable<OffsetDateTime> getVerifiedAt() {
         if (verifiedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return verifiedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFailedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failed_at")
+    public OptionalNullable<OffsetDateTime> getFailedAt() {
         if (failedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failedAt;
     }
 
-    @JsonIgnore
-    public Optional<TrackingDomain> getTracking() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("tracking")
+    public OptionalNullable<TrackingDomain> getTracking() {
         if (tracking == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return tracking;
     }
 
-    @JsonIgnore
-    public Optional<ReceivingDomain> getReceiving() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("receiving")
+    public OptionalNullable<ReceivingDomain> getReceiving() {
         if (receiving == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return receiving;
     }
@@ -213,37 +219,37 @@ public final class Domain {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("region")
-    private Optional<String> _getRegion() {
+    private OptionalNullable<String> _getRegion() {
         return region;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_checked_at")
-    private Optional<OffsetDateTime> _getLastCheckedAt() {
+    private OptionalNullable<OffsetDateTime> _getLastCheckedAt() {
         return lastCheckedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("verified_at")
-    private Optional<OffsetDateTime> _getVerifiedAt() {
+    private OptionalNullable<OffsetDateTime> _getVerifiedAt() {
         return verifiedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failed_at")
-    private Optional<OffsetDateTime> _getFailedAt() {
+    private OptionalNullable<OffsetDateTime> _getFailedAt() {
         return failedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("tracking")
-    private Optional<TrackingDomain> _getTracking() {
+    private OptionalNullable<TrackingDomain> _getTracking() {
         return tracking;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("receiving")
-    private Optional<ReceivingDomain> _getReceiving() {
+    private OptionalNullable<ReceivingDomain> _getReceiving() {
         return receiving;
     }
 
@@ -364,9 +370,11 @@ public final class Domain {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage region(Optional<String> region);
+        _FinalStage region(OptionalNullable<String> region);
 
         _FinalStage region(String region);
+
+        _FinalStage region(Optional<String> region);
 
         _FinalStage region(Nullable<String> region);
 
@@ -379,33 +387,43 @@ public final class Domain {
 
         _FinalStage addAllRecords(List<DomainRecord> records);
 
-        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
+        _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt);
 
         _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt);
 
+        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
+
         _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt);
 
-        _FinalStage verifiedAt(Optional<OffsetDateTime> verifiedAt);
+        _FinalStage verifiedAt(OptionalNullable<OffsetDateTime> verifiedAt);
 
         _FinalStage verifiedAt(OffsetDateTime verifiedAt);
 
+        _FinalStage verifiedAt(Optional<OffsetDateTime> verifiedAt);
+
         _FinalStage verifiedAt(Nullable<OffsetDateTime> verifiedAt);
 
-        _FinalStage failedAt(Optional<OffsetDateTime> failedAt);
+        _FinalStage failedAt(OptionalNullable<OffsetDateTime> failedAt);
 
         _FinalStage failedAt(OffsetDateTime failedAt);
 
+        _FinalStage failedAt(Optional<OffsetDateTime> failedAt);
+
         _FinalStage failedAt(Nullable<OffsetDateTime> failedAt);
 
-        _FinalStage tracking(Optional<TrackingDomain> tracking);
+        _FinalStage tracking(OptionalNullable<TrackingDomain> tracking);
 
         _FinalStage tracking(TrackingDomain tracking);
 
+        _FinalStage tracking(Optional<TrackingDomain> tracking);
+
         _FinalStage tracking(Nullable<TrackingDomain> tracking);
 
-        _FinalStage receiving(Optional<ReceivingDomain> receiving);
+        _FinalStage receiving(OptionalNullable<ReceivingDomain> receiving);
 
         _FinalStage receiving(ReceivingDomain receiving);
+
+        _FinalStage receiving(Optional<ReceivingDomain> receiving);
 
         _FinalStage receiving(Nullable<ReceivingDomain> receiving);
     }
@@ -440,19 +458,19 @@ public final class Domain {
 
         private DomainBimi bimi;
 
-        private Optional<ReceivingDomain> receiving = Optional.empty();
+        private OptionalNullable<ReceivingDomain> receiving = OptionalNullable.absent();
 
-        private Optional<TrackingDomain> tracking = Optional.empty();
+        private OptionalNullable<TrackingDomain> tracking = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> failedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> failedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> verifiedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> verifiedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> lastCheckedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastCheckedAt = OptionalNullable.absent();
 
         private List<DomainRecord> records = new ArrayList<>();
 
-        private Optional<String> region = Optional.empty();
+        private OptionalNullable<String> region = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -562,24 +580,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage receiving(Nullable<ReceivingDomain> receiving) {
             if (receiving.isNull()) {
-                this.receiving = null;
+                this.receiving = OptionalNullable.ofNull();
             } else if (receiving.isEmpty()) {
-                this.receiving = Optional.empty();
+                this.receiving = OptionalNullable.absent();
             } else {
-                this.receiving = Optional.of(receiving.get());
+                this.receiving = OptionalNullable.of(receiving.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage receiving(Optional<ReceivingDomain> receiving) {
+            if (receiving.isPresent()) {
+                this.receiving = OptionalNullable.of(receiving.get());
+            } else {
+                this.receiving = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage receiving(ReceivingDomain receiving) {
-            this.receiving = Optional.ofNullable(receiving);
+            this.receiving = OptionalNullable.of(receiving);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "receiving", nulls = Nulls.SKIP)
-        public _FinalStage receiving(Optional<ReceivingDomain> receiving) {
+        public _FinalStage receiving(OptionalNullable<ReceivingDomain> receiving) {
             this.receiving = receiving;
             return this;
         }
@@ -587,24 +615,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage tracking(Nullable<TrackingDomain> tracking) {
             if (tracking.isNull()) {
-                this.tracking = null;
+                this.tracking = OptionalNullable.ofNull();
             } else if (tracking.isEmpty()) {
-                this.tracking = Optional.empty();
+                this.tracking = OptionalNullable.absent();
             } else {
-                this.tracking = Optional.of(tracking.get());
+                this.tracking = OptionalNullable.of(tracking.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage tracking(Optional<TrackingDomain> tracking) {
+            if (tracking.isPresent()) {
+                this.tracking = OptionalNullable.of(tracking.get());
+            } else {
+                this.tracking = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage tracking(TrackingDomain tracking) {
-            this.tracking = Optional.ofNullable(tracking);
+            this.tracking = OptionalNullable.of(tracking);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "tracking", nulls = Nulls.SKIP)
-        public _FinalStage tracking(Optional<TrackingDomain> tracking) {
+        public _FinalStage tracking(OptionalNullable<TrackingDomain> tracking) {
             this.tracking = tracking;
             return this;
         }
@@ -612,24 +650,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage failedAt(Nullable<OffsetDateTime> failedAt) {
             if (failedAt.isNull()) {
-                this.failedAt = null;
+                this.failedAt = OptionalNullable.ofNull();
             } else if (failedAt.isEmpty()) {
-                this.failedAt = Optional.empty();
+                this.failedAt = OptionalNullable.absent();
             } else {
-                this.failedAt = Optional.of(failedAt.get());
+                this.failedAt = OptionalNullable.of(failedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage failedAt(Optional<OffsetDateTime> failedAt) {
+            if (failedAt.isPresent()) {
+                this.failedAt = OptionalNullable.of(failedAt.get());
+            } else {
+                this.failedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage failedAt(OffsetDateTime failedAt) {
-            this.failedAt = Optional.ofNullable(failedAt);
+            this.failedAt = OptionalNullable.of(failedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "failed_at", nulls = Nulls.SKIP)
-        public _FinalStage failedAt(Optional<OffsetDateTime> failedAt) {
+        public _FinalStage failedAt(OptionalNullable<OffsetDateTime> failedAt) {
             this.failedAt = failedAt;
             return this;
         }
@@ -637,24 +685,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage verifiedAt(Nullable<OffsetDateTime> verifiedAt) {
             if (verifiedAt.isNull()) {
-                this.verifiedAt = null;
+                this.verifiedAt = OptionalNullable.ofNull();
             } else if (verifiedAt.isEmpty()) {
-                this.verifiedAt = Optional.empty();
+                this.verifiedAt = OptionalNullable.absent();
             } else {
-                this.verifiedAt = Optional.of(verifiedAt.get());
+                this.verifiedAt = OptionalNullable.of(verifiedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage verifiedAt(Optional<OffsetDateTime> verifiedAt) {
+            if (verifiedAt.isPresent()) {
+                this.verifiedAt = OptionalNullable.of(verifiedAt.get());
+            } else {
+                this.verifiedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage verifiedAt(OffsetDateTime verifiedAt) {
-            this.verifiedAt = Optional.ofNullable(verifiedAt);
+            this.verifiedAt = OptionalNullable.of(verifiedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "verified_at", nulls = Nulls.SKIP)
-        public _FinalStage verifiedAt(Optional<OffsetDateTime> verifiedAt) {
+        public _FinalStage verifiedAt(OptionalNullable<OffsetDateTime> verifiedAt) {
             this.verifiedAt = verifiedAt;
             return this;
         }
@@ -662,24 +720,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt) {
             if (lastCheckedAt.isNull()) {
-                this.lastCheckedAt = null;
+                this.lastCheckedAt = OptionalNullable.ofNull();
             } else if (lastCheckedAt.isEmpty()) {
-                this.lastCheckedAt = Optional.empty();
+                this.lastCheckedAt = OptionalNullable.absent();
             } else {
-                this.lastCheckedAt = Optional.of(lastCheckedAt.get());
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+            if (lastCheckedAt.isPresent()) {
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            } else {
+                this.lastCheckedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt) {
-            this.lastCheckedAt = Optional.ofNullable(lastCheckedAt);
+            this.lastCheckedAt = OptionalNullable.of(lastCheckedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_checked_at", nulls = Nulls.SKIP)
-        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+        public _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt) {
             this.lastCheckedAt = lastCheckedAt;
             return this;
         }
@@ -722,24 +790,34 @@ public final class Domain {
         @java.lang.Override
         public _FinalStage region(Nullable<String> region) {
             if (region.isNull()) {
-                this.region = null;
+                this.region = OptionalNullable.ofNull();
             } else if (region.isEmpty()) {
-                this.region = Optional.empty();
+                this.region = OptionalNullable.absent();
             } else {
-                this.region = Optional.of(region.get());
+                this.region = OptionalNullable.of(region.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage region(Optional<String> region) {
+            if (region.isPresent()) {
+                this.region = OptionalNullable.of(region.get());
+            } else {
+                this.region = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage region(String region) {
-            this.region = Optional.ofNullable(region);
+            this.region = OptionalNullable.of(region);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "region", nulls = Nulls.SKIP)
-        public _FinalStage region(Optional<String> region) {
+        public _FinalStage region(OptionalNullable<String> region) {
             this.region = region;
             return this;
         }

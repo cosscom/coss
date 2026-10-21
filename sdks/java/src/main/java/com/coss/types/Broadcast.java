@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,11 +35,11 @@ public final class Broadcast {
 
     private final BroadcastStatus status;
 
-    private final Optional<String> audienceId;
+    private final OptionalNullable<String> audienceId;
 
-    private final Optional<String> segmentId;
+    private final OptionalNullable<String> segmentId;
 
-    private final Optional<String> topic;
+    private final OptionalNullable<String> topic;
 
     private final String from;
 
@@ -47,29 +47,29 @@ public final class Broadcast {
 
     private final String subject;
 
-    private final Optional<String> previewText;
+    private final OptionalNullable<String> previewText;
 
-    private final Optional<String> html;
+    private final OptionalNullable<String> html;
 
-    private final Optional<String> text;
+    private final OptionalNullable<String> text;
 
     private final BroadcastTracking tracking;
 
-    private final Optional<Long> ratePerSecond;
+    private final OptionalNullable<Long> ratePerSecond;
 
-    private final Optional<OffsetDateTime> scheduledAt;
+    private final OptionalNullable<OffsetDateTime> scheduledAt;
 
-    private final Optional<OffsetDateTime> startedAt;
+    private final OptionalNullable<OffsetDateTime> startedAt;
 
-    private final Optional<OffsetDateTime> completedAt;
+    private final OptionalNullable<OffsetDateTime> completedAt;
 
-    private final Optional<OffsetDateTime> canceledAt;
+    private final OptionalNullable<OffsetDateTime> canceledAt;
 
-    private final Optional<Long> recipientsEstimated;
+    private final OptionalNullable<Long> recipientsEstimated;
 
-    private final Optional<String> pauseReason;
+    private final OptionalNullable<String> pauseReason;
 
-    private final Optional<BroadcastError> error;
+    private final OptionalNullable<BroadcastError> error;
 
     private final BroadcastStats stats;
 
@@ -84,24 +84,24 @@ public final class Broadcast {
             String id,
             String name,
             BroadcastStatus status,
-            Optional<String> audienceId,
-            Optional<String> segmentId,
-            Optional<String> topic,
+            OptionalNullable<String> audienceId,
+            OptionalNullable<String> segmentId,
+            OptionalNullable<String> topic,
             String from,
             List<String> replyTo,
             String subject,
-            Optional<String> previewText,
-            Optional<String> html,
-            Optional<String> text,
+            OptionalNullable<String> previewText,
+            OptionalNullable<String> html,
+            OptionalNullable<String> text,
             BroadcastTracking tracking,
-            Optional<Long> ratePerSecond,
-            Optional<OffsetDateTime> scheduledAt,
-            Optional<OffsetDateTime> startedAt,
-            Optional<OffsetDateTime> completedAt,
-            Optional<OffsetDateTime> canceledAt,
-            Optional<Long> recipientsEstimated,
-            Optional<String> pauseReason,
-            Optional<BroadcastError> error,
+            OptionalNullable<Long> ratePerSecond,
+            OptionalNullable<OffsetDateTime> scheduledAt,
+            OptionalNullable<OffsetDateTime> startedAt,
+            OptionalNullable<OffsetDateTime> completedAt,
+            OptionalNullable<OffsetDateTime> canceledAt,
+            OptionalNullable<Long> recipientsEstimated,
+            OptionalNullable<String> pauseReason,
+            OptionalNullable<BroadcastError> error,
             BroadcastStats stats,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
@@ -157,26 +157,29 @@ public final class Broadcast {
         return status;
     }
 
-    @JsonIgnore
-    public Optional<String> getAudienceId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("audience_id")
+    public OptionalNullable<String> getAudienceId() {
         if (audienceId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return audienceId;
     }
 
-    @JsonIgnore
-    public Optional<String> getSegmentId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("segment_id")
+    public OptionalNullable<String> getSegmentId() {
         if (segmentId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return segmentId;
     }
 
-    @JsonIgnore
-    public Optional<String> getTopic() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("topic")
+    public OptionalNullable<String> getTopic() {
         if (topic == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return topic;
     }
@@ -196,26 +199,29 @@ public final class Broadcast {
         return subject;
     }
 
-    @JsonIgnore
-    public Optional<String> getPreviewText() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("preview_text")
+    public OptionalNullable<String> getPreviewText() {
         if (previewText == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return previewText;
     }
 
-    @JsonIgnore
-    public Optional<String> getHtml() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("html")
+    public OptionalNullable<String> getHtml() {
         if (html == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return html;
     }
 
-    @JsonIgnore
-    public Optional<String> getText() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("text")
+    public OptionalNullable<String> getText() {
         if (text == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return text;
     }
@@ -225,42 +231,47 @@ public final class Broadcast {
         return tracking;
     }
 
-    @JsonIgnore
-    public Optional<Long> getRatePerSecond() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("rate_per_second")
+    public OptionalNullable<Long> getRatePerSecond() {
         if (ratePerSecond == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ratePerSecond;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getScheduledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("scheduled_at")
+    public OptionalNullable<OffsetDateTime> getScheduledAt() {
         if (scheduledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return scheduledAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getStartedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("started_at")
+    public OptionalNullable<OffsetDateTime> getStartedAt() {
         if (startedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return startedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getCompletedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("completed_at")
+    public OptionalNullable<OffsetDateTime> getCompletedAt() {
         if (completedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return completedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getCanceledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("canceled_at")
+    public OptionalNullable<OffsetDateTime> getCanceledAt() {
         if (canceledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return canceledAt;
     }
@@ -268,10 +279,11 @@ public final class Broadcast {
     /**
      * @return How many contacts it would reach, counted when it started.
      */
-    @JsonIgnore
-    public Optional<Long> getRecipientsEstimated() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("recipients_estimated")
+    public OptionalNullable<Long> getRecipientsEstimated() {
         if (recipientsEstimated == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return recipientsEstimated;
     }
@@ -279,18 +291,20 @@ public final class Broadcast {
     /**
      * @return Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.
      */
-    @JsonIgnore
-    public Optional<String> getPauseReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("pause_reason")
+    public OptionalNullable<String> getPauseReason() {
         if (pauseReason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pauseReason;
     }
 
-    @JsonIgnore
-    public Optional<BroadcastError> getError() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("error")
+    public OptionalNullable<BroadcastError> getError() {
         if (error == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return error;
     }
@@ -312,85 +326,85 @@ public final class Broadcast {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("audience_id")
-    private Optional<String> _getAudienceId() {
+    private OptionalNullable<String> _getAudienceId() {
         return audienceId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("segment_id")
-    private Optional<String> _getSegmentId() {
+    private OptionalNullable<String> _getSegmentId() {
         return segmentId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("topic")
-    private Optional<String> _getTopic() {
+    private OptionalNullable<String> _getTopic() {
         return topic;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("preview_text")
-    private Optional<String> _getPreviewText() {
+    private OptionalNullable<String> _getPreviewText() {
         return previewText;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("html")
-    private Optional<String> _getHtml() {
+    private OptionalNullable<String> _getHtml() {
         return html;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("text")
-    private Optional<String> _getText() {
+    private OptionalNullable<String> _getText() {
         return text;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("rate_per_second")
-    private Optional<Long> _getRatePerSecond() {
+    private OptionalNullable<Long> _getRatePerSecond() {
         return ratePerSecond;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("scheduled_at")
-    private Optional<OffsetDateTime> _getScheduledAt() {
+    private OptionalNullable<OffsetDateTime> _getScheduledAt() {
         return scheduledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("started_at")
-    private Optional<OffsetDateTime> _getStartedAt() {
+    private OptionalNullable<OffsetDateTime> _getStartedAt() {
         return startedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("completed_at")
-    private Optional<OffsetDateTime> _getCompletedAt() {
+    private OptionalNullable<OffsetDateTime> _getCompletedAt() {
         return completedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("canceled_at")
-    private Optional<OffsetDateTime> _getCanceledAt() {
+    private OptionalNullable<OffsetDateTime> _getCanceledAt() {
         return canceledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("recipients_estimated")
-    private Optional<Long> _getRecipientsEstimated() {
+    private OptionalNullable<Long> _getRecipientsEstimated() {
         return recipientsEstimated;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("pause_reason")
-    private Optional<String> _getPauseReason() {
+    private OptionalNullable<String> _getPauseReason() {
         return pauseReason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("error")
-    private Optional<BroadcastError> _getError() {
+    private OptionalNullable<BroadcastError> _getError() {
         return error;
     }
 
@@ -524,21 +538,27 @@ public final class Broadcast {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage audienceId(Optional<String> audienceId);
+        _FinalStage audienceId(OptionalNullable<String> audienceId);
 
         _FinalStage audienceId(String audienceId);
 
+        _FinalStage audienceId(Optional<String> audienceId);
+
         _FinalStage audienceId(Nullable<String> audienceId);
 
-        _FinalStage segmentId(Optional<String> segmentId);
+        _FinalStage segmentId(OptionalNullable<String> segmentId);
 
         _FinalStage segmentId(String segmentId);
 
+        _FinalStage segmentId(Optional<String> segmentId);
+
         _FinalStage segmentId(Nullable<String> segmentId);
 
-        _FinalStage topic(Optional<String> topic);
+        _FinalStage topic(OptionalNullable<String> topic);
 
         _FinalStage topic(String topic);
+
+        _FinalStage topic(Optional<String> topic);
 
         _FinalStage topic(Nullable<String> topic);
 
@@ -548,75 +568,97 @@ public final class Broadcast {
 
         _FinalStage addAllReplyTo(List<String> replyTo);
 
-        _FinalStage previewText(Optional<String> previewText);
+        _FinalStage previewText(OptionalNullable<String> previewText);
 
         _FinalStage previewText(String previewText);
 
+        _FinalStage previewText(Optional<String> previewText);
+
         _FinalStage previewText(Nullable<String> previewText);
 
-        _FinalStage html(Optional<String> html);
+        _FinalStage html(OptionalNullable<String> html);
 
         _FinalStage html(String html);
 
+        _FinalStage html(Optional<String> html);
+
         _FinalStage html(Nullable<String> html);
 
-        _FinalStage text(Optional<String> text);
+        _FinalStage text(OptionalNullable<String> text);
 
         _FinalStage text(String text);
 
+        _FinalStage text(Optional<String> text);
+
         _FinalStage text(Nullable<String> text);
 
-        _FinalStage ratePerSecond(Optional<Long> ratePerSecond);
+        _FinalStage ratePerSecond(OptionalNullable<Long> ratePerSecond);
 
         _FinalStage ratePerSecond(Long ratePerSecond);
 
+        _FinalStage ratePerSecond(Optional<Long> ratePerSecond);
+
         _FinalStage ratePerSecond(Nullable<Long> ratePerSecond);
 
-        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
+        _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt);
 
         _FinalStage scheduledAt(OffsetDateTime scheduledAt);
 
+        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
+
         _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt);
 
-        _FinalStage startedAt(Optional<OffsetDateTime> startedAt);
+        _FinalStage startedAt(OptionalNullable<OffsetDateTime> startedAt);
 
         _FinalStage startedAt(OffsetDateTime startedAt);
 
+        _FinalStage startedAt(Optional<OffsetDateTime> startedAt);
+
         _FinalStage startedAt(Nullable<OffsetDateTime> startedAt);
 
-        _FinalStage completedAt(Optional<OffsetDateTime> completedAt);
+        _FinalStage completedAt(OptionalNullable<OffsetDateTime> completedAt);
 
         _FinalStage completedAt(OffsetDateTime completedAt);
 
+        _FinalStage completedAt(Optional<OffsetDateTime> completedAt);
+
         _FinalStage completedAt(Nullable<OffsetDateTime> completedAt);
 
-        _FinalStage canceledAt(Optional<OffsetDateTime> canceledAt);
+        _FinalStage canceledAt(OptionalNullable<OffsetDateTime> canceledAt);
 
         _FinalStage canceledAt(OffsetDateTime canceledAt);
+
+        _FinalStage canceledAt(Optional<OffsetDateTime> canceledAt);
 
         _FinalStage canceledAt(Nullable<OffsetDateTime> canceledAt);
 
         /**
          * <p>How many contacts it would reach, counted when it started.</p>
          */
-        _FinalStage recipientsEstimated(Optional<Long> recipientsEstimated);
+        _FinalStage recipientsEstimated(OptionalNullable<Long> recipientsEstimated);
 
         _FinalStage recipientsEstimated(Long recipientsEstimated);
+
+        _FinalStage recipientsEstimated(Optional<Long> recipientsEstimated);
 
         _FinalStage recipientsEstimated(Nullable<Long> recipientsEstimated);
 
         /**
          * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
          */
-        _FinalStage pauseReason(Optional<String> pauseReason);
+        _FinalStage pauseReason(OptionalNullable<String> pauseReason);
 
         _FinalStage pauseReason(String pauseReason);
 
+        _FinalStage pauseReason(Optional<String> pauseReason);
+
         _FinalStage pauseReason(Nullable<String> pauseReason);
 
-        _FinalStage error(Optional<BroadcastError> error);
+        _FinalStage error(OptionalNullable<BroadcastError> error);
 
         _FinalStage error(BroadcastError error);
+
+        _FinalStage error(Optional<BroadcastError> error);
 
         _FinalStage error(Nullable<BroadcastError> error);
     }
@@ -654,35 +696,35 @@ public final class Broadcast {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<BroadcastError> error = Optional.empty();
+        private OptionalNullable<BroadcastError> error = OptionalNullable.absent();
 
-        private Optional<String> pauseReason = Optional.empty();
+        private OptionalNullable<String> pauseReason = OptionalNullable.absent();
 
-        private Optional<Long> recipientsEstimated = Optional.empty();
+        private OptionalNullable<Long> recipientsEstimated = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> canceledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> canceledAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> completedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> completedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> startedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> startedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> scheduledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> scheduledAt = OptionalNullable.absent();
 
-        private Optional<Long> ratePerSecond = Optional.empty();
+        private OptionalNullable<Long> ratePerSecond = OptionalNullable.absent();
 
-        private Optional<String> text = Optional.empty();
+        private OptionalNullable<String> text = OptionalNullable.absent();
 
-        private Optional<String> html = Optional.empty();
+        private OptionalNullable<String> html = OptionalNullable.absent();
 
-        private Optional<String> previewText = Optional.empty();
+        private OptionalNullable<String> previewText = OptionalNullable.absent();
 
         private List<String> replyTo = new ArrayList<>();
 
-        private Optional<String> topic = Optional.empty();
+        private OptionalNullable<String> topic = OptionalNullable.absent();
 
-        private Optional<String> segmentId = Optional.empty();
+        private OptionalNullable<String> segmentId = OptionalNullable.absent();
 
-        private Optional<String> audienceId = Optional.empty();
+        private OptionalNullable<String> audienceId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -796,24 +838,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage error(Nullable<BroadcastError> error) {
             if (error.isNull()) {
-                this.error = null;
+                this.error = OptionalNullable.ofNull();
             } else if (error.isEmpty()) {
-                this.error = Optional.empty();
+                this.error = OptionalNullable.absent();
             } else {
-                this.error = Optional.of(error.get());
+                this.error = OptionalNullable.of(error.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage error(Optional<BroadcastError> error) {
+            if (error.isPresent()) {
+                this.error = OptionalNullable.of(error.get());
+            } else {
+                this.error = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage error(BroadcastError error) {
-            this.error = Optional.ofNullable(error);
+            this.error = OptionalNullable.of(error);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "error", nulls = Nulls.SKIP)
-        public _FinalStage error(Optional<BroadcastError> error) {
+        public _FinalStage error(OptionalNullable<BroadcastError> error) {
             this.error = error;
             return this;
         }
@@ -825,11 +877,25 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage pauseReason(Nullable<String> pauseReason) {
             if (pauseReason.isNull()) {
-                this.pauseReason = null;
+                this.pauseReason = OptionalNullable.ofNull();
             } else if (pauseReason.isEmpty()) {
-                this.pauseReason = Optional.empty();
+                this.pauseReason = OptionalNullable.absent();
             } else {
-                this.pauseReason = Optional.of(pauseReason.get());
+                this.pauseReason = OptionalNullable.of(pauseReason.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage pauseReason(Optional<String> pauseReason) {
+            if (pauseReason.isPresent()) {
+                this.pauseReason = OptionalNullable.of(pauseReason.get());
+            } else {
+                this.pauseReason = OptionalNullable.absent();
             }
             return this;
         }
@@ -840,7 +906,7 @@ public final class Broadcast {
          */
         @java.lang.Override
         public _FinalStage pauseReason(String pauseReason) {
-            this.pauseReason = Optional.ofNullable(pauseReason);
+            this.pauseReason = OptionalNullable.of(pauseReason);
             return this;
         }
 
@@ -849,7 +915,7 @@ public final class Broadcast {
          */
         @java.lang.Override
         @JsonSetter(value = "pause_reason", nulls = Nulls.SKIP)
-        public _FinalStage pauseReason(Optional<String> pauseReason) {
+        public _FinalStage pauseReason(OptionalNullable<String> pauseReason) {
             this.pauseReason = pauseReason;
             return this;
         }
@@ -861,11 +927,25 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage recipientsEstimated(Nullable<Long> recipientsEstimated) {
             if (recipientsEstimated.isNull()) {
-                this.recipientsEstimated = null;
+                this.recipientsEstimated = OptionalNullable.ofNull();
             } else if (recipientsEstimated.isEmpty()) {
-                this.recipientsEstimated = Optional.empty();
+                this.recipientsEstimated = OptionalNullable.absent();
             } else {
-                this.recipientsEstimated = Optional.of(recipientsEstimated.get());
+                this.recipientsEstimated = OptionalNullable.of(recipientsEstimated.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>How many contacts it would reach, counted when it started.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage recipientsEstimated(Optional<Long> recipientsEstimated) {
+            if (recipientsEstimated.isPresent()) {
+                this.recipientsEstimated = OptionalNullable.of(recipientsEstimated.get());
+            } else {
+                this.recipientsEstimated = OptionalNullable.absent();
             }
             return this;
         }
@@ -876,7 +956,7 @@ public final class Broadcast {
          */
         @java.lang.Override
         public _FinalStage recipientsEstimated(Long recipientsEstimated) {
-            this.recipientsEstimated = Optional.ofNullable(recipientsEstimated);
+            this.recipientsEstimated = OptionalNullable.of(recipientsEstimated);
             return this;
         }
 
@@ -885,7 +965,7 @@ public final class Broadcast {
          */
         @java.lang.Override
         @JsonSetter(value = "recipients_estimated", nulls = Nulls.SKIP)
-        public _FinalStage recipientsEstimated(Optional<Long> recipientsEstimated) {
+        public _FinalStage recipientsEstimated(OptionalNullable<Long> recipientsEstimated) {
             this.recipientsEstimated = recipientsEstimated;
             return this;
         }
@@ -893,24 +973,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage canceledAt(Nullable<OffsetDateTime> canceledAt) {
             if (canceledAt.isNull()) {
-                this.canceledAt = null;
+                this.canceledAt = OptionalNullable.ofNull();
             } else if (canceledAt.isEmpty()) {
-                this.canceledAt = Optional.empty();
+                this.canceledAt = OptionalNullable.absent();
             } else {
-                this.canceledAt = Optional.of(canceledAt.get());
+                this.canceledAt = OptionalNullable.of(canceledAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage canceledAt(Optional<OffsetDateTime> canceledAt) {
+            if (canceledAt.isPresent()) {
+                this.canceledAt = OptionalNullable.of(canceledAt.get());
+            } else {
+                this.canceledAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage canceledAt(OffsetDateTime canceledAt) {
-            this.canceledAt = Optional.ofNullable(canceledAt);
+            this.canceledAt = OptionalNullable.of(canceledAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "canceled_at", nulls = Nulls.SKIP)
-        public _FinalStage canceledAt(Optional<OffsetDateTime> canceledAt) {
+        public _FinalStage canceledAt(OptionalNullable<OffsetDateTime> canceledAt) {
             this.canceledAt = canceledAt;
             return this;
         }
@@ -918,24 +1008,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage completedAt(Nullable<OffsetDateTime> completedAt) {
             if (completedAt.isNull()) {
-                this.completedAt = null;
+                this.completedAt = OptionalNullable.ofNull();
             } else if (completedAt.isEmpty()) {
-                this.completedAt = Optional.empty();
+                this.completedAt = OptionalNullable.absent();
             } else {
-                this.completedAt = Optional.of(completedAt.get());
+                this.completedAt = OptionalNullable.of(completedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage completedAt(Optional<OffsetDateTime> completedAt) {
+            if (completedAt.isPresent()) {
+                this.completedAt = OptionalNullable.of(completedAt.get());
+            } else {
+                this.completedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage completedAt(OffsetDateTime completedAt) {
-            this.completedAt = Optional.ofNullable(completedAt);
+            this.completedAt = OptionalNullable.of(completedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "completed_at", nulls = Nulls.SKIP)
-        public _FinalStage completedAt(Optional<OffsetDateTime> completedAt) {
+        public _FinalStage completedAt(OptionalNullable<OffsetDateTime> completedAt) {
             this.completedAt = completedAt;
             return this;
         }
@@ -943,24 +1043,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage startedAt(Nullable<OffsetDateTime> startedAt) {
             if (startedAt.isNull()) {
-                this.startedAt = null;
+                this.startedAt = OptionalNullable.ofNull();
             } else if (startedAt.isEmpty()) {
-                this.startedAt = Optional.empty();
+                this.startedAt = OptionalNullable.absent();
             } else {
-                this.startedAt = Optional.of(startedAt.get());
+                this.startedAt = OptionalNullable.of(startedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage startedAt(Optional<OffsetDateTime> startedAt) {
+            if (startedAt.isPresent()) {
+                this.startedAt = OptionalNullable.of(startedAt.get());
+            } else {
+                this.startedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage startedAt(OffsetDateTime startedAt) {
-            this.startedAt = Optional.ofNullable(startedAt);
+            this.startedAt = OptionalNullable.of(startedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "started_at", nulls = Nulls.SKIP)
-        public _FinalStage startedAt(Optional<OffsetDateTime> startedAt) {
+        public _FinalStage startedAt(OptionalNullable<OffsetDateTime> startedAt) {
             this.startedAt = startedAt;
             return this;
         }
@@ -968,24 +1078,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt) {
             if (scheduledAt.isNull()) {
-                this.scheduledAt = null;
+                this.scheduledAt = OptionalNullable.ofNull();
             } else if (scheduledAt.isEmpty()) {
-                this.scheduledAt = Optional.empty();
+                this.scheduledAt = OptionalNullable.absent();
             } else {
-                this.scheduledAt = Optional.of(scheduledAt.get());
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+            if (scheduledAt.isPresent()) {
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            } else {
+                this.scheduledAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage scheduledAt(OffsetDateTime scheduledAt) {
-            this.scheduledAt = Optional.ofNullable(scheduledAt);
+            this.scheduledAt = OptionalNullable.of(scheduledAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "scheduled_at", nulls = Nulls.SKIP)
-        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+        public _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt) {
             this.scheduledAt = scheduledAt;
             return this;
         }
@@ -993,24 +1113,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage ratePerSecond(Nullable<Long> ratePerSecond) {
             if (ratePerSecond.isNull()) {
-                this.ratePerSecond = null;
+                this.ratePerSecond = OptionalNullable.ofNull();
             } else if (ratePerSecond.isEmpty()) {
-                this.ratePerSecond = Optional.empty();
+                this.ratePerSecond = OptionalNullable.absent();
             } else {
-                this.ratePerSecond = Optional.of(ratePerSecond.get());
+                this.ratePerSecond = OptionalNullable.of(ratePerSecond.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage ratePerSecond(Optional<Long> ratePerSecond) {
+            if (ratePerSecond.isPresent()) {
+                this.ratePerSecond = OptionalNullable.of(ratePerSecond.get());
+            } else {
+                this.ratePerSecond = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage ratePerSecond(Long ratePerSecond) {
-            this.ratePerSecond = Optional.ofNullable(ratePerSecond);
+            this.ratePerSecond = OptionalNullable.of(ratePerSecond);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "rate_per_second", nulls = Nulls.SKIP)
-        public _FinalStage ratePerSecond(Optional<Long> ratePerSecond) {
+        public _FinalStage ratePerSecond(OptionalNullable<Long> ratePerSecond) {
             this.ratePerSecond = ratePerSecond;
             return this;
         }
@@ -1018,24 +1148,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage text(Nullable<String> text) {
             if (text.isNull()) {
-                this.text = null;
+                this.text = OptionalNullable.ofNull();
             } else if (text.isEmpty()) {
-                this.text = Optional.empty();
+                this.text = OptionalNullable.absent();
             } else {
-                this.text = Optional.of(text.get());
+                this.text = OptionalNullable.of(text.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage text(Optional<String> text) {
+            if (text.isPresent()) {
+                this.text = OptionalNullable.of(text.get());
+            } else {
+                this.text = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage text(String text) {
-            this.text = Optional.ofNullable(text);
+            this.text = OptionalNullable.of(text);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "text", nulls = Nulls.SKIP)
-        public _FinalStage text(Optional<String> text) {
+        public _FinalStage text(OptionalNullable<String> text) {
             this.text = text;
             return this;
         }
@@ -1043,24 +1183,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage html(Nullable<String> html) {
             if (html.isNull()) {
-                this.html = null;
+                this.html = OptionalNullable.ofNull();
             } else if (html.isEmpty()) {
-                this.html = Optional.empty();
+                this.html = OptionalNullable.absent();
             } else {
-                this.html = Optional.of(html.get());
+                this.html = OptionalNullable.of(html.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage html(Optional<String> html) {
+            if (html.isPresent()) {
+                this.html = OptionalNullable.of(html.get());
+            } else {
+                this.html = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage html(String html) {
-            this.html = Optional.ofNullable(html);
+            this.html = OptionalNullable.of(html);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "html", nulls = Nulls.SKIP)
-        public _FinalStage html(Optional<String> html) {
+        public _FinalStage html(OptionalNullable<String> html) {
             this.html = html;
             return this;
         }
@@ -1068,24 +1218,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage previewText(Nullable<String> previewText) {
             if (previewText.isNull()) {
-                this.previewText = null;
+                this.previewText = OptionalNullable.ofNull();
             } else if (previewText.isEmpty()) {
-                this.previewText = Optional.empty();
+                this.previewText = OptionalNullable.absent();
             } else {
-                this.previewText = Optional.of(previewText.get());
+                this.previewText = OptionalNullable.of(previewText.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage previewText(Optional<String> previewText) {
+            if (previewText.isPresent()) {
+                this.previewText = OptionalNullable.of(previewText.get());
+            } else {
+                this.previewText = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage previewText(String previewText) {
-            this.previewText = Optional.ofNullable(previewText);
+            this.previewText = OptionalNullable.of(previewText);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "preview_text", nulls = Nulls.SKIP)
-        public _FinalStage previewText(Optional<String> previewText) {
+        public _FinalStage previewText(OptionalNullable<String> previewText) {
             this.previewText = previewText;
             return this;
         }
@@ -1117,24 +1277,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage topic(Nullable<String> topic) {
             if (topic.isNull()) {
-                this.topic = null;
+                this.topic = OptionalNullable.ofNull();
             } else if (topic.isEmpty()) {
-                this.topic = Optional.empty();
+                this.topic = OptionalNullable.absent();
             } else {
-                this.topic = Optional.of(topic.get());
+                this.topic = OptionalNullable.of(topic.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage topic(Optional<String> topic) {
+            if (topic.isPresent()) {
+                this.topic = OptionalNullable.of(topic.get());
+            } else {
+                this.topic = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage topic(String topic) {
-            this.topic = Optional.ofNullable(topic);
+            this.topic = OptionalNullable.of(topic);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "topic", nulls = Nulls.SKIP)
-        public _FinalStage topic(Optional<String> topic) {
+        public _FinalStage topic(OptionalNullable<String> topic) {
             this.topic = topic;
             return this;
         }
@@ -1142,24 +1312,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage segmentId(Nullable<String> segmentId) {
             if (segmentId.isNull()) {
-                this.segmentId = null;
+                this.segmentId = OptionalNullable.ofNull();
             } else if (segmentId.isEmpty()) {
-                this.segmentId = Optional.empty();
+                this.segmentId = OptionalNullable.absent();
             } else {
-                this.segmentId = Optional.of(segmentId.get());
+                this.segmentId = OptionalNullable.of(segmentId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage segmentId(Optional<String> segmentId) {
+            if (segmentId.isPresent()) {
+                this.segmentId = OptionalNullable.of(segmentId.get());
+            } else {
+                this.segmentId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage segmentId(String segmentId) {
-            this.segmentId = Optional.ofNullable(segmentId);
+            this.segmentId = OptionalNullable.of(segmentId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "segment_id", nulls = Nulls.SKIP)
-        public _FinalStage segmentId(Optional<String> segmentId) {
+        public _FinalStage segmentId(OptionalNullable<String> segmentId) {
             this.segmentId = segmentId;
             return this;
         }
@@ -1167,24 +1347,34 @@ public final class Broadcast {
         @java.lang.Override
         public _FinalStage audienceId(Nullable<String> audienceId) {
             if (audienceId.isNull()) {
-                this.audienceId = null;
+                this.audienceId = OptionalNullable.ofNull();
             } else if (audienceId.isEmpty()) {
-                this.audienceId = Optional.empty();
+                this.audienceId = OptionalNullable.absent();
             } else {
-                this.audienceId = Optional.of(audienceId.get());
+                this.audienceId = OptionalNullable.of(audienceId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage audienceId(Optional<String> audienceId) {
+            if (audienceId.isPresent()) {
+                this.audienceId = OptionalNullable.of(audienceId.get());
+            } else {
+                this.audienceId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage audienceId(String audienceId) {
-            this.audienceId = Optional.ofNullable(audienceId);
+            this.audienceId = OptionalNullable.of(audienceId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "audience_id", nulls = Nulls.SKIP)
-        public _FinalStage audienceId(Optional<String> audienceId) {
+        public _FinalStage audienceId(OptionalNullable<String> audienceId) {
             this.audienceId = audienceId;
             return this;
         }

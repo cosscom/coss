@@ -79,9 +79,12 @@ public class CheckIpTest : BaseMockServerTest
               "private": false,
               "tor": true,
               "hosting": false,
+              "hosting_provider": null,
+              "hosting_kind": null,
               "asn": 60729,
               "as_name": "Stiftung Erneuerbare Freiheit",
               "country": "DE",
+              "privacy": null,
               "object": "risk_ip_check",
               "ip": "185.220.101.1",
               "degraded": [

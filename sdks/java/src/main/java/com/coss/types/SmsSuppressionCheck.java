@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ public final class SmsSuppressionCheck {
 
     private final boolean suppressed;
 
-    private final Optional<SmsSuppressionCheckSuppression> suppression;
+    private final OptionalNullable<SmsSuppressionCheckSuppression> suppression;
 
     private final Map<String, Object> additionalProperties;
 
@@ -38,7 +38,7 @@ public final class SmsSuppressionCheck {
             SmsSuppressionCheckObject object,
             String phoneNumber,
             boolean suppressed,
-            Optional<SmsSuppressionCheckSuppression> suppression,
+            OptionalNullable<SmsSuppressionCheckSuppression> suppression,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.phoneNumber = phoneNumber;
@@ -65,17 +65,18 @@ public final class SmsSuppressionCheck {
         return suppressed;
     }
 
-    @JsonIgnore
-    public Optional<SmsSuppressionCheckSuppression> getSuppression() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("suppression")
+    public OptionalNullable<SmsSuppressionCheckSuppression> getSuppression() {
         if (suppression == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return suppression;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("suppression")
-    private Optional<SmsSuppressionCheckSuppression> _getSuppression() {
+    private OptionalNullable<SmsSuppressionCheckSuppression> _getSuppression() {
         return suppression;
     }
 
@@ -135,9 +136,11 @@ public final class SmsSuppressionCheck {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage suppression(Optional<SmsSuppressionCheckSuppression> suppression);
+        _FinalStage suppression(OptionalNullable<SmsSuppressionCheckSuppression> suppression);
 
         _FinalStage suppression(SmsSuppressionCheckSuppression suppression);
+
+        _FinalStage suppression(Optional<SmsSuppressionCheckSuppression> suppression);
 
         _FinalStage suppression(Nullable<SmsSuppressionCheckSuppression> suppression);
     }
@@ -150,7 +153,7 @@ public final class SmsSuppressionCheck {
 
         private boolean suppressed;
 
-        private Optional<SmsSuppressionCheckSuppression> suppression = Optional.empty();
+        private OptionalNullable<SmsSuppressionCheckSuppression> suppression = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -194,24 +197,34 @@ public final class SmsSuppressionCheck {
         @java.lang.Override
         public _FinalStage suppression(Nullable<SmsSuppressionCheckSuppression> suppression) {
             if (suppression.isNull()) {
-                this.suppression = null;
+                this.suppression = OptionalNullable.ofNull();
             } else if (suppression.isEmpty()) {
-                this.suppression = Optional.empty();
+                this.suppression = OptionalNullable.absent();
             } else {
-                this.suppression = Optional.of(suppression.get());
+                this.suppression = OptionalNullable.of(suppression.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage suppression(Optional<SmsSuppressionCheckSuppression> suppression) {
+            if (suppression.isPresent()) {
+                this.suppression = OptionalNullable.of(suppression.get());
+            } else {
+                this.suppression = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage suppression(SmsSuppressionCheckSuppression suppression) {
-            this.suppression = Optional.ofNullable(suppression);
+            this.suppression = OptionalNullable.of(suppression);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "suppression", nulls = Nulls.SKIP)
-        public _FinalStage suppression(Optional<SmsSuppressionCheckSuppression> suppression) {
+        public _FinalStage suppression(OptionalNullable<SmsSuppressionCheckSuppression> suppression) {
             this.suppression = suppression;
             return this;
         }

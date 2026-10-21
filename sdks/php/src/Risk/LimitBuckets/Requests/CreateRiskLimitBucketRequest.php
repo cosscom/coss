@@ -54,6 +54,12 @@ class CreateRiskLimitBucketRequest extends JsonSerializableType
         $this->limit = $values['limit'];
         $this->periodSeconds = $values['periodSeconds'];
         $this->burst = $values['burst'] ?? null;
+        if (array_key_exists('burst', $values)) {
+            $this->_setField('burst');
+        }
         $this->onFailure = $values['onFailure'] ?? null;
+        if (array_key_exists('onFailure', $values)) {
+            $this->_setField('onFailure');
+        }
     }
 }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,20 +28,20 @@ public final class WebhookListenerAck {
 
     private final String ackToken;
 
-    private final Optional<Integer> statusCode;
+    private final OptionalNullable<Integer> statusCode;
 
     private final int durationMs;
 
-    private final Optional<String> error;
+    private final OptionalNullable<String> error;
 
     private final Map<String, Object> additionalProperties;
 
     private WebhookListenerAck(
             String deliveryId,
             String ackToken,
-            Optional<Integer> statusCode,
+            OptionalNullable<Integer> statusCode,
             int durationMs,
-            Optional<String> error,
+            OptionalNullable<String> error,
             Map<String, Object> additionalProperties) {
         this.deliveryId = deliveryId;
         this.ackToken = ackToken;
@@ -67,10 +67,11 @@ public final class WebhookListenerAck {
     /**
      * @return What the local URL answered; <code>null</code> when nothing answered, or when the event was only printed.
      */
-    @JsonIgnore
-    public Optional<Integer> getStatusCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("status_code")
+    public OptionalNullable<Integer> getStatusCode() {
         if (statusCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return statusCode;
     }
@@ -83,23 +84,24 @@ public final class WebhookListenerAck {
     /**
      * @return Why forwarding failed (e.g. <code>connection refused</code>); <code>null</code> if it didn't.
      */
-    @JsonIgnore
-    public Optional<String> getError() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("error")
+    public OptionalNullable<String> getError() {
         if (error == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return error;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("status_code")
-    private Optional<Integer> _getStatusCode() {
+    private OptionalNullable<Integer> _getStatusCode() {
         return statusCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("error")
-    private Optional<String> _getError() {
+    private OptionalNullable<String> _getError() {
         return error;
     }
 
@@ -163,18 +165,22 @@ public final class WebhookListenerAck {
         /**
          * <p>What the local URL answered; <code>null</code> when nothing answered, or when the event was only printed.</p>
          */
-        _FinalStage statusCode(Optional<Integer> statusCode);
+        _FinalStage statusCode(OptionalNullable<Integer> statusCode);
 
         _FinalStage statusCode(Integer statusCode);
+
+        _FinalStage statusCode(Optional<Integer> statusCode);
 
         _FinalStage statusCode(Nullable<Integer> statusCode);
 
         /**
          * <p>Why forwarding failed (e.g. <code>connection refused</code>); <code>null</code> if it didn't.</p>
          */
-        _FinalStage error(Optional<String> error);
+        _FinalStage error(OptionalNullable<String> error);
 
         _FinalStage error(String error);
+
+        _FinalStage error(Optional<String> error);
 
         _FinalStage error(Nullable<String> error);
     }
@@ -187,9 +193,9 @@ public final class WebhookListenerAck {
 
         private int durationMs;
 
-        private Optional<String> error = Optional.empty();
+        private OptionalNullable<String> error = OptionalNullable.absent();
 
-        private Optional<Integer> statusCode = Optional.empty();
+        private OptionalNullable<Integer> statusCode = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -238,11 +244,25 @@ public final class WebhookListenerAck {
         @java.lang.Override
         public _FinalStage error(Nullable<String> error) {
             if (error.isNull()) {
-                this.error = null;
+                this.error = OptionalNullable.ofNull();
             } else if (error.isEmpty()) {
-                this.error = Optional.empty();
+                this.error = OptionalNullable.absent();
             } else {
-                this.error = Optional.of(error.get());
+                this.error = OptionalNullable.of(error.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Why forwarding failed (e.g. <code>connection refused</code>); <code>null</code> if it didn't.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage error(Optional<String> error) {
+            if (error.isPresent()) {
+                this.error = OptionalNullable.of(error.get());
+            } else {
+                this.error = OptionalNullable.absent();
             }
             return this;
         }
@@ -253,7 +273,7 @@ public final class WebhookListenerAck {
          */
         @java.lang.Override
         public _FinalStage error(String error) {
-            this.error = Optional.ofNullable(error);
+            this.error = OptionalNullable.of(error);
             return this;
         }
 
@@ -262,7 +282,7 @@ public final class WebhookListenerAck {
          */
         @java.lang.Override
         @JsonSetter(value = "error", nulls = Nulls.SKIP)
-        public _FinalStage error(Optional<String> error) {
+        public _FinalStage error(OptionalNullable<String> error) {
             this.error = error;
             return this;
         }
@@ -274,11 +294,25 @@ public final class WebhookListenerAck {
         @java.lang.Override
         public _FinalStage statusCode(Nullable<Integer> statusCode) {
             if (statusCode.isNull()) {
-                this.statusCode = null;
+                this.statusCode = OptionalNullable.ofNull();
             } else if (statusCode.isEmpty()) {
-                this.statusCode = Optional.empty();
+                this.statusCode = OptionalNullable.absent();
             } else {
-                this.statusCode = Optional.of(statusCode.get());
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What the local URL answered; <code>null</code> when nothing answered, or when the event was only printed.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage statusCode(Optional<Integer> statusCode) {
+            if (statusCode.isPresent()) {
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            } else {
+                this.statusCode = OptionalNullable.absent();
             }
             return this;
         }
@@ -289,7 +323,7 @@ public final class WebhookListenerAck {
          */
         @java.lang.Override
         public _FinalStage statusCode(Integer statusCode) {
-            this.statusCode = Optional.ofNullable(statusCode);
+            this.statusCode = OptionalNullable.of(statusCode);
             return this;
         }
 
@@ -298,7 +332,7 @@ public final class WebhookListenerAck {
          */
         @java.lang.Override
         @JsonSetter(value = "status_code", nulls = Nulls.SKIP)
-        public _FinalStage statusCode(Optional<Integer> statusCode) {
+        public _FinalStage statusCode(OptionalNullable<Integer> statusCode) {
             this.statusCode = statusCode;
             return this;
         }

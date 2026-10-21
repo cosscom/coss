@@ -68,6 +68,7 @@ def test_keeps_the_callers_idempotency_key() -> None:
         from_="hello@acme.test", to=["someone@example.com"], subject="Hi", text="Hi", idempotency_key="order-42"
     )
     assert recorder.requests[0].headers["idempotency-key"] == "order-42"
+    assert "idempotency_key" not in json.loads(recorder.requests[0].content)
 
 
 @pytest.mark.parametrize("status", [400, 402, 404, 422])
@@ -92,3 +93,10 @@ def test_never_retries_what_the_api_does_not_deduplicate() -> None:
     with pytest.raises(ApiError):
         client(recorder).webhook_endpoints.create(url="https://example.com/hooks", event_types=["email.sent"])
     assert len(recorder.requests) == 1
+
+
+def test_sends_an_explicit_null_and_leaves_omitted_fields_out() -> None:
+    endpoint = OPENAPI["components"]["schemas"]["WebhookEndpoint"]["examples"][0]
+    recorder = Recorder([httpx.Response(200, json=endpoint)])
+    client(recorder).webhook_endpoints.update("we_1", description=None)
+    assert json.loads(recorder.requests[0].content) == {"description": None}

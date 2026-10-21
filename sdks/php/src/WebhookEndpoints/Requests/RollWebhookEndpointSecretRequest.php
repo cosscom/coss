@@ -22,5 +22,8 @@ class RollWebhookEndpointSecretRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->previousSecretExpiresIn = $values['previousSecretExpiresIn'] ?? null;
+        if (array_key_exists('previousSecretExpiresIn', $values)) {
+            $this->_setField('previousSecretExpiresIn');
+        }
     }
 }

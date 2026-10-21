@@ -103,10 +103,19 @@ class ReceivedEmailWebhookEventData extends JsonSerializableType
     ) {
         $this->receivedEmailId = $values['receivedEmailId'];
         $this->from = $values['from'] ?? null;
+        if (array_key_exists('from', $values)) {
+            $this->_setField('from');
+        }
         $this->to = $values['to'];
         $this->recipients = $values['recipients'];
         $this->subject = $values['subject'] ?? null;
+        if (array_key_exists('subject', $values)) {
+            $this->_setField('subject');
+        }
         $this->messageId = $values['messageId'] ?? null;
+        if (array_key_exists('messageId', $values)) {
+            $this->_setField('messageId');
+        }
         $this->attachmentCount = $values['attachmentCount'];
         $this->size = $values['size'];
         $this->spam = $values['spam'];

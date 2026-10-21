@@ -75,14 +75,44 @@ class ListEmailRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->to = $values['to'] ?? null;
+        if (array_key_exists('to', $values)) {
+            $this->_setField('to');
+        }
         $this->recipientStatus = $values['recipientStatus'] ?? null;
+        if (array_key_exists('recipientStatus', $values)) {
+            $this->_setField('recipientStatus');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->q = $values['q'] ?? null;
+        if (array_key_exists('q', $values)) {
+            $this->_setField('q');
+        }
         $this->category = $values['category'] ?? null;
+        if (array_key_exists('category', $values)) {
+            $this->_setField('category');
+        }
         $this->batchId = $values['batchId'] ?? null;
+        if (array_key_exists('batchId', $values)) {
+            $this->_setField('batchId');
+        }
         $this->createdAfter = $values['createdAfter'] ?? null;
+        if (array_key_exists('createdAfter', $values)) {
+            $this->_setField('createdAfter');
+        }
         $this->createdBefore = $values['createdBefore'] ?? null;
+        if (array_key_exists('createdBefore', $values)) {
+            $this->_setField('createdBefore');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

@@ -37,6 +37,12 @@ class ExportSuppressionsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->scope = $values['scope'] ?? null;
+        if (array_key_exists('scope', $values)) {
+            $this->_setField('scope');
+        }
         $this->reason = $values['reason'] ?? null;
+        if (array_key_exists('reason', $values)) {
+            $this->_setField('reason');
+        }
     }
 }

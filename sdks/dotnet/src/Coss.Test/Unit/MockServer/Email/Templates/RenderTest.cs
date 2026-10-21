@@ -72,9 +72,11 @@ public class RenderTest : BaseMockServerTest
             {
               "object": "email_template_render",
               "template_id": "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "version": null,
               "locale": "en",
               "subject": "Welcome, Ada",
-              "html": "<p>Hi Ada, thanks for signing up!</p>"
+              "html": "<p>Hi Ada, thanks for signing up!</p>",
+              "text": null
             }
             """;
 

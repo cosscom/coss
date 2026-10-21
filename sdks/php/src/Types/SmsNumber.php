@@ -93,6 +93,9 @@ class SmsNumber extends JsonSerializableType
         $this->country = $values['country'];
         $this->status = $values['status'];
         $this->registrationStatus = $values['registrationStatus'] ?? null;
+        if (array_key_exists('registrationStatus', $values)) {
+            $this->_setField('registrationStatus');
+        }
         $this->canSend = $values['canSend'];
         $this->receivesHere = $values['receivesHere'];
         $this->createdAt = $values['createdAt'];

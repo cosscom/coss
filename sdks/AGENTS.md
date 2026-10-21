@@ -37,15 +37,20 @@ language in turn:
    packaged (`--package`, in Docker), the only way they write their project files.
 3. **Post-process** (`tooling/sdkgen/src/languages.ts`) what no option covers: 409 is retried
    (an idempotent request still in progress) everywhere; PHP and .NET keep an idempotency key the
-   caller passed (their generators overwrite it); Ruby sends the key at all, and lowercase paths
-   (`require "coss"`); PyPI metadata; name clashes with the `environment` resource. Each edit
+   caller passed (their generators overwrite it); Ruby sends the key at all (in its header only),
+   and lowercase paths (`require "coss"`); PHP and Ruby send a field the caller sets to null
+   (which clears it: a webhook endpoint's `description`, a broadcast's `segment_id`, …) instead of
+   dropping it, as the others do through generator options (Java's `OptionalNullable`, .NET's
+   `Optional<T?>`); PyPI metadata; name clashes with the `environment` resource. Each edit
    fails loudly when its target is gone: after a generator upgrade, fix the edit (or drop it if
    the generator now does it) and check the SDK's tests.
 4. **Snippets**: `tooling/sdkgen/snippets.json`, every operation's sample in every language
    (`reference.md`'s usage examples, with imports and the client's setup added), which the site
    shows as code tabs (`x-codeSamples`, `apps/site/src/lib/openapi.ts`).
 
-The version is `sdks/VERSION` (all six share it); generating writes it into each SDK. On main,
+The version is `sdks/VERSION` (all six share it); generating writes it into each SDK (but never
+into the CHANGELOGs, which Fern would date). Fern's `.fern/metadata.json` records the generating
+commit, so it is git-ignored: a regeneration that changes nothing else is no change. On main,
 `.github/workflows/sdks-regenerate.yml` runs all of this after every change to the OpenAPI
 document or the generator, and when anything changed bumps the minor version, adds a CHANGELOG
 entry to each SDK and opens the "Regenerate SDKs" PR. Merging it publishes them

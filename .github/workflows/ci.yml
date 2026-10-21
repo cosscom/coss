@@ -296,8 +296,10 @@ jobs:
         run: |
           uv venv
           uv pip install -e . pytest pytest-asyncio
-          uv run --no-project ruff check src/coss/webhooks.py tests/custom
-          uv run --no-project pytest
+          # Our files only (the generated code is the generator's); Ruff at the version it pins.
+          uvx ruff@0.11.5 check src/coss/webhooks.py tests/custom
+          uvx ruff@0.11.5 format --check src/coss/webhooks.py tests/custom
+          .venv/bin/pytest
           uv build
 
       - if: matrix.sdk == 'go'

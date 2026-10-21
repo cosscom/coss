@@ -63,6 +63,9 @@ class BillingWebhookEventThreeData extends JsonSerializableType
         $this->percent = $values['percent'];
         $this->of = $values['of'];
         $this->meter = $values['meter'] ?? null;
+        if (array_key_exists('meter', $values)) {
+            $this->_setField('meter');
+        }
         $this->period = $values['period'];
     }
 

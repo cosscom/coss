@@ -35,6 +35,7 @@ public record Domain : IJsonOnDeserialized
     [JsonPropertyName("can_send")]
     public required bool CanSend { get; set; }
 
+    [Nullable]
     [JsonPropertyName("region")]
     public string? Region { get; set; }
 
@@ -56,18 +57,23 @@ public record Domain : IJsonOnDeserialized
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_checked_at")]
     public DateTime? LastCheckedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("verified_at")]
     public DateTime? VerifiedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("failed_at")]
     public DateTime? FailedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("tracking")]
     public TrackingDomain? Tracking { get; set; }
 
+    [Nullable]
     [JsonPropertyName("receiving")]
     public ReceivingDomain? Receiving { get; set; }
 

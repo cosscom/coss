@@ -37,6 +37,9 @@ class DmarcReportRecordAuthResultsDkimItem extends JsonSerializableType
     ) {
         $this->domain = $values['domain'];
         $this->selector = $values['selector'] ?? null;
+        if (array_key_exists('selector', $values)) {
+            $this->_setField('selector');
+        }
         $this->result = $values['result'];
     }
 

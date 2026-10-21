@@ -18,12 +18,14 @@ public record UpdateRiskSettingsRequestCaptcha : IJsonOnDeserialized
     /// <summary>
     /// The provider's secret key. Required when setting a provider for the first time or changing it; stored encrypted and never returned.
     /// </summary>
+    [Optional]
     [JsonPropertyName("secret")]
     public string? Secret { get; set; }
 
     /// <summary>
     /// Assessments without a `captcha` token get `captcha.missing`. Default false.
     /// </summary>
+    [Optional]
     [JsonPropertyName("required")]
     public bool? Required { get; set; }
 

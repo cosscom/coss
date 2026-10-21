@@ -61,7 +61,9 @@ public class GetTest : BaseMockServerTest
                 }
               ],
               "dedicated_share": 0.72,
-              "created_at": "2026-10-12T09:31:00.000Z"
+              "message": null,
+              "created_at": "2026-10-12T09:31:00.000Z",
+              "ready_at": null
             }
             """;
 

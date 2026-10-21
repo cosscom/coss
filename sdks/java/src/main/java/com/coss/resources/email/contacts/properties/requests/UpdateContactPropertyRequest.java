@@ -6,10 +6,10 @@ package com.coss.resources.email.contacts.properties.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.email.contacts.properties.types.UpdateContactPropertyRequestFallback;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,27 +24,28 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateContactPropertyRequest.Builder.class)
 public final class UpdateContactPropertyRequest {
-    private final Optional<UpdateContactPropertyRequestFallback> fallback;
+    private final OptionalNullable<UpdateContactPropertyRequestFallback> fallback;
 
     private final Map<String, Object> additionalProperties;
 
     private UpdateContactPropertyRequest(
-            Optional<UpdateContactPropertyRequestFallback> fallback, Map<String, Object> additionalProperties) {
+            OptionalNullable<UpdateContactPropertyRequestFallback> fallback, Map<String, Object> additionalProperties) {
         this.fallback = fallback;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<UpdateContactPropertyRequestFallback> getFallback() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("fallback")
+    public OptionalNullable<UpdateContactPropertyRequestFallback> getFallback() {
         if (fallback == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return fallback;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("fallback")
-    private Optional<UpdateContactPropertyRequestFallback> _getFallback() {
+    private OptionalNullable<UpdateContactPropertyRequestFallback> _getFallback() {
         return fallback;
     }
 
@@ -79,7 +80,7 @@ public final class UpdateContactPropertyRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<UpdateContactPropertyRequestFallback> fallback = Optional.empty();
+        private OptionalNullable<UpdateContactPropertyRequestFallback> fallback = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -92,23 +93,32 @@ public final class UpdateContactPropertyRequest {
         }
 
         @JsonSetter(value = "fallback", nulls = Nulls.SKIP)
-        public Builder fallback(Optional<UpdateContactPropertyRequestFallback> fallback) {
+        public Builder fallback(OptionalNullable<UpdateContactPropertyRequestFallback> fallback) {
             this.fallback = fallback;
             return this;
         }
 
         public Builder fallback(UpdateContactPropertyRequestFallback fallback) {
-            this.fallback = Optional.ofNullable(fallback);
+            this.fallback = OptionalNullable.of(fallback);
+            return this;
+        }
+
+        public Builder fallback(Optional<UpdateContactPropertyRequestFallback> fallback) {
+            if (fallback.isPresent()) {
+                this.fallback = OptionalNullable.of(fallback.get());
+            } else {
+                this.fallback = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder fallback(Nullable<UpdateContactPropertyRequestFallback> fallback) {
             if (fallback.isNull()) {
-                this.fallback = null;
+                this.fallback = OptionalNullable.ofNull();
             } else if (fallback.isEmpty()) {
-                this.fallback = Optional.empty();
+                this.fallback = OptionalNullable.absent();
             } else {
-                this.fallback = Optional.of(fallback.get());
+                this.fallback = OptionalNullable.of(fallback.get());
             }
             return this;
         }

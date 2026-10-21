@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ public final class ContactWebhookEventData {
 
     private final ContactWebhookEventDataSource source;
 
-    private final Optional<String> topic;
+    private final OptionalNullable<String> topic;
 
     private final OffsetDateTime occurredAt;
 
@@ -38,7 +38,7 @@ public final class ContactWebhookEventData {
     private ContactWebhookEventData(
             ContactWebhookEventDataContact contact,
             ContactWebhookEventDataSource source,
-            Optional<String> topic,
+            OptionalNullable<String> topic,
             OffsetDateTime occurredAt,
             Map<String, Object> additionalProperties) {
         this.contact = contact;
@@ -61,10 +61,11 @@ public final class ContactWebhookEventData {
     /**
      * @return <code>contact.unsubscribed</code> from one topic (its key); <code>null</code>: from marketing altogether.
      */
-    @JsonIgnore
-    public Optional<String> getTopic() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("topic")
+    public OptionalNullable<String> getTopic() {
         if (topic == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return topic;
     }
@@ -76,7 +77,7 @@ public final class ContactWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("topic")
-    private Optional<String> _getTopic() {
+    private OptionalNullable<String> _getTopic() {
         return topic;
     }
 
@@ -136,9 +137,11 @@ public final class ContactWebhookEventData {
         /**
          * <p><code>contact.unsubscribed</code> from one topic (its key); <code>null</code>: from marketing altogether.</p>
          */
-        _FinalStage topic(Optional<String> topic);
+        _FinalStage topic(OptionalNullable<String> topic);
 
         _FinalStage topic(String topic);
+
+        _FinalStage topic(Optional<String> topic);
 
         _FinalStage topic(Nullable<String> topic);
     }
@@ -151,7 +154,7 @@ public final class ContactWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<String> topic = Optional.empty();
+        private OptionalNullable<String> topic = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -195,11 +198,25 @@ public final class ContactWebhookEventData {
         @java.lang.Override
         public _FinalStage topic(Nullable<String> topic) {
             if (topic.isNull()) {
-                this.topic = null;
+                this.topic = OptionalNullable.ofNull();
             } else if (topic.isEmpty()) {
-                this.topic = Optional.empty();
+                this.topic = OptionalNullable.absent();
             } else {
-                this.topic = Optional.of(topic.get());
+                this.topic = OptionalNullable.of(topic.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>contact.unsubscribed</code> from one topic (its key); <code>null</code>: from marketing altogether.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage topic(Optional<String> topic) {
+            if (topic.isPresent()) {
+                this.topic = OptionalNullable.of(topic.get());
+            } else {
+                this.topic = OptionalNullable.absent();
             }
             return this;
         }
@@ -210,7 +227,7 @@ public final class ContactWebhookEventData {
          */
         @java.lang.Override
         public _FinalStage topic(String topic) {
-            this.topic = Optional.ofNullable(topic);
+            this.topic = OptionalNullable.of(topic);
             return this;
         }
 
@@ -219,7 +236,7 @@ public final class ContactWebhookEventData {
          */
         @java.lang.Override
         @JsonSetter(value = "topic", nulls = Nulls.SKIP)
-        public _FinalStage topic(Optional<String> topic) {
+        public _FinalStage topic(OptionalNullable<String> topic) {
             this.topic = topic;
             return this;
         }

@@ -172,18 +172,57 @@ class Log extends JsonSerializableType
         $this->type = $values['type'];
         $this->message = $values['message'];
         $this->requestId = $values['requestId'] ?? null;
+        if (array_key_exists('requestId', $values)) {
+            $this->_setField('requestId');
+        }
         $this->apiKeyId = $values['apiKeyId'] ?? null;
+        if (array_key_exists('apiKeyId', $values)) {
+            $this->_setField('apiKeyId');
+        }
         $this->method = $values['method'] ?? null;
+        if (array_key_exists('method', $values)) {
+            $this->_setField('method');
+        }
         $this->path = $values['path'] ?? null;
+        if (array_key_exists('path', $values)) {
+            $this->_setField('path');
+        }
         $this->route = $values['route'] ?? null;
+        if (array_key_exists('route', $values)) {
+            $this->_setField('route');
+        }
         $this->statusCode = $values['statusCode'] ?? null;
+        if (array_key_exists('statusCode', $values)) {
+            $this->_setField('statusCode');
+        }
         $this->durationMs = $values['durationMs'] ?? null;
+        if (array_key_exists('durationMs', $values)) {
+            $this->_setField('durationMs');
+        }
         $this->clientIp = $values['clientIp'] ?? null;
+        if (array_key_exists('clientIp', $values)) {
+            $this->_setField('clientIp');
+        }
         $this->userAgent = $values['userAgent'] ?? null;
+        if (array_key_exists('userAgent', $values)) {
+            $this->_setField('userAgent');
+        }
         $this->errorCode = $values['errorCode'] ?? null;
+        if (array_key_exists('errorCode', $values)) {
+            $this->_setField('errorCode');
+        }
         $this->resourceType = $values['resourceType'] ?? null;
+        if (array_key_exists('resourceType', $values)) {
+            $this->_setField('resourceType');
+        }
         $this->resourceId = $values['resourceId'] ?? null;
+        if (array_key_exists('resourceId', $values)) {
+            $this->_setField('resourceId');
+        }
         $this->recipient = $values['recipient'] ?? null;
+        if (array_key_exists('recipient', $values)) {
+            $this->_setField('recipient');
+        }
         $this->attributes = $values['attributes'];
     }
 

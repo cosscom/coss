@@ -41,6 +41,7 @@ public record HookEndpointRecovery : IJsonOnDeserialized
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("completed_at")]
     public DateTime? CompletedAt { get; set; }
 

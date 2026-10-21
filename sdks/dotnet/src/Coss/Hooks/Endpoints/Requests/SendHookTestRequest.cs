@@ -24,6 +24,7 @@ public record SendHookTestRequest
     /// <summary>
     /// Defaults to the event type's first example.
     /// </summary>
+    [Optional]
     [JsonPropertyName("payload")]
     public Dictionary<string, object?>? Payload { get; set; }
 

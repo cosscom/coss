@@ -29,7 +29,13 @@ class UpdateBroadcastRequestTracking extends JsonSerializableType
         array $values = [],
     ) {
         $this->opens = $values['opens'] ?? null;
+        if (array_key_exists('opens', $values)) {
+            $this->_setField('opens');
+        }
         $this->clicks = $values['clicks'] ?? null;
+        if (array_key_exists('clicks', $values)) {
+            $this->_setField('clicks');
+        }
     }
 
     /**

@@ -70,6 +70,9 @@ class AccountWebhookEventData extends JsonSerializableType
         $this->status = $values['status'];
         $this->previousStatus = $values['previousStatus'];
         $this->reason = $values['reason'] ?? null;
+        if (array_key_exists('reason', $values)) {
+            $this->_setField('reason');
+        }
         $this->occurredAt = $values['occurredAt'];
         $this->checks = $values['checks'];
         $this->marketing = $values['marketing'];

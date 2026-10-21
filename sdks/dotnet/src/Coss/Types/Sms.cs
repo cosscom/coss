@@ -53,6 +53,7 @@ public record Sms : IJsonOnDeserialized
     /// <summary>
     /// Why the message failed or wasn't delivered.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("failure")]
     public SmsFailure? Failure { get; set; }
 
@@ -62,12 +63,15 @@ public record Sms : IJsonOnDeserialized
     [JsonPropertyName("sandbox")]
     public required bool Sandbox { get; set; }
 
+    [Nullable]
     [JsonPropertyName("scheduled_at")]
     public DateTime? ScheduledAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("sent_at")]
     public DateTime? SentAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("delivered_at")]
     public DateTime? DeliveredAt { get; set; }
 

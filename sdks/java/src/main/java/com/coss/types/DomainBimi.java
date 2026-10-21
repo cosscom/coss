@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,13 +30,13 @@ public final class DomainBimi {
 
     private final String name;
 
-    private final Optional<String> record;
+    private final OptionalNullable<String> record;
 
-    private final Optional<String> logoUrl;
+    private final OptionalNullable<String> logoUrl;
 
-    private final Optional<String> certificateUrl;
+    private final OptionalNullable<String> certificateUrl;
 
-    private final Optional<DomainBimiDmarcPolicy> dmarcPolicy;
+    private final OptionalNullable<DomainBimiDmarcPolicy> dmarcPolicy;
 
     private final List<DomainBimiIssuesItem> issues;
 
@@ -45,10 +45,10 @@ public final class DomainBimi {
     private DomainBimi(
             DomainBimiStatus status,
             String name,
-            Optional<String> record,
-            Optional<String> logoUrl,
-            Optional<String> certificateUrl,
-            Optional<DomainBimiDmarcPolicy> dmarcPolicy,
+            OptionalNullable<String> record,
+            OptionalNullable<String> logoUrl,
+            OptionalNullable<String> certificateUrl,
+            OptionalNullable<DomainBimiDmarcPolicy> dmarcPolicy,
             List<DomainBimiIssuesItem> issues,
             Map<String, Object> additionalProperties) {
         this.status = status;
@@ -80,10 +80,11 @@ public final class DomainBimi {
     /**
      * @return The <code>v=BIMI1</code> record found.
      */
-    @JsonIgnore
-    public Optional<String> getRecord() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("record")
+    public OptionalNullable<String> getRecord() {
         if (record == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return record;
     }
@@ -91,10 +92,11 @@ public final class DomainBimi {
     /**
      * @return The record's logo URL (<code>l=</code>).
      */
-    @JsonIgnore
-    public Optional<String> getLogoUrl() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("logo_url")
+    public OptionalNullable<String> getLogoUrl() {
         if (logoUrl == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return logoUrl;
     }
@@ -102,10 +104,11 @@ public final class DomainBimi {
     /**
      * @return The record's VMC or CMC certificate URL (<code>a=</code>).
      */
-    @JsonIgnore
-    public Optional<String> getCertificateUrl() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("certificate_url")
+    public OptionalNullable<String> getCertificateUrl() {
         if (certificateUrl == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return certificateUrl;
     }
@@ -113,10 +116,11 @@ public final class DomainBimi {
     /**
      * @return The DMARC policy that applies to the domain (the organizational domain's <code>sp</code> when it has no record of its own), <code>null</code> without a DMARC record.
      */
-    @JsonIgnore
-    public Optional<DomainBimiDmarcPolicy> getDmarcPolicy() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dmarc_policy")
+    public OptionalNullable<DomainBimiDmarcPolicy> getDmarcPolicy() {
         if (dmarcPolicy == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dmarcPolicy;
     }
@@ -131,25 +135,25 @@ public final class DomainBimi {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("record")
-    private Optional<String> _getRecord() {
+    private OptionalNullable<String> _getRecord() {
         return record;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("logo_url")
-    private Optional<String> _getLogoUrl() {
+    private OptionalNullable<String> _getLogoUrl() {
         return logoUrl;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("certificate_url")
-    private Optional<String> _getCertificateUrl() {
+    private OptionalNullable<String> _getCertificateUrl() {
         return certificateUrl;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dmarc_policy")
-    private Optional<DomainBimiDmarcPolicy> _getDmarcPolicy() {
+    private OptionalNullable<DomainBimiDmarcPolicy> _getDmarcPolicy() {
         return dmarcPolicy;
     }
 
@@ -215,36 +219,44 @@ public final class DomainBimi {
         /**
          * <p>The <code>v=BIMI1</code> record found.</p>
          */
-        _FinalStage record(Optional<String> record);
+        _FinalStage record(OptionalNullable<String> record);
 
         _FinalStage record(String record);
+
+        _FinalStage record(Optional<String> record);
 
         _FinalStage record(Nullable<String> record);
 
         /**
          * <p>The record's logo URL (<code>l=</code>).</p>
          */
-        _FinalStage logoUrl(Optional<String> logoUrl);
+        _FinalStage logoUrl(OptionalNullable<String> logoUrl);
 
         _FinalStage logoUrl(String logoUrl);
+
+        _FinalStage logoUrl(Optional<String> logoUrl);
 
         _FinalStage logoUrl(Nullable<String> logoUrl);
 
         /**
          * <p>The record's VMC or CMC certificate URL (<code>a=</code>).</p>
          */
-        _FinalStage certificateUrl(Optional<String> certificateUrl);
+        _FinalStage certificateUrl(OptionalNullable<String> certificateUrl);
 
         _FinalStage certificateUrl(String certificateUrl);
+
+        _FinalStage certificateUrl(Optional<String> certificateUrl);
 
         _FinalStage certificateUrl(Nullable<String> certificateUrl);
 
         /**
          * <p>The DMARC policy that applies to the domain (the organizational domain's <code>sp</code> when it has no record of its own), <code>null</code> without a DMARC record.</p>
          */
-        _FinalStage dmarcPolicy(Optional<DomainBimiDmarcPolicy> dmarcPolicy);
+        _FinalStage dmarcPolicy(OptionalNullable<DomainBimiDmarcPolicy> dmarcPolicy);
 
         _FinalStage dmarcPolicy(DomainBimiDmarcPolicy dmarcPolicy);
+
+        _FinalStage dmarcPolicy(Optional<DomainBimiDmarcPolicy> dmarcPolicy);
 
         _FinalStage dmarcPolicy(Nullable<DomainBimiDmarcPolicy> dmarcPolicy);
 
@@ -266,13 +278,13 @@ public final class DomainBimi {
 
         private List<DomainBimiIssuesItem> issues = new ArrayList<>();
 
-        private Optional<DomainBimiDmarcPolicy> dmarcPolicy = Optional.empty();
+        private OptionalNullable<DomainBimiDmarcPolicy> dmarcPolicy = OptionalNullable.absent();
 
-        private Optional<String> certificateUrl = Optional.empty();
+        private OptionalNullable<String> certificateUrl = OptionalNullable.absent();
 
-        private Optional<String> logoUrl = Optional.empty();
+        private OptionalNullable<String> logoUrl = OptionalNullable.absent();
 
-        private Optional<String> record = Optional.empty();
+        private OptionalNullable<String> record = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -355,11 +367,25 @@ public final class DomainBimi {
         @java.lang.Override
         public _FinalStage dmarcPolicy(Nullable<DomainBimiDmarcPolicy> dmarcPolicy) {
             if (dmarcPolicy.isNull()) {
-                this.dmarcPolicy = null;
+                this.dmarcPolicy = OptionalNullable.ofNull();
             } else if (dmarcPolicy.isEmpty()) {
-                this.dmarcPolicy = Optional.empty();
+                this.dmarcPolicy = OptionalNullable.absent();
             } else {
-                this.dmarcPolicy = Optional.of(dmarcPolicy.get());
+                this.dmarcPolicy = OptionalNullable.of(dmarcPolicy.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The DMARC policy that applies to the domain (the organizational domain's <code>sp</code> when it has no record of its own), <code>null</code> without a DMARC record.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage dmarcPolicy(Optional<DomainBimiDmarcPolicy> dmarcPolicy) {
+            if (dmarcPolicy.isPresent()) {
+                this.dmarcPolicy = OptionalNullable.of(dmarcPolicy.get());
+            } else {
+                this.dmarcPolicy = OptionalNullable.absent();
             }
             return this;
         }
@@ -370,7 +396,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         public _FinalStage dmarcPolicy(DomainBimiDmarcPolicy dmarcPolicy) {
-            this.dmarcPolicy = Optional.ofNullable(dmarcPolicy);
+            this.dmarcPolicy = OptionalNullable.of(dmarcPolicy);
             return this;
         }
 
@@ -379,7 +405,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         @JsonSetter(value = "dmarc_policy", nulls = Nulls.SKIP)
-        public _FinalStage dmarcPolicy(Optional<DomainBimiDmarcPolicy> dmarcPolicy) {
+        public _FinalStage dmarcPolicy(OptionalNullable<DomainBimiDmarcPolicy> dmarcPolicy) {
             this.dmarcPolicy = dmarcPolicy;
             return this;
         }
@@ -391,11 +417,25 @@ public final class DomainBimi {
         @java.lang.Override
         public _FinalStage certificateUrl(Nullable<String> certificateUrl) {
             if (certificateUrl.isNull()) {
-                this.certificateUrl = null;
+                this.certificateUrl = OptionalNullable.ofNull();
             } else if (certificateUrl.isEmpty()) {
-                this.certificateUrl = Optional.empty();
+                this.certificateUrl = OptionalNullable.absent();
             } else {
-                this.certificateUrl = Optional.of(certificateUrl.get());
+                this.certificateUrl = OptionalNullable.of(certificateUrl.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The record's VMC or CMC certificate URL (<code>a=</code>).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage certificateUrl(Optional<String> certificateUrl) {
+            if (certificateUrl.isPresent()) {
+                this.certificateUrl = OptionalNullable.of(certificateUrl.get());
+            } else {
+                this.certificateUrl = OptionalNullable.absent();
             }
             return this;
         }
@@ -406,7 +446,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         public _FinalStage certificateUrl(String certificateUrl) {
-            this.certificateUrl = Optional.ofNullable(certificateUrl);
+            this.certificateUrl = OptionalNullable.of(certificateUrl);
             return this;
         }
 
@@ -415,7 +455,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         @JsonSetter(value = "certificate_url", nulls = Nulls.SKIP)
-        public _FinalStage certificateUrl(Optional<String> certificateUrl) {
+        public _FinalStage certificateUrl(OptionalNullable<String> certificateUrl) {
             this.certificateUrl = certificateUrl;
             return this;
         }
@@ -427,11 +467,25 @@ public final class DomainBimi {
         @java.lang.Override
         public _FinalStage logoUrl(Nullable<String> logoUrl) {
             if (logoUrl.isNull()) {
-                this.logoUrl = null;
+                this.logoUrl = OptionalNullable.ofNull();
             } else if (logoUrl.isEmpty()) {
-                this.logoUrl = Optional.empty();
+                this.logoUrl = OptionalNullable.absent();
             } else {
-                this.logoUrl = Optional.of(logoUrl.get());
+                this.logoUrl = OptionalNullable.of(logoUrl.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The record's logo URL (<code>l=</code>).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage logoUrl(Optional<String> logoUrl) {
+            if (logoUrl.isPresent()) {
+                this.logoUrl = OptionalNullable.of(logoUrl.get());
+            } else {
+                this.logoUrl = OptionalNullable.absent();
             }
             return this;
         }
@@ -442,7 +496,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         public _FinalStage logoUrl(String logoUrl) {
-            this.logoUrl = Optional.ofNullable(logoUrl);
+            this.logoUrl = OptionalNullable.of(logoUrl);
             return this;
         }
 
@@ -451,7 +505,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         @JsonSetter(value = "logo_url", nulls = Nulls.SKIP)
-        public _FinalStage logoUrl(Optional<String> logoUrl) {
+        public _FinalStage logoUrl(OptionalNullable<String> logoUrl) {
             this.logoUrl = logoUrl;
             return this;
         }
@@ -463,11 +517,25 @@ public final class DomainBimi {
         @java.lang.Override
         public _FinalStage record(Nullable<String> record) {
             if (record.isNull()) {
-                this.record = null;
+                this.record = OptionalNullable.ofNull();
             } else if (record.isEmpty()) {
-                this.record = Optional.empty();
+                this.record = OptionalNullable.absent();
             } else {
-                this.record = Optional.of(record.get());
+                this.record = OptionalNullable.of(record.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The <code>v=BIMI1</code> record found.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage record(Optional<String> record) {
+            if (record.isPresent()) {
+                this.record = OptionalNullable.of(record.get());
+            } else {
+                this.record = OptionalNullable.absent();
             }
             return this;
         }
@@ -478,7 +546,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         public _FinalStage record(String record) {
-            this.record = Optional.ofNullable(record);
+            this.record = OptionalNullable.of(record);
             return this;
         }
 
@@ -487,7 +555,7 @@ public final class DomainBimi {
          */
         @java.lang.Override
         @JsonSetter(value = "record", nulls = Nulls.SKIP)
-        public _FinalStage record(Optional<String> record) {
+        public _FinalStage record(OptionalNullable<String> record) {
             this.record = record;
             return this;
         }

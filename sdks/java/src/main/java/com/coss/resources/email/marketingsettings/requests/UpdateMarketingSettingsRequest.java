@@ -6,9 +6,9 @@ package com.coss.resources.email.marketingsettings.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,33 +23,33 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateMarketingSettingsRequest.Builder.class)
 public final class UpdateMarketingSettingsRequest {
-    private final Optional<String> displayName;
+    private final OptionalNullable<String> displayName;
 
-    private final Optional<String> mailingAddress;
+    private final OptionalNullable<String> mailingAddress;
 
     private final Optional<Boolean> doubleOptInDefault;
 
-    private final Optional<String> confirmationFrom;
+    private final OptionalNullable<String> confirmationFrom;
 
-    private final Optional<String> confirmationSubject;
+    private final OptionalNullable<String> confirmationSubject;
 
-    private final Optional<String> confirmationHtml;
+    private final OptionalNullable<String> confirmationHtml;
 
-    private final Optional<String> confirmationText;
+    private final OptionalNullable<String> confirmationText;
 
-    private final Optional<String> confirmedRedirectUrl;
+    private final OptionalNullable<String> confirmedRedirectUrl;
 
     private final Map<String, Object> additionalProperties;
 
     private UpdateMarketingSettingsRequest(
-            Optional<String> displayName,
-            Optional<String> mailingAddress,
+            OptionalNullable<String> displayName,
+            OptionalNullable<String> mailingAddress,
             Optional<Boolean> doubleOptInDefault,
-            Optional<String> confirmationFrom,
-            Optional<String> confirmationSubject,
-            Optional<String> confirmationHtml,
-            Optional<String> confirmationText,
-            Optional<String> confirmedRedirectUrl,
+            OptionalNullable<String> confirmationFrom,
+            OptionalNullable<String> confirmationSubject,
+            OptionalNullable<String> confirmationHtml,
+            OptionalNullable<String> confirmationText,
+            OptionalNullable<String> confirmedRedirectUrl,
             Map<String, Object> additionalProperties) {
         this.displayName = displayName;
         this.mailingAddress = mailingAddress;
@@ -62,18 +62,20 @@ public final class UpdateMarketingSettingsRequest {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getDisplayName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("display_name")
+    public OptionalNullable<String> getDisplayName() {
         if (displayName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return displayName;
     }
 
-    @JsonIgnore
-    public Optional<String> getMailingAddress() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("mailing_address")
+    public OptionalNullable<String> getMailingAddress() {
         if (mailingAddress == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return mailingAddress;
     }
@@ -83,85 +85,90 @@ public final class UpdateMarketingSettingsRequest {
         return doubleOptInDefault;
     }
 
-    @JsonIgnore
-    public Optional<String> getConfirmationFrom() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmation_from")
+    public OptionalNullable<String> getConfirmationFrom() {
         if (confirmationFrom == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmationFrom;
     }
 
-    @JsonIgnore
-    public Optional<String> getConfirmationSubject() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmation_subject")
+    public OptionalNullable<String> getConfirmationSubject() {
         if (confirmationSubject == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmationSubject;
     }
 
-    @JsonIgnore
-    public Optional<String> getConfirmationHtml() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmation_html")
+    public OptionalNullable<String> getConfirmationHtml() {
         if (confirmationHtml == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmationHtml;
     }
 
-    @JsonIgnore
-    public Optional<String> getConfirmationText() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmation_text")
+    public OptionalNullable<String> getConfirmationText() {
         if (confirmationText == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmationText;
     }
 
-    @JsonIgnore
-    public Optional<String> getConfirmedRedirectUrl() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmed_redirect_url")
+    public OptionalNullable<String> getConfirmedRedirectUrl() {
         if (confirmedRedirectUrl == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmedRedirectUrl;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("display_name")
-    private Optional<String> _getDisplayName() {
+    private OptionalNullable<String> _getDisplayName() {
         return displayName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("mailing_address")
-    private Optional<String> _getMailingAddress() {
+    private OptionalNullable<String> _getMailingAddress() {
         return mailingAddress;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmation_from")
-    private Optional<String> _getConfirmationFrom() {
+    private OptionalNullable<String> _getConfirmationFrom() {
         return confirmationFrom;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmation_subject")
-    private Optional<String> _getConfirmationSubject() {
+    private OptionalNullable<String> _getConfirmationSubject() {
         return confirmationSubject;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmation_html")
-    private Optional<String> _getConfirmationHtml() {
+    private OptionalNullable<String> _getConfirmationHtml() {
         return confirmationHtml;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmation_text")
-    private Optional<String> _getConfirmationText() {
+    private OptionalNullable<String> _getConfirmationText() {
         return confirmationText;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmed_redirect_url")
-    private Optional<String> _getConfirmedRedirectUrl() {
+    private OptionalNullable<String> _getConfirmedRedirectUrl() {
         return confirmedRedirectUrl;
     }
 
@@ -211,21 +218,21 @@ public final class UpdateMarketingSettingsRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> displayName = Optional.empty();
+        private OptionalNullable<String> displayName = OptionalNullable.absent();
 
-        private Optional<String> mailingAddress = Optional.empty();
+        private OptionalNullable<String> mailingAddress = OptionalNullable.absent();
 
         private Optional<Boolean> doubleOptInDefault = Optional.empty();
 
-        private Optional<String> confirmationFrom = Optional.empty();
+        private OptionalNullable<String> confirmationFrom = OptionalNullable.absent();
 
-        private Optional<String> confirmationSubject = Optional.empty();
+        private OptionalNullable<String> confirmationSubject = OptionalNullable.absent();
 
-        private Optional<String> confirmationHtml = Optional.empty();
+        private OptionalNullable<String> confirmationHtml = OptionalNullable.absent();
 
-        private Optional<String> confirmationText = Optional.empty();
+        private OptionalNullable<String> confirmationText = OptionalNullable.absent();
 
-        private Optional<String> confirmedRedirectUrl = Optional.empty();
+        private OptionalNullable<String> confirmedRedirectUrl = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -245,45 +252,63 @@ public final class UpdateMarketingSettingsRequest {
         }
 
         @JsonSetter(value = "display_name", nulls = Nulls.SKIP)
-        public Builder displayName(Optional<String> displayName) {
+        public Builder displayName(OptionalNullable<String> displayName) {
             this.displayName = displayName;
             return this;
         }
 
         public Builder displayName(String displayName) {
-            this.displayName = Optional.ofNullable(displayName);
+            this.displayName = OptionalNullable.of(displayName);
+            return this;
+        }
+
+        public Builder displayName(Optional<String> displayName) {
+            if (displayName.isPresent()) {
+                this.displayName = OptionalNullable.of(displayName.get());
+            } else {
+                this.displayName = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder displayName(Nullable<String> displayName) {
             if (displayName.isNull()) {
-                this.displayName = null;
+                this.displayName = OptionalNullable.ofNull();
             } else if (displayName.isEmpty()) {
-                this.displayName = Optional.empty();
+                this.displayName = OptionalNullable.absent();
             } else {
-                this.displayName = Optional.of(displayName.get());
+                this.displayName = OptionalNullable.of(displayName.get());
             }
             return this;
         }
 
         @JsonSetter(value = "mailing_address", nulls = Nulls.SKIP)
-        public Builder mailingAddress(Optional<String> mailingAddress) {
+        public Builder mailingAddress(OptionalNullable<String> mailingAddress) {
             this.mailingAddress = mailingAddress;
             return this;
         }
 
         public Builder mailingAddress(String mailingAddress) {
-            this.mailingAddress = Optional.ofNullable(mailingAddress);
+            this.mailingAddress = OptionalNullable.of(mailingAddress);
+            return this;
+        }
+
+        public Builder mailingAddress(Optional<String> mailingAddress) {
+            if (mailingAddress.isPresent()) {
+                this.mailingAddress = OptionalNullable.of(mailingAddress.get());
+            } else {
+                this.mailingAddress = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder mailingAddress(Nullable<String> mailingAddress) {
             if (mailingAddress.isNull()) {
-                this.mailingAddress = null;
+                this.mailingAddress = OptionalNullable.ofNull();
             } else if (mailingAddress.isEmpty()) {
-                this.mailingAddress = Optional.empty();
+                this.mailingAddress = OptionalNullable.absent();
             } else {
-                this.mailingAddress = Optional.of(mailingAddress.get());
+                this.mailingAddress = OptionalNullable.of(mailingAddress.get());
             }
             return this;
         }
@@ -300,111 +325,156 @@ public final class UpdateMarketingSettingsRequest {
         }
 
         @JsonSetter(value = "confirmation_from", nulls = Nulls.SKIP)
-        public Builder confirmationFrom(Optional<String> confirmationFrom) {
+        public Builder confirmationFrom(OptionalNullable<String> confirmationFrom) {
             this.confirmationFrom = confirmationFrom;
             return this;
         }
 
         public Builder confirmationFrom(String confirmationFrom) {
-            this.confirmationFrom = Optional.ofNullable(confirmationFrom);
+            this.confirmationFrom = OptionalNullable.of(confirmationFrom);
+            return this;
+        }
+
+        public Builder confirmationFrom(Optional<String> confirmationFrom) {
+            if (confirmationFrom.isPresent()) {
+                this.confirmationFrom = OptionalNullable.of(confirmationFrom.get());
+            } else {
+                this.confirmationFrom = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder confirmationFrom(Nullable<String> confirmationFrom) {
             if (confirmationFrom.isNull()) {
-                this.confirmationFrom = null;
+                this.confirmationFrom = OptionalNullable.ofNull();
             } else if (confirmationFrom.isEmpty()) {
-                this.confirmationFrom = Optional.empty();
+                this.confirmationFrom = OptionalNullable.absent();
             } else {
-                this.confirmationFrom = Optional.of(confirmationFrom.get());
+                this.confirmationFrom = OptionalNullable.of(confirmationFrom.get());
             }
             return this;
         }
 
         @JsonSetter(value = "confirmation_subject", nulls = Nulls.SKIP)
-        public Builder confirmationSubject(Optional<String> confirmationSubject) {
+        public Builder confirmationSubject(OptionalNullable<String> confirmationSubject) {
             this.confirmationSubject = confirmationSubject;
             return this;
         }
 
         public Builder confirmationSubject(String confirmationSubject) {
-            this.confirmationSubject = Optional.ofNullable(confirmationSubject);
+            this.confirmationSubject = OptionalNullable.of(confirmationSubject);
+            return this;
+        }
+
+        public Builder confirmationSubject(Optional<String> confirmationSubject) {
+            if (confirmationSubject.isPresent()) {
+                this.confirmationSubject = OptionalNullable.of(confirmationSubject.get());
+            } else {
+                this.confirmationSubject = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder confirmationSubject(Nullable<String> confirmationSubject) {
             if (confirmationSubject.isNull()) {
-                this.confirmationSubject = null;
+                this.confirmationSubject = OptionalNullable.ofNull();
             } else if (confirmationSubject.isEmpty()) {
-                this.confirmationSubject = Optional.empty();
+                this.confirmationSubject = OptionalNullable.absent();
             } else {
-                this.confirmationSubject = Optional.of(confirmationSubject.get());
+                this.confirmationSubject = OptionalNullable.of(confirmationSubject.get());
             }
             return this;
         }
 
         @JsonSetter(value = "confirmation_html", nulls = Nulls.SKIP)
-        public Builder confirmationHtml(Optional<String> confirmationHtml) {
+        public Builder confirmationHtml(OptionalNullable<String> confirmationHtml) {
             this.confirmationHtml = confirmationHtml;
             return this;
         }
 
         public Builder confirmationHtml(String confirmationHtml) {
-            this.confirmationHtml = Optional.ofNullable(confirmationHtml);
+            this.confirmationHtml = OptionalNullable.of(confirmationHtml);
+            return this;
+        }
+
+        public Builder confirmationHtml(Optional<String> confirmationHtml) {
+            if (confirmationHtml.isPresent()) {
+                this.confirmationHtml = OptionalNullable.of(confirmationHtml.get());
+            } else {
+                this.confirmationHtml = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder confirmationHtml(Nullable<String> confirmationHtml) {
             if (confirmationHtml.isNull()) {
-                this.confirmationHtml = null;
+                this.confirmationHtml = OptionalNullable.ofNull();
             } else if (confirmationHtml.isEmpty()) {
-                this.confirmationHtml = Optional.empty();
+                this.confirmationHtml = OptionalNullable.absent();
             } else {
-                this.confirmationHtml = Optional.of(confirmationHtml.get());
+                this.confirmationHtml = OptionalNullable.of(confirmationHtml.get());
             }
             return this;
         }
 
         @JsonSetter(value = "confirmation_text", nulls = Nulls.SKIP)
-        public Builder confirmationText(Optional<String> confirmationText) {
+        public Builder confirmationText(OptionalNullable<String> confirmationText) {
             this.confirmationText = confirmationText;
             return this;
         }
 
         public Builder confirmationText(String confirmationText) {
-            this.confirmationText = Optional.ofNullable(confirmationText);
+            this.confirmationText = OptionalNullable.of(confirmationText);
+            return this;
+        }
+
+        public Builder confirmationText(Optional<String> confirmationText) {
+            if (confirmationText.isPresent()) {
+                this.confirmationText = OptionalNullable.of(confirmationText.get());
+            } else {
+                this.confirmationText = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder confirmationText(Nullable<String> confirmationText) {
             if (confirmationText.isNull()) {
-                this.confirmationText = null;
+                this.confirmationText = OptionalNullable.ofNull();
             } else if (confirmationText.isEmpty()) {
-                this.confirmationText = Optional.empty();
+                this.confirmationText = OptionalNullable.absent();
             } else {
-                this.confirmationText = Optional.of(confirmationText.get());
+                this.confirmationText = OptionalNullable.of(confirmationText.get());
             }
             return this;
         }
 
         @JsonSetter(value = "confirmed_redirect_url", nulls = Nulls.SKIP)
-        public Builder confirmedRedirectUrl(Optional<String> confirmedRedirectUrl) {
+        public Builder confirmedRedirectUrl(OptionalNullable<String> confirmedRedirectUrl) {
             this.confirmedRedirectUrl = confirmedRedirectUrl;
             return this;
         }
 
         public Builder confirmedRedirectUrl(String confirmedRedirectUrl) {
-            this.confirmedRedirectUrl = Optional.ofNullable(confirmedRedirectUrl);
+            this.confirmedRedirectUrl = OptionalNullable.of(confirmedRedirectUrl);
+            return this;
+        }
+
+        public Builder confirmedRedirectUrl(Optional<String> confirmedRedirectUrl) {
+            if (confirmedRedirectUrl.isPresent()) {
+                this.confirmedRedirectUrl = OptionalNullable.of(confirmedRedirectUrl.get());
+            } else {
+                this.confirmedRedirectUrl = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder confirmedRedirectUrl(Nullable<String> confirmedRedirectUrl) {
             if (confirmedRedirectUrl.isNull()) {
-                this.confirmedRedirectUrl = null;
+                this.confirmedRedirectUrl = OptionalNullable.ofNull();
             } else if (confirmedRedirectUrl.isEmpty()) {
-                this.confirmedRedirectUrl = Optional.empty();
+                this.confirmedRedirectUrl = OptionalNullable.absent();
             } else {
-                this.confirmedRedirectUrl = Optional.of(confirmedRedirectUrl.get());
+                this.confirmedRedirectUrl = OptionalNullable.of(confirmedRedirectUrl.get());
             }
             return this;
         }

@@ -103,13 +103,25 @@ class RiskEmailCheck extends JsonSerializableType
         $this->email = $values['email'];
         $this->valid = $values['valid'];
         $this->domain = $values['domain'] ?? null;
+        if (array_key_exists('domain', $values)) {
+            $this->_setField('domain');
+        }
         $this->canonical = $values['canonical'] ?? null;
+        if (array_key_exists('canonical', $values)) {
+            $this->_setField('canonical');
+        }
         $this->disposable = $values['disposable'];
         $this->deliverability = $values['deliverability'];
         $this->roleAccount = $values['roleAccount'];
         $this->freeProvider = $values['freeProvider'];
         $this->suggestion = $values['suggestion'] ?? null;
+        if (array_key_exists('suggestion', $values)) {
+            $this->_setField('suggestion');
+        }
         $this->domainAgeDays = $values['domainAgeDays'] ?? null;
+        if (array_key_exists('domainAgeDays', $values)) {
+            $this->_setField('domainAgeDays');
+        }
         $this->degraded = $values['degraded'];
     }
 

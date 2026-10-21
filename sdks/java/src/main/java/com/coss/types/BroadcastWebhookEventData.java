@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,9 +27,9 @@ import org.jetbrains.annotations.NotNull;
 public final class BroadcastWebhookEventData {
     private final BroadcastWebhookEventDataBroadcast broadcast;
 
-    private final Optional<String> pauseReason;
+    private final OptionalNullable<String> pauseReason;
 
-    private final Optional<BroadcastWebhookEventDataError> error;
+    private final OptionalNullable<BroadcastWebhookEventDataError> error;
 
     private final BroadcastStats stats;
 
@@ -39,8 +39,8 @@ public final class BroadcastWebhookEventData {
 
     private BroadcastWebhookEventData(
             BroadcastWebhookEventDataBroadcast broadcast,
-            Optional<String> pauseReason,
-            Optional<BroadcastWebhookEventDataError> error,
+            OptionalNullable<String> pauseReason,
+            OptionalNullable<BroadcastWebhookEventDataError> error,
             BroadcastStats stats,
             OffsetDateTime occurredAt,
             Map<String, Object> additionalProperties) {
@@ -57,18 +57,20 @@ public final class BroadcastWebhookEventData {
         return broadcast;
     }
 
-    @JsonIgnore
-    public Optional<String> getPauseReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("pause_reason")
+    public OptionalNullable<String> getPauseReason() {
         if (pauseReason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pauseReason;
     }
 
-    @JsonIgnore
-    public Optional<BroadcastWebhookEventDataError> getError() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("error")
+    public OptionalNullable<BroadcastWebhookEventDataError> getError() {
         if (error == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return error;
     }
@@ -85,13 +87,13 @@ public final class BroadcastWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("pause_reason")
-    private Optional<String> _getPauseReason() {
+    private OptionalNullable<String> _getPauseReason() {
         return pauseReason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("error")
-    private Optional<BroadcastWebhookEventDataError> _getError() {
+    private OptionalNullable<BroadcastWebhookEventDataError> _getError() {
         return error;
     }
 
@@ -149,15 +151,19 @@ public final class BroadcastWebhookEventData {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage pauseReason(Optional<String> pauseReason);
+        _FinalStage pauseReason(OptionalNullable<String> pauseReason);
 
         _FinalStage pauseReason(String pauseReason);
 
+        _FinalStage pauseReason(Optional<String> pauseReason);
+
         _FinalStage pauseReason(Nullable<String> pauseReason);
 
-        _FinalStage error(Optional<BroadcastWebhookEventDataError> error);
+        _FinalStage error(OptionalNullable<BroadcastWebhookEventDataError> error);
 
         _FinalStage error(BroadcastWebhookEventDataError error);
+
+        _FinalStage error(Optional<BroadcastWebhookEventDataError> error);
 
         _FinalStage error(Nullable<BroadcastWebhookEventDataError> error);
     }
@@ -170,9 +176,9 @@ public final class BroadcastWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<BroadcastWebhookEventDataError> error = Optional.empty();
+        private OptionalNullable<BroadcastWebhookEventDataError> error = OptionalNullable.absent();
 
-        private Optional<String> pauseReason = Optional.empty();
+        private OptionalNullable<String> pauseReason = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -213,24 +219,34 @@ public final class BroadcastWebhookEventData {
         @java.lang.Override
         public _FinalStage error(Nullable<BroadcastWebhookEventDataError> error) {
             if (error.isNull()) {
-                this.error = null;
+                this.error = OptionalNullable.ofNull();
             } else if (error.isEmpty()) {
-                this.error = Optional.empty();
+                this.error = OptionalNullable.absent();
             } else {
-                this.error = Optional.of(error.get());
+                this.error = OptionalNullable.of(error.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage error(Optional<BroadcastWebhookEventDataError> error) {
+            if (error.isPresent()) {
+                this.error = OptionalNullable.of(error.get());
+            } else {
+                this.error = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage error(BroadcastWebhookEventDataError error) {
-            this.error = Optional.ofNullable(error);
+            this.error = OptionalNullable.of(error);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "error", nulls = Nulls.SKIP)
-        public _FinalStage error(Optional<BroadcastWebhookEventDataError> error) {
+        public _FinalStage error(OptionalNullable<BroadcastWebhookEventDataError> error) {
             this.error = error;
             return this;
         }
@@ -238,24 +254,34 @@ public final class BroadcastWebhookEventData {
         @java.lang.Override
         public _FinalStage pauseReason(Nullable<String> pauseReason) {
             if (pauseReason.isNull()) {
-                this.pauseReason = null;
+                this.pauseReason = OptionalNullable.ofNull();
             } else if (pauseReason.isEmpty()) {
-                this.pauseReason = Optional.empty();
+                this.pauseReason = OptionalNullable.absent();
             } else {
-                this.pauseReason = Optional.of(pauseReason.get());
+                this.pauseReason = OptionalNullable.of(pauseReason.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage pauseReason(Optional<String> pauseReason) {
+            if (pauseReason.isPresent()) {
+                this.pauseReason = OptionalNullable.of(pauseReason.get());
+            } else {
+                this.pauseReason = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage pauseReason(String pauseReason) {
-            this.pauseReason = Optional.ofNullable(pauseReason);
+            this.pauseReason = OptionalNullable.of(pauseReason);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "pause_reason", nulls = Nulls.SKIP)
-        public _FinalStage pauseReason(Optional<String> pauseReason) {
+        public _FinalStage pauseReason(OptionalNullable<String> pauseReason) {
             this.pauseReason = pauseReason;
             return this;
         }

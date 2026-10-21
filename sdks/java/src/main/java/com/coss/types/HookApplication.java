@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ public final class HookApplication {
 
     private final String id;
 
-    private final Optional<String> uid;
+    private final OptionalNullable<String> uid;
 
     private final String name;
 
@@ -45,7 +45,7 @@ public final class HookApplication {
     private HookApplication(
             HookApplicationObject object,
             String id,
-            Optional<String> uid,
+            OptionalNullable<String> uid,
             String name,
             Map<String, String> metadata,
             OffsetDateTime createdAt,
@@ -74,10 +74,11 @@ public final class HookApplication {
     /**
      * @return Your own id for it (e.g. your customer's id), unique in the environment. Every path that takes an application accepts its <code>id</code> or its <code>uid</code>.
      */
-    @JsonIgnore
-    public Optional<String> getUid() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("uid")
+    public OptionalNullable<String> getUid() {
         if (uid == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return uid;
     }
@@ -104,7 +105,7 @@ public final class HookApplication {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("uid")
-    private Optional<String> _getUid() {
+    private OptionalNullable<String> _getUid() {
         return uid;
     }
 
@@ -175,9 +176,11 @@ public final class HookApplication {
         /**
          * <p>Your own id for it (e.g. your customer's id), unique in the environment. Every path that takes an application accepts its <code>id</code> or its <code>uid</code>.</p>
          */
-        _FinalStage uid(Optional<String> uid);
+        _FinalStage uid(OptionalNullable<String> uid);
 
         _FinalStage uid(String uid);
+
+        _FinalStage uid(Optional<String> uid);
 
         _FinalStage uid(Nullable<String> uid);
 
@@ -203,7 +206,7 @@ public final class HookApplication {
 
         private Map<String, String> metadata = new LinkedHashMap<>();
 
-        private Optional<String> uid = Optional.empty();
+        private OptionalNullable<String> uid = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -288,11 +291,25 @@ public final class HookApplication {
         @java.lang.Override
         public _FinalStage uid(Nullable<String> uid) {
             if (uid.isNull()) {
-                this.uid = null;
+                this.uid = OptionalNullable.ofNull();
             } else if (uid.isEmpty()) {
-                this.uid = Optional.empty();
+                this.uid = OptionalNullable.absent();
             } else {
-                this.uid = Optional.of(uid.get());
+                this.uid = OptionalNullable.of(uid.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Your own id for it (e.g. your customer's id), unique in the environment. Every path that takes an application accepts its <code>id</code> or its <code>uid</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage uid(Optional<String> uid) {
+            if (uid.isPresent()) {
+                this.uid = OptionalNullable.of(uid.get());
+            } else {
+                this.uid = OptionalNullable.absent();
             }
             return this;
         }
@@ -303,7 +320,7 @@ public final class HookApplication {
          */
         @java.lang.Override
         public _FinalStage uid(String uid) {
-            this.uid = Optional.ofNullable(uid);
+            this.uid = OptionalNullable.of(uid);
             return this;
         }
 
@@ -312,7 +329,7 @@ public final class HookApplication {
          */
         @java.lang.Override
         @JsonSetter(value = "uid", nulls = Nulls.SKIP)
-        public _FinalStage uid(Optional<String> uid) {
+        public _FinalStage uid(OptionalNullable<String> uid) {
             this.uid = uid;
             return this;
         }

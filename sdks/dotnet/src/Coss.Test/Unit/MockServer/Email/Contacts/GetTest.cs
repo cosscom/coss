@@ -62,6 +62,8 @@ public class GetTest : BaseMockServerTest
               },
               "source": "api",
               "subscribed_at": "2026-10-10T12:00:00.000Z",
+              "unsubscribed_at": null,
+              "confirmed_at": null,
               "created_at": "2026-10-10T12:00:00.000Z",
               "updated_at": "2026-10-10T12:00:00.000Z"
             }

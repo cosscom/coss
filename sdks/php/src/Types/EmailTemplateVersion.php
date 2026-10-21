@@ -104,6 +104,9 @@ class EmailTemplateVersion extends JsonSerializableType
         $this->object = $values['object'];
         $this->templateId = $values['templateId'];
         $this->version = $values['version'] ?? null;
+        if (array_key_exists('version', $values)) {
+            $this->_setField('version');
+        }
         $this->revision = $values['revision'];
         $this->defaultLocale = $values['defaultLocale'];
         $this->variables = $values['variables'];
@@ -111,6 +114,9 @@ class EmailTemplateVersion extends JsonSerializableType
         $this->contents = $values['contents'];
         $this->problems = $values['problems'];
         $this->publishedAt = $values['publishedAt'] ?? null;
+        if (array_key_exists('publishedAt', $values)) {
+            $this->_setField('publishedAt');
+        }
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];
     }

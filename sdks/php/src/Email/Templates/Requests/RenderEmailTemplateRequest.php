@@ -37,7 +37,16 @@ class RenderEmailTemplateRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->version = $values['version'] ?? null;
+        if (array_key_exists('version', $values)) {
+            $this->_setField('version');
+        }
         $this->locale = $values['locale'] ?? null;
+        if (array_key_exists('locale', $values)) {
+            $this->_setField('locale');
+        }
         $this->variables = $values['variables'] ?? null;
+        if (array_key_exists('variables', $values)) {
+            $this->_setField('variables');
+        }
     }
 }

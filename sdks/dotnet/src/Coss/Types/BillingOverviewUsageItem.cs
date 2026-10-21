@@ -23,6 +23,7 @@ public record BillingOverviewUsageItem : IJsonOnDeserialized
     /// <summary>
     /// The plan's monthly allowance where usage stops (Free), else `null`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("included")]
     public long? Included { get; set; }
 

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,17 +28,17 @@ public final class TemplateContentInput {
 
     private final String subject;
 
-    private final Optional<String> html;
+    private final OptionalNullable<String> html;
 
-    private final Optional<String> text;
+    private final OptionalNullable<String> text;
 
     private final Map<String, Object> additionalProperties;
 
     private TemplateContentInput(
             String locale,
             String subject,
-            Optional<String> html,
-            Optional<String> text,
+            OptionalNullable<String> html,
+            OptionalNullable<String> text,
             Map<String, Object> additionalProperties) {
         this.locale = locale;
         this.subject = subject;
@@ -66,10 +66,11 @@ public final class TemplateContentInput {
     /**
      * @return The HTML template. Provide <code>html</code>, <code>text</code>, or both.
      */
-    @JsonIgnore
-    public Optional<String> getHtml() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("html")
+    public OptionalNullable<String> getHtml() {
         if (html == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return html;
     }
@@ -77,23 +78,24 @@ public final class TemplateContentInput {
     /**
      * @return The plain-text template.
      */
-    @JsonIgnore
-    public Optional<String> getText() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("text")
+    public OptionalNullable<String> getText() {
         if (text == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return text;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("html")
-    private Optional<String> _getHtml() {
+    private OptionalNullable<String> _getHtml() {
         return html;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("text")
-    private Optional<String> _getText() {
+    private OptionalNullable<String> _getText() {
         return text;
     }
 
@@ -155,18 +157,22 @@ public final class TemplateContentInput {
         /**
          * <p>The HTML template. Provide <code>html</code>, <code>text</code>, or both.</p>
          */
-        _FinalStage html(Optional<String> html);
+        _FinalStage html(OptionalNullable<String> html);
 
         _FinalStage html(String html);
+
+        _FinalStage html(Optional<String> html);
 
         _FinalStage html(Nullable<String> html);
 
         /**
          * <p>The plain-text template.</p>
          */
-        _FinalStage text(Optional<String> text);
+        _FinalStage text(OptionalNullable<String> text);
 
         _FinalStage text(String text);
+
+        _FinalStage text(Optional<String> text);
 
         _FinalStage text(Nullable<String> text);
     }
@@ -177,9 +183,9 @@ public final class TemplateContentInput {
 
         private String subject;
 
-        private Optional<String> text = Optional.empty();
+        private OptionalNullable<String> text = OptionalNullable.absent();
 
-        private Optional<String> html = Optional.empty();
+        private OptionalNullable<String> html = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -224,11 +230,25 @@ public final class TemplateContentInput {
         @java.lang.Override
         public _FinalStage text(Nullable<String> text) {
             if (text.isNull()) {
-                this.text = null;
+                this.text = OptionalNullable.ofNull();
             } else if (text.isEmpty()) {
-                this.text = Optional.empty();
+                this.text = OptionalNullable.absent();
             } else {
-                this.text = Optional.of(text.get());
+                this.text = OptionalNullable.of(text.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The plain-text template.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage text(Optional<String> text) {
+            if (text.isPresent()) {
+                this.text = OptionalNullable.of(text.get());
+            } else {
+                this.text = OptionalNullable.absent();
             }
             return this;
         }
@@ -239,7 +259,7 @@ public final class TemplateContentInput {
          */
         @java.lang.Override
         public _FinalStage text(String text) {
-            this.text = Optional.ofNullable(text);
+            this.text = OptionalNullable.of(text);
             return this;
         }
 
@@ -248,7 +268,7 @@ public final class TemplateContentInput {
          */
         @java.lang.Override
         @JsonSetter(value = "text", nulls = Nulls.SKIP)
-        public _FinalStage text(Optional<String> text) {
+        public _FinalStage text(OptionalNullable<String> text) {
             this.text = text;
             return this;
         }
@@ -260,11 +280,25 @@ public final class TemplateContentInput {
         @java.lang.Override
         public _FinalStage html(Nullable<String> html) {
             if (html.isNull()) {
-                this.html = null;
+                this.html = OptionalNullable.ofNull();
             } else if (html.isEmpty()) {
-                this.html = Optional.empty();
+                this.html = OptionalNullable.absent();
             } else {
-                this.html = Optional.of(html.get());
+                this.html = OptionalNullable.of(html.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The HTML template. Provide <code>html</code>, <code>text</code>, or both.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage html(Optional<String> html) {
+            if (html.isPresent()) {
+                this.html = OptionalNullable.of(html.get());
+            } else {
+                this.html = OptionalNullable.absent();
             }
             return this;
         }
@@ -275,7 +309,7 @@ public final class TemplateContentInput {
          */
         @java.lang.Override
         public _FinalStage html(String html) {
-            this.html = Optional.ofNullable(html);
+            this.html = OptionalNullable.of(html);
             return this;
         }
 
@@ -284,7 +318,7 @@ public final class TemplateContentInput {
          */
         @java.lang.Override
         @JsonSetter(value = "html", nulls = Nulls.SKIP)
-        public _FinalStage html(Optional<String> html) {
+        public _FinalStage html(OptionalNullable<String> html) {
             this.html = html;
             return this;
         }

@@ -48,8 +48,20 @@ class ListSuppressionsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->address = $values['address'] ?? null;
+        if (array_key_exists('address', $values)) {
+            $this->_setField('address');
+        }
         $this->scope = $values['scope'] ?? null;
+        if (array_key_exists('scope', $values)) {
+            $this->_setField('scope');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

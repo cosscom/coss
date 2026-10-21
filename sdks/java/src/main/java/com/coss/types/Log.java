@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,31 +40,31 @@ public final class Log {
 
     private final String message;
 
-    private final Optional<String> requestId;
+    private final OptionalNullable<String> requestId;
 
-    private final Optional<String> apiKeyId;
+    private final OptionalNullable<String> apiKeyId;
 
-    private final Optional<String> method;
+    private final OptionalNullable<String> method;
 
-    private final Optional<String> path;
+    private final OptionalNullable<String> path;
 
-    private final Optional<String> route;
+    private final OptionalNullable<String> route;
 
-    private final Optional<Long> statusCode;
+    private final OptionalNullable<Long> statusCode;
 
-    private final Optional<Long> durationMs;
+    private final OptionalNullable<Long> durationMs;
 
-    private final Optional<String> clientIp;
+    private final OptionalNullable<String> clientIp;
 
-    private final Optional<String> userAgent;
+    private final OptionalNullable<String> userAgent;
 
-    private final Optional<String> errorCode;
+    private final OptionalNullable<String> errorCode;
 
-    private final Optional<String> resourceType;
+    private final OptionalNullable<String> resourceType;
 
-    private final Optional<String> resourceId;
+    private final OptionalNullable<String> resourceId;
 
-    private final Optional<String> recipient;
+    private final OptionalNullable<String> recipient;
 
     private final Map<String, Object> attributes;
 
@@ -78,19 +78,19 @@ public final class Log {
             LogLevel level,
             String type,
             String message,
-            Optional<String> requestId,
-            Optional<String> apiKeyId,
-            Optional<String> method,
-            Optional<String> path,
-            Optional<String> route,
-            Optional<Long> statusCode,
-            Optional<Long> durationMs,
-            Optional<String> clientIp,
-            Optional<String> userAgent,
-            Optional<String> errorCode,
-            Optional<String> resourceType,
-            Optional<String> resourceId,
-            Optional<String> recipient,
+            OptionalNullable<String> requestId,
+            OptionalNullable<String> apiKeyId,
+            OptionalNullable<String> method,
+            OptionalNullable<String> path,
+            OptionalNullable<String> route,
+            OptionalNullable<Long> statusCode,
+            OptionalNullable<Long> durationMs,
+            OptionalNullable<String> clientIp,
+            OptionalNullable<String> userAgent,
+            OptionalNullable<String> errorCode,
+            OptionalNullable<String> resourceType,
+            OptionalNullable<String> resourceId,
+            OptionalNullable<String> recipient,
             Map<String, Object> attributes,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -161,34 +161,38 @@ public final class Log {
     /**
      * @return The <code>X-Request-Id</code> of the API request this line belongs to.
      */
-    @JsonIgnore
-    public Optional<String> getRequestId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("request_id")
+    public OptionalNullable<String> getRequestId() {
         if (requestId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return requestId;
     }
 
-    @JsonIgnore
-    public Optional<String> getApiKeyId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("api_key_id")
+    public OptionalNullable<String> getApiKeyId() {
         if (apiKeyId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return apiKeyId;
     }
 
-    @JsonIgnore
-    public Optional<String> getMethod() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("method")
+    public OptionalNullable<String> getMethod() {
         if (method == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return method;
     }
 
-    @JsonIgnore
-    public Optional<String> getPath() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("path")
+    public OptionalNullable<String> getPath() {
         if (path == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return path;
     }
@@ -196,10 +200,11 @@ public final class Log {
     /**
      * @return The matched route, e.g. <code>/v1/emails/:id</code>.
      */
-    @JsonIgnore
-    public Optional<String> getRoute() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("route")
+    public OptionalNullable<String> getRoute() {
         if (route == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return route;
     }
@@ -207,42 +212,47 @@ public final class Log {
     /**
      * @return The API response status, or the webhook endpoint's response status.
      */
-    @JsonIgnore
-    public Optional<Long> getStatusCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("status_code")
+    public OptionalNullable<Long> getStatusCode() {
         if (statusCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return statusCode;
     }
 
-    @JsonIgnore
-    public Optional<Long> getDurationMs() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("duration_ms")
+    public OptionalNullable<Long> getDurationMs() {
         if (durationMs == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return durationMs;
     }
 
-    @JsonIgnore
-    public Optional<String> getClientIp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("client_ip")
+    public OptionalNullable<String> getClientIp() {
         if (clientIp == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return clientIp;
     }
 
-    @JsonIgnore
-    public Optional<String> getUserAgent() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_agent")
+    public OptionalNullable<String> getUserAgent() {
         if (userAgent == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userAgent;
     }
 
-    @JsonIgnore
-    public Optional<String> getErrorCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("error_code")
+    public OptionalNullable<String> getErrorCode() {
         if (errorCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return errorCode;
     }
@@ -250,26 +260,29 @@ public final class Log {
     /**
      * @return What the line is about: <code>email</code>, <code>domain</code>, <code>webhook_endpoint</code>…
      */
-    @JsonIgnore
-    public Optional<String> getResourceType() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("resource_type")
+    public OptionalNullable<String> getResourceType() {
         if (resourceType == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return resourceType;
     }
 
-    @JsonIgnore
-    public Optional<String> getResourceId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("resource_id")
+    public OptionalNullable<String> getResourceId() {
         if (resourceId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return resourceId;
     }
 
-    @JsonIgnore
-    public Optional<String> getRecipient() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("recipient")
+    public OptionalNullable<String> getRecipient() {
         if (recipient == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return recipient;
     }
@@ -284,79 +297,79 @@ public final class Log {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("request_id")
-    private Optional<String> _getRequestId() {
+    private OptionalNullable<String> _getRequestId() {
         return requestId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("api_key_id")
-    private Optional<String> _getApiKeyId() {
+    private OptionalNullable<String> _getApiKeyId() {
         return apiKeyId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("method")
-    private Optional<String> _getMethod() {
+    private OptionalNullable<String> _getMethod() {
         return method;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("path")
-    private Optional<String> _getPath() {
+    private OptionalNullable<String> _getPath() {
         return path;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("route")
-    private Optional<String> _getRoute() {
+    private OptionalNullable<String> _getRoute() {
         return route;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("status_code")
-    private Optional<Long> _getStatusCode() {
+    private OptionalNullable<Long> _getStatusCode() {
         return statusCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("duration_ms")
-    private Optional<Long> _getDurationMs() {
+    private OptionalNullable<Long> _getDurationMs() {
         return durationMs;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("client_ip")
-    private Optional<String> _getClientIp() {
+    private OptionalNullable<String> _getClientIp() {
         return clientIp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_agent")
-    private Optional<String> _getUserAgent() {
+    private OptionalNullable<String> _getUserAgent() {
         return userAgent;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("error_code")
-    private Optional<String> _getErrorCode() {
+    private OptionalNullable<String> _getErrorCode() {
         return errorCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("resource_type")
-    private Optional<String> _getResourceType() {
+    private OptionalNullable<String> _getResourceType() {
         return resourceType;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("resource_id")
-    private Optional<String> _getResourceId() {
+    private OptionalNullable<String> _getResourceId() {
         return resourceId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("recipient")
-    private Optional<String> _getRecipient() {
+    private OptionalNullable<String> _getRecipient() {
         return recipient;
     }
 
@@ -476,90 +489,116 @@ public final class Log {
         /**
          * <p>The <code>X-Request-Id</code> of the API request this line belongs to.</p>
          */
-        _FinalStage requestId(Optional<String> requestId);
+        _FinalStage requestId(OptionalNullable<String> requestId);
 
         _FinalStage requestId(String requestId);
 
+        _FinalStage requestId(Optional<String> requestId);
+
         _FinalStage requestId(Nullable<String> requestId);
 
-        _FinalStage apiKeyId(Optional<String> apiKeyId);
+        _FinalStage apiKeyId(OptionalNullable<String> apiKeyId);
 
         _FinalStage apiKeyId(String apiKeyId);
 
+        _FinalStage apiKeyId(Optional<String> apiKeyId);
+
         _FinalStage apiKeyId(Nullable<String> apiKeyId);
 
-        _FinalStage method(Optional<String> method);
+        _FinalStage method(OptionalNullable<String> method);
 
         _FinalStage method(String method);
 
+        _FinalStage method(Optional<String> method);
+
         _FinalStage method(Nullable<String> method);
 
-        _FinalStage path(Optional<String> path);
+        _FinalStage path(OptionalNullable<String> path);
 
         _FinalStage path(String path);
+
+        _FinalStage path(Optional<String> path);
 
         _FinalStage path(Nullable<String> path);
 
         /**
          * <p>The matched route, e.g. <code>/v1/emails/:id</code>.</p>
          */
-        _FinalStage route(Optional<String> route);
+        _FinalStage route(OptionalNullable<String> route);
 
         _FinalStage route(String route);
+
+        _FinalStage route(Optional<String> route);
 
         _FinalStage route(Nullable<String> route);
 
         /**
          * <p>The API response status, or the webhook endpoint's response status.</p>
          */
-        _FinalStage statusCode(Optional<Long> statusCode);
+        _FinalStage statusCode(OptionalNullable<Long> statusCode);
 
         _FinalStage statusCode(Long statusCode);
 
+        _FinalStage statusCode(Optional<Long> statusCode);
+
         _FinalStage statusCode(Nullable<Long> statusCode);
 
-        _FinalStage durationMs(Optional<Long> durationMs);
+        _FinalStage durationMs(OptionalNullable<Long> durationMs);
 
         _FinalStage durationMs(Long durationMs);
 
+        _FinalStage durationMs(Optional<Long> durationMs);
+
         _FinalStage durationMs(Nullable<Long> durationMs);
 
-        _FinalStage clientIp(Optional<String> clientIp);
+        _FinalStage clientIp(OptionalNullable<String> clientIp);
 
         _FinalStage clientIp(String clientIp);
 
+        _FinalStage clientIp(Optional<String> clientIp);
+
         _FinalStage clientIp(Nullable<String> clientIp);
 
-        _FinalStage userAgent(Optional<String> userAgent);
+        _FinalStage userAgent(OptionalNullable<String> userAgent);
 
         _FinalStage userAgent(String userAgent);
 
+        _FinalStage userAgent(Optional<String> userAgent);
+
         _FinalStage userAgent(Nullable<String> userAgent);
 
-        _FinalStage errorCode(Optional<String> errorCode);
+        _FinalStage errorCode(OptionalNullable<String> errorCode);
 
         _FinalStage errorCode(String errorCode);
+
+        _FinalStage errorCode(Optional<String> errorCode);
 
         _FinalStage errorCode(Nullable<String> errorCode);
 
         /**
          * <p>What the line is about: <code>email</code>, <code>domain</code>, <code>webhook_endpoint</code>…</p>
          */
-        _FinalStage resourceType(Optional<String> resourceType);
+        _FinalStage resourceType(OptionalNullable<String> resourceType);
 
         _FinalStage resourceType(String resourceType);
 
+        _FinalStage resourceType(Optional<String> resourceType);
+
         _FinalStage resourceType(Nullable<String> resourceType);
 
-        _FinalStage resourceId(Optional<String> resourceId);
+        _FinalStage resourceId(OptionalNullable<String> resourceId);
 
         _FinalStage resourceId(String resourceId);
 
+        _FinalStage resourceId(Optional<String> resourceId);
+
         _FinalStage resourceId(Nullable<String> resourceId);
 
-        _FinalStage recipient(Optional<String> recipient);
+        _FinalStage recipient(OptionalNullable<String> recipient);
 
         _FinalStage recipient(String recipient);
+
+        _FinalStage recipient(Optional<String> recipient);
 
         _FinalStage recipient(Nullable<String> recipient);
 
@@ -599,31 +638,31 @@ public final class Log {
 
         private Map<String, Object> attributes = new LinkedHashMap<>();
 
-        private Optional<String> recipient = Optional.empty();
+        private OptionalNullable<String> recipient = OptionalNullable.absent();
 
-        private Optional<String> resourceId = Optional.empty();
+        private OptionalNullable<String> resourceId = OptionalNullable.absent();
 
-        private Optional<String> resourceType = Optional.empty();
+        private OptionalNullable<String> resourceType = OptionalNullable.absent();
 
-        private Optional<String> errorCode = Optional.empty();
+        private OptionalNullable<String> errorCode = OptionalNullable.absent();
 
-        private Optional<String> userAgent = Optional.empty();
+        private OptionalNullable<String> userAgent = OptionalNullable.absent();
 
-        private Optional<String> clientIp = Optional.empty();
+        private OptionalNullable<String> clientIp = OptionalNullable.absent();
 
-        private Optional<Long> durationMs = Optional.empty();
+        private OptionalNullable<Long> durationMs = OptionalNullable.absent();
 
-        private Optional<Long> statusCode = Optional.empty();
+        private OptionalNullable<Long> statusCode = OptionalNullable.absent();
 
-        private Optional<String> route = Optional.empty();
+        private OptionalNullable<String> route = OptionalNullable.absent();
 
-        private Optional<String> path = Optional.empty();
+        private OptionalNullable<String> path = OptionalNullable.absent();
 
-        private Optional<String> method = Optional.empty();
+        private OptionalNullable<String> method = OptionalNullable.absent();
 
-        private Optional<String> apiKeyId = Optional.empty();
+        private OptionalNullable<String> apiKeyId = OptionalNullable.absent();
 
-        private Optional<String> requestId = Optional.empty();
+        private OptionalNullable<String> requestId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -751,24 +790,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage recipient(Nullable<String> recipient) {
             if (recipient.isNull()) {
-                this.recipient = null;
+                this.recipient = OptionalNullable.ofNull();
             } else if (recipient.isEmpty()) {
-                this.recipient = Optional.empty();
+                this.recipient = OptionalNullable.absent();
             } else {
-                this.recipient = Optional.of(recipient.get());
+                this.recipient = OptionalNullable.of(recipient.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage recipient(Optional<String> recipient) {
+            if (recipient.isPresent()) {
+                this.recipient = OptionalNullable.of(recipient.get());
+            } else {
+                this.recipient = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage recipient(String recipient) {
-            this.recipient = Optional.ofNullable(recipient);
+            this.recipient = OptionalNullable.of(recipient);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "recipient", nulls = Nulls.SKIP)
-        public _FinalStage recipient(Optional<String> recipient) {
+        public _FinalStage recipient(OptionalNullable<String> recipient) {
             this.recipient = recipient;
             return this;
         }
@@ -776,24 +825,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage resourceId(Nullable<String> resourceId) {
             if (resourceId.isNull()) {
-                this.resourceId = null;
+                this.resourceId = OptionalNullable.ofNull();
             } else if (resourceId.isEmpty()) {
-                this.resourceId = Optional.empty();
+                this.resourceId = OptionalNullable.absent();
             } else {
-                this.resourceId = Optional.of(resourceId.get());
+                this.resourceId = OptionalNullable.of(resourceId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage resourceId(Optional<String> resourceId) {
+            if (resourceId.isPresent()) {
+                this.resourceId = OptionalNullable.of(resourceId.get());
+            } else {
+                this.resourceId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage resourceId(String resourceId) {
-            this.resourceId = Optional.ofNullable(resourceId);
+            this.resourceId = OptionalNullable.of(resourceId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "resource_id", nulls = Nulls.SKIP)
-        public _FinalStage resourceId(Optional<String> resourceId) {
+        public _FinalStage resourceId(OptionalNullable<String> resourceId) {
             this.resourceId = resourceId;
             return this;
         }
@@ -805,11 +864,25 @@ public final class Log {
         @java.lang.Override
         public _FinalStage resourceType(Nullable<String> resourceType) {
             if (resourceType.isNull()) {
-                this.resourceType = null;
+                this.resourceType = OptionalNullable.ofNull();
             } else if (resourceType.isEmpty()) {
-                this.resourceType = Optional.empty();
+                this.resourceType = OptionalNullable.absent();
             } else {
-                this.resourceType = Optional.of(resourceType.get());
+                this.resourceType = OptionalNullable.of(resourceType.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What the line is about: <code>email</code>, <code>domain</code>, <code>webhook_endpoint</code>…</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage resourceType(Optional<String> resourceType) {
+            if (resourceType.isPresent()) {
+                this.resourceType = OptionalNullable.of(resourceType.get());
+            } else {
+                this.resourceType = OptionalNullable.absent();
             }
             return this;
         }
@@ -820,7 +893,7 @@ public final class Log {
          */
         @java.lang.Override
         public _FinalStage resourceType(String resourceType) {
-            this.resourceType = Optional.ofNullable(resourceType);
+            this.resourceType = OptionalNullable.of(resourceType);
             return this;
         }
 
@@ -829,7 +902,7 @@ public final class Log {
          */
         @java.lang.Override
         @JsonSetter(value = "resource_type", nulls = Nulls.SKIP)
-        public _FinalStage resourceType(Optional<String> resourceType) {
+        public _FinalStage resourceType(OptionalNullable<String> resourceType) {
             this.resourceType = resourceType;
             return this;
         }
@@ -837,24 +910,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage errorCode(Nullable<String> errorCode) {
             if (errorCode.isNull()) {
-                this.errorCode = null;
+                this.errorCode = OptionalNullable.ofNull();
             } else if (errorCode.isEmpty()) {
-                this.errorCode = Optional.empty();
+                this.errorCode = OptionalNullable.absent();
             } else {
-                this.errorCode = Optional.of(errorCode.get());
+                this.errorCode = OptionalNullable.of(errorCode.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage errorCode(Optional<String> errorCode) {
+            if (errorCode.isPresent()) {
+                this.errorCode = OptionalNullable.of(errorCode.get());
+            } else {
+                this.errorCode = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage errorCode(String errorCode) {
-            this.errorCode = Optional.ofNullable(errorCode);
+            this.errorCode = OptionalNullable.of(errorCode);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "error_code", nulls = Nulls.SKIP)
-        public _FinalStage errorCode(Optional<String> errorCode) {
+        public _FinalStage errorCode(OptionalNullable<String> errorCode) {
             this.errorCode = errorCode;
             return this;
         }
@@ -862,24 +945,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage userAgent(Nullable<String> userAgent) {
             if (userAgent.isNull()) {
-                this.userAgent = null;
+                this.userAgent = OptionalNullable.ofNull();
             } else if (userAgent.isEmpty()) {
-                this.userAgent = Optional.empty();
+                this.userAgent = OptionalNullable.absent();
             } else {
-                this.userAgent = Optional.of(userAgent.get());
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage userAgent(Optional<String> userAgent) {
+            if (userAgent.isPresent()) {
+                this.userAgent = OptionalNullable.of(userAgent.get());
+            } else {
+                this.userAgent = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage userAgent(String userAgent) {
-            this.userAgent = Optional.ofNullable(userAgent);
+            this.userAgent = OptionalNullable.of(userAgent);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "user_agent", nulls = Nulls.SKIP)
-        public _FinalStage userAgent(Optional<String> userAgent) {
+        public _FinalStage userAgent(OptionalNullable<String> userAgent) {
             this.userAgent = userAgent;
             return this;
         }
@@ -887,24 +980,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage clientIp(Nullable<String> clientIp) {
             if (clientIp.isNull()) {
-                this.clientIp = null;
+                this.clientIp = OptionalNullable.ofNull();
             } else if (clientIp.isEmpty()) {
-                this.clientIp = Optional.empty();
+                this.clientIp = OptionalNullable.absent();
             } else {
-                this.clientIp = Optional.of(clientIp.get());
+                this.clientIp = OptionalNullable.of(clientIp.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage clientIp(Optional<String> clientIp) {
+            if (clientIp.isPresent()) {
+                this.clientIp = OptionalNullable.of(clientIp.get());
+            } else {
+                this.clientIp = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage clientIp(String clientIp) {
-            this.clientIp = Optional.ofNullable(clientIp);
+            this.clientIp = OptionalNullable.of(clientIp);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "client_ip", nulls = Nulls.SKIP)
-        public _FinalStage clientIp(Optional<String> clientIp) {
+        public _FinalStage clientIp(OptionalNullable<String> clientIp) {
             this.clientIp = clientIp;
             return this;
         }
@@ -912,24 +1015,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage durationMs(Nullable<Long> durationMs) {
             if (durationMs.isNull()) {
-                this.durationMs = null;
+                this.durationMs = OptionalNullable.ofNull();
             } else if (durationMs.isEmpty()) {
-                this.durationMs = Optional.empty();
+                this.durationMs = OptionalNullable.absent();
             } else {
-                this.durationMs = Optional.of(durationMs.get());
+                this.durationMs = OptionalNullable.of(durationMs.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage durationMs(Optional<Long> durationMs) {
+            if (durationMs.isPresent()) {
+                this.durationMs = OptionalNullable.of(durationMs.get());
+            } else {
+                this.durationMs = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage durationMs(Long durationMs) {
-            this.durationMs = Optional.ofNullable(durationMs);
+            this.durationMs = OptionalNullable.of(durationMs);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "duration_ms", nulls = Nulls.SKIP)
-        public _FinalStage durationMs(Optional<Long> durationMs) {
+        public _FinalStage durationMs(OptionalNullable<Long> durationMs) {
             this.durationMs = durationMs;
             return this;
         }
@@ -941,11 +1054,25 @@ public final class Log {
         @java.lang.Override
         public _FinalStage statusCode(Nullable<Long> statusCode) {
             if (statusCode.isNull()) {
-                this.statusCode = null;
+                this.statusCode = OptionalNullable.ofNull();
             } else if (statusCode.isEmpty()) {
-                this.statusCode = Optional.empty();
+                this.statusCode = OptionalNullable.absent();
             } else {
-                this.statusCode = Optional.of(statusCode.get());
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The API response status, or the webhook endpoint's response status.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage statusCode(Optional<Long> statusCode) {
+            if (statusCode.isPresent()) {
+                this.statusCode = OptionalNullable.of(statusCode.get());
+            } else {
+                this.statusCode = OptionalNullable.absent();
             }
             return this;
         }
@@ -956,7 +1083,7 @@ public final class Log {
          */
         @java.lang.Override
         public _FinalStage statusCode(Long statusCode) {
-            this.statusCode = Optional.ofNullable(statusCode);
+            this.statusCode = OptionalNullable.of(statusCode);
             return this;
         }
 
@@ -965,7 +1092,7 @@ public final class Log {
          */
         @java.lang.Override
         @JsonSetter(value = "status_code", nulls = Nulls.SKIP)
-        public _FinalStage statusCode(Optional<Long> statusCode) {
+        public _FinalStage statusCode(OptionalNullable<Long> statusCode) {
             this.statusCode = statusCode;
             return this;
         }
@@ -977,11 +1104,25 @@ public final class Log {
         @java.lang.Override
         public _FinalStage route(Nullable<String> route) {
             if (route.isNull()) {
-                this.route = null;
+                this.route = OptionalNullable.ofNull();
             } else if (route.isEmpty()) {
-                this.route = Optional.empty();
+                this.route = OptionalNullable.absent();
             } else {
-                this.route = Optional.of(route.get());
+                this.route = OptionalNullable.of(route.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The matched route, e.g. <code>/v1/emails/:id</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage route(Optional<String> route) {
+            if (route.isPresent()) {
+                this.route = OptionalNullable.of(route.get());
+            } else {
+                this.route = OptionalNullable.absent();
             }
             return this;
         }
@@ -992,7 +1133,7 @@ public final class Log {
          */
         @java.lang.Override
         public _FinalStage route(String route) {
-            this.route = Optional.ofNullable(route);
+            this.route = OptionalNullable.of(route);
             return this;
         }
 
@@ -1001,7 +1142,7 @@ public final class Log {
          */
         @java.lang.Override
         @JsonSetter(value = "route", nulls = Nulls.SKIP)
-        public _FinalStage route(Optional<String> route) {
+        public _FinalStage route(OptionalNullable<String> route) {
             this.route = route;
             return this;
         }
@@ -1009,24 +1150,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage path(Nullable<String> path) {
             if (path.isNull()) {
-                this.path = null;
+                this.path = OptionalNullable.ofNull();
             } else if (path.isEmpty()) {
-                this.path = Optional.empty();
+                this.path = OptionalNullable.absent();
             } else {
-                this.path = Optional.of(path.get());
+                this.path = OptionalNullable.of(path.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage path(Optional<String> path) {
+            if (path.isPresent()) {
+                this.path = OptionalNullable.of(path.get());
+            } else {
+                this.path = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage path(String path) {
-            this.path = Optional.ofNullable(path);
+            this.path = OptionalNullable.of(path);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "path", nulls = Nulls.SKIP)
-        public _FinalStage path(Optional<String> path) {
+        public _FinalStage path(OptionalNullable<String> path) {
             this.path = path;
             return this;
         }
@@ -1034,24 +1185,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage method(Nullable<String> method) {
             if (method.isNull()) {
-                this.method = null;
+                this.method = OptionalNullable.ofNull();
             } else if (method.isEmpty()) {
-                this.method = Optional.empty();
+                this.method = OptionalNullable.absent();
             } else {
-                this.method = Optional.of(method.get());
+                this.method = OptionalNullable.of(method.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage method(Optional<String> method) {
+            if (method.isPresent()) {
+                this.method = OptionalNullable.of(method.get());
+            } else {
+                this.method = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage method(String method) {
-            this.method = Optional.ofNullable(method);
+            this.method = OptionalNullable.of(method);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "method", nulls = Nulls.SKIP)
-        public _FinalStage method(Optional<String> method) {
+        public _FinalStage method(OptionalNullable<String> method) {
             this.method = method;
             return this;
         }
@@ -1059,24 +1220,34 @@ public final class Log {
         @java.lang.Override
         public _FinalStage apiKeyId(Nullable<String> apiKeyId) {
             if (apiKeyId.isNull()) {
-                this.apiKeyId = null;
+                this.apiKeyId = OptionalNullable.ofNull();
             } else if (apiKeyId.isEmpty()) {
-                this.apiKeyId = Optional.empty();
+                this.apiKeyId = OptionalNullable.absent();
             } else {
-                this.apiKeyId = Optional.of(apiKeyId.get());
+                this.apiKeyId = OptionalNullable.of(apiKeyId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage apiKeyId(Optional<String> apiKeyId) {
+            if (apiKeyId.isPresent()) {
+                this.apiKeyId = OptionalNullable.of(apiKeyId.get());
+            } else {
+                this.apiKeyId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage apiKeyId(String apiKeyId) {
-            this.apiKeyId = Optional.ofNullable(apiKeyId);
+            this.apiKeyId = OptionalNullable.of(apiKeyId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "api_key_id", nulls = Nulls.SKIP)
-        public _FinalStage apiKeyId(Optional<String> apiKeyId) {
+        public _FinalStage apiKeyId(OptionalNullable<String> apiKeyId) {
             this.apiKeyId = apiKeyId;
             return this;
         }
@@ -1088,11 +1259,25 @@ public final class Log {
         @java.lang.Override
         public _FinalStage requestId(Nullable<String> requestId) {
             if (requestId.isNull()) {
-                this.requestId = null;
+                this.requestId = OptionalNullable.ofNull();
             } else if (requestId.isEmpty()) {
-                this.requestId = Optional.empty();
+                this.requestId = OptionalNullable.absent();
             } else {
-                this.requestId = Optional.of(requestId.get());
+                this.requestId = OptionalNullable.of(requestId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The <code>X-Request-Id</code> of the API request this line belongs to.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage requestId(Optional<String> requestId) {
+            if (requestId.isPresent()) {
+                this.requestId = OptionalNullable.of(requestId.get());
+            } else {
+                this.requestId = OptionalNullable.absent();
             }
             return this;
         }
@@ -1103,7 +1288,7 @@ public final class Log {
          */
         @java.lang.Override
         public _FinalStage requestId(String requestId) {
-            this.requestId = Optional.ofNullable(requestId);
+            this.requestId = OptionalNullable.of(requestId);
             return this;
         }
 
@@ -1112,7 +1297,7 @@ public final class Log {
          */
         @java.lang.Override
         @JsonSetter(value = "request_id", nulls = Nulls.SKIP)
-        public _FinalStage requestId(Optional<String> requestId) {
+        public _FinalStage requestId(OptionalNullable<String> requestId) {
             this.requestId = requestId;
             return this;
         }

@@ -15,146 +15,193 @@ public record UpdateRiskSettingsRequestReasonWeights : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable, Optional]
     [JsonPropertyName("email.invalid")]
-    public double? EmailInvalid { get; set; }
+    public Optional<double?> EmailInvalid { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("email.disposable")]
-    public double? EmailDisposable { get; set; }
+    public Optional<double?> EmailDisposable { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("email.undeliverable")]
-    public double? EmailUndeliverable { get; set; }
+    public Optional<double?> EmailUndeliverable { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("email.role_account")]
-    public double? EmailRoleAccount { get; set; }
+    public Optional<double?> EmailRoleAccount { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("email.typo")]
-    public double? EmailTypo { get; set; }
+    public Optional<double?> EmailTypo { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("email.domain_new")]
-    public double? EmailDomainNew { get; set; }
+    public Optional<double?> EmailDomainNew { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.tor")]
-    public double? IpTor { get; set; }
+    public Optional<double?> IpTor { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.vpn_network")]
-    public double? IpVpnNetwork { get; set; }
+    public Optional<double?> IpVpnNetwork { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.hosting_provider")]
-    public double? IpHostingProvider { get; set; }
+    public Optional<double?> IpHostingProvider { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.vpn")]
-    public double? IpVpn { get; set; }
+    public Optional<double?> IpVpn { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.proxy")]
-    public double? IpProxy { get; set; }
+    public Optional<double?> IpProxy { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.relay")]
-    public double? IpRelay { get; set; }
+    public Optional<double?> IpRelay { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("ip.private")]
-    public double? IpPrivate { get; set; }
+    public Optional<double?> IpPrivate { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_ip_1h")]
-    public double? VelocitySignupsPerIp1H { get; set; }
+    public Optional<double?> VelocitySignupsPerIp1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_ip_24h")]
-    public double? VelocitySignupsPerIp24H { get; set; }
+    public Optional<double?> VelocitySignupsPerIp24H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_subnet_1h")]
-    public double? VelocitySignupsPerSubnet1H { get; set; }
+    public Optional<double?> VelocitySignupsPerSubnet1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_email_domain_1h")]
-    public double? VelocitySignupsPerEmailDomain1H { get; set; }
+    public Optional<double?> VelocitySignupsPerEmailDomain1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_mailbox_24h")]
-    public double? VelocitySignupsPerMailbox24H { get; set; }
+    public Optional<double?> VelocitySignupsPerMailbox24H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.signups_per_device_24h")]
-    public double? VelocitySignupsPerDevice24H { get; set; }
+    public Optional<double?> VelocitySignupsPerDevice24H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.checkouts_per_ip_1h")]
-    public double? VelocityCheckoutsPerIp1H { get; set; }
+    public Optional<double?> VelocityCheckoutsPerIp1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.checkouts_per_user_1h")]
-    public double? VelocityCheckoutsPerUser1H { get; set; }
+    public Optional<double?> VelocityCheckoutsPerUser1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.checkouts_per_card_24h")]
-    public double? VelocityCheckoutsPerCard24H { get; set; }
+    public Optional<double?> VelocityCheckoutsPerCard24H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.logins_per_ip_1h")]
-    public double? VelocityLoginsPerIp1H { get; set; }
+    public Optional<double?> VelocityLoginsPerIp1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.logins_per_user_1h")]
-    public double? VelocityLoginsPerUser1H { get; set; }
+    public Optional<double?> VelocityLoginsPerUser1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.events_per_ip_1h")]
-    public double? VelocityEventsPerIp1H { get; set; }
+    public Optional<double?> VelocityEventsPerIp1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("velocity.events_per_user_1h")]
-    public double? VelocityEventsPerUser1H { get; set; }
+    public Optional<double?> VelocityEventsPerUser1H { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("duplicate.canonical_mailbox")]
-    public double? DuplicateCanonicalMailbox { get; set; }
+    public Optional<double?> DuplicateCanonicalMailbox { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("duplicate.device")]
-    public double? DuplicateDevice { get; set; }
+    public Optional<double?> DuplicateDevice { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_mailbox")]
-    public double? HistoryFraudMailbox { get; set; }
+    public Optional<double?> HistoryFraudMailbox { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_user")]
-    public double? HistoryFraudUser { get; set; }
+    public Optional<double?> HistoryFraudUser { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_ip")]
-    public double? HistoryFraudIp { get; set; }
+    public Optional<double?> HistoryFraudIp { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_subnet")]
-    public double? HistoryFraudSubnet { get; set; }
+    public Optional<double?> HistoryFraudSubnet { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_card")]
-    public double? HistoryFraudCard { get; set; }
+    public Optional<double?> HistoryFraudCard { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("history.fraud_device")]
-    public double? HistoryFraudDevice { get; set; }
+    public Optional<double?> HistoryFraudDevice { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("checkout.card_country_mismatch")]
-    public double? CheckoutCardCountryMismatch { get; set; }
+    public Optional<double?> CheckoutCardCountryMismatch { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("checkout.billing_country_mismatch")]
-    public double? CheckoutBillingCountryMismatch { get; set; }
+    public Optional<double?> CheckoutBillingCountryMismatch { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("checkout.prepaid_card")]
-    public double? CheckoutPrepaidCard { get; set; }
+    public Optional<double?> CheckoutPrepaidCard { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("device.automation")]
-    public double? DeviceAutomation { get; set; }
+    public Optional<double?> DeviceAutomation { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("device.invalid")]
-    public double? DeviceInvalid { get; set; }
+    public Optional<double?> DeviceInvalid { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("login.new_country")]
-    public double? LoginNewCountry { get; set; }
+    public Optional<double?> LoginNewCountry { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("login.new_network")]
-    public double? LoginNewNetwork { get; set; }
+    public Optional<double?> LoginNewNetwork { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("captcha.failed")]
-    public double? CaptchaFailed { get; set; }
+    public Optional<double?> CaptchaFailed { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("captcha.missing")]
-    public double? CaptchaMissing { get; set; }
+    public Optional<double?> CaptchaMissing { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("content.spam")]
-    public double? ContentSpam { get; set; }
+    public Optional<double?> ContentSpam { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("content.phishing")]
-    public double? ContentPhishing { get; set; }
+    public Optional<double?> ContentPhishing { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("content.malware")]
-    public double? ContentMalware { get; set; }
+    public Optional<double?> ContentMalware { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("content.fraud")]
-    public double? ContentFraud { get; set; }
+    public Optional<double?> ContentFraud { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

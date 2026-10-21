@@ -119,6 +119,7 @@ public class GetTest : BaseMockServerTest
               "due_at": "2026-11-01T00:20:00.000Z",
               "finalized_at": "2026-11-01T00:20:00.000Z",
               "paid_at": "2026-11-01T00:21:00.000Z",
+              "voided_at": null,
               "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
               "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf",
               "lines": [
@@ -128,6 +129,7 @@ public class GetTest : BaseMockServerTest
                   "kind": "usage",
                   "description": "Email: 120,000 recipients",
                   "meter": "email.recipients",
+                  "dimension": null,
                   "quantity": 120000,
                   "included_quantity": 0,
                   "unit_price": "0.0004",

@@ -17,15 +17,18 @@ public record RiskCheckoutRequestCard : IJsonOnDeserialized
     /// <summary>
     /// Your payment processor's fingerprint of the card number (Stripe: `card.fingerprint`). Counted and remembered as a keyed hash only; never send the card number.
     /// </summary>
+    [Optional]
     [JsonPropertyName("fingerprint")]
     public string? Fingerprint { get; set; }
 
     /// <summary>
     /// Where the card was issued.
     /// </summary>
+    [Optional]
     [JsonPropertyName("country")]
     public string? Country { get; set; }
 
+    [Optional]
     [JsonPropertyName("funding")]
     public RiskCheckoutRequestCardFunding? Funding { get; set; }
 

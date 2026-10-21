@@ -88,7 +88,9 @@ public class ListDeliveriesTest : BaseMockServerTest
                   "endpoint_id": "hep_01k7c8m4q2f3e9v6t5r1n0p8yz",
                   "status": "succeeded",
                   "attempt_count": 1,
+                  "next_attempt_at": null,
                   "last_status_code": 200,
+                  "last_error": null,
                   "created_at": "2026-01-15T09:30:00.000Z",
                   "finished_at": "2026-01-15T09:30:00.000Z"
                 }

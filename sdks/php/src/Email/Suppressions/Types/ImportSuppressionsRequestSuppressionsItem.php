@@ -30,6 +30,9 @@ class ImportSuppressionsRequestSuppressionsItem extends JsonSerializableType
     ) {
         $this->address = $values['address'];
         $this->scope = $values['scope'] ?? null;
+        if (array_key_exists('scope', $values)) {
+            $this->_setField('scope');
+        }
     }
 
     /**

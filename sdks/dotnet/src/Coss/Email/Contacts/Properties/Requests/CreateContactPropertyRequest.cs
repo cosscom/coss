@@ -13,6 +13,7 @@ public record CreateContactPropertyRequest
     [JsonPropertyName("type")]
     public required CreateContactPropertyRequestType Type { get; set; }
 
+    [Optional]
     [JsonPropertyName("fallback")]
     public OneOf<string, double, bool>? Fallback { get; set; }
 

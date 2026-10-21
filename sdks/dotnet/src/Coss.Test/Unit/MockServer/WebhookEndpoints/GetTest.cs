@@ -68,6 +68,10 @@ public class GetTest : BaseMockServerTest
               ],
               "api_version": "2026-10-10",
               "enabled": true,
+              "disabled_reason": null,
+              "disabled_at": null,
+              "failing_since": null,
+              "previous_secret_expires_at": null,
               "created_at": "2026-01-15T09:30:00.000Z",
               "updated_at": "2026-01-15T09:30:00.000Z"
             }

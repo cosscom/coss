@@ -19,21 +19,25 @@ public record ImportContactsRequestContactsItem : IJsonOnDeserialized
     [JsonPropertyName("email")]
     public required string Email { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("first_name")]
-    public string? FirstName { get; set; }
+    public Optional<string?> FirstName { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("last_name")]
-    public string? LastName { get; set; }
+    public Optional<string?> LastName { get; set; }
 
     /// <summary>
     /// Custom properties by key, checked against their definitions.
     /// </summary>
+    [Optional]
     [JsonPropertyName("properties")]
     public Dictionary<string, OneOf<string, double, bool>?>? Properties { get; set; }
 
     /// <summary>
     /// `subscribed` or `unsubscribed` (anything else, like an export's `pending`, is reported in `invalid`). Omitted, a new contact is `subscribed` and an existing one keeps its status.
     /// </summary>
+    [Optional]
     [JsonPropertyName("status")]
     public string? Status { get; set; }
 

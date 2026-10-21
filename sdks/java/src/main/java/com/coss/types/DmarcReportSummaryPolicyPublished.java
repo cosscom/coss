@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,31 +26,31 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcReportSummaryPolicyPublished {
     private final String domain;
 
-    private final Optional<String> p;
+    private final OptionalNullable<String> p;
 
-    private final Optional<String> sp;
+    private final OptionalNullable<String> sp;
 
-    private final Optional<String> np;
+    private final OptionalNullable<String> np;
 
-    private final Optional<String> adkim;
+    private final OptionalNullable<String> adkim;
 
-    private final Optional<String> aspf;
+    private final OptionalNullable<String> aspf;
 
-    private final Optional<Long> pct;
+    private final OptionalNullable<Long> pct;
 
-    private final Optional<String> testing;
+    private final OptionalNullable<String> testing;
 
     private final Map<String, Object> additionalProperties;
 
     private DmarcReportSummaryPolicyPublished(
             String domain,
-            Optional<String> p,
-            Optional<String> sp,
-            Optional<String> np,
-            Optional<String> adkim,
-            Optional<String> aspf,
-            Optional<Long> pct,
-            Optional<String> testing,
+            OptionalNullable<String> p,
+            OptionalNullable<String> sp,
+            OptionalNullable<String> np,
+            OptionalNullable<String> adkim,
+            OptionalNullable<String> aspf,
+            OptionalNullable<Long> pct,
+            OptionalNullable<String> testing,
             Map<String, Object> additionalProperties) {
         this.domain = domain;
         this.p = p;
@@ -68,101 +68,108 @@ public final class DmarcReportSummaryPolicyPublished {
         return domain;
     }
 
-    @JsonIgnore
-    public Optional<String> getP() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("p")
+    public OptionalNullable<String> getP() {
         if (p == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return p;
     }
 
-    @JsonIgnore
-    public Optional<String> getSp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sp")
+    public OptionalNullable<String> getSp() {
         if (sp == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return sp;
     }
 
-    @JsonIgnore
-    public Optional<String> getNp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("np")
+    public OptionalNullable<String> getNp() {
         if (np == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return np;
     }
 
-    @JsonIgnore
-    public Optional<String> getAdkim() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("adkim")
+    public OptionalNullable<String> getAdkim() {
         if (adkim == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return adkim;
     }
 
-    @JsonIgnore
-    public Optional<String> getAspf() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("aspf")
+    public OptionalNullable<String> getAspf() {
         if (aspf == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return aspf;
     }
 
-    @JsonIgnore
-    public Optional<Long> getPct() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("pct")
+    public OptionalNullable<Long> getPct() {
         if (pct == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pct;
     }
 
-    @JsonIgnore
-    public Optional<String> getTesting() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("testing")
+    public OptionalNullable<String> getTesting() {
         if (testing == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return testing;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("p")
-    private Optional<String> _getP() {
+    private OptionalNullable<String> _getP() {
         return p;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sp")
-    private Optional<String> _getSp() {
+    private OptionalNullable<String> _getSp() {
         return sp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("np")
-    private Optional<String> _getNp() {
+    private OptionalNullable<String> _getNp() {
         return np;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("adkim")
-    private Optional<String> _getAdkim() {
+    private OptionalNullable<String> _getAdkim() {
         return adkim;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("aspf")
-    private Optional<String> _getAspf() {
+    private OptionalNullable<String> _getAspf() {
         return aspf;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("pct")
-    private Optional<Long> _getPct() {
+    private OptionalNullable<Long> _getPct() {
         return pct;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("testing")
-    private Optional<String> _getTesting() {
+    private OptionalNullable<String> _getTesting() {
         return testing;
     }
 
@@ -215,45 +222,59 @@ public final class DmarcReportSummaryPolicyPublished {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage p(Optional<String> p);
+        _FinalStage p(OptionalNullable<String> p);
 
         _FinalStage p(String p);
 
+        _FinalStage p(Optional<String> p);
+
         _FinalStage p(Nullable<String> p);
 
-        _FinalStage sp(Optional<String> sp);
+        _FinalStage sp(OptionalNullable<String> sp);
 
         _FinalStage sp(String sp);
 
+        _FinalStage sp(Optional<String> sp);
+
         _FinalStage sp(Nullable<String> sp);
 
-        _FinalStage np(Optional<String> np);
+        _FinalStage np(OptionalNullable<String> np);
 
         _FinalStage np(String np);
 
+        _FinalStage np(Optional<String> np);
+
         _FinalStage np(Nullable<String> np);
 
-        _FinalStage adkim(Optional<String> adkim);
+        _FinalStage adkim(OptionalNullable<String> adkim);
 
         _FinalStage adkim(String adkim);
 
+        _FinalStage adkim(Optional<String> adkim);
+
         _FinalStage adkim(Nullable<String> adkim);
 
-        _FinalStage aspf(Optional<String> aspf);
+        _FinalStage aspf(OptionalNullable<String> aspf);
 
         _FinalStage aspf(String aspf);
 
+        _FinalStage aspf(Optional<String> aspf);
+
         _FinalStage aspf(Nullable<String> aspf);
 
-        _FinalStage pct(Optional<Long> pct);
+        _FinalStage pct(OptionalNullable<Long> pct);
 
         _FinalStage pct(Long pct);
 
+        _FinalStage pct(Optional<Long> pct);
+
         _FinalStage pct(Nullable<Long> pct);
 
-        _FinalStage testing(Optional<String> testing);
+        _FinalStage testing(OptionalNullable<String> testing);
 
         _FinalStage testing(String testing);
+
+        _FinalStage testing(Optional<String> testing);
 
         _FinalStage testing(Nullable<String> testing);
     }
@@ -262,19 +283,19 @@ public final class DmarcReportSummaryPolicyPublished {
     public static final class Builder implements DomainStage, _FinalStage {
         private String domain;
 
-        private Optional<String> testing = Optional.empty();
+        private OptionalNullable<String> testing = OptionalNullable.absent();
 
-        private Optional<Long> pct = Optional.empty();
+        private OptionalNullable<Long> pct = OptionalNullable.absent();
 
-        private Optional<String> aspf = Optional.empty();
+        private OptionalNullable<String> aspf = OptionalNullable.absent();
 
-        private Optional<String> adkim = Optional.empty();
+        private OptionalNullable<String> adkim = OptionalNullable.absent();
 
-        private Optional<String> np = Optional.empty();
+        private OptionalNullable<String> np = OptionalNullable.absent();
 
-        private Optional<String> sp = Optional.empty();
+        private OptionalNullable<String> sp = OptionalNullable.absent();
 
-        private Optional<String> p = Optional.empty();
+        private OptionalNullable<String> p = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -304,24 +325,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage testing(Nullable<String> testing) {
             if (testing.isNull()) {
-                this.testing = null;
+                this.testing = OptionalNullable.ofNull();
             } else if (testing.isEmpty()) {
-                this.testing = Optional.empty();
+                this.testing = OptionalNullable.absent();
             } else {
-                this.testing = Optional.of(testing.get());
+                this.testing = OptionalNullable.of(testing.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage testing(Optional<String> testing) {
+            if (testing.isPresent()) {
+                this.testing = OptionalNullable.of(testing.get());
+            } else {
+                this.testing = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage testing(String testing) {
-            this.testing = Optional.ofNullable(testing);
+            this.testing = OptionalNullable.of(testing);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "testing", nulls = Nulls.SKIP)
-        public _FinalStage testing(Optional<String> testing) {
+        public _FinalStage testing(OptionalNullable<String> testing) {
             this.testing = testing;
             return this;
         }
@@ -329,24 +360,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage pct(Nullable<Long> pct) {
             if (pct.isNull()) {
-                this.pct = null;
+                this.pct = OptionalNullable.ofNull();
             } else if (pct.isEmpty()) {
-                this.pct = Optional.empty();
+                this.pct = OptionalNullable.absent();
             } else {
-                this.pct = Optional.of(pct.get());
+                this.pct = OptionalNullable.of(pct.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage pct(Optional<Long> pct) {
+            if (pct.isPresent()) {
+                this.pct = OptionalNullable.of(pct.get());
+            } else {
+                this.pct = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage pct(Long pct) {
-            this.pct = Optional.ofNullable(pct);
+            this.pct = OptionalNullable.of(pct);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "pct", nulls = Nulls.SKIP)
-        public _FinalStage pct(Optional<Long> pct) {
+        public _FinalStage pct(OptionalNullable<Long> pct) {
             this.pct = pct;
             return this;
         }
@@ -354,24 +395,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage aspf(Nullable<String> aspf) {
             if (aspf.isNull()) {
-                this.aspf = null;
+                this.aspf = OptionalNullable.ofNull();
             } else if (aspf.isEmpty()) {
-                this.aspf = Optional.empty();
+                this.aspf = OptionalNullable.absent();
             } else {
-                this.aspf = Optional.of(aspf.get());
+                this.aspf = OptionalNullable.of(aspf.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage aspf(Optional<String> aspf) {
+            if (aspf.isPresent()) {
+                this.aspf = OptionalNullable.of(aspf.get());
+            } else {
+                this.aspf = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage aspf(String aspf) {
-            this.aspf = Optional.ofNullable(aspf);
+            this.aspf = OptionalNullable.of(aspf);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "aspf", nulls = Nulls.SKIP)
-        public _FinalStage aspf(Optional<String> aspf) {
+        public _FinalStage aspf(OptionalNullable<String> aspf) {
             this.aspf = aspf;
             return this;
         }
@@ -379,24 +430,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage adkim(Nullable<String> adkim) {
             if (adkim.isNull()) {
-                this.adkim = null;
+                this.adkim = OptionalNullable.ofNull();
             } else if (adkim.isEmpty()) {
-                this.adkim = Optional.empty();
+                this.adkim = OptionalNullable.absent();
             } else {
-                this.adkim = Optional.of(adkim.get());
+                this.adkim = OptionalNullable.of(adkim.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage adkim(Optional<String> adkim) {
+            if (adkim.isPresent()) {
+                this.adkim = OptionalNullable.of(adkim.get());
+            } else {
+                this.adkim = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage adkim(String adkim) {
-            this.adkim = Optional.ofNullable(adkim);
+            this.adkim = OptionalNullable.of(adkim);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "adkim", nulls = Nulls.SKIP)
-        public _FinalStage adkim(Optional<String> adkim) {
+        public _FinalStage adkim(OptionalNullable<String> adkim) {
             this.adkim = adkim;
             return this;
         }
@@ -404,24 +465,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage np(Nullable<String> np) {
             if (np.isNull()) {
-                this.np = null;
+                this.np = OptionalNullable.ofNull();
             } else if (np.isEmpty()) {
-                this.np = Optional.empty();
+                this.np = OptionalNullable.absent();
             } else {
-                this.np = Optional.of(np.get());
+                this.np = OptionalNullable.of(np.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage np(Optional<String> np) {
+            if (np.isPresent()) {
+                this.np = OptionalNullable.of(np.get());
+            } else {
+                this.np = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage np(String np) {
-            this.np = Optional.ofNullable(np);
+            this.np = OptionalNullable.of(np);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "np", nulls = Nulls.SKIP)
-        public _FinalStage np(Optional<String> np) {
+        public _FinalStage np(OptionalNullable<String> np) {
             this.np = np;
             return this;
         }
@@ -429,24 +500,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage sp(Nullable<String> sp) {
             if (sp.isNull()) {
-                this.sp = null;
+                this.sp = OptionalNullable.ofNull();
             } else if (sp.isEmpty()) {
-                this.sp = Optional.empty();
+                this.sp = OptionalNullable.absent();
             } else {
-                this.sp = Optional.of(sp.get());
+                this.sp = OptionalNullable.of(sp.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage sp(Optional<String> sp) {
+            if (sp.isPresent()) {
+                this.sp = OptionalNullable.of(sp.get());
+            } else {
+                this.sp = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage sp(String sp) {
-            this.sp = Optional.ofNullable(sp);
+            this.sp = OptionalNullable.of(sp);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "sp", nulls = Nulls.SKIP)
-        public _FinalStage sp(Optional<String> sp) {
+        public _FinalStage sp(OptionalNullable<String> sp) {
             this.sp = sp;
             return this;
         }
@@ -454,24 +535,34 @@ public final class DmarcReportSummaryPolicyPublished {
         @java.lang.Override
         public _FinalStage p(Nullable<String> p) {
             if (p.isNull()) {
-                this.p = null;
+                this.p = OptionalNullable.ofNull();
             } else if (p.isEmpty()) {
-                this.p = Optional.empty();
+                this.p = OptionalNullable.absent();
             } else {
-                this.p = Optional.of(p.get());
+                this.p = OptionalNullable.of(p.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage p(Optional<String> p) {
+            if (p.isPresent()) {
+                this.p = OptionalNullable.of(p.get());
+            } else {
+                this.p = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage p(String p) {
-            this.p = Optional.ofNullable(p);
+            this.p = OptionalNullable.of(p);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "p", nulls = Nulls.SKIP)
-        public _FinalStage p(Optional<String> p) {
+        public _FinalStage p(OptionalNullable<String> p) {
             this.p = p;
             return this;
         }

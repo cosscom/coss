@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class BillingWebhookEventThreeData {
 
     private final BillingWebhookEventThreeDataOf of;
 
-    private final Optional<BillingWebhookEventThreeDataMeter> meter;
+    private final OptionalNullable<BillingWebhookEventThreeDataMeter> meter;
 
     private final BillingWebhookEventThreeDataPeriod period;
 
@@ -44,7 +44,7 @@ public final class BillingWebhookEventThreeData {
             OffsetDateTime occurredAt,
             long percent,
             BillingWebhookEventThreeDataOf of,
-            Optional<BillingWebhookEventThreeDataMeter> meter,
+            OptionalNullable<BillingWebhookEventThreeDataMeter> meter,
             BillingWebhookEventThreeDataPeriod period,
             Map<String, Object> additionalProperties) {
         this.organizationId = organizationId;
@@ -88,10 +88,11 @@ public final class BillingWebhookEventThreeData {
     /**
      * @return The allowance's meter (<code>of: allowance</code>).
      */
-    @JsonIgnore
-    public Optional<BillingWebhookEventThreeDataMeter> getMeter() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("meter")
+    public OptionalNullable<BillingWebhookEventThreeDataMeter> getMeter() {
         if (meter == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return meter;
     }
@@ -103,7 +104,7 @@ public final class BillingWebhookEventThreeData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("meter")
-    private Optional<BillingWebhookEventThreeDataMeter> _getMeter() {
+    private OptionalNullable<BillingWebhookEventThreeDataMeter> _getMeter() {
         return meter;
     }
 
@@ -182,9 +183,11 @@ public final class BillingWebhookEventThreeData {
         /**
          * <p>The allowance's meter (<code>of: allowance</code>).</p>
          */
-        _FinalStage meter(Optional<BillingWebhookEventThreeDataMeter> meter);
+        _FinalStage meter(OptionalNullable<BillingWebhookEventThreeDataMeter> meter);
 
         _FinalStage meter(BillingWebhookEventThreeDataMeter meter);
+
+        _FinalStage meter(Optional<BillingWebhookEventThreeDataMeter> meter);
 
         _FinalStage meter(Nullable<BillingWebhookEventThreeDataMeter> meter);
     }
@@ -202,7 +205,7 @@ public final class BillingWebhookEventThreeData {
 
         private BillingWebhookEventThreeDataPeriod period;
 
-        private Optional<BillingWebhookEventThreeDataMeter> meter = Optional.empty();
+        private OptionalNullable<BillingWebhookEventThreeDataMeter> meter = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -274,11 +277,25 @@ public final class BillingWebhookEventThreeData {
         @java.lang.Override
         public _FinalStage meter(Nullable<BillingWebhookEventThreeDataMeter> meter) {
             if (meter.isNull()) {
-                this.meter = null;
+                this.meter = OptionalNullable.ofNull();
             } else if (meter.isEmpty()) {
-                this.meter = Optional.empty();
+                this.meter = OptionalNullable.absent();
             } else {
-                this.meter = Optional.of(meter.get());
+                this.meter = OptionalNullable.of(meter.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The allowance's meter (<code>of: allowance</code>).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage meter(Optional<BillingWebhookEventThreeDataMeter> meter) {
+            if (meter.isPresent()) {
+                this.meter = OptionalNullable.of(meter.get());
+            } else {
+                this.meter = OptionalNullable.absent();
             }
             return this;
         }
@@ -289,7 +306,7 @@ public final class BillingWebhookEventThreeData {
          */
         @java.lang.Override
         public _FinalStage meter(BillingWebhookEventThreeDataMeter meter) {
-            this.meter = Optional.ofNullable(meter);
+            this.meter = OptionalNullable.of(meter);
             return this;
         }
 
@@ -298,7 +315,7 @@ public final class BillingWebhookEventThreeData {
          */
         @java.lang.Override
         @JsonSetter(value = "meter", nulls = Nulls.SKIP)
-        public _FinalStage meter(Optional<BillingWebhookEventThreeDataMeter> meter) {
+        public _FinalStage meter(OptionalNullable<BillingWebhookEventThreeDataMeter> meter) {
             this.meter = meter;
             return this;
         }

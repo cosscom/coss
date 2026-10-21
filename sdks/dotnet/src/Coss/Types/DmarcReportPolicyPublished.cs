@@ -17,24 +17,31 @@ public record DmarcReportPolicyPublished : IJsonOnDeserialized
     [JsonPropertyName("domain")]
     public required string Domain { get; set; }
 
+    [Nullable]
     [JsonPropertyName("p")]
     public string? P { get; set; }
 
+    [Nullable]
     [JsonPropertyName("sp")]
     public string? Sp { get; set; }
 
+    [Nullable]
     [JsonPropertyName("np")]
     public string? Np { get; set; }
 
+    [Nullable]
     [JsonPropertyName("adkim")]
     public string? Adkim { get; set; }
 
+    [Nullable]
     [JsonPropertyName("aspf")]
     public string? Aspf { get; set; }
 
+    [Nullable]
     [JsonPropertyName("pct")]
     public long? Pct { get; set; }
 
+    [Nullable]
     [JsonPropertyName("testing")]
     public string? Testing { get; set; }
 

@@ -35,18 +35,22 @@ public record EmailTracking : IJsonOnDeserialized
     [JsonPropertyName("open_count")]
     public required long OpenCount { get; set; }
 
+    [Nullable]
     [JsonPropertyName("first_opened_at")]
     public DateTime? FirstOpenedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_opened_at")]
     public DateTime? LastOpenedAt { get; set; }
 
     [JsonPropertyName("click_count")]
     public required long ClickCount { get; set; }
 
+    [Nullable]
     [JsonPropertyName("first_clicked_at")]
     public DateTime? FirstClickedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_clicked_at")]
     public DateTime? LastClickedAt { get; set; }
 

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,14 +26,14 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcReportRecordAuthResultsSpfItem {
     private final String domain;
 
-    private final Optional<String> scope;
+    private final OptionalNullable<String> scope;
 
     private final String result;
 
     private final Map<String, Object> additionalProperties;
 
     private DmarcReportRecordAuthResultsSpfItem(
-            String domain, Optional<String> scope, String result, Map<String, Object> additionalProperties) {
+            String domain, OptionalNullable<String> scope, String result, Map<String, Object> additionalProperties) {
         this.domain = domain;
         this.scope = scope;
         this.result = result;
@@ -45,10 +45,11 @@ public final class DmarcReportRecordAuthResultsSpfItem {
         return domain;
     }
 
-    @JsonIgnore
-    public Optional<String> getScope() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("scope")
+    public OptionalNullable<String> getScope() {
         if (scope == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return scope;
     }
@@ -60,7 +61,7 @@ public final class DmarcReportRecordAuthResultsSpfItem {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("scope")
-    private Optional<String> _getScope() {
+    private OptionalNullable<String> _getScope() {
         return scope;
     }
 
@@ -111,9 +112,11 @@ public final class DmarcReportRecordAuthResultsSpfItem {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage scope(Optional<String> scope);
+        _FinalStage scope(OptionalNullable<String> scope);
 
         _FinalStage scope(String scope);
+
+        _FinalStage scope(Optional<String> scope);
 
         _FinalStage scope(Nullable<String> scope);
     }
@@ -124,7 +127,7 @@ public final class DmarcReportRecordAuthResultsSpfItem {
 
         private String result;
 
-        private Optional<String> scope = Optional.empty();
+        private OptionalNullable<String> scope = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -156,24 +159,34 @@ public final class DmarcReportRecordAuthResultsSpfItem {
         @java.lang.Override
         public _FinalStage scope(Nullable<String> scope) {
             if (scope.isNull()) {
-                this.scope = null;
+                this.scope = OptionalNullable.ofNull();
             } else if (scope.isEmpty()) {
-                this.scope = Optional.empty();
+                this.scope = OptionalNullable.absent();
             } else {
-                this.scope = Optional.of(scope.get());
+                this.scope = OptionalNullable.of(scope.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage scope(Optional<String> scope) {
+            if (scope.isPresent()) {
+                this.scope = OptionalNullable.of(scope.get());
+            } else {
+                this.scope = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage scope(String scope) {
-            this.scope = Optional.ofNullable(scope);
+            this.scope = OptionalNullable.of(scope);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "scope", nulls = Nulls.SKIP)
-        public _FinalStage scope(Optional<String> scope) {
+        public _FinalStage scope(OptionalNullable<String> scope) {
             this.scope = scope;
             return this;
         }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,33 +23,33 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = RiskAssessmentSignals.Builder.class)
 public final class RiskAssessmentSignals {
-    private final Optional<RiskEmailSignals> email;
+    private final OptionalNullable<RiskEmailSignals> email;
 
-    private final Optional<RiskIpSignals> ip;
+    private final OptionalNullable<RiskIpSignals> ip;
 
-    private final Optional<Map<String, Long>> velocity;
+    private final OptionalNullable<Map<String, Long>> velocity;
 
-    private final Optional<RiskCaptchaSignals> captcha;
+    private final OptionalNullable<RiskCaptchaSignals> captcha;
 
-    private final Optional<RiskLoginSignals> login;
+    private final OptionalNullable<RiskLoginSignals> login;
 
-    private final Optional<RiskContentSignals> content;
+    private final OptionalNullable<RiskContentSignals> content;
 
-    private final Optional<RiskCheckoutSignals> checkout;
+    private final OptionalNullable<RiskCheckoutSignals> checkout;
 
-    private final Optional<RiskDeviceSignals> device;
+    private final OptionalNullable<RiskDeviceSignals> device;
 
     private final Map<String, Object> additionalProperties;
 
     private RiskAssessmentSignals(
-            Optional<RiskEmailSignals> email,
-            Optional<RiskIpSignals> ip,
-            Optional<Map<String, Long>> velocity,
-            Optional<RiskCaptchaSignals> captcha,
-            Optional<RiskLoginSignals> login,
-            Optional<RiskContentSignals> content,
-            Optional<RiskCheckoutSignals> checkout,
-            Optional<RiskDeviceSignals> device,
+            OptionalNullable<RiskEmailSignals> email,
+            OptionalNullable<RiskIpSignals> ip,
+            OptionalNullable<Map<String, Long>> velocity,
+            OptionalNullable<RiskCaptchaSignals> captcha,
+            OptionalNullable<RiskLoginSignals> login,
+            OptionalNullable<RiskContentSignals> content,
+            OptionalNullable<RiskCheckoutSignals> checkout,
+            OptionalNullable<RiskDeviceSignals> device,
             Map<String, Object> additionalProperties) {
         this.email = email;
         this.ip = ip;
@@ -62,18 +62,20 @@ public final class RiskAssessmentSignals {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<RiskEmailSignals> getEmail() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email")
+    public OptionalNullable<RiskEmailSignals> getEmail() {
         if (email == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return email;
     }
 
-    @JsonIgnore
-    public Optional<RiskIpSignals> getIp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip")
+    public OptionalNullable<RiskIpSignals> getIp() {
         if (ip == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ip;
     }
@@ -81,26 +83,29 @@ public final class RiskAssessmentSignals {
     /**
      * @return <code>null</code> when velocity was unavailable (see <code>degraded</code>).
      */
-    @JsonIgnore
-    public Optional<Map<String, Long>> getVelocity() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity")
+    public OptionalNullable<Map<String, Long>> getVelocity() {
         if (velocity == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocity;
     }
 
-    @JsonIgnore
-    public Optional<RiskCaptchaSignals> getCaptcha() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("captcha")
+    public OptionalNullable<RiskCaptchaSignals> getCaptcha() {
         if (captcha == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return captcha;
     }
 
-    @JsonIgnore
-    public Optional<RiskLoginSignals> getLogin() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("login")
+    public OptionalNullable<RiskLoginSignals> getLogin() {
         if (login == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return login;
     }
@@ -108,75 +113,78 @@ public final class RiskAssessmentSignals {
     /**
      * @return <code>null</code> when no content was given or it couldn't be classified.
      */
-    @JsonIgnore
-    public Optional<RiskContentSignals> getContent() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content")
+    public OptionalNullable<RiskContentSignals> getContent() {
         if (content == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return content;
     }
 
-    @JsonIgnore
-    public Optional<RiskCheckoutSignals> getCheckout() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("checkout")
+    public OptionalNullable<RiskCheckoutSignals> getCheckout() {
         if (checkout == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return checkout;
     }
 
-    @JsonIgnore
-    public Optional<RiskDeviceSignals> getDevice() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("device")
+    public OptionalNullable<RiskDeviceSignals> getDevice() {
         if (device == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return device;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email")
-    private Optional<RiskEmailSignals> _getEmail() {
+    private OptionalNullable<RiskEmailSignals> _getEmail() {
         return email;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip")
-    private Optional<RiskIpSignals> _getIp() {
+    private OptionalNullable<RiskIpSignals> _getIp() {
         return ip;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity")
-    private Optional<Map<String, Long>> _getVelocity() {
+    private OptionalNullable<Map<String, Long>> _getVelocity() {
         return velocity;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("captcha")
-    private Optional<RiskCaptchaSignals> _getCaptcha() {
+    private OptionalNullable<RiskCaptchaSignals> _getCaptcha() {
         return captcha;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("login")
-    private Optional<RiskLoginSignals> _getLogin() {
+    private OptionalNullable<RiskLoginSignals> _getLogin() {
         return login;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content")
-    private Optional<RiskContentSignals> _getContent() {
+    private OptionalNullable<RiskContentSignals> _getContent() {
         return content;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("checkout")
-    private Optional<RiskCheckoutSignals> _getCheckout() {
+    private OptionalNullable<RiskCheckoutSignals> _getCheckout() {
         return checkout;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("device")
-    private Optional<RiskDeviceSignals> _getDevice() {
+    private OptionalNullable<RiskDeviceSignals> _getDevice() {
         return device;
     }
 
@@ -219,21 +227,21 @@ public final class RiskAssessmentSignals {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<RiskEmailSignals> email = Optional.empty();
+        private OptionalNullable<RiskEmailSignals> email = OptionalNullable.absent();
 
-        private Optional<RiskIpSignals> ip = Optional.empty();
+        private OptionalNullable<RiskIpSignals> ip = OptionalNullable.absent();
 
-        private Optional<Map<String, Long>> velocity = Optional.empty();
+        private OptionalNullable<Map<String, Long>> velocity = OptionalNullable.absent();
 
-        private Optional<RiskCaptchaSignals> captcha = Optional.empty();
+        private OptionalNullable<RiskCaptchaSignals> captcha = OptionalNullable.absent();
 
-        private Optional<RiskLoginSignals> login = Optional.empty();
+        private OptionalNullable<RiskLoginSignals> login = OptionalNullable.absent();
 
-        private Optional<RiskContentSignals> content = Optional.empty();
+        private OptionalNullable<RiskContentSignals> content = OptionalNullable.absent();
 
-        private Optional<RiskCheckoutSignals> checkout = Optional.empty();
+        private OptionalNullable<RiskCheckoutSignals> checkout = OptionalNullable.absent();
 
-        private Optional<RiskDeviceSignals> device = Optional.empty();
+        private OptionalNullable<RiskDeviceSignals> device = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -253,45 +261,63 @@ public final class RiskAssessmentSignals {
         }
 
         @JsonSetter(value = "email", nulls = Nulls.SKIP)
-        public Builder email(Optional<RiskEmailSignals> email) {
+        public Builder email(OptionalNullable<RiskEmailSignals> email) {
             this.email = email;
             return this;
         }
 
         public Builder email(RiskEmailSignals email) {
-            this.email = Optional.ofNullable(email);
+            this.email = OptionalNullable.of(email);
+            return this;
+        }
+
+        public Builder email(Optional<RiskEmailSignals> email) {
+            if (email.isPresent()) {
+                this.email = OptionalNullable.of(email.get());
+            } else {
+                this.email = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder email(Nullable<RiskEmailSignals> email) {
             if (email.isNull()) {
-                this.email = null;
+                this.email = OptionalNullable.ofNull();
             } else if (email.isEmpty()) {
-                this.email = Optional.empty();
+                this.email = OptionalNullable.absent();
             } else {
-                this.email = Optional.of(email.get());
+                this.email = OptionalNullable.of(email.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip", nulls = Nulls.SKIP)
-        public Builder ip(Optional<RiskIpSignals> ip) {
+        public Builder ip(OptionalNullable<RiskIpSignals> ip) {
             this.ip = ip;
             return this;
         }
 
         public Builder ip(RiskIpSignals ip) {
-            this.ip = Optional.ofNullable(ip);
+            this.ip = OptionalNullable.of(ip);
+            return this;
+        }
+
+        public Builder ip(Optional<RiskIpSignals> ip) {
+            if (ip.isPresent()) {
+                this.ip = OptionalNullable.of(ip.get());
+            } else {
+                this.ip = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ip(Nullable<RiskIpSignals> ip) {
             if (ip.isNull()) {
-                this.ip = null;
+                this.ip = OptionalNullable.ofNull();
             } else if (ip.isEmpty()) {
-                this.ip = Optional.empty();
+                this.ip = OptionalNullable.absent();
             } else {
-                this.ip = Optional.of(ip.get());
+                this.ip = OptionalNullable.of(ip.get());
             }
             return this;
         }
@@ -300,67 +326,94 @@ public final class RiskAssessmentSignals {
          * <p><code>null</code> when velocity was unavailable (see <code>degraded</code>).</p>
          */
         @JsonSetter(value = "velocity", nulls = Nulls.SKIP)
-        public Builder velocity(Optional<Map<String, Long>> velocity) {
+        public Builder velocity(OptionalNullable<Map<String, Long>> velocity) {
             this.velocity = velocity;
             return this;
         }
 
         public Builder velocity(Map<String, Long> velocity) {
-            this.velocity = Optional.ofNullable(velocity);
+            this.velocity = OptionalNullable.of(velocity);
+            return this;
+        }
+
+        public Builder velocity(Optional<Map<String, Long>> velocity) {
+            if (velocity.isPresent()) {
+                this.velocity = OptionalNullable.of(velocity.get());
+            } else {
+                this.velocity = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocity(Nullable<Map<String, Long>> velocity) {
             if (velocity.isNull()) {
-                this.velocity = null;
+                this.velocity = OptionalNullable.ofNull();
             } else if (velocity.isEmpty()) {
-                this.velocity = Optional.empty();
+                this.velocity = OptionalNullable.absent();
             } else {
-                this.velocity = Optional.of(velocity.get());
+                this.velocity = OptionalNullable.of(velocity.get());
             }
             return this;
         }
 
         @JsonSetter(value = "captcha", nulls = Nulls.SKIP)
-        public Builder captcha(Optional<RiskCaptchaSignals> captcha) {
+        public Builder captcha(OptionalNullable<RiskCaptchaSignals> captcha) {
             this.captcha = captcha;
             return this;
         }
 
         public Builder captcha(RiskCaptchaSignals captcha) {
-            this.captcha = Optional.ofNullable(captcha);
+            this.captcha = OptionalNullable.of(captcha);
+            return this;
+        }
+
+        public Builder captcha(Optional<RiskCaptchaSignals> captcha) {
+            if (captcha.isPresent()) {
+                this.captcha = OptionalNullable.of(captcha.get());
+            } else {
+                this.captcha = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder captcha(Nullable<RiskCaptchaSignals> captcha) {
             if (captcha.isNull()) {
-                this.captcha = null;
+                this.captcha = OptionalNullable.ofNull();
             } else if (captcha.isEmpty()) {
-                this.captcha = Optional.empty();
+                this.captcha = OptionalNullable.absent();
             } else {
-                this.captcha = Optional.of(captcha.get());
+                this.captcha = OptionalNullable.of(captcha.get());
             }
             return this;
         }
 
         @JsonSetter(value = "login", nulls = Nulls.SKIP)
-        public Builder login(Optional<RiskLoginSignals> login) {
+        public Builder login(OptionalNullable<RiskLoginSignals> login) {
             this.login = login;
             return this;
         }
 
         public Builder login(RiskLoginSignals login) {
-            this.login = Optional.ofNullable(login);
+            this.login = OptionalNullable.of(login);
+            return this;
+        }
+
+        public Builder login(Optional<RiskLoginSignals> login) {
+            if (login.isPresent()) {
+                this.login = OptionalNullable.of(login.get());
+            } else {
+                this.login = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder login(Nullable<RiskLoginSignals> login) {
             if (login.isNull()) {
-                this.login = null;
+                this.login = OptionalNullable.ofNull();
             } else if (login.isEmpty()) {
-                this.login = Optional.empty();
+                this.login = OptionalNullable.absent();
             } else {
-                this.login = Optional.of(login.get());
+                this.login = OptionalNullable.of(login.get());
             }
             return this;
         }
@@ -369,67 +422,94 @@ public final class RiskAssessmentSignals {
          * <p><code>null</code> when no content was given or it couldn't be classified.</p>
          */
         @JsonSetter(value = "content", nulls = Nulls.SKIP)
-        public Builder content(Optional<RiskContentSignals> content) {
+        public Builder content(OptionalNullable<RiskContentSignals> content) {
             this.content = content;
             return this;
         }
 
         public Builder content(RiskContentSignals content) {
-            this.content = Optional.ofNullable(content);
+            this.content = OptionalNullable.of(content);
+            return this;
+        }
+
+        public Builder content(Optional<RiskContentSignals> content) {
+            if (content.isPresent()) {
+                this.content = OptionalNullable.of(content.get());
+            } else {
+                this.content = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder content(Nullable<RiskContentSignals> content) {
             if (content.isNull()) {
-                this.content = null;
+                this.content = OptionalNullable.ofNull();
             } else if (content.isEmpty()) {
-                this.content = Optional.empty();
+                this.content = OptionalNullable.absent();
             } else {
-                this.content = Optional.of(content.get());
+                this.content = OptionalNullable.of(content.get());
             }
             return this;
         }
 
         @JsonSetter(value = "checkout", nulls = Nulls.SKIP)
-        public Builder checkout(Optional<RiskCheckoutSignals> checkout) {
+        public Builder checkout(OptionalNullable<RiskCheckoutSignals> checkout) {
             this.checkout = checkout;
             return this;
         }
 
         public Builder checkout(RiskCheckoutSignals checkout) {
-            this.checkout = Optional.ofNullable(checkout);
+            this.checkout = OptionalNullable.of(checkout);
+            return this;
+        }
+
+        public Builder checkout(Optional<RiskCheckoutSignals> checkout) {
+            if (checkout.isPresent()) {
+                this.checkout = OptionalNullable.of(checkout.get());
+            } else {
+                this.checkout = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder checkout(Nullable<RiskCheckoutSignals> checkout) {
             if (checkout.isNull()) {
-                this.checkout = null;
+                this.checkout = OptionalNullable.ofNull();
             } else if (checkout.isEmpty()) {
-                this.checkout = Optional.empty();
+                this.checkout = OptionalNullable.absent();
             } else {
-                this.checkout = Optional.of(checkout.get());
+                this.checkout = OptionalNullable.of(checkout.get());
             }
             return this;
         }
 
         @JsonSetter(value = "device", nulls = Nulls.SKIP)
-        public Builder device(Optional<RiskDeviceSignals> device) {
+        public Builder device(OptionalNullable<RiskDeviceSignals> device) {
             this.device = device;
             return this;
         }
 
         public Builder device(RiskDeviceSignals device) {
-            this.device = Optional.ofNullable(device);
+            this.device = OptionalNullable.of(device);
+            return this;
+        }
+
+        public Builder device(Optional<RiskDeviceSignals> device) {
+            if (device.isPresent()) {
+                this.device = OptionalNullable.of(device.get());
+            } else {
+                this.device = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder device(Nullable<RiskDeviceSignals> device) {
             if (device.isNull()) {
-                this.device = null;
+                this.device = OptionalNullable.ofNull();
             } else if (device.isEmpty()) {
-                this.device = Optional.empty();
+                this.device = OptionalNullable.absent();
             } else {
-                this.device = Optional.of(device.get());
+                this.device = OptionalNullable.of(device.get());
             }
             return this;
         }

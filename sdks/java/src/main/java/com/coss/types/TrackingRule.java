@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,7 +29,7 @@ public final class TrackingRule {
 
     private final String id;
 
-    private final Optional<String> category;
+    private final OptionalNullable<String> category;
 
     private final boolean opens;
 
@@ -46,7 +46,7 @@ public final class TrackingRule {
     private TrackingRule(
             TrackingRuleObject object,
             String id,
-            Optional<String> category,
+            OptionalNullable<String> category,
             boolean opens,
             boolean clicks,
             boolean unsubscribe,
@@ -77,10 +77,11 @@ public final class TrackingRule {
     /**
      * @return The category the rule applies to; <code>null</code> for the environment default.
      */
-    @JsonIgnore
-    public Optional<String> getCategory() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("category")
+    public OptionalNullable<String> getCategory() {
         if (category == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return category;
     }
@@ -121,7 +122,7 @@ public final class TrackingRule {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("category")
-    private Optional<String> _getCategory() {
+    private OptionalNullable<String> _getCategory() {
         return category;
     }
 
@@ -218,9 +219,11 @@ public final class TrackingRule {
         /**
          * <p>The category the rule applies to; <code>null</code> for the environment default.</p>
          */
-        _FinalStage category(Optional<String> category);
+        _FinalStage category(OptionalNullable<String> category);
 
         _FinalStage category(String category);
+
+        _FinalStage category(Optional<String> category);
 
         _FinalStage category(Nullable<String> category);
     }
@@ -249,7 +252,7 @@ public final class TrackingRule {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<String> category = Optional.empty();
+        private OptionalNullable<String> category = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -337,11 +340,25 @@ public final class TrackingRule {
         @java.lang.Override
         public _FinalStage category(Nullable<String> category) {
             if (category.isNull()) {
-                this.category = null;
+                this.category = OptionalNullable.ofNull();
             } else if (category.isEmpty()) {
-                this.category = Optional.empty();
+                this.category = OptionalNullable.absent();
             } else {
-                this.category = Optional.of(category.get());
+                this.category = OptionalNullable.of(category.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The category the rule applies to; <code>null</code> for the environment default.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage category(Optional<String> category) {
+            if (category.isPresent()) {
+                this.category = OptionalNullable.of(category.get());
+            } else {
+                this.category = OptionalNullable.absent();
             }
             return this;
         }
@@ -352,7 +369,7 @@ public final class TrackingRule {
          */
         @java.lang.Override
         public _FinalStage category(String category) {
-            this.category = Optional.ofNullable(category);
+            this.category = OptionalNullable.of(category);
             return this;
         }
 
@@ -361,7 +378,7 @@ public final class TrackingRule {
          */
         @java.lang.Override
         @JsonSetter(value = "category", nulls = Nulls.SKIP)
-        public _FinalStage category(Optional<String> category) {
+        public _FinalStage category(OptionalNullable<String> category) {
             this.category = category;
             return this;
         }

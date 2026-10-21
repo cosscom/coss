@@ -32,6 +32,7 @@ public record DomainRecord : IJsonOnDeserialized
     /// <summary>
     /// `MX` records only.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("priority")]
     public long? Priority { get; set; }
 

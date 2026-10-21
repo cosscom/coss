@@ -123,19 +123,55 @@ class CreateBroadcastRequest extends JsonSerializableType
         array $values,
     ) {
         $this->idempotencyKey = $values['idempotencyKey'] ?? null;
+        if (array_key_exists('idempotencyKey', $values)) {
+            $this->_setField('idempotencyKey');
+        }
         $this->name = $values['name'];
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
         $this->segmentId = $values['segmentId'] ?? null;
+        if (array_key_exists('segmentId', $values)) {
+            $this->_setField('segmentId');
+        }
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
         $this->from = $values['from'];
         $this->replyTo = $values['replyTo'] ?? null;
+        if (array_key_exists('replyTo', $values)) {
+            $this->_setField('replyTo');
+        }
         $this->subject = $values['subject'];
         $this->previewText = $values['previewText'] ?? null;
+        if (array_key_exists('previewText', $values)) {
+            $this->_setField('previewText');
+        }
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
         $this->tracking = $values['tracking'] ?? null;
+        if (array_key_exists('tracking', $values)) {
+            $this->_setField('tracking');
+        }
         $this->ratePerSecond = $values['ratePerSecond'] ?? null;
+        if (array_key_exists('ratePerSecond', $values)) {
+            $this->_setField('ratePerSecond');
+        }
         $this->send = $values['send'] ?? null;
+        if (array_key_exists('send', $values)) {
+            $this->_setField('send');
+        }
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
     }
 }

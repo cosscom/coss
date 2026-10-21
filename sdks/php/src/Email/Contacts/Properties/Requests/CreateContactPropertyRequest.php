@@ -48,5 +48,8 @@ class CreateContactPropertyRequest extends JsonSerializableType
         $this->key = $values['key'];
         $this->type = $values['type'];
         $this->fallback = $values['fallback'] ?? null;
+        if (array_key_exists('fallback', $values)) {
+            $this->_setField('fallback');
+        }
     }
 }

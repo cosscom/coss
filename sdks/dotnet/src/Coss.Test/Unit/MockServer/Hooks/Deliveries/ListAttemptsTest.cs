@@ -82,6 +82,7 @@ public class ListAttemptsTest : BaseMockServerTest
                   "attempted_at": "2026-01-15T09:30:00.000Z",
                   "status_code": 200,
                   "duration_ms": 182,
+                  "error": null,
                   "response_excerpt": "ok"
                 }
               ],

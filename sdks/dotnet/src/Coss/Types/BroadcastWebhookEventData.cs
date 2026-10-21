@@ -14,9 +14,11 @@ public record BroadcastWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("broadcast")]
     public required BroadcastWebhookEventDataBroadcast Broadcast { get; set; }
 
+    [Nullable]
     [JsonPropertyName("pause_reason")]
     public string? PauseReason { get; set; }
 
+    [Nullable]
     [JsonPropertyName("error")]
     public BroadcastWebhookEventDataError? Error { get; set; }
 

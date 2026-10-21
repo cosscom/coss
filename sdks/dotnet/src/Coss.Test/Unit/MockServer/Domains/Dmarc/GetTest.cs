@@ -118,11 +118,18 @@ public class GetTest : BaseMockServerTest
               "record": {
                 "value": "v=DMARC1; p=none; rua=mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com;",
                 "p": "none",
+                "sp": null,
+                "np": null,
+                "adkim": null,
+                "aspf": null,
+                "pct": null,
+                "t": null,
                 "rua": [
                   "mailto:dmarc-k3x9m2pq7rtw4nbc@inbound.coss.com"
                 ]
               },
               "policy": "none",
+              "inherited_from": null,
               "policy_since": "2026-09-20T08:00:00.000Z",
               "stage": "monitoring",
               "partial": false,

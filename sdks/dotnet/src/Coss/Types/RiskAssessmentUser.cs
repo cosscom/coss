@@ -11,12 +11,14 @@ public record RiskAssessmentUser : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
     /// <summary>
     /// `null` once removed (90 days after the assessment) or when none was given.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("email")]
     public string? Email { get; set; }
 

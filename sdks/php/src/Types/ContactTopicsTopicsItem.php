@@ -46,6 +46,9 @@ class ContactTopicsTopicsItem extends JsonSerializableType
         $this->name = $values['name'];
         $this->subscribed = $values['subscribed'];
         $this->choice = $values['choice'] ?? null;
+        if (array_key_exists('choice', $values)) {
+            $this->_setField('choice');
+        }
     }
 
     /**

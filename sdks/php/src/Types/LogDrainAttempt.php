@@ -69,9 +69,18 @@ class LogDrainAttempt extends JsonSerializableType
         $this->id = $values['id'];
         $this->attemptedAt = $values['attemptedAt'];
         $this->statusCode = $values['statusCode'] ?? null;
+        if (array_key_exists('statusCode', $values)) {
+            $this->_setField('statusCode');
+        }
         $this->durationMs = $values['durationMs'];
         $this->error = $values['error'] ?? null;
+        if (array_key_exists('error', $values)) {
+            $this->_setField('error');
+        }
         $this->responseExcerpt = $values['responseExcerpt'] ?? null;
+        if (array_key_exists('responseExcerpt', $values)) {
+            $this->_setField('responseExcerpt');
+        }
     }
 
     /**

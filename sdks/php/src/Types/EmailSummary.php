@@ -191,18 +191,39 @@ class EmailSummary extends JsonSerializableType
         $this->subject = $values['subject'];
         $this->tags = $values['tags'];
         $this->category = $values['category'] ?? null;
+        if (array_key_exists('category', $values)) {
+            $this->_setField('category');
+        }
         $this->stream = $values['stream'];
         $this->status = $values['status'];
         $this->failure = $values['failure'] ?? null;
+        if (array_key_exists('failure', $values)) {
+            $this->_setField('failure');
+        }
         $this->recipients = $values['recipients'];
         $this->sandbox = $values['sandbox'];
         $this->tracking = $values['tracking'];
         $this->createdAt = $values['createdAt'];
         $this->sentAt = $values['sentAt'] ?? null;
+        if (array_key_exists('sentAt', $values)) {
+            $this->_setField('sentAt');
+        }
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
         $this->batchId = $values['batchId'] ?? null;
+        if (array_key_exists('batchId', $values)) {
+            $this->_setField('batchId');
+        }
         $this->template = $values['template'] ?? null;
+        if (array_key_exists('template', $values)) {
+            $this->_setField('template');
+        }
         $this->broadcastId = $values['broadcastId'] ?? null;
+        if (array_key_exists('broadcastId', $values)) {
+            $this->_setField('broadcastId');
+        }
         $this->contentStorage = $values['contentStorage'];
     }
 

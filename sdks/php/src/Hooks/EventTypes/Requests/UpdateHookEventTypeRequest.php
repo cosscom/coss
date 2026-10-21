@@ -44,8 +44,20 @@ class UpdateHookEventTypeRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->schema = $values['schema'] ?? null;
+        if (array_key_exists('schema', $values)) {
+            $this->_setField('schema');
+        }
         $this->examples = $values['examples'] ?? null;
+        if (array_key_exists('examples', $values)) {
+            $this->_setField('examples');
+        }
         $this->archived = $values['archived'] ?? null;
+        if (array_key_exists('archived', $values)) {
+            $this->_setField('archived');
+        }
     }
 }

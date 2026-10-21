@@ -247,6 +247,7 @@ public class ListTest : BaseMockServerTest
                       "type": "CNAME",
                       "name": "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e._domainkey.acme.com",
                       "value": "x7f3k2m9qp4ld8sv6hwz1nyc5rbtgj0e.dkim.amazonses.com",
+                      "priority": null,
                       "required": true,
                       "status": "verified",
                       "found": [
@@ -270,6 +271,7 @@ public class ListTest : BaseMockServerTest
                       "type": "TXT",
                       "name": "send.acme.com",
                       "value": "v=spf1 include:amazonses.com ~all",
+                      "priority": null,
                       "required": true,
                       "status": "verified",
                       "found": [
@@ -281,6 +283,7 @@ public class ListTest : BaseMockServerTest
                       "type": "TXT",
                       "name": "_dmarc.acme.com",
                       "value": "v=DMARC1; p=none;",
+                      "priority": null,
                       "required": false,
                       "status": "verified",
                       "found": [
@@ -291,6 +294,7 @@ public class ListTest : BaseMockServerTest
                   "created_at": "2026-01-15T09:30:00.000Z",
                   "last_checked_at": "2026-01-15T09:42:10.000Z",
                   "verified_at": "2026-01-15T09:42:10.000Z",
+                  "failed_at": null,
                   "tracking": {
                     "hostname": "links.acme.com",
                     "status": "active",
@@ -303,10 +307,13 @@ public class ListTest : BaseMockServerTest
                         "found"
                       ]
                     },
+                    "message": null,
                     "created_at": "2026-01-15T09:45:00.000Z",
                     "last_checked_at": "2026-01-15T09:52:00.000Z",
-                    "activated_at": "2026-01-15T09:52:00.000Z"
+                    "activated_at": "2026-01-15T09:52:00.000Z",
+                    "failed_at": null
                   },
+                  "receiving": null,
                   "bimi": {
                     "status": "configured",
                     "name": "default._bimi.acme.com",

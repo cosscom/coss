@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,19 +28,19 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcPublishedRecord {
     private final String value;
 
-    private final Optional<DmarcPublishedRecordP> p;
+    private final OptionalNullable<DmarcPublishedRecordP> p;
 
-    private final Optional<DmarcPublishedRecordSp> sp;
+    private final OptionalNullable<DmarcPublishedRecordSp> sp;
 
-    private final Optional<DmarcPublishedRecordNp> np;
+    private final OptionalNullable<DmarcPublishedRecordNp> np;
 
-    private final Optional<DmarcPublishedRecordAdkim> adkim;
+    private final OptionalNullable<DmarcPublishedRecordAdkim> adkim;
 
-    private final Optional<DmarcPublishedRecordAspf> aspf;
+    private final OptionalNullable<DmarcPublishedRecordAspf> aspf;
 
-    private final Optional<Long> pct;
+    private final OptionalNullable<Long> pct;
 
-    private final Optional<DmarcPublishedRecordT> t;
+    private final OptionalNullable<DmarcPublishedRecordT> t;
 
     private final List<String> rua;
 
@@ -48,13 +48,13 @@ public final class DmarcPublishedRecord {
 
     private DmarcPublishedRecord(
             String value,
-            Optional<DmarcPublishedRecordP> p,
-            Optional<DmarcPublishedRecordSp> sp,
-            Optional<DmarcPublishedRecordNp> np,
-            Optional<DmarcPublishedRecordAdkim> adkim,
-            Optional<DmarcPublishedRecordAspf> aspf,
-            Optional<Long> pct,
-            Optional<DmarcPublishedRecordT> t,
+            OptionalNullable<DmarcPublishedRecordP> p,
+            OptionalNullable<DmarcPublishedRecordSp> sp,
+            OptionalNullable<DmarcPublishedRecordNp> np,
+            OptionalNullable<DmarcPublishedRecordAdkim> adkim,
+            OptionalNullable<DmarcPublishedRecordAspf> aspf,
+            OptionalNullable<Long> pct,
+            OptionalNullable<DmarcPublishedRecordT> t,
             List<String> rua,
             Map<String, Object> additionalProperties) {
         this.value = value;
@@ -77,42 +77,47 @@ public final class DmarcPublishedRecord {
         return value;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordP> getP() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("p")
+    public OptionalNullable<DmarcPublishedRecordP> getP() {
         if (p == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return p;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordSp> getSp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sp")
+    public OptionalNullable<DmarcPublishedRecordSp> getSp() {
         if (sp == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return sp;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordNp> getNp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("np")
+    public OptionalNullable<DmarcPublishedRecordNp> getNp() {
         if (np == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return np;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordAdkim> getAdkim() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("adkim")
+    public OptionalNullable<DmarcPublishedRecordAdkim> getAdkim() {
         if (adkim == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return adkim;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordAspf> getAspf() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("aspf")
+    public OptionalNullable<DmarcPublishedRecordAspf> getAspf() {
         if (aspf == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return aspf;
     }
@@ -120,18 +125,20 @@ public final class DmarcPublishedRecord {
     /**
      * @return Removed by RFC 9989 but still honored by many receivers.
      */
-    @JsonIgnore
-    public Optional<Long> getPct() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("pct")
+    public OptionalNullable<Long> getPct() {
         if (pct == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pct;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecordT> getT() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("t")
+    public OptionalNullable<DmarcPublishedRecordT> getT() {
         if (t == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return t;
     }
@@ -146,43 +153,43 @@ public final class DmarcPublishedRecord {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("p")
-    private Optional<DmarcPublishedRecordP> _getP() {
+    private OptionalNullable<DmarcPublishedRecordP> _getP() {
         return p;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sp")
-    private Optional<DmarcPublishedRecordSp> _getSp() {
+    private OptionalNullable<DmarcPublishedRecordSp> _getSp() {
         return sp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("np")
-    private Optional<DmarcPublishedRecordNp> _getNp() {
+    private OptionalNullable<DmarcPublishedRecordNp> _getNp() {
         return np;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("adkim")
-    private Optional<DmarcPublishedRecordAdkim> _getAdkim() {
+    private OptionalNullable<DmarcPublishedRecordAdkim> _getAdkim() {
         return adkim;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("aspf")
-    private Optional<DmarcPublishedRecordAspf> _getAspf() {
+    private OptionalNullable<DmarcPublishedRecordAspf> _getAspf() {
         return aspf;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("pct")
-    private Optional<Long> _getPct() {
+    private OptionalNullable<Long> _getPct() {
         return pct;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("t")
-    private Optional<DmarcPublishedRecordT> _getT() {
+    private OptionalNullable<DmarcPublishedRecordT> _getT() {
         return t;
     }
 
@@ -239,48 +246,62 @@ public final class DmarcPublishedRecord {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage p(Optional<DmarcPublishedRecordP> p);
+        _FinalStage p(OptionalNullable<DmarcPublishedRecordP> p);
 
         _FinalStage p(DmarcPublishedRecordP p);
 
+        _FinalStage p(Optional<DmarcPublishedRecordP> p);
+
         _FinalStage p(Nullable<DmarcPublishedRecordP> p);
 
-        _FinalStage sp(Optional<DmarcPublishedRecordSp> sp);
+        _FinalStage sp(OptionalNullable<DmarcPublishedRecordSp> sp);
 
         _FinalStage sp(DmarcPublishedRecordSp sp);
 
+        _FinalStage sp(Optional<DmarcPublishedRecordSp> sp);
+
         _FinalStage sp(Nullable<DmarcPublishedRecordSp> sp);
 
-        _FinalStage np(Optional<DmarcPublishedRecordNp> np);
+        _FinalStage np(OptionalNullable<DmarcPublishedRecordNp> np);
 
         _FinalStage np(DmarcPublishedRecordNp np);
 
+        _FinalStage np(Optional<DmarcPublishedRecordNp> np);
+
         _FinalStage np(Nullable<DmarcPublishedRecordNp> np);
 
-        _FinalStage adkim(Optional<DmarcPublishedRecordAdkim> adkim);
+        _FinalStage adkim(OptionalNullable<DmarcPublishedRecordAdkim> adkim);
 
         _FinalStage adkim(DmarcPublishedRecordAdkim adkim);
 
+        _FinalStage adkim(Optional<DmarcPublishedRecordAdkim> adkim);
+
         _FinalStage adkim(Nullable<DmarcPublishedRecordAdkim> adkim);
 
-        _FinalStage aspf(Optional<DmarcPublishedRecordAspf> aspf);
+        _FinalStage aspf(OptionalNullable<DmarcPublishedRecordAspf> aspf);
 
         _FinalStage aspf(DmarcPublishedRecordAspf aspf);
+
+        _FinalStage aspf(Optional<DmarcPublishedRecordAspf> aspf);
 
         _FinalStage aspf(Nullable<DmarcPublishedRecordAspf> aspf);
 
         /**
          * <p>Removed by RFC 9989 but still honored by many receivers.</p>
          */
-        _FinalStage pct(Optional<Long> pct);
+        _FinalStage pct(OptionalNullable<Long> pct);
 
         _FinalStage pct(Long pct);
 
+        _FinalStage pct(Optional<Long> pct);
+
         _FinalStage pct(Nullable<Long> pct);
 
-        _FinalStage t(Optional<DmarcPublishedRecordT> t);
+        _FinalStage t(OptionalNullable<DmarcPublishedRecordT> t);
 
         _FinalStage t(DmarcPublishedRecordT t);
+
+        _FinalStage t(Optional<DmarcPublishedRecordT> t);
 
         _FinalStage t(Nullable<DmarcPublishedRecordT> t);
 
@@ -300,19 +321,19 @@ public final class DmarcPublishedRecord {
 
         private List<String> rua = new ArrayList<>();
 
-        private Optional<DmarcPublishedRecordT> t = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordT> t = OptionalNullable.absent();
 
-        private Optional<Long> pct = Optional.empty();
+        private OptionalNullable<Long> pct = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecordAspf> aspf = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordAspf> aspf = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecordAdkim> adkim = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordAdkim> adkim = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecordNp> np = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordNp> np = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecordSp> sp = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordSp> sp = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecordP> p = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecordP> p = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -382,24 +403,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage t(Nullable<DmarcPublishedRecordT> t) {
             if (t.isNull()) {
-                this.t = null;
+                this.t = OptionalNullable.ofNull();
             } else if (t.isEmpty()) {
-                this.t = Optional.empty();
+                this.t = OptionalNullable.absent();
             } else {
-                this.t = Optional.of(t.get());
+                this.t = OptionalNullable.of(t.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage t(Optional<DmarcPublishedRecordT> t) {
+            if (t.isPresent()) {
+                this.t = OptionalNullable.of(t.get());
+            } else {
+                this.t = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage t(DmarcPublishedRecordT t) {
-            this.t = Optional.ofNullable(t);
+            this.t = OptionalNullable.of(t);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "t", nulls = Nulls.SKIP)
-        public _FinalStage t(Optional<DmarcPublishedRecordT> t) {
+        public _FinalStage t(OptionalNullable<DmarcPublishedRecordT> t) {
             this.t = t;
             return this;
         }
@@ -411,11 +442,25 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage pct(Nullable<Long> pct) {
             if (pct.isNull()) {
-                this.pct = null;
+                this.pct = OptionalNullable.ofNull();
             } else if (pct.isEmpty()) {
-                this.pct = Optional.empty();
+                this.pct = OptionalNullable.absent();
             } else {
-                this.pct = Optional.of(pct.get());
+                this.pct = OptionalNullable.of(pct.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Removed by RFC 9989 but still honored by many receivers.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage pct(Optional<Long> pct) {
+            if (pct.isPresent()) {
+                this.pct = OptionalNullable.of(pct.get());
+            } else {
+                this.pct = OptionalNullable.absent();
             }
             return this;
         }
@@ -426,7 +471,7 @@ public final class DmarcPublishedRecord {
          */
         @java.lang.Override
         public _FinalStage pct(Long pct) {
-            this.pct = Optional.ofNullable(pct);
+            this.pct = OptionalNullable.of(pct);
             return this;
         }
 
@@ -435,7 +480,7 @@ public final class DmarcPublishedRecord {
          */
         @java.lang.Override
         @JsonSetter(value = "pct", nulls = Nulls.SKIP)
-        public _FinalStage pct(Optional<Long> pct) {
+        public _FinalStage pct(OptionalNullable<Long> pct) {
             this.pct = pct;
             return this;
         }
@@ -443,24 +488,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage aspf(Nullable<DmarcPublishedRecordAspf> aspf) {
             if (aspf.isNull()) {
-                this.aspf = null;
+                this.aspf = OptionalNullable.ofNull();
             } else if (aspf.isEmpty()) {
-                this.aspf = Optional.empty();
+                this.aspf = OptionalNullable.absent();
             } else {
-                this.aspf = Optional.of(aspf.get());
+                this.aspf = OptionalNullable.of(aspf.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage aspf(Optional<DmarcPublishedRecordAspf> aspf) {
+            if (aspf.isPresent()) {
+                this.aspf = OptionalNullable.of(aspf.get());
+            } else {
+                this.aspf = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage aspf(DmarcPublishedRecordAspf aspf) {
-            this.aspf = Optional.ofNullable(aspf);
+            this.aspf = OptionalNullable.of(aspf);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "aspf", nulls = Nulls.SKIP)
-        public _FinalStage aspf(Optional<DmarcPublishedRecordAspf> aspf) {
+        public _FinalStage aspf(OptionalNullable<DmarcPublishedRecordAspf> aspf) {
             this.aspf = aspf;
             return this;
         }
@@ -468,24 +523,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage adkim(Nullable<DmarcPublishedRecordAdkim> adkim) {
             if (adkim.isNull()) {
-                this.adkim = null;
+                this.adkim = OptionalNullable.ofNull();
             } else if (adkim.isEmpty()) {
-                this.adkim = Optional.empty();
+                this.adkim = OptionalNullable.absent();
             } else {
-                this.adkim = Optional.of(adkim.get());
+                this.adkim = OptionalNullable.of(adkim.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage adkim(Optional<DmarcPublishedRecordAdkim> adkim) {
+            if (adkim.isPresent()) {
+                this.adkim = OptionalNullable.of(adkim.get());
+            } else {
+                this.adkim = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage adkim(DmarcPublishedRecordAdkim adkim) {
-            this.adkim = Optional.ofNullable(adkim);
+            this.adkim = OptionalNullable.of(adkim);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "adkim", nulls = Nulls.SKIP)
-        public _FinalStage adkim(Optional<DmarcPublishedRecordAdkim> adkim) {
+        public _FinalStage adkim(OptionalNullable<DmarcPublishedRecordAdkim> adkim) {
             this.adkim = adkim;
             return this;
         }
@@ -493,24 +558,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage np(Nullable<DmarcPublishedRecordNp> np) {
             if (np.isNull()) {
-                this.np = null;
+                this.np = OptionalNullable.ofNull();
             } else if (np.isEmpty()) {
-                this.np = Optional.empty();
+                this.np = OptionalNullable.absent();
             } else {
-                this.np = Optional.of(np.get());
+                this.np = OptionalNullable.of(np.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage np(Optional<DmarcPublishedRecordNp> np) {
+            if (np.isPresent()) {
+                this.np = OptionalNullable.of(np.get());
+            } else {
+                this.np = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage np(DmarcPublishedRecordNp np) {
-            this.np = Optional.ofNullable(np);
+            this.np = OptionalNullable.of(np);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "np", nulls = Nulls.SKIP)
-        public _FinalStage np(Optional<DmarcPublishedRecordNp> np) {
+        public _FinalStage np(OptionalNullable<DmarcPublishedRecordNp> np) {
             this.np = np;
             return this;
         }
@@ -518,24 +593,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage sp(Nullable<DmarcPublishedRecordSp> sp) {
             if (sp.isNull()) {
-                this.sp = null;
+                this.sp = OptionalNullable.ofNull();
             } else if (sp.isEmpty()) {
-                this.sp = Optional.empty();
+                this.sp = OptionalNullable.absent();
             } else {
-                this.sp = Optional.of(sp.get());
+                this.sp = OptionalNullable.of(sp.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage sp(Optional<DmarcPublishedRecordSp> sp) {
+            if (sp.isPresent()) {
+                this.sp = OptionalNullable.of(sp.get());
+            } else {
+                this.sp = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage sp(DmarcPublishedRecordSp sp) {
-            this.sp = Optional.ofNullable(sp);
+            this.sp = OptionalNullable.of(sp);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "sp", nulls = Nulls.SKIP)
-        public _FinalStage sp(Optional<DmarcPublishedRecordSp> sp) {
+        public _FinalStage sp(OptionalNullable<DmarcPublishedRecordSp> sp) {
             this.sp = sp;
             return this;
         }
@@ -543,24 +628,34 @@ public final class DmarcPublishedRecord {
         @java.lang.Override
         public _FinalStage p(Nullable<DmarcPublishedRecordP> p) {
             if (p.isNull()) {
-                this.p = null;
+                this.p = OptionalNullable.ofNull();
             } else if (p.isEmpty()) {
-                this.p = Optional.empty();
+                this.p = OptionalNullable.absent();
             } else {
-                this.p = Optional.of(p.get());
+                this.p = OptionalNullable.of(p.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage p(Optional<DmarcPublishedRecordP> p) {
+            if (p.isPresent()) {
+                this.p = OptionalNullable.of(p.get());
+            } else {
+                this.p = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage p(DmarcPublishedRecordP p) {
-            this.p = Optional.ofNullable(p);
+            this.p = OptionalNullable.of(p);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "p", nulls = Nulls.SKIP)
-        public _FinalStage p(Optional<DmarcPublishedRecordP> p) {
+        public _FinalStage p(OptionalNullable<DmarcPublishedRecordP> p) {
             this.p = p;
             return this;
         }

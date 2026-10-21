@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,7 +25,7 @@ import java.util.Optional;
 public final class SmsEventData {
     private final Optional<SmsEventDataFailure> failure;
 
-    private final Optional<String> providerErrorCode;
+    private final OptionalNullable<String> providerErrorCode;
 
     private final Optional<SmsEventDataSuppression> suppression;
 
@@ -33,7 +33,7 @@ public final class SmsEventData {
 
     private SmsEventData(
             Optional<SmsEventDataFailure> failure,
-            Optional<String> providerErrorCode,
+            OptionalNullable<String> providerErrorCode,
             Optional<SmsEventDataSuppression> suppression,
             Map<String, Object> additionalProperties) {
         this.failure = failure;
@@ -53,10 +53,11 @@ public final class SmsEventData {
     /**
      * @return The provider's or carrier's own error code, e.g. <code>30007</code>.
      */
-    @JsonIgnore
-    public Optional<String> getProviderErrorCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("provider_error_code")
+    public OptionalNullable<String> getProviderErrorCode() {
         if (providerErrorCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return providerErrorCode;
     }
@@ -71,7 +72,7 @@ public final class SmsEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("provider_error_code")
-    private Optional<String> _getProviderErrorCode() {
+    private OptionalNullable<String> _getProviderErrorCode() {
         return providerErrorCode;
     }
 
@@ -110,7 +111,7 @@ public final class SmsEventData {
     public static final class Builder {
         private Optional<SmsEventDataFailure> failure = Optional.empty();
 
-        private Optional<String> providerErrorCode = Optional.empty();
+        private OptionalNullable<String> providerErrorCode = OptionalNullable.absent();
 
         private Optional<SmsEventDataSuppression> suppression = Optional.empty();
 
@@ -144,23 +145,32 @@ public final class SmsEventData {
          * <p>The provider's or carrier's own error code, e.g. <code>30007</code>.</p>
          */
         @JsonSetter(value = "provider_error_code", nulls = Nulls.SKIP)
-        public Builder providerErrorCode(Optional<String> providerErrorCode) {
+        public Builder providerErrorCode(OptionalNullable<String> providerErrorCode) {
             this.providerErrorCode = providerErrorCode;
             return this;
         }
 
         public Builder providerErrorCode(String providerErrorCode) {
-            this.providerErrorCode = Optional.ofNullable(providerErrorCode);
+            this.providerErrorCode = OptionalNullable.of(providerErrorCode);
+            return this;
+        }
+
+        public Builder providerErrorCode(Optional<String> providerErrorCode) {
+            if (providerErrorCode.isPresent()) {
+                this.providerErrorCode = OptionalNullable.of(providerErrorCode.get());
+            } else {
+                this.providerErrorCode = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder providerErrorCode(Nullable<String> providerErrorCode) {
             if (providerErrorCode.isNull()) {
-                this.providerErrorCode = null;
+                this.providerErrorCode = OptionalNullable.ofNull();
             } else if (providerErrorCode.isEmpty()) {
-                this.providerErrorCode = Optional.empty();
+                this.providerErrorCode = OptionalNullable.absent();
             } else {
-                this.providerErrorCode = Optional.of(providerErrorCode.get());
+                this.providerErrorCode = OptionalNullable.of(providerErrorCode.get());
             }
             return this;
         }

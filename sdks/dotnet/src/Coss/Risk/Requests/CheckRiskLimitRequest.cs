@@ -27,6 +27,7 @@ public record CheckRiskLimitRequest
     /// <summary>
     /// Tokens this request takes. Default 1.
     /// </summary>
+    [Optional]
     [JsonPropertyName("cost")]
     public int? Cost { get; set; }
 

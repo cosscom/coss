@@ -6,9 +6,9 @@ package com.coss.resources.email.templates.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,16 +25,16 @@ import java.util.Optional;
 public final class UpdateEmailTemplateRequest {
     private final Optional<String> name;
 
-    private final Optional<String> alias;
+    private final OptionalNullable<String> alias;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final Map<String, Object> additionalProperties;
 
     private UpdateEmailTemplateRequest(
             Optional<String> name,
-            Optional<String> alias,
-            Optional<String> description,
+            OptionalNullable<String> alias,
+            OptionalNullable<String> description,
             Map<String, Object> additionalProperties) {
         this.name = name;
         this.alias = alias;
@@ -50,31 +50,33 @@ public final class UpdateEmailTemplateRequest {
     /**
      * @return <code>null</code> removes the alias.
      */
-    @JsonIgnore
-    public Optional<String> getAlias() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("alias")
+    public OptionalNullable<String> getAlias() {
         if (alias == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return alias;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("alias")
-    private Optional<String> _getAlias() {
+    private OptionalNullable<String> _getAlias() {
         return alias;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
@@ -111,9 +113,9 @@ public final class UpdateEmailTemplateRequest {
     public static final class Builder {
         private Optional<String> name = Optional.empty();
 
-        private Optional<String> alias = Optional.empty();
+        private OptionalNullable<String> alias = OptionalNullable.absent();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -142,45 +144,63 @@ public final class UpdateEmailTemplateRequest {
          * <p><code>null</code> removes the alias.</p>
          */
         @JsonSetter(value = "alias", nulls = Nulls.SKIP)
-        public Builder alias(Optional<String> alias) {
+        public Builder alias(OptionalNullable<String> alias) {
             this.alias = alias;
             return this;
         }
 
         public Builder alias(String alias) {
-            this.alias = Optional.ofNullable(alias);
+            this.alias = OptionalNullable.of(alias);
+            return this;
+        }
+
+        public Builder alias(Optional<String> alias) {
+            if (alias.isPresent()) {
+                this.alias = OptionalNullable.of(alias.get());
+            } else {
+                this.alias = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder alias(Nullable<String> alias) {
             if (alias.isNull()) {
-                this.alias = null;
+                this.alias = OptionalNullable.ofNull();
             } else if (alias.isEmpty()) {
-                this.alias = Optional.empty();
+                this.alias = OptionalNullable.absent();
             } else {
-                this.alias = Optional.of(alias.get());
+                this.alias = OptionalNullable.of(alias.get());
             }
             return this;
         }
 
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public Builder description(Optional<String> description) {
+        public Builder description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }
 
         public Builder description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
+            return this;
+        }
+
+        public Builder description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
             }
             return this;
         }

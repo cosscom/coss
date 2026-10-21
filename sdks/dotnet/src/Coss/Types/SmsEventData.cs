@@ -14,18 +14,21 @@ public record SmsEventData : IJsonOnDeserialized
     /// <summary>
     /// Why the message failed or wasn't delivered.
     /// </summary>
+    [Optional]
     [JsonPropertyName("failure")]
     public SmsEventDataFailure? Failure { get; set; }
 
     /// <summary>
     /// The provider's or carrier's own error code, e.g. `30007`.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("provider_error_code")]
-    public string? ProviderErrorCode { get; set; }
+    public Optional<string?> ProviderErrorCode { get; set; }
 
     /// <summary>
     /// `sms.suppressed`: the entry that made coss.com skip the number.
     /// </summary>
+    [Optional]
     [JsonPropertyName("suppression")]
     public SmsEventDataSuppression? Suppression { get; set; }
 

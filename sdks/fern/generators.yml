@@ -78,6 +78,8 @@ groups:
           maxRetries: 2
           user-agent: coss-java/{version}
           enable-forward-compatible-enums: true
+          # OptionalNullable<T>: an explicit null (which clears a field) apart from an omitted one.
+          collapse-optional-nullable: true
   csharp:
     generators:
       - name: fernapi/fern-csharp-sdk
@@ -91,3 +93,5 @@ groups:
           maxRetries: 2
           user-agent: coss-dotnet/{version}
           enable-forward-compatible-enums: true
+          # An explicit null (which clears a field) apart from an omitted one.
+          experimental-explicit-nullable-optional: true

@@ -16,6 +16,7 @@ public class CreateTest : BaseMockServerTest
             {
               "key": "key",
               "name": "x",
+              "description": null,
               "default_subscription": "opt_in"
             }
             """;

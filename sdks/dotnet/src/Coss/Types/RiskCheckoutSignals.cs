@@ -20,15 +20,19 @@ public record RiskCheckoutSignals : IJsonOnDeserialized
     [JsonPropertyName("currency")]
     public required string Currency { get; set; }
 
+    [Nullable]
     [JsonPropertyName("card_country")]
     public string? CardCountry { get; set; }
 
+    [Nullable]
     [JsonPropertyName("card_funding")]
     public RiskCheckoutSignalsCardFunding? CardFunding { get; set; }
 
+    [Nullable]
     [JsonPropertyName("billing_country")]
     public string? BillingCountry { get; set; }
 
+    [Nullable]
     [JsonPropertyName("shipping_country")]
     public string? ShippingCountry { get; set; }
 

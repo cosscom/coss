@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,12 +26,12 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcReportRecordReasonsItem {
     private final String type;
 
-    private final Optional<String> comment;
+    private final OptionalNullable<String> comment;
 
     private final Map<String, Object> additionalProperties;
 
     private DmarcReportRecordReasonsItem(
-            String type, Optional<String> comment, Map<String, Object> additionalProperties) {
+            String type, OptionalNullable<String> comment, Map<String, Object> additionalProperties) {
         this.type = type;
         this.comment = comment;
         this.additionalProperties = additionalProperties;
@@ -42,17 +42,18 @@ public final class DmarcReportRecordReasonsItem {
         return type;
     }
 
-    @JsonIgnore
-    public Optional<String> getComment() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("comment")
+    public OptionalNullable<String> getComment() {
         if (comment == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return comment;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("comment")
-    private Optional<String> _getComment() {
+    private OptionalNullable<String> _getComment() {
         return comment;
     }
 
@@ -98,9 +99,11 @@ public final class DmarcReportRecordReasonsItem {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage comment(Optional<String> comment);
+        _FinalStage comment(OptionalNullable<String> comment);
 
         _FinalStage comment(String comment);
+
+        _FinalStage comment(Optional<String> comment);
 
         _FinalStage comment(Nullable<String> comment);
     }
@@ -109,7 +112,7 @@ public final class DmarcReportRecordReasonsItem {
     public static final class Builder implements TypeStage, _FinalStage {
         private String type;
 
-        private Optional<String> comment = Optional.empty();
+        private OptionalNullable<String> comment = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -133,24 +136,34 @@ public final class DmarcReportRecordReasonsItem {
         @java.lang.Override
         public _FinalStage comment(Nullable<String> comment) {
             if (comment.isNull()) {
-                this.comment = null;
+                this.comment = OptionalNullable.ofNull();
             } else if (comment.isEmpty()) {
-                this.comment = Optional.empty();
+                this.comment = OptionalNullable.absent();
             } else {
-                this.comment = Optional.of(comment.get());
+                this.comment = OptionalNullable.of(comment.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage comment(Optional<String> comment) {
+            if (comment.isPresent()) {
+                this.comment = OptionalNullable.of(comment.get());
+            } else {
+                this.comment = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage comment(String comment) {
-            this.comment = Optional.ofNullable(comment);
+            this.comment = OptionalNullable.of(comment);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "comment", nulls = Nulls.SKIP)
-        public _FinalStage comment(Optional<String> comment) {
+        public _FinalStage comment(OptionalNullable<String> comment) {
             this.comment = comment;
             return this;
         }

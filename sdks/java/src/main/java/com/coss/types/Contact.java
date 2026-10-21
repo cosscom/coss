@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,9 +32,9 @@ public final class Contact {
 
     private final String email;
 
-    private final Optional<String> firstName;
+    private final OptionalNullable<String> firstName;
 
-    private final Optional<String> lastName;
+    private final OptionalNullable<String> lastName;
 
     private final ContactStatus status;
 
@@ -42,11 +42,11 @@ public final class Contact {
 
     private final ContactSource source;
 
-    private final Optional<OffsetDateTime> subscribedAt;
+    private final OptionalNullable<OffsetDateTime> subscribedAt;
 
-    private final Optional<OffsetDateTime> unsubscribedAt;
+    private final OptionalNullable<OffsetDateTime> unsubscribedAt;
 
-    private final Optional<OffsetDateTime> confirmedAt;
+    private final OptionalNullable<OffsetDateTime> confirmedAt;
 
     private final OffsetDateTime createdAt;
 
@@ -58,14 +58,14 @@ public final class Contact {
             ContactObject object,
             String id,
             String email,
-            Optional<String> firstName,
-            Optional<String> lastName,
+            OptionalNullable<String> firstName,
+            OptionalNullable<String> lastName,
             ContactStatus status,
             Map<String, ContactPropertiesValue> properties,
             ContactSource source,
-            Optional<OffsetDateTime> subscribedAt,
-            Optional<OffsetDateTime> unsubscribedAt,
-            Optional<OffsetDateTime> confirmedAt,
+            OptionalNullable<OffsetDateTime> subscribedAt,
+            OptionalNullable<OffsetDateTime> unsubscribedAt,
+            OptionalNullable<OffsetDateTime> confirmedAt,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
             Map<String, Object> additionalProperties) {
@@ -100,18 +100,20 @@ public final class Contact {
         return email;
     }
 
-    @JsonIgnore
-    public Optional<String> getFirstName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_name")
+    public OptionalNullable<String> getFirstName() {
         if (firstName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstName;
     }
 
-    @JsonIgnore
-    public Optional<String> getLastName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_name")
+    public OptionalNullable<String> getLastName() {
         if (lastName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastName;
     }
@@ -137,18 +139,20 @@ public final class Contact {
         return source;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getSubscribedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subscribed_at")
+    public OptionalNullable<OffsetDateTime> getSubscribedAt() {
         if (subscribedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return subscribedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getUnsubscribedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("unsubscribed_at")
+    public OptionalNullable<OffsetDateTime> getUnsubscribedAt() {
         if (unsubscribedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return unsubscribedAt;
     }
@@ -156,10 +160,11 @@ public final class Contact {
     /**
      * @return When the contact confirmed a double opt-in.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getConfirmedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("confirmed_at")
+    public OptionalNullable<OffsetDateTime> getConfirmedAt() {
         if (confirmedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return confirmedAt;
     }
@@ -176,31 +181,31 @@ public final class Contact {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_name")
-    private Optional<String> _getFirstName() {
+    private OptionalNullable<String> _getFirstName() {
         return firstName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_name")
-    private Optional<String> _getLastName() {
+    private OptionalNullable<String> _getLastName() {
         return lastName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("subscribed_at")
-    private Optional<OffsetDateTime> _getSubscribedAt() {
+    private OptionalNullable<OffsetDateTime> _getSubscribedAt() {
         return subscribedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("unsubscribed_at")
-    private Optional<OffsetDateTime> _getUnsubscribedAt() {
+    private OptionalNullable<OffsetDateTime> _getUnsubscribedAt() {
         return unsubscribedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("confirmed_at")
-    private Optional<OffsetDateTime> _getConfirmedAt() {
+    private OptionalNullable<OffsetDateTime> _getConfirmedAt() {
         return confirmedAt;
     }
 
@@ -301,15 +306,19 @@ public final class Contact {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage firstName(Optional<String> firstName);
+        _FinalStage firstName(OptionalNullable<String> firstName);
 
         _FinalStage firstName(String firstName);
 
+        _FinalStage firstName(Optional<String> firstName);
+
         _FinalStage firstName(Nullable<String> firstName);
 
-        _FinalStage lastName(Optional<String> lastName);
+        _FinalStage lastName(OptionalNullable<String> lastName);
 
         _FinalStage lastName(String lastName);
+
+        _FinalStage lastName(Optional<String> lastName);
 
         _FinalStage lastName(Nullable<String> lastName);
 
@@ -319,24 +328,30 @@ public final class Contact {
 
         _FinalStage properties(String key, ContactPropertiesValue value);
 
-        _FinalStage subscribedAt(Optional<OffsetDateTime> subscribedAt);
+        _FinalStage subscribedAt(OptionalNullable<OffsetDateTime> subscribedAt);
 
         _FinalStage subscribedAt(OffsetDateTime subscribedAt);
 
+        _FinalStage subscribedAt(Optional<OffsetDateTime> subscribedAt);
+
         _FinalStage subscribedAt(Nullable<OffsetDateTime> subscribedAt);
 
-        _FinalStage unsubscribedAt(Optional<OffsetDateTime> unsubscribedAt);
+        _FinalStage unsubscribedAt(OptionalNullable<OffsetDateTime> unsubscribedAt);
 
         _FinalStage unsubscribedAt(OffsetDateTime unsubscribedAt);
+
+        _FinalStage unsubscribedAt(Optional<OffsetDateTime> unsubscribedAt);
 
         _FinalStage unsubscribedAt(Nullable<OffsetDateTime> unsubscribedAt);
 
         /**
          * <p>When the contact confirmed a double opt-in.</p>
          */
-        _FinalStage confirmedAt(Optional<OffsetDateTime> confirmedAt);
+        _FinalStage confirmedAt(OptionalNullable<OffsetDateTime> confirmedAt);
 
         _FinalStage confirmedAt(OffsetDateTime confirmedAt);
+
+        _FinalStage confirmedAt(Optional<OffsetDateTime> confirmedAt);
 
         _FinalStage confirmedAt(Nullable<OffsetDateTime> confirmedAt);
     }
@@ -365,17 +380,17 @@ public final class Contact {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<OffsetDateTime> confirmedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> confirmedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> unsubscribedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> unsubscribedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> subscribedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> subscribedAt = OptionalNullable.absent();
 
         private Map<String, ContactPropertiesValue> properties = new LinkedHashMap<>();
 
-        private Optional<String> lastName = Optional.empty();
+        private OptionalNullable<String> lastName = OptionalNullable.absent();
 
-        private Optional<String> firstName = Optional.empty();
+        private OptionalNullable<String> firstName = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -464,11 +479,25 @@ public final class Contact {
         @java.lang.Override
         public _FinalStage confirmedAt(Nullable<OffsetDateTime> confirmedAt) {
             if (confirmedAt.isNull()) {
-                this.confirmedAt = null;
+                this.confirmedAt = OptionalNullable.ofNull();
             } else if (confirmedAt.isEmpty()) {
-                this.confirmedAt = Optional.empty();
+                this.confirmedAt = OptionalNullable.absent();
             } else {
-                this.confirmedAt = Optional.of(confirmedAt.get());
+                this.confirmedAt = OptionalNullable.of(confirmedAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the contact confirmed a double opt-in.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage confirmedAt(Optional<OffsetDateTime> confirmedAt) {
+            if (confirmedAt.isPresent()) {
+                this.confirmedAt = OptionalNullable.of(confirmedAt.get());
+            } else {
+                this.confirmedAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -479,7 +508,7 @@ public final class Contact {
          */
         @java.lang.Override
         public _FinalStage confirmedAt(OffsetDateTime confirmedAt) {
-            this.confirmedAt = Optional.ofNullable(confirmedAt);
+            this.confirmedAt = OptionalNullable.of(confirmedAt);
             return this;
         }
 
@@ -488,7 +517,7 @@ public final class Contact {
          */
         @java.lang.Override
         @JsonSetter(value = "confirmed_at", nulls = Nulls.SKIP)
-        public _FinalStage confirmedAt(Optional<OffsetDateTime> confirmedAt) {
+        public _FinalStage confirmedAt(OptionalNullable<OffsetDateTime> confirmedAt) {
             this.confirmedAt = confirmedAt;
             return this;
         }
@@ -496,24 +525,34 @@ public final class Contact {
         @java.lang.Override
         public _FinalStage unsubscribedAt(Nullable<OffsetDateTime> unsubscribedAt) {
             if (unsubscribedAt.isNull()) {
-                this.unsubscribedAt = null;
+                this.unsubscribedAt = OptionalNullable.ofNull();
             } else if (unsubscribedAt.isEmpty()) {
-                this.unsubscribedAt = Optional.empty();
+                this.unsubscribedAt = OptionalNullable.absent();
             } else {
-                this.unsubscribedAt = Optional.of(unsubscribedAt.get());
+                this.unsubscribedAt = OptionalNullable.of(unsubscribedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage unsubscribedAt(Optional<OffsetDateTime> unsubscribedAt) {
+            if (unsubscribedAt.isPresent()) {
+                this.unsubscribedAt = OptionalNullable.of(unsubscribedAt.get());
+            } else {
+                this.unsubscribedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage unsubscribedAt(OffsetDateTime unsubscribedAt) {
-            this.unsubscribedAt = Optional.ofNullable(unsubscribedAt);
+            this.unsubscribedAt = OptionalNullable.of(unsubscribedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "unsubscribed_at", nulls = Nulls.SKIP)
-        public _FinalStage unsubscribedAt(Optional<OffsetDateTime> unsubscribedAt) {
+        public _FinalStage unsubscribedAt(OptionalNullable<OffsetDateTime> unsubscribedAt) {
             this.unsubscribedAt = unsubscribedAt;
             return this;
         }
@@ -521,24 +560,34 @@ public final class Contact {
         @java.lang.Override
         public _FinalStage subscribedAt(Nullable<OffsetDateTime> subscribedAt) {
             if (subscribedAt.isNull()) {
-                this.subscribedAt = null;
+                this.subscribedAt = OptionalNullable.ofNull();
             } else if (subscribedAt.isEmpty()) {
-                this.subscribedAt = Optional.empty();
+                this.subscribedAt = OptionalNullable.absent();
             } else {
-                this.subscribedAt = Optional.of(subscribedAt.get());
+                this.subscribedAt = OptionalNullable.of(subscribedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage subscribedAt(Optional<OffsetDateTime> subscribedAt) {
+            if (subscribedAt.isPresent()) {
+                this.subscribedAt = OptionalNullable.of(subscribedAt.get());
+            } else {
+                this.subscribedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage subscribedAt(OffsetDateTime subscribedAt) {
-            this.subscribedAt = Optional.ofNullable(subscribedAt);
+            this.subscribedAt = OptionalNullable.of(subscribedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "subscribed_at", nulls = Nulls.SKIP)
-        public _FinalStage subscribedAt(Optional<OffsetDateTime> subscribedAt) {
+        public _FinalStage subscribedAt(OptionalNullable<OffsetDateTime> subscribedAt) {
             this.subscribedAt = subscribedAt;
             return this;
         }
@@ -570,24 +619,34 @@ public final class Contact {
         @java.lang.Override
         public _FinalStage lastName(Nullable<String> lastName) {
             if (lastName.isNull()) {
-                this.lastName = null;
+                this.lastName = OptionalNullable.ofNull();
             } else if (lastName.isEmpty()) {
-                this.lastName = Optional.empty();
+                this.lastName = OptionalNullable.absent();
             } else {
-                this.lastName = Optional.of(lastName.get());
+                this.lastName = OptionalNullable.of(lastName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastName(Optional<String> lastName) {
+            if (lastName.isPresent()) {
+                this.lastName = OptionalNullable.of(lastName.get());
+            } else {
+                this.lastName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastName(String lastName) {
-            this.lastName = Optional.ofNullable(lastName);
+            this.lastName = OptionalNullable.of(lastName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_name", nulls = Nulls.SKIP)
-        public _FinalStage lastName(Optional<String> lastName) {
+        public _FinalStage lastName(OptionalNullable<String> lastName) {
             this.lastName = lastName;
             return this;
         }
@@ -595,24 +654,34 @@ public final class Contact {
         @java.lang.Override
         public _FinalStage firstName(Nullable<String> firstName) {
             if (firstName.isNull()) {
-                this.firstName = null;
+                this.firstName = OptionalNullable.ofNull();
             } else if (firstName.isEmpty()) {
-                this.firstName = Optional.empty();
+                this.firstName = OptionalNullable.absent();
             } else {
-                this.firstName = Optional.of(firstName.get());
+                this.firstName = OptionalNullable.of(firstName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage firstName(Optional<String> firstName) {
+            if (firstName.isPresent()) {
+                this.firstName = OptionalNullable.of(firstName.get());
+            } else {
+                this.firstName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage firstName(String firstName) {
-            this.firstName = Optional.ofNullable(firstName);
+            this.firstName = OptionalNullable.of(firstName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "first_name", nulls = Nulls.SKIP)
-        public _FinalStage firstName(Optional<String> firstName) {
+        public _FinalStage firstName(OptionalNullable<String> firstName) {
             this.firstName = firstName;
             return this;
         }

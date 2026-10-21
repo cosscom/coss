@@ -23,6 +23,7 @@ public record SmsSuppressionCheck : IJsonOnDeserialized
     [JsonPropertyName("suppressed")]
     public required bool Suppressed { get; set; }
 
+    [Nullable]
     [JsonPropertyName("suppression")]
     public SmsSuppressionCheckSuppression? Suppression { get; set; }
 

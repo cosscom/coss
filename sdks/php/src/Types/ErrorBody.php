@@ -61,7 +61,13 @@ class ErrorBody extends JsonSerializableType
         $this->code = $values['code'];
         $this->message = $values['message'];
         $this->param = $values['param'] ?? null;
+        if (array_key_exists('param', $values)) {
+            $this->_setField('param');
+        }
         $this->issues = $values['issues'] ?? null;
+        if (array_key_exists('issues', $values)) {
+            $this->_setField('issues');
+        }
         $this->requestId = $values['requestId'];
     }
 

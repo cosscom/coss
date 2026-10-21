@@ -197,23 +197,65 @@ class Broadcast extends JsonSerializableType
         $this->name = $values['name'];
         $this->status = $values['status'];
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
         $this->segmentId = $values['segmentId'] ?? null;
+        if (array_key_exists('segmentId', $values)) {
+            $this->_setField('segmentId');
+        }
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
         $this->from = $values['from'];
         $this->replyTo = $values['replyTo'];
         $this->subject = $values['subject'];
         $this->previewText = $values['previewText'] ?? null;
+        if (array_key_exists('previewText', $values)) {
+            $this->_setField('previewText');
+        }
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
         $this->tracking = $values['tracking'];
         $this->ratePerSecond = $values['ratePerSecond'] ?? null;
+        if (array_key_exists('ratePerSecond', $values)) {
+            $this->_setField('ratePerSecond');
+        }
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
         $this->startedAt = $values['startedAt'] ?? null;
+        if (array_key_exists('startedAt', $values)) {
+            $this->_setField('startedAt');
+        }
         $this->completedAt = $values['completedAt'] ?? null;
+        if (array_key_exists('completedAt', $values)) {
+            $this->_setField('completedAt');
+        }
         $this->canceledAt = $values['canceledAt'] ?? null;
+        if (array_key_exists('canceledAt', $values)) {
+            $this->_setField('canceledAt');
+        }
         $this->recipientsEstimated = $values['recipientsEstimated'] ?? null;
+        if (array_key_exists('recipientsEstimated', $values)) {
+            $this->_setField('recipientsEstimated');
+        }
         $this->pauseReason = $values['pauseReason'] ?? null;
+        if (array_key_exists('pauseReason', $values)) {
+            $this->_setField('pauseReason');
+        }
         $this->error = $values['error'] ?? null;
+        if (array_key_exists('error', $values)) {
+            $this->_setField('error');
+        }
         $this->stats = $values['stats'];
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];

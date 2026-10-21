@@ -88,11 +88,13 @@ public class ListTest : BaseMockServerTest
                   "amount": 50000,
                   "remaining": 12000,
                   "meter": "email.recipients",
+                  "meters": null,
                   "applies_to": "usage",
                   "source": "support",
                   "description": "Migration credit",
                   "effective_at": "2026-10-01T00:00:00.000Z",
                   "expires_at": "2027-01-01T00:00:00.000Z",
+                  "voided_at": null,
                   "created_at": "2026-10-01T09:30:00.000Z"
                 }
               ],

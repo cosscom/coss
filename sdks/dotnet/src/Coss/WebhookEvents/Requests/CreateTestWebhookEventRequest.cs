@@ -15,6 +15,7 @@ public record CreateTestWebhookEventRequest
     /// <summary>
     /// Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.
     /// </summary>
+    [Optional]
     [JsonPropertyName("data")]
     public Dictionary<string, object?>? Data { get; set; }
 

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,14 +26,14 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcReportRecordAuthResultsDkimItem {
     private final String domain;
 
-    private final Optional<String> selector;
+    private final OptionalNullable<String> selector;
 
     private final String result;
 
     private final Map<String, Object> additionalProperties;
 
     private DmarcReportRecordAuthResultsDkimItem(
-            String domain, Optional<String> selector, String result, Map<String, Object> additionalProperties) {
+            String domain, OptionalNullable<String> selector, String result, Map<String, Object> additionalProperties) {
         this.domain = domain;
         this.selector = selector;
         this.result = result;
@@ -45,10 +45,11 @@ public final class DmarcReportRecordAuthResultsDkimItem {
         return domain;
     }
 
-    @JsonIgnore
-    public Optional<String> getSelector() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("selector")
+    public OptionalNullable<String> getSelector() {
         if (selector == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return selector;
     }
@@ -60,7 +61,7 @@ public final class DmarcReportRecordAuthResultsDkimItem {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("selector")
-    private Optional<String> _getSelector() {
+    private OptionalNullable<String> _getSelector() {
         return selector;
     }
 
@@ -111,9 +112,11 @@ public final class DmarcReportRecordAuthResultsDkimItem {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage selector(Optional<String> selector);
+        _FinalStage selector(OptionalNullable<String> selector);
 
         _FinalStage selector(String selector);
+
+        _FinalStage selector(Optional<String> selector);
 
         _FinalStage selector(Nullable<String> selector);
     }
@@ -124,7 +127,7 @@ public final class DmarcReportRecordAuthResultsDkimItem {
 
         private String result;
 
-        private Optional<String> selector = Optional.empty();
+        private OptionalNullable<String> selector = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -156,24 +159,34 @@ public final class DmarcReportRecordAuthResultsDkimItem {
         @java.lang.Override
         public _FinalStage selector(Nullable<String> selector) {
             if (selector.isNull()) {
-                this.selector = null;
+                this.selector = OptionalNullable.ofNull();
             } else if (selector.isEmpty()) {
-                this.selector = Optional.empty();
+                this.selector = OptionalNullable.absent();
             } else {
-                this.selector = Optional.of(selector.get());
+                this.selector = OptionalNullable.of(selector.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage selector(Optional<String> selector) {
+            if (selector.isPresent()) {
+                this.selector = OptionalNullable.of(selector.get());
+            } else {
+                this.selector = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage selector(String selector) {
-            this.selector = Optional.ofNullable(selector);
+            this.selector = OptionalNullable.of(selector);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "selector", nulls = Nulls.SKIP)
-        public _FinalStage selector(Optional<String> selector) {
+        public _FinalStage selector(OptionalNullable<String> selector) {
             this.selector = selector;
             return this;
         }

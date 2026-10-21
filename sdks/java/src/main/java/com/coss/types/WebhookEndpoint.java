@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class WebhookEndpoint {
 
     private final String url;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final List<String> eventTypes;
 
@@ -41,13 +41,13 @@ public final class WebhookEndpoint {
 
     private final boolean enabled;
 
-    private final Optional<WebhookEndpointDisabledReason> disabledReason;
+    private final OptionalNullable<WebhookEndpointDisabledReason> disabledReason;
 
-    private final Optional<OffsetDateTime> disabledAt;
+    private final OptionalNullable<OffsetDateTime> disabledAt;
 
-    private final Optional<OffsetDateTime> failingSince;
+    private final OptionalNullable<OffsetDateTime> failingSince;
 
-    private final Optional<OffsetDateTime> previousSecretExpiresAt;
+    private final OptionalNullable<OffsetDateTime> previousSecretExpiresAt;
 
     private final OffsetDateTime createdAt;
 
@@ -59,14 +59,14 @@ public final class WebhookEndpoint {
             WebhookEndpointObject object,
             String id,
             String url,
-            Optional<String> description,
+            OptionalNullable<String> description,
             List<String> eventTypes,
             String apiVersion,
             boolean enabled,
-            Optional<WebhookEndpointDisabledReason> disabledReason,
-            Optional<OffsetDateTime> disabledAt,
-            Optional<OffsetDateTime> failingSince,
-            Optional<OffsetDateTime> previousSecretExpiresAt,
+            OptionalNullable<WebhookEndpointDisabledReason> disabledReason,
+            OptionalNullable<OffsetDateTime> disabledAt,
+            OptionalNullable<OffsetDateTime> failingSince,
+            OptionalNullable<OffsetDateTime> previousSecretExpiresAt,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
             Map<String, Object> additionalProperties) {
@@ -101,10 +101,11 @@ public final class WebhookEndpoint {
         return url;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -136,18 +137,20 @@ public final class WebhookEndpoint {
     /**
      * @return <code>manual</code>: someone disabled it. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.
      */
-    @JsonIgnore
-    public Optional<WebhookEndpointDisabledReason> getDisabledReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("disabled_reason")
+    public OptionalNullable<WebhookEndpointDisabledReason> getDisabledReason() {
         if (disabledReason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return disabledReason;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getDisabledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("disabled_at")
+    public OptionalNullable<OffsetDateTime> getDisabledAt() {
         if (disabledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return disabledAt;
     }
@@ -155,10 +158,11 @@ public final class WebhookEndpoint {
     /**
      * @return When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. <code>null</code> while healthy.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFailingSince() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failing_since")
+    public OptionalNullable<OffsetDateTime> getFailingSince() {
         if (failingSince == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failingSince;
     }
@@ -166,10 +170,11 @@ public final class WebhookEndpoint {
     /**
      * @return After a secret roll, deliveries are also signed with the previous secret until this time. <code>null</code> when only the current secret signs.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPreviousSecretExpiresAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("previous_secret_expires_at")
+    public OptionalNullable<OffsetDateTime> getPreviousSecretExpiresAt() {
         if (previousSecretExpiresAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return previousSecretExpiresAt;
     }
@@ -186,31 +191,31 @@ public final class WebhookEndpoint {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("disabled_reason")
-    private Optional<WebhookEndpointDisabledReason> _getDisabledReason() {
+    private OptionalNullable<WebhookEndpointDisabledReason> _getDisabledReason() {
         return disabledReason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("disabled_at")
-    private Optional<OffsetDateTime> _getDisabledAt() {
+    private OptionalNullable<OffsetDateTime> _getDisabledAt() {
         return disabledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failing_since")
-    private Optional<OffsetDateTime> _getFailingSince() {
+    private OptionalNullable<OffsetDateTime> _getFailingSince() {
         return failingSince;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("previous_secret_expires_at")
-    private Optional<OffsetDateTime> _getPreviousSecretExpiresAt() {
+    private OptionalNullable<OffsetDateTime> _getPreviousSecretExpiresAt() {
         return previousSecretExpiresAt;
     }
 
@@ -311,9 +316,11 @@ public final class WebhookEndpoint {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
+
+        _FinalStage description(Optional<String> description);
 
         _FinalStage description(Nullable<String> description);
 
@@ -329,33 +336,41 @@ public final class WebhookEndpoint {
         /**
          * <p><code>manual</code>: someone disabled it. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.</p>
          */
-        _FinalStage disabledReason(Optional<WebhookEndpointDisabledReason> disabledReason);
+        _FinalStage disabledReason(OptionalNullable<WebhookEndpointDisabledReason> disabledReason);
 
         _FinalStage disabledReason(WebhookEndpointDisabledReason disabledReason);
 
+        _FinalStage disabledReason(Optional<WebhookEndpointDisabledReason> disabledReason);
+
         _FinalStage disabledReason(Nullable<WebhookEndpointDisabledReason> disabledReason);
 
-        _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt);
+        _FinalStage disabledAt(OptionalNullable<OffsetDateTime> disabledAt);
 
         _FinalStage disabledAt(OffsetDateTime disabledAt);
+
+        _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt);
 
         _FinalStage disabledAt(Nullable<OffsetDateTime> disabledAt);
 
         /**
          * <p>When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. <code>null</code> while healthy.</p>
          */
-        _FinalStage failingSince(Optional<OffsetDateTime> failingSince);
+        _FinalStage failingSince(OptionalNullable<OffsetDateTime> failingSince);
 
         _FinalStage failingSince(OffsetDateTime failingSince);
+
+        _FinalStage failingSince(Optional<OffsetDateTime> failingSince);
 
         _FinalStage failingSince(Nullable<OffsetDateTime> failingSince);
 
         /**
          * <p>After a secret roll, deliveries are also signed with the previous secret until this time. <code>null</code> when only the current secret signs.</p>
          */
-        _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt);
+        _FinalStage previousSecretExpiresAt(OptionalNullable<OffsetDateTime> previousSecretExpiresAt);
 
         _FinalStage previousSecretExpiresAt(OffsetDateTime previousSecretExpiresAt);
+
+        _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt);
 
         _FinalStage previousSecretExpiresAt(Nullable<OffsetDateTime> previousSecretExpiresAt);
     }
@@ -384,17 +399,17 @@ public final class WebhookEndpoint {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<OffsetDateTime> previousSecretExpiresAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> previousSecretExpiresAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> failingSince = Optional.empty();
+        private OptionalNullable<OffsetDateTime> failingSince = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> disabledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> disabledAt = OptionalNullable.absent();
 
-        private Optional<WebhookEndpointDisabledReason> disabledReason = Optional.empty();
+        private OptionalNullable<WebhookEndpointDisabledReason> disabledReason = OptionalNullable.absent();
 
         private List<String> eventTypes = new ArrayList<>();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -483,11 +498,25 @@ public final class WebhookEndpoint {
         @java.lang.Override
         public _FinalStage previousSecretExpiresAt(Nullable<OffsetDateTime> previousSecretExpiresAt) {
             if (previousSecretExpiresAt.isNull()) {
-                this.previousSecretExpiresAt = null;
+                this.previousSecretExpiresAt = OptionalNullable.ofNull();
             } else if (previousSecretExpiresAt.isEmpty()) {
-                this.previousSecretExpiresAt = Optional.empty();
+                this.previousSecretExpiresAt = OptionalNullable.absent();
             } else {
-                this.previousSecretExpiresAt = Optional.of(previousSecretExpiresAt.get());
+                this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>After a secret roll, deliveries are also signed with the previous secret until this time. <code>null</code> when only the current secret signs.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt) {
+            if (previousSecretExpiresAt.isPresent()) {
+                this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt.get());
+            } else {
+                this.previousSecretExpiresAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -498,7 +527,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         public _FinalStage previousSecretExpiresAt(OffsetDateTime previousSecretExpiresAt) {
-            this.previousSecretExpiresAt = Optional.ofNullable(previousSecretExpiresAt);
+            this.previousSecretExpiresAt = OptionalNullable.of(previousSecretExpiresAt);
             return this;
         }
 
@@ -507,7 +536,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "previous_secret_expires_at", nulls = Nulls.SKIP)
-        public _FinalStage previousSecretExpiresAt(Optional<OffsetDateTime> previousSecretExpiresAt) {
+        public _FinalStage previousSecretExpiresAt(OptionalNullable<OffsetDateTime> previousSecretExpiresAt) {
             this.previousSecretExpiresAt = previousSecretExpiresAt;
             return this;
         }
@@ -519,11 +548,25 @@ public final class WebhookEndpoint {
         @java.lang.Override
         public _FinalStage failingSince(Nullable<OffsetDateTime> failingSince) {
             if (failingSince.isNull()) {
-                this.failingSince = null;
+                this.failingSince = OptionalNullable.ofNull();
             } else if (failingSince.isEmpty()) {
-                this.failingSince = Optional.empty();
+                this.failingSince = OptionalNullable.absent();
             } else {
-                this.failingSince = Optional.of(failingSince.get());
+                this.failingSince = OptionalNullable.of(failingSince.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the endpoint's current run of failed deliveries began (a delivery that failed every attempt); cleared by the next successful delivery. An endpoint failing for five days is disabled. <code>null</code> while healthy.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage failingSince(Optional<OffsetDateTime> failingSince) {
+            if (failingSince.isPresent()) {
+                this.failingSince = OptionalNullable.of(failingSince.get());
+            } else {
+                this.failingSince = OptionalNullable.absent();
             }
             return this;
         }
@@ -534,7 +577,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         public _FinalStage failingSince(OffsetDateTime failingSince) {
-            this.failingSince = Optional.ofNullable(failingSince);
+            this.failingSince = OptionalNullable.of(failingSince);
             return this;
         }
 
@@ -543,7 +586,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "failing_since", nulls = Nulls.SKIP)
-        public _FinalStage failingSince(Optional<OffsetDateTime> failingSince) {
+        public _FinalStage failingSince(OptionalNullable<OffsetDateTime> failingSince) {
             this.failingSince = failingSince;
             return this;
         }
@@ -551,24 +594,34 @@ public final class WebhookEndpoint {
         @java.lang.Override
         public _FinalStage disabledAt(Nullable<OffsetDateTime> disabledAt) {
             if (disabledAt.isNull()) {
-                this.disabledAt = null;
+                this.disabledAt = OptionalNullable.ofNull();
             } else if (disabledAt.isEmpty()) {
-                this.disabledAt = Optional.empty();
+                this.disabledAt = OptionalNullable.absent();
             } else {
-                this.disabledAt = Optional.of(disabledAt.get());
+                this.disabledAt = OptionalNullable.of(disabledAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt) {
+            if (disabledAt.isPresent()) {
+                this.disabledAt = OptionalNullable.of(disabledAt.get());
+            } else {
+                this.disabledAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage disabledAt(OffsetDateTime disabledAt) {
-            this.disabledAt = Optional.ofNullable(disabledAt);
+            this.disabledAt = OptionalNullable.of(disabledAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "disabled_at", nulls = Nulls.SKIP)
-        public _FinalStage disabledAt(Optional<OffsetDateTime> disabledAt) {
+        public _FinalStage disabledAt(OptionalNullable<OffsetDateTime> disabledAt) {
             this.disabledAt = disabledAt;
             return this;
         }
@@ -580,11 +633,25 @@ public final class WebhookEndpoint {
         @java.lang.Override
         public _FinalStage disabledReason(Nullable<WebhookEndpointDisabledReason> disabledReason) {
             if (disabledReason.isNull()) {
-                this.disabledReason = null;
+                this.disabledReason = OptionalNullable.ofNull();
             } else if (disabledReason.isEmpty()) {
-                this.disabledReason = Optional.empty();
+                this.disabledReason = OptionalNullable.absent();
             } else {
-                this.disabledReason = Optional.of(disabledReason.get());
+                this.disabledReason = OptionalNullable.of(disabledReason.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>manual</code>: someone disabled it. <code>failing</code>: its deliveries failed every attempt for five days, so coss.com disabled it. <code>null</code> while enabled.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage disabledReason(Optional<WebhookEndpointDisabledReason> disabledReason) {
+            if (disabledReason.isPresent()) {
+                this.disabledReason = OptionalNullable.of(disabledReason.get());
+            } else {
+                this.disabledReason = OptionalNullable.absent();
             }
             return this;
         }
@@ -595,7 +662,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         public _FinalStage disabledReason(WebhookEndpointDisabledReason disabledReason) {
-            this.disabledReason = Optional.ofNullable(disabledReason);
+            this.disabledReason = OptionalNullable.of(disabledReason);
             return this;
         }
 
@@ -604,7 +671,7 @@ public final class WebhookEndpoint {
          */
         @java.lang.Override
         @JsonSetter(value = "disabled_reason", nulls = Nulls.SKIP)
-        public _FinalStage disabledReason(Optional<WebhookEndpointDisabledReason> disabledReason) {
+        public _FinalStage disabledReason(OptionalNullable<WebhookEndpointDisabledReason> disabledReason) {
             this.disabledReason = disabledReason;
             return this;
         }
@@ -647,24 +714,34 @@ public final class WebhookEndpoint {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }

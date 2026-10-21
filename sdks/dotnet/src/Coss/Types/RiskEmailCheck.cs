@@ -23,12 +23,14 @@ public record RiskEmailCheck : IJsonOnDeserialized
     [JsonPropertyName("valid")]
     public required bool Valid { get; set; }
 
+    [Nullable]
     [JsonPropertyName("domain")]
     public string? Domain { get; set; }
 
     /// <summary>
     /// The mailbox with the provider's aliasing folded (dots and `+tags` at Gmail…): two addresses with the same canonical form reach one inbox.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("canonical")]
     public string? Canonical { get; set; }
 
@@ -50,12 +52,14 @@ public record RiskEmailCheck : IJsonOnDeserialized
     /// <summary>
     /// The likely intended domain when this one looks like a typo of a popular one.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("suggestion")]
     public string? Suggestion { get; set; }
 
     /// <summary>
     /// Days since the domain was registered (RDAP); `null` when unknown or not looked up (free providers, disposable domains).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("domain_age_days")]
     public long? DomainAgeDays { get; set; }
 

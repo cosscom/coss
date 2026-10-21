@@ -6,9 +6,9 @@ package com.coss.resources.email.contacts.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,11 +26,11 @@ import org.jetbrains.annotations.NotNull;
 public final class ImportContactsRequestContactsItem {
     private final String email;
 
-    private final Optional<String> firstName;
+    private final OptionalNullable<String> firstName;
 
-    private final Optional<String> lastName;
+    private final OptionalNullable<String> lastName;
 
-    private final Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> properties;
+    private final Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> properties;
 
     private final Optional<String> status;
 
@@ -38,9 +38,9 @@ public final class ImportContactsRequestContactsItem {
 
     private ImportContactsRequestContactsItem(
             String email,
-            Optional<String> firstName,
-            Optional<String> lastName,
-            Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> properties,
+            OptionalNullable<String> firstName,
+            OptionalNullable<String> lastName,
+            Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> properties,
             Optional<String> status,
             Map<String, Object> additionalProperties) {
         this.email = email;
@@ -59,18 +59,20 @@ public final class ImportContactsRequestContactsItem {
         return email;
     }
 
-    @JsonIgnore
-    public Optional<String> getFirstName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_name")
+    public OptionalNullable<String> getFirstName() {
         if (firstName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstName;
     }
 
-    @JsonIgnore
-    public Optional<String> getLastName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_name")
+    public OptionalNullable<String> getLastName() {
         if (lastName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastName;
     }
@@ -79,7 +81,7 @@ public final class ImportContactsRequestContactsItem {
      * @return Custom properties by key, checked against their definitions.
      */
     @JsonProperty("properties")
-    public Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> getProperties() {
+    public Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> getProperties() {
         return properties;
     }
 
@@ -93,13 +95,13 @@ public final class ImportContactsRequestContactsItem {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_name")
-    private Optional<String> _getFirstName() {
+    private OptionalNullable<String> _getFirstName() {
         return firstName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_name")
-    private Optional<String> _getLastName() {
+    private OptionalNullable<String> _getLastName() {
         return lastName;
     }
 
@@ -152,15 +154,19 @@ public final class ImportContactsRequestContactsItem {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage firstName(Optional<String> firstName);
+        _FinalStage firstName(OptionalNullable<String> firstName);
 
         _FinalStage firstName(String firstName);
 
+        _FinalStage firstName(Optional<String> firstName);
+
         _FinalStage firstName(Nullable<String> firstName);
 
-        _FinalStage lastName(Optional<String> lastName);
+        _FinalStage lastName(OptionalNullable<String> lastName);
 
         _FinalStage lastName(String lastName);
+
+        _FinalStage lastName(Optional<String> lastName);
 
         _FinalStage lastName(Nullable<String> lastName);
 
@@ -168,9 +174,10 @@ public final class ImportContactsRequestContactsItem {
          * <p>Custom properties by key, checked against their definitions.</p>
          */
         _FinalStage properties(
-                Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> properties);
+                Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> properties);
 
-        _FinalStage properties(Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>> properties);
+        _FinalStage properties(
+                Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>> properties);
 
         /**
          * <p><code>subscribed</code> or <code>unsubscribed</code> (anything else, like an export's <code>pending</code>, is reported in <code>invalid</code>). Omitted, a new contact is <code>subscribed</code> and an existing one keeps its status.</p>
@@ -186,12 +193,12 @@ public final class ImportContactsRequestContactsItem {
 
         private Optional<String> status = Optional.empty();
 
-        private Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> properties =
+        private Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> properties =
                 Optional.empty();
 
-        private Optional<String> lastName = Optional.empty();
+        private OptionalNullable<String> lastName = OptionalNullable.absent();
 
-        private Optional<String> firstName = Optional.empty();
+        private OptionalNullable<String> firstName = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -245,7 +252,7 @@ public final class ImportContactsRequestContactsItem {
          */
         @java.lang.Override
         public _FinalStage properties(
-                Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>> properties) {
+                Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>> properties) {
             this.properties = Optional.ofNullable(properties);
             return this;
         }
@@ -256,7 +263,7 @@ public final class ImportContactsRequestContactsItem {
         @java.lang.Override
         @JsonSetter(value = "properties", nulls = Nulls.SKIP)
         public _FinalStage properties(
-                Optional<Map<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>> properties) {
+                Optional<Map<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>> properties) {
             this.properties = properties;
             return this;
         }
@@ -264,24 +271,34 @@ public final class ImportContactsRequestContactsItem {
         @java.lang.Override
         public _FinalStage lastName(Nullable<String> lastName) {
             if (lastName.isNull()) {
-                this.lastName = null;
+                this.lastName = OptionalNullable.ofNull();
             } else if (lastName.isEmpty()) {
-                this.lastName = Optional.empty();
+                this.lastName = OptionalNullable.absent();
             } else {
-                this.lastName = Optional.of(lastName.get());
+                this.lastName = OptionalNullable.of(lastName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastName(Optional<String> lastName) {
+            if (lastName.isPresent()) {
+                this.lastName = OptionalNullable.of(lastName.get());
+            } else {
+                this.lastName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastName(String lastName) {
-            this.lastName = Optional.ofNullable(lastName);
+            this.lastName = OptionalNullable.of(lastName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_name", nulls = Nulls.SKIP)
-        public _FinalStage lastName(Optional<String> lastName) {
+        public _FinalStage lastName(OptionalNullable<String> lastName) {
             this.lastName = lastName;
             return this;
         }
@@ -289,24 +306,34 @@ public final class ImportContactsRequestContactsItem {
         @java.lang.Override
         public _FinalStage firstName(Nullable<String> firstName) {
             if (firstName.isNull()) {
-                this.firstName = null;
+                this.firstName = OptionalNullable.ofNull();
             } else if (firstName.isEmpty()) {
-                this.firstName = Optional.empty();
+                this.firstName = OptionalNullable.absent();
             } else {
-                this.firstName = Optional.of(firstName.get());
+                this.firstName = OptionalNullable.of(firstName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage firstName(Optional<String> firstName) {
+            if (firstName.isPresent()) {
+                this.firstName = OptionalNullable.of(firstName.get());
+            } else {
+                this.firstName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage firstName(String firstName) {
-            this.firstName = Optional.ofNullable(firstName);
+            this.firstName = OptionalNullable.of(firstName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "first_name", nulls = Nulls.SKIP)
-        public _FinalStage firstName(Optional<String> firstName) {
+        public _FinalStage firstName(OptionalNullable<String> firstName) {
             this.firstName = firstName;
             return this;
         }

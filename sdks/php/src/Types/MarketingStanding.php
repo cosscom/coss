@@ -39,7 +39,13 @@ class MarketingStanding extends JsonSerializableType
     ) {
         $this->status = $values['status'];
         $this->reason = $values['reason'] ?? null;
+        if (array_key_exists('reason', $values)) {
+            $this->_setField('reason');
+        }
         $this->pausedAt = $values['pausedAt'] ?? null;
+        if (array_key_exists('pausedAt', $values)) {
+            $this->_setField('pausedAt');
+        }
     }
 
     /**

@@ -155,6 +155,7 @@ public class CancelTest : BaseMockServerTest
               ],
               "subject": "Welcome to Acme",
               "html": "<p>Thanks for signing up!</p>",
+              "text": null,
               "headers": {
                 "key": "value"
               },
@@ -167,6 +168,7 @@ public class CancelTest : BaseMockServerTest
               "category": "onboarding",
               "stream": "transactional",
               "status": "sent",
+              "failure": null,
               "recipients": [
                 {
                   "address": "user@example.com",
@@ -190,12 +192,21 @@ public class CancelTest : BaseMockServerTest
                 "clicks": false,
                 "unsubscribe": false,
                 "open_count": 0,
-                "click_count": 0
+                "first_opened_at": null,
+                "last_opened_at": null,
+                "click_count": 0,
+                "first_clicked_at": null,
+                "last_clicked_at": null
               },
               "created_at": "2026-10-10T12:00:00.000Z",
               "sent_at": "2026-10-10T12:00:01.000Z",
+              "scheduled_at": null,
+              "batch_id": null,
+              "template": null,
+              "broadcast_id": null,
               "content_storage": {
-                "mode": "store"
+                "mode": "store",
+                "discarded_at": null
               }
             }
             """;

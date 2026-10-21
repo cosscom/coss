@@ -15,6 +15,7 @@ public record PublishEmailTemplateRequest
     /// <summary>
     /// The draft `revision` you read. When given, the request is refused (`template_revision_mismatch`) if the draft changed since.
     /// </summary>
+    [Optional]
     [JsonPropertyName("revision")]
     public long? Revision { get; set; }
 

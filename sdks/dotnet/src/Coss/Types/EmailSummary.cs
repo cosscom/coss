@@ -41,6 +41,7 @@ public record EmailSummary : IJsonOnDeserialized
     [JsonPropertyName("tags")]
     public IEnumerable<EmailSummaryTagsItem> Tags { get; set; } = new List<EmailSummaryTagsItem>();
 
+    [Nullable]
     [JsonPropertyName("category")]
     public string? Category { get; set; }
 
@@ -56,6 +57,7 @@ public record EmailSummary : IJsonOnDeserialized
     /// <summary>
     /// Why the email failed; `null` unless `status` is `failed`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("failure")]
     public EmailFailure? Failure { get; set; }
 
@@ -74,30 +76,35 @@ public record EmailSummary : IJsonOnDeserialized
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("sent_at")]
     public DateTime? SentAt { get; set; }
 
     /// <summary>
     /// When the email was scheduled to be sent; `null` if it was not.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("scheduled_at")]
     public DateTime? ScheduledAt { get; set; }
 
     /// <summary>
     /// The batch that sent the email; `null` if it was sent on its own.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("batch_id")]
     public string? BatchId { get; set; }
 
     /// <summary>
     /// The template the email was rendered from; `null` if it was sent without one.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("template")]
     public EmailTemplateReference? Template { get; set; }
 
     /// <summary>
     /// The broadcast the email is part of; `null` for any other email.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("broadcast_id")]
     public string? BroadcastId { get; set; }
 

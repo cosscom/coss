@@ -127,8 +127,11 @@ public class GetTest : BaseMockServerTest
                 "id": "bcon_01k7c8m4q2f3e9v6t5r1n0p8yz",
                 "kind": "self_serve",
                 "effective_from": "2026-10-01T00:00:00.000Z",
+                "effective_until": null,
+                "term_end": null,
                 "auto_renew": false
               },
+              "scheduled_change": null,
               "status": "active",
               "holds": [
                 {
@@ -144,7 +147,8 @@ public class GetTest : BaseMockServerTest
               "usage": [
                 {
                   "meter": "email.recipients",
-                  "quantity": 120000
+                  "quantity": 120000,
+                  "included": null
                 }
               ],
               "estimate": {
@@ -154,6 +158,7 @@ public class GetTest : BaseMockServerTest
                 "total": 2300
               },
               "credit_remaining": 0,
+              "spend_limit": null,
               "payment_method": {
                 "type": "card",
                 "brand": "visa",

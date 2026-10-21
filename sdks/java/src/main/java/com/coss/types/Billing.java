@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,9 +32,9 @@ public final class Billing {
 
     private final BillingPlan plan;
 
-    private final Optional<BillingContract> contract;
+    private final OptionalNullable<BillingContract> contract;
 
-    private final Optional<BillingScheduledChange> scheduledChange;
+    private final OptionalNullable<BillingScheduledChange> scheduledChange;
 
     private final BillingStatus status;
 
@@ -50,9 +50,9 @@ public final class Billing {
 
     private final long creditRemaining;
 
-    private final Optional<Long> spendLimit;
+    private final OptionalNullable<Long> spendLimit;
 
-    private final Optional<BillingPaymentMethod> paymentMethod;
+    private final OptionalNullable<BillingPaymentMethod> paymentMethod;
 
     private final List<BillingAddOnsItem> addOns;
 
@@ -66,8 +66,8 @@ public final class Billing {
             BillingObject object,
             String organizationId,
             BillingPlan plan,
-            Optional<BillingContract> contract,
-            Optional<BillingScheduledChange> scheduledChange,
+            OptionalNullable<BillingContract> contract,
+            OptionalNullable<BillingScheduledChange> scheduledChange,
             BillingStatus status,
             List<BillingHoldsItem> holds,
             BillingCurrency currency,
@@ -75,8 +75,8 @@ public final class Billing {
             List<BillingUsageItem> usage,
             BillingEstimate estimate,
             long creditRemaining,
-            Optional<Long> spendLimit,
-            Optional<BillingPaymentMethod> paymentMethod,
+            OptionalNullable<Long> spendLimit,
+            OptionalNullable<BillingPaymentMethod> paymentMethod,
             List<BillingAddOnsItem> addOns,
             BillingFeatures features,
             BillingLimits limits,
@@ -122,10 +122,11 @@ public final class Billing {
     /**
      * @return The contract in effect; <code>null</code> on the Free plan.
      */
-    @JsonIgnore
-    public Optional<BillingContract> getContract() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("contract")
+    public OptionalNullable<BillingContract> getContract() {
         if (contract == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contract;
     }
@@ -133,10 +134,11 @@ public final class Billing {
     /**
      * @return A plan change that takes effect later (a downgrade, a cancellation).
      */
-    @JsonIgnore
-    public Optional<BillingScheduledChange> getScheduledChange() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("scheduled_change")
+    public OptionalNullable<BillingScheduledChange> getScheduledChange() {
         if (scheduledChange == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return scheduledChange;
     }
@@ -194,18 +196,20 @@ public final class Billing {
     /**
      * @return Usage beyond the credit past which live sending is held; <code>null</code>: none.
      */
-    @JsonIgnore
-    public Optional<Long> getSpendLimit() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("spend_limit")
+    public OptionalNullable<Long> getSpendLimit() {
         if (spendLimit == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return spendLimit;
     }
 
-    @JsonIgnore
-    public Optional<BillingPaymentMethod> getPaymentMethod() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("payment_method")
+    public OptionalNullable<BillingPaymentMethod> getPaymentMethod() {
         if (paymentMethod == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return paymentMethod;
     }
@@ -233,25 +237,25 @@ public final class Billing {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("contract")
-    private Optional<BillingContract> _getContract() {
+    private OptionalNullable<BillingContract> _getContract() {
         return contract;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("scheduled_change")
-    private Optional<BillingScheduledChange> _getScheduledChange() {
+    private OptionalNullable<BillingScheduledChange> _getScheduledChange() {
         return scheduledChange;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spend_limit")
-    private Optional<Long> _getSpendLimit() {
+    private OptionalNullable<Long> _getSpendLimit() {
         return spendLimit;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("payment_method")
-    private Optional<BillingPaymentMethod> _getPaymentMethod() {
+    private OptionalNullable<BillingPaymentMethod> _getPaymentMethod() {
         return paymentMethod;
     }
 
@@ -387,18 +391,22 @@ public final class Billing {
         /**
          * <p>The contract in effect; <code>null</code> on the Free plan.</p>
          */
-        _FinalStage contract(Optional<BillingContract> contract);
+        _FinalStage contract(OptionalNullable<BillingContract> contract);
 
         _FinalStage contract(BillingContract contract);
+
+        _FinalStage contract(Optional<BillingContract> contract);
 
         _FinalStage contract(Nullable<BillingContract> contract);
 
         /**
          * <p>A plan change that takes effect later (a downgrade, a cancellation).</p>
          */
-        _FinalStage scheduledChange(Optional<BillingScheduledChange> scheduledChange);
+        _FinalStage scheduledChange(OptionalNullable<BillingScheduledChange> scheduledChange);
 
         _FinalStage scheduledChange(BillingScheduledChange scheduledChange);
+
+        _FinalStage scheduledChange(Optional<BillingScheduledChange> scheduledChange);
 
         _FinalStage scheduledChange(Nullable<BillingScheduledChange> scheduledChange);
 
@@ -420,15 +428,19 @@ public final class Billing {
         /**
          * <p>Usage beyond the credit past which live sending is held; <code>null</code>: none.</p>
          */
-        _FinalStage spendLimit(Optional<Long> spendLimit);
+        _FinalStage spendLimit(OptionalNullable<Long> spendLimit);
 
         _FinalStage spendLimit(Long spendLimit);
 
+        _FinalStage spendLimit(Optional<Long> spendLimit);
+
         _FinalStage spendLimit(Nullable<Long> spendLimit);
 
-        _FinalStage paymentMethod(Optional<BillingPaymentMethod> paymentMethod);
+        _FinalStage paymentMethod(OptionalNullable<BillingPaymentMethod> paymentMethod);
 
         _FinalStage paymentMethod(BillingPaymentMethod paymentMethod);
+
+        _FinalStage paymentMethod(Optional<BillingPaymentMethod> paymentMethod);
 
         _FinalStage paymentMethod(Nullable<BillingPaymentMethod> paymentMethod);
 
@@ -477,17 +489,17 @@ public final class Billing {
 
         private List<BillingAddOnsItem> addOns = new ArrayList<>();
 
-        private Optional<BillingPaymentMethod> paymentMethod = Optional.empty();
+        private OptionalNullable<BillingPaymentMethod> paymentMethod = OptionalNullable.absent();
 
-        private Optional<Long> spendLimit = Optional.empty();
+        private OptionalNullable<Long> spendLimit = OptionalNullable.absent();
 
         private List<BillingUsageItem> usage = new ArrayList<>();
 
         private List<BillingHoldsItem> holds = new ArrayList<>();
 
-        private Optional<BillingScheduledChange> scheduledChange = Optional.empty();
+        private OptionalNullable<BillingScheduledChange> scheduledChange = OptionalNullable.absent();
 
-        private Optional<BillingContract> contract = Optional.empty();
+        private OptionalNullable<BillingContract> contract = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -648,24 +660,34 @@ public final class Billing {
         @java.lang.Override
         public _FinalStage paymentMethod(Nullable<BillingPaymentMethod> paymentMethod) {
             if (paymentMethod.isNull()) {
-                this.paymentMethod = null;
+                this.paymentMethod = OptionalNullable.ofNull();
             } else if (paymentMethod.isEmpty()) {
-                this.paymentMethod = Optional.empty();
+                this.paymentMethod = OptionalNullable.absent();
             } else {
-                this.paymentMethod = Optional.of(paymentMethod.get());
+                this.paymentMethod = OptionalNullable.of(paymentMethod.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage paymentMethod(Optional<BillingPaymentMethod> paymentMethod) {
+            if (paymentMethod.isPresent()) {
+                this.paymentMethod = OptionalNullable.of(paymentMethod.get());
+            } else {
+                this.paymentMethod = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage paymentMethod(BillingPaymentMethod paymentMethod) {
-            this.paymentMethod = Optional.ofNullable(paymentMethod);
+            this.paymentMethod = OptionalNullable.of(paymentMethod);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "payment_method", nulls = Nulls.SKIP)
-        public _FinalStage paymentMethod(Optional<BillingPaymentMethod> paymentMethod) {
+        public _FinalStage paymentMethod(OptionalNullable<BillingPaymentMethod> paymentMethod) {
             this.paymentMethod = paymentMethod;
             return this;
         }
@@ -677,11 +699,25 @@ public final class Billing {
         @java.lang.Override
         public _FinalStage spendLimit(Nullable<Long> spendLimit) {
             if (spendLimit.isNull()) {
-                this.spendLimit = null;
+                this.spendLimit = OptionalNullable.ofNull();
             } else if (spendLimit.isEmpty()) {
-                this.spendLimit = Optional.empty();
+                this.spendLimit = OptionalNullable.absent();
             } else {
-                this.spendLimit = Optional.of(spendLimit.get());
+                this.spendLimit = OptionalNullable.of(spendLimit.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Usage beyond the credit past which live sending is held; <code>null</code>: none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage spendLimit(Optional<Long> spendLimit) {
+            if (spendLimit.isPresent()) {
+                this.spendLimit = OptionalNullable.of(spendLimit.get());
+            } else {
+                this.spendLimit = OptionalNullable.absent();
             }
             return this;
         }
@@ -692,7 +728,7 @@ public final class Billing {
          */
         @java.lang.Override
         public _FinalStage spendLimit(Long spendLimit) {
-            this.spendLimit = Optional.ofNullable(spendLimit);
+            this.spendLimit = OptionalNullable.of(spendLimit);
             return this;
         }
 
@@ -701,7 +737,7 @@ public final class Billing {
          */
         @java.lang.Override
         @JsonSetter(value = "spend_limit", nulls = Nulls.SKIP)
-        public _FinalStage spendLimit(Optional<Long> spendLimit) {
+        public _FinalStage spendLimit(OptionalNullable<Long> spendLimit) {
             this.spendLimit = spendLimit;
             return this;
         }
@@ -772,11 +808,25 @@ public final class Billing {
         @java.lang.Override
         public _FinalStage scheduledChange(Nullable<BillingScheduledChange> scheduledChange) {
             if (scheduledChange.isNull()) {
-                this.scheduledChange = null;
+                this.scheduledChange = OptionalNullable.ofNull();
             } else if (scheduledChange.isEmpty()) {
-                this.scheduledChange = Optional.empty();
+                this.scheduledChange = OptionalNullable.absent();
             } else {
-                this.scheduledChange = Optional.of(scheduledChange.get());
+                this.scheduledChange = OptionalNullable.of(scheduledChange.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>A plan change that takes effect later (a downgrade, a cancellation).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage scheduledChange(Optional<BillingScheduledChange> scheduledChange) {
+            if (scheduledChange.isPresent()) {
+                this.scheduledChange = OptionalNullable.of(scheduledChange.get());
+            } else {
+                this.scheduledChange = OptionalNullable.absent();
             }
             return this;
         }
@@ -787,7 +837,7 @@ public final class Billing {
          */
         @java.lang.Override
         public _FinalStage scheduledChange(BillingScheduledChange scheduledChange) {
-            this.scheduledChange = Optional.ofNullable(scheduledChange);
+            this.scheduledChange = OptionalNullable.of(scheduledChange);
             return this;
         }
 
@@ -796,7 +846,7 @@ public final class Billing {
          */
         @java.lang.Override
         @JsonSetter(value = "scheduled_change", nulls = Nulls.SKIP)
-        public _FinalStage scheduledChange(Optional<BillingScheduledChange> scheduledChange) {
+        public _FinalStage scheduledChange(OptionalNullable<BillingScheduledChange> scheduledChange) {
             this.scheduledChange = scheduledChange;
             return this;
         }
@@ -808,11 +858,25 @@ public final class Billing {
         @java.lang.Override
         public _FinalStage contract(Nullable<BillingContract> contract) {
             if (contract.isNull()) {
-                this.contract = null;
+                this.contract = OptionalNullable.ofNull();
             } else if (contract.isEmpty()) {
-                this.contract = Optional.empty();
+                this.contract = OptionalNullable.absent();
             } else {
-                this.contract = Optional.of(contract.get());
+                this.contract = OptionalNullable.of(contract.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The contract in effect; <code>null</code> on the Free plan.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage contract(Optional<BillingContract> contract) {
+            if (contract.isPresent()) {
+                this.contract = OptionalNullable.of(contract.get());
+            } else {
+                this.contract = OptionalNullable.absent();
             }
             return this;
         }
@@ -823,7 +887,7 @@ public final class Billing {
          */
         @java.lang.Override
         public _FinalStage contract(BillingContract contract) {
-            this.contract = Optional.ofNullable(contract);
+            this.contract = OptionalNullable.of(contract);
             return this;
         }
 
@@ -832,7 +896,7 @@ public final class Billing {
          */
         @java.lang.Override
         @JsonSetter(value = "contract", nulls = Nulls.SKIP)
-        public _FinalStage contract(Optional<BillingContract> contract) {
+        public _FinalStage contract(OptionalNullable<BillingContract> contract) {
             this.contract = contract;
             return this;
         }

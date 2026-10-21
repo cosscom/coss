@@ -59,6 +59,9 @@ class ReceivingDomain extends JsonSerializableType
         $this->record = $values['record'];
         $this->createdAt = $values['createdAt'];
         $this->lastCheckedAt = $values['lastCheckedAt'] ?? null;
+        if (array_key_exists('lastCheckedAt', $values)) {
+            $this->_setField('lastCheckedAt');
+        }
     }
 
     /**

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = RiskEmailSignals.Builder.class)
 public final class RiskEmailSignals {
-    private final Optional<String> domain;
+    private final OptionalNullable<String> domain;
 
     private final boolean valid;
 
@@ -36,21 +36,21 @@ public final class RiskEmailSignals {
 
     private final boolean freeProvider;
 
-    private final Optional<String> suggestion;
+    private final OptionalNullable<String> suggestion;
 
-    private final Optional<Long> domainAgeDays;
+    private final OptionalNullable<Long> domainAgeDays;
 
     private final Map<String, Object> additionalProperties;
 
     private RiskEmailSignals(
-            Optional<String> domain,
+            OptionalNullable<String> domain,
             boolean valid,
             boolean disposable,
             RiskEmailSignalsDeliverability deliverability,
             boolean roleAccount,
             boolean freeProvider,
-            Optional<String> suggestion,
-            Optional<Long> domainAgeDays,
+            OptionalNullable<String> suggestion,
+            OptionalNullable<Long> domainAgeDays,
             Map<String, Object> additionalProperties) {
         this.domain = domain;
         this.valid = valid;
@@ -66,10 +66,11 @@ public final class RiskEmailSignals {
     /**
      * @return <code>null</code> once the address is removed (90 days after the assessment).
      */
-    @JsonIgnore
-    public Optional<String> getDomain() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("domain")
+    public OptionalNullable<String> getDomain() {
         if (domain == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return domain;
     }
@@ -102,10 +103,11 @@ public final class RiskEmailSignals {
         return freeProvider;
     }
 
-    @JsonIgnore
-    public Optional<String> getSuggestion() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("suggestion")
+    public OptionalNullable<String> getSuggestion() {
         if (suggestion == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return suggestion;
     }
@@ -113,29 +115,30 @@ public final class RiskEmailSignals {
     /**
      * @return Days since the domain was registered (RDAP); <code>null</code> when unknown or not looked up (free providers, disposable domains).
      */
-    @JsonIgnore
-    public Optional<Long> getDomainAgeDays() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("domain_age_days")
+    public OptionalNullable<Long> getDomainAgeDays() {
         if (domainAgeDays == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return domainAgeDays;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("domain")
-    private Optional<String> _getDomain() {
+    private OptionalNullable<String> _getDomain() {
         return domain;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("suggestion")
-    private Optional<String> _getSuggestion() {
+    private OptionalNullable<String> _getSuggestion() {
         return suggestion;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("domain_age_days")
-    private Optional<Long> _getDomainAgeDays() {
+    private OptionalNullable<Long> _getDomainAgeDays() {
         return domainAgeDays;
     }
 
@@ -218,24 +221,30 @@ public final class RiskEmailSignals {
         /**
          * <p><code>null</code> once the address is removed (90 days after the assessment).</p>
          */
-        _FinalStage domain(Optional<String> domain);
+        _FinalStage domain(OptionalNullable<String> domain);
 
         _FinalStage domain(String domain);
 
+        _FinalStage domain(Optional<String> domain);
+
         _FinalStage domain(Nullable<String> domain);
 
-        _FinalStage suggestion(Optional<String> suggestion);
+        _FinalStage suggestion(OptionalNullable<String> suggestion);
 
         _FinalStage suggestion(String suggestion);
+
+        _FinalStage suggestion(Optional<String> suggestion);
 
         _FinalStage suggestion(Nullable<String> suggestion);
 
         /**
          * <p>Days since the domain was registered (RDAP); <code>null</code> when unknown or not looked up (free providers, disposable domains).</p>
          */
-        _FinalStage domainAgeDays(Optional<Long> domainAgeDays);
+        _FinalStage domainAgeDays(OptionalNullable<Long> domainAgeDays);
 
         _FinalStage domainAgeDays(Long domainAgeDays);
+
+        _FinalStage domainAgeDays(Optional<Long> domainAgeDays);
 
         _FinalStage domainAgeDays(Nullable<Long> domainAgeDays);
     }
@@ -258,11 +267,11 @@ public final class RiskEmailSignals {
 
         private boolean freeProvider;
 
-        private Optional<Long> domainAgeDays = Optional.empty();
+        private OptionalNullable<Long> domainAgeDays = OptionalNullable.absent();
 
-        private Optional<String> suggestion = Optional.empty();
+        private OptionalNullable<String> suggestion = OptionalNullable.absent();
 
-        private Optional<String> domain = Optional.empty();
+        private OptionalNullable<String> domain = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -328,11 +337,25 @@ public final class RiskEmailSignals {
         @java.lang.Override
         public _FinalStage domainAgeDays(Nullable<Long> domainAgeDays) {
             if (domainAgeDays.isNull()) {
-                this.domainAgeDays = null;
+                this.domainAgeDays = OptionalNullable.ofNull();
             } else if (domainAgeDays.isEmpty()) {
-                this.domainAgeDays = Optional.empty();
+                this.domainAgeDays = OptionalNullable.absent();
             } else {
-                this.domainAgeDays = Optional.of(domainAgeDays.get());
+                this.domainAgeDays = OptionalNullable.of(domainAgeDays.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Days since the domain was registered (RDAP); <code>null</code> when unknown or not looked up (free providers, disposable domains).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage domainAgeDays(Optional<Long> domainAgeDays) {
+            if (domainAgeDays.isPresent()) {
+                this.domainAgeDays = OptionalNullable.of(domainAgeDays.get());
+            } else {
+                this.domainAgeDays = OptionalNullable.absent();
             }
             return this;
         }
@@ -343,7 +366,7 @@ public final class RiskEmailSignals {
          */
         @java.lang.Override
         public _FinalStage domainAgeDays(Long domainAgeDays) {
-            this.domainAgeDays = Optional.ofNullable(domainAgeDays);
+            this.domainAgeDays = OptionalNullable.of(domainAgeDays);
             return this;
         }
 
@@ -352,7 +375,7 @@ public final class RiskEmailSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "domain_age_days", nulls = Nulls.SKIP)
-        public _FinalStage domainAgeDays(Optional<Long> domainAgeDays) {
+        public _FinalStage domainAgeDays(OptionalNullable<Long> domainAgeDays) {
             this.domainAgeDays = domainAgeDays;
             return this;
         }
@@ -360,24 +383,34 @@ public final class RiskEmailSignals {
         @java.lang.Override
         public _FinalStage suggestion(Nullable<String> suggestion) {
             if (suggestion.isNull()) {
-                this.suggestion = null;
+                this.suggestion = OptionalNullable.ofNull();
             } else if (suggestion.isEmpty()) {
-                this.suggestion = Optional.empty();
+                this.suggestion = OptionalNullable.absent();
             } else {
-                this.suggestion = Optional.of(suggestion.get());
+                this.suggestion = OptionalNullable.of(suggestion.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage suggestion(Optional<String> suggestion) {
+            if (suggestion.isPresent()) {
+                this.suggestion = OptionalNullable.of(suggestion.get());
+            } else {
+                this.suggestion = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage suggestion(String suggestion) {
-            this.suggestion = Optional.ofNullable(suggestion);
+            this.suggestion = OptionalNullable.of(suggestion);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "suggestion", nulls = Nulls.SKIP)
-        public _FinalStage suggestion(Optional<String> suggestion) {
+        public _FinalStage suggestion(OptionalNullable<String> suggestion) {
             this.suggestion = suggestion;
             return this;
         }
@@ -389,11 +422,25 @@ public final class RiskEmailSignals {
         @java.lang.Override
         public _FinalStage domain(Nullable<String> domain) {
             if (domain.isNull()) {
-                this.domain = null;
+                this.domain = OptionalNullable.ofNull();
             } else if (domain.isEmpty()) {
-                this.domain = Optional.empty();
+                this.domain = OptionalNullable.absent();
             } else {
-                this.domain = Optional.of(domain.get());
+                this.domain = OptionalNullable.of(domain.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> once the address is removed (90 days after the assessment).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage domain(Optional<String> domain) {
+            if (domain.isPresent()) {
+                this.domain = OptionalNullable.of(domain.get());
+            } else {
+                this.domain = OptionalNullable.absent();
             }
             return this;
         }
@@ -404,7 +451,7 @@ public final class RiskEmailSignals {
          */
         @java.lang.Override
         public _FinalStage domain(String domain) {
-            this.domain = Optional.ofNullable(domain);
+            this.domain = OptionalNullable.of(domain);
             return this;
         }
 
@@ -413,7 +460,7 @@ public final class RiskEmailSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "domain", nulls = Nulls.SKIP)
-        public _FinalStage domain(Optional<String> domain) {
+        public _FinalStage domain(OptionalNullable<String> domain) {
             this.domain = domain;
             return this;
         }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,14 +28,14 @@ public final class BillingUsageItem {
 
     private final long quantity;
 
-    private final Optional<Long> included;
+    private final OptionalNullable<Long> included;
 
     private final Map<String, Object> additionalProperties;
 
     private BillingUsageItem(
             BillingUsageItemMeter meter,
             long quantity,
-            Optional<Long> included,
+            OptionalNullable<Long> included,
             Map<String, Object> additionalProperties) {
         this.meter = meter;
         this.quantity = quantity;
@@ -59,17 +59,18 @@ public final class BillingUsageItem {
     /**
      * @return The plan's monthly allowance where usage stops (Free), else <code>null</code>.
      */
-    @JsonIgnore
-    public Optional<Long> getIncluded() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("included")
+    public OptionalNullable<Long> getIncluded() {
         if (included == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return included;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("included")
-    private Optional<Long> _getIncluded() {
+    private OptionalNullable<Long> _getIncluded() {
         return included;
     }
 
@@ -125,9 +126,11 @@ public final class BillingUsageItem {
         /**
          * <p>The plan's monthly allowance where usage stops (Free), else <code>null</code>.</p>
          */
-        _FinalStage included(Optional<Long> included);
+        _FinalStage included(OptionalNullable<Long> included);
 
         _FinalStage included(Long included);
+
+        _FinalStage included(Optional<Long> included);
 
         _FinalStage included(Nullable<Long> included);
     }
@@ -138,7 +141,7 @@ public final class BillingUsageItem {
 
         private long quantity;
 
-        private Optional<Long> included = Optional.empty();
+        private OptionalNullable<Long> included = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -178,11 +181,25 @@ public final class BillingUsageItem {
         @java.lang.Override
         public _FinalStage included(Nullable<Long> included) {
             if (included.isNull()) {
-                this.included = null;
+                this.included = OptionalNullable.ofNull();
             } else if (included.isEmpty()) {
-                this.included = Optional.empty();
+                this.included = OptionalNullable.absent();
             } else {
-                this.included = Optional.of(included.get());
+                this.included = OptionalNullable.of(included.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The plan's monthly allowance where usage stops (Free), else <code>null</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage included(Optional<Long> included) {
+            if (included.isPresent()) {
+                this.included = OptionalNullable.of(included.get());
+            } else {
+                this.included = OptionalNullable.absent();
             }
             return this;
         }
@@ -193,7 +210,7 @@ public final class BillingUsageItem {
          */
         @java.lang.Override
         public _FinalStage included(Long included) {
-            this.included = Optional.ofNullable(included);
+            this.included = OptionalNullable.of(included);
             return this;
         }
 
@@ -202,7 +219,7 @@ public final class BillingUsageItem {
          */
         @java.lang.Override
         @JsonSetter(value = "included", nulls = Nulls.SKIP)
-        public _FinalStage included(Optional<Long> included) {
+        public _FinalStage included(OptionalNullable<Long> included) {
             this.included = included;
             return this;
         }

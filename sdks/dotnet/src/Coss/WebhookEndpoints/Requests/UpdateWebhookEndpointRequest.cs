@@ -15,27 +15,32 @@ public record UpdateWebhookEndpointRequest
     /// <summary>
     /// An `https://` URL coss.com posts events to.
     /// </summary>
+    [Optional]
     [JsonPropertyName("url")]
     public string? Url { get; set; }
 
     /// <summary>
     /// A note for your own reference. `null` clears it.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    public Optional<string?> Description { get; set; }
 
     /// <summary>
     /// Event types delivered to this endpoint. An empty array means every event type, including ones added later.
     /// </summary>
+    [Optional]
     [JsonPropertyName("event_types")]
     public IEnumerable<UpdateWebhookEndpointRequestEventTypesItem>? EventTypes { get; set; }
 
     /// <summary>
     /// The API version (`Coss-Version`) events are rendered in for this endpoint. Each event carries it as `api_version`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("api_version")]
     public UpdateWebhookEndpointRequestApiVersion? ApiVersion { get; set; }
 
+    [Optional]
     [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
 

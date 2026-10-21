@@ -14,15 +14,19 @@ public record BillingOverviewLimits : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("domains")]
     public long? Domains { get; set; }
 
+    [Nullable]
     [JsonPropertyName("members")]
     public long? Members { get; set; }
 
+    [Nullable]
     [JsonPropertyName("webhook_endpoints_per_environment")]
     public long? WebhookEndpointsPerEnvironment { get; set; }
 
+    [Nullable]
     [JsonPropertyName("contacts_per_environment")]
     public long? ContactsPerEnvironment { get; set; }
 

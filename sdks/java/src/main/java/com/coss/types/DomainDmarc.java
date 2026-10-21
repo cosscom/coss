@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,15 +31,15 @@ public final class DomainDmarc {
 
     private final String domainId;
 
-    private final Optional<String> reportAddress;
+    private final OptionalNullable<String> reportAddress;
 
-    private final Optional<DmarcPublishedRecord> record;
+    private final OptionalNullable<DmarcPublishedRecord> record;
 
-    private final Optional<DomainDmarcPolicy> policy;
+    private final OptionalNullable<DomainDmarcPolicy> policy;
 
-    private final Optional<String> inheritedFrom;
+    private final OptionalNullable<String> inheritedFrom;
 
-    private final Optional<OffsetDateTime> policySince;
+    private final OptionalNullable<OffsetDateTime> policySince;
 
     private final DomainDmarcStage stage;
 
@@ -49,7 +49,7 @@ public final class DomainDmarc {
 
     private final boolean ready;
 
-    private final Optional<DomainDmarcNext> next;
+    private final OptionalNullable<DomainDmarcNext> next;
 
     private final List<DomainDmarcChecksItem> checks;
 
@@ -62,16 +62,16 @@ public final class DomainDmarc {
     private DomainDmarc(
             DomainDmarcObject object,
             String domainId,
-            Optional<String> reportAddress,
-            Optional<DmarcPublishedRecord> record,
-            Optional<DomainDmarcPolicy> policy,
-            Optional<String> inheritedFrom,
-            Optional<OffsetDateTime> policySince,
+            OptionalNullable<String> reportAddress,
+            OptionalNullable<DmarcPublishedRecord> record,
+            OptionalNullable<DomainDmarcPolicy> policy,
+            OptionalNullable<String> inheritedFrom,
+            OptionalNullable<OffsetDateTime> policySince,
             DomainDmarcStage stage,
             boolean partial,
             boolean reporting,
             boolean ready,
-            Optional<DomainDmarcNext> next,
+            OptionalNullable<DomainDmarcNext> next,
             List<DomainDmarcChecksItem> checks,
             List<String> warnings,
             DomainDmarcReportSummary reportSummary,
@@ -107,18 +107,20 @@ public final class DomainDmarc {
     /**
      * @return Where the domain's DMARC aggregate reports go (<code>rua=mailto:…</code>). <code>null</code> when this deployment doesn't receive email.
      */
-    @JsonIgnore
-    public Optional<String> getReportAddress() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("report_address")
+    public OptionalNullable<String> getReportAddress() {
         if (reportAddress == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return reportAddress;
     }
 
-    @JsonIgnore
-    public Optional<DmarcPublishedRecord> getRecord() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("record")
+    public OptionalNullable<DmarcPublishedRecord> getRecord() {
         if (record == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return record;
     }
@@ -126,10 +128,11 @@ public final class DomainDmarc {
     /**
      * @return The policy receivers apply: the record's <code>p</code> (<code>none</code> when it has none), or for a subdomain without a record of its own, its organizational domain's <code>sp</code> (else <code>p</code>).
      */
-    @JsonIgnore
-    public Optional<DomainDmarcPolicy> getPolicy() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("policy")
+    public OptionalNullable<DomainDmarcPolicy> getPolicy() {
         if (policy == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return policy;
     }
@@ -137,10 +140,11 @@ public final class DomainDmarc {
     /**
      * @return The organizational domain whose DMARC record applies, when this domain publishes none of its own.
      */
-    @JsonIgnore
-    public Optional<String> getInheritedFrom() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("inherited_from")
+    public OptionalNullable<String> getInheritedFrom() {
         if (inheritedFrom == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return inheritedFrom;
     }
@@ -148,10 +152,11 @@ public final class DomainDmarc {
     /**
      * @return When a DNS check first saw the current policy.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPolicySince() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("policy_since")
+    public OptionalNullable<OffsetDateTime> getPolicySince() {
         if (policySince == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return policySince;
     }
@@ -191,10 +196,11 @@ public final class DomainDmarc {
     /**
      * @return The next step: <code>publish</code> a first record, <code>add_reporting</code> (send reports to coss.com), <code>complete_rollout</code> (drop <code>pct</code>/<code>t=y</code>) or <code>tighten</code> to the next policy. <code>null</code> at <code>p=reject</code>.
      */
-    @JsonIgnore
-    public Optional<DomainDmarcNext> getNext() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("next")
+    public OptionalNullable<DomainDmarcNext> getNext() {
         if (next == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return next;
     }
@@ -219,37 +225,37 @@ public final class DomainDmarc {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("report_address")
-    private Optional<String> _getReportAddress() {
+    private OptionalNullable<String> _getReportAddress() {
         return reportAddress;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("record")
-    private Optional<DmarcPublishedRecord> _getRecord() {
+    private OptionalNullable<DmarcPublishedRecord> _getRecord() {
         return record;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("policy")
-    private Optional<DomainDmarcPolicy> _getPolicy() {
+    private OptionalNullable<DomainDmarcPolicy> _getPolicy() {
         return policy;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("inherited_from")
-    private Optional<String> _getInheritedFrom() {
+    private OptionalNullable<String> _getInheritedFrom() {
         return inheritedFrom;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("policy_since")
-    private Optional<OffsetDateTime> _getPolicySince() {
+    private OptionalNullable<OffsetDateTime> _getPolicySince() {
         return policySince;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("next")
-    private Optional<DomainDmarcNext> _getNext() {
+    private OptionalNullable<DomainDmarcNext> _getNext() {
         return next;
     }
 
@@ -363,51 +369,63 @@ public final class DomainDmarc {
         /**
          * <p>Where the domain's DMARC aggregate reports go (<code>rua=mailto:…</code>). <code>null</code> when this deployment doesn't receive email.</p>
          */
-        _FinalStage reportAddress(Optional<String> reportAddress);
+        _FinalStage reportAddress(OptionalNullable<String> reportAddress);
 
         _FinalStage reportAddress(String reportAddress);
 
+        _FinalStage reportAddress(Optional<String> reportAddress);
+
         _FinalStage reportAddress(Nullable<String> reportAddress);
 
-        _FinalStage record(Optional<DmarcPublishedRecord> record);
+        _FinalStage record(OptionalNullable<DmarcPublishedRecord> record);
 
         _FinalStage record(DmarcPublishedRecord record);
+
+        _FinalStage record(Optional<DmarcPublishedRecord> record);
 
         _FinalStage record(Nullable<DmarcPublishedRecord> record);
 
         /**
          * <p>The policy receivers apply: the record's <code>p</code> (<code>none</code> when it has none), or for a subdomain without a record of its own, its organizational domain's <code>sp</code> (else <code>p</code>).</p>
          */
-        _FinalStage policy(Optional<DomainDmarcPolicy> policy);
+        _FinalStage policy(OptionalNullable<DomainDmarcPolicy> policy);
 
         _FinalStage policy(DomainDmarcPolicy policy);
+
+        _FinalStage policy(Optional<DomainDmarcPolicy> policy);
 
         _FinalStage policy(Nullable<DomainDmarcPolicy> policy);
 
         /**
          * <p>The organizational domain whose DMARC record applies, when this domain publishes none of its own.</p>
          */
-        _FinalStage inheritedFrom(Optional<String> inheritedFrom);
+        _FinalStage inheritedFrom(OptionalNullable<String> inheritedFrom);
 
         _FinalStage inheritedFrom(String inheritedFrom);
+
+        _FinalStage inheritedFrom(Optional<String> inheritedFrom);
 
         _FinalStage inheritedFrom(Nullable<String> inheritedFrom);
 
         /**
          * <p>When a DNS check first saw the current policy.</p>
          */
-        _FinalStage policySince(Optional<OffsetDateTime> policySince);
+        _FinalStage policySince(OptionalNullable<OffsetDateTime> policySince);
 
         _FinalStage policySince(OffsetDateTime policySince);
+
+        _FinalStage policySince(Optional<OffsetDateTime> policySince);
 
         _FinalStage policySince(Nullable<OffsetDateTime> policySince);
 
         /**
          * <p>The next step: <code>publish</code> a first record, <code>add_reporting</code> (send reports to coss.com), <code>complete_rollout</code> (drop <code>pct</code>/<code>t=y</code>) or <code>tighten</code> to the next policy. <code>null</code> at <code>p=reject</code>.</p>
          */
-        _FinalStage next(Optional<DomainDmarcNext> next);
+        _FinalStage next(OptionalNullable<DomainDmarcNext> next);
 
         _FinalStage next(DomainDmarcNext next);
+
+        _FinalStage next(Optional<DomainDmarcNext> next);
 
         _FinalStage next(Nullable<DomainDmarcNext> next);
 
@@ -455,17 +473,17 @@ public final class DomainDmarc {
 
         private List<DomainDmarcChecksItem> checks = new ArrayList<>();
 
-        private Optional<DomainDmarcNext> next = Optional.empty();
+        private OptionalNullable<DomainDmarcNext> next = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> policySince = Optional.empty();
+        private OptionalNullable<OffsetDateTime> policySince = OptionalNullable.absent();
 
-        private Optional<String> inheritedFrom = Optional.empty();
+        private OptionalNullable<String> inheritedFrom = OptionalNullable.absent();
 
-        private Optional<DomainDmarcPolicy> policy = Optional.empty();
+        private OptionalNullable<DomainDmarcPolicy> policy = OptionalNullable.absent();
 
-        private Optional<DmarcPublishedRecord> record = Optional.empty();
+        private OptionalNullable<DmarcPublishedRecord> record = OptionalNullable.absent();
 
-        private Optional<String> reportAddress = Optional.empty();
+        private OptionalNullable<String> reportAddress = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -623,11 +641,25 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage next(Nullable<DomainDmarcNext> next) {
             if (next.isNull()) {
-                this.next = null;
+                this.next = OptionalNullable.ofNull();
             } else if (next.isEmpty()) {
-                this.next = Optional.empty();
+                this.next = OptionalNullable.absent();
             } else {
-                this.next = Optional.of(next.get());
+                this.next = OptionalNullable.of(next.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The next step: <code>publish</code> a first record, <code>add_reporting</code> (send reports to coss.com), <code>complete_rollout</code> (drop <code>pct</code>/<code>t=y</code>) or <code>tighten</code> to the next policy. <code>null</code> at <code>p=reject</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage next(Optional<DomainDmarcNext> next) {
+            if (next.isPresent()) {
+                this.next = OptionalNullable.of(next.get());
+            } else {
+                this.next = OptionalNullable.absent();
             }
             return this;
         }
@@ -638,7 +670,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         public _FinalStage next(DomainDmarcNext next) {
-            this.next = Optional.ofNullable(next);
+            this.next = OptionalNullable.of(next);
             return this;
         }
 
@@ -647,7 +679,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         @JsonSetter(value = "next", nulls = Nulls.SKIP)
-        public _FinalStage next(Optional<DomainDmarcNext> next) {
+        public _FinalStage next(OptionalNullable<DomainDmarcNext> next) {
             this.next = next;
             return this;
         }
@@ -659,11 +691,25 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage policySince(Nullable<OffsetDateTime> policySince) {
             if (policySince.isNull()) {
-                this.policySince = null;
+                this.policySince = OptionalNullable.ofNull();
             } else if (policySince.isEmpty()) {
-                this.policySince = Optional.empty();
+                this.policySince = OptionalNullable.absent();
             } else {
-                this.policySince = Optional.of(policySince.get());
+                this.policySince = OptionalNullable.of(policySince.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When a DNS check first saw the current policy.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage policySince(Optional<OffsetDateTime> policySince) {
+            if (policySince.isPresent()) {
+                this.policySince = OptionalNullable.of(policySince.get());
+            } else {
+                this.policySince = OptionalNullable.absent();
             }
             return this;
         }
@@ -674,7 +720,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         public _FinalStage policySince(OffsetDateTime policySince) {
-            this.policySince = Optional.ofNullable(policySince);
+            this.policySince = OptionalNullable.of(policySince);
             return this;
         }
 
@@ -683,7 +729,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         @JsonSetter(value = "policy_since", nulls = Nulls.SKIP)
-        public _FinalStage policySince(Optional<OffsetDateTime> policySince) {
+        public _FinalStage policySince(OptionalNullable<OffsetDateTime> policySince) {
             this.policySince = policySince;
             return this;
         }
@@ -695,11 +741,25 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage inheritedFrom(Nullable<String> inheritedFrom) {
             if (inheritedFrom.isNull()) {
-                this.inheritedFrom = null;
+                this.inheritedFrom = OptionalNullable.ofNull();
             } else if (inheritedFrom.isEmpty()) {
-                this.inheritedFrom = Optional.empty();
+                this.inheritedFrom = OptionalNullable.absent();
             } else {
-                this.inheritedFrom = Optional.of(inheritedFrom.get());
+                this.inheritedFrom = OptionalNullable.of(inheritedFrom.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The organizational domain whose DMARC record applies, when this domain publishes none of its own.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage inheritedFrom(Optional<String> inheritedFrom) {
+            if (inheritedFrom.isPresent()) {
+                this.inheritedFrom = OptionalNullable.of(inheritedFrom.get());
+            } else {
+                this.inheritedFrom = OptionalNullable.absent();
             }
             return this;
         }
@@ -710,7 +770,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         public _FinalStage inheritedFrom(String inheritedFrom) {
-            this.inheritedFrom = Optional.ofNullable(inheritedFrom);
+            this.inheritedFrom = OptionalNullable.of(inheritedFrom);
             return this;
         }
 
@@ -719,7 +779,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         @JsonSetter(value = "inherited_from", nulls = Nulls.SKIP)
-        public _FinalStage inheritedFrom(Optional<String> inheritedFrom) {
+        public _FinalStage inheritedFrom(OptionalNullable<String> inheritedFrom) {
             this.inheritedFrom = inheritedFrom;
             return this;
         }
@@ -731,11 +791,25 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage policy(Nullable<DomainDmarcPolicy> policy) {
             if (policy.isNull()) {
-                this.policy = null;
+                this.policy = OptionalNullable.ofNull();
             } else if (policy.isEmpty()) {
-                this.policy = Optional.empty();
+                this.policy = OptionalNullable.absent();
             } else {
-                this.policy = Optional.of(policy.get());
+                this.policy = OptionalNullable.of(policy.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The policy receivers apply: the record's <code>p</code> (<code>none</code> when it has none), or for a subdomain without a record of its own, its organizational domain's <code>sp</code> (else <code>p</code>).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage policy(Optional<DomainDmarcPolicy> policy) {
+            if (policy.isPresent()) {
+                this.policy = OptionalNullable.of(policy.get());
+            } else {
+                this.policy = OptionalNullable.absent();
             }
             return this;
         }
@@ -746,7 +820,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         public _FinalStage policy(DomainDmarcPolicy policy) {
-            this.policy = Optional.ofNullable(policy);
+            this.policy = OptionalNullable.of(policy);
             return this;
         }
 
@@ -755,7 +829,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         @JsonSetter(value = "policy", nulls = Nulls.SKIP)
-        public _FinalStage policy(Optional<DomainDmarcPolicy> policy) {
+        public _FinalStage policy(OptionalNullable<DomainDmarcPolicy> policy) {
             this.policy = policy;
             return this;
         }
@@ -763,24 +837,34 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage record(Nullable<DmarcPublishedRecord> record) {
             if (record.isNull()) {
-                this.record = null;
+                this.record = OptionalNullable.ofNull();
             } else if (record.isEmpty()) {
-                this.record = Optional.empty();
+                this.record = OptionalNullable.absent();
             } else {
-                this.record = Optional.of(record.get());
+                this.record = OptionalNullable.of(record.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage record(Optional<DmarcPublishedRecord> record) {
+            if (record.isPresent()) {
+                this.record = OptionalNullable.of(record.get());
+            } else {
+                this.record = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage record(DmarcPublishedRecord record) {
-            this.record = Optional.ofNullable(record);
+            this.record = OptionalNullable.of(record);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "record", nulls = Nulls.SKIP)
-        public _FinalStage record(Optional<DmarcPublishedRecord> record) {
+        public _FinalStage record(OptionalNullable<DmarcPublishedRecord> record) {
             this.record = record;
             return this;
         }
@@ -792,11 +876,25 @@ public final class DomainDmarc {
         @java.lang.Override
         public _FinalStage reportAddress(Nullable<String> reportAddress) {
             if (reportAddress.isNull()) {
-                this.reportAddress = null;
+                this.reportAddress = OptionalNullable.ofNull();
             } else if (reportAddress.isEmpty()) {
-                this.reportAddress = Optional.empty();
+                this.reportAddress = OptionalNullable.absent();
             } else {
-                this.reportAddress = Optional.of(reportAddress.get());
+                this.reportAddress = OptionalNullable.of(reportAddress.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Where the domain's DMARC aggregate reports go (<code>rua=mailto:…</code>). <code>null</code> when this deployment doesn't receive email.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage reportAddress(Optional<String> reportAddress) {
+            if (reportAddress.isPresent()) {
+                this.reportAddress = OptionalNullable.of(reportAddress.get());
+            } else {
+                this.reportAddress = OptionalNullable.absent();
             }
             return this;
         }
@@ -807,7 +905,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         public _FinalStage reportAddress(String reportAddress) {
-            this.reportAddress = Optional.ofNullable(reportAddress);
+            this.reportAddress = OptionalNullable.of(reportAddress);
             return this;
         }
 
@@ -816,7 +914,7 @@ public final class DomainDmarc {
          */
         @java.lang.Override
         @JsonSetter(value = "report_address", nulls = Nulls.SKIP)
-        public _FinalStage reportAddress(Optional<String> reportAddress) {
+        public _FinalStage reportAddress(OptionalNullable<String> reportAddress) {
             this.reportAddress = reportAddress;
             return this;
         }

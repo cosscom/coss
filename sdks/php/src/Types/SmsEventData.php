@@ -36,8 +36,17 @@ class SmsEventData extends JsonSerializableType
         array $values = [],
     ) {
         $this->failure = $values['failure'] ?? null;
+        if (array_key_exists('failure', $values)) {
+            $this->_setField('failure');
+        }
         $this->providerErrorCode = $values['providerErrorCode'] ?? null;
+        if (array_key_exists('providerErrorCode', $values)) {
+            $this->_setField('providerErrorCode');
+        }
         $this->suppression = $values['suppression'] ?? null;
+        if (array_key_exists('suppression', $values)) {
+            $this->_setField('suppression');
+        }
     }
 
     /**

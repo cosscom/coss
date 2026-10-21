@@ -13,7 +13,10 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "description": null,
+              "rate_limit_per_second": null
+            }
             """;
 
         const string mockResponse = """
@@ -92,7 +95,12 @@ public class UpdateTest : BaseMockServerTest
               "filter_types": [
                 "invoice.paid"
               ],
+              "rate_limit_per_second": null,
               "enabled": true,
+              "disabled_reason": null,
+              "disabled_at": null,
+              "failing_since": null,
+              "previous_secret_expires_at": null,
               "metadata": {
                 "key": "value"
               },

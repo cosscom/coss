@@ -121,13 +121,25 @@ class Credit extends JsonSerializableType
         $this->amount = $values['amount'];
         $this->remaining = $values['remaining'];
         $this->meter = $values['meter'] ?? null;
+        if (array_key_exists('meter', $values)) {
+            $this->_setField('meter');
+        }
         $this->meters = $values['meters'] ?? null;
+        if (array_key_exists('meters', $values)) {
+            $this->_setField('meters');
+        }
         $this->appliesTo = $values['appliesTo'];
         $this->source = $values['source'];
         $this->description = $values['description'];
         $this->effectiveAt = $values['effectiveAt'];
         $this->expiresAt = $values['expiresAt'] ?? null;
+        if (array_key_exists('expiresAt', $values)) {
+            $this->_setField('expiresAt');
+        }
         $this->voidedAt = $values['voidedAt'] ?? null;
+        if (array_key_exists('voidedAt', $values)) {
+            $this->_setField('voidedAt');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

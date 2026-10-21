@@ -38,7 +38,16 @@ class PollWebhookListenerRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->acks = $values['acks'] ?? null;
+        if (array_key_exists('acks', $values)) {
+            $this->_setField('acks');
+        }
         $this->waitMs = $values['waitMs'] ?? null;
+        if (array_key_exists('waitMs', $values)) {
+            $this->_setField('waitMs');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
     }
 }

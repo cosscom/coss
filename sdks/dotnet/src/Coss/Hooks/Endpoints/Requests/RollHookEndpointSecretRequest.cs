@@ -21,6 +21,7 @@ public record RollHookEndpointSecretRequest
     /// <summary>
     /// Seconds the current secret keeps signing next to the new one. Default 86400 (a day), at most 604800 (a week); `0` stops it immediately.
     /// </summary>
+    [Optional]
     [JsonPropertyName("previous_secret_expires_in")]
     public int? PreviousSecretExpiresIn { get; set; }
 

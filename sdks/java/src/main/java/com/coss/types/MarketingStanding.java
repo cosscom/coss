@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,16 +27,16 @@ import org.jetbrains.annotations.NotNull;
 public final class MarketingStanding {
     private final MarketingStandingStatus status;
 
-    private final Optional<String> reason;
+    private final OptionalNullable<String> reason;
 
-    private final Optional<OffsetDateTime> pausedAt;
+    private final OptionalNullable<OffsetDateTime> pausedAt;
 
     private final Map<String, Object> additionalProperties;
 
     private MarketingStanding(
             MarketingStandingStatus status,
-            Optional<String> reason,
-            Optional<OffsetDateTime> pausedAt,
+            OptionalNullable<String> reason,
+            OptionalNullable<OffsetDateTime> pausedAt,
             Map<String, Object> additionalProperties) {
         this.status = status;
         this.reason = reason;
@@ -55,31 +55,33 @@ public final class MarketingStanding {
     /**
      * @return The trigger behind a pause.
      */
-    @JsonIgnore
-    public Optional<String> getReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("reason")
+    public OptionalNullable<String> getReason() {
         if (reason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return reason;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPausedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("paused_at")
+    public OptionalNullable<OffsetDateTime> getPausedAt() {
         if (pausedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pausedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("reason")
-    private Optional<String> _getReason() {
+    private OptionalNullable<String> _getReason() {
         return reason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("paused_at")
-    private Optional<OffsetDateTime> _getPausedAt() {
+    private OptionalNullable<OffsetDateTime> _getPausedAt() {
         return pausedAt;
     }
 
@@ -131,15 +133,19 @@ public final class MarketingStanding {
         /**
          * <p>The trigger behind a pause.</p>
          */
-        _FinalStage reason(Optional<String> reason);
+        _FinalStage reason(OptionalNullable<String> reason);
 
         _FinalStage reason(String reason);
 
+        _FinalStage reason(Optional<String> reason);
+
         _FinalStage reason(Nullable<String> reason);
 
-        _FinalStage pausedAt(Optional<OffsetDateTime> pausedAt);
+        _FinalStage pausedAt(OptionalNullable<OffsetDateTime> pausedAt);
 
         _FinalStage pausedAt(OffsetDateTime pausedAt);
+
+        _FinalStage pausedAt(Optional<OffsetDateTime> pausedAt);
 
         _FinalStage pausedAt(Nullable<OffsetDateTime> pausedAt);
     }
@@ -148,9 +154,9 @@ public final class MarketingStanding {
     public static final class Builder implements StatusStage, _FinalStage {
         private MarketingStandingStatus status;
 
-        private Optional<OffsetDateTime> pausedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> pausedAt = OptionalNullable.absent();
 
-        private Optional<String> reason = Optional.empty();
+        private OptionalNullable<String> reason = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -179,24 +185,34 @@ public final class MarketingStanding {
         @java.lang.Override
         public _FinalStage pausedAt(Nullable<OffsetDateTime> pausedAt) {
             if (pausedAt.isNull()) {
-                this.pausedAt = null;
+                this.pausedAt = OptionalNullable.ofNull();
             } else if (pausedAt.isEmpty()) {
-                this.pausedAt = Optional.empty();
+                this.pausedAt = OptionalNullable.absent();
             } else {
-                this.pausedAt = Optional.of(pausedAt.get());
+                this.pausedAt = OptionalNullable.of(pausedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage pausedAt(Optional<OffsetDateTime> pausedAt) {
+            if (pausedAt.isPresent()) {
+                this.pausedAt = OptionalNullable.of(pausedAt.get());
+            } else {
+                this.pausedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage pausedAt(OffsetDateTime pausedAt) {
-            this.pausedAt = Optional.ofNullable(pausedAt);
+            this.pausedAt = OptionalNullable.of(pausedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "paused_at", nulls = Nulls.SKIP)
-        public _FinalStage pausedAt(Optional<OffsetDateTime> pausedAt) {
+        public _FinalStage pausedAt(OptionalNullable<OffsetDateTime> pausedAt) {
             this.pausedAt = pausedAt;
             return this;
         }
@@ -208,11 +224,25 @@ public final class MarketingStanding {
         @java.lang.Override
         public _FinalStage reason(Nullable<String> reason) {
             if (reason.isNull()) {
-                this.reason = null;
+                this.reason = OptionalNullable.ofNull();
             } else if (reason.isEmpty()) {
-                this.reason = Optional.empty();
+                this.reason = OptionalNullable.absent();
             } else {
-                this.reason = Optional.of(reason.get());
+                this.reason = OptionalNullable.of(reason.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The trigger behind a pause.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage reason(Optional<String> reason) {
+            if (reason.isPresent()) {
+                this.reason = OptionalNullable.of(reason.get());
+            } else {
+                this.reason = OptionalNullable.absent();
             }
             return this;
         }
@@ -223,7 +253,7 @@ public final class MarketingStanding {
          */
         @java.lang.Override
         public _FinalStage reason(String reason) {
-            this.reason = Optional.ofNullable(reason);
+            this.reason = OptionalNullable.of(reason);
             return this;
         }
 
@@ -232,7 +262,7 @@ public final class MarketingStanding {
          */
         @java.lang.Override
         @JsonSetter(value = "reason", nulls = Nulls.SKIP)
-        public _FinalStage reason(Optional<String> reason) {
+        public _FinalStage reason(OptionalNullable<String> reason) {
             this.reason = reason;
             return this;
         }

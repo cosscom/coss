@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,44 +23,48 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = EmailWebhookEventDataComplaint.Builder.class)
 public final class EmailWebhookEventDataComplaint {
-    private final Optional<String> feedbackType;
+    private final OptionalNullable<String> feedbackType;
 
-    private final Optional<String> subType;
+    private final OptionalNullable<String> subType;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailWebhookEventDataComplaint(
-            Optional<String> feedbackType, Optional<String> subType, Map<String, Object> additionalProperties) {
+            OptionalNullable<String> feedbackType,
+            OptionalNullable<String> subType,
+            Map<String, Object> additionalProperties) {
         this.feedbackType = feedbackType;
         this.subType = subType;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getFeedbackType() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("feedback_type")
+    public OptionalNullable<String> getFeedbackType() {
         if (feedbackType == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return feedbackType;
     }
 
-    @JsonIgnore
-    public Optional<String> getSubType() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sub_type")
+    public OptionalNullable<String> getSubType() {
         if (subType == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return subType;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("feedback_type")
-    private Optional<String> _getFeedbackType() {
+    private OptionalNullable<String> _getFeedbackType() {
         return feedbackType;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sub_type")
-    private Optional<String> _getSubType() {
+    private OptionalNullable<String> _getSubType() {
         return subType;
     }
 
@@ -95,9 +99,9 @@ public final class EmailWebhookEventDataComplaint {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> feedbackType = Optional.empty();
+        private OptionalNullable<String> feedbackType = OptionalNullable.absent();
 
-        private Optional<String> subType = Optional.empty();
+        private OptionalNullable<String> subType = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -111,45 +115,63 @@ public final class EmailWebhookEventDataComplaint {
         }
 
         @JsonSetter(value = "feedback_type", nulls = Nulls.SKIP)
-        public Builder feedbackType(Optional<String> feedbackType) {
+        public Builder feedbackType(OptionalNullable<String> feedbackType) {
             this.feedbackType = feedbackType;
             return this;
         }
 
         public Builder feedbackType(String feedbackType) {
-            this.feedbackType = Optional.ofNullable(feedbackType);
+            this.feedbackType = OptionalNullable.of(feedbackType);
+            return this;
+        }
+
+        public Builder feedbackType(Optional<String> feedbackType) {
+            if (feedbackType.isPresent()) {
+                this.feedbackType = OptionalNullable.of(feedbackType.get());
+            } else {
+                this.feedbackType = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder feedbackType(Nullable<String> feedbackType) {
             if (feedbackType.isNull()) {
-                this.feedbackType = null;
+                this.feedbackType = OptionalNullable.ofNull();
             } else if (feedbackType.isEmpty()) {
-                this.feedbackType = Optional.empty();
+                this.feedbackType = OptionalNullable.absent();
             } else {
-                this.feedbackType = Optional.of(feedbackType.get());
+                this.feedbackType = OptionalNullable.of(feedbackType.get());
             }
             return this;
         }
 
         @JsonSetter(value = "sub_type", nulls = Nulls.SKIP)
-        public Builder subType(Optional<String> subType) {
+        public Builder subType(OptionalNullable<String> subType) {
             this.subType = subType;
             return this;
         }
 
         public Builder subType(String subType) {
-            this.subType = Optional.ofNullable(subType);
+            this.subType = OptionalNullable.of(subType);
+            return this;
+        }
+
+        public Builder subType(Optional<String> subType) {
+            if (subType.isPresent()) {
+                this.subType = OptionalNullable.of(subType.get());
+            } else {
+                this.subType = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder subType(Nullable<String> subType) {
             if (subType.isNull()) {
-                this.subType = null;
+                this.subType = OptionalNullable.ofNull();
             } else if (subType.isEmpty()) {
-                this.subType = Optional.empty();
+                this.subType = OptionalNullable.absent();
             } else {
-                this.subType = Optional.of(subType.get());
+                this.subType = OptionalNullable.of(subType.get());
             }
             return this;
         }

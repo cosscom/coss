@@ -20,6 +20,7 @@ public record HookApplication : IJsonOnDeserialized
     /// <summary>
     /// Your own id for it (e.g. your customer's id), unique in the environment. Every path that takes an application accepts its `id` or its `uid`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("uid")]
     public string? Uid { get; set; }
 

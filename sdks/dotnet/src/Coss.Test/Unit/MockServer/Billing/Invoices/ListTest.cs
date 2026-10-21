@@ -120,6 +120,7 @@ public class ListTest : BaseMockServerTest
                   "due_at": "2026-11-01T00:20:00.000Z",
                   "finalized_at": "2026-11-01T00:20:00.000Z",
                   "paid_at": "2026-11-01T00:21:00.000Z",
+                  "voided_at": null,
                   "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
                   "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
                 }

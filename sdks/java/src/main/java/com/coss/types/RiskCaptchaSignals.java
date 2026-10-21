@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,11 +25,12 @@ import java.util.Optional;
 public final class RiskCaptchaSignals {
     private final boolean provided;
 
-    private final Optional<Boolean> passed;
+    private final OptionalNullable<Boolean> passed;
 
     private final Map<String, Object> additionalProperties;
 
-    private RiskCaptchaSignals(boolean provided, Optional<Boolean> passed, Map<String, Object> additionalProperties) {
+    private RiskCaptchaSignals(
+            boolean provided, OptionalNullable<Boolean> passed, Map<String, Object> additionalProperties) {
         this.provided = provided;
         this.passed = passed;
         this.additionalProperties = additionalProperties;
@@ -43,17 +44,18 @@ public final class RiskCaptchaSignals {
     /**
      * @return <code>null</code> when it couldn't be checked (no captcha configured, or the provider was unreachable).
      */
-    @JsonIgnore
-    public Optional<Boolean> getPassed() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("passed")
+    public OptionalNullable<Boolean> getPassed() {
         if (passed == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return passed;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("passed")
-    private Optional<Boolean> _getPassed() {
+    private OptionalNullable<Boolean> _getPassed() {
         return passed;
     }
 
@@ -102,9 +104,11 @@ public final class RiskCaptchaSignals {
         /**
          * <p><code>null</code> when it couldn't be checked (no captcha configured, or the provider was unreachable).</p>
          */
-        _FinalStage passed(Optional<Boolean> passed);
+        _FinalStage passed(OptionalNullable<Boolean> passed);
 
         _FinalStage passed(Boolean passed);
+
+        _FinalStage passed(Optional<Boolean> passed);
 
         _FinalStage passed(Nullable<Boolean> passed);
     }
@@ -113,7 +117,7 @@ public final class RiskCaptchaSignals {
     public static final class Builder implements ProvidedStage, _FinalStage {
         private boolean provided;
 
-        private Optional<Boolean> passed = Optional.empty();
+        private OptionalNullable<Boolean> passed = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -141,11 +145,25 @@ public final class RiskCaptchaSignals {
         @java.lang.Override
         public _FinalStage passed(Nullable<Boolean> passed) {
             if (passed.isNull()) {
-                this.passed = null;
+                this.passed = OptionalNullable.ofNull();
             } else if (passed.isEmpty()) {
-                this.passed = Optional.empty();
+                this.passed = OptionalNullable.absent();
             } else {
-                this.passed = Optional.of(passed.get());
+                this.passed = OptionalNullable.of(passed.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> when it couldn't be checked (no captcha configured, or the provider was unreachable).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage passed(Optional<Boolean> passed) {
+            if (passed.isPresent()) {
+                this.passed = OptionalNullable.of(passed.get());
+            } else {
+                this.passed = OptionalNullable.absent();
             }
             return this;
         }
@@ -156,7 +174,7 @@ public final class RiskCaptchaSignals {
          */
         @java.lang.Override
         public _FinalStage passed(Boolean passed) {
-            this.passed = Optional.ofNullable(passed);
+            this.passed = OptionalNullable.of(passed);
             return this;
         }
 
@@ -165,7 +183,7 @@ public final class RiskCaptchaSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "passed", nulls = Nulls.SKIP)
-        public _FinalStage passed(Optional<Boolean> passed) {
+        public _FinalStage passed(OptionalNullable<Boolean> passed) {
             this.passed = passed;
             return this;
         }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,22 +23,24 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = RiskAssessmentUser.Builder.class)
 public final class RiskAssessmentUser {
-    private final Optional<String> id;
+    private final OptionalNullable<String> id;
 
-    private final Optional<String> email;
+    private final OptionalNullable<String> email;
 
     private final Map<String, Object> additionalProperties;
 
-    private RiskAssessmentUser(Optional<String> id, Optional<String> email, Map<String, Object> additionalProperties) {
+    private RiskAssessmentUser(
+            OptionalNullable<String> id, OptionalNullable<String> email, Map<String, Object> additionalProperties) {
         this.id = id;
         this.email = email;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("id")
+    public OptionalNullable<String> getId() {
         if (id == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return id;
     }
@@ -46,23 +48,24 @@ public final class RiskAssessmentUser {
     /**
      * @return <code>null</code> once removed (90 days after the assessment) or when none was given.
      */
-    @JsonIgnore
-    public Optional<String> getEmail() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email")
+    public OptionalNullable<String> getEmail() {
         if (email == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return email;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("id")
-    private Optional<String> _getId() {
+    private OptionalNullable<String> _getId() {
         return id;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email")
-    private Optional<String> _getEmail() {
+    private OptionalNullable<String> _getEmail() {
         return email;
     }
 
@@ -97,9 +100,9 @@ public final class RiskAssessmentUser {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> id = Optional.empty();
+        private OptionalNullable<String> id = OptionalNullable.absent();
 
-        private Optional<String> email = Optional.empty();
+        private OptionalNullable<String> email = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -113,23 +116,32 @@ public final class RiskAssessmentUser {
         }
 
         @JsonSetter(value = "id", nulls = Nulls.SKIP)
-        public Builder id(Optional<String> id) {
+        public Builder id(OptionalNullable<String> id) {
             this.id = id;
             return this;
         }
 
         public Builder id(String id) {
-            this.id = Optional.ofNullable(id);
+            this.id = OptionalNullable.of(id);
+            return this;
+        }
+
+        public Builder id(Optional<String> id) {
+            if (id.isPresent()) {
+                this.id = OptionalNullable.of(id.get());
+            } else {
+                this.id = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder id(Nullable<String> id) {
             if (id.isNull()) {
-                this.id = null;
+                this.id = OptionalNullable.ofNull();
             } else if (id.isEmpty()) {
-                this.id = Optional.empty();
+                this.id = OptionalNullable.absent();
             } else {
-                this.id = Optional.of(id.get());
+                this.id = OptionalNullable.of(id.get());
             }
             return this;
         }
@@ -138,23 +150,32 @@ public final class RiskAssessmentUser {
          * <p><code>null</code> once removed (90 days after the assessment) or when none was given.</p>
          */
         @JsonSetter(value = "email", nulls = Nulls.SKIP)
-        public Builder email(Optional<String> email) {
+        public Builder email(OptionalNullable<String> email) {
             this.email = email;
             return this;
         }
 
         public Builder email(String email) {
-            this.email = Optional.ofNullable(email);
+            this.email = OptionalNullable.of(email);
+            return this;
+        }
+
+        public Builder email(Optional<String> email) {
+            if (email.isPresent()) {
+                this.email = OptionalNullable.of(email.get());
+            } else {
+                this.email = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder email(Nullable<String> email) {
             if (email.isNull()) {
-                this.email = null;
+                this.email = OptionalNullable.ofNull();
             } else if (email.isEmpty()) {
-                this.email = Optional.empty();
+                this.email = OptionalNullable.absent();
             } else {
-                this.email = Optional.of(email.get());
+                this.email = OptionalNullable.of(email.get());
             }
             return this;
         }

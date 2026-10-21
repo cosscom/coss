@@ -64,7 +64,8 @@ public class GetTopicsTest : BaseMockServerTest
                 {
                   "topic": "newsletter",
                   "name": "Newsletter",
-                  "subscribed": true
+                  "subscribed": true,
+                  "choice": null
                 },
                 {
                   "topic": "product",

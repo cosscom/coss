@@ -119,15 +119,27 @@ class RiskAssessment extends JsonSerializableType
         $this->id = $values['id'];
         $this->event = $values['event'];
         $this->eventName = $values['eventName'] ?? null;
+        if (array_key_exists('eventName', $values)) {
+            $this->_setField('eventName');
+        }
         $this->decision = $values['decision'];
         $this->score = $values['score'];
         $this->reasons = $values['reasons'];
         $this->signals = $values['signals'];
         $this->user = $values['user'];
         $this->ip = $values['ip'] ?? null;
+        if (array_key_exists('ip', $values)) {
+            $this->_setField('ip');
+        }
         $this->degraded = $values['degraded'];
         $this->outcome = $values['outcome'] ?? null;
+        if (array_key_exists('outcome', $values)) {
+            $this->_setField('outcome');
+        }
         $this->reviewStatus = $values['reviewStatus'] ?? null;
+        if (array_key_exists('reviewStatus', $values)) {
+            $this->_setField('reviewStatus');
+        }
         $this->createdAt = $values['createdAt'];
     }
 

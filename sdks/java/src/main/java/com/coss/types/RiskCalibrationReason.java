@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,13 +32,13 @@ public final class RiskCalibrationReason {
 
     private final long legitimate;
 
-    private final Optional<Double> precision;
+    private final OptionalNullable<Double> precision;
 
     private final double defaultWeight;
 
     private final double weight;
 
-    private final Optional<Double> suggestedWeight;
+    private final OptionalNullable<Double> suggestedWeight;
 
     private final Map<String, Object> additionalProperties;
 
@@ -47,10 +47,10 @@ public final class RiskCalibrationReason {
             long fired,
             long fraud,
             long legitimate,
-            Optional<Double> precision,
+            OptionalNullable<Double> precision,
             double defaultWeight,
             double weight,
-            Optional<Double> suggestedWeight,
+            OptionalNullable<Double> suggestedWeight,
             Map<String, Object> additionalProperties) {
         this.code = code;
         this.fired = fired;
@@ -95,10 +95,11 @@ public final class RiskCalibrationReason {
     /**
      * @return <code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.
      */
-    @JsonIgnore
-    public Optional<Double> getPrecision() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("precision")
+    public OptionalNullable<Double> getPrecision() {
         if (precision == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return precision;
     }
@@ -119,23 +120,24 @@ public final class RiskCalibrationReason {
     /**
      * @return The weight feedback supports: its precision, pulled toward the default while there is little feedback. <code>null</code> below 20 assessments with feedback.
      */
-    @JsonIgnore
-    public Optional<Double> getSuggestedWeight() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("suggested_weight")
+    public OptionalNullable<Double> getSuggestedWeight() {
         if (suggestedWeight == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return suggestedWeight;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("precision")
-    private Optional<Double> _getPrecision() {
+    private OptionalNullable<Double> _getPrecision() {
         return precision;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("suggested_weight")
-    private Optional<Double> _getSuggestedWeight() {
+    private OptionalNullable<Double> _getSuggestedWeight() {
         return suggestedWeight;
     }
 
@@ -231,18 +233,22 @@ public final class RiskCalibrationReason {
         /**
          * <p><code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.</p>
          */
-        _FinalStage precision(Optional<Double> precision);
+        _FinalStage precision(OptionalNullable<Double> precision);
 
         _FinalStage precision(Double precision);
+
+        _FinalStage precision(Optional<Double> precision);
 
         _FinalStage precision(Nullable<Double> precision);
 
         /**
          * <p>The weight feedback supports: its precision, pulled toward the default while there is little feedback. <code>null</code> below 20 assessments with feedback.</p>
          */
-        _FinalStage suggestedWeight(Optional<Double> suggestedWeight);
+        _FinalStage suggestedWeight(OptionalNullable<Double> suggestedWeight);
 
         _FinalStage suggestedWeight(Double suggestedWeight);
+
+        _FinalStage suggestedWeight(Optional<Double> suggestedWeight);
 
         _FinalStage suggestedWeight(Nullable<Double> suggestedWeight);
     }
@@ -268,9 +274,9 @@ public final class RiskCalibrationReason {
 
         private double weight;
 
-        private Optional<Double> suggestedWeight = Optional.empty();
+        private OptionalNullable<Double> suggestedWeight = OptionalNullable.absent();
 
-        private Optional<Double> precision = Optional.empty();
+        private OptionalNullable<Double> precision = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -355,11 +361,25 @@ public final class RiskCalibrationReason {
         @java.lang.Override
         public _FinalStage suggestedWeight(Nullable<Double> suggestedWeight) {
             if (suggestedWeight.isNull()) {
-                this.suggestedWeight = null;
+                this.suggestedWeight = OptionalNullable.ofNull();
             } else if (suggestedWeight.isEmpty()) {
-                this.suggestedWeight = Optional.empty();
+                this.suggestedWeight = OptionalNullable.absent();
             } else {
-                this.suggestedWeight = Optional.of(suggestedWeight.get());
+                this.suggestedWeight = OptionalNullable.of(suggestedWeight.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The weight feedback supports: its precision, pulled toward the default while there is little feedback. <code>null</code> below 20 assessments with feedback.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage suggestedWeight(Optional<Double> suggestedWeight) {
+            if (suggestedWeight.isPresent()) {
+                this.suggestedWeight = OptionalNullable.of(suggestedWeight.get());
+            } else {
+                this.suggestedWeight = OptionalNullable.absent();
             }
             return this;
         }
@@ -370,7 +390,7 @@ public final class RiskCalibrationReason {
          */
         @java.lang.Override
         public _FinalStage suggestedWeight(Double suggestedWeight) {
-            this.suggestedWeight = Optional.ofNullable(suggestedWeight);
+            this.suggestedWeight = OptionalNullable.of(suggestedWeight);
             return this;
         }
 
@@ -379,7 +399,7 @@ public final class RiskCalibrationReason {
          */
         @java.lang.Override
         @JsonSetter(value = "suggested_weight", nulls = Nulls.SKIP)
-        public _FinalStage suggestedWeight(Optional<Double> suggestedWeight) {
+        public _FinalStage suggestedWeight(OptionalNullable<Double> suggestedWeight) {
             this.suggestedWeight = suggestedWeight;
             return this;
         }
@@ -391,11 +411,25 @@ public final class RiskCalibrationReason {
         @java.lang.Override
         public _FinalStage precision(Nullable<Double> precision) {
             if (precision.isNull()) {
-                this.precision = null;
+                this.precision = OptionalNullable.ofNull();
             } else if (precision.isEmpty()) {
-                this.precision = Optional.empty();
+                this.precision = OptionalNullable.absent();
             } else {
-                this.precision = Optional.of(precision.get());
+                this.precision = OptionalNullable.of(precision.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage precision(Optional<Double> precision) {
+            if (precision.isPresent()) {
+                this.precision = OptionalNullable.of(precision.get());
+            } else {
+                this.precision = OptionalNullable.absent();
             }
             return this;
         }
@@ -406,7 +440,7 @@ public final class RiskCalibrationReason {
          */
         @java.lang.Override
         public _FinalStage precision(Double precision) {
-            this.precision = Optional.ofNullable(precision);
+            this.precision = OptionalNullable.of(precision);
             return this;
         }
 
@@ -415,7 +449,7 @@ public final class RiskCalibrationReason {
          */
         @java.lang.Override
         @JsonSetter(value = "precision", nulls = Nulls.SKIP)
-        public _FinalStage precision(Optional<Double> precision) {
+        public _FinalStage precision(OptionalNullable<Double> precision) {
             this.precision = precision;
             return this;
         }

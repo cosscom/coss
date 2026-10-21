@@ -29,7 +29,13 @@ class CreateRiskAssessmentRequestUser extends JsonSerializableType
         array $values = [],
     ) {
         $this->id = $values['id'] ?? null;
+        if (array_key_exists('id', $values)) {
+            $this->_setField('id');
+        }
         $this->email = $values['email'] ?? null;
+        if (array_key_exists('email', $values)) {
+            $this->_setField('email');
+        }
     }
 
     /**

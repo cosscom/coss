@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,15 +32,15 @@ public final class InvoiceLine {
 
     private final String description;
 
-    private final Optional<InvoiceLineMeter> meter;
+    private final OptionalNullable<InvoiceLineMeter> meter;
 
-    private final Optional<String> dimension;
+    private final OptionalNullable<String> dimension;
 
-    private final Optional<Long> quantity;
+    private final OptionalNullable<Long> quantity;
 
-    private final Optional<Long> includedQuantity;
+    private final OptionalNullable<Long> includedQuantity;
 
-    private final Optional<String> unitPrice;
+    private final OptionalNullable<String> unitPrice;
 
     private final long amount;
 
@@ -53,11 +53,11 @@ public final class InvoiceLine {
             String id,
             InvoiceLineKind kind,
             String description,
-            Optional<InvoiceLineMeter> meter,
-            Optional<String> dimension,
-            Optional<Long> quantity,
-            Optional<Long> includedQuantity,
-            Optional<String> unitPrice,
+            OptionalNullable<InvoiceLineMeter> meter,
+            OptionalNullable<String> dimension,
+            OptionalNullable<Long> quantity,
+            OptionalNullable<Long> includedQuantity,
+            OptionalNullable<String> unitPrice,
             long amount,
             InvoiceLinePeriod period,
             Map<String, Object> additionalProperties) {
@@ -98,26 +98,29 @@ public final class InvoiceLine {
     /**
      * @return What is counted, e.g. <code>email.recipients</code>.
      */
-    @JsonIgnore
-    public Optional<InvoiceLineMeter> getMeter() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("meter")
+    public OptionalNullable<InvoiceLineMeter> getMeter() {
         if (meter == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return meter;
     }
 
-    @JsonIgnore
-    public Optional<String> getDimension() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dimension")
+    public OptionalNullable<String> getDimension() {
         if (dimension == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dimension;
     }
 
-    @JsonIgnore
-    public Optional<Long> getQuantity() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("quantity")
+    public OptionalNullable<Long> getQuantity() {
         if (quantity == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return quantity;
     }
@@ -125,10 +128,11 @@ public final class InvoiceLine {
     /**
      * @return Units covered by an allowance or committed volume (not charged).
      */
-    @JsonIgnore
-    public Optional<Long> getIncludedQuantity() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("included_quantity")
+    public OptionalNullable<Long> getIncludedQuantity() {
         if (includedQuantity == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return includedQuantity;
     }
@@ -136,10 +140,11 @@ public final class InvoiceLine {
     /**
      * @return Dollars per unit, e.g. <code>0.0004</code>; <code>null</code> when the price varies by volume.
      */
-    @JsonIgnore
-    public Optional<String> getUnitPrice() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("unit_price")
+    public OptionalNullable<String> getUnitPrice() {
         if (unitPrice == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return unitPrice;
     }
@@ -159,31 +164,31 @@ public final class InvoiceLine {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("meter")
-    private Optional<InvoiceLineMeter> _getMeter() {
+    private OptionalNullable<InvoiceLineMeter> _getMeter() {
         return meter;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dimension")
-    private Optional<String> _getDimension() {
+    private OptionalNullable<String> _getDimension() {
         return dimension;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("quantity")
-    private Optional<Long> _getQuantity() {
+    private OptionalNullable<Long> _getQuantity() {
         return quantity;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("included_quantity")
-    private Optional<Long> _getIncludedQuantity() {
+    private OptionalNullable<Long> _getIncludedQuantity() {
         return includedQuantity;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("unit_price")
-    private Optional<String> _getUnitPrice() {
+    private OptionalNullable<String> _getUnitPrice() {
         return unitPrice;
     }
 
@@ -276,39 +281,49 @@ public final class InvoiceLine {
         /**
          * <p>What is counted, e.g. <code>email.recipients</code>.</p>
          */
-        _FinalStage meter(Optional<InvoiceLineMeter> meter);
+        _FinalStage meter(OptionalNullable<InvoiceLineMeter> meter);
 
         _FinalStage meter(InvoiceLineMeter meter);
 
+        _FinalStage meter(Optional<InvoiceLineMeter> meter);
+
         _FinalStage meter(Nullable<InvoiceLineMeter> meter);
 
-        _FinalStage dimension(Optional<String> dimension);
+        _FinalStage dimension(OptionalNullable<String> dimension);
 
         _FinalStage dimension(String dimension);
 
+        _FinalStage dimension(Optional<String> dimension);
+
         _FinalStage dimension(Nullable<String> dimension);
 
-        _FinalStage quantity(Optional<Long> quantity);
+        _FinalStage quantity(OptionalNullable<Long> quantity);
 
         _FinalStage quantity(Long quantity);
+
+        _FinalStage quantity(Optional<Long> quantity);
 
         _FinalStage quantity(Nullable<Long> quantity);
 
         /**
          * <p>Units covered by an allowance or committed volume (not charged).</p>
          */
-        _FinalStage includedQuantity(Optional<Long> includedQuantity);
+        _FinalStage includedQuantity(OptionalNullable<Long> includedQuantity);
 
         _FinalStage includedQuantity(Long includedQuantity);
+
+        _FinalStage includedQuantity(Optional<Long> includedQuantity);
 
         _FinalStage includedQuantity(Nullable<Long> includedQuantity);
 
         /**
          * <p>Dollars per unit, e.g. <code>0.0004</code>; <code>null</code> when the price varies by volume.</p>
          */
-        _FinalStage unitPrice(Optional<String> unitPrice);
+        _FinalStage unitPrice(OptionalNullable<String> unitPrice);
 
         _FinalStage unitPrice(String unitPrice);
+
+        _FinalStage unitPrice(Optional<String> unitPrice);
 
         _FinalStage unitPrice(Nullable<String> unitPrice);
     }
@@ -328,15 +343,15 @@ public final class InvoiceLine {
 
         private InvoiceLinePeriod period;
 
-        private Optional<String> unitPrice = Optional.empty();
+        private OptionalNullable<String> unitPrice = OptionalNullable.absent();
 
-        private Optional<Long> includedQuantity = Optional.empty();
+        private OptionalNullable<Long> includedQuantity = OptionalNullable.absent();
 
-        private Optional<Long> quantity = Optional.empty();
+        private OptionalNullable<Long> quantity = OptionalNullable.absent();
 
-        private Optional<String> dimension = Optional.empty();
+        private OptionalNullable<String> dimension = OptionalNullable.absent();
 
-        private Optional<InvoiceLineMeter> meter = Optional.empty();
+        private OptionalNullable<InvoiceLineMeter> meter = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -412,11 +427,25 @@ public final class InvoiceLine {
         @java.lang.Override
         public _FinalStage unitPrice(Nullable<String> unitPrice) {
             if (unitPrice.isNull()) {
-                this.unitPrice = null;
+                this.unitPrice = OptionalNullable.ofNull();
             } else if (unitPrice.isEmpty()) {
-                this.unitPrice = Optional.empty();
+                this.unitPrice = OptionalNullable.absent();
             } else {
-                this.unitPrice = Optional.of(unitPrice.get());
+                this.unitPrice = OptionalNullable.of(unitPrice.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Dollars per unit, e.g. <code>0.0004</code>; <code>null</code> when the price varies by volume.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage unitPrice(Optional<String> unitPrice) {
+            if (unitPrice.isPresent()) {
+                this.unitPrice = OptionalNullable.of(unitPrice.get());
+            } else {
+                this.unitPrice = OptionalNullable.absent();
             }
             return this;
         }
@@ -427,7 +456,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         public _FinalStage unitPrice(String unitPrice) {
-            this.unitPrice = Optional.ofNullable(unitPrice);
+            this.unitPrice = OptionalNullable.of(unitPrice);
             return this;
         }
 
@@ -436,7 +465,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         @JsonSetter(value = "unit_price", nulls = Nulls.SKIP)
-        public _FinalStage unitPrice(Optional<String> unitPrice) {
+        public _FinalStage unitPrice(OptionalNullable<String> unitPrice) {
             this.unitPrice = unitPrice;
             return this;
         }
@@ -448,11 +477,25 @@ public final class InvoiceLine {
         @java.lang.Override
         public _FinalStage includedQuantity(Nullable<Long> includedQuantity) {
             if (includedQuantity.isNull()) {
-                this.includedQuantity = null;
+                this.includedQuantity = OptionalNullable.ofNull();
             } else if (includedQuantity.isEmpty()) {
-                this.includedQuantity = Optional.empty();
+                this.includedQuantity = OptionalNullable.absent();
             } else {
-                this.includedQuantity = Optional.of(includedQuantity.get());
+                this.includedQuantity = OptionalNullable.of(includedQuantity.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Units covered by an allowance or committed volume (not charged).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage includedQuantity(Optional<Long> includedQuantity) {
+            if (includedQuantity.isPresent()) {
+                this.includedQuantity = OptionalNullable.of(includedQuantity.get());
+            } else {
+                this.includedQuantity = OptionalNullable.absent();
             }
             return this;
         }
@@ -463,7 +506,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         public _FinalStage includedQuantity(Long includedQuantity) {
-            this.includedQuantity = Optional.ofNullable(includedQuantity);
+            this.includedQuantity = OptionalNullable.of(includedQuantity);
             return this;
         }
 
@@ -472,7 +515,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         @JsonSetter(value = "included_quantity", nulls = Nulls.SKIP)
-        public _FinalStage includedQuantity(Optional<Long> includedQuantity) {
+        public _FinalStage includedQuantity(OptionalNullable<Long> includedQuantity) {
             this.includedQuantity = includedQuantity;
             return this;
         }
@@ -480,24 +523,34 @@ public final class InvoiceLine {
         @java.lang.Override
         public _FinalStage quantity(Nullable<Long> quantity) {
             if (quantity.isNull()) {
-                this.quantity = null;
+                this.quantity = OptionalNullable.ofNull();
             } else if (quantity.isEmpty()) {
-                this.quantity = Optional.empty();
+                this.quantity = OptionalNullable.absent();
             } else {
-                this.quantity = Optional.of(quantity.get());
+                this.quantity = OptionalNullable.of(quantity.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage quantity(Optional<Long> quantity) {
+            if (quantity.isPresent()) {
+                this.quantity = OptionalNullable.of(quantity.get());
+            } else {
+                this.quantity = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage quantity(Long quantity) {
-            this.quantity = Optional.ofNullable(quantity);
+            this.quantity = OptionalNullable.of(quantity);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "quantity", nulls = Nulls.SKIP)
-        public _FinalStage quantity(Optional<Long> quantity) {
+        public _FinalStage quantity(OptionalNullable<Long> quantity) {
             this.quantity = quantity;
             return this;
         }
@@ -505,24 +558,34 @@ public final class InvoiceLine {
         @java.lang.Override
         public _FinalStage dimension(Nullable<String> dimension) {
             if (dimension.isNull()) {
-                this.dimension = null;
+                this.dimension = OptionalNullable.ofNull();
             } else if (dimension.isEmpty()) {
-                this.dimension = Optional.empty();
+                this.dimension = OptionalNullable.absent();
             } else {
-                this.dimension = Optional.of(dimension.get());
+                this.dimension = OptionalNullable.of(dimension.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage dimension(Optional<String> dimension) {
+            if (dimension.isPresent()) {
+                this.dimension = OptionalNullable.of(dimension.get());
+            } else {
+                this.dimension = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage dimension(String dimension) {
-            this.dimension = Optional.ofNullable(dimension);
+            this.dimension = OptionalNullable.of(dimension);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "dimension", nulls = Nulls.SKIP)
-        public _FinalStage dimension(Optional<String> dimension) {
+        public _FinalStage dimension(OptionalNullable<String> dimension) {
             this.dimension = dimension;
             return this;
         }
@@ -534,11 +597,25 @@ public final class InvoiceLine {
         @java.lang.Override
         public _FinalStage meter(Nullable<InvoiceLineMeter> meter) {
             if (meter.isNull()) {
-                this.meter = null;
+                this.meter = OptionalNullable.ofNull();
             } else if (meter.isEmpty()) {
-                this.meter = Optional.empty();
+                this.meter = OptionalNullable.absent();
             } else {
-                this.meter = Optional.of(meter.get());
+                this.meter = OptionalNullable.of(meter.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What is counted, e.g. <code>email.recipients</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage meter(Optional<InvoiceLineMeter> meter) {
+            if (meter.isPresent()) {
+                this.meter = OptionalNullable.of(meter.get());
+            } else {
+                this.meter = OptionalNullable.absent();
             }
             return this;
         }
@@ -549,7 +626,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         public _FinalStage meter(InvoiceLineMeter meter) {
-            this.meter = Optional.ofNullable(meter);
+            this.meter = OptionalNullable.of(meter);
             return this;
         }
 
@@ -558,7 +635,7 @@ public final class InvoiceLine {
          */
         @java.lang.Override
         @JsonSetter(value = "meter", nulls = Nulls.SKIP)
-        public _FinalStage meter(Optional<InvoiceLineMeter> meter) {
+        public _FinalStage meter(OptionalNullable<InvoiceLineMeter> meter) {
             this.meter = meter;
             return this;
         }

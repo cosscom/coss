@@ -61,8 +61,17 @@ class CreateTopicRequest extends JsonSerializableType
         $this->key = $values['key'];
         $this->name = $values['name'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->defaultSubscription = $values['defaultSubscription'];
         $this->visibility = $values['visibility'] ?? null;
+        if (array_key_exists('visibility', $values)) {
+            $this->_setField('visibility');
+        }
         $this->position = $values['position'] ?? null;
+        if (array_key_exists('position', $values)) {
+            $this->_setField('position');
+        }
     }
 }

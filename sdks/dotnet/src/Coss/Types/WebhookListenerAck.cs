@@ -23,6 +23,7 @@ public record WebhookListenerAck : IJsonOnDeserialized
     /// <summary>
     /// What the local URL answered; `null` when nothing answered, or when the event was only printed.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("status_code")]
     public int? StatusCode { get; set; }
 
@@ -32,6 +33,7 @@ public record WebhookListenerAck : IJsonOnDeserialized
     /// <summary>
     /// Why forwarding failed (e.g. `connection refused`); `null` if it didn't.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 

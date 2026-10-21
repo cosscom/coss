@@ -13,7 +13,9 @@ public class CreateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "description": null
+            }
             """;
 
         const string mockResponse = """

@@ -69,11 +69,32 @@ class UpdateRiskRuleRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->enabled = $values['enabled'] ?? null;
+        if (array_key_exists('enabled', $values)) {
+            $this->_setField('enabled');
+        }
         $this->position = $values['position'] ?? null;
+        if (array_key_exists('position', $values)) {
+            $this->_setField('position');
+        }
         $this->events = $values['events'] ?? null;
+        if (array_key_exists('events', $values)) {
+            $this->_setField('events');
+        }
         $this->match = $values['match'] ?? null;
+        if (array_key_exists('match', $values)) {
+            $this->_setField('match');
+        }
         $this->conditions = $values['conditions'] ?? null;
+        if (array_key_exists('conditions', $values)) {
+            $this->_setField('conditions');
+        }
         $this->action = $values['action'] ?? null;
+        if (array_key_exists('action', $values)) {
+            $this->_setField('action');
+        }
     }
 }

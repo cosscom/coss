@@ -137,6 +137,7 @@ module Coss
         # @return [self]
         def initialize(values = {})
           @data = {}
+          @given = []
 
           values = Utils.symbolize_keys(values.dup)
 
@@ -146,6 +147,7 @@ module Coss
               next unless values.key?(key)
 
               candidate = values.delete(key)
+              @given << field_name
               value = candidate if value.nil?
             end
 
@@ -176,11 +178,11 @@ module Coss
 
             value = @data[name]
 
-            next if value.nil? && field.optional && !field.nullable
+            next if value.nil? && field.optional && !field.nullable && !@given&.include?(name)
 
             if value.is_a?(::Array)
               value = value.map { |item| item.respond_to?(:to_h) ? item.to_h : item }
-            elsif value.respond_to?(:to_h)
+            elsif !value.nil? && value.respond_to?(:to_h)
               value = value.to_h
             end
 

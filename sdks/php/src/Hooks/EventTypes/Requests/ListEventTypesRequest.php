@@ -33,7 +33,16 @@ class ListEventTypesRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->includeArchived = $values['includeArchived'] ?? null;
+        if (array_key_exists('includeArchived', $values)) {
+            $this->_setField('includeArchived');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

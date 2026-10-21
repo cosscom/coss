@@ -96,10 +96,25 @@ class InvoiceLine extends JsonSerializableType
         $this->kind = $values['kind'];
         $this->description = $values['description'];
         $this->meter = $values['meter'] ?? null;
+        if (array_key_exists('meter', $values)) {
+            $this->_setField('meter');
+        }
         $this->dimension = $values['dimension'] ?? null;
+        if (array_key_exists('dimension', $values)) {
+            $this->_setField('dimension');
+        }
         $this->quantity = $values['quantity'] ?? null;
+        if (array_key_exists('quantity', $values)) {
+            $this->_setField('quantity');
+        }
         $this->includedQuantity = $values['includedQuantity'] ?? null;
+        if (array_key_exists('includedQuantity', $values)) {
+            $this->_setField('includedQuantity');
+        }
         $this->unitPrice = $values['unitPrice'] ?? null;
+        if (array_key_exists('unitPrice', $values)) {
+            $this->_setField('unitPrice');
+        }
         $this->amount = $values['amount'];
         $this->period = $values['period'];
     }

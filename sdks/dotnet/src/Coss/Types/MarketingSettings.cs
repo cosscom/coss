@@ -17,12 +17,14 @@ public record MarketingSettings : IJsonOnDeserialized
     /// <summary>
     /// The sender's name in the preference center (default: the organization's).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("display_name")]
     public string? DisplayName { get; set; }
 
     /// <summary>
     /// The postal address every marketing email carries (CAN-SPAM). Marketing emails can't be sent without one.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("mailing_address")]
     public string? MailingAddress { get; set; }
 
@@ -35,30 +37,35 @@ public record MarketingSettings : IJsonOnDeserialized
     /// <summary>
     /// The sender of confirmation emails (a verified domain's address for live keys).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmation_from")]
     public string? ConfirmationFrom { get; set; }
 
     /// <summary>
     /// `null`: coss.com's default.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmation_subject")]
     public string? ConfirmationSubject { get; set; }
 
     /// <summary>
     /// `null`: coss.com's default. Must contain `{{{confirmation_url}}}`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmation_html")]
     public string? ConfirmationHtml { get; set; }
 
     /// <summary>
     /// `null`: coss.com's default. Must contain `{{{confirmation_url}}}`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmation_text")]
     public string? ConfirmationText { get; set; }
 
     /// <summary>
     /// Where confirming sends the contact (https); `null`: a coss.com confirmation page.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmed_redirect_url")]
     public string? ConfirmedRedirectUrl { get; set; }
 

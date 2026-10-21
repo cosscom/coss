@@ -29,12 +29,14 @@ public record ErrorBody : IJsonOnDeserialized
     /// <summary>
     /// The request field or header the error relates to.
     /// </summary>
+    [Optional]
     [JsonPropertyName("param")]
     public string? Param { get; set; }
 
     /// <summary>
     /// Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`).
     /// </summary>
+    [Optional]
     [JsonPropertyName("issues")]
     public IEnumerable<ErrorBodyIssuesItem>? Issues { get; set; }
 

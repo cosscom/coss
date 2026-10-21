@@ -14,9 +14,11 @@ public record EmailEventDataUnsubscribe : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("contact_id")]
     public string? ContactId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("topic")]
     public string? Topic { get; set; }
 

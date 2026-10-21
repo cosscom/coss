@@ -39,6 +39,8 @@ export const LANGUAGES: readonly Language[] = [
  *   publishing configuration.
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
+ * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
+ *   Ruby keeps the idempotency key out of the request body.
  * - PHP keeps an Idempotency-Key the caller passes (the generator overwrites it), and its
  *   exceptions, named after the Fern organization, become `CossApiException` and `CossException`.
  */
@@ -76,6 +78,38 @@ export async function postProcess(language: Language, dir: string): Promise<void
       );
       await appendTo(join(dir, "lib/coss.rb"), 'require_relative "coss/webhooks"\n');
       await replaceIn(join(dir, "test/test_helper.rb"), '"../lib/Coss"', '"../lib/coss"');
+      // A key the caller passes is sent even when it's nil (which clears a field): the model
+      // drops nils of optional fields, and marks optional fields as never nullable.
+      await replaceIn(
+        join(dir, "lib/coss/internal/types/model.rb"),
+        "          @data = {}\n",
+        "          @data = {}\n          @given = []\n",
+      );
+      await replaceIn(
+        join(dir, "lib/coss/internal/types/model.rb"),
+        "              candidate = values.delete(key)\n",
+        "              candidate = values.delete(key)\n              @given << field_name\n",
+      );
+      await replaceIn(
+        join(dir, "lib/coss/internal/types/model.rb"),
+        "            next if value.nil? && field.optional && !field.nullable\n",
+        "            next if value.nil? && field.optional && !field.nullable && !@given&.include?(name)\n",
+      );
+      // The idempotency key goes in its header only. Where the body is built from the params
+      // after it (`send_`, …), the request model would send it in the body too, which the API
+      // refuses (an unknown field).
+      await replaceInTree(
+        join(dir, "lib"),
+        ".rb",
+        /^( +)(headers\["Idempotency-Key"\] = params\[:idempotency_key\] if params\[:idempotency_key\]\n)(?=\n\1request = Coss::Internal::JSON::Request\.new\(\n(?:\1 {2}.*\n)*?\1 {2}body: [\w:]+\.new\(params\)\.to_h,)/gm,
+        "$1$2$1params = params.except(:idempotency_key)\n",
+      );
+      // `nil.to_h` is `{}`: a nil kept above must stay nil.
+      await replaceIn(
+        join(dir, "lib/coss/internal/types/model.rb"),
+        "            elsif value.respond_to?(:to_h)\n",
+        "            elsif !value.nil? && value.respond_to?(:to_h)\n",
+      );
       // The base URLs and the `environment` resource share `Coss::Environment`: a class can't
       // also be a module, but a module can hold both.
       await replaceIn(
@@ -120,6 +154,14 @@ export async function postProcess(language: Language, dir: string): Promise<void
         ".php",
         "$headers['Idempotency-Key'] = IdempotencyKey::generate();",
         "$headers['Idempotency-Key'] ??= IdempotencyKey::generate();",
+      );
+      // A key the caller passes is sent even when it's null (which clears a field): the base
+      // class sends fields marked with `_setField`, which the generated constructors never call.
+      await replaceInTree(
+        join(dir, "src"),
+        ".php",
+        /^( {8})\$this->(\w+) = \$values\['(\w+)'\] \?\? null;$/gm,
+        "$1$this->$2 = $values['$3'] ?? null;\n$1if (array_key_exists('$3', $values)) {\n$1    $this->_setField('$2');\n$1}",
       );
       // The exceptions are named after the Fern organization (`cosscom`).
       for (const name of ["CosscomApiException", "CosscomException"]) {
@@ -188,21 +230,22 @@ async function replaceIn(
 async function replaceInTree(
   root: string,
   extension: string,
-  from: string,
+  from: string | RegExp,
   to: string,
   { required = true } = {},
 ): Promise<void> {
-  let replaced = 0;
+  let files = 0;
   const entries = await readdir(root, { recursive: true, withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isFile() || !entry.name.endsWith(extension)) continue;
     const path = join(entry.parentPath, entry.name);
     const text = await Bun.file(path).text();
-    if (!text.includes(from)) continue;
-    await Bun.write(path, text.replaceAll(from, to));
-    replaced += 1;
+    const replaced = text.replaceAll(from, to);
+    if (replaced === text) continue;
+    await Bun.write(path, replaced);
+    files += 1;
   }
-  if (replaced === 0 && required)
+  if (files === 0 && required)
     throw new Error(`No file under ${root} contains ${from}: update postProcess`);
 }
 

@@ -45,7 +45,13 @@ class SendEmailAttachment extends JsonSerializableType
         $this->filename = $values['filename'];
         $this->content = $values['content'];
         $this->contentType = $values['contentType'] ?? null;
+        if (array_key_exists('contentType', $values)) {
+            $this->_setField('contentType');
+        }
         $this->contentId = $values['contentId'] ?? null;
+        if (array_key_exists('contentId', $values)) {
+            $this->_setField('contentId');
+        }
     }
 
     /**

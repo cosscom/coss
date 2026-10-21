@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class RiskAssessment {
 
     private final RiskEvent event;
 
-    private final Optional<String> eventName;
+    private final OptionalNullable<String> eventName;
 
     private final RiskDecision decision;
 
@@ -45,13 +45,13 @@ public final class RiskAssessment {
 
     private final RiskAssessmentUser user;
 
-    private final Optional<String> ip;
+    private final OptionalNullable<String> ip;
 
     private final List<RiskAssessmentDegradedItem> degraded;
 
-    private final Optional<RiskOutcome> outcome;
+    private final OptionalNullable<RiskOutcome> outcome;
 
-    private final Optional<RiskAssessmentReviewStatus> reviewStatus;
+    private final OptionalNullable<RiskAssessmentReviewStatus> reviewStatus;
 
     private final OffsetDateTime createdAt;
 
@@ -61,16 +61,16 @@ public final class RiskAssessment {
             RiskAssessmentObject object,
             String id,
             RiskEvent event,
-            Optional<String> eventName,
+            OptionalNullable<String> eventName,
             RiskDecision decision,
             double score,
             List<RiskReason> reasons,
             RiskAssessmentSignals signals,
             RiskAssessmentUser user,
-            Optional<String> ip,
+            OptionalNullable<String> ip,
             List<RiskAssessmentDegradedItem> degraded,
-            Optional<RiskOutcome> outcome,
-            Optional<RiskAssessmentReviewStatus> reviewStatus,
+            OptionalNullable<RiskOutcome> outcome,
+            OptionalNullable<RiskAssessmentReviewStatus> reviewStatus,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -105,10 +105,11 @@ public final class RiskAssessment {
         return event;
     }
 
-    @JsonIgnore
-    public Optional<String> getEventName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("event_name")
+    public OptionalNullable<String> getEventName() {
         if (eventName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return eventName;
     }
@@ -147,10 +148,11 @@ public final class RiskAssessment {
     /**
      * @return <code>null</code> once removed (90 days after).
      */
-    @JsonIgnore
-    public Optional<String> getIp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip")
+    public OptionalNullable<String> getIp() {
         if (ip == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ip;
     }
@@ -166,10 +168,11 @@ public final class RiskAssessment {
     /**
      * @return The latest outcome you reported with feedback.
      */
-    @JsonIgnore
-    public Optional<RiskOutcome> getOutcome() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("outcome")
+    public OptionalNullable<RiskOutcome> getOutcome() {
         if (outcome == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return outcome;
     }
@@ -177,10 +180,11 @@ public final class RiskAssessment {
     /**
      * @return <code>open</code> for <code>review</code> decisions until you send feedback, then <code>resolved</code>.
      */
-    @JsonIgnore
-    public Optional<RiskAssessmentReviewStatus> getReviewStatus() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("review_status")
+    public OptionalNullable<RiskAssessmentReviewStatus> getReviewStatus() {
         if (reviewStatus == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return reviewStatus;
     }
@@ -192,25 +196,25 @@ public final class RiskAssessment {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("event_name")
-    private Optional<String> _getEventName() {
+    private OptionalNullable<String> _getEventName() {
         return eventName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip")
-    private Optional<String> _getIp() {
+    private OptionalNullable<String> _getIp() {
         return ip;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("outcome")
-    private Optional<RiskOutcome> _getOutcome() {
+    private OptionalNullable<RiskOutcome> _getOutcome() {
         return outcome;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("review_status")
-    private Optional<RiskAssessmentReviewStatus> _getReviewStatus() {
+    private OptionalNullable<RiskAssessmentReviewStatus> _getReviewStatus() {
         return reviewStatus;
     }
 
@@ -314,9 +318,11 @@ public final class RiskAssessment {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage eventName(Optional<String> eventName);
+        _FinalStage eventName(OptionalNullable<String> eventName);
 
         _FinalStage eventName(String eventName);
+
+        _FinalStage eventName(Optional<String> eventName);
 
         _FinalStage eventName(Nullable<String> eventName);
 
@@ -332,9 +338,11 @@ public final class RiskAssessment {
         /**
          * <p><code>null</code> once removed (90 days after).</p>
          */
-        _FinalStage ip(Optional<String> ip);
+        _FinalStage ip(OptionalNullable<String> ip);
 
         _FinalStage ip(String ip);
+
+        _FinalStage ip(Optional<String> ip);
 
         _FinalStage ip(Nullable<String> ip);
 
@@ -350,18 +358,22 @@ public final class RiskAssessment {
         /**
          * <p>The latest outcome you reported with feedback.</p>
          */
-        _FinalStage outcome(Optional<RiskOutcome> outcome);
+        _FinalStage outcome(OptionalNullable<RiskOutcome> outcome);
 
         _FinalStage outcome(RiskOutcome outcome);
+
+        _FinalStage outcome(Optional<RiskOutcome> outcome);
 
         _FinalStage outcome(Nullable<RiskOutcome> outcome);
 
         /**
          * <p><code>open</code> for <code>review</code> decisions until you send feedback, then <code>resolved</code>.</p>
          */
-        _FinalStage reviewStatus(Optional<RiskAssessmentReviewStatus> reviewStatus);
+        _FinalStage reviewStatus(OptionalNullable<RiskAssessmentReviewStatus> reviewStatus);
 
         _FinalStage reviewStatus(RiskAssessmentReviewStatus reviewStatus);
+
+        _FinalStage reviewStatus(Optional<RiskAssessmentReviewStatus> reviewStatus);
 
         _FinalStage reviewStatus(Nullable<RiskAssessmentReviewStatus> reviewStatus);
     }
@@ -393,17 +405,17 @@ public final class RiskAssessment {
 
         private OffsetDateTime createdAt;
 
-        private Optional<RiskAssessmentReviewStatus> reviewStatus = Optional.empty();
+        private OptionalNullable<RiskAssessmentReviewStatus> reviewStatus = OptionalNullable.absent();
 
-        private Optional<RiskOutcome> outcome = Optional.empty();
+        private OptionalNullable<RiskOutcome> outcome = OptionalNullable.absent();
 
         private List<RiskAssessmentDegradedItem> degraded = new ArrayList<>();
 
-        private Optional<String> ip = Optional.empty();
+        private OptionalNullable<String> ip = OptionalNullable.absent();
 
         private List<RiskReason> reasons = new ArrayList<>();
 
-        private Optional<String> eventName = Optional.empty();
+        private OptionalNullable<String> eventName = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -496,11 +508,25 @@ public final class RiskAssessment {
         @java.lang.Override
         public _FinalStage reviewStatus(Nullable<RiskAssessmentReviewStatus> reviewStatus) {
             if (reviewStatus.isNull()) {
-                this.reviewStatus = null;
+                this.reviewStatus = OptionalNullable.ofNull();
             } else if (reviewStatus.isEmpty()) {
-                this.reviewStatus = Optional.empty();
+                this.reviewStatus = OptionalNullable.absent();
             } else {
-                this.reviewStatus = Optional.of(reviewStatus.get());
+                this.reviewStatus = OptionalNullable.of(reviewStatus.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>open</code> for <code>review</code> decisions until you send feedback, then <code>resolved</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage reviewStatus(Optional<RiskAssessmentReviewStatus> reviewStatus) {
+            if (reviewStatus.isPresent()) {
+                this.reviewStatus = OptionalNullable.of(reviewStatus.get());
+            } else {
+                this.reviewStatus = OptionalNullable.absent();
             }
             return this;
         }
@@ -511,7 +537,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         public _FinalStage reviewStatus(RiskAssessmentReviewStatus reviewStatus) {
-            this.reviewStatus = Optional.ofNullable(reviewStatus);
+            this.reviewStatus = OptionalNullable.of(reviewStatus);
             return this;
         }
 
@@ -520,7 +546,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         @JsonSetter(value = "review_status", nulls = Nulls.SKIP)
-        public _FinalStage reviewStatus(Optional<RiskAssessmentReviewStatus> reviewStatus) {
+        public _FinalStage reviewStatus(OptionalNullable<RiskAssessmentReviewStatus> reviewStatus) {
             this.reviewStatus = reviewStatus;
             return this;
         }
@@ -532,11 +558,25 @@ public final class RiskAssessment {
         @java.lang.Override
         public _FinalStage outcome(Nullable<RiskOutcome> outcome) {
             if (outcome.isNull()) {
-                this.outcome = null;
+                this.outcome = OptionalNullable.ofNull();
             } else if (outcome.isEmpty()) {
-                this.outcome = Optional.empty();
+                this.outcome = OptionalNullable.absent();
             } else {
-                this.outcome = Optional.of(outcome.get());
+                this.outcome = OptionalNullable.of(outcome.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The latest outcome you reported with feedback.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage outcome(Optional<RiskOutcome> outcome) {
+            if (outcome.isPresent()) {
+                this.outcome = OptionalNullable.of(outcome.get());
+            } else {
+                this.outcome = OptionalNullable.absent();
             }
             return this;
         }
@@ -547,7 +587,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         public _FinalStage outcome(RiskOutcome outcome) {
-            this.outcome = Optional.ofNullable(outcome);
+            this.outcome = OptionalNullable.of(outcome);
             return this;
         }
 
@@ -556,7 +596,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         @JsonSetter(value = "outcome", nulls = Nulls.SKIP)
-        public _FinalStage outcome(Optional<RiskOutcome> outcome) {
+        public _FinalStage outcome(OptionalNullable<RiskOutcome> outcome) {
             this.outcome = outcome;
             return this;
         }
@@ -603,11 +643,25 @@ public final class RiskAssessment {
         @java.lang.Override
         public _FinalStage ip(Nullable<String> ip) {
             if (ip.isNull()) {
-                this.ip = null;
+                this.ip = OptionalNullable.ofNull();
             } else if (ip.isEmpty()) {
-                this.ip = Optional.empty();
+                this.ip = OptionalNullable.absent();
             } else {
-                this.ip = Optional.of(ip.get());
+                this.ip = OptionalNullable.of(ip.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> once removed (90 days after).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage ip(Optional<String> ip) {
+            if (ip.isPresent()) {
+                this.ip = OptionalNullable.of(ip.get());
+            } else {
+                this.ip = OptionalNullable.absent();
             }
             return this;
         }
@@ -618,7 +672,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         public _FinalStage ip(String ip) {
-            this.ip = Optional.ofNullable(ip);
+            this.ip = OptionalNullable.of(ip);
             return this;
         }
 
@@ -627,7 +681,7 @@ public final class RiskAssessment {
          */
         @java.lang.Override
         @JsonSetter(value = "ip", nulls = Nulls.SKIP)
-        public _FinalStage ip(Optional<String> ip) {
+        public _FinalStage ip(OptionalNullable<String> ip) {
             this.ip = ip;
             return this;
         }
@@ -670,24 +724,34 @@ public final class RiskAssessment {
         @java.lang.Override
         public _FinalStage eventName(Nullable<String> eventName) {
             if (eventName.isNull()) {
-                this.eventName = null;
+                this.eventName = OptionalNullable.ofNull();
             } else if (eventName.isEmpty()) {
-                this.eventName = Optional.empty();
+                this.eventName = OptionalNullable.absent();
             } else {
-                this.eventName = Optional.of(eventName.get());
+                this.eventName = OptionalNullable.of(eventName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage eventName(Optional<String> eventName) {
+            if (eventName.isPresent()) {
+                this.eventName = OptionalNullable.of(eventName.get());
+            } else {
+                this.eventName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage eventName(String eventName) {
-            this.eventName = Optional.ofNullable(eventName);
+            this.eventName = OptionalNullable.of(eventName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "event_name", nulls = Nulls.SKIP)
-        public _FinalStage eventName(Optional<String> eventName) {
+        public _FinalStage eventName(OptionalNullable<String> eventName) {
             this.eventName = eventName;
             return this;
         }

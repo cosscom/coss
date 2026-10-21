@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class AccountWebhookEventData {
 
     private final AccountWebhookEventDataPreviousStatus previousStatus;
 
-    private final Optional<String> reason;
+    private final OptionalNullable<String> reason;
 
     private final OffsetDateTime occurredAt;
 
@@ -47,7 +47,7 @@ public final class AccountWebhookEventData {
             String organizationId,
             AccountWebhookEventDataStatus status,
             AccountWebhookEventDataPreviousStatus previousStatus,
-            Optional<String> reason,
+            OptionalNullable<String> reason,
             OffsetDateTime occurredAt,
             List<ReputationCheck> checks,
             MarketingStanding marketing,
@@ -77,10 +77,11 @@ public final class AccountWebhookEventData {
         return previousStatus;
     }
 
-    @JsonIgnore
-    public Optional<String> getReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("reason")
+    public OptionalNullable<String> getReason() {
         if (reason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return reason;
     }
@@ -102,7 +103,7 @@ public final class AccountWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("reason")
-    private Optional<String> _getReason() {
+    private OptionalNullable<String> _getReason() {
         return reason;
     }
 
@@ -177,9 +178,11 @@ public final class AccountWebhookEventData {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage reason(Optional<String> reason);
+        _FinalStage reason(OptionalNullable<String> reason);
 
         _FinalStage reason(String reason);
+
+        _FinalStage reason(Optional<String> reason);
 
         _FinalStage reason(Nullable<String> reason);
 
@@ -210,7 +213,7 @@ public final class AccountWebhookEventData {
 
         private List<ReputationCheck> checks = new ArrayList<>();
 
-        private Optional<String> reason = Optional.empty();
+        private OptionalNullable<String> reason = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -291,24 +294,34 @@ public final class AccountWebhookEventData {
         @java.lang.Override
         public _FinalStage reason(Nullable<String> reason) {
             if (reason.isNull()) {
-                this.reason = null;
+                this.reason = OptionalNullable.ofNull();
             } else if (reason.isEmpty()) {
-                this.reason = Optional.empty();
+                this.reason = OptionalNullable.absent();
             } else {
-                this.reason = Optional.of(reason.get());
+                this.reason = OptionalNullable.of(reason.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage reason(Optional<String> reason) {
+            if (reason.isPresent()) {
+                this.reason = OptionalNullable.of(reason.get());
+            } else {
+                this.reason = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage reason(String reason) {
-            this.reason = Optional.ofNullable(reason);
+            this.reason = OptionalNullable.of(reason);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "reason", nulls = Nulls.SKIP)
-        public _FinalStage reason(Optional<String> reason) {
+        public _FinalStage reason(OptionalNullable<String> reason) {
             this.reason = reason;
             return this;
         }

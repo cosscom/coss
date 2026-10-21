@@ -20,6 +20,7 @@ public record EmailTemplateVersion : IJsonOnDeserialized
     /// <summary>
     /// The version number; `null` for the draft.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("version")]
     public long? Version { get; set; }
 
@@ -48,6 +49,7 @@ public record EmailTemplateVersion : IJsonOnDeserialized
     [JsonPropertyName("problems")]
     public IEnumerable<TemplateProblem> Problems { get; set; } = new List<TemplateProblem>();
 
+    [Nullable]
     [JsonPropertyName("published_at")]
     public DateTime? PublishedAt { get; set; }
 

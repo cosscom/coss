@@ -32,9 +32,11 @@ public record DomainDmarcReportSummary : IJsonOnDeserialized
     [JsonPropertyName("coss_passing")]
     public required long CossPassing { get; set; }
 
+    [Nullable]
     [JsonPropertyName("first_report_at")]
     public DateTime? FirstReportAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_report_at")]
     public DateTime? LastReportAt { get; set; }
 

@@ -17,6 +17,7 @@ public record RiskWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("event")]
     public required RiskEvent Event { get; set; }
 
+    [Nullable]
     [JsonPropertyName("event_name")]
     public string? EventName { get; set; }
 
@@ -29,12 +30,14 @@ public record RiskWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("reasons")]
     public IEnumerable<RiskReason> Reasons { get; set; } = new List<RiskReason>();
 
+    [Nullable]
     [JsonPropertyName("user_id")]
     public string? UserId { get; set; }
 
     /// <summary>
     /// `risk.assessment.reviewed`: the outcome that resolved the review.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("outcome")]
     public RiskOutcome? Outcome { get; set; }
 

@@ -14,7 +14,10 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "first_name": null,
+              "last_name": null
+            }
             """;
 
         const string mockResponse = """
@@ -93,6 +96,8 @@ public class UpdateTest : BaseMockServerTest
               },
               "source": "api",
               "subscribed_at": "2026-10-10T12:00:00.000Z",
+              "unsubscribed_at": null,
+              "confirmed_at": null,
               "created_at": "2026-10-10T12:00:00.000Z",
               "updated_at": "2026-10-10T12:00:00.000Z"
             }

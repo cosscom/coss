@@ -39,8 +39,17 @@ class RiskCheckoutRequestCard extends JsonSerializableType
         array $values = [],
     ) {
         $this->fingerprint = $values['fingerprint'] ?? null;
+        if (array_key_exists('fingerprint', $values)) {
+            $this->_setField('fingerprint');
+        }
         $this->country = $values['country'] ?? null;
+        if (array_key_exists('country', $values)) {
+            $this->_setField('country');
+        }
         $this->funding = $values['funding'] ?? null;
+        if (array_key_exists('funding', $values)) {
+            $this->_setField('funding');
+        }
     }
 
     /**

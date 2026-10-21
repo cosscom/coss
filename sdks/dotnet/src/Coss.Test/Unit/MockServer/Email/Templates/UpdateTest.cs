@@ -13,7 +13,10 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "alias": null,
+              "description": null
+            }
             """;
 
         const string mockResponse = """

@@ -62,9 +62,21 @@ class RiskCheckoutSignals extends JsonSerializableType
         $this->amount = $values['amount'];
         $this->currency = $values['currency'];
         $this->cardCountry = $values['cardCountry'] ?? null;
+        if (array_key_exists('cardCountry', $values)) {
+            $this->_setField('cardCountry');
+        }
         $this->cardFunding = $values['cardFunding'] ?? null;
+        if (array_key_exists('cardFunding', $values)) {
+            $this->_setField('cardFunding');
+        }
         $this->billingCountry = $values['billingCountry'] ?? null;
+        if (array_key_exists('billingCountry', $values)) {
+            $this->_setField('billingCountry');
+        }
         $this->shippingCountry = $values['shippingCountry'] ?? null;
+        if (array_key_exists('shippingCountry', $values)) {
+            $this->_setField('shippingCountry');
+        }
     }
 
     /**

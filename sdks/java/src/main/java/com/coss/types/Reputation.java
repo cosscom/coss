@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,13 +31,13 @@ public final class Reputation {
 
     private final ReputationStatus status;
 
-    private final Optional<String> reason;
+    private final OptionalNullable<String> reason;
 
-    private final Optional<OffsetDateTime> statusChangedAt;
+    private final OptionalNullable<OffsetDateTime> statusChangedAt;
 
-    private final Optional<OffsetDateTime> evaluatedAt;
+    private final OptionalNullable<OffsetDateTime> evaluatedAt;
 
-    private final Optional<ReputationWindow> window;
+    private final OptionalNullable<ReputationWindow> window;
 
     private final List<ReputationCheck> checks;
 
@@ -48,10 +48,10 @@ public final class Reputation {
     private Reputation(
             ReputationObject object,
             ReputationStatus status,
-            Optional<String> reason,
-            Optional<OffsetDateTime> statusChangedAt,
-            Optional<OffsetDateTime> evaluatedAt,
-            Optional<ReputationWindow> window,
+            OptionalNullable<String> reason,
+            OptionalNullable<OffsetDateTime> statusChangedAt,
+            OptionalNullable<OffsetDateTime> evaluatedAt,
+            OptionalNullable<ReputationWindow> window,
             List<ReputationCheck> checks,
             MarketingStanding marketing,
             Map<String, Object> additionalProperties) {
@@ -82,18 +82,20 @@ public final class Reputation {
     /**
      * @return The trigger behind a <code>warning</code> or <code>suspended</code> status.
      */
-    @JsonIgnore
-    public Optional<String> getReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("reason")
+    public OptionalNullable<String> getReason() {
         if (reason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return reason;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getStatusChangedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("status_changed_at")
+    public OptionalNullable<OffsetDateTime> getStatusChangedAt() {
         if (statusChangedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return statusChangedAt;
     }
@@ -101,10 +103,11 @@ public final class Reputation {
     /**
      * @return When the checks below were computed; <code>null</code> before the first evaluation.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getEvaluatedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("evaluated_at")
+    public OptionalNullable<OffsetDateTime> getEvaluatedAt() {
         if (evaluatedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return evaluatedAt;
     }
@@ -112,10 +115,11 @@ public final class Reputation {
     /**
      * @return The period the checks cover (live environments only).
      */
-    @JsonIgnore
-    public Optional<ReputationWindow> getWindow() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("window")
+    public OptionalNullable<ReputationWindow> getWindow() {
         if (window == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return window;
     }
@@ -132,25 +136,25 @@ public final class Reputation {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("reason")
-    private Optional<String> _getReason() {
+    private OptionalNullable<String> _getReason() {
         return reason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("status_changed_at")
-    private Optional<OffsetDateTime> _getStatusChangedAt() {
+    private OptionalNullable<OffsetDateTime> _getStatusChangedAt() {
         return statusChangedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("evaluated_at")
-    private Optional<OffsetDateTime> _getEvaluatedAt() {
+    private OptionalNullable<OffsetDateTime> _getEvaluatedAt() {
         return evaluatedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("window")
-    private Optional<ReputationWindow> _getWindow() {
+    private OptionalNullable<ReputationWindow> _getWindow() {
         return window;
     }
 
@@ -225,33 +229,41 @@ public final class Reputation {
         /**
          * <p>The trigger behind a <code>warning</code> or <code>suspended</code> status.</p>
          */
-        _FinalStage reason(Optional<String> reason);
+        _FinalStage reason(OptionalNullable<String> reason);
 
         _FinalStage reason(String reason);
 
+        _FinalStage reason(Optional<String> reason);
+
         _FinalStage reason(Nullable<String> reason);
 
-        _FinalStage statusChangedAt(Optional<OffsetDateTime> statusChangedAt);
+        _FinalStage statusChangedAt(OptionalNullable<OffsetDateTime> statusChangedAt);
 
         _FinalStage statusChangedAt(OffsetDateTime statusChangedAt);
+
+        _FinalStage statusChangedAt(Optional<OffsetDateTime> statusChangedAt);
 
         _FinalStage statusChangedAt(Nullable<OffsetDateTime> statusChangedAt);
 
         /**
          * <p>When the checks below were computed; <code>null</code> before the first evaluation.</p>
          */
-        _FinalStage evaluatedAt(Optional<OffsetDateTime> evaluatedAt);
+        _FinalStage evaluatedAt(OptionalNullable<OffsetDateTime> evaluatedAt);
 
         _FinalStage evaluatedAt(OffsetDateTime evaluatedAt);
+
+        _FinalStage evaluatedAt(Optional<OffsetDateTime> evaluatedAt);
 
         _FinalStage evaluatedAt(Nullable<OffsetDateTime> evaluatedAt);
 
         /**
          * <p>The period the checks cover (live environments only).</p>
          */
-        _FinalStage window(Optional<ReputationWindow> window);
+        _FinalStage window(OptionalNullable<ReputationWindow> window);
 
         _FinalStage window(ReputationWindow window);
+
+        _FinalStage window(Optional<ReputationWindow> window);
 
         _FinalStage window(Nullable<ReputationWindow> window);
 
@@ -272,13 +284,13 @@ public final class Reputation {
 
         private List<ReputationCheck> checks = new ArrayList<>();
 
-        private Optional<ReputationWindow> window = Optional.empty();
+        private OptionalNullable<ReputationWindow> window = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> evaluatedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> evaluatedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> statusChangedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> statusChangedAt = OptionalNullable.absent();
 
-        private Optional<String> reason = Optional.empty();
+        private OptionalNullable<String> reason = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -354,11 +366,25 @@ public final class Reputation {
         @java.lang.Override
         public _FinalStage window(Nullable<ReputationWindow> window) {
             if (window.isNull()) {
-                this.window = null;
+                this.window = OptionalNullable.ofNull();
             } else if (window.isEmpty()) {
-                this.window = Optional.empty();
+                this.window = OptionalNullable.absent();
             } else {
-                this.window = Optional.of(window.get());
+                this.window = OptionalNullable.of(window.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The period the checks cover (live environments only).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage window(Optional<ReputationWindow> window) {
+            if (window.isPresent()) {
+                this.window = OptionalNullable.of(window.get());
+            } else {
+                this.window = OptionalNullable.absent();
             }
             return this;
         }
@@ -369,7 +395,7 @@ public final class Reputation {
          */
         @java.lang.Override
         public _FinalStage window(ReputationWindow window) {
-            this.window = Optional.ofNullable(window);
+            this.window = OptionalNullable.of(window);
             return this;
         }
 
@@ -378,7 +404,7 @@ public final class Reputation {
          */
         @java.lang.Override
         @JsonSetter(value = "window", nulls = Nulls.SKIP)
-        public _FinalStage window(Optional<ReputationWindow> window) {
+        public _FinalStage window(OptionalNullable<ReputationWindow> window) {
             this.window = window;
             return this;
         }
@@ -390,11 +416,25 @@ public final class Reputation {
         @java.lang.Override
         public _FinalStage evaluatedAt(Nullable<OffsetDateTime> evaluatedAt) {
             if (evaluatedAt.isNull()) {
-                this.evaluatedAt = null;
+                this.evaluatedAt = OptionalNullable.ofNull();
             } else if (evaluatedAt.isEmpty()) {
-                this.evaluatedAt = Optional.empty();
+                this.evaluatedAt = OptionalNullable.absent();
             } else {
-                this.evaluatedAt = Optional.of(evaluatedAt.get());
+                this.evaluatedAt = OptionalNullable.of(evaluatedAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the checks below were computed; <code>null</code> before the first evaluation.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage evaluatedAt(Optional<OffsetDateTime> evaluatedAt) {
+            if (evaluatedAt.isPresent()) {
+                this.evaluatedAt = OptionalNullable.of(evaluatedAt.get());
+            } else {
+                this.evaluatedAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -405,7 +445,7 @@ public final class Reputation {
          */
         @java.lang.Override
         public _FinalStage evaluatedAt(OffsetDateTime evaluatedAt) {
-            this.evaluatedAt = Optional.ofNullable(evaluatedAt);
+            this.evaluatedAt = OptionalNullable.of(evaluatedAt);
             return this;
         }
 
@@ -414,7 +454,7 @@ public final class Reputation {
          */
         @java.lang.Override
         @JsonSetter(value = "evaluated_at", nulls = Nulls.SKIP)
-        public _FinalStage evaluatedAt(Optional<OffsetDateTime> evaluatedAt) {
+        public _FinalStage evaluatedAt(OptionalNullable<OffsetDateTime> evaluatedAt) {
             this.evaluatedAt = evaluatedAt;
             return this;
         }
@@ -422,24 +462,34 @@ public final class Reputation {
         @java.lang.Override
         public _FinalStage statusChangedAt(Nullable<OffsetDateTime> statusChangedAt) {
             if (statusChangedAt.isNull()) {
-                this.statusChangedAt = null;
+                this.statusChangedAt = OptionalNullable.ofNull();
             } else if (statusChangedAt.isEmpty()) {
-                this.statusChangedAt = Optional.empty();
+                this.statusChangedAt = OptionalNullable.absent();
             } else {
-                this.statusChangedAt = Optional.of(statusChangedAt.get());
+                this.statusChangedAt = OptionalNullable.of(statusChangedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage statusChangedAt(Optional<OffsetDateTime> statusChangedAt) {
+            if (statusChangedAt.isPresent()) {
+                this.statusChangedAt = OptionalNullable.of(statusChangedAt.get());
+            } else {
+                this.statusChangedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage statusChangedAt(OffsetDateTime statusChangedAt) {
-            this.statusChangedAt = Optional.ofNullable(statusChangedAt);
+            this.statusChangedAt = OptionalNullable.of(statusChangedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "status_changed_at", nulls = Nulls.SKIP)
-        public _FinalStage statusChangedAt(Optional<OffsetDateTime> statusChangedAt) {
+        public _FinalStage statusChangedAt(OptionalNullable<OffsetDateTime> statusChangedAt) {
             this.statusChangedAt = statusChangedAt;
             return this;
         }
@@ -451,11 +501,25 @@ public final class Reputation {
         @java.lang.Override
         public _FinalStage reason(Nullable<String> reason) {
             if (reason.isNull()) {
-                this.reason = null;
+                this.reason = OptionalNullable.ofNull();
             } else if (reason.isEmpty()) {
-                this.reason = Optional.empty();
+                this.reason = OptionalNullable.absent();
             } else {
-                this.reason = Optional.of(reason.get());
+                this.reason = OptionalNullable.of(reason.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The trigger behind a <code>warning</code> or <code>suspended</code> status.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage reason(Optional<String> reason) {
+            if (reason.isPresent()) {
+                this.reason = OptionalNullable.of(reason.get());
+            } else {
+                this.reason = OptionalNullable.absent();
             }
             return this;
         }
@@ -466,7 +530,7 @@ public final class Reputation {
          */
         @java.lang.Override
         public _FinalStage reason(String reason) {
-            this.reason = Optional.ofNullable(reason);
+            this.reason = OptionalNullable.of(reason);
             return this;
         }
 
@@ -475,7 +539,7 @@ public final class Reputation {
          */
         @java.lang.Override
         @JsonSetter(value = "reason", nulls = Nulls.SKIP)
-        public _FinalStage reason(Optional<String> reason) {
+        public _FinalStage reason(OptionalNullable<String> reason) {
             this.reason = reason;
             return this;
         }

@@ -22,6 +22,9 @@ class EmailEventDataDelivery extends JsonSerializableType
         array $values = [],
     ) {
         $this->smtpResponse = $values['smtpResponse'] ?? null;
+        if (array_key_exists('smtpResponse', $values)) {
+            $this->_setField('smtpResponse');
+        }
     }
 
     /**

@@ -37,6 +37,9 @@ class EmailTemplateReference extends JsonSerializableType
     ) {
         $this->id = $values['id'];
         $this->version = $values['version'] ?? null;
+        if (array_key_exists('version', $values)) {
+            $this->_setField('version');
+        }
         $this->locale = $values['locale'];
     }
 

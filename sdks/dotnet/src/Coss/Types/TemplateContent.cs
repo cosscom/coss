@@ -17,9 +17,11 @@ public record TemplateContent : IJsonOnDeserialized
     [JsonPropertyName("subject")]
     public required string Subject { get; set; }
 
+    [Nullable]
     [JsonPropertyName("html")]
     public string? Html { get; set; }
 
+    [Nullable]
     [JsonPropertyName("text")]
     public string? Text { get; set; }
 

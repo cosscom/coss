@@ -29,6 +29,7 @@ public record WebhookListener : IJsonOnDeserialized
     [JsonPropertyName("event_types")]
     public IEnumerable<string> EventTypes { get; set; } = new List<string>();
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 

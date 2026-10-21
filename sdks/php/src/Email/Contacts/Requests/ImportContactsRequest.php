@@ -32,5 +32,8 @@ class ImportContactsRequest extends JsonSerializableType
     ) {
         $this->contacts = $values['contacts'];
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
     }
 }

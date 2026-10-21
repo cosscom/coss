@@ -6,9 +6,9 @@ package com.coss.resources.risk.settings.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,150 +23,150 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateRiskSettingsRequestReasonWeights.Builder.class)
 public final class UpdateRiskSettingsRequestReasonWeights {
-    private final Optional<Double> emailInvalid;
+    private final OptionalNullable<Double> emailInvalid;
 
-    private final Optional<Double> emailDisposable;
+    private final OptionalNullable<Double> emailDisposable;
 
-    private final Optional<Double> emailUndeliverable;
+    private final OptionalNullable<Double> emailUndeliverable;
 
-    private final Optional<Double> emailRoleAccount;
+    private final OptionalNullable<Double> emailRoleAccount;
 
-    private final Optional<Double> emailTypo;
+    private final OptionalNullable<Double> emailTypo;
 
-    private final Optional<Double> emailDomainNew;
+    private final OptionalNullable<Double> emailDomainNew;
 
-    private final Optional<Double> ipTor;
+    private final OptionalNullable<Double> ipTor;
 
-    private final Optional<Double> ipVpnNetwork;
+    private final OptionalNullable<Double> ipVpnNetwork;
 
-    private final Optional<Double> ipHostingProvider;
+    private final OptionalNullable<Double> ipHostingProvider;
 
-    private final Optional<Double> ipVpn;
+    private final OptionalNullable<Double> ipVpn;
 
-    private final Optional<Double> ipProxy;
+    private final OptionalNullable<Double> ipProxy;
 
-    private final Optional<Double> ipRelay;
+    private final OptionalNullable<Double> ipRelay;
 
-    private final Optional<Double> ipPrivate;
+    private final OptionalNullable<Double> ipPrivate;
 
-    private final Optional<Double> velocitySignupsPerIp1H;
+    private final OptionalNullable<Double> velocitySignupsPerIp1H;
 
-    private final Optional<Double> velocitySignupsPerIp24H;
+    private final OptionalNullable<Double> velocitySignupsPerIp24H;
 
-    private final Optional<Double> velocitySignupsPerSubnet1H;
+    private final OptionalNullable<Double> velocitySignupsPerSubnet1H;
 
-    private final Optional<Double> velocitySignupsPerEmailDomain1H;
+    private final OptionalNullable<Double> velocitySignupsPerEmailDomain1H;
 
-    private final Optional<Double> velocitySignupsPerMailbox24H;
+    private final OptionalNullable<Double> velocitySignupsPerMailbox24H;
 
-    private final Optional<Double> velocitySignupsPerDevice24H;
+    private final OptionalNullable<Double> velocitySignupsPerDevice24H;
 
-    private final Optional<Double> velocityCheckoutsPerIp1H;
+    private final OptionalNullable<Double> velocityCheckoutsPerIp1H;
 
-    private final Optional<Double> velocityCheckoutsPerUser1H;
+    private final OptionalNullable<Double> velocityCheckoutsPerUser1H;
 
-    private final Optional<Double> velocityCheckoutsPerCard24H;
+    private final OptionalNullable<Double> velocityCheckoutsPerCard24H;
 
-    private final Optional<Double> velocityLoginsPerIp1H;
+    private final OptionalNullable<Double> velocityLoginsPerIp1H;
 
-    private final Optional<Double> velocityLoginsPerUser1H;
+    private final OptionalNullable<Double> velocityLoginsPerUser1H;
 
-    private final Optional<Double> velocityEventsPerIp1H;
+    private final OptionalNullable<Double> velocityEventsPerIp1H;
 
-    private final Optional<Double> velocityEventsPerUser1H;
+    private final OptionalNullable<Double> velocityEventsPerUser1H;
 
-    private final Optional<Double> duplicateCanonicalMailbox;
+    private final OptionalNullable<Double> duplicateCanonicalMailbox;
 
-    private final Optional<Double> duplicateDevice;
+    private final OptionalNullable<Double> duplicateDevice;
 
-    private final Optional<Double> historyFraudMailbox;
+    private final OptionalNullable<Double> historyFraudMailbox;
 
-    private final Optional<Double> historyFraudUser;
+    private final OptionalNullable<Double> historyFraudUser;
 
-    private final Optional<Double> historyFraudIp;
+    private final OptionalNullable<Double> historyFraudIp;
 
-    private final Optional<Double> historyFraudSubnet;
+    private final OptionalNullable<Double> historyFraudSubnet;
 
-    private final Optional<Double> historyFraudCard;
+    private final OptionalNullable<Double> historyFraudCard;
 
-    private final Optional<Double> historyFraudDevice;
+    private final OptionalNullable<Double> historyFraudDevice;
 
-    private final Optional<Double> checkoutCardCountryMismatch;
+    private final OptionalNullable<Double> checkoutCardCountryMismatch;
 
-    private final Optional<Double> checkoutBillingCountryMismatch;
+    private final OptionalNullable<Double> checkoutBillingCountryMismatch;
 
-    private final Optional<Double> checkoutPrepaidCard;
+    private final OptionalNullable<Double> checkoutPrepaidCard;
 
-    private final Optional<Double> deviceAutomation;
+    private final OptionalNullable<Double> deviceAutomation;
 
-    private final Optional<Double> deviceInvalid;
+    private final OptionalNullable<Double> deviceInvalid;
 
-    private final Optional<Double> loginNewCountry;
+    private final OptionalNullable<Double> loginNewCountry;
 
-    private final Optional<Double> loginNewNetwork;
+    private final OptionalNullable<Double> loginNewNetwork;
 
-    private final Optional<Double> captchaFailed;
+    private final OptionalNullable<Double> captchaFailed;
 
-    private final Optional<Double> captchaMissing;
+    private final OptionalNullable<Double> captchaMissing;
 
-    private final Optional<Double> contentSpam;
+    private final OptionalNullable<Double> contentSpam;
 
-    private final Optional<Double> contentPhishing;
+    private final OptionalNullable<Double> contentPhishing;
 
-    private final Optional<Double> contentMalware;
+    private final OptionalNullable<Double> contentMalware;
 
-    private final Optional<Double> contentFraud;
+    private final OptionalNullable<Double> contentFraud;
 
     private final Map<String, Object> additionalProperties;
 
     private UpdateRiskSettingsRequestReasonWeights(
-            Optional<Double> emailInvalid,
-            Optional<Double> emailDisposable,
-            Optional<Double> emailUndeliverable,
-            Optional<Double> emailRoleAccount,
-            Optional<Double> emailTypo,
-            Optional<Double> emailDomainNew,
-            Optional<Double> ipTor,
-            Optional<Double> ipVpnNetwork,
-            Optional<Double> ipHostingProvider,
-            Optional<Double> ipVpn,
-            Optional<Double> ipProxy,
-            Optional<Double> ipRelay,
-            Optional<Double> ipPrivate,
-            Optional<Double> velocitySignupsPerIp1H,
-            Optional<Double> velocitySignupsPerIp24H,
-            Optional<Double> velocitySignupsPerSubnet1H,
-            Optional<Double> velocitySignupsPerEmailDomain1H,
-            Optional<Double> velocitySignupsPerMailbox24H,
-            Optional<Double> velocitySignupsPerDevice24H,
-            Optional<Double> velocityCheckoutsPerIp1H,
-            Optional<Double> velocityCheckoutsPerUser1H,
-            Optional<Double> velocityCheckoutsPerCard24H,
-            Optional<Double> velocityLoginsPerIp1H,
-            Optional<Double> velocityLoginsPerUser1H,
-            Optional<Double> velocityEventsPerIp1H,
-            Optional<Double> velocityEventsPerUser1H,
-            Optional<Double> duplicateCanonicalMailbox,
-            Optional<Double> duplicateDevice,
-            Optional<Double> historyFraudMailbox,
-            Optional<Double> historyFraudUser,
-            Optional<Double> historyFraudIp,
-            Optional<Double> historyFraudSubnet,
-            Optional<Double> historyFraudCard,
-            Optional<Double> historyFraudDevice,
-            Optional<Double> checkoutCardCountryMismatch,
-            Optional<Double> checkoutBillingCountryMismatch,
-            Optional<Double> checkoutPrepaidCard,
-            Optional<Double> deviceAutomation,
-            Optional<Double> deviceInvalid,
-            Optional<Double> loginNewCountry,
-            Optional<Double> loginNewNetwork,
-            Optional<Double> captchaFailed,
-            Optional<Double> captchaMissing,
-            Optional<Double> contentSpam,
-            Optional<Double> contentPhishing,
-            Optional<Double> contentMalware,
-            Optional<Double> contentFraud,
+            OptionalNullable<Double> emailInvalid,
+            OptionalNullable<Double> emailDisposable,
+            OptionalNullable<Double> emailUndeliverable,
+            OptionalNullable<Double> emailRoleAccount,
+            OptionalNullable<Double> emailTypo,
+            OptionalNullable<Double> emailDomainNew,
+            OptionalNullable<Double> ipTor,
+            OptionalNullable<Double> ipVpnNetwork,
+            OptionalNullable<Double> ipHostingProvider,
+            OptionalNullable<Double> ipVpn,
+            OptionalNullable<Double> ipProxy,
+            OptionalNullable<Double> ipRelay,
+            OptionalNullable<Double> ipPrivate,
+            OptionalNullable<Double> velocitySignupsPerIp1H,
+            OptionalNullable<Double> velocitySignupsPerIp24H,
+            OptionalNullable<Double> velocitySignupsPerSubnet1H,
+            OptionalNullable<Double> velocitySignupsPerEmailDomain1H,
+            OptionalNullable<Double> velocitySignupsPerMailbox24H,
+            OptionalNullable<Double> velocitySignupsPerDevice24H,
+            OptionalNullable<Double> velocityCheckoutsPerIp1H,
+            OptionalNullable<Double> velocityCheckoutsPerUser1H,
+            OptionalNullable<Double> velocityCheckoutsPerCard24H,
+            OptionalNullable<Double> velocityLoginsPerIp1H,
+            OptionalNullable<Double> velocityLoginsPerUser1H,
+            OptionalNullable<Double> velocityEventsPerIp1H,
+            OptionalNullable<Double> velocityEventsPerUser1H,
+            OptionalNullable<Double> duplicateCanonicalMailbox,
+            OptionalNullable<Double> duplicateDevice,
+            OptionalNullable<Double> historyFraudMailbox,
+            OptionalNullable<Double> historyFraudUser,
+            OptionalNullable<Double> historyFraudIp,
+            OptionalNullable<Double> historyFraudSubnet,
+            OptionalNullable<Double> historyFraudCard,
+            OptionalNullable<Double> historyFraudDevice,
+            OptionalNullable<Double> checkoutCardCountryMismatch,
+            OptionalNullable<Double> checkoutBillingCountryMismatch,
+            OptionalNullable<Double> checkoutPrepaidCard,
+            OptionalNullable<Double> deviceAutomation,
+            OptionalNullable<Double> deviceInvalid,
+            OptionalNullable<Double> loginNewCountry,
+            OptionalNullable<Double> loginNewNetwork,
+            OptionalNullable<Double> captchaFailed,
+            OptionalNullable<Double> captchaMissing,
+            OptionalNullable<Double> contentSpam,
+            OptionalNullable<Double> contentPhishing,
+            OptionalNullable<Double> contentMalware,
+            OptionalNullable<Double> contentFraud,
             Map<String, Object> additionalProperties) {
         this.emailInvalid = emailInvalid;
         this.emailDisposable = emailDisposable;
@@ -218,661 +218,708 @@ public final class UpdateRiskSettingsRequestReasonWeights {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailInvalid() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.invalid")
+    public OptionalNullable<Double> getEmailInvalid() {
         if (emailInvalid == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailInvalid;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailDisposable() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.disposable")
+    public OptionalNullable<Double> getEmailDisposable() {
         if (emailDisposable == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailDisposable;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailUndeliverable() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.undeliverable")
+    public OptionalNullable<Double> getEmailUndeliverable() {
         if (emailUndeliverable == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailUndeliverable;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailRoleAccount() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.role_account")
+    public OptionalNullable<Double> getEmailRoleAccount() {
         if (emailRoleAccount == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailRoleAccount;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailTypo() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.typo")
+    public OptionalNullable<Double> getEmailTypo() {
         if (emailTypo == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailTypo;
     }
 
-    @JsonIgnore
-    public Optional<Double> getEmailDomainNew() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email.domain_new")
+    public OptionalNullable<Double> getEmailDomainNew() {
         if (emailDomainNew == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return emailDomainNew;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpTor() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.tor")
+    public OptionalNullable<Double> getIpTor() {
         if (ipTor == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipTor;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpVpnNetwork() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.vpn_network")
+    public OptionalNullable<Double> getIpVpnNetwork() {
         if (ipVpnNetwork == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipVpnNetwork;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpHostingProvider() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.hosting_provider")
+    public OptionalNullable<Double> getIpHostingProvider() {
         if (ipHostingProvider == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipHostingProvider;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpVpn() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.vpn")
+    public OptionalNullable<Double> getIpVpn() {
         if (ipVpn == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipVpn;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpProxy() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.proxy")
+    public OptionalNullable<Double> getIpProxy() {
         if (ipProxy == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipProxy;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpRelay() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.relay")
+    public OptionalNullable<Double> getIpRelay() {
         if (ipRelay == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipRelay;
     }
 
-    @JsonIgnore
-    public Optional<Double> getIpPrivate() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ip.private")
+    public OptionalNullable<Double> getIpPrivate() {
         if (ipPrivate == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return ipPrivate;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerIp1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_ip_1h")
+    public OptionalNullable<Double> getVelocitySignupsPerIp1H() {
         if (velocitySignupsPerIp1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerIp1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerIp24H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_ip_24h")
+    public OptionalNullable<Double> getVelocitySignupsPerIp24H() {
         if (velocitySignupsPerIp24H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerIp24H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerSubnet1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_subnet_1h")
+    public OptionalNullable<Double> getVelocitySignupsPerSubnet1H() {
         if (velocitySignupsPerSubnet1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerSubnet1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerEmailDomain1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_email_domain_1h")
+    public OptionalNullable<Double> getVelocitySignupsPerEmailDomain1H() {
         if (velocitySignupsPerEmailDomain1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerEmailDomain1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerMailbox24H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_mailbox_24h")
+    public OptionalNullable<Double> getVelocitySignupsPerMailbox24H() {
         if (velocitySignupsPerMailbox24H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerMailbox24H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocitySignupsPerDevice24H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.signups_per_device_24h")
+    public OptionalNullable<Double> getVelocitySignupsPerDevice24H() {
         if (velocitySignupsPerDevice24H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocitySignupsPerDevice24H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityCheckoutsPerIp1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.checkouts_per_ip_1h")
+    public OptionalNullable<Double> getVelocityCheckoutsPerIp1H() {
         if (velocityCheckoutsPerIp1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityCheckoutsPerIp1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityCheckoutsPerUser1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.checkouts_per_user_1h")
+    public OptionalNullable<Double> getVelocityCheckoutsPerUser1H() {
         if (velocityCheckoutsPerUser1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityCheckoutsPerUser1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityCheckoutsPerCard24H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.checkouts_per_card_24h")
+    public OptionalNullable<Double> getVelocityCheckoutsPerCard24H() {
         if (velocityCheckoutsPerCard24H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityCheckoutsPerCard24H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityLoginsPerIp1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.logins_per_ip_1h")
+    public OptionalNullable<Double> getVelocityLoginsPerIp1H() {
         if (velocityLoginsPerIp1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityLoginsPerIp1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityLoginsPerUser1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.logins_per_user_1h")
+    public OptionalNullable<Double> getVelocityLoginsPerUser1H() {
         if (velocityLoginsPerUser1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityLoginsPerUser1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityEventsPerIp1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.events_per_ip_1h")
+    public OptionalNullable<Double> getVelocityEventsPerIp1H() {
         if (velocityEventsPerIp1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityEventsPerIp1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getVelocityEventsPerUser1H() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("velocity.events_per_user_1h")
+    public OptionalNullable<Double> getVelocityEventsPerUser1H() {
         if (velocityEventsPerUser1H == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return velocityEventsPerUser1H;
     }
 
-    @JsonIgnore
-    public Optional<Double> getDuplicateCanonicalMailbox() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("duplicate.canonical_mailbox")
+    public OptionalNullable<Double> getDuplicateCanonicalMailbox() {
         if (duplicateCanonicalMailbox == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return duplicateCanonicalMailbox;
     }
 
-    @JsonIgnore
-    public Optional<Double> getDuplicateDevice() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("duplicate.device")
+    public OptionalNullable<Double> getDuplicateDevice() {
         if (duplicateDevice == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return duplicateDevice;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudMailbox() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_mailbox")
+    public OptionalNullable<Double> getHistoryFraudMailbox() {
         if (historyFraudMailbox == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudMailbox;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudUser() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_user")
+    public OptionalNullable<Double> getHistoryFraudUser() {
         if (historyFraudUser == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudUser;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudIp() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_ip")
+    public OptionalNullable<Double> getHistoryFraudIp() {
         if (historyFraudIp == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudIp;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudSubnet() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_subnet")
+    public OptionalNullable<Double> getHistoryFraudSubnet() {
         if (historyFraudSubnet == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudSubnet;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudCard() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_card")
+    public OptionalNullable<Double> getHistoryFraudCard() {
         if (historyFraudCard == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudCard;
     }
 
-    @JsonIgnore
-    public Optional<Double> getHistoryFraudDevice() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("history.fraud_device")
+    public OptionalNullable<Double> getHistoryFraudDevice() {
         if (historyFraudDevice == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return historyFraudDevice;
     }
 
-    @JsonIgnore
-    public Optional<Double> getCheckoutCardCountryMismatch() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("checkout.card_country_mismatch")
+    public OptionalNullable<Double> getCheckoutCardCountryMismatch() {
         if (checkoutCardCountryMismatch == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return checkoutCardCountryMismatch;
     }
 
-    @JsonIgnore
-    public Optional<Double> getCheckoutBillingCountryMismatch() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("checkout.billing_country_mismatch")
+    public OptionalNullable<Double> getCheckoutBillingCountryMismatch() {
         if (checkoutBillingCountryMismatch == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return checkoutBillingCountryMismatch;
     }
 
-    @JsonIgnore
-    public Optional<Double> getCheckoutPrepaidCard() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("checkout.prepaid_card")
+    public OptionalNullable<Double> getCheckoutPrepaidCard() {
         if (checkoutPrepaidCard == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return checkoutPrepaidCard;
     }
 
-    @JsonIgnore
-    public Optional<Double> getDeviceAutomation() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("device.automation")
+    public OptionalNullable<Double> getDeviceAutomation() {
         if (deviceAutomation == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return deviceAutomation;
     }
 
-    @JsonIgnore
-    public Optional<Double> getDeviceInvalid() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("device.invalid")
+    public OptionalNullable<Double> getDeviceInvalid() {
         if (deviceInvalid == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return deviceInvalid;
     }
 
-    @JsonIgnore
-    public Optional<Double> getLoginNewCountry() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("login.new_country")
+    public OptionalNullable<Double> getLoginNewCountry() {
         if (loginNewCountry == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return loginNewCountry;
     }
 
-    @JsonIgnore
-    public Optional<Double> getLoginNewNetwork() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("login.new_network")
+    public OptionalNullable<Double> getLoginNewNetwork() {
         if (loginNewNetwork == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return loginNewNetwork;
     }
 
-    @JsonIgnore
-    public Optional<Double> getCaptchaFailed() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("captcha.failed")
+    public OptionalNullable<Double> getCaptchaFailed() {
         if (captchaFailed == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return captchaFailed;
     }
 
-    @JsonIgnore
-    public Optional<Double> getCaptchaMissing() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("captcha.missing")
+    public OptionalNullable<Double> getCaptchaMissing() {
         if (captchaMissing == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return captchaMissing;
     }
 
-    @JsonIgnore
-    public Optional<Double> getContentSpam() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content.spam")
+    public OptionalNullable<Double> getContentSpam() {
         if (contentSpam == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentSpam;
     }
 
-    @JsonIgnore
-    public Optional<Double> getContentPhishing() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content.phishing")
+    public OptionalNullable<Double> getContentPhishing() {
         if (contentPhishing == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentPhishing;
     }
 
-    @JsonIgnore
-    public Optional<Double> getContentMalware() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content.malware")
+    public OptionalNullable<Double> getContentMalware() {
         if (contentMalware == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentMalware;
     }
 
-    @JsonIgnore
-    public Optional<Double> getContentFraud() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content.fraud")
+    public OptionalNullable<Double> getContentFraud() {
         if (contentFraud == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentFraud;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.invalid")
-    private Optional<Double> _getEmailInvalid() {
+    private OptionalNullable<Double> _getEmailInvalid() {
         return emailInvalid;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.disposable")
-    private Optional<Double> _getEmailDisposable() {
+    private OptionalNullable<Double> _getEmailDisposable() {
         return emailDisposable;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.undeliverable")
-    private Optional<Double> _getEmailUndeliverable() {
+    private OptionalNullable<Double> _getEmailUndeliverable() {
         return emailUndeliverable;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.role_account")
-    private Optional<Double> _getEmailRoleAccount() {
+    private OptionalNullable<Double> _getEmailRoleAccount() {
         return emailRoleAccount;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.typo")
-    private Optional<Double> _getEmailTypo() {
+    private OptionalNullable<Double> _getEmailTypo() {
         return emailTypo;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email.domain_new")
-    private Optional<Double> _getEmailDomainNew() {
+    private OptionalNullable<Double> _getEmailDomainNew() {
         return emailDomainNew;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.tor")
-    private Optional<Double> _getIpTor() {
+    private OptionalNullable<Double> _getIpTor() {
         return ipTor;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.vpn_network")
-    private Optional<Double> _getIpVpnNetwork() {
+    private OptionalNullable<Double> _getIpVpnNetwork() {
         return ipVpnNetwork;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.hosting_provider")
-    private Optional<Double> _getIpHostingProvider() {
+    private OptionalNullable<Double> _getIpHostingProvider() {
         return ipHostingProvider;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.vpn")
-    private Optional<Double> _getIpVpn() {
+    private OptionalNullable<Double> _getIpVpn() {
         return ipVpn;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.proxy")
-    private Optional<Double> _getIpProxy() {
+    private OptionalNullable<Double> _getIpProxy() {
         return ipProxy;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.relay")
-    private Optional<Double> _getIpRelay() {
+    private OptionalNullable<Double> _getIpRelay() {
         return ipRelay;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ip.private")
-    private Optional<Double> _getIpPrivate() {
+    private OptionalNullable<Double> _getIpPrivate() {
         return ipPrivate;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_ip_1h")
-    private Optional<Double> _getVelocitySignupsPerIp1H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerIp1H() {
         return velocitySignupsPerIp1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_ip_24h")
-    private Optional<Double> _getVelocitySignupsPerIp24H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerIp24H() {
         return velocitySignupsPerIp24H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_subnet_1h")
-    private Optional<Double> _getVelocitySignupsPerSubnet1H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerSubnet1H() {
         return velocitySignupsPerSubnet1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_email_domain_1h")
-    private Optional<Double> _getVelocitySignupsPerEmailDomain1H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerEmailDomain1H() {
         return velocitySignupsPerEmailDomain1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_mailbox_24h")
-    private Optional<Double> _getVelocitySignupsPerMailbox24H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerMailbox24H() {
         return velocitySignupsPerMailbox24H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.signups_per_device_24h")
-    private Optional<Double> _getVelocitySignupsPerDevice24H() {
+    private OptionalNullable<Double> _getVelocitySignupsPerDevice24H() {
         return velocitySignupsPerDevice24H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.checkouts_per_ip_1h")
-    private Optional<Double> _getVelocityCheckoutsPerIp1H() {
+    private OptionalNullable<Double> _getVelocityCheckoutsPerIp1H() {
         return velocityCheckoutsPerIp1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.checkouts_per_user_1h")
-    private Optional<Double> _getVelocityCheckoutsPerUser1H() {
+    private OptionalNullable<Double> _getVelocityCheckoutsPerUser1H() {
         return velocityCheckoutsPerUser1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.checkouts_per_card_24h")
-    private Optional<Double> _getVelocityCheckoutsPerCard24H() {
+    private OptionalNullable<Double> _getVelocityCheckoutsPerCard24H() {
         return velocityCheckoutsPerCard24H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.logins_per_ip_1h")
-    private Optional<Double> _getVelocityLoginsPerIp1H() {
+    private OptionalNullable<Double> _getVelocityLoginsPerIp1H() {
         return velocityLoginsPerIp1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.logins_per_user_1h")
-    private Optional<Double> _getVelocityLoginsPerUser1H() {
+    private OptionalNullable<Double> _getVelocityLoginsPerUser1H() {
         return velocityLoginsPerUser1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.events_per_ip_1h")
-    private Optional<Double> _getVelocityEventsPerIp1H() {
+    private OptionalNullable<Double> _getVelocityEventsPerIp1H() {
         return velocityEventsPerIp1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("velocity.events_per_user_1h")
-    private Optional<Double> _getVelocityEventsPerUser1H() {
+    private OptionalNullable<Double> _getVelocityEventsPerUser1H() {
         return velocityEventsPerUser1H;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("duplicate.canonical_mailbox")
-    private Optional<Double> _getDuplicateCanonicalMailbox() {
+    private OptionalNullable<Double> _getDuplicateCanonicalMailbox() {
         return duplicateCanonicalMailbox;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("duplicate.device")
-    private Optional<Double> _getDuplicateDevice() {
+    private OptionalNullable<Double> _getDuplicateDevice() {
         return duplicateDevice;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_mailbox")
-    private Optional<Double> _getHistoryFraudMailbox() {
+    private OptionalNullable<Double> _getHistoryFraudMailbox() {
         return historyFraudMailbox;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_user")
-    private Optional<Double> _getHistoryFraudUser() {
+    private OptionalNullable<Double> _getHistoryFraudUser() {
         return historyFraudUser;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_ip")
-    private Optional<Double> _getHistoryFraudIp() {
+    private OptionalNullable<Double> _getHistoryFraudIp() {
         return historyFraudIp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_subnet")
-    private Optional<Double> _getHistoryFraudSubnet() {
+    private OptionalNullable<Double> _getHistoryFraudSubnet() {
         return historyFraudSubnet;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_card")
-    private Optional<Double> _getHistoryFraudCard() {
+    private OptionalNullable<Double> _getHistoryFraudCard() {
         return historyFraudCard;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("history.fraud_device")
-    private Optional<Double> _getHistoryFraudDevice() {
+    private OptionalNullable<Double> _getHistoryFraudDevice() {
         return historyFraudDevice;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("checkout.card_country_mismatch")
-    private Optional<Double> _getCheckoutCardCountryMismatch() {
+    private OptionalNullable<Double> _getCheckoutCardCountryMismatch() {
         return checkoutCardCountryMismatch;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("checkout.billing_country_mismatch")
-    private Optional<Double> _getCheckoutBillingCountryMismatch() {
+    private OptionalNullable<Double> _getCheckoutBillingCountryMismatch() {
         return checkoutBillingCountryMismatch;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("checkout.prepaid_card")
-    private Optional<Double> _getCheckoutPrepaidCard() {
+    private OptionalNullable<Double> _getCheckoutPrepaidCard() {
         return checkoutPrepaidCard;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("device.automation")
-    private Optional<Double> _getDeviceAutomation() {
+    private OptionalNullable<Double> _getDeviceAutomation() {
         return deviceAutomation;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("device.invalid")
-    private Optional<Double> _getDeviceInvalid() {
+    private OptionalNullable<Double> _getDeviceInvalid() {
         return deviceInvalid;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("login.new_country")
-    private Optional<Double> _getLoginNewCountry() {
+    private OptionalNullable<Double> _getLoginNewCountry() {
         return loginNewCountry;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("login.new_network")
-    private Optional<Double> _getLoginNewNetwork() {
+    private OptionalNullable<Double> _getLoginNewNetwork() {
         return loginNewNetwork;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("captcha.failed")
-    private Optional<Double> _getCaptchaFailed() {
+    private OptionalNullable<Double> _getCaptchaFailed() {
         return captchaFailed;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("captcha.missing")
-    private Optional<Double> _getCaptchaMissing() {
+    private OptionalNullable<Double> _getCaptchaMissing() {
         return captchaMissing;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content.spam")
-    private Optional<Double> _getContentSpam() {
+    private OptionalNullable<Double> _getContentSpam() {
         return contentSpam;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content.phishing")
-    private Optional<Double> _getContentPhishing() {
+    private OptionalNullable<Double> _getContentPhishing() {
         return contentPhishing;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content.malware")
-    private Optional<Double> _getContentMalware() {
+    private OptionalNullable<Double> _getContentMalware() {
         return contentMalware;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content.fraud")
-    private Optional<Double> _getContentFraud() {
+    private OptionalNullable<Double> _getContentFraud() {
         return contentFraud;
     }
 
@@ -1001,99 +1048,99 @@ public final class UpdateRiskSettingsRequestReasonWeights {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<Double> emailInvalid = Optional.empty();
+        private OptionalNullable<Double> emailInvalid = OptionalNullable.absent();
 
-        private Optional<Double> emailDisposable = Optional.empty();
+        private OptionalNullable<Double> emailDisposable = OptionalNullable.absent();
 
-        private Optional<Double> emailUndeliverable = Optional.empty();
+        private OptionalNullable<Double> emailUndeliverable = OptionalNullable.absent();
 
-        private Optional<Double> emailRoleAccount = Optional.empty();
+        private OptionalNullable<Double> emailRoleAccount = OptionalNullable.absent();
 
-        private Optional<Double> emailTypo = Optional.empty();
+        private OptionalNullable<Double> emailTypo = OptionalNullable.absent();
 
-        private Optional<Double> emailDomainNew = Optional.empty();
+        private OptionalNullable<Double> emailDomainNew = OptionalNullable.absent();
 
-        private Optional<Double> ipTor = Optional.empty();
+        private OptionalNullable<Double> ipTor = OptionalNullable.absent();
 
-        private Optional<Double> ipVpnNetwork = Optional.empty();
+        private OptionalNullable<Double> ipVpnNetwork = OptionalNullable.absent();
 
-        private Optional<Double> ipHostingProvider = Optional.empty();
+        private OptionalNullable<Double> ipHostingProvider = OptionalNullable.absent();
 
-        private Optional<Double> ipVpn = Optional.empty();
+        private OptionalNullable<Double> ipVpn = OptionalNullable.absent();
 
-        private Optional<Double> ipProxy = Optional.empty();
+        private OptionalNullable<Double> ipProxy = OptionalNullable.absent();
 
-        private Optional<Double> ipRelay = Optional.empty();
+        private OptionalNullable<Double> ipRelay = OptionalNullable.absent();
 
-        private Optional<Double> ipPrivate = Optional.empty();
+        private OptionalNullable<Double> ipPrivate = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerIp1H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerIp1H = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerIp24H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerIp24H = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerSubnet1H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerSubnet1H = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerEmailDomain1H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerEmailDomain1H = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerMailbox24H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerMailbox24H = OptionalNullable.absent();
 
-        private Optional<Double> velocitySignupsPerDevice24H = Optional.empty();
+        private OptionalNullable<Double> velocitySignupsPerDevice24H = OptionalNullable.absent();
 
-        private Optional<Double> velocityCheckoutsPerIp1H = Optional.empty();
+        private OptionalNullable<Double> velocityCheckoutsPerIp1H = OptionalNullable.absent();
 
-        private Optional<Double> velocityCheckoutsPerUser1H = Optional.empty();
+        private OptionalNullable<Double> velocityCheckoutsPerUser1H = OptionalNullable.absent();
 
-        private Optional<Double> velocityCheckoutsPerCard24H = Optional.empty();
+        private OptionalNullable<Double> velocityCheckoutsPerCard24H = OptionalNullable.absent();
 
-        private Optional<Double> velocityLoginsPerIp1H = Optional.empty();
+        private OptionalNullable<Double> velocityLoginsPerIp1H = OptionalNullable.absent();
 
-        private Optional<Double> velocityLoginsPerUser1H = Optional.empty();
+        private OptionalNullable<Double> velocityLoginsPerUser1H = OptionalNullable.absent();
 
-        private Optional<Double> velocityEventsPerIp1H = Optional.empty();
+        private OptionalNullable<Double> velocityEventsPerIp1H = OptionalNullable.absent();
 
-        private Optional<Double> velocityEventsPerUser1H = Optional.empty();
+        private OptionalNullable<Double> velocityEventsPerUser1H = OptionalNullable.absent();
 
-        private Optional<Double> duplicateCanonicalMailbox = Optional.empty();
+        private OptionalNullable<Double> duplicateCanonicalMailbox = OptionalNullable.absent();
 
-        private Optional<Double> duplicateDevice = Optional.empty();
+        private OptionalNullable<Double> duplicateDevice = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudMailbox = Optional.empty();
+        private OptionalNullable<Double> historyFraudMailbox = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudUser = Optional.empty();
+        private OptionalNullable<Double> historyFraudUser = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudIp = Optional.empty();
+        private OptionalNullable<Double> historyFraudIp = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudSubnet = Optional.empty();
+        private OptionalNullable<Double> historyFraudSubnet = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudCard = Optional.empty();
+        private OptionalNullable<Double> historyFraudCard = OptionalNullable.absent();
 
-        private Optional<Double> historyFraudDevice = Optional.empty();
+        private OptionalNullable<Double> historyFraudDevice = OptionalNullable.absent();
 
-        private Optional<Double> checkoutCardCountryMismatch = Optional.empty();
+        private OptionalNullable<Double> checkoutCardCountryMismatch = OptionalNullable.absent();
 
-        private Optional<Double> checkoutBillingCountryMismatch = Optional.empty();
+        private OptionalNullable<Double> checkoutBillingCountryMismatch = OptionalNullable.absent();
 
-        private Optional<Double> checkoutPrepaidCard = Optional.empty();
+        private OptionalNullable<Double> checkoutPrepaidCard = OptionalNullable.absent();
 
-        private Optional<Double> deviceAutomation = Optional.empty();
+        private OptionalNullable<Double> deviceAutomation = OptionalNullable.absent();
 
-        private Optional<Double> deviceInvalid = Optional.empty();
+        private OptionalNullable<Double> deviceInvalid = OptionalNullable.absent();
 
-        private Optional<Double> loginNewCountry = Optional.empty();
+        private OptionalNullable<Double> loginNewCountry = OptionalNullable.absent();
 
-        private Optional<Double> loginNewNetwork = Optional.empty();
+        private OptionalNullable<Double> loginNewNetwork = OptionalNullable.absent();
 
-        private Optional<Double> captchaFailed = Optional.empty();
+        private OptionalNullable<Double> captchaFailed = OptionalNullable.absent();
 
-        private Optional<Double> captchaMissing = Optional.empty();
+        private OptionalNullable<Double> captchaMissing = OptionalNullable.absent();
 
-        private Optional<Double> contentSpam = Optional.empty();
+        private OptionalNullable<Double> contentSpam = OptionalNullable.absent();
 
-        private Optional<Double> contentPhishing = Optional.empty();
+        private OptionalNullable<Double> contentPhishing = OptionalNullable.absent();
 
-        private Optional<Double> contentMalware = Optional.empty();
+        private OptionalNullable<Double> contentMalware = OptionalNullable.absent();
 
-        private Optional<Double> contentFraud = Optional.empty();
+        private OptionalNullable<Double> contentFraud = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -1152,1035 +1199,1458 @@ public final class UpdateRiskSettingsRequestReasonWeights {
         }
 
         @JsonSetter(value = "email.invalid", nulls = Nulls.SKIP)
-        public Builder emailInvalid(Optional<Double> emailInvalid) {
+        public Builder emailInvalid(OptionalNullable<Double> emailInvalid) {
             this.emailInvalid = emailInvalid;
             return this;
         }
 
         public Builder emailInvalid(Double emailInvalid) {
-            this.emailInvalid = Optional.ofNullable(emailInvalid);
+            this.emailInvalid = OptionalNullable.of(emailInvalid);
+            return this;
+        }
+
+        public Builder emailInvalid(Optional<Double> emailInvalid) {
+            if (emailInvalid.isPresent()) {
+                this.emailInvalid = OptionalNullable.of(emailInvalid.get());
+            } else {
+                this.emailInvalid = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailInvalid(Nullable<Double> emailInvalid) {
             if (emailInvalid.isNull()) {
-                this.emailInvalid = null;
+                this.emailInvalid = OptionalNullable.ofNull();
             } else if (emailInvalid.isEmpty()) {
-                this.emailInvalid = Optional.empty();
+                this.emailInvalid = OptionalNullable.absent();
             } else {
-                this.emailInvalid = Optional.of(emailInvalid.get());
+                this.emailInvalid = OptionalNullable.of(emailInvalid.get());
             }
             return this;
         }
 
         @JsonSetter(value = "email.disposable", nulls = Nulls.SKIP)
-        public Builder emailDisposable(Optional<Double> emailDisposable) {
+        public Builder emailDisposable(OptionalNullable<Double> emailDisposable) {
             this.emailDisposable = emailDisposable;
             return this;
         }
 
         public Builder emailDisposable(Double emailDisposable) {
-            this.emailDisposable = Optional.ofNullable(emailDisposable);
+            this.emailDisposable = OptionalNullable.of(emailDisposable);
+            return this;
+        }
+
+        public Builder emailDisposable(Optional<Double> emailDisposable) {
+            if (emailDisposable.isPresent()) {
+                this.emailDisposable = OptionalNullable.of(emailDisposable.get());
+            } else {
+                this.emailDisposable = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailDisposable(Nullable<Double> emailDisposable) {
             if (emailDisposable.isNull()) {
-                this.emailDisposable = null;
+                this.emailDisposable = OptionalNullable.ofNull();
             } else if (emailDisposable.isEmpty()) {
-                this.emailDisposable = Optional.empty();
+                this.emailDisposable = OptionalNullable.absent();
             } else {
-                this.emailDisposable = Optional.of(emailDisposable.get());
+                this.emailDisposable = OptionalNullable.of(emailDisposable.get());
             }
             return this;
         }
 
         @JsonSetter(value = "email.undeliverable", nulls = Nulls.SKIP)
-        public Builder emailUndeliverable(Optional<Double> emailUndeliverable) {
+        public Builder emailUndeliverable(OptionalNullable<Double> emailUndeliverable) {
             this.emailUndeliverable = emailUndeliverable;
             return this;
         }
 
         public Builder emailUndeliverable(Double emailUndeliverable) {
-            this.emailUndeliverable = Optional.ofNullable(emailUndeliverable);
+            this.emailUndeliverable = OptionalNullable.of(emailUndeliverable);
+            return this;
+        }
+
+        public Builder emailUndeliverable(Optional<Double> emailUndeliverable) {
+            if (emailUndeliverable.isPresent()) {
+                this.emailUndeliverable = OptionalNullable.of(emailUndeliverable.get());
+            } else {
+                this.emailUndeliverable = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailUndeliverable(Nullable<Double> emailUndeliverable) {
             if (emailUndeliverable.isNull()) {
-                this.emailUndeliverable = null;
+                this.emailUndeliverable = OptionalNullable.ofNull();
             } else if (emailUndeliverable.isEmpty()) {
-                this.emailUndeliverable = Optional.empty();
+                this.emailUndeliverable = OptionalNullable.absent();
             } else {
-                this.emailUndeliverable = Optional.of(emailUndeliverable.get());
+                this.emailUndeliverable = OptionalNullable.of(emailUndeliverable.get());
             }
             return this;
         }
 
         @JsonSetter(value = "email.role_account", nulls = Nulls.SKIP)
-        public Builder emailRoleAccount(Optional<Double> emailRoleAccount) {
+        public Builder emailRoleAccount(OptionalNullable<Double> emailRoleAccount) {
             this.emailRoleAccount = emailRoleAccount;
             return this;
         }
 
         public Builder emailRoleAccount(Double emailRoleAccount) {
-            this.emailRoleAccount = Optional.ofNullable(emailRoleAccount);
+            this.emailRoleAccount = OptionalNullable.of(emailRoleAccount);
+            return this;
+        }
+
+        public Builder emailRoleAccount(Optional<Double> emailRoleAccount) {
+            if (emailRoleAccount.isPresent()) {
+                this.emailRoleAccount = OptionalNullable.of(emailRoleAccount.get());
+            } else {
+                this.emailRoleAccount = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailRoleAccount(Nullable<Double> emailRoleAccount) {
             if (emailRoleAccount.isNull()) {
-                this.emailRoleAccount = null;
+                this.emailRoleAccount = OptionalNullable.ofNull();
             } else if (emailRoleAccount.isEmpty()) {
-                this.emailRoleAccount = Optional.empty();
+                this.emailRoleAccount = OptionalNullable.absent();
             } else {
-                this.emailRoleAccount = Optional.of(emailRoleAccount.get());
+                this.emailRoleAccount = OptionalNullable.of(emailRoleAccount.get());
             }
             return this;
         }
 
         @JsonSetter(value = "email.typo", nulls = Nulls.SKIP)
-        public Builder emailTypo(Optional<Double> emailTypo) {
+        public Builder emailTypo(OptionalNullable<Double> emailTypo) {
             this.emailTypo = emailTypo;
             return this;
         }
 
         public Builder emailTypo(Double emailTypo) {
-            this.emailTypo = Optional.ofNullable(emailTypo);
+            this.emailTypo = OptionalNullable.of(emailTypo);
+            return this;
+        }
+
+        public Builder emailTypo(Optional<Double> emailTypo) {
+            if (emailTypo.isPresent()) {
+                this.emailTypo = OptionalNullable.of(emailTypo.get());
+            } else {
+                this.emailTypo = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailTypo(Nullable<Double> emailTypo) {
             if (emailTypo.isNull()) {
-                this.emailTypo = null;
+                this.emailTypo = OptionalNullable.ofNull();
             } else if (emailTypo.isEmpty()) {
-                this.emailTypo = Optional.empty();
+                this.emailTypo = OptionalNullable.absent();
             } else {
-                this.emailTypo = Optional.of(emailTypo.get());
+                this.emailTypo = OptionalNullable.of(emailTypo.get());
             }
             return this;
         }
 
         @JsonSetter(value = "email.domain_new", nulls = Nulls.SKIP)
-        public Builder emailDomainNew(Optional<Double> emailDomainNew) {
+        public Builder emailDomainNew(OptionalNullable<Double> emailDomainNew) {
             this.emailDomainNew = emailDomainNew;
             return this;
         }
 
         public Builder emailDomainNew(Double emailDomainNew) {
-            this.emailDomainNew = Optional.ofNullable(emailDomainNew);
+            this.emailDomainNew = OptionalNullable.of(emailDomainNew);
+            return this;
+        }
+
+        public Builder emailDomainNew(Optional<Double> emailDomainNew) {
+            if (emailDomainNew.isPresent()) {
+                this.emailDomainNew = OptionalNullable.of(emailDomainNew.get());
+            } else {
+                this.emailDomainNew = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder emailDomainNew(Nullable<Double> emailDomainNew) {
             if (emailDomainNew.isNull()) {
-                this.emailDomainNew = null;
+                this.emailDomainNew = OptionalNullable.ofNull();
             } else if (emailDomainNew.isEmpty()) {
-                this.emailDomainNew = Optional.empty();
+                this.emailDomainNew = OptionalNullable.absent();
             } else {
-                this.emailDomainNew = Optional.of(emailDomainNew.get());
+                this.emailDomainNew = OptionalNullable.of(emailDomainNew.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.tor", nulls = Nulls.SKIP)
-        public Builder ipTor(Optional<Double> ipTor) {
+        public Builder ipTor(OptionalNullable<Double> ipTor) {
             this.ipTor = ipTor;
             return this;
         }
 
         public Builder ipTor(Double ipTor) {
-            this.ipTor = Optional.ofNullable(ipTor);
+            this.ipTor = OptionalNullable.of(ipTor);
+            return this;
+        }
+
+        public Builder ipTor(Optional<Double> ipTor) {
+            if (ipTor.isPresent()) {
+                this.ipTor = OptionalNullable.of(ipTor.get());
+            } else {
+                this.ipTor = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipTor(Nullable<Double> ipTor) {
             if (ipTor.isNull()) {
-                this.ipTor = null;
+                this.ipTor = OptionalNullable.ofNull();
             } else if (ipTor.isEmpty()) {
-                this.ipTor = Optional.empty();
+                this.ipTor = OptionalNullable.absent();
             } else {
-                this.ipTor = Optional.of(ipTor.get());
+                this.ipTor = OptionalNullable.of(ipTor.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.vpn_network", nulls = Nulls.SKIP)
-        public Builder ipVpnNetwork(Optional<Double> ipVpnNetwork) {
+        public Builder ipVpnNetwork(OptionalNullable<Double> ipVpnNetwork) {
             this.ipVpnNetwork = ipVpnNetwork;
             return this;
         }
 
         public Builder ipVpnNetwork(Double ipVpnNetwork) {
-            this.ipVpnNetwork = Optional.ofNullable(ipVpnNetwork);
+            this.ipVpnNetwork = OptionalNullable.of(ipVpnNetwork);
+            return this;
+        }
+
+        public Builder ipVpnNetwork(Optional<Double> ipVpnNetwork) {
+            if (ipVpnNetwork.isPresent()) {
+                this.ipVpnNetwork = OptionalNullable.of(ipVpnNetwork.get());
+            } else {
+                this.ipVpnNetwork = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipVpnNetwork(Nullable<Double> ipVpnNetwork) {
             if (ipVpnNetwork.isNull()) {
-                this.ipVpnNetwork = null;
+                this.ipVpnNetwork = OptionalNullable.ofNull();
             } else if (ipVpnNetwork.isEmpty()) {
-                this.ipVpnNetwork = Optional.empty();
+                this.ipVpnNetwork = OptionalNullable.absent();
             } else {
-                this.ipVpnNetwork = Optional.of(ipVpnNetwork.get());
+                this.ipVpnNetwork = OptionalNullable.of(ipVpnNetwork.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.hosting_provider", nulls = Nulls.SKIP)
-        public Builder ipHostingProvider(Optional<Double> ipHostingProvider) {
+        public Builder ipHostingProvider(OptionalNullable<Double> ipHostingProvider) {
             this.ipHostingProvider = ipHostingProvider;
             return this;
         }
 
         public Builder ipHostingProvider(Double ipHostingProvider) {
-            this.ipHostingProvider = Optional.ofNullable(ipHostingProvider);
+            this.ipHostingProvider = OptionalNullable.of(ipHostingProvider);
+            return this;
+        }
+
+        public Builder ipHostingProvider(Optional<Double> ipHostingProvider) {
+            if (ipHostingProvider.isPresent()) {
+                this.ipHostingProvider = OptionalNullable.of(ipHostingProvider.get());
+            } else {
+                this.ipHostingProvider = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipHostingProvider(Nullable<Double> ipHostingProvider) {
             if (ipHostingProvider.isNull()) {
-                this.ipHostingProvider = null;
+                this.ipHostingProvider = OptionalNullable.ofNull();
             } else if (ipHostingProvider.isEmpty()) {
-                this.ipHostingProvider = Optional.empty();
+                this.ipHostingProvider = OptionalNullable.absent();
             } else {
-                this.ipHostingProvider = Optional.of(ipHostingProvider.get());
+                this.ipHostingProvider = OptionalNullable.of(ipHostingProvider.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.vpn", nulls = Nulls.SKIP)
-        public Builder ipVpn(Optional<Double> ipVpn) {
+        public Builder ipVpn(OptionalNullable<Double> ipVpn) {
             this.ipVpn = ipVpn;
             return this;
         }
 
         public Builder ipVpn(Double ipVpn) {
-            this.ipVpn = Optional.ofNullable(ipVpn);
+            this.ipVpn = OptionalNullable.of(ipVpn);
+            return this;
+        }
+
+        public Builder ipVpn(Optional<Double> ipVpn) {
+            if (ipVpn.isPresent()) {
+                this.ipVpn = OptionalNullable.of(ipVpn.get());
+            } else {
+                this.ipVpn = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipVpn(Nullable<Double> ipVpn) {
             if (ipVpn.isNull()) {
-                this.ipVpn = null;
+                this.ipVpn = OptionalNullable.ofNull();
             } else if (ipVpn.isEmpty()) {
-                this.ipVpn = Optional.empty();
+                this.ipVpn = OptionalNullable.absent();
             } else {
-                this.ipVpn = Optional.of(ipVpn.get());
+                this.ipVpn = OptionalNullable.of(ipVpn.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.proxy", nulls = Nulls.SKIP)
-        public Builder ipProxy(Optional<Double> ipProxy) {
+        public Builder ipProxy(OptionalNullable<Double> ipProxy) {
             this.ipProxy = ipProxy;
             return this;
         }
 
         public Builder ipProxy(Double ipProxy) {
-            this.ipProxy = Optional.ofNullable(ipProxy);
+            this.ipProxy = OptionalNullable.of(ipProxy);
+            return this;
+        }
+
+        public Builder ipProxy(Optional<Double> ipProxy) {
+            if (ipProxy.isPresent()) {
+                this.ipProxy = OptionalNullable.of(ipProxy.get());
+            } else {
+                this.ipProxy = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipProxy(Nullable<Double> ipProxy) {
             if (ipProxy.isNull()) {
-                this.ipProxy = null;
+                this.ipProxy = OptionalNullable.ofNull();
             } else if (ipProxy.isEmpty()) {
-                this.ipProxy = Optional.empty();
+                this.ipProxy = OptionalNullable.absent();
             } else {
-                this.ipProxy = Optional.of(ipProxy.get());
+                this.ipProxy = OptionalNullable.of(ipProxy.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.relay", nulls = Nulls.SKIP)
-        public Builder ipRelay(Optional<Double> ipRelay) {
+        public Builder ipRelay(OptionalNullable<Double> ipRelay) {
             this.ipRelay = ipRelay;
             return this;
         }
 
         public Builder ipRelay(Double ipRelay) {
-            this.ipRelay = Optional.ofNullable(ipRelay);
+            this.ipRelay = OptionalNullable.of(ipRelay);
+            return this;
+        }
+
+        public Builder ipRelay(Optional<Double> ipRelay) {
+            if (ipRelay.isPresent()) {
+                this.ipRelay = OptionalNullable.of(ipRelay.get());
+            } else {
+                this.ipRelay = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipRelay(Nullable<Double> ipRelay) {
             if (ipRelay.isNull()) {
-                this.ipRelay = null;
+                this.ipRelay = OptionalNullable.ofNull();
             } else if (ipRelay.isEmpty()) {
-                this.ipRelay = Optional.empty();
+                this.ipRelay = OptionalNullable.absent();
             } else {
-                this.ipRelay = Optional.of(ipRelay.get());
+                this.ipRelay = OptionalNullable.of(ipRelay.get());
             }
             return this;
         }
 
         @JsonSetter(value = "ip.private", nulls = Nulls.SKIP)
-        public Builder ipPrivate(Optional<Double> ipPrivate) {
+        public Builder ipPrivate(OptionalNullable<Double> ipPrivate) {
             this.ipPrivate = ipPrivate;
             return this;
         }
 
         public Builder ipPrivate(Double ipPrivate) {
-            this.ipPrivate = Optional.ofNullable(ipPrivate);
+            this.ipPrivate = OptionalNullable.of(ipPrivate);
+            return this;
+        }
+
+        public Builder ipPrivate(Optional<Double> ipPrivate) {
+            if (ipPrivate.isPresent()) {
+                this.ipPrivate = OptionalNullable.of(ipPrivate.get());
+            } else {
+                this.ipPrivate = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder ipPrivate(Nullable<Double> ipPrivate) {
             if (ipPrivate.isNull()) {
-                this.ipPrivate = null;
+                this.ipPrivate = OptionalNullable.ofNull();
             } else if (ipPrivate.isEmpty()) {
-                this.ipPrivate = Optional.empty();
+                this.ipPrivate = OptionalNullable.absent();
             } else {
-                this.ipPrivate = Optional.of(ipPrivate.get());
+                this.ipPrivate = OptionalNullable.of(ipPrivate.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_ip_1h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerIp1H(Optional<Double> velocitySignupsPerIp1H) {
+        public Builder velocitySignupsPerIp1H(OptionalNullable<Double> velocitySignupsPerIp1H) {
             this.velocitySignupsPerIp1H = velocitySignupsPerIp1H;
             return this;
         }
 
         public Builder velocitySignupsPerIp1H(Double velocitySignupsPerIp1H) {
-            this.velocitySignupsPerIp1H = Optional.ofNullable(velocitySignupsPerIp1H);
+            this.velocitySignupsPerIp1H = OptionalNullable.of(velocitySignupsPerIp1H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerIp1H(Optional<Double> velocitySignupsPerIp1H) {
+            if (velocitySignupsPerIp1H.isPresent()) {
+                this.velocitySignupsPerIp1H = OptionalNullable.of(velocitySignupsPerIp1H.get());
+            } else {
+                this.velocitySignupsPerIp1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerIp1H(Nullable<Double> velocitySignupsPerIp1H) {
             if (velocitySignupsPerIp1H.isNull()) {
-                this.velocitySignupsPerIp1H = null;
+                this.velocitySignupsPerIp1H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerIp1H.isEmpty()) {
-                this.velocitySignupsPerIp1H = Optional.empty();
+                this.velocitySignupsPerIp1H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerIp1H = Optional.of(velocitySignupsPerIp1H.get());
+                this.velocitySignupsPerIp1H = OptionalNullable.of(velocitySignupsPerIp1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_ip_24h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerIp24H(Optional<Double> velocitySignupsPerIp24H) {
+        public Builder velocitySignupsPerIp24H(OptionalNullable<Double> velocitySignupsPerIp24H) {
             this.velocitySignupsPerIp24H = velocitySignupsPerIp24H;
             return this;
         }
 
         public Builder velocitySignupsPerIp24H(Double velocitySignupsPerIp24H) {
-            this.velocitySignupsPerIp24H = Optional.ofNullable(velocitySignupsPerIp24H);
+            this.velocitySignupsPerIp24H = OptionalNullable.of(velocitySignupsPerIp24H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerIp24H(Optional<Double> velocitySignupsPerIp24H) {
+            if (velocitySignupsPerIp24H.isPresent()) {
+                this.velocitySignupsPerIp24H = OptionalNullable.of(velocitySignupsPerIp24H.get());
+            } else {
+                this.velocitySignupsPerIp24H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerIp24H(Nullable<Double> velocitySignupsPerIp24H) {
             if (velocitySignupsPerIp24H.isNull()) {
-                this.velocitySignupsPerIp24H = null;
+                this.velocitySignupsPerIp24H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerIp24H.isEmpty()) {
-                this.velocitySignupsPerIp24H = Optional.empty();
+                this.velocitySignupsPerIp24H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerIp24H = Optional.of(velocitySignupsPerIp24H.get());
+                this.velocitySignupsPerIp24H = OptionalNullable.of(velocitySignupsPerIp24H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_subnet_1h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerSubnet1H(Optional<Double> velocitySignupsPerSubnet1H) {
+        public Builder velocitySignupsPerSubnet1H(OptionalNullable<Double> velocitySignupsPerSubnet1H) {
             this.velocitySignupsPerSubnet1H = velocitySignupsPerSubnet1H;
             return this;
         }
 
         public Builder velocitySignupsPerSubnet1H(Double velocitySignupsPerSubnet1H) {
-            this.velocitySignupsPerSubnet1H = Optional.ofNullable(velocitySignupsPerSubnet1H);
+            this.velocitySignupsPerSubnet1H = OptionalNullable.of(velocitySignupsPerSubnet1H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerSubnet1H(Optional<Double> velocitySignupsPerSubnet1H) {
+            if (velocitySignupsPerSubnet1H.isPresent()) {
+                this.velocitySignupsPerSubnet1H = OptionalNullable.of(velocitySignupsPerSubnet1H.get());
+            } else {
+                this.velocitySignupsPerSubnet1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerSubnet1H(Nullable<Double> velocitySignupsPerSubnet1H) {
             if (velocitySignupsPerSubnet1H.isNull()) {
-                this.velocitySignupsPerSubnet1H = null;
+                this.velocitySignupsPerSubnet1H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerSubnet1H.isEmpty()) {
-                this.velocitySignupsPerSubnet1H = Optional.empty();
+                this.velocitySignupsPerSubnet1H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerSubnet1H = Optional.of(velocitySignupsPerSubnet1H.get());
+                this.velocitySignupsPerSubnet1H = OptionalNullable.of(velocitySignupsPerSubnet1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_email_domain_1h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerEmailDomain1H(Optional<Double> velocitySignupsPerEmailDomain1H) {
+        public Builder velocitySignupsPerEmailDomain1H(OptionalNullable<Double> velocitySignupsPerEmailDomain1H) {
             this.velocitySignupsPerEmailDomain1H = velocitySignupsPerEmailDomain1H;
             return this;
         }
 
         public Builder velocitySignupsPerEmailDomain1H(Double velocitySignupsPerEmailDomain1H) {
-            this.velocitySignupsPerEmailDomain1H = Optional.ofNullable(velocitySignupsPerEmailDomain1H);
+            this.velocitySignupsPerEmailDomain1H = OptionalNullable.of(velocitySignupsPerEmailDomain1H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerEmailDomain1H(Optional<Double> velocitySignupsPerEmailDomain1H) {
+            if (velocitySignupsPerEmailDomain1H.isPresent()) {
+                this.velocitySignupsPerEmailDomain1H = OptionalNullable.of(velocitySignupsPerEmailDomain1H.get());
+            } else {
+                this.velocitySignupsPerEmailDomain1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerEmailDomain1H(Nullable<Double> velocitySignupsPerEmailDomain1H) {
             if (velocitySignupsPerEmailDomain1H.isNull()) {
-                this.velocitySignupsPerEmailDomain1H = null;
+                this.velocitySignupsPerEmailDomain1H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerEmailDomain1H.isEmpty()) {
-                this.velocitySignupsPerEmailDomain1H = Optional.empty();
+                this.velocitySignupsPerEmailDomain1H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerEmailDomain1H = Optional.of(velocitySignupsPerEmailDomain1H.get());
+                this.velocitySignupsPerEmailDomain1H = OptionalNullable.of(velocitySignupsPerEmailDomain1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_mailbox_24h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerMailbox24H(Optional<Double> velocitySignupsPerMailbox24H) {
+        public Builder velocitySignupsPerMailbox24H(OptionalNullable<Double> velocitySignupsPerMailbox24H) {
             this.velocitySignupsPerMailbox24H = velocitySignupsPerMailbox24H;
             return this;
         }
 
         public Builder velocitySignupsPerMailbox24H(Double velocitySignupsPerMailbox24H) {
-            this.velocitySignupsPerMailbox24H = Optional.ofNullable(velocitySignupsPerMailbox24H);
+            this.velocitySignupsPerMailbox24H = OptionalNullable.of(velocitySignupsPerMailbox24H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerMailbox24H(Optional<Double> velocitySignupsPerMailbox24H) {
+            if (velocitySignupsPerMailbox24H.isPresent()) {
+                this.velocitySignupsPerMailbox24H = OptionalNullable.of(velocitySignupsPerMailbox24H.get());
+            } else {
+                this.velocitySignupsPerMailbox24H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerMailbox24H(Nullable<Double> velocitySignupsPerMailbox24H) {
             if (velocitySignupsPerMailbox24H.isNull()) {
-                this.velocitySignupsPerMailbox24H = null;
+                this.velocitySignupsPerMailbox24H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerMailbox24H.isEmpty()) {
-                this.velocitySignupsPerMailbox24H = Optional.empty();
+                this.velocitySignupsPerMailbox24H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerMailbox24H = Optional.of(velocitySignupsPerMailbox24H.get());
+                this.velocitySignupsPerMailbox24H = OptionalNullable.of(velocitySignupsPerMailbox24H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.signups_per_device_24h", nulls = Nulls.SKIP)
-        public Builder velocitySignupsPerDevice24H(Optional<Double> velocitySignupsPerDevice24H) {
+        public Builder velocitySignupsPerDevice24H(OptionalNullable<Double> velocitySignupsPerDevice24H) {
             this.velocitySignupsPerDevice24H = velocitySignupsPerDevice24H;
             return this;
         }
 
         public Builder velocitySignupsPerDevice24H(Double velocitySignupsPerDevice24H) {
-            this.velocitySignupsPerDevice24H = Optional.ofNullable(velocitySignupsPerDevice24H);
+            this.velocitySignupsPerDevice24H = OptionalNullable.of(velocitySignupsPerDevice24H);
+            return this;
+        }
+
+        public Builder velocitySignupsPerDevice24H(Optional<Double> velocitySignupsPerDevice24H) {
+            if (velocitySignupsPerDevice24H.isPresent()) {
+                this.velocitySignupsPerDevice24H = OptionalNullable.of(velocitySignupsPerDevice24H.get());
+            } else {
+                this.velocitySignupsPerDevice24H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocitySignupsPerDevice24H(Nullable<Double> velocitySignupsPerDevice24H) {
             if (velocitySignupsPerDevice24H.isNull()) {
-                this.velocitySignupsPerDevice24H = null;
+                this.velocitySignupsPerDevice24H = OptionalNullable.ofNull();
             } else if (velocitySignupsPerDevice24H.isEmpty()) {
-                this.velocitySignupsPerDevice24H = Optional.empty();
+                this.velocitySignupsPerDevice24H = OptionalNullable.absent();
             } else {
-                this.velocitySignupsPerDevice24H = Optional.of(velocitySignupsPerDevice24H.get());
+                this.velocitySignupsPerDevice24H = OptionalNullable.of(velocitySignupsPerDevice24H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.checkouts_per_ip_1h", nulls = Nulls.SKIP)
-        public Builder velocityCheckoutsPerIp1H(Optional<Double> velocityCheckoutsPerIp1H) {
+        public Builder velocityCheckoutsPerIp1H(OptionalNullable<Double> velocityCheckoutsPerIp1H) {
             this.velocityCheckoutsPerIp1H = velocityCheckoutsPerIp1H;
             return this;
         }
 
         public Builder velocityCheckoutsPerIp1H(Double velocityCheckoutsPerIp1H) {
-            this.velocityCheckoutsPerIp1H = Optional.ofNullable(velocityCheckoutsPerIp1H);
+            this.velocityCheckoutsPerIp1H = OptionalNullable.of(velocityCheckoutsPerIp1H);
+            return this;
+        }
+
+        public Builder velocityCheckoutsPerIp1H(Optional<Double> velocityCheckoutsPerIp1H) {
+            if (velocityCheckoutsPerIp1H.isPresent()) {
+                this.velocityCheckoutsPerIp1H = OptionalNullable.of(velocityCheckoutsPerIp1H.get());
+            } else {
+                this.velocityCheckoutsPerIp1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityCheckoutsPerIp1H(Nullable<Double> velocityCheckoutsPerIp1H) {
             if (velocityCheckoutsPerIp1H.isNull()) {
-                this.velocityCheckoutsPerIp1H = null;
+                this.velocityCheckoutsPerIp1H = OptionalNullable.ofNull();
             } else if (velocityCheckoutsPerIp1H.isEmpty()) {
-                this.velocityCheckoutsPerIp1H = Optional.empty();
+                this.velocityCheckoutsPerIp1H = OptionalNullable.absent();
             } else {
-                this.velocityCheckoutsPerIp1H = Optional.of(velocityCheckoutsPerIp1H.get());
+                this.velocityCheckoutsPerIp1H = OptionalNullable.of(velocityCheckoutsPerIp1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.checkouts_per_user_1h", nulls = Nulls.SKIP)
-        public Builder velocityCheckoutsPerUser1H(Optional<Double> velocityCheckoutsPerUser1H) {
+        public Builder velocityCheckoutsPerUser1H(OptionalNullable<Double> velocityCheckoutsPerUser1H) {
             this.velocityCheckoutsPerUser1H = velocityCheckoutsPerUser1H;
             return this;
         }
 
         public Builder velocityCheckoutsPerUser1H(Double velocityCheckoutsPerUser1H) {
-            this.velocityCheckoutsPerUser1H = Optional.ofNullable(velocityCheckoutsPerUser1H);
+            this.velocityCheckoutsPerUser1H = OptionalNullable.of(velocityCheckoutsPerUser1H);
+            return this;
+        }
+
+        public Builder velocityCheckoutsPerUser1H(Optional<Double> velocityCheckoutsPerUser1H) {
+            if (velocityCheckoutsPerUser1H.isPresent()) {
+                this.velocityCheckoutsPerUser1H = OptionalNullable.of(velocityCheckoutsPerUser1H.get());
+            } else {
+                this.velocityCheckoutsPerUser1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityCheckoutsPerUser1H(Nullable<Double> velocityCheckoutsPerUser1H) {
             if (velocityCheckoutsPerUser1H.isNull()) {
-                this.velocityCheckoutsPerUser1H = null;
+                this.velocityCheckoutsPerUser1H = OptionalNullable.ofNull();
             } else if (velocityCheckoutsPerUser1H.isEmpty()) {
-                this.velocityCheckoutsPerUser1H = Optional.empty();
+                this.velocityCheckoutsPerUser1H = OptionalNullable.absent();
             } else {
-                this.velocityCheckoutsPerUser1H = Optional.of(velocityCheckoutsPerUser1H.get());
+                this.velocityCheckoutsPerUser1H = OptionalNullable.of(velocityCheckoutsPerUser1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.checkouts_per_card_24h", nulls = Nulls.SKIP)
-        public Builder velocityCheckoutsPerCard24H(Optional<Double> velocityCheckoutsPerCard24H) {
+        public Builder velocityCheckoutsPerCard24H(OptionalNullable<Double> velocityCheckoutsPerCard24H) {
             this.velocityCheckoutsPerCard24H = velocityCheckoutsPerCard24H;
             return this;
         }
 
         public Builder velocityCheckoutsPerCard24H(Double velocityCheckoutsPerCard24H) {
-            this.velocityCheckoutsPerCard24H = Optional.ofNullable(velocityCheckoutsPerCard24H);
+            this.velocityCheckoutsPerCard24H = OptionalNullable.of(velocityCheckoutsPerCard24H);
+            return this;
+        }
+
+        public Builder velocityCheckoutsPerCard24H(Optional<Double> velocityCheckoutsPerCard24H) {
+            if (velocityCheckoutsPerCard24H.isPresent()) {
+                this.velocityCheckoutsPerCard24H = OptionalNullable.of(velocityCheckoutsPerCard24H.get());
+            } else {
+                this.velocityCheckoutsPerCard24H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityCheckoutsPerCard24H(Nullable<Double> velocityCheckoutsPerCard24H) {
             if (velocityCheckoutsPerCard24H.isNull()) {
-                this.velocityCheckoutsPerCard24H = null;
+                this.velocityCheckoutsPerCard24H = OptionalNullable.ofNull();
             } else if (velocityCheckoutsPerCard24H.isEmpty()) {
-                this.velocityCheckoutsPerCard24H = Optional.empty();
+                this.velocityCheckoutsPerCard24H = OptionalNullable.absent();
             } else {
-                this.velocityCheckoutsPerCard24H = Optional.of(velocityCheckoutsPerCard24H.get());
+                this.velocityCheckoutsPerCard24H = OptionalNullable.of(velocityCheckoutsPerCard24H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.logins_per_ip_1h", nulls = Nulls.SKIP)
-        public Builder velocityLoginsPerIp1H(Optional<Double> velocityLoginsPerIp1H) {
+        public Builder velocityLoginsPerIp1H(OptionalNullable<Double> velocityLoginsPerIp1H) {
             this.velocityLoginsPerIp1H = velocityLoginsPerIp1H;
             return this;
         }
 
         public Builder velocityLoginsPerIp1H(Double velocityLoginsPerIp1H) {
-            this.velocityLoginsPerIp1H = Optional.ofNullable(velocityLoginsPerIp1H);
+            this.velocityLoginsPerIp1H = OptionalNullable.of(velocityLoginsPerIp1H);
+            return this;
+        }
+
+        public Builder velocityLoginsPerIp1H(Optional<Double> velocityLoginsPerIp1H) {
+            if (velocityLoginsPerIp1H.isPresent()) {
+                this.velocityLoginsPerIp1H = OptionalNullable.of(velocityLoginsPerIp1H.get());
+            } else {
+                this.velocityLoginsPerIp1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityLoginsPerIp1H(Nullable<Double> velocityLoginsPerIp1H) {
             if (velocityLoginsPerIp1H.isNull()) {
-                this.velocityLoginsPerIp1H = null;
+                this.velocityLoginsPerIp1H = OptionalNullable.ofNull();
             } else if (velocityLoginsPerIp1H.isEmpty()) {
-                this.velocityLoginsPerIp1H = Optional.empty();
+                this.velocityLoginsPerIp1H = OptionalNullable.absent();
             } else {
-                this.velocityLoginsPerIp1H = Optional.of(velocityLoginsPerIp1H.get());
+                this.velocityLoginsPerIp1H = OptionalNullable.of(velocityLoginsPerIp1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.logins_per_user_1h", nulls = Nulls.SKIP)
-        public Builder velocityLoginsPerUser1H(Optional<Double> velocityLoginsPerUser1H) {
+        public Builder velocityLoginsPerUser1H(OptionalNullable<Double> velocityLoginsPerUser1H) {
             this.velocityLoginsPerUser1H = velocityLoginsPerUser1H;
             return this;
         }
 
         public Builder velocityLoginsPerUser1H(Double velocityLoginsPerUser1H) {
-            this.velocityLoginsPerUser1H = Optional.ofNullable(velocityLoginsPerUser1H);
+            this.velocityLoginsPerUser1H = OptionalNullable.of(velocityLoginsPerUser1H);
+            return this;
+        }
+
+        public Builder velocityLoginsPerUser1H(Optional<Double> velocityLoginsPerUser1H) {
+            if (velocityLoginsPerUser1H.isPresent()) {
+                this.velocityLoginsPerUser1H = OptionalNullable.of(velocityLoginsPerUser1H.get());
+            } else {
+                this.velocityLoginsPerUser1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityLoginsPerUser1H(Nullable<Double> velocityLoginsPerUser1H) {
             if (velocityLoginsPerUser1H.isNull()) {
-                this.velocityLoginsPerUser1H = null;
+                this.velocityLoginsPerUser1H = OptionalNullable.ofNull();
             } else if (velocityLoginsPerUser1H.isEmpty()) {
-                this.velocityLoginsPerUser1H = Optional.empty();
+                this.velocityLoginsPerUser1H = OptionalNullable.absent();
             } else {
-                this.velocityLoginsPerUser1H = Optional.of(velocityLoginsPerUser1H.get());
+                this.velocityLoginsPerUser1H = OptionalNullable.of(velocityLoginsPerUser1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.events_per_ip_1h", nulls = Nulls.SKIP)
-        public Builder velocityEventsPerIp1H(Optional<Double> velocityEventsPerIp1H) {
+        public Builder velocityEventsPerIp1H(OptionalNullable<Double> velocityEventsPerIp1H) {
             this.velocityEventsPerIp1H = velocityEventsPerIp1H;
             return this;
         }
 
         public Builder velocityEventsPerIp1H(Double velocityEventsPerIp1H) {
-            this.velocityEventsPerIp1H = Optional.ofNullable(velocityEventsPerIp1H);
+            this.velocityEventsPerIp1H = OptionalNullable.of(velocityEventsPerIp1H);
+            return this;
+        }
+
+        public Builder velocityEventsPerIp1H(Optional<Double> velocityEventsPerIp1H) {
+            if (velocityEventsPerIp1H.isPresent()) {
+                this.velocityEventsPerIp1H = OptionalNullable.of(velocityEventsPerIp1H.get());
+            } else {
+                this.velocityEventsPerIp1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityEventsPerIp1H(Nullable<Double> velocityEventsPerIp1H) {
             if (velocityEventsPerIp1H.isNull()) {
-                this.velocityEventsPerIp1H = null;
+                this.velocityEventsPerIp1H = OptionalNullable.ofNull();
             } else if (velocityEventsPerIp1H.isEmpty()) {
-                this.velocityEventsPerIp1H = Optional.empty();
+                this.velocityEventsPerIp1H = OptionalNullable.absent();
             } else {
-                this.velocityEventsPerIp1H = Optional.of(velocityEventsPerIp1H.get());
+                this.velocityEventsPerIp1H = OptionalNullable.of(velocityEventsPerIp1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "velocity.events_per_user_1h", nulls = Nulls.SKIP)
-        public Builder velocityEventsPerUser1H(Optional<Double> velocityEventsPerUser1H) {
+        public Builder velocityEventsPerUser1H(OptionalNullable<Double> velocityEventsPerUser1H) {
             this.velocityEventsPerUser1H = velocityEventsPerUser1H;
             return this;
         }
 
         public Builder velocityEventsPerUser1H(Double velocityEventsPerUser1H) {
-            this.velocityEventsPerUser1H = Optional.ofNullable(velocityEventsPerUser1H);
+            this.velocityEventsPerUser1H = OptionalNullable.of(velocityEventsPerUser1H);
+            return this;
+        }
+
+        public Builder velocityEventsPerUser1H(Optional<Double> velocityEventsPerUser1H) {
+            if (velocityEventsPerUser1H.isPresent()) {
+                this.velocityEventsPerUser1H = OptionalNullable.of(velocityEventsPerUser1H.get());
+            } else {
+                this.velocityEventsPerUser1H = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder velocityEventsPerUser1H(Nullable<Double> velocityEventsPerUser1H) {
             if (velocityEventsPerUser1H.isNull()) {
-                this.velocityEventsPerUser1H = null;
+                this.velocityEventsPerUser1H = OptionalNullable.ofNull();
             } else if (velocityEventsPerUser1H.isEmpty()) {
-                this.velocityEventsPerUser1H = Optional.empty();
+                this.velocityEventsPerUser1H = OptionalNullable.absent();
             } else {
-                this.velocityEventsPerUser1H = Optional.of(velocityEventsPerUser1H.get());
+                this.velocityEventsPerUser1H = OptionalNullable.of(velocityEventsPerUser1H.get());
             }
             return this;
         }
 
         @JsonSetter(value = "duplicate.canonical_mailbox", nulls = Nulls.SKIP)
-        public Builder duplicateCanonicalMailbox(Optional<Double> duplicateCanonicalMailbox) {
+        public Builder duplicateCanonicalMailbox(OptionalNullable<Double> duplicateCanonicalMailbox) {
             this.duplicateCanonicalMailbox = duplicateCanonicalMailbox;
             return this;
         }
 
         public Builder duplicateCanonicalMailbox(Double duplicateCanonicalMailbox) {
-            this.duplicateCanonicalMailbox = Optional.ofNullable(duplicateCanonicalMailbox);
+            this.duplicateCanonicalMailbox = OptionalNullable.of(duplicateCanonicalMailbox);
+            return this;
+        }
+
+        public Builder duplicateCanonicalMailbox(Optional<Double> duplicateCanonicalMailbox) {
+            if (duplicateCanonicalMailbox.isPresent()) {
+                this.duplicateCanonicalMailbox = OptionalNullable.of(duplicateCanonicalMailbox.get());
+            } else {
+                this.duplicateCanonicalMailbox = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder duplicateCanonicalMailbox(Nullable<Double> duplicateCanonicalMailbox) {
             if (duplicateCanonicalMailbox.isNull()) {
-                this.duplicateCanonicalMailbox = null;
+                this.duplicateCanonicalMailbox = OptionalNullable.ofNull();
             } else if (duplicateCanonicalMailbox.isEmpty()) {
-                this.duplicateCanonicalMailbox = Optional.empty();
+                this.duplicateCanonicalMailbox = OptionalNullable.absent();
             } else {
-                this.duplicateCanonicalMailbox = Optional.of(duplicateCanonicalMailbox.get());
+                this.duplicateCanonicalMailbox = OptionalNullable.of(duplicateCanonicalMailbox.get());
             }
             return this;
         }
 
         @JsonSetter(value = "duplicate.device", nulls = Nulls.SKIP)
-        public Builder duplicateDevice(Optional<Double> duplicateDevice) {
+        public Builder duplicateDevice(OptionalNullable<Double> duplicateDevice) {
             this.duplicateDevice = duplicateDevice;
             return this;
         }
 
         public Builder duplicateDevice(Double duplicateDevice) {
-            this.duplicateDevice = Optional.ofNullable(duplicateDevice);
+            this.duplicateDevice = OptionalNullable.of(duplicateDevice);
+            return this;
+        }
+
+        public Builder duplicateDevice(Optional<Double> duplicateDevice) {
+            if (duplicateDevice.isPresent()) {
+                this.duplicateDevice = OptionalNullable.of(duplicateDevice.get());
+            } else {
+                this.duplicateDevice = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder duplicateDevice(Nullable<Double> duplicateDevice) {
             if (duplicateDevice.isNull()) {
-                this.duplicateDevice = null;
+                this.duplicateDevice = OptionalNullable.ofNull();
             } else if (duplicateDevice.isEmpty()) {
-                this.duplicateDevice = Optional.empty();
+                this.duplicateDevice = OptionalNullable.absent();
             } else {
-                this.duplicateDevice = Optional.of(duplicateDevice.get());
+                this.duplicateDevice = OptionalNullable.of(duplicateDevice.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_mailbox", nulls = Nulls.SKIP)
-        public Builder historyFraudMailbox(Optional<Double> historyFraudMailbox) {
+        public Builder historyFraudMailbox(OptionalNullable<Double> historyFraudMailbox) {
             this.historyFraudMailbox = historyFraudMailbox;
             return this;
         }
 
         public Builder historyFraudMailbox(Double historyFraudMailbox) {
-            this.historyFraudMailbox = Optional.ofNullable(historyFraudMailbox);
+            this.historyFraudMailbox = OptionalNullable.of(historyFraudMailbox);
+            return this;
+        }
+
+        public Builder historyFraudMailbox(Optional<Double> historyFraudMailbox) {
+            if (historyFraudMailbox.isPresent()) {
+                this.historyFraudMailbox = OptionalNullable.of(historyFraudMailbox.get());
+            } else {
+                this.historyFraudMailbox = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudMailbox(Nullable<Double> historyFraudMailbox) {
             if (historyFraudMailbox.isNull()) {
-                this.historyFraudMailbox = null;
+                this.historyFraudMailbox = OptionalNullable.ofNull();
             } else if (historyFraudMailbox.isEmpty()) {
-                this.historyFraudMailbox = Optional.empty();
+                this.historyFraudMailbox = OptionalNullable.absent();
             } else {
-                this.historyFraudMailbox = Optional.of(historyFraudMailbox.get());
+                this.historyFraudMailbox = OptionalNullable.of(historyFraudMailbox.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_user", nulls = Nulls.SKIP)
-        public Builder historyFraudUser(Optional<Double> historyFraudUser) {
+        public Builder historyFraudUser(OptionalNullable<Double> historyFraudUser) {
             this.historyFraudUser = historyFraudUser;
             return this;
         }
 
         public Builder historyFraudUser(Double historyFraudUser) {
-            this.historyFraudUser = Optional.ofNullable(historyFraudUser);
+            this.historyFraudUser = OptionalNullable.of(historyFraudUser);
+            return this;
+        }
+
+        public Builder historyFraudUser(Optional<Double> historyFraudUser) {
+            if (historyFraudUser.isPresent()) {
+                this.historyFraudUser = OptionalNullable.of(historyFraudUser.get());
+            } else {
+                this.historyFraudUser = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudUser(Nullable<Double> historyFraudUser) {
             if (historyFraudUser.isNull()) {
-                this.historyFraudUser = null;
+                this.historyFraudUser = OptionalNullable.ofNull();
             } else if (historyFraudUser.isEmpty()) {
-                this.historyFraudUser = Optional.empty();
+                this.historyFraudUser = OptionalNullable.absent();
             } else {
-                this.historyFraudUser = Optional.of(historyFraudUser.get());
+                this.historyFraudUser = OptionalNullable.of(historyFraudUser.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_ip", nulls = Nulls.SKIP)
-        public Builder historyFraudIp(Optional<Double> historyFraudIp) {
+        public Builder historyFraudIp(OptionalNullable<Double> historyFraudIp) {
             this.historyFraudIp = historyFraudIp;
             return this;
         }
 
         public Builder historyFraudIp(Double historyFraudIp) {
-            this.historyFraudIp = Optional.ofNullable(historyFraudIp);
+            this.historyFraudIp = OptionalNullable.of(historyFraudIp);
+            return this;
+        }
+
+        public Builder historyFraudIp(Optional<Double> historyFraudIp) {
+            if (historyFraudIp.isPresent()) {
+                this.historyFraudIp = OptionalNullable.of(historyFraudIp.get());
+            } else {
+                this.historyFraudIp = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudIp(Nullable<Double> historyFraudIp) {
             if (historyFraudIp.isNull()) {
-                this.historyFraudIp = null;
+                this.historyFraudIp = OptionalNullable.ofNull();
             } else if (historyFraudIp.isEmpty()) {
-                this.historyFraudIp = Optional.empty();
+                this.historyFraudIp = OptionalNullable.absent();
             } else {
-                this.historyFraudIp = Optional.of(historyFraudIp.get());
+                this.historyFraudIp = OptionalNullable.of(historyFraudIp.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_subnet", nulls = Nulls.SKIP)
-        public Builder historyFraudSubnet(Optional<Double> historyFraudSubnet) {
+        public Builder historyFraudSubnet(OptionalNullable<Double> historyFraudSubnet) {
             this.historyFraudSubnet = historyFraudSubnet;
             return this;
         }
 
         public Builder historyFraudSubnet(Double historyFraudSubnet) {
-            this.historyFraudSubnet = Optional.ofNullable(historyFraudSubnet);
+            this.historyFraudSubnet = OptionalNullable.of(historyFraudSubnet);
+            return this;
+        }
+
+        public Builder historyFraudSubnet(Optional<Double> historyFraudSubnet) {
+            if (historyFraudSubnet.isPresent()) {
+                this.historyFraudSubnet = OptionalNullable.of(historyFraudSubnet.get());
+            } else {
+                this.historyFraudSubnet = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudSubnet(Nullable<Double> historyFraudSubnet) {
             if (historyFraudSubnet.isNull()) {
-                this.historyFraudSubnet = null;
+                this.historyFraudSubnet = OptionalNullable.ofNull();
             } else if (historyFraudSubnet.isEmpty()) {
-                this.historyFraudSubnet = Optional.empty();
+                this.historyFraudSubnet = OptionalNullable.absent();
             } else {
-                this.historyFraudSubnet = Optional.of(historyFraudSubnet.get());
+                this.historyFraudSubnet = OptionalNullable.of(historyFraudSubnet.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_card", nulls = Nulls.SKIP)
-        public Builder historyFraudCard(Optional<Double> historyFraudCard) {
+        public Builder historyFraudCard(OptionalNullable<Double> historyFraudCard) {
             this.historyFraudCard = historyFraudCard;
             return this;
         }
 
         public Builder historyFraudCard(Double historyFraudCard) {
-            this.historyFraudCard = Optional.ofNullable(historyFraudCard);
+            this.historyFraudCard = OptionalNullable.of(historyFraudCard);
+            return this;
+        }
+
+        public Builder historyFraudCard(Optional<Double> historyFraudCard) {
+            if (historyFraudCard.isPresent()) {
+                this.historyFraudCard = OptionalNullable.of(historyFraudCard.get());
+            } else {
+                this.historyFraudCard = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudCard(Nullable<Double> historyFraudCard) {
             if (historyFraudCard.isNull()) {
-                this.historyFraudCard = null;
+                this.historyFraudCard = OptionalNullable.ofNull();
             } else if (historyFraudCard.isEmpty()) {
-                this.historyFraudCard = Optional.empty();
+                this.historyFraudCard = OptionalNullable.absent();
             } else {
-                this.historyFraudCard = Optional.of(historyFraudCard.get());
+                this.historyFraudCard = OptionalNullable.of(historyFraudCard.get());
             }
             return this;
         }
 
         @JsonSetter(value = "history.fraud_device", nulls = Nulls.SKIP)
-        public Builder historyFraudDevice(Optional<Double> historyFraudDevice) {
+        public Builder historyFraudDevice(OptionalNullable<Double> historyFraudDevice) {
             this.historyFraudDevice = historyFraudDevice;
             return this;
         }
 
         public Builder historyFraudDevice(Double historyFraudDevice) {
-            this.historyFraudDevice = Optional.ofNullable(historyFraudDevice);
+            this.historyFraudDevice = OptionalNullable.of(historyFraudDevice);
+            return this;
+        }
+
+        public Builder historyFraudDevice(Optional<Double> historyFraudDevice) {
+            if (historyFraudDevice.isPresent()) {
+                this.historyFraudDevice = OptionalNullable.of(historyFraudDevice.get());
+            } else {
+                this.historyFraudDevice = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder historyFraudDevice(Nullable<Double> historyFraudDevice) {
             if (historyFraudDevice.isNull()) {
-                this.historyFraudDevice = null;
+                this.historyFraudDevice = OptionalNullable.ofNull();
             } else if (historyFraudDevice.isEmpty()) {
-                this.historyFraudDevice = Optional.empty();
+                this.historyFraudDevice = OptionalNullable.absent();
             } else {
-                this.historyFraudDevice = Optional.of(historyFraudDevice.get());
+                this.historyFraudDevice = OptionalNullable.of(historyFraudDevice.get());
             }
             return this;
         }
 
         @JsonSetter(value = "checkout.card_country_mismatch", nulls = Nulls.SKIP)
-        public Builder checkoutCardCountryMismatch(Optional<Double> checkoutCardCountryMismatch) {
+        public Builder checkoutCardCountryMismatch(OptionalNullable<Double> checkoutCardCountryMismatch) {
             this.checkoutCardCountryMismatch = checkoutCardCountryMismatch;
             return this;
         }
 
         public Builder checkoutCardCountryMismatch(Double checkoutCardCountryMismatch) {
-            this.checkoutCardCountryMismatch = Optional.ofNullable(checkoutCardCountryMismatch);
+            this.checkoutCardCountryMismatch = OptionalNullable.of(checkoutCardCountryMismatch);
+            return this;
+        }
+
+        public Builder checkoutCardCountryMismatch(Optional<Double> checkoutCardCountryMismatch) {
+            if (checkoutCardCountryMismatch.isPresent()) {
+                this.checkoutCardCountryMismatch = OptionalNullable.of(checkoutCardCountryMismatch.get());
+            } else {
+                this.checkoutCardCountryMismatch = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder checkoutCardCountryMismatch(Nullable<Double> checkoutCardCountryMismatch) {
             if (checkoutCardCountryMismatch.isNull()) {
-                this.checkoutCardCountryMismatch = null;
+                this.checkoutCardCountryMismatch = OptionalNullable.ofNull();
             } else if (checkoutCardCountryMismatch.isEmpty()) {
-                this.checkoutCardCountryMismatch = Optional.empty();
+                this.checkoutCardCountryMismatch = OptionalNullable.absent();
             } else {
-                this.checkoutCardCountryMismatch = Optional.of(checkoutCardCountryMismatch.get());
+                this.checkoutCardCountryMismatch = OptionalNullable.of(checkoutCardCountryMismatch.get());
             }
             return this;
         }
 
         @JsonSetter(value = "checkout.billing_country_mismatch", nulls = Nulls.SKIP)
-        public Builder checkoutBillingCountryMismatch(Optional<Double> checkoutBillingCountryMismatch) {
+        public Builder checkoutBillingCountryMismatch(OptionalNullable<Double> checkoutBillingCountryMismatch) {
             this.checkoutBillingCountryMismatch = checkoutBillingCountryMismatch;
             return this;
         }
 
         public Builder checkoutBillingCountryMismatch(Double checkoutBillingCountryMismatch) {
-            this.checkoutBillingCountryMismatch = Optional.ofNullable(checkoutBillingCountryMismatch);
+            this.checkoutBillingCountryMismatch = OptionalNullable.of(checkoutBillingCountryMismatch);
+            return this;
+        }
+
+        public Builder checkoutBillingCountryMismatch(Optional<Double> checkoutBillingCountryMismatch) {
+            if (checkoutBillingCountryMismatch.isPresent()) {
+                this.checkoutBillingCountryMismatch = OptionalNullable.of(checkoutBillingCountryMismatch.get());
+            } else {
+                this.checkoutBillingCountryMismatch = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder checkoutBillingCountryMismatch(Nullable<Double> checkoutBillingCountryMismatch) {
             if (checkoutBillingCountryMismatch.isNull()) {
-                this.checkoutBillingCountryMismatch = null;
+                this.checkoutBillingCountryMismatch = OptionalNullable.ofNull();
             } else if (checkoutBillingCountryMismatch.isEmpty()) {
-                this.checkoutBillingCountryMismatch = Optional.empty();
+                this.checkoutBillingCountryMismatch = OptionalNullable.absent();
             } else {
-                this.checkoutBillingCountryMismatch = Optional.of(checkoutBillingCountryMismatch.get());
+                this.checkoutBillingCountryMismatch = OptionalNullable.of(checkoutBillingCountryMismatch.get());
             }
             return this;
         }
 
         @JsonSetter(value = "checkout.prepaid_card", nulls = Nulls.SKIP)
-        public Builder checkoutPrepaidCard(Optional<Double> checkoutPrepaidCard) {
+        public Builder checkoutPrepaidCard(OptionalNullable<Double> checkoutPrepaidCard) {
             this.checkoutPrepaidCard = checkoutPrepaidCard;
             return this;
         }
 
         public Builder checkoutPrepaidCard(Double checkoutPrepaidCard) {
-            this.checkoutPrepaidCard = Optional.ofNullable(checkoutPrepaidCard);
+            this.checkoutPrepaidCard = OptionalNullable.of(checkoutPrepaidCard);
+            return this;
+        }
+
+        public Builder checkoutPrepaidCard(Optional<Double> checkoutPrepaidCard) {
+            if (checkoutPrepaidCard.isPresent()) {
+                this.checkoutPrepaidCard = OptionalNullable.of(checkoutPrepaidCard.get());
+            } else {
+                this.checkoutPrepaidCard = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder checkoutPrepaidCard(Nullable<Double> checkoutPrepaidCard) {
             if (checkoutPrepaidCard.isNull()) {
-                this.checkoutPrepaidCard = null;
+                this.checkoutPrepaidCard = OptionalNullable.ofNull();
             } else if (checkoutPrepaidCard.isEmpty()) {
-                this.checkoutPrepaidCard = Optional.empty();
+                this.checkoutPrepaidCard = OptionalNullable.absent();
             } else {
-                this.checkoutPrepaidCard = Optional.of(checkoutPrepaidCard.get());
+                this.checkoutPrepaidCard = OptionalNullable.of(checkoutPrepaidCard.get());
             }
             return this;
         }
 
         @JsonSetter(value = "device.automation", nulls = Nulls.SKIP)
-        public Builder deviceAutomation(Optional<Double> deviceAutomation) {
+        public Builder deviceAutomation(OptionalNullable<Double> deviceAutomation) {
             this.deviceAutomation = deviceAutomation;
             return this;
         }
 
         public Builder deviceAutomation(Double deviceAutomation) {
-            this.deviceAutomation = Optional.ofNullable(deviceAutomation);
+            this.deviceAutomation = OptionalNullable.of(deviceAutomation);
+            return this;
+        }
+
+        public Builder deviceAutomation(Optional<Double> deviceAutomation) {
+            if (deviceAutomation.isPresent()) {
+                this.deviceAutomation = OptionalNullable.of(deviceAutomation.get());
+            } else {
+                this.deviceAutomation = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder deviceAutomation(Nullable<Double> deviceAutomation) {
             if (deviceAutomation.isNull()) {
-                this.deviceAutomation = null;
+                this.deviceAutomation = OptionalNullable.ofNull();
             } else if (deviceAutomation.isEmpty()) {
-                this.deviceAutomation = Optional.empty();
+                this.deviceAutomation = OptionalNullable.absent();
             } else {
-                this.deviceAutomation = Optional.of(deviceAutomation.get());
+                this.deviceAutomation = OptionalNullable.of(deviceAutomation.get());
             }
             return this;
         }
 
         @JsonSetter(value = "device.invalid", nulls = Nulls.SKIP)
-        public Builder deviceInvalid(Optional<Double> deviceInvalid) {
+        public Builder deviceInvalid(OptionalNullable<Double> deviceInvalid) {
             this.deviceInvalid = deviceInvalid;
             return this;
         }
 
         public Builder deviceInvalid(Double deviceInvalid) {
-            this.deviceInvalid = Optional.ofNullable(deviceInvalid);
+            this.deviceInvalid = OptionalNullable.of(deviceInvalid);
+            return this;
+        }
+
+        public Builder deviceInvalid(Optional<Double> deviceInvalid) {
+            if (deviceInvalid.isPresent()) {
+                this.deviceInvalid = OptionalNullable.of(deviceInvalid.get());
+            } else {
+                this.deviceInvalid = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder deviceInvalid(Nullable<Double> deviceInvalid) {
             if (deviceInvalid.isNull()) {
-                this.deviceInvalid = null;
+                this.deviceInvalid = OptionalNullable.ofNull();
             } else if (deviceInvalid.isEmpty()) {
-                this.deviceInvalid = Optional.empty();
+                this.deviceInvalid = OptionalNullable.absent();
             } else {
-                this.deviceInvalid = Optional.of(deviceInvalid.get());
+                this.deviceInvalid = OptionalNullable.of(deviceInvalid.get());
             }
             return this;
         }
 
         @JsonSetter(value = "login.new_country", nulls = Nulls.SKIP)
-        public Builder loginNewCountry(Optional<Double> loginNewCountry) {
+        public Builder loginNewCountry(OptionalNullable<Double> loginNewCountry) {
             this.loginNewCountry = loginNewCountry;
             return this;
         }
 
         public Builder loginNewCountry(Double loginNewCountry) {
-            this.loginNewCountry = Optional.ofNullable(loginNewCountry);
+            this.loginNewCountry = OptionalNullable.of(loginNewCountry);
+            return this;
+        }
+
+        public Builder loginNewCountry(Optional<Double> loginNewCountry) {
+            if (loginNewCountry.isPresent()) {
+                this.loginNewCountry = OptionalNullable.of(loginNewCountry.get());
+            } else {
+                this.loginNewCountry = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder loginNewCountry(Nullable<Double> loginNewCountry) {
             if (loginNewCountry.isNull()) {
-                this.loginNewCountry = null;
+                this.loginNewCountry = OptionalNullable.ofNull();
             } else if (loginNewCountry.isEmpty()) {
-                this.loginNewCountry = Optional.empty();
+                this.loginNewCountry = OptionalNullable.absent();
             } else {
-                this.loginNewCountry = Optional.of(loginNewCountry.get());
+                this.loginNewCountry = OptionalNullable.of(loginNewCountry.get());
             }
             return this;
         }
 
         @JsonSetter(value = "login.new_network", nulls = Nulls.SKIP)
-        public Builder loginNewNetwork(Optional<Double> loginNewNetwork) {
+        public Builder loginNewNetwork(OptionalNullable<Double> loginNewNetwork) {
             this.loginNewNetwork = loginNewNetwork;
             return this;
         }
 
         public Builder loginNewNetwork(Double loginNewNetwork) {
-            this.loginNewNetwork = Optional.ofNullable(loginNewNetwork);
+            this.loginNewNetwork = OptionalNullable.of(loginNewNetwork);
+            return this;
+        }
+
+        public Builder loginNewNetwork(Optional<Double> loginNewNetwork) {
+            if (loginNewNetwork.isPresent()) {
+                this.loginNewNetwork = OptionalNullable.of(loginNewNetwork.get());
+            } else {
+                this.loginNewNetwork = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder loginNewNetwork(Nullable<Double> loginNewNetwork) {
             if (loginNewNetwork.isNull()) {
-                this.loginNewNetwork = null;
+                this.loginNewNetwork = OptionalNullable.ofNull();
             } else if (loginNewNetwork.isEmpty()) {
-                this.loginNewNetwork = Optional.empty();
+                this.loginNewNetwork = OptionalNullable.absent();
             } else {
-                this.loginNewNetwork = Optional.of(loginNewNetwork.get());
+                this.loginNewNetwork = OptionalNullable.of(loginNewNetwork.get());
             }
             return this;
         }
 
         @JsonSetter(value = "captcha.failed", nulls = Nulls.SKIP)
-        public Builder captchaFailed(Optional<Double> captchaFailed) {
+        public Builder captchaFailed(OptionalNullable<Double> captchaFailed) {
             this.captchaFailed = captchaFailed;
             return this;
         }
 
         public Builder captchaFailed(Double captchaFailed) {
-            this.captchaFailed = Optional.ofNullable(captchaFailed);
+            this.captchaFailed = OptionalNullable.of(captchaFailed);
+            return this;
+        }
+
+        public Builder captchaFailed(Optional<Double> captchaFailed) {
+            if (captchaFailed.isPresent()) {
+                this.captchaFailed = OptionalNullable.of(captchaFailed.get());
+            } else {
+                this.captchaFailed = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder captchaFailed(Nullable<Double> captchaFailed) {
             if (captchaFailed.isNull()) {
-                this.captchaFailed = null;
+                this.captchaFailed = OptionalNullable.ofNull();
             } else if (captchaFailed.isEmpty()) {
-                this.captchaFailed = Optional.empty();
+                this.captchaFailed = OptionalNullable.absent();
             } else {
-                this.captchaFailed = Optional.of(captchaFailed.get());
+                this.captchaFailed = OptionalNullable.of(captchaFailed.get());
             }
             return this;
         }
 
         @JsonSetter(value = "captcha.missing", nulls = Nulls.SKIP)
-        public Builder captchaMissing(Optional<Double> captchaMissing) {
+        public Builder captchaMissing(OptionalNullable<Double> captchaMissing) {
             this.captchaMissing = captchaMissing;
             return this;
         }
 
         public Builder captchaMissing(Double captchaMissing) {
-            this.captchaMissing = Optional.ofNullable(captchaMissing);
+            this.captchaMissing = OptionalNullable.of(captchaMissing);
+            return this;
+        }
+
+        public Builder captchaMissing(Optional<Double> captchaMissing) {
+            if (captchaMissing.isPresent()) {
+                this.captchaMissing = OptionalNullable.of(captchaMissing.get());
+            } else {
+                this.captchaMissing = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder captchaMissing(Nullable<Double> captchaMissing) {
             if (captchaMissing.isNull()) {
-                this.captchaMissing = null;
+                this.captchaMissing = OptionalNullable.ofNull();
             } else if (captchaMissing.isEmpty()) {
-                this.captchaMissing = Optional.empty();
+                this.captchaMissing = OptionalNullable.absent();
             } else {
-                this.captchaMissing = Optional.of(captchaMissing.get());
+                this.captchaMissing = OptionalNullable.of(captchaMissing.get());
             }
             return this;
         }
 
         @JsonSetter(value = "content.spam", nulls = Nulls.SKIP)
-        public Builder contentSpam(Optional<Double> contentSpam) {
+        public Builder contentSpam(OptionalNullable<Double> contentSpam) {
             this.contentSpam = contentSpam;
             return this;
         }
 
         public Builder contentSpam(Double contentSpam) {
-            this.contentSpam = Optional.ofNullable(contentSpam);
+            this.contentSpam = OptionalNullable.of(contentSpam);
+            return this;
+        }
+
+        public Builder contentSpam(Optional<Double> contentSpam) {
+            if (contentSpam.isPresent()) {
+                this.contentSpam = OptionalNullable.of(contentSpam.get());
+            } else {
+                this.contentSpam = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contentSpam(Nullable<Double> contentSpam) {
             if (contentSpam.isNull()) {
-                this.contentSpam = null;
+                this.contentSpam = OptionalNullable.ofNull();
             } else if (contentSpam.isEmpty()) {
-                this.contentSpam = Optional.empty();
+                this.contentSpam = OptionalNullable.absent();
             } else {
-                this.contentSpam = Optional.of(contentSpam.get());
+                this.contentSpam = OptionalNullable.of(contentSpam.get());
             }
             return this;
         }
 
         @JsonSetter(value = "content.phishing", nulls = Nulls.SKIP)
-        public Builder contentPhishing(Optional<Double> contentPhishing) {
+        public Builder contentPhishing(OptionalNullable<Double> contentPhishing) {
             this.contentPhishing = contentPhishing;
             return this;
         }
 
         public Builder contentPhishing(Double contentPhishing) {
-            this.contentPhishing = Optional.ofNullable(contentPhishing);
+            this.contentPhishing = OptionalNullable.of(contentPhishing);
+            return this;
+        }
+
+        public Builder contentPhishing(Optional<Double> contentPhishing) {
+            if (contentPhishing.isPresent()) {
+                this.contentPhishing = OptionalNullable.of(contentPhishing.get());
+            } else {
+                this.contentPhishing = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contentPhishing(Nullable<Double> contentPhishing) {
             if (contentPhishing.isNull()) {
-                this.contentPhishing = null;
+                this.contentPhishing = OptionalNullable.ofNull();
             } else if (contentPhishing.isEmpty()) {
-                this.contentPhishing = Optional.empty();
+                this.contentPhishing = OptionalNullable.absent();
             } else {
-                this.contentPhishing = Optional.of(contentPhishing.get());
+                this.contentPhishing = OptionalNullable.of(contentPhishing.get());
             }
             return this;
         }
 
         @JsonSetter(value = "content.malware", nulls = Nulls.SKIP)
-        public Builder contentMalware(Optional<Double> contentMalware) {
+        public Builder contentMalware(OptionalNullable<Double> contentMalware) {
             this.contentMalware = contentMalware;
             return this;
         }
 
         public Builder contentMalware(Double contentMalware) {
-            this.contentMalware = Optional.ofNullable(contentMalware);
+            this.contentMalware = OptionalNullable.of(contentMalware);
+            return this;
+        }
+
+        public Builder contentMalware(Optional<Double> contentMalware) {
+            if (contentMalware.isPresent()) {
+                this.contentMalware = OptionalNullable.of(contentMalware.get());
+            } else {
+                this.contentMalware = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contentMalware(Nullable<Double> contentMalware) {
             if (contentMalware.isNull()) {
-                this.contentMalware = null;
+                this.contentMalware = OptionalNullable.ofNull();
             } else if (contentMalware.isEmpty()) {
-                this.contentMalware = Optional.empty();
+                this.contentMalware = OptionalNullable.absent();
             } else {
-                this.contentMalware = Optional.of(contentMalware.get());
+                this.contentMalware = OptionalNullable.of(contentMalware.get());
             }
             return this;
         }
 
         @JsonSetter(value = "content.fraud", nulls = Nulls.SKIP)
-        public Builder contentFraud(Optional<Double> contentFraud) {
+        public Builder contentFraud(OptionalNullable<Double> contentFraud) {
             this.contentFraud = contentFraud;
             return this;
         }
 
         public Builder contentFraud(Double contentFraud) {
-            this.contentFraud = Optional.ofNullable(contentFraud);
+            this.contentFraud = OptionalNullable.of(contentFraud);
+            return this;
+        }
+
+        public Builder contentFraud(Optional<Double> contentFraud) {
+            if (contentFraud.isPresent()) {
+                this.contentFraud = OptionalNullable.of(contentFraud.get());
+            } else {
+                this.contentFraud = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder contentFraud(Nullable<Double> contentFraud) {
             if (contentFraud.isNull()) {
-                this.contentFraud = null;
+                this.contentFraud = OptionalNullable.ofNull();
             } else if (contentFraud.isEmpty()) {
-                this.contentFraud = Optional.empty();
+                this.contentFraud = OptionalNullable.absent();
             } else {
-                this.contentFraud = Optional.of(contentFraud.get());
+                this.contentFraud = OptionalNullable.of(contentFraud.get());
             }
             return this;
         }

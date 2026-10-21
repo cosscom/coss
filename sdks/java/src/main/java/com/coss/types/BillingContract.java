@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,9 +31,9 @@ public final class BillingContract {
 
     private final OffsetDateTime effectiveFrom;
 
-    private final Optional<OffsetDateTime> effectiveUntil;
+    private final OptionalNullable<OffsetDateTime> effectiveUntil;
 
-    private final Optional<OffsetDateTime> termEnd;
+    private final OptionalNullable<OffsetDateTime> termEnd;
 
     private final boolean autoRenew;
 
@@ -43,8 +43,8 @@ public final class BillingContract {
             String id,
             BillingContractKind kind,
             OffsetDateTime effectiveFrom,
-            Optional<OffsetDateTime> effectiveUntil,
-            Optional<OffsetDateTime> termEnd,
+            OptionalNullable<OffsetDateTime> effectiveUntil,
+            OptionalNullable<OffsetDateTime> termEnd,
             boolean autoRenew,
             Map<String, Object> additionalProperties) {
         this.id = id;
@@ -71,10 +71,11 @@ public final class BillingContract {
         return effectiveFrom;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getEffectiveUntil() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("effective_until")
+    public OptionalNullable<OffsetDateTime> getEffectiveUntil() {
         if (effectiveUntil == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return effectiveUntil;
     }
@@ -82,10 +83,11 @@ public final class BillingContract {
     /**
      * @return End of a committed term.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getTermEnd() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("term_end")
+    public OptionalNullable<OffsetDateTime> getTermEnd() {
         if (termEnd == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return termEnd;
     }
@@ -97,13 +99,13 @@ public final class BillingContract {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("effective_until")
-    private Optional<OffsetDateTime> _getEffectiveUntil() {
+    private OptionalNullable<OffsetDateTime> _getEffectiveUntil() {
         return effectiveUntil;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("term_end")
-    private Optional<OffsetDateTime> _getTermEnd() {
+    private OptionalNullable<OffsetDateTime> _getTermEnd() {
         return termEnd;
     }
 
@@ -166,18 +168,22 @@ public final class BillingContract {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage effectiveUntil(Optional<OffsetDateTime> effectiveUntil);
+        _FinalStage effectiveUntil(OptionalNullable<OffsetDateTime> effectiveUntil);
 
         _FinalStage effectiveUntil(OffsetDateTime effectiveUntil);
+
+        _FinalStage effectiveUntil(Optional<OffsetDateTime> effectiveUntil);
 
         _FinalStage effectiveUntil(Nullable<OffsetDateTime> effectiveUntil);
 
         /**
          * <p>End of a committed term.</p>
          */
-        _FinalStage termEnd(Optional<OffsetDateTime> termEnd);
+        _FinalStage termEnd(OptionalNullable<OffsetDateTime> termEnd);
 
         _FinalStage termEnd(OffsetDateTime termEnd);
+
+        _FinalStage termEnd(Optional<OffsetDateTime> termEnd);
 
         _FinalStage termEnd(Nullable<OffsetDateTime> termEnd);
     }
@@ -192,9 +198,9 @@ public final class BillingContract {
 
         private boolean autoRenew;
 
-        private Optional<OffsetDateTime> termEnd = Optional.empty();
+        private OptionalNullable<OffsetDateTime> termEnd = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> effectiveUntil = Optional.empty();
+        private OptionalNullable<OffsetDateTime> effectiveUntil = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -247,11 +253,25 @@ public final class BillingContract {
         @java.lang.Override
         public _FinalStage termEnd(Nullable<OffsetDateTime> termEnd) {
             if (termEnd.isNull()) {
-                this.termEnd = null;
+                this.termEnd = OptionalNullable.ofNull();
             } else if (termEnd.isEmpty()) {
-                this.termEnd = Optional.empty();
+                this.termEnd = OptionalNullable.absent();
             } else {
-                this.termEnd = Optional.of(termEnd.get());
+                this.termEnd = OptionalNullable.of(termEnd.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>End of a committed term.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage termEnd(Optional<OffsetDateTime> termEnd) {
+            if (termEnd.isPresent()) {
+                this.termEnd = OptionalNullable.of(termEnd.get());
+            } else {
+                this.termEnd = OptionalNullable.absent();
             }
             return this;
         }
@@ -262,7 +282,7 @@ public final class BillingContract {
          */
         @java.lang.Override
         public _FinalStage termEnd(OffsetDateTime termEnd) {
-            this.termEnd = Optional.ofNullable(termEnd);
+            this.termEnd = OptionalNullable.of(termEnd);
             return this;
         }
 
@@ -271,7 +291,7 @@ public final class BillingContract {
          */
         @java.lang.Override
         @JsonSetter(value = "term_end", nulls = Nulls.SKIP)
-        public _FinalStage termEnd(Optional<OffsetDateTime> termEnd) {
+        public _FinalStage termEnd(OptionalNullable<OffsetDateTime> termEnd) {
             this.termEnd = termEnd;
             return this;
         }
@@ -279,24 +299,34 @@ public final class BillingContract {
         @java.lang.Override
         public _FinalStage effectiveUntil(Nullable<OffsetDateTime> effectiveUntil) {
             if (effectiveUntil.isNull()) {
-                this.effectiveUntil = null;
+                this.effectiveUntil = OptionalNullable.ofNull();
             } else if (effectiveUntil.isEmpty()) {
-                this.effectiveUntil = Optional.empty();
+                this.effectiveUntil = OptionalNullable.absent();
             } else {
-                this.effectiveUntil = Optional.of(effectiveUntil.get());
+                this.effectiveUntil = OptionalNullable.of(effectiveUntil.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage effectiveUntil(Optional<OffsetDateTime> effectiveUntil) {
+            if (effectiveUntil.isPresent()) {
+                this.effectiveUntil = OptionalNullable.of(effectiveUntil.get());
+            } else {
+                this.effectiveUntil = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage effectiveUntil(OffsetDateTime effectiveUntil) {
-            this.effectiveUntil = Optional.ofNullable(effectiveUntil);
+            this.effectiveUntil = OptionalNullable.of(effectiveUntil);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "effective_until", nulls = Nulls.SKIP)
-        public _FinalStage effectiveUntil(Optional<OffsetDateTime> effectiveUntil) {
+        public _FinalStage effectiveUntil(OptionalNullable<OffsetDateTime> effectiveUntil) {
             this.effectiveUntil = effectiveUntil;
             return this;
         }

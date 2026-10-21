@@ -14,6 +14,7 @@ public record DmarcReportRecordAuthResultsSpfItem : IJsonOnDeserialized
     [JsonPropertyName("domain")]
     public required string Domain { get; set; }
 
+    [Nullable]
     [JsonPropertyName("scope")]
     public string? Scope { get; set; }
 

@@ -46,6 +46,9 @@ class RiskIpPrivacy extends JsonSerializableType
         $this->proxy = $values['proxy'];
         $this->relay = $values['relay'];
         $this->service = $values['service'] ?? null;
+        if (array_key_exists('service', $values)) {
+            $this->_setField('service');
+        }
     }
 
     /**

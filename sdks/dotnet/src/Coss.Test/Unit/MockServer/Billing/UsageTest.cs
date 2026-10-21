@@ -70,6 +70,11 @@ public class UsageTest : BaseMockServerTest
                 {
                   "object": "usage",
                   "meter": "email.recipients",
+                  "dimension": null,
+                  "environment_id": null,
+                  "project_id": null,
+                  "api_key_id": null,
+                  "user_id": null,
                   "start": "2026-10-12T00:00:00.000Z",
                   "end": "2026-10-13T00:00:00.000Z",
                   "quantity": 4200

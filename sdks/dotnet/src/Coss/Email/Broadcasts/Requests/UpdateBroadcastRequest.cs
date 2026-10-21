@@ -15,44 +15,56 @@ public record UpdateBroadcastRequest
     /// <summary>
     /// Shown only to you.
     /// </summary>
+    [Optional]
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("audience_id")]
-    public string? AudienceId { get; set; }
+    public Optional<string?> AudienceId { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("segment_id")]
-    public string? SegmentId { get; set; }
+    public Optional<string?> SegmentId { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("topic")]
-    public string? Topic { get; set; }
+    public Optional<string?> Topic { get; set; }
 
+    [Optional]
     [JsonPropertyName("from")]
     public string? From { get; set; }
 
+    [Optional]
     [JsonPropertyName("reply_to")]
     public IEnumerable<string>? ReplyTo { get; set; }
 
     /// <summary>
     /// May use `{{{contact.&lt;key&gt;|fallback}}}` (e.g. `{{{contact.first_name|there}}}`).
     /// </summary>
+    [Optional]
     [JsonPropertyName("subject")]
     public string? Subject { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("preview_text")]
-    public string? PreviewText { get; set; }
+    public Optional<string?> PreviewText { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("html")]
-    public string? Html { get; set; }
+    public Optional<string?> Html { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public Optional<string?> Text { get; set; }
 
+    [Optional]
     [JsonPropertyName("tracking")]
     public UpdateBroadcastRequestTracking? Tracking { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("rate_per_second")]
-    public int? RatePerSecond { get; set; }
+    public Optional<int?> RatePerSecond { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

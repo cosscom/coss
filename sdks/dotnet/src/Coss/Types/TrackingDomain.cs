@@ -35,18 +35,22 @@ public record TrackingDomain : IJsonOnDeserialized
     /// <summary>
     /// What is holding the hostname up, when the certificate provider said.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("message")]
     public string? Message { get; set; }
 
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_checked_at")]
     public DateTime? LastCheckedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("activated_at")]
     public DateTime? ActivatedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("failed_at")]
     public DateTime? FailedAt { get; set; }
 

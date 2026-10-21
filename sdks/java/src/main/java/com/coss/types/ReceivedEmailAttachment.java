@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,11 +26,11 @@ import org.jetbrains.annotations.NotNull;
 public final class ReceivedEmailAttachment {
     private final String id;
 
-    private final Optional<String> filename;
+    private final OptionalNullable<String> filename;
 
     private final String contentType;
 
-    private final Optional<String> contentId;
+    private final OptionalNullable<String> contentId;
 
     private final ReceivedEmailAttachmentDisposition disposition;
 
@@ -40,9 +40,9 @@ public final class ReceivedEmailAttachment {
 
     private ReceivedEmailAttachment(
             String id,
-            Optional<String> filename,
+            OptionalNullable<String> filename,
             String contentType,
-            Optional<String> contentId,
+            OptionalNullable<String> contentId,
             ReceivedEmailAttachmentDisposition disposition,
             long size,
             Map<String, Object> additionalProperties) {
@@ -63,10 +63,11 @@ public final class ReceivedEmailAttachment {
     /**
      * @return <code>null</code> when the part named none.
      */
-    @JsonIgnore
-    public Optional<String> getFilename() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("filename")
+    public OptionalNullable<String> getFilename() {
         if (filename == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return filename;
     }
@@ -79,10 +80,11 @@ public final class ReceivedEmailAttachment {
     /**
      * @return Set for parts the HTML references (<code>cid:</code> URLs).
      */
-    @JsonIgnore
-    public Optional<String> getContentId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content_id")
+    public OptionalNullable<String> getContentId() {
         if (contentId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentId;
     }
@@ -102,13 +104,13 @@ public final class ReceivedEmailAttachment {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("filename")
-    private Optional<String> _getFilename() {
+    private OptionalNullable<String> _getFilename() {
         return filename;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content_id")
-    private Optional<String> _getContentId() {
+    private OptionalNullable<String> _getContentId() {
         return contentId;
     }
 
@@ -177,18 +179,22 @@ public final class ReceivedEmailAttachment {
         /**
          * <p><code>null</code> when the part named none.</p>
          */
-        _FinalStage filename(Optional<String> filename);
+        _FinalStage filename(OptionalNullable<String> filename);
 
         _FinalStage filename(String filename);
+
+        _FinalStage filename(Optional<String> filename);
 
         _FinalStage filename(Nullable<String> filename);
 
         /**
          * <p>Set for parts the HTML references (<code>cid:</code> URLs).</p>
          */
-        _FinalStage contentId(Optional<String> contentId);
+        _FinalStage contentId(OptionalNullable<String> contentId);
 
         _FinalStage contentId(String contentId);
+
+        _FinalStage contentId(Optional<String> contentId);
 
         _FinalStage contentId(Nullable<String> contentId);
     }
@@ -203,9 +209,9 @@ public final class ReceivedEmailAttachment {
 
         private long size;
 
-        private Optional<String> contentId = Optional.empty();
+        private OptionalNullable<String> contentId = OptionalNullable.absent();
 
-        private Optional<String> filename = Optional.empty();
+        private OptionalNullable<String> filename = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -262,11 +268,25 @@ public final class ReceivedEmailAttachment {
         @java.lang.Override
         public _FinalStage contentId(Nullable<String> contentId) {
             if (contentId.isNull()) {
-                this.contentId = null;
+                this.contentId = OptionalNullable.ofNull();
             } else if (contentId.isEmpty()) {
-                this.contentId = Optional.empty();
+                this.contentId = OptionalNullable.absent();
             } else {
-                this.contentId = Optional.of(contentId.get());
+                this.contentId = OptionalNullable.of(contentId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set for parts the HTML references (<code>cid:</code> URLs).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage contentId(Optional<String> contentId) {
+            if (contentId.isPresent()) {
+                this.contentId = OptionalNullable.of(contentId.get());
+            } else {
+                this.contentId = OptionalNullable.absent();
             }
             return this;
         }
@@ -277,7 +297,7 @@ public final class ReceivedEmailAttachment {
          */
         @java.lang.Override
         public _FinalStage contentId(String contentId) {
-            this.contentId = Optional.ofNullable(contentId);
+            this.contentId = OptionalNullable.of(contentId);
             return this;
         }
 
@@ -286,7 +306,7 @@ public final class ReceivedEmailAttachment {
          */
         @java.lang.Override
         @JsonSetter(value = "content_id", nulls = Nulls.SKIP)
-        public _FinalStage contentId(Optional<String> contentId) {
+        public _FinalStage contentId(OptionalNullable<String> contentId) {
             this.contentId = contentId;
             return this;
         }
@@ -298,11 +318,25 @@ public final class ReceivedEmailAttachment {
         @java.lang.Override
         public _FinalStage filename(Nullable<String> filename) {
             if (filename.isNull()) {
-                this.filename = null;
+                this.filename = OptionalNullable.ofNull();
             } else if (filename.isEmpty()) {
-                this.filename = Optional.empty();
+                this.filename = OptionalNullable.absent();
             } else {
-                this.filename = Optional.of(filename.get());
+                this.filename = OptionalNullable.of(filename.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> when the part named none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage filename(Optional<String> filename) {
+            if (filename.isPresent()) {
+                this.filename = OptionalNullable.of(filename.get());
+            } else {
+                this.filename = OptionalNullable.absent();
             }
             return this;
         }
@@ -313,7 +347,7 @@ public final class ReceivedEmailAttachment {
          */
         @java.lang.Override
         public _FinalStage filename(String filename) {
-            this.filename = Optional.ofNullable(filename);
+            this.filename = OptionalNullable.of(filename);
             return this;
         }
 
@@ -322,7 +356,7 @@ public final class ReceivedEmailAttachment {
          */
         @java.lang.Override
         @JsonSetter(value = "filename", nulls = Nulls.SKIP)
-        public _FinalStage filename(Optional<String> filename) {
+        public _FinalStage filename(OptionalNullable<String> filename) {
             this.filename = filename;
             return this;
         }

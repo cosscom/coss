@@ -43,6 +43,9 @@ class StorageSettings extends JsonSerializableType
         $this->object = $values['object'];
         $this->contentStorage = $values['contentStorage'];
         $this->updatedAt = $values['updatedAt'] ?? null;
+        if (array_key_exists('updatedAt', $values)) {
+            $this->_setField('updatedAt');
+        }
     }
 
     /**

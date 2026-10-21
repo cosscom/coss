@@ -38,6 +38,9 @@ class BillingUsageItem extends JsonSerializableType
         $this->meter = $values['meter'];
         $this->quantity = $values['quantity'];
         $this->included = $values['included'] ?? null;
+        if (array_key_exists('included', $values)) {
+            $this->_setField('included');
+        }
     }
 
     /**

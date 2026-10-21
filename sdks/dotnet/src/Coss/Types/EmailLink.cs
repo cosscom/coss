@@ -32,9 +32,11 @@ public record EmailLink : IJsonOnDeserialized
     [JsonPropertyName("click_count")]
     public required long ClickCount { get; set; }
 
+    [Nullable]
     [JsonPropertyName("first_clicked_at")]
     public DateTime? FirstClickedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_clicked_at")]
     public DateTime? LastClickedAt { get; set; }
 

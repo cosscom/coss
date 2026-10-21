@@ -69,6 +69,9 @@ class HookApplication extends JsonSerializableType
         $this->object = $values['object'];
         $this->id = $values['id'];
         $this->uid = $values['uid'] ?? null;
+        if (array_key_exists('uid', $values)) {
+            $this->_setField('uid');
+        }
         $this->name = $values['name'];
         $this->metadata = $values['metadata'];
         $this->createdAt = $values['createdAt'];

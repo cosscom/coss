@@ -26,6 +26,7 @@ public record AuditEvent : IJsonOnDeserialized
     /// <summary>
     /// The user's or API key's id; `null` for the system.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("actor_id")]
     public string? ActorId { get; set; }
 
@@ -44,27 +45,32 @@ public record AuditEvent : IJsonOnDeserialized
     /// <summary>
     /// What was changed: `domain`, `api_key`, `member`…
     /// </summary>
+    [Nullable]
     [JsonPropertyName("target_type")]
     public string? TargetType { get; set; }
 
+    [Nullable]
     [JsonPropertyName("target_id")]
     public string? TargetId { get; set; }
 
     /// <summary>
     /// A readable name for the target when it was changed.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("target_label")]
     public string? TargetLabel { get; set; }
 
     /// <summary>
     /// `null` for organization-wide changes (domains, members…).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("project_id")]
     public string? ProjectId { get; set; }
 
     /// <summary>
     /// `null` for organization-wide changes (domains, members…).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("environment_id")]
     public string? EnvironmentId { get; set; }
 
@@ -74,9 +80,11 @@ public record AuditEvent : IJsonOnDeserialized
     [JsonPropertyName("metadata")]
     public Dictionary<string, object?> Metadata { get; set; } = new Dictionary<string, object?>();
 
+    [Nullable]
     [JsonPropertyName("client_ip")]
     public string? ClientIp { get; set; }
 
+    [Nullable]
     [JsonPropertyName("user_agent")]
     public string? UserAgent { get; set; }
 

@@ -61,9 +61,21 @@ class ImportContactsRequestContactsItem extends JsonSerializableType
     ) {
         $this->email = $values['email'];
         $this->firstName = $values['firstName'] ?? null;
+        if (array_key_exists('firstName', $values)) {
+            $this->_setField('firstName');
+        }
         $this->lastName = $values['lastName'] ?? null;
+        if (array_key_exists('lastName', $values)) {
+            $this->_setField('lastName');
+        }
         $this->properties = $values['properties'] ?? null;
+        if (array_key_exists('properties', $values)) {
+            $this->_setField('properties');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
     }
 
     /**

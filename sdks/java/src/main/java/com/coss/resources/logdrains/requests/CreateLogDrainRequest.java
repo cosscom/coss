@@ -6,10 +6,10 @@ package com.coss.resources.logdrains.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.types.LogDrainSource;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 public final class CreateLogDrainRequest {
     private final String url;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final Optional<List<LogDrainSource>> sources;
 
@@ -36,7 +36,7 @@ public final class CreateLogDrainRequest {
 
     private CreateLogDrainRequest(
             String url,
-            Optional<String> description,
+            OptionalNullable<String> description,
             Optional<List<LogDrainSource>> sources,
             Map<String, Object> additionalProperties) {
         this.url = url;
@@ -56,10 +56,11 @@ public final class CreateLogDrainRequest {
     /**
      * @return A note for your own reference. <code>null</code> clears it.
      */
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -74,7 +75,7 @@ public final class CreateLogDrainRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
@@ -126,9 +127,11 @@ public final class CreateLogDrainRequest {
         /**
          * <p>A note for your own reference. <code>null</code> clears it.</p>
          */
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
+
+        _FinalStage description(Optional<String> description);
 
         _FinalStage description(Nullable<String> description);
 
@@ -146,7 +149,7 @@ public final class CreateLogDrainRequest {
 
         private Optional<List<LogDrainSource>> sources = Optional.empty();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -199,11 +202,25 @@ public final class CreateLogDrainRequest {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>A note for your own reference. <code>null</code> clears it.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
@@ -214,7 +231,7 @@ public final class CreateLogDrainRequest {
          */
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
@@ -223,7 +240,7 @@ public final class CreateLogDrainRequest {
          */
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }

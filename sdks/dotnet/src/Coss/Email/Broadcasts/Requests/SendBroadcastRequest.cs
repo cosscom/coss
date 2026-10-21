@@ -15,6 +15,7 @@ public record SendBroadcastRequest
     /// <summary>
     /// Omit to start right away.
     /// </summary>
+    [Optional]
     [JsonPropertyName("scheduled_at")]
     public DateTime? ScheduledAt { get; set; }
 

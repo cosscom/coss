@@ -26,6 +26,7 @@ public record EmailWebhookEventDataClick : IJsonOnDeserialized
     [JsonPropertyName("link_position")]
     public required long LinkPosition { get; set; }
 
+    [Nullable]
     [JsonPropertyName("user_agent")]
     public string? UserAgent { get; set; }
 

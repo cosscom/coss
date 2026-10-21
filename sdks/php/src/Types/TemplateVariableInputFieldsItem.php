@@ -38,6 +38,9 @@ class TemplateVariableInputFieldsItem extends JsonSerializableType
         $this->name = $values['name'];
         $this->type = $values['type'];
         $this->required = $values['required'] ?? null;
+        if (array_key_exists('required', $values)) {
+            $this->_setField('required');
+        }
     }
 
     /**

@@ -35,6 +35,7 @@ public record BillingWebhookEventThreeData : IJsonOnDeserialized
     /// <summary>
     /// The allowance's meter (`of: allowance`).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("meter")]
     public BillingWebhookEventThreeDataMeter? Meter { get; set; }
 

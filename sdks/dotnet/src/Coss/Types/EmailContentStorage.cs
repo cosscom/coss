@@ -23,6 +23,7 @@ public record EmailContentStorage : IJsonOnDeserialized
     /// <summary>
     /// When the content was cleared; `null` while it is kept. A cleared email has an empty `subject`, `html` and `text` `null` and no `headers`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("discarded_at")]
     public DateTime? DiscardedAt { get; set; }
 

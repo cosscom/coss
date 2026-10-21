@@ -41,51 +41,64 @@ public record Log : IJsonOnDeserialized
     /// <summary>
     /// The `X-Request-Id` of the API request this line belongs to.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("request_id")]
     public string? RequestId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("api_key_id")]
     public string? ApiKeyId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("method")]
     public string? Method { get; set; }
 
+    [Nullable]
     [JsonPropertyName("path")]
     public string? Path { get; set; }
 
     /// <summary>
     /// The matched route, e.g. `/v1/emails/:id`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("route")]
     public string? Route { get; set; }
 
     /// <summary>
     /// The API response status, or the webhook endpoint's response status.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("status_code")]
     public long? StatusCode { get; set; }
 
+    [Nullable]
     [JsonPropertyName("duration_ms")]
     public long? DurationMs { get; set; }
 
+    [Nullable]
     [JsonPropertyName("client_ip")]
     public string? ClientIp { get; set; }
 
+    [Nullable]
     [JsonPropertyName("user_agent")]
     public string? UserAgent { get; set; }
 
+    [Nullable]
     [JsonPropertyName("error_code")]
     public string? ErrorCode { get; set; }
 
     /// <summary>
     /// What the line is about: `email`, `domain`, `webhook_endpoint`…
     /// </summary>
+    [Nullable]
     [JsonPropertyName("resource_type")]
     public string? ResourceType { get; set; }
 
+    [Nullable]
     [JsonPropertyName("resource_id")]
     public string? ResourceId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("recipient")]
     public string? Recipient { get; set; }
 

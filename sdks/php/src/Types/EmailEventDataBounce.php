@@ -38,6 +38,9 @@ class EmailEventDataBounce extends JsonSerializableType
         $this->type = $values['type'];
         $this->subType = $values['subType'];
         $this->diagnosticCode = $values['diagnosticCode'] ?? null;
+        if (array_key_exists('diagnosticCode', $values)) {
+            $this->_setField('diagnosticCode');
+        }
     }
 
     /**

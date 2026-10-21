@@ -13,7 +13,9 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "captcha": null
+            }
             """;
 
         const string mockResponse = """
@@ -145,6 +147,7 @@ public class UpdateTest : BaseMockServerTest
                 "required": true
               },
               "content_thresholds": {
+                "spam": null,
                 "phishing": 0.8,
                 "malware": 0.8,
                 "fraud": 0.9

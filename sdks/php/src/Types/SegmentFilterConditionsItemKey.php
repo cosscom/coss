@@ -65,6 +65,9 @@ class SegmentFilterConditionsItemKey extends JsonSerializableType
         $this->key = $values['key'];
         $this->op = $values['op'];
         $this->value = $values['value'] ?? null;
+        if (array_key_exists('value', $values)) {
+            $this->_setField('value');
+        }
     }
 
     /**

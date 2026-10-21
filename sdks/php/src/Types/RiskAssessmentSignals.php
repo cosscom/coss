@@ -72,13 +72,37 @@ class RiskAssessmentSignals extends JsonSerializableType
         array $values = [],
     ) {
         $this->email = $values['email'] ?? null;
+        if (array_key_exists('email', $values)) {
+            $this->_setField('email');
+        }
         $this->ip = $values['ip'] ?? null;
+        if (array_key_exists('ip', $values)) {
+            $this->_setField('ip');
+        }
         $this->velocity = $values['velocity'] ?? null;
+        if (array_key_exists('velocity', $values)) {
+            $this->_setField('velocity');
+        }
         $this->captcha = $values['captcha'] ?? null;
+        if (array_key_exists('captcha', $values)) {
+            $this->_setField('captcha');
+        }
         $this->login = $values['login'] ?? null;
+        if (array_key_exists('login', $values)) {
+            $this->_setField('login');
+        }
         $this->content = $values['content'] ?? null;
+        if (array_key_exists('content', $values)) {
+            $this->_setField('content');
+        }
         $this->checkout = $values['checkout'] ?? null;
+        if (array_key_exists('checkout', $values)) {
+            $this->_setField('checkout');
+        }
         $this->device = $values['device'] ?? null;
+        if (array_key_exists('device', $values)) {
+            $this->_setField('device');
+        }
     }
 
     /**

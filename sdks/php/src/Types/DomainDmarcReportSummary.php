@@ -95,7 +95,13 @@ class DomainDmarcReportSummary extends JsonSerializableType
         $this->cossMessages = $values['cossMessages'];
         $this->cossPassing = $values['cossPassing'];
         $this->firstReportAt = $values['firstReportAt'] ?? null;
+        if (array_key_exists('firstReportAt', $values)) {
+            $this->_setField('firstReportAt');
+        }
         $this->lastReportAt = $values['lastReportAt'] ?? null;
+        if (array_key_exists('lastReportAt', $values)) {
+            $this->_setField('lastReportAt');
+        }
         $this->sources = $values['sources'];
     }
 

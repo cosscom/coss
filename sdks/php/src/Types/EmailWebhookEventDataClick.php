@@ -41,6 +41,9 @@ class EmailWebhookEventDataClick extends JsonSerializableType
         $this->url = $values['url'];
         $this->linkPosition = $values['linkPosition'];
         $this->userAgent = $values['userAgent'] ?? null;
+        if (array_key_exists('userAgent', $values)) {
+            $this->_setField('userAgent');
+        }
     }
 
     /**

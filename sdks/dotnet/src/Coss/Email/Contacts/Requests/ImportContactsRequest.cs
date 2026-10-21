@@ -13,6 +13,7 @@ public record ImportContactsRequest
     /// <summary>
     /// Adds every imported contact to this audience.
     /// </summary>
+    [Optional]
     [JsonPropertyName("audience_id")]
     public string? AudienceId { get; set; }
 

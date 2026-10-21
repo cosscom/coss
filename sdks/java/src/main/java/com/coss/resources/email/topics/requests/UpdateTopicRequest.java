@@ -6,11 +6,11 @@ package com.coss.resources.email.topics.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.email.topics.types.UpdateTopicRequestDefaultSubscription;
 import com.coss.resources.email.topics.types.UpdateTopicRequestVisibility;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public final class UpdateTopicRequest {
     private final Optional<String> name;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
     private final Optional<UpdateTopicRequestDefaultSubscription> defaultSubscription;
 
@@ -39,7 +39,7 @@ public final class UpdateTopicRequest {
 
     private UpdateTopicRequest(
             Optional<String> name,
-            Optional<String> description,
+            OptionalNullable<String> description,
             Optional<UpdateTopicRequestDefaultSubscription> defaultSubscription,
             Optional<UpdateTopicRequestVisibility> visibility,
             Optional<Integer> position,
@@ -57,10 +57,11 @@ public final class UpdateTopicRequest {
         return name;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -91,7 +92,7 @@ public final class UpdateTopicRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
@@ -132,7 +133,7 @@ public final class UpdateTopicRequest {
     public static final class Builder {
         private Optional<String> name = Optional.empty();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
         private Optional<UpdateTopicRequestDefaultSubscription> defaultSubscription = Optional.empty();
 
@@ -166,23 +167,32 @@ public final class UpdateTopicRequest {
         }
 
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public Builder description(Optional<String> description) {
+        public Builder description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }
 
         public Builder description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
+            return this;
+        }
+
+        public Builder description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
             }
             return this;
         }

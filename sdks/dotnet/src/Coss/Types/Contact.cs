@@ -21,9 +21,11 @@ public record Contact : IJsonOnDeserialized
     [JsonPropertyName("email")]
     public required string Email { get; set; }
 
+    [Nullable]
     [JsonPropertyName("first_name")]
     public string? FirstName { get; set; }
 
+    [Nullable]
     [JsonPropertyName("last_name")]
     public string? LastName { get; set; }
 
@@ -43,15 +45,18 @@ public record Contact : IJsonOnDeserialized
     [JsonPropertyName("source")]
     public required ContactSource Source { get; set; }
 
+    [Nullable]
     [JsonPropertyName("subscribed_at")]
     public DateTime? SubscribedAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("unsubscribed_at")]
     public DateTime? UnsubscribedAt { get; set; }
 
     /// <summary>
     /// When the contact confirmed a double opt-in.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("confirmed_at")]
     public DateTime? ConfirmedAt { get; set; }
 

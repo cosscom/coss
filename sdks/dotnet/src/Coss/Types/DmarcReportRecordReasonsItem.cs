@@ -14,6 +14,7 @@ public record DmarcReportRecordReasonsItem : IJsonOnDeserialized
     [JsonPropertyName("type")]
     public required string Type { get; set; }
 
+    [Nullable]
     [JsonPropertyName("comment")]
     public string? Comment { get; set; }
 

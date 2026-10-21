@@ -29,24 +29,29 @@ public record RiskDeviceSignals : IJsonOnDeserialized
     /// <summary>
     /// IANA time zone (`Europe/London`).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("timezone")]
     public string? Timezone { get; set; }
 
     /// <summary>
     /// The browser's first language.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("language")]
     public string? Language { get; set; }
 
+    [Nullable]
     [JsonPropertyName("platform")]
     public string? Platform { get; set; }
 
     /// <summary>
     /// `&lt;width&gt;x&lt;height&gt;` in CSS pixels.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("screen")]
     public string? Screen { get; set; }
 
+    [Nullable]
     [JsonPropertyName("touch")]
     public bool? Touch { get; set; }
 

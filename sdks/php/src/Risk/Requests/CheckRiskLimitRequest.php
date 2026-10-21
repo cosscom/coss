@@ -42,8 +42,14 @@ class CheckRiskLimitRequest extends JsonSerializableType
         array $values,
     ) {
         $this->idempotencyKey = $values['idempotencyKey'] ?? null;
+        if (array_key_exists('idempotencyKey', $values)) {
+            $this->_setField('idempotencyKey');
+        }
         $this->bucket = $values['bucket'];
         $this->key = $values['key'];
         $this->cost = $values['cost'] ?? null;
+        if (array_key_exists('cost', $values)) {
+            $this->_setField('cost');
+        }
     }
 }

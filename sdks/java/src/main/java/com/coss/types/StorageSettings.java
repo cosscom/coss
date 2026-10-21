@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,14 +29,14 @@ public final class StorageSettings {
 
     private final StorageSettingsContentStorage contentStorage;
 
-    private final Optional<OffsetDateTime> updatedAt;
+    private final OptionalNullable<OffsetDateTime> updatedAt;
 
     private final Map<String, Object> additionalProperties;
 
     private StorageSettings(
             StorageSettingsObject object,
             StorageSettingsContentStorage contentStorage,
-            Optional<OffsetDateTime> updatedAt,
+            OptionalNullable<OffsetDateTime> updatedAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.contentStorage = contentStorage;
@@ -60,17 +60,18 @@ public final class StorageSettings {
     /**
      * @return When the setting last changed; <code>null</code> if it never did (content is stored).
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getUpdatedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("updated_at")
+    public OptionalNullable<OffsetDateTime> getUpdatedAt() {
         if (updatedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return updatedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("updated_at")
-    private Optional<OffsetDateTime> _getUpdatedAt() {
+    private OptionalNullable<OffsetDateTime> _getUpdatedAt() {
         return updatedAt;
     }
 
@@ -128,9 +129,11 @@ public final class StorageSettings {
         /**
          * <p>When the setting last changed; <code>null</code> if it never did (content is stored).</p>
          */
-        _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt);
+        _FinalStage updatedAt(OptionalNullable<OffsetDateTime> updatedAt);
 
         _FinalStage updatedAt(OffsetDateTime updatedAt);
+
+        _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt);
 
         _FinalStage updatedAt(Nullable<OffsetDateTime> updatedAt);
     }
@@ -141,7 +144,7 @@ public final class StorageSettings {
 
         private StorageSettingsContentStorage contentStorage;
 
-        private Optional<OffsetDateTime> updatedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> updatedAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -181,11 +184,25 @@ public final class StorageSettings {
         @java.lang.Override
         public _FinalStage updatedAt(Nullable<OffsetDateTime> updatedAt) {
             if (updatedAt.isNull()) {
-                this.updatedAt = null;
+                this.updatedAt = OptionalNullable.ofNull();
             } else if (updatedAt.isEmpty()) {
-                this.updatedAt = Optional.empty();
+                this.updatedAt = OptionalNullable.absent();
             } else {
-                this.updatedAt = Optional.of(updatedAt.get());
+                this.updatedAt = OptionalNullable.of(updatedAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When the setting last changed; <code>null</code> if it never did (content is stored).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt) {
+            if (updatedAt.isPresent()) {
+                this.updatedAt = OptionalNullable.of(updatedAt.get());
+            } else {
+                this.updatedAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -196,7 +213,7 @@ public final class StorageSettings {
          */
         @java.lang.Override
         public _FinalStage updatedAt(OffsetDateTime updatedAt) {
-            this.updatedAt = Optional.ofNullable(updatedAt);
+            this.updatedAt = OptionalNullable.of(updatedAt);
             return this;
         }
 
@@ -205,7 +222,7 @@ public final class StorageSettings {
          */
         @java.lang.Override
         @JsonSetter(value = "updated_at", nulls = Nulls.SKIP)
-        public _FinalStage updatedAt(Optional<OffsetDateTime> updatedAt) {
+        public _FinalStage updatedAt(OptionalNullable<OffsetDateTime> updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }

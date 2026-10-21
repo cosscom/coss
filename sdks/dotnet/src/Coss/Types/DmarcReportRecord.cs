@@ -41,6 +41,7 @@ public record DmarcReportRecord : IJsonOnDeserialized
     [JsonPropertyName("header_from")]
     public required string HeaderFrom { get; set; }
 
+    [Nullable]
     [JsonPropertyName("envelope_from")]
     public string? EnvelopeFrom { get; set; }
 

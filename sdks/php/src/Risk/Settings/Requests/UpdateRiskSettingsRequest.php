@@ -62,10 +62,28 @@ class UpdateRiskSettingsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->reviewThreshold = $values['reviewThreshold'] ?? null;
+        if (array_key_exists('reviewThreshold', $values)) {
+            $this->_setField('reviewThreshold');
+        }
         $this->blockThreshold = $values['blockThreshold'] ?? null;
+        if (array_key_exists('blockThreshold', $values)) {
+            $this->_setField('blockThreshold');
+        }
         $this->disabledReasons = $values['disabledReasons'] ?? null;
+        if (array_key_exists('disabledReasons', $values)) {
+            $this->_setField('disabledReasons');
+        }
         $this->captcha = $values['captcha'] ?? null;
+        if (array_key_exists('captcha', $values)) {
+            $this->_setField('captcha');
+        }
         $this->contentThresholds = $values['contentThresholds'] ?? null;
+        if (array_key_exists('contentThresholds', $values)) {
+            $this->_setField('contentThresholds');
+        }
         $this->reasonWeights = $values['reasonWeights'] ?? null;
+        if (array_key_exists('reasonWeights', $values)) {
+            $this->_setField('reasonWeights');
+        }
     }
 }

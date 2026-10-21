@@ -64,7 +64,7 @@ class ClientBehaviourTest < Minitest::Test
 
   def test_keeps_the_callers_idempotency_key
     stub = stub_request(:post, "#{BASE}/v1/emails")
-           .with(headers: { "Idempotency-Key" => "order-42" })
+           .with(headers: { "Idempotency-Key" => "order-42" }) { |request| !JSON.parse(request.body).key?("idempotency_key") }
            .to_return(*responses(202))
     @coss.email.send_(from: "hello@acme.test", to: ["someone@example.com"], subject: "Hi", text: "Hi",
                       idempotency_key: "order-42")
@@ -85,5 +85,16 @@ class ClientBehaviourTest < Minitest::Test
     stub = stub_request(:post, "#{BASE}/v1/webhook_endpoints").to_return(*responses(503, 200))
     assert_raises(Coss::Errors::ResponseError) { @coss.webhook_endpoints.create(url: "https://example.com/hooks") }
     assert_requested stub, times: 1
+  end
+
+  def test_sends_an_explicit_null_and_leaves_omitted_fields_out
+    endpoint = JSON.parse(File.read(File.join(ROOT, "apps/api/openapi.json")))
+                   .dig("components", "schemas", "WebhookEndpoint", "examples", 0)
+    stub = stub_request(:patch, "#{BASE}/v1/webhook_endpoints/we_1")
+           .with(body: { description: nil }.to_json)
+           .to_return(status: 200, body: endpoint.to_json, headers: { "Content-Type" => "application/json" })
+    @coss.webhook_endpoints.update(id: "we_1", description: nil)
+
+    assert_requested stub
   end
 end

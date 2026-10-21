@@ -14,6 +14,7 @@ public record RiskEmailSignals : IJsonOnDeserialized
     /// <summary>
     /// `null` once the address is removed (90 days after the assessment).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("domain")]
     public string? Domain { get; set; }
 
@@ -35,12 +36,14 @@ public record RiskEmailSignals : IJsonOnDeserialized
     [JsonPropertyName("free_provider")]
     public required bool FreeProvider { get; set; }
 
+    [Nullable]
     [JsonPropertyName("suggestion")]
     public string? Suggestion { get; set; }
 
     /// <summary>
     /// Days since the domain was registered (RDAP); `null` when unknown or not looked up (free providers, disposable domains).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("domain_age_days")]
     public long? DomainAgeDays { get; set; }
 

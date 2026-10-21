@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class EmailEvent {
 
     private final EmailEventType type;
 
-    private final Optional<String> recipient;
+    private final OptionalNullable<String> recipient;
 
     private final OffsetDateTime occurredAt;
 
@@ -46,7 +46,7 @@ public final class EmailEvent {
             String id,
             String emailId,
             EmailEventType type,
-            Optional<String> recipient,
+            OptionalNullable<String> recipient,
             OffsetDateTime occurredAt,
             EmailEventData data,
             Map<String, Object> additionalProperties) {
@@ -83,10 +83,11 @@ public final class EmailEvent {
     /**
      * @return The recipient this event is about; <code>null</code> for the whole email.
      */
-    @JsonIgnore
-    public Optional<String> getRecipient() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("recipient")
+    public OptionalNullable<String> getRecipient() {
         if (recipient == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return recipient;
     }
@@ -103,7 +104,7 @@ public final class EmailEvent {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("recipient")
-    private Optional<String> _getRecipient() {
+    private OptionalNullable<String> _getRecipient() {
         return recipient;
     }
 
@@ -178,9 +179,11 @@ public final class EmailEvent {
         /**
          * <p>The recipient this event is about; <code>null</code> for the whole email.</p>
          */
-        _FinalStage recipient(Optional<String> recipient);
+        _FinalStage recipient(OptionalNullable<String> recipient);
 
         _FinalStage recipient(String recipient);
+
+        _FinalStage recipient(Optional<String> recipient);
 
         _FinalStage recipient(Nullable<String> recipient);
     }
@@ -200,7 +203,7 @@ public final class EmailEvent {
 
         private EmailEventData data;
 
-        private Optional<String> recipient = Optional.empty();
+        private OptionalNullable<String> recipient = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -268,11 +271,25 @@ public final class EmailEvent {
         @java.lang.Override
         public _FinalStage recipient(Nullable<String> recipient) {
             if (recipient.isNull()) {
-                this.recipient = null;
+                this.recipient = OptionalNullable.ofNull();
             } else if (recipient.isEmpty()) {
-                this.recipient = Optional.empty();
+                this.recipient = OptionalNullable.absent();
             } else {
-                this.recipient = Optional.of(recipient.get());
+                this.recipient = OptionalNullable.of(recipient.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The recipient this event is about; <code>null</code> for the whole email.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage recipient(Optional<String> recipient) {
+            if (recipient.isPresent()) {
+                this.recipient = OptionalNullable.of(recipient.get());
+            } else {
+                this.recipient = OptionalNullable.absent();
             }
             return this;
         }
@@ -283,7 +300,7 @@ public final class EmailEvent {
          */
         @java.lang.Override
         public _FinalStage recipient(String recipient) {
-            this.recipient = Optional.ofNullable(recipient);
+            this.recipient = OptionalNullable.of(recipient);
             return this;
         }
 
@@ -292,7 +309,7 @@ public final class EmailEvent {
          */
         @java.lang.Override
         @JsonSetter(value = "recipient", nulls = Nulls.SKIP)
-        public _FinalStage recipient(Optional<String> recipient) {
+        public _FinalStage recipient(OptionalNullable<String> recipient) {
             this.recipient = recipient;
             return this;
         }

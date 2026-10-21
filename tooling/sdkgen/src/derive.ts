@@ -49,6 +49,16 @@ const RENAMES: Record<string, Record<string, string>> = {
   csharp: { Email: "EmailMessage", Billing: "BillingOverview", Error: "ErrorResponse" },
 };
 
+/**
+ * Properties whose `null` is dropped for one language, by JSON pointer under
+ * `components/schemas`. C#'s explicit optional-nullable values (`Optional<T?>`, which send a
+ * null that clears a field) don't convert implicitly from one branch of a union, so the
+ * generator's own code for this one doesn't compile; on a create, null and omitted are the same.
+ */
+const NOT_NULLABLE: Record<string, string[]> = {
+  csharp: ["CreateContactPropertyRequest/properties/fallback"],
+};
+
 /** The operations of a document, keyed by `METHOD /path` like `SDK_METHODS`. */
 export function operationsOf(doc: OpenApiDocument): Map<string, Operation> {
   const operations = new Map<string, Operation>();
@@ -111,6 +121,15 @@ export function deriveSdkSpec(source: OpenApiDocument, language?: string): OpenA
     const schema = resolve(doc.components.schemas, [renamed, ...rest].join("/"));
     if (!schema) throw new Error(`No schema at components/schemas/${pointer} to name ${name}`);
     schema["x-fern-type-name"] = name;
+  }
+
+  for (const pointer of NOT_NULLABLE[language ?? ""] ?? []) {
+    const schema = resolve(doc.components.schemas, pointer);
+    const branches = schema?.anyOf;
+    if (!schema || !Array.isArray(branches)) {
+      throw new Error(`No anyOf at components/schemas/${pointer}`);
+    }
+    schema.anyOf = branches.filter((branch) => (branch as Schema).type !== "null");
   }
 
   visitSchemas(doc, widenIntegers);

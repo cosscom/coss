@@ -27,6 +27,12 @@ class ExportContactsRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->audienceId = $values['audienceId'] ?? null;
+        if (array_key_exists('audienceId', $values)) {
+            $this->_setField('audienceId');
+        }
     }
 }

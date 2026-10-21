@@ -17,6 +17,7 @@ public record ReceivedEmailAttachment : IJsonOnDeserialized
     /// <summary>
     /// `null` when the part named none.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("filename")]
     public string? Filename { get; set; }
 
@@ -26,6 +27,7 @@ public record ReceivedEmailAttachment : IJsonOnDeserialized
     /// <summary>
     /// Set for parts the HTML references (`cid:` URLs).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("content_id")]
     public string? ContentId { get; set; }
 

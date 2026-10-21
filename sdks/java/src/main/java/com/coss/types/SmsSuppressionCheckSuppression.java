@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class SmsSuppressionCheckSuppression {
 
     private final SmsSuppressionCheckSuppressionReason reason;
 
-    private final Optional<String> smsId;
+    private final OptionalNullable<String> smsId;
 
     private final OffsetDateTime createdAt;
 
@@ -44,7 +44,7 @@ public final class SmsSuppressionCheckSuppression {
             String id,
             String phoneNumber,
             SmsSuppressionCheckSuppressionReason reason,
-            Optional<String> smsId,
+            OptionalNullable<String> smsId,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -82,10 +82,11 @@ public final class SmsSuppressionCheckSuppression {
     /**
      * @return The message whose failure added it, if any.
      */
-    @JsonIgnore
-    public Optional<String> getSmsId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sms_id")
+    public OptionalNullable<String> getSmsId() {
         if (smsId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return smsId;
     }
@@ -97,7 +98,7 @@ public final class SmsSuppressionCheckSuppression {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sms_id")
-    private Optional<String> _getSmsId() {
+    private OptionalNullable<String> _getSmsId() {
         return smsId;
     }
 
@@ -170,9 +171,11 @@ public final class SmsSuppressionCheckSuppression {
         /**
          * <p>The message whose failure added it, if any.</p>
          */
-        _FinalStage smsId(Optional<String> smsId);
+        _FinalStage smsId(OptionalNullable<String> smsId);
 
         _FinalStage smsId(String smsId);
+
+        _FinalStage smsId(Optional<String> smsId);
 
         _FinalStage smsId(Nullable<String> smsId);
     }
@@ -190,7 +193,7 @@ public final class SmsSuppressionCheckSuppression {
 
         private OffsetDateTime createdAt;
 
-        private Optional<String> smsId = Optional.empty();
+        private OptionalNullable<String> smsId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -254,11 +257,25 @@ public final class SmsSuppressionCheckSuppression {
         @java.lang.Override
         public _FinalStage smsId(Nullable<String> smsId) {
             if (smsId.isNull()) {
-                this.smsId = null;
+                this.smsId = OptionalNullable.ofNull();
             } else if (smsId.isEmpty()) {
-                this.smsId = Optional.empty();
+                this.smsId = OptionalNullable.absent();
             } else {
-                this.smsId = Optional.of(smsId.get());
+                this.smsId = OptionalNullable.of(smsId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The message whose failure added it, if any.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage smsId(Optional<String> smsId) {
+            if (smsId.isPresent()) {
+                this.smsId = OptionalNullable.of(smsId.get());
+            } else {
+                this.smsId = OptionalNullable.absent();
             }
             return this;
         }
@@ -269,7 +286,7 @@ public final class SmsSuppressionCheckSuppression {
          */
         @java.lang.Override
         public _FinalStage smsId(String smsId) {
-            this.smsId = Optional.ofNullable(smsId);
+            this.smsId = OptionalNullable.of(smsId);
             return this;
         }
 
@@ -278,7 +295,7 @@ public final class SmsSuppressionCheckSuppression {
          */
         @java.lang.Override
         @JsonSetter(value = "sms_id", nulls = Nulls.SKIP)
-        public _FinalStage smsId(Optional<String> smsId) {
+        public _FinalStage smsId(OptionalNullable<String> smsId) {
             this.smsId = smsId;
             return this;
         }

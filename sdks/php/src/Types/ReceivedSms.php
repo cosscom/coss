@@ -86,6 +86,9 @@ class ReceivedSms extends JsonSerializableType
         $this->body = $values['body'];
         $this->segments = $values['segments'];
         $this->keyword = $values['keyword'] ?? null;
+        if (array_key_exists('keyword', $values)) {
+            $this->_setField('keyword');
+        }
         $this->sandbox = $values['sandbox'];
         $this->createdAt = $values['createdAt'];
     }

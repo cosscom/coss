@@ -12,15 +12,19 @@ public record UpdateRiskLimitBucketRequest
     [JsonIgnore]
     public required string Id { get; set; }
 
+    [Optional]
     [JsonPropertyName("limit")]
     public int? Limit { get; set; }
 
+    [Optional]
     [JsonPropertyName("period_seconds")]
     public int? PeriodSeconds { get; set; }
 
+    [Optional]
     [JsonPropertyName("burst")]
     public int? Burst { get; set; }
 
+    [Optional]
     [JsonPropertyName("on_failure")]
     public UpdateRiskLimitBucketRequestOnFailure? OnFailure { get; set; }
 

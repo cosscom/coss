@@ -111,6 +111,7 @@ module Coss
         params = Coss::Internal::Types::Utils.normalize_keys(params)
         headers = {}
         headers["Idempotency-Key"] = params[:idempotency_key] if params[:idempotency_key]
+        params = params.except(:idempotency_key)
 
         request = Coss::Internal::JSON::Request.new(
           base_url: request_options[:base_url],

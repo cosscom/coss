@@ -60,6 +60,9 @@ class HookEndpointWebhookEventData extends JsonSerializableType
     ) {
         $this->applicationId = $values['applicationId'];
         $this->applicationUid = $values['applicationUid'] ?? null;
+        if (array_key_exists('applicationUid', $values)) {
+            $this->_setField('applicationUid');
+        }
         $this->endpointId = $values['endpointId'];
         $this->url = $values['url'];
         $this->failingSince = $values['failingSince'];

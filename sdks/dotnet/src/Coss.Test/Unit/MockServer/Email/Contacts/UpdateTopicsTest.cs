@@ -108,7 +108,8 @@ public class UpdateTopicsTest : BaseMockServerTest
                 {
                   "topic": "newsletter",
                   "name": "Newsletter",
-                  "subscribed": true
+                  "subscribed": true,
+                  "choice": null
                 },
                 {
                   "topic": "product",

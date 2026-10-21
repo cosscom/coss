@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,13 +33,13 @@ public final class DedicatedIpPool {
 
     private final List<DedicatedIpPoolIpsItem> ips;
 
-    private final Optional<Double> dedicatedShare;
+    private final OptionalNullable<Double> dedicatedShare;
 
-    private final Optional<String> message;
+    private final OptionalNullable<String> message;
 
-    private final Optional<OffsetDateTime> createdAt;
+    private final OptionalNullable<OffsetDateTime> createdAt;
 
-    private final Optional<OffsetDateTime> readyAt;
+    private final OptionalNullable<OffsetDateTime> readyAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -47,10 +47,10 @@ public final class DedicatedIpPool {
             DedicatedIpPoolObject object,
             DedicatedIpPoolStatus status,
             List<DedicatedIpPoolIpsItem> ips,
-            Optional<Double> dedicatedShare,
-            Optional<String> message,
-            Optional<OffsetDateTime> createdAt,
-            Optional<OffsetDateTime> readyAt,
+            OptionalNullable<Double> dedicatedShare,
+            OptionalNullable<String> message,
+            OptionalNullable<OffsetDateTime> createdAt,
+            OptionalNullable<OffsetDateTime> readyAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.status = status;
@@ -86,10 +86,11 @@ public final class DedicatedIpPool {
     /**
      * @return Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (<code>null</code>: fewer than 1,000).
      */
-    @JsonIgnore
-    public Optional<Double> getDedicatedShare() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dedicated_share")
+    public OptionalNullable<Double> getDedicatedShare() {
         if (dedicatedShare == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dedicatedShare;
     }
@@ -97,18 +98,20 @@ public final class DedicatedIpPool {
     /**
      * @return What is holding the pool up, if anything.
      */
-    @JsonIgnore
-    public Optional<String> getMessage() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("message")
+    public OptionalNullable<String> getMessage() {
         if (message == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return message;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getCreatedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("created_at")
+    public OptionalNullable<OffsetDateTime> getCreatedAt() {
         if (createdAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return createdAt;
     }
@@ -116,35 +119,36 @@ public final class DedicatedIpPool {
     /**
      * @return When it was first <code>ready</code>.
      */
-    @JsonIgnore
-    public Optional<OffsetDateTime> getReadyAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("ready_at")
+    public OptionalNullable<OffsetDateTime> getReadyAt() {
         if (readyAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return readyAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dedicated_share")
-    private Optional<Double> _getDedicatedShare() {
+    private OptionalNullable<Double> _getDedicatedShare() {
         return dedicatedShare;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("message")
-    private Optional<String> _getMessage() {
+    private OptionalNullable<String> _getMessage() {
         return message;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("created_at")
-    private Optional<OffsetDateTime> _getCreatedAt() {
+    private OptionalNullable<OffsetDateTime> _getCreatedAt() {
         return createdAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("ready_at")
-    private Optional<OffsetDateTime> _getReadyAt() {
+    private OptionalNullable<OffsetDateTime> _getReadyAt() {
         return readyAt;
     }
 
@@ -216,33 +220,41 @@ public final class DedicatedIpPool {
         /**
          * <p>Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (<code>null</code>: fewer than 1,000).</p>
          */
-        _FinalStage dedicatedShare(Optional<Double> dedicatedShare);
+        _FinalStage dedicatedShare(OptionalNullable<Double> dedicatedShare);
 
         _FinalStage dedicatedShare(Double dedicatedShare);
+
+        _FinalStage dedicatedShare(Optional<Double> dedicatedShare);
 
         _FinalStage dedicatedShare(Nullable<Double> dedicatedShare);
 
         /**
          * <p>What is holding the pool up, if anything.</p>
          */
-        _FinalStage message(Optional<String> message);
+        _FinalStage message(OptionalNullable<String> message);
 
         _FinalStage message(String message);
 
+        _FinalStage message(Optional<String> message);
+
         _FinalStage message(Nullable<String> message);
 
-        _FinalStage createdAt(Optional<OffsetDateTime> createdAt);
+        _FinalStage createdAt(OptionalNullable<OffsetDateTime> createdAt);
 
         _FinalStage createdAt(OffsetDateTime createdAt);
+
+        _FinalStage createdAt(Optional<OffsetDateTime> createdAt);
 
         _FinalStage createdAt(Nullable<OffsetDateTime> createdAt);
 
         /**
          * <p>When it was first <code>ready</code>.</p>
          */
-        _FinalStage readyAt(Optional<OffsetDateTime> readyAt);
+        _FinalStage readyAt(OptionalNullable<OffsetDateTime> readyAt);
 
         _FinalStage readyAt(OffsetDateTime readyAt);
+
+        _FinalStage readyAt(Optional<OffsetDateTime> readyAt);
 
         _FinalStage readyAt(Nullable<OffsetDateTime> readyAt);
     }
@@ -253,13 +265,13 @@ public final class DedicatedIpPool {
 
         private DedicatedIpPoolStatus status;
 
-        private Optional<OffsetDateTime> readyAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> readyAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> createdAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> createdAt = OptionalNullable.absent();
 
-        private Optional<String> message = Optional.empty();
+        private OptionalNullable<String> message = OptionalNullable.absent();
 
-        private Optional<Double> dedicatedShare = Optional.empty();
+        private OptionalNullable<Double> dedicatedShare = OptionalNullable.absent();
 
         private List<DedicatedIpPoolIpsItem> ips = new ArrayList<>();
 
@@ -305,11 +317,25 @@ public final class DedicatedIpPool {
         @java.lang.Override
         public _FinalStage readyAt(Nullable<OffsetDateTime> readyAt) {
             if (readyAt.isNull()) {
-                this.readyAt = null;
+                this.readyAt = OptionalNullable.ofNull();
             } else if (readyAt.isEmpty()) {
-                this.readyAt = Optional.empty();
+                this.readyAt = OptionalNullable.absent();
             } else {
-                this.readyAt = Optional.of(readyAt.get());
+                this.readyAt = OptionalNullable.of(readyAt.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>When it was first <code>ready</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage readyAt(Optional<OffsetDateTime> readyAt) {
+            if (readyAt.isPresent()) {
+                this.readyAt = OptionalNullable.of(readyAt.get());
+            } else {
+                this.readyAt = OptionalNullable.absent();
             }
             return this;
         }
@@ -320,7 +346,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         public _FinalStage readyAt(OffsetDateTime readyAt) {
-            this.readyAt = Optional.ofNullable(readyAt);
+            this.readyAt = OptionalNullable.of(readyAt);
             return this;
         }
 
@@ -329,7 +355,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         @JsonSetter(value = "ready_at", nulls = Nulls.SKIP)
-        public _FinalStage readyAt(Optional<OffsetDateTime> readyAt) {
+        public _FinalStage readyAt(OptionalNullable<OffsetDateTime> readyAt) {
             this.readyAt = readyAt;
             return this;
         }
@@ -337,24 +363,34 @@ public final class DedicatedIpPool {
         @java.lang.Override
         public _FinalStage createdAt(Nullable<OffsetDateTime> createdAt) {
             if (createdAt.isNull()) {
-                this.createdAt = null;
+                this.createdAt = OptionalNullable.ofNull();
             } else if (createdAt.isEmpty()) {
-                this.createdAt = Optional.empty();
+                this.createdAt = OptionalNullable.absent();
             } else {
-                this.createdAt = Optional.of(createdAt.get());
+                this.createdAt = OptionalNullable.of(createdAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage createdAt(Optional<OffsetDateTime> createdAt) {
+            if (createdAt.isPresent()) {
+                this.createdAt = OptionalNullable.of(createdAt.get());
+            } else {
+                this.createdAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage createdAt(OffsetDateTime createdAt) {
-            this.createdAt = Optional.ofNullable(createdAt);
+            this.createdAt = OptionalNullable.of(createdAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "created_at", nulls = Nulls.SKIP)
-        public _FinalStage createdAt(Optional<OffsetDateTime> createdAt) {
+        public _FinalStage createdAt(OptionalNullable<OffsetDateTime> createdAt) {
             this.createdAt = createdAt;
             return this;
         }
@@ -366,11 +402,25 @@ public final class DedicatedIpPool {
         @java.lang.Override
         public _FinalStage message(Nullable<String> message) {
             if (message.isNull()) {
-                this.message = null;
+                this.message = OptionalNullable.ofNull();
             } else if (message.isEmpty()) {
-                this.message = Optional.empty();
+                this.message = OptionalNullable.absent();
             } else {
-                this.message = Optional.of(message.get());
+                this.message = OptionalNullable.of(message.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What is holding the pool up, if anything.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage message(Optional<String> message) {
+            if (message.isPresent()) {
+                this.message = OptionalNullable.of(message.get());
+            } else {
+                this.message = OptionalNullable.absent();
             }
             return this;
         }
@@ -381,7 +431,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         public _FinalStage message(String message) {
-            this.message = Optional.ofNullable(message);
+            this.message = OptionalNullable.of(message);
             return this;
         }
 
@@ -390,7 +440,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         @JsonSetter(value = "message", nulls = Nulls.SKIP)
-        public _FinalStage message(Optional<String> message) {
+        public _FinalStage message(OptionalNullable<String> message) {
             this.message = message;
             return this;
         }
@@ -402,11 +452,25 @@ public final class DedicatedIpPool {
         @java.lang.Override
         public _FinalStage dedicatedShare(Nullable<Double> dedicatedShare) {
             if (dedicatedShare.isNull()) {
-                this.dedicatedShare = null;
+                this.dedicatedShare = OptionalNullable.ofNull();
             } else if (dedicatedShare.isEmpty()) {
-                this.dedicatedShare = Optional.empty();
+                this.dedicatedShare = OptionalNullable.absent();
             } else {
-                this.dedicatedShare = Optional.of(dedicatedShare.get());
+                this.dedicatedShare = OptionalNullable.of(dedicatedShare.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Share (0–1) of the last 7 days' deliveries that left from the pool's IPs (<code>null</code>: fewer than 1,000).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage dedicatedShare(Optional<Double> dedicatedShare) {
+            if (dedicatedShare.isPresent()) {
+                this.dedicatedShare = OptionalNullable.of(dedicatedShare.get());
+            } else {
+                this.dedicatedShare = OptionalNullable.absent();
             }
             return this;
         }
@@ -417,7 +481,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         public _FinalStage dedicatedShare(Double dedicatedShare) {
-            this.dedicatedShare = Optional.ofNullable(dedicatedShare);
+            this.dedicatedShare = OptionalNullable.of(dedicatedShare);
             return this;
         }
 
@@ -426,7 +490,7 @@ public final class DedicatedIpPool {
          */
         @java.lang.Override
         @JsonSetter(value = "dedicated_share", nulls = Nulls.SKIP)
-        public _FinalStage dedicatedShare(Optional<Double> dedicatedShare) {
+        public _FinalStage dedicatedShare(OptionalNullable<Double> dedicatedShare) {
             this.dedicatedShare = dedicatedShare;
             return this;
         }

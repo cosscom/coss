@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,7 +38,7 @@ public final class RiskReason {
 
     private final Optional<String> provider;
 
-    private final Optional<String> previousUser;
+    private final OptionalNullable<String> previousUser;
 
     private final Optional<String> previousAssessment;
 
@@ -60,7 +60,7 @@ public final class RiskReason {
             Optional<RiskReasonWindow> window,
             Optional<String> suggestion,
             Optional<String> provider,
-            Optional<String> previousUser,
+            OptionalNullable<String> previousUser,
             Optional<String> previousAssessment,
             Optional<String> entry,
             Optional<String> rule,
@@ -133,10 +133,11 @@ public final class RiskReason {
     /**
      * @return <code>duplicate.canonical_mailbox</code>, <code>duplicate.device</code>: your id of the user who has the mailbox or device, if known.
      */
-    @JsonIgnore
-    public Optional<String> getPreviousUser() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("previous_user")
+    public OptionalNullable<String> getPreviousUser() {
         if (previousUser == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return previousUser;
     }
@@ -183,7 +184,7 @@ public final class RiskReason {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("previous_user")
-    private Optional<String> _getPreviousUser() {
+    private OptionalNullable<String> _getPreviousUser() {
         return previousUser;
     }
 
@@ -293,9 +294,11 @@ public final class RiskReason {
         /**
          * <p><code>duplicate.canonical_mailbox</code>, <code>duplicate.device</code>: your id of the user who has the mailbox or device, if known.</p>
          */
-        _FinalStage previousUser(Optional<String> previousUser);
+        _FinalStage previousUser(OptionalNullable<String> previousUser);
 
         _FinalStage previousUser(String previousUser);
+
+        _FinalStage previousUser(Optional<String> previousUser);
 
         _FinalStage previousUser(Nullable<String> previousUser);
 
@@ -351,7 +354,7 @@ public final class RiskReason {
 
         private Optional<String> previousAssessment = Optional.empty();
 
-        private Optional<String> previousUser = Optional.empty();
+        private OptionalNullable<String> previousUser = OptionalNullable.absent();
 
         private Optional<String> provider = Optional.empty();
 
@@ -507,11 +510,25 @@ public final class RiskReason {
         @java.lang.Override
         public _FinalStage previousUser(Nullable<String> previousUser) {
             if (previousUser.isNull()) {
-                this.previousUser = null;
+                this.previousUser = OptionalNullable.ofNull();
             } else if (previousUser.isEmpty()) {
-                this.previousUser = Optional.empty();
+                this.previousUser = OptionalNullable.absent();
             } else {
-                this.previousUser = Optional.of(previousUser.get());
+                this.previousUser = OptionalNullable.of(previousUser.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>duplicate.canonical_mailbox</code>, <code>duplicate.device</code>: your id of the user who has the mailbox or device, if known.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage previousUser(Optional<String> previousUser) {
+            if (previousUser.isPresent()) {
+                this.previousUser = OptionalNullable.of(previousUser.get());
+            } else {
+                this.previousUser = OptionalNullable.absent();
             }
             return this;
         }
@@ -522,7 +539,7 @@ public final class RiskReason {
          */
         @java.lang.Override
         public _FinalStage previousUser(String previousUser) {
-            this.previousUser = Optional.ofNullable(previousUser);
+            this.previousUser = OptionalNullable.of(previousUser);
             return this;
         }
 
@@ -531,7 +548,7 @@ public final class RiskReason {
          */
         @java.lang.Override
         @JsonSetter(value = "previous_user", nulls = Nulls.SKIP)
-        public _FinalStage previousUser(Optional<String> previousUser) {
+        public _FinalStage previousUser(OptionalNullable<String> previousUser) {
             this.previousUser = previousUser;
             return this;
         }

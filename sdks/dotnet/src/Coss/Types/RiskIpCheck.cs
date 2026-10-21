@@ -23,27 +23,33 @@ public record RiskIpCheck : IJsonOnDeserialized
     [JsonPropertyName("hosting")]
     public required bool Hosting { get; set; }
 
+    [Nullable]
     [JsonPropertyName("hosting_provider")]
     public string? HostingProvider { get; set; }
 
+    [Nullable]
     [JsonPropertyName("hosting_kind")]
     public RiskIpCheckHostingKind? HostingKind { get; set; }
 
+    [Nullable]
     [JsonPropertyName("asn")]
     public long? Asn { get; set; }
 
+    [Nullable]
     [JsonPropertyName("as_name")]
     public string? AsName { get; set; }
 
     /// <summary>
     /// ISO 3166-1 alpha-2.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("country")]
     public string? Country { get; set; }
 
     /// <summary>
     /// From coss.com's IP privacy data provider (VPNs, proxies, relays). `null` when it isn't available or was not asked (private addresses).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("privacy")]
     public RiskIpPrivacy? Privacy { get; set; }
 

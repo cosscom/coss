@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,15 +29,15 @@ public final class EmailTemplate {
 
     private final String id;
 
-    private final Optional<String> alias;
+    private final OptionalNullable<String> alias;
 
     private final String name;
 
-    private final Optional<String> description;
+    private final OptionalNullable<String> description;
 
-    private final Optional<Long> publishedVersion;
+    private final OptionalNullable<Long> publishedVersion;
 
-    private final Optional<OffsetDateTime> publishedAt;
+    private final OptionalNullable<OffsetDateTime> publishedAt;
 
     private final boolean hasUnpublishedChanges;
 
@@ -50,11 +50,11 @@ public final class EmailTemplate {
     private EmailTemplate(
             EmailTemplateObject object,
             String id,
-            Optional<String> alias,
+            OptionalNullable<String> alias,
             String name,
-            Optional<String> description,
-            Optional<Long> publishedVersion,
-            Optional<OffsetDateTime> publishedAt,
+            OptionalNullable<String> description,
+            OptionalNullable<Long> publishedVersion,
+            OptionalNullable<OffsetDateTime> publishedAt,
             boolean hasUnpublishedChanges,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt,
@@ -82,10 +82,11 @@ public final class EmailTemplate {
         return id;
     }
 
-    @JsonIgnore
-    public Optional<String> getAlias() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("alias")
+    public OptionalNullable<String> getAlias() {
         if (alias == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return alias;
     }
@@ -95,10 +96,11 @@ public final class EmailTemplate {
         return name;
     }
 
-    @JsonIgnore
-    public Optional<String> getDescription() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("description")
+    public OptionalNullable<String> getDescription() {
         if (description == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return description;
     }
@@ -106,18 +108,20 @@ public final class EmailTemplate {
     /**
      * @return The version sends use; <code>null</code> until the draft is first published.
      */
-    @JsonIgnore
-    public Optional<Long> getPublishedVersion() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("published_version")
+    public OptionalNullable<Long> getPublishedVersion() {
         if (publishedVersion == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return publishedVersion;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPublishedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("published_at")
+    public OptionalNullable<OffsetDateTime> getPublishedAt() {
         if (publishedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return publishedAt;
     }
@@ -142,25 +146,25 @@ public final class EmailTemplate {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("alias")
-    private Optional<String> _getAlias() {
+    private OptionalNullable<String> _getAlias() {
         return alias;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("description")
-    private Optional<String> _getDescription() {
+    private OptionalNullable<String> _getDescription() {
         return description;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("published_version")
-    private Optional<Long> _getPublishedVersion() {
+    private OptionalNullable<Long> _getPublishedVersion() {
         return publishedVersion;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("published_at")
-    private Optional<OffsetDateTime> _getPublishedAt() {
+    private OptionalNullable<OffsetDateTime> _getPublishedAt() {
         return publishedAt;
     }
 
@@ -248,30 +252,38 @@ public final class EmailTemplate {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage alias(Optional<String> alias);
+        _FinalStage alias(OptionalNullable<String> alias);
 
         _FinalStage alias(String alias);
 
+        _FinalStage alias(Optional<String> alias);
+
         _FinalStage alias(Nullable<String> alias);
 
-        _FinalStage description(Optional<String> description);
+        _FinalStage description(OptionalNullable<String> description);
 
         _FinalStage description(String description);
+
+        _FinalStage description(Optional<String> description);
 
         _FinalStage description(Nullable<String> description);
 
         /**
          * <p>The version sends use; <code>null</code> until the draft is first published.</p>
          */
-        _FinalStage publishedVersion(Optional<Long> publishedVersion);
+        _FinalStage publishedVersion(OptionalNullable<Long> publishedVersion);
 
         _FinalStage publishedVersion(Long publishedVersion);
 
+        _FinalStage publishedVersion(Optional<Long> publishedVersion);
+
         _FinalStage publishedVersion(Nullable<Long> publishedVersion);
 
-        _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt);
+        _FinalStage publishedAt(OptionalNullable<OffsetDateTime> publishedAt);
 
         _FinalStage publishedAt(OffsetDateTime publishedAt);
+
+        _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt);
 
         _FinalStage publishedAt(Nullable<OffsetDateTime> publishedAt);
     }
@@ -297,13 +309,13 @@ public final class EmailTemplate {
 
         private OffsetDateTime updatedAt;
 
-        private Optional<OffsetDateTime> publishedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> publishedAt = OptionalNullable.absent();
 
-        private Optional<Long> publishedVersion = Optional.empty();
+        private OptionalNullable<Long> publishedVersion = OptionalNullable.absent();
 
-        private Optional<String> description = Optional.empty();
+        private OptionalNullable<String> description = OptionalNullable.absent();
 
-        private Optional<String> alias = Optional.empty();
+        private OptionalNullable<String> alias = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -374,24 +386,34 @@ public final class EmailTemplate {
         @java.lang.Override
         public _FinalStage publishedAt(Nullable<OffsetDateTime> publishedAt) {
             if (publishedAt.isNull()) {
-                this.publishedAt = null;
+                this.publishedAt = OptionalNullable.ofNull();
             } else if (publishedAt.isEmpty()) {
-                this.publishedAt = Optional.empty();
+                this.publishedAt = OptionalNullable.absent();
             } else {
-                this.publishedAt = Optional.of(publishedAt.get());
+                this.publishedAt = OptionalNullable.of(publishedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt) {
+            if (publishedAt.isPresent()) {
+                this.publishedAt = OptionalNullable.of(publishedAt.get());
+            } else {
+                this.publishedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage publishedAt(OffsetDateTime publishedAt) {
-            this.publishedAt = Optional.ofNullable(publishedAt);
+            this.publishedAt = OptionalNullable.of(publishedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "published_at", nulls = Nulls.SKIP)
-        public _FinalStage publishedAt(Optional<OffsetDateTime> publishedAt) {
+        public _FinalStage publishedAt(OptionalNullable<OffsetDateTime> publishedAt) {
             this.publishedAt = publishedAt;
             return this;
         }
@@ -403,11 +425,25 @@ public final class EmailTemplate {
         @java.lang.Override
         public _FinalStage publishedVersion(Nullable<Long> publishedVersion) {
             if (publishedVersion.isNull()) {
-                this.publishedVersion = null;
+                this.publishedVersion = OptionalNullable.ofNull();
             } else if (publishedVersion.isEmpty()) {
-                this.publishedVersion = Optional.empty();
+                this.publishedVersion = OptionalNullable.absent();
             } else {
-                this.publishedVersion = Optional.of(publishedVersion.get());
+                this.publishedVersion = OptionalNullable.of(publishedVersion.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The version sends use; <code>null</code> until the draft is first published.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage publishedVersion(Optional<Long> publishedVersion) {
+            if (publishedVersion.isPresent()) {
+                this.publishedVersion = OptionalNullable.of(publishedVersion.get());
+            } else {
+                this.publishedVersion = OptionalNullable.absent();
             }
             return this;
         }
@@ -418,7 +454,7 @@ public final class EmailTemplate {
          */
         @java.lang.Override
         public _FinalStage publishedVersion(Long publishedVersion) {
-            this.publishedVersion = Optional.ofNullable(publishedVersion);
+            this.publishedVersion = OptionalNullable.of(publishedVersion);
             return this;
         }
 
@@ -427,7 +463,7 @@ public final class EmailTemplate {
          */
         @java.lang.Override
         @JsonSetter(value = "published_version", nulls = Nulls.SKIP)
-        public _FinalStage publishedVersion(Optional<Long> publishedVersion) {
+        public _FinalStage publishedVersion(OptionalNullable<Long> publishedVersion) {
             this.publishedVersion = publishedVersion;
             return this;
         }
@@ -435,24 +471,34 @@ public final class EmailTemplate {
         @java.lang.Override
         public _FinalStage description(Nullable<String> description) {
             if (description.isNull()) {
-                this.description = null;
+                this.description = OptionalNullable.ofNull();
             } else if (description.isEmpty()) {
-                this.description = Optional.empty();
+                this.description = OptionalNullable.absent();
             } else {
-                this.description = Optional.of(description.get());
+                this.description = OptionalNullable.of(description.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage description(Optional<String> description) {
+            if (description.isPresent()) {
+                this.description = OptionalNullable.of(description.get());
+            } else {
+                this.description = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage description(String description) {
-            this.description = Optional.ofNullable(description);
+            this.description = OptionalNullable.of(description);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "description", nulls = Nulls.SKIP)
-        public _FinalStage description(Optional<String> description) {
+        public _FinalStage description(OptionalNullable<String> description) {
             this.description = description;
             return this;
         }
@@ -460,24 +506,34 @@ public final class EmailTemplate {
         @java.lang.Override
         public _FinalStage alias(Nullable<String> alias) {
             if (alias.isNull()) {
-                this.alias = null;
+                this.alias = OptionalNullable.ofNull();
             } else if (alias.isEmpty()) {
-                this.alias = Optional.empty();
+                this.alias = OptionalNullable.absent();
             } else {
-                this.alias = Optional.of(alias.get());
+                this.alias = OptionalNullable.of(alias.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage alias(Optional<String> alias) {
+            if (alias.isPresent()) {
+                this.alias = OptionalNullable.of(alias.get());
+            } else {
+                this.alias = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage alias(String alias) {
-            this.alias = Optional.ofNullable(alias);
+            this.alias = OptionalNullable.of(alias);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "alias", nulls = Nulls.SKIP)
-        public _FinalStage alias(Optional<String> alias) {
+        public _FinalStage alias(OptionalNullable<String> alias) {
             this.alias = alias;
             return this;
         }

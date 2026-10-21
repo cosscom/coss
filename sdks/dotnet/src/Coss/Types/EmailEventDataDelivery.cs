@@ -11,6 +11,7 @@ public record EmailEventDataDelivery : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("smtp_response")]
     public string? SmtpResponse { get; set; }
 

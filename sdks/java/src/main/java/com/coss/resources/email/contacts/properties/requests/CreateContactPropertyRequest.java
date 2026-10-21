@@ -6,11 +6,11 @@ package com.coss.resources.email.contacts.properties.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.email.contacts.properties.types.CreateContactPropertyRequestFallback;
 import com.coss.resources.email.contacts.properties.types.CreateContactPropertyRequestType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,14 +30,14 @@ public final class CreateContactPropertyRequest {
 
     private final CreateContactPropertyRequestType type;
 
-    private final Optional<CreateContactPropertyRequestFallback> fallback;
+    private final OptionalNullable<CreateContactPropertyRequestFallback> fallback;
 
     private final Map<String, Object> additionalProperties;
 
     private CreateContactPropertyRequest(
             String key,
             CreateContactPropertyRequestType type,
-            Optional<CreateContactPropertyRequestFallback> fallback,
+            OptionalNullable<CreateContactPropertyRequestFallback> fallback,
             Map<String, Object> additionalProperties) {
         this.key = key;
         this.type = type;
@@ -55,17 +55,18 @@ public final class CreateContactPropertyRequest {
         return type;
     }
 
-    @JsonIgnore
-    public Optional<CreateContactPropertyRequestFallback> getFallback() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("fallback")
+    public OptionalNullable<CreateContactPropertyRequestFallback> getFallback() {
         if (fallback == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return fallback;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("fallback")
-    private Optional<CreateContactPropertyRequestFallback> _getFallback() {
+    private OptionalNullable<CreateContactPropertyRequestFallback> _getFallback() {
         return fallback;
     }
 
@@ -115,9 +116,11 @@ public final class CreateContactPropertyRequest {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage fallback(Optional<CreateContactPropertyRequestFallback> fallback);
+        _FinalStage fallback(OptionalNullable<CreateContactPropertyRequestFallback> fallback);
 
         _FinalStage fallback(CreateContactPropertyRequestFallback fallback);
+
+        _FinalStage fallback(Optional<CreateContactPropertyRequestFallback> fallback);
 
         _FinalStage fallback(Nullable<CreateContactPropertyRequestFallback> fallback);
     }
@@ -128,7 +131,7 @@ public final class CreateContactPropertyRequest {
 
         private CreateContactPropertyRequestType type;
 
-        private Optional<CreateContactPropertyRequestFallback> fallback = Optional.empty();
+        private OptionalNullable<CreateContactPropertyRequestFallback> fallback = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -160,24 +163,34 @@ public final class CreateContactPropertyRequest {
         @java.lang.Override
         public _FinalStage fallback(Nullable<CreateContactPropertyRequestFallback> fallback) {
             if (fallback.isNull()) {
-                this.fallback = null;
+                this.fallback = OptionalNullable.ofNull();
             } else if (fallback.isEmpty()) {
-                this.fallback = Optional.empty();
+                this.fallback = OptionalNullable.absent();
             } else {
-                this.fallback = Optional.of(fallback.get());
+                this.fallback = OptionalNullable.of(fallback.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage fallback(Optional<CreateContactPropertyRequestFallback> fallback) {
+            if (fallback.isPresent()) {
+                this.fallback = OptionalNullable.of(fallback.get());
+            } else {
+                this.fallback = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage fallback(CreateContactPropertyRequestFallback fallback) {
-            this.fallback = Optional.ofNullable(fallback);
+            this.fallback = OptionalNullable.of(fallback);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "fallback", nulls = Nulls.SKIP)
-        public _FinalStage fallback(Optional<CreateContactPropertyRequestFallback> fallback) {
+        public _FinalStage fallback(OptionalNullable<CreateContactPropertyRequestFallback> fallback) {
             this.fallback = fallback;
             return this;
         }

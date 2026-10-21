@@ -29,6 +29,7 @@ public record ReputationCheck : IJsonOnDeserialized
     /// <summary>
     /// `count / volume`; `null` with no volume.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("rate")]
     public double? Rate { get; set; }
 
@@ -44,15 +45,18 @@ public record ReputationCheck : IJsonOnDeserialized
     [JsonPropertyName("volume")]
     public required long Volume { get; set; }
 
+    [Nullable]
     [JsonPropertyName("warning_threshold")]
     public double? WarningThreshold { get; set; }
 
+    [Nullable]
     [JsonPropertyName("suspend_threshold")]
     public double? SuspendThreshold { get; set; }
 
     /// <summary>
     /// Below this volume the rate is reported but never acted on.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("minimum_volume")]
     public long? MinimumVolume { get; set; }
 

@@ -119,13 +119,28 @@ class WebhookEndpointWithSecret extends JsonSerializableType
         $this->id = $values['id'];
         $this->url = $values['url'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->eventTypes = $values['eventTypes'];
         $this->apiVersion = $values['apiVersion'];
         $this->enabled = $values['enabled'];
         $this->disabledReason = $values['disabledReason'] ?? null;
+        if (array_key_exists('disabledReason', $values)) {
+            $this->_setField('disabledReason');
+        }
         $this->disabledAt = $values['disabledAt'] ?? null;
+        if (array_key_exists('disabledAt', $values)) {
+            $this->_setField('disabledAt');
+        }
         $this->failingSince = $values['failingSince'] ?? null;
+        if (array_key_exists('failingSince', $values)) {
+            $this->_setField('failingSince');
+        }
         $this->previousSecretExpiresAt = $values['previousSecretExpiresAt'] ?? null;
+        if (array_key_exists('previousSecretExpiresAt', $values)) {
+            $this->_setField('previousSecretExpiresAt');
+        }
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];
         $this->secret = $values['secret'];

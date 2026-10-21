@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,9 +36,9 @@ public final class Credit {
 
     private final long remaining;
 
-    private final Optional<CreditMeter> meter;
+    private final OptionalNullable<CreditMeter> meter;
 
-    private final Optional<List<CreditMetersItem>> meters;
+    private final OptionalNullable<List<CreditMetersItem>> meters;
 
     private final CreditAppliesTo appliesTo;
 
@@ -48,9 +48,9 @@ public final class Credit {
 
     private final OffsetDateTime effectiveAt;
 
-    private final Optional<OffsetDateTime> expiresAt;
+    private final OptionalNullable<OffsetDateTime> expiresAt;
 
-    private final Optional<OffsetDateTime> voidedAt;
+    private final OptionalNullable<OffsetDateTime> voidedAt;
 
     private final OffsetDateTime createdAt;
 
@@ -62,14 +62,14 @@ public final class Credit {
             CreditKind kind,
             long amount,
             long remaining,
-            Optional<CreditMeter> meter,
-            Optional<List<CreditMetersItem>> meters,
+            OptionalNullable<CreditMeter> meter,
+            OptionalNullable<List<CreditMetersItem>> meters,
             CreditAppliesTo appliesTo,
             CreditSource source,
             String description,
             OffsetDateTime effectiveAt,
-            Optional<OffsetDateTime> expiresAt,
-            Optional<OffsetDateTime> voidedAt,
+            OptionalNullable<OffsetDateTime> expiresAt,
+            OptionalNullable<OffsetDateTime> voidedAt,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -120,10 +120,11 @@ public final class Credit {
     /**
      * @return What a <code>units</code> credit covers.
      */
-    @JsonIgnore
-    public Optional<CreditMeter> getMeter() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("meter")
+    public OptionalNullable<CreditMeter> getMeter() {
         if (meter == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return meter;
     }
@@ -131,10 +132,11 @@ public final class Credit {
     /**
      * @return What an <code>amount</code> credit pays for (<code>null</code>: any usage).
      */
-    @JsonIgnore
-    public Optional<List<CreditMetersItem>> getMeters() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("meters")
+    public OptionalNullable<List<CreditMetersItem>> getMeters() {
         if (meters == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return meters;
     }
@@ -162,18 +164,20 @@ public final class Credit {
         return effectiveAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getExpiresAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("expires_at")
+    public OptionalNullable<OffsetDateTime> getExpiresAt() {
         if (expiresAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return expiresAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getVoidedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("voided_at")
+    public OptionalNullable<OffsetDateTime> getVoidedAt() {
         if (voidedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return voidedAt;
     }
@@ -185,25 +189,25 @@ public final class Credit {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("meter")
-    private Optional<CreditMeter> _getMeter() {
+    private OptionalNullable<CreditMeter> _getMeter() {
         return meter;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("meters")
-    private Optional<List<CreditMetersItem>> _getMeters() {
+    private OptionalNullable<List<CreditMetersItem>> _getMeters() {
         return meters;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("expires_at")
-    private Optional<OffsetDateTime> _getExpiresAt() {
+    private OptionalNullable<OffsetDateTime> _getExpiresAt() {
         return expiresAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("voided_at")
-    private Optional<OffsetDateTime> _getVoidedAt() {
+    private OptionalNullable<OffsetDateTime> _getVoidedAt() {
         return voidedAt;
     }
 
@@ -321,30 +325,38 @@ public final class Credit {
         /**
          * <p>What a <code>units</code> credit covers.</p>
          */
-        _FinalStage meter(Optional<CreditMeter> meter);
+        _FinalStage meter(OptionalNullable<CreditMeter> meter);
 
         _FinalStage meter(CreditMeter meter);
+
+        _FinalStage meter(Optional<CreditMeter> meter);
 
         _FinalStage meter(Nullable<CreditMeter> meter);
 
         /**
          * <p>What an <code>amount</code> credit pays for (<code>null</code>: any usage).</p>
          */
-        _FinalStage meters(Optional<List<CreditMetersItem>> meters);
+        _FinalStage meters(OptionalNullable<List<CreditMetersItem>> meters);
 
         _FinalStage meters(List<CreditMetersItem> meters);
 
+        _FinalStage meters(Optional<List<CreditMetersItem>> meters);
+
         _FinalStage meters(Nullable<List<CreditMetersItem>> meters);
 
-        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
+        _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt);
 
         _FinalStage expiresAt(OffsetDateTime expiresAt);
 
+        _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt);
+
         _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt);
 
-        _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt);
+        _FinalStage voidedAt(OptionalNullable<OffsetDateTime> voidedAt);
 
         _FinalStage voidedAt(OffsetDateTime voidedAt);
+
+        _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt);
 
         _FinalStage voidedAt(Nullable<OffsetDateTime> voidedAt);
     }
@@ -382,13 +394,13 @@ public final class Credit {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> voidedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> voidedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> expiresAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> expiresAt = OptionalNullable.absent();
 
-        private Optional<List<CreditMetersItem>> meters = Optional.empty();
+        private OptionalNullable<List<CreditMetersItem>> meters = OptionalNullable.absent();
 
-        private Optional<CreditMeter> meter = Optional.empty();
+        private OptionalNullable<CreditMeter> meter = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -495,24 +507,34 @@ public final class Credit {
         @java.lang.Override
         public _FinalStage voidedAt(Nullable<OffsetDateTime> voidedAt) {
             if (voidedAt.isNull()) {
-                this.voidedAt = null;
+                this.voidedAt = OptionalNullable.ofNull();
             } else if (voidedAt.isEmpty()) {
-                this.voidedAt = Optional.empty();
+                this.voidedAt = OptionalNullable.absent();
             } else {
-                this.voidedAt = Optional.of(voidedAt.get());
+                this.voidedAt = OptionalNullable.of(voidedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt) {
+            if (voidedAt.isPresent()) {
+                this.voidedAt = OptionalNullable.of(voidedAt.get());
+            } else {
+                this.voidedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage voidedAt(OffsetDateTime voidedAt) {
-            this.voidedAt = Optional.ofNullable(voidedAt);
+            this.voidedAt = OptionalNullable.of(voidedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "voided_at", nulls = Nulls.SKIP)
-        public _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt) {
+        public _FinalStage voidedAt(OptionalNullable<OffsetDateTime> voidedAt) {
             this.voidedAt = voidedAt;
             return this;
         }
@@ -520,24 +542,34 @@ public final class Credit {
         @java.lang.Override
         public _FinalStage expiresAt(Nullable<OffsetDateTime> expiresAt) {
             if (expiresAt.isNull()) {
-                this.expiresAt = null;
+                this.expiresAt = OptionalNullable.ofNull();
             } else if (expiresAt.isEmpty()) {
-                this.expiresAt = Optional.empty();
+                this.expiresAt = OptionalNullable.absent();
             } else {
-                this.expiresAt = Optional.of(expiresAt.get());
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+            if (expiresAt.isPresent()) {
+                this.expiresAt = OptionalNullable.of(expiresAt.get());
+            } else {
+                this.expiresAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage expiresAt(OffsetDateTime expiresAt) {
-            this.expiresAt = Optional.ofNullable(expiresAt);
+            this.expiresAt = OptionalNullable.of(expiresAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "expires_at", nulls = Nulls.SKIP)
-        public _FinalStage expiresAt(Optional<OffsetDateTime> expiresAt) {
+        public _FinalStage expiresAt(OptionalNullable<OffsetDateTime> expiresAt) {
             this.expiresAt = expiresAt;
             return this;
         }
@@ -549,11 +581,25 @@ public final class Credit {
         @java.lang.Override
         public _FinalStage meters(Nullable<List<CreditMetersItem>> meters) {
             if (meters.isNull()) {
-                this.meters = null;
+                this.meters = OptionalNullable.ofNull();
             } else if (meters.isEmpty()) {
-                this.meters = Optional.empty();
+                this.meters = OptionalNullable.absent();
             } else {
-                this.meters = Optional.of(meters.get());
+                this.meters = OptionalNullable.of(meters.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What an <code>amount</code> credit pays for (<code>null</code>: any usage).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage meters(Optional<List<CreditMetersItem>> meters) {
+            if (meters.isPresent()) {
+                this.meters = OptionalNullable.of(meters.get());
+            } else {
+                this.meters = OptionalNullable.absent();
             }
             return this;
         }
@@ -564,7 +610,7 @@ public final class Credit {
          */
         @java.lang.Override
         public _FinalStage meters(List<CreditMetersItem> meters) {
-            this.meters = Optional.ofNullable(meters);
+            this.meters = OptionalNullable.of(meters);
             return this;
         }
 
@@ -573,7 +619,7 @@ public final class Credit {
          */
         @java.lang.Override
         @JsonSetter(value = "meters", nulls = Nulls.SKIP)
-        public _FinalStage meters(Optional<List<CreditMetersItem>> meters) {
+        public _FinalStage meters(OptionalNullable<List<CreditMetersItem>> meters) {
             this.meters = meters;
             return this;
         }
@@ -585,11 +631,25 @@ public final class Credit {
         @java.lang.Override
         public _FinalStage meter(Nullable<CreditMeter> meter) {
             if (meter.isNull()) {
-                this.meter = null;
+                this.meter = OptionalNullable.ofNull();
             } else if (meter.isEmpty()) {
-                this.meter = Optional.empty();
+                this.meter = OptionalNullable.absent();
             } else {
-                this.meter = Optional.of(meter.get());
+                this.meter = OptionalNullable.of(meter.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What a <code>units</code> credit covers.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage meter(Optional<CreditMeter> meter) {
+            if (meter.isPresent()) {
+                this.meter = OptionalNullable.of(meter.get());
+            } else {
+                this.meter = OptionalNullable.absent();
             }
             return this;
         }
@@ -600,7 +660,7 @@ public final class Credit {
          */
         @java.lang.Override
         public _FinalStage meter(CreditMeter meter) {
-            this.meter = Optional.ofNullable(meter);
+            this.meter = OptionalNullable.of(meter);
             return this;
         }
 
@@ -609,7 +669,7 @@ public final class Credit {
          */
         @java.lang.Override
         @JsonSetter(value = "meter", nulls = Nulls.SKIP)
-        public _FinalStage meter(Optional<CreditMeter> meter) {
+        public _FinalStage meter(OptionalNullable<CreditMeter> meter) {
             this.meter = meter;
             return this;
         }

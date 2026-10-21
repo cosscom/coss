@@ -23,12 +23,14 @@ public record BillingOverviewContract : IJsonOnDeserialized
     [JsonPropertyName("effective_from")]
     public required DateTime EffectiveFrom { get; set; }
 
+    [Nullable]
     [JsonPropertyName("effective_until")]
     public DateTime? EffectiveUntil { get; set; }
 
     /// <summary>
     /// End of a committed term.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("term_end")]
     public DateTime? TermEnd { get; set; }
 

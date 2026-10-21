@@ -85,15 +85,45 @@ class EmailEventData extends JsonSerializableType
         array $values = [],
     ) {
         $this->bounce = $values['bounce'] ?? null;
+        if (array_key_exists('bounce', $values)) {
+            $this->_setField('bounce');
+        }
         $this->complaint = $values['complaint'] ?? null;
+        if (array_key_exists('complaint', $values)) {
+            $this->_setField('complaint');
+        }
         $this->delay = $values['delay'] ?? null;
+        if (array_key_exists('delay', $values)) {
+            $this->_setField('delay');
+        }
         $this->delivery = $values['delivery'] ?? null;
+        if (array_key_exists('delivery', $values)) {
+            $this->_setField('delivery');
+        }
         $this->failure = $values['failure'] ?? null;
+        if (array_key_exists('failure', $values)) {
+            $this->_setField('failure');
+        }
         $this->suppression = $values['suppression'] ?? null;
+        if (array_key_exists('suppression', $values)) {
+            $this->_setField('suppression');
+        }
         $this->unsubscribe = $values['unsubscribe'] ?? null;
+        if (array_key_exists('unsubscribe', $values)) {
+            $this->_setField('unsubscribe');
+        }
         $this->open = $values['open'] ?? null;
+        if (array_key_exists('open', $values)) {
+            $this->_setField('open');
+        }
         $this->click = $values['click'] ?? null;
+        if (array_key_exists('click', $values)) {
+            $this->_setField('click');
+        }
         $this->reschedule = $values['reschedule'] ?? null;
+        if (array_key_exists('reschedule', $values)) {
+            $this->_setField('reschedule');
+        }
     }
 
     /**

@@ -14,9 +14,11 @@ public record EmailWebhookEventDataDelay : IJsonOnDeserialized
     [JsonPropertyName("type")]
     public required string Type { get; set; }
 
+    [Nullable]
     [JsonPropertyName("expires_at")]
     public DateTime? ExpiresAt { get; set; }
 
+    [Nullable]
     [JsonPropertyName("diagnostic_code")]
     public string? DiagnosticCode { get; set; }
 

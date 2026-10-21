@@ -11,9 +11,11 @@ public record EmailEventDataComplaint : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("feedback_type")]
     public string? FeedbackType { get; set; }
 
+    [Nullable]
     [JsonPropertyName("sub_type")]
     public string? SubType { get; set; }
 

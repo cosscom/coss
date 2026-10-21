@@ -81,7 +81,9 @@ public class GetTest : BaseMockServerTest
               "line_count": 42,
               "byte_size": 31870,
               "attempt_count": 1,
+              "next_attempt_at": null,
               "last_status_code": 200,
+              "last_error": null,
               "attempts": [
                 {
                   "object": "log_drain_attempt",
@@ -89,6 +91,7 @@ public class GetTest : BaseMockServerTest
                   "attempted_at": "2026-01-15T09:30:01.000Z",
                   "status_code": 200,
                   "duration_ms": 182,
+                  "error": null,
                   "response_excerpt": "ok"
                 }
               ],

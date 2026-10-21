@@ -14,6 +14,7 @@ public record HookEndpointWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("application_id")]
     public required string ApplicationId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("application_uid")]
     public string? ApplicationUid { get; set; }
 

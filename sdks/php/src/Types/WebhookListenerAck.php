@@ -52,8 +52,14 @@ class WebhookListenerAck extends JsonSerializableType
         $this->deliveryId = $values['deliveryId'];
         $this->ackToken = $values['ackToken'];
         $this->statusCode = $values['statusCode'] ?? null;
+        if (array_key_exists('statusCode', $values)) {
+            $this->_setField('statusCode');
+        }
         $this->durationMs = $values['durationMs'];
         $this->error = $values['error'] ?? null;
+        if (array_key_exists('error', $values)) {
+            $this->_setField('error');
+        }
     }
 
     /**

@@ -59,9 +59,15 @@ class ReceivedSmsWebhookEventData extends JsonSerializableType
         array $values,
     ) {
         $this->receivedSmsId = $values['receivedSmsId'] ?? null;
+        if (array_key_exists('receivedSmsId', $values)) {
+            $this->_setField('receivedSmsId');
+        }
         $this->from = $values['from'];
         $this->to = $values['to'];
         $this->keyword = $values['keyword'] ?? null;
+        if (array_key_exists('keyword', $values)) {
+            $this->_setField('keyword');
+        }
         $this->sandbox = $values['sandbox'];
         $this->occurredAt = $values['occurredAt'];
     }

@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +31,7 @@ public final class Invoice {
 
     private final String id;
 
-    private final Optional<String> number;
+    private final OptionalNullable<String> number;
 
     private final InvoiceKind kind;
 
@@ -57,17 +57,17 @@ public final class Invoice {
 
     private final InvoiceCollectionMethod collectionMethod;
 
-    private final Optional<OffsetDateTime> dueAt;
+    private final OptionalNullable<OffsetDateTime> dueAt;
 
-    private final Optional<OffsetDateTime> finalizedAt;
+    private final OptionalNullable<OffsetDateTime> finalizedAt;
 
-    private final Optional<OffsetDateTime> paidAt;
+    private final OptionalNullable<OffsetDateTime> paidAt;
 
-    private final Optional<OffsetDateTime> voidedAt;
+    private final OptionalNullable<OffsetDateTime> voidedAt;
 
-    private final Optional<String> hostedUrl;
+    private final OptionalNullable<String> hostedUrl;
 
-    private final Optional<String> pdfUrl;
+    private final OptionalNullable<String> pdfUrl;
 
     private final List<InvoiceLine> lines;
 
@@ -76,7 +76,7 @@ public final class Invoice {
     private Invoice(
             InvoiceObject object,
             String id,
-            Optional<String> number,
+            OptionalNullable<String> number,
             InvoiceKind kind,
             InvoiceStatus status,
             InvoiceCurrency currency,
@@ -89,12 +89,12 @@ public final class Invoice {
             long amountPaid,
             long amountDue,
             InvoiceCollectionMethod collectionMethod,
-            Optional<OffsetDateTime> dueAt,
-            Optional<OffsetDateTime> finalizedAt,
-            Optional<OffsetDateTime> paidAt,
-            Optional<OffsetDateTime> voidedAt,
-            Optional<String> hostedUrl,
-            Optional<String> pdfUrl,
+            OptionalNullable<OffsetDateTime> dueAt,
+            OptionalNullable<OffsetDateTime> finalizedAt,
+            OptionalNullable<OffsetDateTime> paidAt,
+            OptionalNullable<OffsetDateTime> voidedAt,
+            OptionalNullable<String> hostedUrl,
+            OptionalNullable<String> pdfUrl,
             List<InvoiceLine> lines,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -132,10 +132,11 @@ public final class Invoice {
         return id;
     }
 
-    @JsonIgnore
-    public Optional<String> getNumber() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("number")
+    public OptionalNullable<String> getNumber() {
         if (number == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return number;
     }
@@ -221,34 +222,38 @@ public final class Invoice {
         return collectionMethod;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getDueAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("due_at")
+    public OptionalNullable<OffsetDateTime> getDueAt() {
         if (dueAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dueAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFinalizedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("finalized_at")
+    public OptionalNullable<OffsetDateTime> getFinalizedAt() {
         if (finalizedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return finalizedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getPaidAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("paid_at")
+    public OptionalNullable<OffsetDateTime> getPaidAt() {
         if (paidAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return paidAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getVoidedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("voided_at")
+    public OptionalNullable<OffsetDateTime> getVoidedAt() {
         if (voidedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return voidedAt;
     }
@@ -256,18 +261,20 @@ public final class Invoice {
     /**
      * @return A page to view (and pay) the invoice.
      */
-    @JsonIgnore
-    public Optional<String> getHostedUrl() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("hosted_url")
+    public OptionalNullable<String> getHostedUrl() {
         if (hostedUrl == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return hostedUrl;
     }
 
-    @JsonIgnore
-    public Optional<String> getPdfUrl() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("pdf_url")
+    public OptionalNullable<String> getPdfUrl() {
         if (pdfUrl == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return pdfUrl;
     }
@@ -279,43 +286,43 @@ public final class Invoice {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("number")
-    private Optional<String> _getNumber() {
+    private OptionalNullable<String> _getNumber() {
         return number;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("due_at")
-    private Optional<OffsetDateTime> _getDueAt() {
+    private OptionalNullable<OffsetDateTime> _getDueAt() {
         return dueAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("finalized_at")
-    private Optional<OffsetDateTime> _getFinalizedAt() {
+    private OptionalNullable<OffsetDateTime> _getFinalizedAt() {
         return finalizedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("paid_at")
-    private Optional<OffsetDateTime> _getPaidAt() {
+    private OptionalNullable<OffsetDateTime> _getPaidAt() {
         return paidAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("voided_at")
-    private Optional<OffsetDateTime> _getVoidedAt() {
+    private OptionalNullable<OffsetDateTime> _getVoidedAt() {
         return voidedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("hosted_url")
-    private Optional<String> _getHostedUrl() {
+    private OptionalNullable<String> _getHostedUrl() {
         return hostedUrl;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("pdf_url")
-    private Optional<String> _getPdfUrl() {
+    private OptionalNullable<String> _getPdfUrl() {
         return pdfUrl;
     }
 
@@ -477,48 +484,62 @@ public final class Invoice {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage number(Optional<String> number);
+        _FinalStage number(OptionalNullable<String> number);
 
         _FinalStage number(String number);
 
+        _FinalStage number(Optional<String> number);
+
         _FinalStage number(Nullable<String> number);
 
-        _FinalStage dueAt(Optional<OffsetDateTime> dueAt);
+        _FinalStage dueAt(OptionalNullable<OffsetDateTime> dueAt);
 
         _FinalStage dueAt(OffsetDateTime dueAt);
 
+        _FinalStage dueAt(Optional<OffsetDateTime> dueAt);
+
         _FinalStage dueAt(Nullable<OffsetDateTime> dueAt);
 
-        _FinalStage finalizedAt(Optional<OffsetDateTime> finalizedAt);
+        _FinalStage finalizedAt(OptionalNullable<OffsetDateTime> finalizedAt);
 
         _FinalStage finalizedAt(OffsetDateTime finalizedAt);
 
+        _FinalStage finalizedAt(Optional<OffsetDateTime> finalizedAt);
+
         _FinalStage finalizedAt(Nullable<OffsetDateTime> finalizedAt);
 
-        _FinalStage paidAt(Optional<OffsetDateTime> paidAt);
+        _FinalStage paidAt(OptionalNullable<OffsetDateTime> paidAt);
 
         _FinalStage paidAt(OffsetDateTime paidAt);
 
+        _FinalStage paidAt(Optional<OffsetDateTime> paidAt);
+
         _FinalStage paidAt(Nullable<OffsetDateTime> paidAt);
 
-        _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt);
+        _FinalStage voidedAt(OptionalNullable<OffsetDateTime> voidedAt);
 
         _FinalStage voidedAt(OffsetDateTime voidedAt);
+
+        _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt);
 
         _FinalStage voidedAt(Nullable<OffsetDateTime> voidedAt);
 
         /**
          * <p>A page to view (and pay) the invoice.</p>
          */
-        _FinalStage hostedUrl(Optional<String> hostedUrl);
+        _FinalStage hostedUrl(OptionalNullable<String> hostedUrl);
 
         _FinalStage hostedUrl(String hostedUrl);
 
+        _FinalStage hostedUrl(Optional<String> hostedUrl);
+
         _FinalStage hostedUrl(Nullable<String> hostedUrl);
 
-        _FinalStage pdfUrl(Optional<String> pdfUrl);
+        _FinalStage pdfUrl(OptionalNullable<String> pdfUrl);
 
         _FinalStage pdfUrl(String pdfUrl);
+
+        _FinalStage pdfUrl(Optional<String> pdfUrl);
 
         _FinalStage pdfUrl(Nullable<String> pdfUrl);
 
@@ -576,19 +597,19 @@ public final class Invoice {
 
         private List<InvoiceLine> lines = new ArrayList<>();
 
-        private Optional<String> pdfUrl = Optional.empty();
+        private OptionalNullable<String> pdfUrl = OptionalNullable.absent();
 
-        private Optional<String> hostedUrl = Optional.empty();
+        private OptionalNullable<String> hostedUrl = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> voidedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> voidedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> paidAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> paidAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> finalizedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> finalizedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> dueAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> dueAt = OptionalNullable.absent();
 
-        private Optional<String> number = Optional.empty();
+        private OptionalNullable<String> number = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -775,24 +796,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage pdfUrl(Nullable<String> pdfUrl) {
             if (pdfUrl.isNull()) {
-                this.pdfUrl = null;
+                this.pdfUrl = OptionalNullable.ofNull();
             } else if (pdfUrl.isEmpty()) {
-                this.pdfUrl = Optional.empty();
+                this.pdfUrl = OptionalNullable.absent();
             } else {
-                this.pdfUrl = Optional.of(pdfUrl.get());
+                this.pdfUrl = OptionalNullable.of(pdfUrl.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage pdfUrl(Optional<String> pdfUrl) {
+            if (pdfUrl.isPresent()) {
+                this.pdfUrl = OptionalNullable.of(pdfUrl.get());
+            } else {
+                this.pdfUrl = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage pdfUrl(String pdfUrl) {
-            this.pdfUrl = Optional.ofNullable(pdfUrl);
+            this.pdfUrl = OptionalNullable.of(pdfUrl);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "pdf_url", nulls = Nulls.SKIP)
-        public _FinalStage pdfUrl(Optional<String> pdfUrl) {
+        public _FinalStage pdfUrl(OptionalNullable<String> pdfUrl) {
             this.pdfUrl = pdfUrl;
             return this;
         }
@@ -804,11 +835,25 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage hostedUrl(Nullable<String> hostedUrl) {
             if (hostedUrl.isNull()) {
-                this.hostedUrl = null;
+                this.hostedUrl = OptionalNullable.ofNull();
             } else if (hostedUrl.isEmpty()) {
-                this.hostedUrl = Optional.empty();
+                this.hostedUrl = OptionalNullable.absent();
             } else {
-                this.hostedUrl = Optional.of(hostedUrl.get());
+                this.hostedUrl = OptionalNullable.of(hostedUrl.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>A page to view (and pay) the invoice.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage hostedUrl(Optional<String> hostedUrl) {
+            if (hostedUrl.isPresent()) {
+                this.hostedUrl = OptionalNullable.of(hostedUrl.get());
+            } else {
+                this.hostedUrl = OptionalNullable.absent();
             }
             return this;
         }
@@ -819,7 +864,7 @@ public final class Invoice {
          */
         @java.lang.Override
         public _FinalStage hostedUrl(String hostedUrl) {
-            this.hostedUrl = Optional.ofNullable(hostedUrl);
+            this.hostedUrl = OptionalNullable.of(hostedUrl);
             return this;
         }
 
@@ -828,7 +873,7 @@ public final class Invoice {
          */
         @java.lang.Override
         @JsonSetter(value = "hosted_url", nulls = Nulls.SKIP)
-        public _FinalStage hostedUrl(Optional<String> hostedUrl) {
+        public _FinalStage hostedUrl(OptionalNullable<String> hostedUrl) {
             this.hostedUrl = hostedUrl;
             return this;
         }
@@ -836,24 +881,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage voidedAt(Nullable<OffsetDateTime> voidedAt) {
             if (voidedAt.isNull()) {
-                this.voidedAt = null;
+                this.voidedAt = OptionalNullable.ofNull();
             } else if (voidedAt.isEmpty()) {
-                this.voidedAt = Optional.empty();
+                this.voidedAt = OptionalNullable.absent();
             } else {
-                this.voidedAt = Optional.of(voidedAt.get());
+                this.voidedAt = OptionalNullable.of(voidedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt) {
+            if (voidedAt.isPresent()) {
+                this.voidedAt = OptionalNullable.of(voidedAt.get());
+            } else {
+                this.voidedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage voidedAt(OffsetDateTime voidedAt) {
-            this.voidedAt = Optional.ofNullable(voidedAt);
+            this.voidedAt = OptionalNullable.of(voidedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "voided_at", nulls = Nulls.SKIP)
-        public _FinalStage voidedAt(Optional<OffsetDateTime> voidedAt) {
+        public _FinalStage voidedAt(OptionalNullable<OffsetDateTime> voidedAt) {
             this.voidedAt = voidedAt;
             return this;
         }
@@ -861,24 +916,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage paidAt(Nullable<OffsetDateTime> paidAt) {
             if (paidAt.isNull()) {
-                this.paidAt = null;
+                this.paidAt = OptionalNullable.ofNull();
             } else if (paidAt.isEmpty()) {
-                this.paidAt = Optional.empty();
+                this.paidAt = OptionalNullable.absent();
             } else {
-                this.paidAt = Optional.of(paidAt.get());
+                this.paidAt = OptionalNullable.of(paidAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage paidAt(Optional<OffsetDateTime> paidAt) {
+            if (paidAt.isPresent()) {
+                this.paidAt = OptionalNullable.of(paidAt.get());
+            } else {
+                this.paidAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage paidAt(OffsetDateTime paidAt) {
-            this.paidAt = Optional.ofNullable(paidAt);
+            this.paidAt = OptionalNullable.of(paidAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "paid_at", nulls = Nulls.SKIP)
-        public _FinalStage paidAt(Optional<OffsetDateTime> paidAt) {
+        public _FinalStage paidAt(OptionalNullable<OffsetDateTime> paidAt) {
             this.paidAt = paidAt;
             return this;
         }
@@ -886,24 +951,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage finalizedAt(Nullable<OffsetDateTime> finalizedAt) {
             if (finalizedAt.isNull()) {
-                this.finalizedAt = null;
+                this.finalizedAt = OptionalNullable.ofNull();
             } else if (finalizedAt.isEmpty()) {
-                this.finalizedAt = Optional.empty();
+                this.finalizedAt = OptionalNullable.absent();
             } else {
-                this.finalizedAt = Optional.of(finalizedAt.get());
+                this.finalizedAt = OptionalNullable.of(finalizedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage finalizedAt(Optional<OffsetDateTime> finalizedAt) {
+            if (finalizedAt.isPresent()) {
+                this.finalizedAt = OptionalNullable.of(finalizedAt.get());
+            } else {
+                this.finalizedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage finalizedAt(OffsetDateTime finalizedAt) {
-            this.finalizedAt = Optional.ofNullable(finalizedAt);
+            this.finalizedAt = OptionalNullable.of(finalizedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "finalized_at", nulls = Nulls.SKIP)
-        public _FinalStage finalizedAt(Optional<OffsetDateTime> finalizedAt) {
+        public _FinalStage finalizedAt(OptionalNullable<OffsetDateTime> finalizedAt) {
             this.finalizedAt = finalizedAt;
             return this;
         }
@@ -911,24 +986,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage dueAt(Nullable<OffsetDateTime> dueAt) {
             if (dueAt.isNull()) {
-                this.dueAt = null;
+                this.dueAt = OptionalNullable.ofNull();
             } else if (dueAt.isEmpty()) {
-                this.dueAt = Optional.empty();
+                this.dueAt = OptionalNullable.absent();
             } else {
-                this.dueAt = Optional.of(dueAt.get());
+                this.dueAt = OptionalNullable.of(dueAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage dueAt(Optional<OffsetDateTime> dueAt) {
+            if (dueAt.isPresent()) {
+                this.dueAt = OptionalNullable.of(dueAt.get());
+            } else {
+                this.dueAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage dueAt(OffsetDateTime dueAt) {
-            this.dueAt = Optional.ofNullable(dueAt);
+            this.dueAt = OptionalNullable.of(dueAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "due_at", nulls = Nulls.SKIP)
-        public _FinalStage dueAt(Optional<OffsetDateTime> dueAt) {
+        public _FinalStage dueAt(OptionalNullable<OffsetDateTime> dueAt) {
             this.dueAt = dueAt;
             return this;
         }
@@ -936,24 +1021,34 @@ public final class Invoice {
         @java.lang.Override
         public _FinalStage number(Nullable<String> number) {
             if (number.isNull()) {
-                this.number = null;
+                this.number = OptionalNullable.ofNull();
             } else if (number.isEmpty()) {
-                this.number = Optional.empty();
+                this.number = OptionalNullable.absent();
             } else {
-                this.number = Optional.of(number.get());
+                this.number = OptionalNullable.of(number.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage number(Optional<String> number) {
+            if (number.isPresent()) {
+                this.number = OptionalNullable.of(number.get());
+            } else {
+                this.number = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage number(String number) {
-            this.number = Optional.ofNullable(number);
+            this.number = OptionalNullable.of(number);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "number", nulls = Nulls.SKIP)
-        public _FinalStage number(Optional<String> number) {
+        public _FinalStage number(OptionalNullable<String> number) {
             this.number = number;
             return this;
         }

@@ -12,9 +12,11 @@ public record UpdateBroadcastRequestTracking : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Optional]
     [JsonPropertyName("opens")]
     public bool? Opens { get; set; }
 
+    [Optional]
     [JsonPropertyName("clicks")]
     public bool? Clicks { get; set; }
 

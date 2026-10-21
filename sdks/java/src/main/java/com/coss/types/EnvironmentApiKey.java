@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,9 +28,9 @@ import org.jetbrains.annotations.NotNull;
 public final class EnvironmentApiKey {
     private final String id;
 
-    private final Optional<String> name;
+    private final OptionalNullable<String> name;
 
-    private final Optional<String> start;
+    private final OptionalNullable<String> start;
 
     private final EnvironmentApiKeyAccess access;
 
@@ -40,8 +40,8 @@ public final class EnvironmentApiKey {
 
     private EnvironmentApiKey(
             String id,
-            Optional<String> name,
-            Optional<String> start,
+            OptionalNullable<String> name,
+            OptionalNullable<String> start,
             EnvironmentApiKeyAccess access,
             List<String> permissions,
             Map<String, Object> additionalProperties) {
@@ -61,10 +61,11 @@ public final class EnvironmentApiKey {
         return id;
     }
 
-    @JsonIgnore
-    public Optional<String> getName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("name")
+    public OptionalNullable<String> getName() {
         if (name == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return name;
     }
@@ -72,10 +73,11 @@ public final class EnvironmentApiKey {
     /**
      * @return The key's first characters, as shown in the dashboard.
      */
-    @JsonIgnore
-    public Optional<String> getStart() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("start")
+    public OptionalNullable<String> getStart() {
         if (start == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return start;
     }
@@ -98,13 +100,13 @@ public final class EnvironmentApiKey {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("name")
-    private Optional<String> _getName() {
+    private OptionalNullable<String> _getName() {
         return name;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("start")
-    private Optional<String> _getStart() {
+    private OptionalNullable<String> _getStart() {
         return start;
     }
 
@@ -164,18 +166,22 @@ public final class EnvironmentApiKey {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage name(Optional<String> name);
+        _FinalStage name(OptionalNullable<String> name);
 
         _FinalStage name(String name);
+
+        _FinalStage name(Optional<String> name);
 
         _FinalStage name(Nullable<String> name);
 
         /**
          * <p>The key's first characters, as shown in the dashboard.</p>
          */
-        _FinalStage start(Optional<String> start);
+        _FinalStage start(OptionalNullable<String> start);
 
         _FinalStage start(String start);
+
+        _FinalStage start(Optional<String> start);
 
         _FinalStage start(Nullable<String> start);
 
@@ -197,9 +203,9 @@ public final class EnvironmentApiKey {
 
         private List<String> permissions = new ArrayList<>();
 
-        private Optional<String> start = Optional.empty();
+        private OptionalNullable<String> start = OptionalNullable.absent();
 
-        private Optional<String> name = Optional.empty();
+        private OptionalNullable<String> name = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -280,11 +286,25 @@ public final class EnvironmentApiKey {
         @java.lang.Override
         public _FinalStage start(Nullable<String> start) {
             if (start.isNull()) {
-                this.start = null;
+                this.start = OptionalNullable.ofNull();
             } else if (start.isEmpty()) {
-                this.start = Optional.empty();
+                this.start = OptionalNullable.absent();
             } else {
-                this.start = Optional.of(start.get());
+                this.start = OptionalNullable.of(start.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The key's first characters, as shown in the dashboard.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage start(Optional<String> start) {
+            if (start.isPresent()) {
+                this.start = OptionalNullable.of(start.get());
+            } else {
+                this.start = OptionalNullable.absent();
             }
             return this;
         }
@@ -295,7 +315,7 @@ public final class EnvironmentApiKey {
          */
         @java.lang.Override
         public _FinalStage start(String start) {
-            this.start = Optional.ofNullable(start);
+            this.start = OptionalNullable.of(start);
             return this;
         }
 
@@ -304,7 +324,7 @@ public final class EnvironmentApiKey {
          */
         @java.lang.Override
         @JsonSetter(value = "start", nulls = Nulls.SKIP)
-        public _FinalStage start(Optional<String> start) {
+        public _FinalStage start(OptionalNullable<String> start) {
             this.start = start;
             return this;
         }
@@ -312,24 +332,34 @@ public final class EnvironmentApiKey {
         @java.lang.Override
         public _FinalStage name(Nullable<String> name) {
             if (name.isNull()) {
-                this.name = null;
+                this.name = OptionalNullable.ofNull();
             } else if (name.isEmpty()) {
-                this.name = Optional.empty();
+                this.name = OptionalNullable.absent();
             } else {
-                this.name = Optional.of(name.get());
+                this.name = OptionalNullable.of(name.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage name(Optional<String> name) {
+            if (name.isPresent()) {
+                this.name = OptionalNullable.of(name.get());
+            } else {
+                this.name = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage name(String name) {
-            this.name = Optional.ofNullable(name);
+            this.name = OptionalNullable.of(name);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "name", nulls = Nulls.SKIP)
-        public _FinalStage name(Optional<String> name) {
+        public _FinalStage name(OptionalNullable<String> name) {
             this.name = name;
             return this;
         }

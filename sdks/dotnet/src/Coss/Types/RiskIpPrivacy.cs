@@ -23,6 +23,7 @@ public record RiskIpPrivacy : IJsonOnDeserialized
     /// <summary>
     /// The VPN or proxy service.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("service")]
     public string? Service { get; set; }
 

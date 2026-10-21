@@ -6,13 +6,13 @@ package com.coss.resources.risk.settings.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.risk.settings.types.UpdateRiskSettingsRequestCaptcha;
 import com.coss.resources.risk.settings.types.UpdateRiskSettingsRequestContentThresholds;
 import com.coss.resources.risk.settings.types.UpdateRiskSettingsRequestDisabledReasonsItem;
 import com.coss.resources.risk.settings.types.UpdateRiskSettingsRequestReasonWeights;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +34,7 @@ public final class UpdateRiskSettingsRequest {
 
     private final Optional<List<UpdateRiskSettingsRequestDisabledReasonsItem>> disabledReasons;
 
-    private final Optional<UpdateRiskSettingsRequestCaptcha> captcha;
+    private final OptionalNullable<UpdateRiskSettingsRequestCaptcha> captcha;
 
     private final Optional<UpdateRiskSettingsRequestContentThresholds> contentThresholds;
 
@@ -46,7 +46,7 @@ public final class UpdateRiskSettingsRequest {
             Optional<Double> reviewThreshold,
             Optional<Double> blockThreshold,
             Optional<List<UpdateRiskSettingsRequestDisabledReasonsItem>> disabledReasons,
-            Optional<UpdateRiskSettingsRequestCaptcha> captcha,
+            OptionalNullable<UpdateRiskSettingsRequestCaptcha> captcha,
             Optional<UpdateRiskSettingsRequestContentThresholds> contentThresholds,
             Optional<UpdateRiskSettingsRequestReasonWeights> reasonWeights,
             Map<String, Object> additionalProperties) {
@@ -77,10 +77,11 @@ public final class UpdateRiskSettingsRequest {
     /**
      * @return <code>null</code> turns captcha verification off and deletes the secret.
      */
-    @JsonIgnore
-    public Optional<UpdateRiskSettingsRequestCaptcha> getCaptcha() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("captcha")
+    public OptionalNullable<UpdateRiskSettingsRequestCaptcha> getCaptcha() {
         if (captcha == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return captcha;
     }
@@ -103,7 +104,7 @@ public final class UpdateRiskSettingsRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("captcha")
-    private Optional<UpdateRiskSettingsRequestCaptcha> _getCaptcha() {
+    private OptionalNullable<UpdateRiskSettingsRequestCaptcha> _getCaptcha() {
         return captcha;
     }
 
@@ -155,7 +156,7 @@ public final class UpdateRiskSettingsRequest {
 
         private Optional<List<UpdateRiskSettingsRequestDisabledReasonsItem>> disabledReasons = Optional.empty();
 
-        private Optional<UpdateRiskSettingsRequestCaptcha> captcha = Optional.empty();
+        private OptionalNullable<UpdateRiskSettingsRequestCaptcha> captcha = OptionalNullable.absent();
 
         private Optional<UpdateRiskSettingsRequestContentThresholds> contentThresholds = Optional.empty();
 
@@ -213,23 +214,32 @@ public final class UpdateRiskSettingsRequest {
          * <p><code>null</code> turns captcha verification off and deletes the secret.</p>
          */
         @JsonSetter(value = "captcha", nulls = Nulls.SKIP)
-        public Builder captcha(Optional<UpdateRiskSettingsRequestCaptcha> captcha) {
+        public Builder captcha(OptionalNullable<UpdateRiskSettingsRequestCaptcha> captcha) {
             this.captcha = captcha;
             return this;
         }
 
         public Builder captcha(UpdateRiskSettingsRequestCaptcha captcha) {
-            this.captcha = Optional.ofNullable(captcha);
+            this.captcha = OptionalNullable.of(captcha);
+            return this;
+        }
+
+        public Builder captcha(Optional<UpdateRiskSettingsRequestCaptcha> captcha) {
+            if (captcha.isPresent()) {
+                this.captcha = OptionalNullable.of(captcha.get());
+            } else {
+                this.captcha = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder captcha(Nullable<UpdateRiskSettingsRequestCaptcha> captcha) {
             if (captcha.isNull()) {
-                this.captcha = null;
+                this.captcha = OptionalNullable.ofNull();
             } else if (captcha.isEmpty()) {
-                this.captcha = Optional.empty();
+                this.captcha = OptionalNullable.absent();
             } else {
-                this.captcha = Optional.of(captcha.get());
+                this.captcha = OptionalNullable.of(captcha.get());
             }
             return this;
         }

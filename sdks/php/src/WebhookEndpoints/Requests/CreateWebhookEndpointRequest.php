@@ -47,7 +47,16 @@ class CreateWebhookEndpointRequest extends JsonSerializableType
     ) {
         $this->url = $values['url'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->eventTypes = $values['eventTypes'] ?? null;
+        if (array_key_exists('eventTypes', $values)) {
+            $this->_setField('eventTypes');
+        }
         $this->apiVersion = $values['apiVersion'] ?? null;
+        if (array_key_exists('apiVersion', $values)) {
+            $this->_setField('apiVersion');
+        }
     }
 }

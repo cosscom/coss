@@ -30,6 +30,9 @@ class RiskCaptchaSignals extends JsonSerializableType
     ) {
         $this->provided = $values['provided'];
         $this->passed = $values['passed'] ?? null;
+        if (array_key_exists('passed', $values)) {
+            $this->_setField('passed');
+        }
     }
 
     /**

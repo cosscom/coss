@@ -60,11 +60,29 @@ class ReceivedEmailVerdicts extends JsonSerializableType
         array $values = [],
     ) {
         $this->spam = $values['spam'] ?? null;
+        if (array_key_exists('spam', $values)) {
+            $this->_setField('spam');
+        }
         $this->virus = $values['virus'] ?? null;
+        if (array_key_exists('virus', $values)) {
+            $this->_setField('virus');
+        }
         $this->spf = $values['spf'] ?? null;
+        if (array_key_exists('spf', $values)) {
+            $this->_setField('spf');
+        }
         $this->dkim = $values['dkim'] ?? null;
+        if (array_key_exists('dkim', $values)) {
+            $this->_setField('dkim');
+        }
         $this->dmarc = $values['dmarc'] ?? null;
+        if (array_key_exists('dmarc', $values)) {
+            $this->_setField('dmarc');
+        }
         $this->dmarcPolicy = $values['dmarcPolicy'] ?? null;
+        if (array_key_exists('dmarcPolicy', $values)) {
+            $this->_setField('dmarcPolicy');
+        }
     }
 
     /**

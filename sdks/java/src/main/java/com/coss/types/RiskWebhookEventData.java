@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +31,7 @@ public final class RiskWebhookEventData {
 
     private final RiskEvent event;
 
-    private final Optional<String> eventName;
+    private final OptionalNullable<String> eventName;
 
     private final RiskDecision decision;
 
@@ -39,9 +39,9 @@ public final class RiskWebhookEventData {
 
     private final List<RiskReason> reasons;
 
-    private final Optional<String> userId;
+    private final OptionalNullable<String> userId;
 
-    private final Optional<RiskOutcome> outcome;
+    private final OptionalNullable<RiskOutcome> outcome;
 
     private final OffsetDateTime occurredAt;
 
@@ -50,12 +50,12 @@ public final class RiskWebhookEventData {
     private RiskWebhookEventData(
             String assessmentId,
             RiskEvent event,
-            Optional<String> eventName,
+            OptionalNullable<String> eventName,
             RiskDecision decision,
             double score,
             List<RiskReason> reasons,
-            Optional<String> userId,
-            Optional<RiskOutcome> outcome,
+            OptionalNullable<String> userId,
+            OptionalNullable<RiskOutcome> outcome,
             OffsetDateTime occurredAt,
             Map<String, Object> additionalProperties) {
         this.assessmentId = assessmentId;
@@ -80,10 +80,11 @@ public final class RiskWebhookEventData {
         return event;
     }
 
-    @JsonIgnore
-    public Optional<String> getEventName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("event_name")
+    public OptionalNullable<String> getEventName() {
         if (eventName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return eventName;
     }
@@ -103,10 +104,11 @@ public final class RiskWebhookEventData {
         return reasons;
     }
 
-    @JsonIgnore
-    public Optional<String> getUserId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_id")
+    public OptionalNullable<String> getUserId() {
         if (userId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return userId;
     }
@@ -114,10 +116,11 @@ public final class RiskWebhookEventData {
     /**
      * @return <code>risk.assessment.reviewed</code>: the outcome that resolved the review.
      */
-    @JsonIgnore
-    public Optional<RiskOutcome> getOutcome() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("outcome")
+    public OptionalNullable<RiskOutcome> getOutcome() {
         if (outcome == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return outcome;
     }
@@ -129,19 +132,19 @@ public final class RiskWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("event_name")
-    private Optional<String> _getEventName() {
+    private OptionalNullable<String> _getEventName() {
         return eventName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("user_id")
-    private Optional<String> _getUserId() {
+    private OptionalNullable<String> _getUserId() {
         return userId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("outcome")
-    private Optional<RiskOutcome> _getOutcome() {
+    private OptionalNullable<RiskOutcome> _getOutcome() {
         return outcome;
     }
 
@@ -220,9 +223,11 @@ public final class RiskWebhookEventData {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage eventName(Optional<String> eventName);
+        _FinalStage eventName(OptionalNullable<String> eventName);
 
         _FinalStage eventName(String eventName);
+
+        _FinalStage eventName(Optional<String> eventName);
 
         _FinalStage eventName(Nullable<String> eventName);
 
@@ -232,18 +237,22 @@ public final class RiskWebhookEventData {
 
         _FinalStage addAllReasons(List<RiskReason> reasons);
 
-        _FinalStage userId(Optional<String> userId);
+        _FinalStage userId(OptionalNullable<String> userId);
 
         _FinalStage userId(String userId);
+
+        _FinalStage userId(Optional<String> userId);
 
         _FinalStage userId(Nullable<String> userId);
 
         /**
          * <p><code>risk.assessment.reviewed</code>: the outcome that resolved the review.</p>
          */
-        _FinalStage outcome(Optional<RiskOutcome> outcome);
+        _FinalStage outcome(OptionalNullable<RiskOutcome> outcome);
 
         _FinalStage outcome(RiskOutcome outcome);
+
+        _FinalStage outcome(Optional<RiskOutcome> outcome);
 
         _FinalStage outcome(Nullable<RiskOutcome> outcome);
     }
@@ -261,13 +270,13 @@ public final class RiskWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<RiskOutcome> outcome = Optional.empty();
+        private OptionalNullable<RiskOutcome> outcome = OptionalNullable.absent();
 
-        private Optional<String> userId = Optional.empty();
+        private OptionalNullable<String> userId = OptionalNullable.absent();
 
         private List<RiskReason> reasons = new ArrayList<>();
 
-        private Optional<String> eventName = Optional.empty();
+        private OptionalNullable<String> eventName = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -330,11 +339,25 @@ public final class RiskWebhookEventData {
         @java.lang.Override
         public _FinalStage outcome(Nullable<RiskOutcome> outcome) {
             if (outcome.isNull()) {
-                this.outcome = null;
+                this.outcome = OptionalNullable.ofNull();
             } else if (outcome.isEmpty()) {
-                this.outcome = Optional.empty();
+                this.outcome = OptionalNullable.absent();
             } else {
-                this.outcome = Optional.of(outcome.get());
+                this.outcome = OptionalNullable.of(outcome.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>risk.assessment.reviewed</code>: the outcome that resolved the review.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage outcome(Optional<RiskOutcome> outcome) {
+            if (outcome.isPresent()) {
+                this.outcome = OptionalNullable.of(outcome.get());
+            } else {
+                this.outcome = OptionalNullable.absent();
             }
             return this;
         }
@@ -345,7 +368,7 @@ public final class RiskWebhookEventData {
          */
         @java.lang.Override
         public _FinalStage outcome(RiskOutcome outcome) {
-            this.outcome = Optional.ofNullable(outcome);
+            this.outcome = OptionalNullable.of(outcome);
             return this;
         }
 
@@ -354,7 +377,7 @@ public final class RiskWebhookEventData {
          */
         @java.lang.Override
         @JsonSetter(value = "outcome", nulls = Nulls.SKIP)
-        public _FinalStage outcome(Optional<RiskOutcome> outcome) {
+        public _FinalStage outcome(OptionalNullable<RiskOutcome> outcome) {
             this.outcome = outcome;
             return this;
         }
@@ -362,24 +385,34 @@ public final class RiskWebhookEventData {
         @java.lang.Override
         public _FinalStage userId(Nullable<String> userId) {
             if (userId.isNull()) {
-                this.userId = null;
+                this.userId = OptionalNullable.ofNull();
             } else if (userId.isEmpty()) {
-                this.userId = Optional.empty();
+                this.userId = OptionalNullable.absent();
             } else {
-                this.userId = Optional.of(userId.get());
+                this.userId = OptionalNullable.of(userId.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage userId(Optional<String> userId) {
+            if (userId.isPresent()) {
+                this.userId = OptionalNullable.of(userId.get());
+            } else {
+                this.userId = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage userId(String userId) {
-            this.userId = Optional.ofNullable(userId);
+            this.userId = OptionalNullable.of(userId);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "user_id", nulls = Nulls.SKIP)
-        public _FinalStage userId(Optional<String> userId) {
+        public _FinalStage userId(OptionalNullable<String> userId) {
             this.userId = userId;
             return this;
         }
@@ -411,24 +444,34 @@ public final class RiskWebhookEventData {
         @java.lang.Override
         public _FinalStage eventName(Nullable<String> eventName) {
             if (eventName.isNull()) {
-                this.eventName = null;
+                this.eventName = OptionalNullable.ofNull();
             } else if (eventName.isEmpty()) {
-                this.eventName = Optional.empty();
+                this.eventName = OptionalNullable.absent();
             } else {
-                this.eventName = Optional.of(eventName.get());
+                this.eventName = OptionalNullable.of(eventName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage eventName(Optional<String> eventName) {
+            if (eventName.isPresent()) {
+                this.eventName = OptionalNullable.of(eventName.get());
+            } else {
+                this.eventName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage eventName(String eventName) {
-            this.eventName = Optional.ofNullable(eventName);
+            this.eventName = OptionalNullable.of(eventName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "event_name", nulls = Nulls.SKIP)
-        public _FinalStage eventName(Optional<String> eventName) {
+        public _FinalStage eventName(OptionalNullable<String> eventName) {
             this.eventName = eventName;
             return this;
         }

@@ -30,6 +30,12 @@ class UpdateSegmentRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->filter = $values['filter'] ?? null;
+        if (array_key_exists('filter', $values)) {
+            $this->_setField('filter');
+        }
     }
 }

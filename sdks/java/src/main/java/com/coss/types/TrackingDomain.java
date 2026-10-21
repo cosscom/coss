@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,15 +31,15 @@ public final class TrackingDomain {
 
     private final TrackingDomainRecord record;
 
-    private final Optional<String> message;
+    private final OptionalNullable<String> message;
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> lastCheckedAt;
+    private final OptionalNullable<OffsetDateTime> lastCheckedAt;
 
-    private final Optional<OffsetDateTime> activatedAt;
+    private final OptionalNullable<OffsetDateTime> activatedAt;
 
-    private final Optional<OffsetDateTime> failedAt;
+    private final OptionalNullable<OffsetDateTime> failedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -47,11 +47,11 @@ public final class TrackingDomain {
             String hostname,
             TrackingDomainStatus status,
             TrackingDomainRecord record,
-            Optional<String> message,
+            OptionalNullable<String> message,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> lastCheckedAt,
-            Optional<OffsetDateTime> activatedAt,
-            Optional<OffsetDateTime> failedAt,
+            OptionalNullable<OffsetDateTime> lastCheckedAt,
+            OptionalNullable<OffsetDateTime> activatedAt,
+            OptionalNullable<OffsetDateTime> failedAt,
             Map<String, Object> additionalProperties) {
         this.hostname = hostname;
         this.status = status;
@@ -91,10 +91,11 @@ public final class TrackingDomain {
     /**
      * @return What is holding the hostname up, when the certificate provider said.
      */
-    @JsonIgnore
-    public Optional<String> getMessage() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("message")
+    public OptionalNullable<String> getMessage() {
         if (message == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return message;
     }
@@ -104,51 +105,54 @@ public final class TrackingDomain {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastCheckedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_checked_at")
+    public OptionalNullable<OffsetDateTime> getLastCheckedAt() {
         if (lastCheckedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastCheckedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getActivatedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("activated_at")
+    public OptionalNullable<OffsetDateTime> getActivatedAt() {
         if (activatedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return activatedAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getFailedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failed_at")
+    public OptionalNullable<OffsetDateTime> getFailedAt() {
         if (failedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("message")
-    private Optional<String> _getMessage() {
+    private OptionalNullable<String> _getMessage() {
         return message;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_checked_at")
-    private Optional<OffsetDateTime> _getLastCheckedAt() {
+    private OptionalNullable<OffsetDateTime> _getLastCheckedAt() {
         return lastCheckedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("activated_at")
-    private Optional<OffsetDateTime> _getActivatedAt() {
+    private OptionalNullable<OffsetDateTime> _getActivatedAt() {
         return activatedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failed_at")
-    private Optional<OffsetDateTime> _getFailedAt() {
+    private OptionalNullable<OffsetDateTime> _getFailedAt() {
         return failedAt;
     }
 
@@ -233,27 +237,35 @@ public final class TrackingDomain {
         /**
          * <p>What is holding the hostname up, when the certificate provider said.</p>
          */
-        _FinalStage message(Optional<String> message);
+        _FinalStage message(OptionalNullable<String> message);
 
         _FinalStage message(String message);
 
+        _FinalStage message(Optional<String> message);
+
         _FinalStage message(Nullable<String> message);
 
-        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
+        _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt);
 
         _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt);
 
+        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
+
         _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt);
 
-        _FinalStage activatedAt(Optional<OffsetDateTime> activatedAt);
+        _FinalStage activatedAt(OptionalNullable<OffsetDateTime> activatedAt);
 
         _FinalStage activatedAt(OffsetDateTime activatedAt);
 
+        _FinalStage activatedAt(Optional<OffsetDateTime> activatedAt);
+
         _FinalStage activatedAt(Nullable<OffsetDateTime> activatedAt);
 
-        _FinalStage failedAt(Optional<OffsetDateTime> failedAt);
+        _FinalStage failedAt(OptionalNullable<OffsetDateTime> failedAt);
 
         _FinalStage failedAt(OffsetDateTime failedAt);
+
+        _FinalStage failedAt(Optional<OffsetDateTime> failedAt);
 
         _FinalStage failedAt(Nullable<OffsetDateTime> failedAt);
     }
@@ -268,13 +280,13 @@ public final class TrackingDomain {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> failedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> failedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> activatedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> activatedAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> lastCheckedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastCheckedAt = OptionalNullable.absent();
 
-        private Optional<String> message = Optional.empty();
+        private OptionalNullable<String> message = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -337,24 +349,34 @@ public final class TrackingDomain {
         @java.lang.Override
         public _FinalStage failedAt(Nullable<OffsetDateTime> failedAt) {
             if (failedAt.isNull()) {
-                this.failedAt = null;
+                this.failedAt = OptionalNullable.ofNull();
             } else if (failedAt.isEmpty()) {
-                this.failedAt = Optional.empty();
+                this.failedAt = OptionalNullable.absent();
             } else {
-                this.failedAt = Optional.of(failedAt.get());
+                this.failedAt = OptionalNullable.of(failedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage failedAt(Optional<OffsetDateTime> failedAt) {
+            if (failedAt.isPresent()) {
+                this.failedAt = OptionalNullable.of(failedAt.get());
+            } else {
+                this.failedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage failedAt(OffsetDateTime failedAt) {
-            this.failedAt = Optional.ofNullable(failedAt);
+            this.failedAt = OptionalNullable.of(failedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "failed_at", nulls = Nulls.SKIP)
-        public _FinalStage failedAt(Optional<OffsetDateTime> failedAt) {
+        public _FinalStage failedAt(OptionalNullable<OffsetDateTime> failedAt) {
             this.failedAt = failedAt;
             return this;
         }
@@ -362,24 +384,34 @@ public final class TrackingDomain {
         @java.lang.Override
         public _FinalStage activatedAt(Nullable<OffsetDateTime> activatedAt) {
             if (activatedAt.isNull()) {
-                this.activatedAt = null;
+                this.activatedAt = OptionalNullable.ofNull();
             } else if (activatedAt.isEmpty()) {
-                this.activatedAt = Optional.empty();
+                this.activatedAt = OptionalNullable.absent();
             } else {
-                this.activatedAt = Optional.of(activatedAt.get());
+                this.activatedAt = OptionalNullable.of(activatedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage activatedAt(Optional<OffsetDateTime> activatedAt) {
+            if (activatedAt.isPresent()) {
+                this.activatedAt = OptionalNullable.of(activatedAt.get());
+            } else {
+                this.activatedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage activatedAt(OffsetDateTime activatedAt) {
-            this.activatedAt = Optional.ofNullable(activatedAt);
+            this.activatedAt = OptionalNullable.of(activatedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "activated_at", nulls = Nulls.SKIP)
-        public _FinalStage activatedAt(Optional<OffsetDateTime> activatedAt) {
+        public _FinalStage activatedAt(OptionalNullable<OffsetDateTime> activatedAt) {
             this.activatedAt = activatedAt;
             return this;
         }
@@ -387,24 +419,34 @@ public final class TrackingDomain {
         @java.lang.Override
         public _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt) {
             if (lastCheckedAt.isNull()) {
-                this.lastCheckedAt = null;
+                this.lastCheckedAt = OptionalNullable.ofNull();
             } else if (lastCheckedAt.isEmpty()) {
-                this.lastCheckedAt = Optional.empty();
+                this.lastCheckedAt = OptionalNullable.absent();
             } else {
-                this.lastCheckedAt = Optional.of(lastCheckedAt.get());
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+            if (lastCheckedAt.isPresent()) {
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            } else {
+                this.lastCheckedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt) {
-            this.lastCheckedAt = Optional.ofNullable(lastCheckedAt);
+            this.lastCheckedAt = OptionalNullable.of(lastCheckedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_checked_at", nulls = Nulls.SKIP)
-        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+        public _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt) {
             this.lastCheckedAt = lastCheckedAt;
             return this;
         }
@@ -416,11 +458,25 @@ public final class TrackingDomain {
         @java.lang.Override
         public _FinalStage message(Nullable<String> message) {
             if (message.isNull()) {
-                this.message = null;
+                this.message = OptionalNullable.ofNull();
             } else if (message.isEmpty()) {
-                this.message = Optional.empty();
+                this.message = OptionalNullable.absent();
             } else {
-                this.message = Optional.of(message.get());
+                this.message = OptionalNullable.of(message.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>What is holding the hostname up, when the certificate provider said.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage message(Optional<String> message) {
+            if (message.isPresent()) {
+                this.message = OptionalNullable.of(message.get());
+            } else {
+                this.message = OptionalNullable.absent();
             }
             return this;
         }
@@ -431,7 +487,7 @@ public final class TrackingDomain {
          */
         @java.lang.Override
         public _FinalStage message(String message) {
-            this.message = Optional.ofNullable(message);
+            this.message = OptionalNullable.of(message);
             return this;
         }
 
@@ -440,7 +496,7 @@ public final class TrackingDomain {
          */
         @java.lang.Override
         @JsonSetter(value = "message", nulls = Nulls.SKIP)
-        public _FinalStage message(Optional<String> message) {
+        public _FinalStage message(OptionalNullable<String> message) {
             this.message = message;
             return this;
         }

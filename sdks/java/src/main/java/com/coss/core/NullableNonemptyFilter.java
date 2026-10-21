@@ -17,6 +17,9 @@ public final class NullableNonemptyFilter {
         if (o instanceof Optional) {
             return !((Optional<?>) o).isPresent();
         }
+        if (o instanceof OptionalNullable) {
+            return ((OptionalNullable<?>) o).isAbsent();
+        }
         return false;
     }
 }

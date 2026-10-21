@@ -17,9 +17,11 @@ public record HookEventType : IJsonOnDeserialized
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 
+    [Nullable]
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
+    [Nullable]
     [JsonPropertyName("schema")]
     public Dictionary<string, object?>? Schema { get; set; }
 

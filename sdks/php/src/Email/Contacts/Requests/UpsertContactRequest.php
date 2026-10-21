@@ -84,11 +84,32 @@ class UpsertContactRequest extends JsonSerializableType
     ) {
         $this->email = $values['email'];
         $this->firstName = $values['firstName'] ?? null;
+        if (array_key_exists('firstName', $values)) {
+            $this->_setField('firstName');
+        }
         $this->lastName = $values['lastName'] ?? null;
+        if (array_key_exists('lastName', $values)) {
+            $this->_setField('lastName');
+        }
         $this->properties = $values['properties'] ?? null;
+        if (array_key_exists('properties', $values)) {
+            $this->_setField('properties');
+        }
         $this->status = $values['status'] ?? null;
+        if (array_key_exists('status', $values)) {
+            $this->_setField('status');
+        }
         $this->audienceIds = $values['audienceIds'] ?? null;
+        if (array_key_exists('audienceIds', $values)) {
+            $this->_setField('audienceIds');
+        }
         $this->topics = $values['topics'] ?? null;
+        if (array_key_exists('topics', $values)) {
+            $this->_setField('topics');
+        }
         $this->doubleOptIn = $values['doubleOptIn'] ?? null;
+        if (array_key_exists('doubleOptIn', $values)) {
+            $this->_setField('doubleOptIn');
+        }
     }
 }

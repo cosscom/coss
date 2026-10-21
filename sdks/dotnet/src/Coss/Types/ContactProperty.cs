@@ -30,6 +30,7 @@ public record ContactProperty : IJsonOnDeserialized
     /// <summary>
     /// Used in templates for contacts without a value.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("fallback")]
     public OneOf<string, double, bool>? Fallback { get; set; }
 

@@ -62,6 +62,9 @@ class RiskCalibrationRule extends JsonSerializableType
         $this->fraud = $values['fraud'];
         $this->legitimate = $values['legitimate'];
         $this->precision = $values['precision'] ?? null;
+        if (array_key_exists('precision', $values)) {
+            $this->_setField('precision');
+        }
     }
 
     /**

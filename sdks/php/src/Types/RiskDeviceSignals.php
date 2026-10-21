@@ -69,10 +69,25 @@ class RiskDeviceSignals extends JsonSerializableType
         $this->valid = $values['valid'];
         $this->automation = $values['automation'];
         $this->timezone = $values['timezone'] ?? null;
+        if (array_key_exists('timezone', $values)) {
+            $this->_setField('timezone');
+        }
         $this->language = $values['language'] ?? null;
+        if (array_key_exists('language', $values)) {
+            $this->_setField('language');
+        }
         $this->platform = $values['platform'] ?? null;
+        if (array_key_exists('platform', $values)) {
+            $this->_setField('platform');
+        }
         $this->screen = $values['screen'] ?? null;
+        if (array_key_exists('screen', $values)) {
+            $this->_setField('screen');
+        }
         $this->touch = $values['touch'] ?? null;
+        if (array_key_exists('touch', $values)) {
+            $this->_setField('touch');
+        }
     }
 
     /**

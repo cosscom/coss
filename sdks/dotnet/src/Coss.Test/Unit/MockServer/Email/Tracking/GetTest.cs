@@ -76,6 +76,7 @@ public class GetTest : BaseMockServerTest
               "default": {
                 "object": "tracking_rule",
                 "id": "etr_01k7c8k1d9w4x2b7n3m5q6r8st",
+                "category": null,
                 "opens": true,
                 "clicks": true,
                 "unsubscribe": false,

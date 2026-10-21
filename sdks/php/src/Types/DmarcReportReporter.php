@@ -30,6 +30,9 @@ class DmarcReportReporter extends JsonSerializableType
     ) {
         $this->orgName = $values['orgName'];
         $this->email = $values['email'] ?? null;
+        if (array_key_exists('email', $values)) {
+            $this->_setField('email');
+        }
     }
 
     /**

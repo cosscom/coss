@@ -51,6 +51,7 @@ public class GetTest : BaseMockServerTest
               "id": "smssup_01k7c8m4q2f3e9v6t5r1n0p8yz",
               "phone_number": "+14155550199",
               "reason": "opt_out",
+              "sms_id": null,
               "created_at": "2026-11-10T12:05:00.000Z"
             }
             """;

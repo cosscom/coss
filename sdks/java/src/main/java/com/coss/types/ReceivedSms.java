@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +37,7 @@ public final class ReceivedSms {
 
     private final long segments;
 
-    private final Optional<ReceivedSmsKeyword> keyword;
+    private final OptionalNullable<ReceivedSmsKeyword> keyword;
 
     private final boolean sandbox;
 
@@ -52,7 +52,7 @@ public final class ReceivedSms {
             String to,
             String body,
             long segments,
-            Optional<ReceivedSmsKeyword> keyword,
+            OptionalNullable<ReceivedSmsKeyword> keyword,
             boolean sandbox,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
@@ -107,10 +107,11 @@ public final class ReceivedSms {
     /**
      * @return <code>stop</code>: an opt-out (the sender is suppressed in every live environment), <code>start</code>: an opt-in again, <code>help</code>: a request for help. Twilio answers each.
      */
-    @JsonIgnore
-    public Optional<ReceivedSmsKeyword> getKeyword() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("keyword")
+    public OptionalNullable<ReceivedSmsKeyword> getKeyword() {
         if (keyword == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return keyword;
     }
@@ -127,7 +128,7 @@ public final class ReceivedSms {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("keyword")
-    private Optional<ReceivedSmsKeyword> _getKeyword() {
+    private OptionalNullable<ReceivedSmsKeyword> _getKeyword() {
         return keyword;
     }
 
@@ -227,9 +228,11 @@ public final class ReceivedSms {
         /**
          * <p><code>stop</code>: an opt-out (the sender is suppressed in every live environment), <code>start</code>: an opt-in again, <code>help</code>: a request for help. Twilio answers each.</p>
          */
-        _FinalStage keyword(Optional<ReceivedSmsKeyword> keyword);
+        _FinalStage keyword(OptionalNullable<ReceivedSmsKeyword> keyword);
 
         _FinalStage keyword(ReceivedSmsKeyword keyword);
+
+        _FinalStage keyword(Optional<ReceivedSmsKeyword> keyword);
 
         _FinalStage keyword(Nullable<ReceivedSmsKeyword> keyword);
     }
@@ -261,7 +264,7 @@ public final class ReceivedSms {
 
         private OffsetDateTime createdAt;
 
-        private Optional<ReceivedSmsKeyword> keyword = Optional.empty();
+        private OptionalNullable<ReceivedSmsKeyword> keyword = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -353,11 +356,25 @@ public final class ReceivedSms {
         @java.lang.Override
         public _FinalStage keyword(Nullable<ReceivedSmsKeyword> keyword) {
             if (keyword.isNull()) {
-                this.keyword = null;
+                this.keyword = OptionalNullable.ofNull();
             } else if (keyword.isEmpty()) {
-                this.keyword = Optional.empty();
+                this.keyword = OptionalNullable.absent();
             } else {
-                this.keyword = Optional.of(keyword.get());
+                this.keyword = OptionalNullable.of(keyword.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>stop</code>: an opt-out (the sender is suppressed in every live environment), <code>start</code>: an opt-in again, <code>help</code>: a request for help. Twilio answers each.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage keyword(Optional<ReceivedSmsKeyword> keyword) {
+            if (keyword.isPresent()) {
+                this.keyword = OptionalNullable.of(keyword.get());
+            } else {
+                this.keyword = OptionalNullable.absent();
             }
             return this;
         }
@@ -368,7 +385,7 @@ public final class ReceivedSms {
          */
         @java.lang.Override
         public _FinalStage keyword(ReceivedSmsKeyword keyword) {
-            this.keyword = Optional.ofNullable(keyword);
+            this.keyword = OptionalNullable.of(keyword);
             return this;
         }
 
@@ -377,7 +394,7 @@ public final class ReceivedSms {
          */
         @java.lang.Override
         @JsonSetter(value = "keyword", nulls = Nulls.SKIP)
-        public _FinalStage keyword(Optional<ReceivedSmsKeyword> keyword) {
+        public _FinalStage keyword(OptionalNullable<ReceivedSmsKeyword> keyword) {
             this.keyword = keyword;
             return this;
         }

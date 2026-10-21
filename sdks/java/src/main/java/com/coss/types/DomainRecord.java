@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +34,7 @@ public final class DomainRecord {
 
     private final String value;
 
-    private final Optional<Long> priority;
+    private final OptionalNullable<Long> priority;
 
     private final boolean required;
 
@@ -49,7 +49,7 @@ public final class DomainRecord {
             DomainRecordType type,
             String name,
             String value,
-            Optional<Long> priority,
+            OptionalNullable<Long> priority,
             boolean required,
             DomainRecordStatus status,
             List<String> found,
@@ -94,10 +94,11 @@ public final class DomainRecord {
     /**
      * @return <code>MX</code> records only.
      */
-    @JsonIgnore
-    public Optional<Long> getPriority() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("priority")
+    public OptionalNullable<Long> getPriority() {
         if (priority == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return priority;
     }
@@ -128,7 +129,7 @@ public final class DomainRecord {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("priority")
-    private Optional<Long> _getPriority() {
+    private OptionalNullable<Long> _getPriority() {
         return priority;
     }
 
@@ -217,9 +218,11 @@ public final class DomainRecord {
         /**
          * <p><code>MX</code> records only.</p>
          */
-        _FinalStage priority(Optional<Long> priority);
+        _FinalStage priority(OptionalNullable<Long> priority);
 
         _FinalStage priority(Long priority);
+
+        _FinalStage priority(Optional<Long> priority);
 
         _FinalStage priority(Nullable<Long> priority);
 
@@ -250,7 +253,7 @@ public final class DomainRecord {
 
         private List<String> found = new ArrayList<>();
 
-        private Optional<Long> priority = Optional.empty();
+        private OptionalNullable<Long> priority = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -370,11 +373,25 @@ public final class DomainRecord {
         @java.lang.Override
         public _FinalStage priority(Nullable<Long> priority) {
             if (priority.isNull()) {
-                this.priority = null;
+                this.priority = OptionalNullable.ofNull();
             } else if (priority.isEmpty()) {
-                this.priority = Optional.empty();
+                this.priority = OptionalNullable.absent();
             } else {
-                this.priority = Optional.of(priority.get());
+                this.priority = OptionalNullable.of(priority.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>MX</code> records only.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage priority(Optional<Long> priority) {
+            if (priority.isPresent()) {
+                this.priority = OptionalNullable.of(priority.get());
+            } else {
+                this.priority = OptionalNullable.absent();
             }
             return this;
         }
@@ -385,7 +402,7 @@ public final class DomainRecord {
          */
         @java.lang.Override
         public _FinalStage priority(Long priority) {
-            this.priority = Optional.ofNullable(priority);
+            this.priority = OptionalNullable.of(priority);
             return this;
         }
 
@@ -394,7 +411,7 @@ public final class DomainRecord {
          */
         @java.lang.Override
         @JsonSetter(value = "priority", nulls = Nulls.SKIP)
-        public _FinalStage priority(Optional<Long> priority) {
+        public _FinalStage priority(OptionalNullable<Long> priority) {
             this.priority = priority;
             return this;
         }

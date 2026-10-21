@@ -16,12 +16,14 @@ public record CreateRiskListEntryRequest
     [JsonPropertyName("value")]
     public required string Value { get; set; }
 
+    [Optional]
     [JsonPropertyName("note")]
     public string? Note { get; set; }
 
     /// <summary>
     /// The entry stops matching at this time (it is kept until deleted).
     /// </summary>
+    [Optional]
     [JsonPropertyName("expires_at")]
     public DateTime? ExpiresAt { get; set; }
 

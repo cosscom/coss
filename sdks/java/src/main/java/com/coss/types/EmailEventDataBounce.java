@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,14 +28,14 @@ public final class EmailEventDataBounce {
 
     private final String subType;
 
-    private final Optional<String> diagnosticCode;
+    private final OptionalNullable<String> diagnosticCode;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailEventDataBounce(
             EmailEventDataBounceType type,
             String subType,
-            Optional<String> diagnosticCode,
+            OptionalNullable<String> diagnosticCode,
             Map<String, Object> additionalProperties) {
         this.type = type;
         this.subType = subType;
@@ -53,17 +53,18 @@ public final class EmailEventDataBounce {
         return subType;
     }
 
-    @JsonIgnore
-    public Optional<String> getDiagnosticCode() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("diagnostic_code")
+    public OptionalNullable<String> getDiagnosticCode() {
         if (diagnosticCode == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return diagnosticCode;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("diagnostic_code")
-    private Optional<String> _getDiagnosticCode() {
+    private OptionalNullable<String> _getDiagnosticCode() {
         return diagnosticCode;
     }
 
@@ -113,9 +114,11 @@ public final class EmailEventDataBounce {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage diagnosticCode(Optional<String> diagnosticCode);
+        _FinalStage diagnosticCode(OptionalNullable<String> diagnosticCode);
 
         _FinalStage diagnosticCode(String diagnosticCode);
+
+        _FinalStage diagnosticCode(Optional<String> diagnosticCode);
 
         _FinalStage diagnosticCode(Nullable<String> diagnosticCode);
     }
@@ -126,7 +129,7 @@ public final class EmailEventDataBounce {
 
         private String subType;
 
-        private Optional<String> diagnosticCode = Optional.empty();
+        private OptionalNullable<String> diagnosticCode = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -158,24 +161,34 @@ public final class EmailEventDataBounce {
         @java.lang.Override
         public _FinalStage diagnosticCode(Nullable<String> diagnosticCode) {
             if (diagnosticCode.isNull()) {
-                this.diagnosticCode = null;
+                this.diagnosticCode = OptionalNullable.ofNull();
             } else if (diagnosticCode.isEmpty()) {
-                this.diagnosticCode = Optional.empty();
+                this.diagnosticCode = OptionalNullable.absent();
             } else {
-                this.diagnosticCode = Optional.of(diagnosticCode.get());
+                this.diagnosticCode = OptionalNullable.of(diagnosticCode.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage diagnosticCode(Optional<String> diagnosticCode) {
+            if (diagnosticCode.isPresent()) {
+                this.diagnosticCode = OptionalNullable.of(diagnosticCode.get());
+            } else {
+                this.diagnosticCode = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage diagnosticCode(String diagnosticCode) {
-            this.diagnosticCode = Optional.ofNullable(diagnosticCode);
+            this.diagnosticCode = OptionalNullable.of(diagnosticCode);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "diagnostic_code", nulls = Nulls.SKIP)
-        public _FinalStage diagnosticCode(Optional<String> diagnosticCode) {
+        public _FinalStage diagnosticCode(OptionalNullable<String> diagnosticCode) {
             this.diagnosticCode = diagnosticCode;
             return this;
         }

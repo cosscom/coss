@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ public final class ReceivingDomain {
 
     private final OffsetDateTime createdAt;
 
-    private final Optional<OffsetDateTime> lastCheckedAt;
+    private final OptionalNullable<OffsetDateTime> lastCheckedAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -42,7 +42,7 @@ public final class ReceivingDomain {
             String environmentId,
             ReceivingDomainRecord record,
             OffsetDateTime createdAt,
-            Optional<OffsetDateTime> lastCheckedAt,
+            OptionalNullable<OffsetDateTime> lastCheckedAt,
             Map<String, Object> additionalProperties) {
         this.hostname = hostname;
         this.environmentId = environmentId;
@@ -81,17 +81,18 @@ public final class ReceivingDomain {
         return createdAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastCheckedAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_checked_at")
+    public OptionalNullable<OffsetDateTime> getLastCheckedAt() {
         if (lastCheckedAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastCheckedAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_checked_at")
-    private Optional<OffsetDateTime> _getLastCheckedAt() {
+    private OptionalNullable<OffsetDateTime> _getLastCheckedAt() {
         return lastCheckedAt;
     }
 
@@ -162,9 +163,11 @@ public final class ReceivingDomain {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
+        _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt);
 
         _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt);
+
+        _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt);
 
         _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt);
     }
@@ -180,7 +183,7 @@ public final class ReceivingDomain {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> lastCheckedAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastCheckedAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -240,24 +243,34 @@ public final class ReceivingDomain {
         @java.lang.Override
         public _FinalStage lastCheckedAt(Nullable<OffsetDateTime> lastCheckedAt) {
             if (lastCheckedAt.isNull()) {
-                this.lastCheckedAt = null;
+                this.lastCheckedAt = OptionalNullable.ofNull();
             } else if (lastCheckedAt.isEmpty()) {
-                this.lastCheckedAt = Optional.empty();
+                this.lastCheckedAt = OptionalNullable.absent();
             } else {
-                this.lastCheckedAt = Optional.of(lastCheckedAt.get());
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+            if (lastCheckedAt.isPresent()) {
+                this.lastCheckedAt = OptionalNullable.of(lastCheckedAt.get());
+            } else {
+                this.lastCheckedAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastCheckedAt(OffsetDateTime lastCheckedAt) {
-            this.lastCheckedAt = Optional.ofNullable(lastCheckedAt);
+            this.lastCheckedAt = OptionalNullable.of(lastCheckedAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_checked_at", nulls = Nulls.SKIP)
-        public _FinalStage lastCheckedAt(Optional<OffsetDateTime> lastCheckedAt) {
+        public _FinalStage lastCheckedAt(OptionalNullable<OffsetDateTime> lastCheckedAt) {
             this.lastCheckedAt = lastCheckedAt;
             return this;
         }

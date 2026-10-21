@@ -15,7 +15,9 @@ public class UpsertTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "email": "email"
+              "email": "email",
+              "first_name": null,
+              "last_name": null
             }
             """;
 
@@ -104,6 +106,8 @@ public class UpsertTest : BaseMockServerTest
               },
               "source": "api",
               "subscribed_at": "2026-10-10T12:00:00.000Z",
+              "unsubscribed_at": null,
+              "confirmed_at": null,
               "created_at": "2026-10-10T12:00:00.000Z",
               "updated_at": "2026-10-10T12:00:00.000Z"
             }

@@ -53,9 +53,24 @@ class UpdateWebhookEndpointRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->url = $values['url'] ?? null;
+        if (array_key_exists('url', $values)) {
+            $this->_setField('url');
+        }
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->eventTypes = $values['eventTypes'] ?? null;
+        if (array_key_exists('eventTypes', $values)) {
+            $this->_setField('eventTypes');
+        }
         $this->apiVersion = $values['apiVersion'] ?? null;
+        if (array_key_exists('apiVersion', $values)) {
+            $this->_setField('apiVersion');
+        }
         $this->enabled = $values['enabled'] ?? null;
+        if (array_key_exists('enabled', $values)) {
+            $this->_setField('enabled');
+        }
     }
 }

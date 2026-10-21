@@ -38,6 +38,12 @@ class CreateHookApplicationRequest extends JsonSerializableType
     ) {
         $this->name = $values['name'];
         $this->uid = $values['uid'] ?? null;
+        if (array_key_exists('uid', $values)) {
+            $this->_setField('uid');
+        }
         $this->metadata = $values['metadata'] ?? null;
+        if (array_key_exists('metadata', $values)) {
+            $this->_setField('metadata');
+        }
     }
 }

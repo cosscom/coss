@@ -20,6 +20,7 @@ public record RiskAssessment : IJsonOnDeserialized
     [JsonPropertyName("event")]
     public required RiskEvent Event { get; set; }
 
+    [Nullable]
     [JsonPropertyName("event_name")]
     public string? EventName { get; set; }
 
@@ -47,6 +48,7 @@ public record RiskAssessment : IJsonOnDeserialized
     /// <summary>
     /// `null` once removed (90 days after).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("ip")]
     public string? Ip { get; set; }
 
@@ -60,12 +62,14 @@ public record RiskAssessment : IJsonOnDeserialized
     /// <summary>
     /// The latest outcome you reported with feedback.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("outcome")]
     public RiskOutcome? Outcome { get; set; }
 
     /// <summary>
     /// `open` for `review` decisions until you send feedback, then `resolved`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("review_status")]
     public RiskAssessmentReviewStatus? ReviewStatus { get; set; }
 

@@ -53,7 +53,13 @@ class BroadcastWebhookEventData extends JsonSerializableType
     ) {
         $this->broadcast = $values['broadcast'];
         $this->pauseReason = $values['pauseReason'] ?? null;
+        if (array_key_exists('pauseReason', $values)) {
+            $this->_setField('pauseReason');
+        }
         $this->error = $values['error'] ?? null;
+        if (array_key_exists('error', $values)) {
+            $this->_setField('error');
+        }
         $this->stats = $values['stats'];
         $this->occurredAt = $values['occurredAt'];
     }

@@ -14,6 +14,7 @@ public record DmarcReportRecordAuthResultsDkimItem : IJsonOnDeserialized
     [JsonPropertyName("domain")]
     public required string Domain { get; set; }
 
+    [Nullable]
     [JsonPropertyName("selector")]
     public string? Selector { get; set; }
 

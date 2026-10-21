@@ -32,6 +32,7 @@ public record SmsNumber : IJsonOnDeserialized
     /// <summary>
     /// Its carrier registration's status; live sends need `approved`.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("registration_status")]
     public SmsNumberRegistrationStatus? RegistrationStatus { get; set; }
 

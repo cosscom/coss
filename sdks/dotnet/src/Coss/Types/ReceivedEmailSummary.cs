@@ -23,6 +23,7 @@ public record ReceivedEmailSummary : IJsonOnDeserialized
     [JsonPropertyName("status")]
     public required ReceivedEmailSummaryStatus Status { get; set; }
 
+    [Nullable]
     [JsonPropertyName("blocked_reason")]
     public ReceivedEmailSummaryBlockedReason? BlockedReason { get; set; }
 
@@ -41,6 +42,7 @@ public record ReceivedEmailSummary : IJsonOnDeserialized
     /// <summary>
     /// The `From` header.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("from")]
     public string? From { get; set; }
 
@@ -56,12 +58,14 @@ public record ReceivedEmailSummary : IJsonOnDeserialized
     [JsonPropertyName("cc")]
     public IEnumerable<string> Cc { get; set; } = new List<string>();
 
+    [Nullable]
     [JsonPropertyName("subject")]
     public string? Subject { get; set; }
 
     /// <summary>
     /// The `Message-ID` header.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("message_id")]
     public string? MessageId { get; set; }
 

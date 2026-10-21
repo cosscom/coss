@@ -12,17 +12,20 @@ public record UpdateEmailTemplateRequest
     [JsonIgnore]
     public required string Id { get; set; }
 
+    [Optional]
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
     /// <summary>
     /// `null` removes the alias.
     /// </summary>
+    [Nullable, Optional]
     [JsonPropertyName("alias")]
-    public string? Alias { get; set; }
+    public Optional<string?> Alias { get; set; }
 
+    [Nullable, Optional]
     [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    public Optional<string?> Description { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

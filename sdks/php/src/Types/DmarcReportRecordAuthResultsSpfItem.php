@@ -37,6 +37,9 @@ class DmarcReportRecordAuthResultsSpfItem extends JsonSerializableType
     ) {
         $this->domain = $values['domain'];
         $this->scope = $values['scope'] ?? null;
+        if (array_key_exists('scope', $values)) {
+            $this->_setField('scope');
+        }
         $this->result = $values['result'];
     }
 

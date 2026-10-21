@@ -24,5 +24,8 @@ class SendBroadcastRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->scheduledAt = $values['scheduledAt'] ?? null;
+        if (array_key_exists('scheduledAt', $values)) {
+            $this->_setField('scheduledAt');
+        }
     }
 }

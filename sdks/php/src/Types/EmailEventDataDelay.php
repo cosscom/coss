@@ -39,7 +39,13 @@ class EmailEventDataDelay extends JsonSerializableType
     ) {
         $this->type = $values['type'];
         $this->expiresAt = $values['expiresAt'] ?? null;
+        if (array_key_exists('expiresAt', $values)) {
+            $this->_setField('expiresAt');
+        }
         $this->diagnosticCode = $values['diagnosticCode'] ?? null;
+        if (array_key_exists('diagnosticCode', $values)) {
+            $this->_setField('diagnosticCode');
+        }
     }
 
     /**

@@ -23,12 +23,14 @@ public record SendEmailAttachment : IJsonOnDeserialized
     /// <summary>
     /// Defaults from the filename's extension.
     /// </summary>
+    [Optional]
     [JsonPropertyName("content_type")]
     public string? ContentType { get; set; }
 
     /// <summary>
     /// Makes the attachment inline: reference it from `html` as `&lt;img src="cid:logo@acme"&gt;`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("content_id")]
     public string? ContentId { get; set; }
 

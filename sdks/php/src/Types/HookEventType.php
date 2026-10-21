@@ -76,7 +76,13 @@ class HookEventType extends JsonSerializableType
         $this->object = $values['object'];
         $this->name = $values['name'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->schema = $values['schema'] ?? null;
+        if (array_key_exists('schema', $values)) {
+            $this->_setField('schema');
+        }
         $this->examples = $values['examples'];
         $this->archived = $values['archived'];
         $this->createdAt = $values['createdAt'];

@@ -13,7 +13,9 @@ public class UpdateTest : BaseMockServerTest
     public async Task MockServerTest_1()
     {
         const string requestJson = """
-            {}
+            {
+              "uid": null
+            }
             """;
 
         const string mockResponse = """

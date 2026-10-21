@@ -76,6 +76,9 @@ class DomainRecord extends JsonSerializableType
         $this->name = $values['name'];
         $this->value = $values['value'];
         $this->priority = $values['priority'] ?? null;
+        if (array_key_exists('priority', $values)) {
+            $this->_setField('priority');
+        }
         $this->required = $values['required'];
         $this->status = $values['status'];
         $this->found = $values['found'];

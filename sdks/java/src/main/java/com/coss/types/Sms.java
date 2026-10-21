@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,15 +47,15 @@ public final class Sms {
 
     private final List<SmsTagsItem> tags;
 
-    private final Optional<SmsFailure> failure;
+    private final OptionalNullable<SmsFailure> failure;
 
     private final boolean sandbox;
 
-    private final Optional<OffsetDateTime> scheduledAt;
+    private final OptionalNullable<OffsetDateTime> scheduledAt;
 
-    private final Optional<OffsetDateTime> sentAt;
+    private final OptionalNullable<OffsetDateTime> sentAt;
 
-    private final Optional<OffsetDateTime> deliveredAt;
+    private final OptionalNullable<OffsetDateTime> deliveredAt;
 
     private final OffsetDateTime createdAt;
 
@@ -72,11 +72,11 @@ public final class Sms {
             SmsEncoding encoding,
             String country,
             List<SmsTagsItem> tags,
-            Optional<SmsFailure> failure,
+            OptionalNullable<SmsFailure> failure,
             boolean sandbox,
-            Optional<OffsetDateTime> scheduledAt,
-            Optional<OffsetDateTime> sentAt,
-            Optional<OffsetDateTime> deliveredAt,
+            OptionalNullable<OffsetDateTime> scheduledAt,
+            OptionalNullable<OffsetDateTime> sentAt,
+            OptionalNullable<OffsetDateTime> deliveredAt,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -160,10 +160,11 @@ public final class Sms {
     /**
      * @return Why the message failed or wasn't delivered.
      */
-    @JsonIgnore
-    public Optional<SmsFailure> getFailure() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("failure")
+    public OptionalNullable<SmsFailure> getFailure() {
         if (failure == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return failure;
     }
@@ -176,26 +177,29 @@ public final class Sms {
         return sandbox;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getScheduledAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("scheduled_at")
+    public OptionalNullable<OffsetDateTime> getScheduledAt() {
         if (scheduledAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return scheduledAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getSentAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("sent_at")
+    public OptionalNullable<OffsetDateTime> getSentAt() {
         if (sentAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return sentAt;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getDeliveredAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("delivered_at")
+    public OptionalNullable<OffsetDateTime> getDeliveredAt() {
         if (deliveredAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return deliveredAt;
     }
@@ -207,25 +211,25 @@ public final class Sms {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("failure")
-    private Optional<SmsFailure> _getFailure() {
+    private OptionalNullable<SmsFailure> _getFailure() {
         return failure;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("scheduled_at")
-    private Optional<OffsetDateTime> _getScheduledAt() {
+    private OptionalNullable<OffsetDateTime> _getScheduledAt() {
         return scheduledAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("sent_at")
-    private Optional<OffsetDateTime> _getSentAt() {
+    private OptionalNullable<OffsetDateTime> _getSentAt() {
         return sentAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("delivered_at")
-    private Optional<OffsetDateTime> _getDeliveredAt() {
+    private OptionalNullable<OffsetDateTime> _getDeliveredAt() {
         return deliveredAt;
     }
 
@@ -363,27 +367,35 @@ public final class Sms {
         /**
          * <p>Why the message failed or wasn't delivered.</p>
          */
-        _FinalStage failure(Optional<SmsFailure> failure);
+        _FinalStage failure(OptionalNullable<SmsFailure> failure);
 
         _FinalStage failure(SmsFailure failure);
 
+        _FinalStage failure(Optional<SmsFailure> failure);
+
         _FinalStage failure(Nullable<SmsFailure> failure);
 
-        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
+        _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt);
 
         _FinalStage scheduledAt(OffsetDateTime scheduledAt);
 
+        _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt);
+
         _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt);
 
-        _FinalStage sentAt(Optional<OffsetDateTime> sentAt);
+        _FinalStage sentAt(OptionalNullable<OffsetDateTime> sentAt);
 
         _FinalStage sentAt(OffsetDateTime sentAt);
 
+        _FinalStage sentAt(Optional<OffsetDateTime> sentAt);
+
         _FinalStage sentAt(Nullable<OffsetDateTime> sentAt);
 
-        _FinalStage deliveredAt(Optional<OffsetDateTime> deliveredAt);
+        _FinalStage deliveredAt(OptionalNullable<OffsetDateTime> deliveredAt);
 
         _FinalStage deliveredAt(OffsetDateTime deliveredAt);
+
+        _FinalStage deliveredAt(Optional<OffsetDateTime> deliveredAt);
 
         _FinalStage deliveredAt(Nullable<OffsetDateTime> deliveredAt);
     }
@@ -424,13 +436,13 @@ public final class Sms {
 
         private OffsetDateTime createdAt;
 
-        private Optional<OffsetDateTime> deliveredAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> deliveredAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> sentAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> sentAt = OptionalNullable.absent();
 
-        private Optional<OffsetDateTime> scheduledAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> scheduledAt = OptionalNullable.absent();
 
-        private Optional<SmsFailure> failure = Optional.empty();
+        private OptionalNullable<SmsFailure> failure = OptionalNullable.absent();
 
         private List<SmsTagsItem> tags = new ArrayList<>();
 
@@ -556,24 +568,34 @@ public final class Sms {
         @java.lang.Override
         public _FinalStage deliveredAt(Nullable<OffsetDateTime> deliveredAt) {
             if (deliveredAt.isNull()) {
-                this.deliveredAt = null;
+                this.deliveredAt = OptionalNullable.ofNull();
             } else if (deliveredAt.isEmpty()) {
-                this.deliveredAt = Optional.empty();
+                this.deliveredAt = OptionalNullable.absent();
             } else {
-                this.deliveredAt = Optional.of(deliveredAt.get());
+                this.deliveredAt = OptionalNullable.of(deliveredAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage deliveredAt(Optional<OffsetDateTime> deliveredAt) {
+            if (deliveredAt.isPresent()) {
+                this.deliveredAt = OptionalNullable.of(deliveredAt.get());
+            } else {
+                this.deliveredAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage deliveredAt(OffsetDateTime deliveredAt) {
-            this.deliveredAt = Optional.ofNullable(deliveredAt);
+            this.deliveredAt = OptionalNullable.of(deliveredAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "delivered_at", nulls = Nulls.SKIP)
-        public _FinalStage deliveredAt(Optional<OffsetDateTime> deliveredAt) {
+        public _FinalStage deliveredAt(OptionalNullable<OffsetDateTime> deliveredAt) {
             this.deliveredAt = deliveredAt;
             return this;
         }
@@ -581,24 +603,34 @@ public final class Sms {
         @java.lang.Override
         public _FinalStage sentAt(Nullable<OffsetDateTime> sentAt) {
             if (sentAt.isNull()) {
-                this.sentAt = null;
+                this.sentAt = OptionalNullable.ofNull();
             } else if (sentAt.isEmpty()) {
-                this.sentAt = Optional.empty();
+                this.sentAt = OptionalNullable.absent();
             } else {
-                this.sentAt = Optional.of(sentAt.get());
+                this.sentAt = OptionalNullable.of(sentAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage sentAt(Optional<OffsetDateTime> sentAt) {
+            if (sentAt.isPresent()) {
+                this.sentAt = OptionalNullable.of(sentAt.get());
+            } else {
+                this.sentAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage sentAt(OffsetDateTime sentAt) {
-            this.sentAt = Optional.ofNullable(sentAt);
+            this.sentAt = OptionalNullable.of(sentAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "sent_at", nulls = Nulls.SKIP)
-        public _FinalStage sentAt(Optional<OffsetDateTime> sentAt) {
+        public _FinalStage sentAt(OptionalNullable<OffsetDateTime> sentAt) {
             this.sentAt = sentAt;
             return this;
         }
@@ -606,24 +638,34 @@ public final class Sms {
         @java.lang.Override
         public _FinalStage scheduledAt(Nullable<OffsetDateTime> scheduledAt) {
             if (scheduledAt.isNull()) {
-                this.scheduledAt = null;
+                this.scheduledAt = OptionalNullable.ofNull();
             } else if (scheduledAt.isEmpty()) {
-                this.scheduledAt = Optional.empty();
+                this.scheduledAt = OptionalNullable.absent();
             } else {
-                this.scheduledAt = Optional.of(scheduledAt.get());
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+            if (scheduledAt.isPresent()) {
+                this.scheduledAt = OptionalNullable.of(scheduledAt.get());
+            } else {
+                this.scheduledAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage scheduledAt(OffsetDateTime scheduledAt) {
-            this.scheduledAt = Optional.ofNullable(scheduledAt);
+            this.scheduledAt = OptionalNullable.of(scheduledAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "scheduled_at", nulls = Nulls.SKIP)
-        public _FinalStage scheduledAt(Optional<OffsetDateTime> scheduledAt) {
+        public _FinalStage scheduledAt(OptionalNullable<OffsetDateTime> scheduledAt) {
             this.scheduledAt = scheduledAt;
             return this;
         }
@@ -635,11 +677,25 @@ public final class Sms {
         @java.lang.Override
         public _FinalStage failure(Nullable<SmsFailure> failure) {
             if (failure.isNull()) {
-                this.failure = null;
+                this.failure = OptionalNullable.ofNull();
             } else if (failure.isEmpty()) {
-                this.failure = Optional.empty();
+                this.failure = OptionalNullable.absent();
             } else {
-                this.failure = Optional.of(failure.get());
+                this.failure = OptionalNullable.of(failure.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Why the message failed or wasn't delivered.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage failure(Optional<SmsFailure> failure) {
+            if (failure.isPresent()) {
+                this.failure = OptionalNullable.of(failure.get());
+            } else {
+                this.failure = OptionalNullable.absent();
             }
             return this;
         }
@@ -650,7 +706,7 @@ public final class Sms {
          */
         @java.lang.Override
         public _FinalStage failure(SmsFailure failure) {
-            this.failure = Optional.ofNullable(failure);
+            this.failure = OptionalNullable.of(failure);
             return this;
         }
 
@@ -659,7 +715,7 @@ public final class Sms {
          */
         @java.lang.Override
         @JsonSetter(value = "failure", nulls = Nulls.SKIP)
-        public _FinalStage failure(Optional<SmsFailure> failure) {
+        public _FinalStage failure(OptionalNullable<SmsFailure> failure) {
             this.failure = failure;
             return this;
         }

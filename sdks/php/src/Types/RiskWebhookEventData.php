@@ -83,11 +83,20 @@ class RiskWebhookEventData extends JsonSerializableType
         $this->assessmentId = $values['assessmentId'];
         $this->event = $values['event'];
         $this->eventName = $values['eventName'] ?? null;
+        if (array_key_exists('eventName', $values)) {
+            $this->_setField('eventName');
+        }
         $this->decision = $values['decision'];
         $this->score = $values['score'];
         $this->reasons = $values['reasons'];
         $this->userId = $values['userId'] ?? null;
+        if (array_key_exists('userId', $values)) {
+            $this->_setField('userId');
+        }
         $this->outcome = $values['outcome'] ?? null;
+        if (array_key_exists('outcome', $values)) {
+            $this->_setField('outcome');
+        }
         $this->occurredAt = $values['occurredAt'];
     }
 

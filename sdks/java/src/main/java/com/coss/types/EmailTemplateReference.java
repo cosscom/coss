@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,14 +26,14 @@ import org.jetbrains.annotations.NotNull;
 public final class EmailTemplateReference {
     private final String id;
 
-    private final Optional<Long> version;
+    private final OptionalNullable<Long> version;
 
     private final String locale;
 
     private final Map<String, Object> additionalProperties;
 
     private EmailTemplateReference(
-            String id, Optional<Long> version, String locale, Map<String, Object> additionalProperties) {
+            String id, OptionalNullable<Long> version, String locale, Map<String, Object> additionalProperties) {
         this.id = id;
         this.version = version;
         this.locale = locale;
@@ -48,10 +48,11 @@ public final class EmailTemplateReference {
     /**
      * @return <code>null</code> for a dashboard test send of the draft.
      */
-    @JsonIgnore
-    public Optional<Long> getVersion() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("version")
+    public OptionalNullable<Long> getVersion() {
         if (version == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return version;
     }
@@ -63,7 +64,7 @@ public final class EmailTemplateReference {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("version")
-    private Optional<Long> _getVersion() {
+    private OptionalNullable<Long> _getVersion() {
         return version;
     }
 
@@ -116,9 +117,11 @@ public final class EmailTemplateReference {
         /**
          * <p><code>null</code> for a dashboard test send of the draft.</p>
          */
-        _FinalStage version(Optional<Long> version);
+        _FinalStage version(OptionalNullable<Long> version);
 
         _FinalStage version(Long version);
+
+        _FinalStage version(Optional<Long> version);
 
         _FinalStage version(Nullable<Long> version);
     }
@@ -129,7 +132,7 @@ public final class EmailTemplateReference {
 
         private String locale;
 
-        private Optional<Long> version = Optional.empty();
+        private OptionalNullable<Long> version = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -165,11 +168,25 @@ public final class EmailTemplateReference {
         @java.lang.Override
         public _FinalStage version(Nullable<Long> version) {
             if (version.isNull()) {
-                this.version = null;
+                this.version = OptionalNullable.ofNull();
             } else if (version.isEmpty()) {
-                this.version = Optional.empty();
+                this.version = OptionalNullable.absent();
             } else {
-                this.version = Optional.of(version.get());
+                this.version = OptionalNullable.of(version.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>null</code> for a dashboard test send of the draft.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage version(Optional<Long> version) {
+            if (version.isPresent()) {
+                this.version = OptionalNullable.of(version.get());
+            } else {
+                this.version = OptionalNullable.absent();
             }
             return this;
         }
@@ -180,7 +197,7 @@ public final class EmailTemplateReference {
          */
         @java.lang.Override
         public _FinalStage version(Long version) {
-            this.version = Optional.ofNullable(version);
+            this.version = OptionalNullable.of(version);
             return this;
         }
 
@@ -189,7 +206,7 @@ public final class EmailTemplateReference {
          */
         @java.lang.Override
         @JsonSetter(value = "version", nulls = Nulls.SKIP)
-        public _FinalStage version(Optional<Long> version) {
+        public _FinalStage version(OptionalNullable<Long> version) {
             this.version = version;
             return this;
         }

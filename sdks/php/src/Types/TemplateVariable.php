@@ -70,8 +70,17 @@ class TemplateVariable extends JsonSerializableType
         $this->type = $values['type'];
         $this->required = $values['required'];
         $this->default = $values['default'] ?? null;
+        if (array_key_exists('default', $values)) {
+            $this->_setField('default');
+        }
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->fields = $values['fields'] ?? null;
+        if (array_key_exists('fields', $values)) {
+            $this->_setField('fields');
+        }
     }
 
     /**

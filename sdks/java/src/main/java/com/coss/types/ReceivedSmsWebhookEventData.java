@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,13 +25,13 @@ import org.jetbrains.annotations.NotNull;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ReceivedSmsWebhookEventData.Builder.class)
 public final class ReceivedSmsWebhookEventData {
-    private final Optional<String> receivedSmsId;
+    private final OptionalNullable<String> receivedSmsId;
 
     private final String from;
 
     private final String to;
 
-    private final Optional<ReceivedSmsWebhookEventDataKeyword> keyword;
+    private final OptionalNullable<ReceivedSmsWebhookEventDataKeyword> keyword;
 
     private final boolean sandbox;
 
@@ -40,10 +40,10 @@ public final class ReceivedSmsWebhookEventData {
     private final Map<String, Object> additionalProperties;
 
     private ReceivedSmsWebhookEventData(
-            Optional<String> receivedSmsId,
+            OptionalNullable<String> receivedSmsId,
             String from,
             String to,
-            Optional<ReceivedSmsWebhookEventDataKeyword> keyword,
+            OptionalNullable<ReceivedSmsWebhookEventDataKeyword> keyword,
             boolean sandbox,
             OffsetDateTime occurredAt,
             Map<String, Object> additionalProperties) {
@@ -59,10 +59,11 @@ public final class ReceivedSmsWebhookEventData {
     /**
      * @return The received message; <code>null</code> for an opt-out to a number whose replies go to no environment.
      */
-    @JsonIgnore
-    public Optional<String> getReceivedSmsId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("received_sms_id")
+    public OptionalNullable<String> getReceivedSmsId() {
         if (receivedSmsId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return receivedSmsId;
     }
@@ -77,10 +78,11 @@ public final class ReceivedSmsWebhookEventData {
         return to;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedSmsWebhookEventDataKeyword> getKeyword() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("keyword")
+    public OptionalNullable<ReceivedSmsWebhookEventDataKeyword> getKeyword() {
         if (keyword == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return keyword;
     }
@@ -97,13 +99,13 @@ public final class ReceivedSmsWebhookEventData {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("received_sms_id")
-    private Optional<String> _getReceivedSmsId() {
+    private OptionalNullable<String> _getReceivedSmsId() {
         return receivedSmsId;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("keyword")
-    private Optional<ReceivedSmsWebhookEventDataKeyword> _getKeyword() {
+    private OptionalNullable<ReceivedSmsWebhookEventDataKeyword> _getKeyword() {
         return keyword;
     }
 
@@ -169,15 +171,19 @@ public final class ReceivedSmsWebhookEventData {
         /**
          * <p>The received message; <code>null</code> for an opt-out to a number whose replies go to no environment.</p>
          */
-        _FinalStage receivedSmsId(Optional<String> receivedSmsId);
+        _FinalStage receivedSmsId(OptionalNullable<String> receivedSmsId);
 
         _FinalStage receivedSmsId(String receivedSmsId);
 
+        _FinalStage receivedSmsId(Optional<String> receivedSmsId);
+
         _FinalStage receivedSmsId(Nullable<String> receivedSmsId);
 
-        _FinalStage keyword(Optional<ReceivedSmsWebhookEventDataKeyword> keyword);
+        _FinalStage keyword(OptionalNullable<ReceivedSmsWebhookEventDataKeyword> keyword);
 
         _FinalStage keyword(ReceivedSmsWebhookEventDataKeyword keyword);
+
+        _FinalStage keyword(Optional<ReceivedSmsWebhookEventDataKeyword> keyword);
 
         _FinalStage keyword(Nullable<ReceivedSmsWebhookEventDataKeyword> keyword);
     }
@@ -192,9 +198,9 @@ public final class ReceivedSmsWebhookEventData {
 
         private OffsetDateTime occurredAt;
 
-        private Optional<ReceivedSmsWebhookEventDataKeyword> keyword = Optional.empty();
+        private OptionalNullable<ReceivedSmsWebhookEventDataKeyword> keyword = OptionalNullable.absent();
 
-        private Optional<String> receivedSmsId = Optional.empty();
+        private OptionalNullable<String> receivedSmsId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -243,24 +249,34 @@ public final class ReceivedSmsWebhookEventData {
         @java.lang.Override
         public _FinalStage keyword(Nullable<ReceivedSmsWebhookEventDataKeyword> keyword) {
             if (keyword.isNull()) {
-                this.keyword = null;
+                this.keyword = OptionalNullable.ofNull();
             } else if (keyword.isEmpty()) {
-                this.keyword = Optional.empty();
+                this.keyword = OptionalNullable.absent();
             } else {
-                this.keyword = Optional.of(keyword.get());
+                this.keyword = OptionalNullable.of(keyword.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage keyword(Optional<ReceivedSmsWebhookEventDataKeyword> keyword) {
+            if (keyword.isPresent()) {
+                this.keyword = OptionalNullable.of(keyword.get());
+            } else {
+                this.keyword = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage keyword(ReceivedSmsWebhookEventDataKeyword keyword) {
-            this.keyword = Optional.ofNullable(keyword);
+            this.keyword = OptionalNullable.of(keyword);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "keyword", nulls = Nulls.SKIP)
-        public _FinalStage keyword(Optional<ReceivedSmsWebhookEventDataKeyword> keyword) {
+        public _FinalStage keyword(OptionalNullable<ReceivedSmsWebhookEventDataKeyword> keyword) {
             this.keyword = keyword;
             return this;
         }
@@ -272,11 +288,25 @@ public final class ReceivedSmsWebhookEventData {
         @java.lang.Override
         public _FinalStage receivedSmsId(Nullable<String> receivedSmsId) {
             if (receivedSmsId.isNull()) {
-                this.receivedSmsId = null;
+                this.receivedSmsId = OptionalNullable.ofNull();
             } else if (receivedSmsId.isEmpty()) {
-                this.receivedSmsId = Optional.empty();
+                this.receivedSmsId = OptionalNullable.absent();
             } else {
-                this.receivedSmsId = Optional.of(receivedSmsId.get());
+                this.receivedSmsId = OptionalNullable.of(receivedSmsId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The received message; <code>null</code> for an opt-out to a number whose replies go to no environment.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage receivedSmsId(Optional<String> receivedSmsId) {
+            if (receivedSmsId.isPresent()) {
+                this.receivedSmsId = OptionalNullable.of(receivedSmsId.get());
+            } else {
+                this.receivedSmsId = OptionalNullable.absent();
             }
             return this;
         }
@@ -287,7 +317,7 @@ public final class ReceivedSmsWebhookEventData {
          */
         @java.lang.Override
         public _FinalStage receivedSmsId(String receivedSmsId) {
-            this.receivedSmsId = Optional.ofNullable(receivedSmsId);
+            this.receivedSmsId = OptionalNullable.of(receivedSmsId);
             return this;
         }
 
@@ -296,7 +326,7 @@ public final class ReceivedSmsWebhookEventData {
          */
         @java.lang.Override
         @JsonSetter(value = "received_sms_id", nulls = Nulls.SKIP)
-        public _FinalStage receivedSmsId(Optional<String> receivedSmsId) {
+        public _FinalStage receivedSmsId(OptionalNullable<String> receivedSmsId) {
             this.receivedSmsId = receivedSmsId;
             return this;
         }

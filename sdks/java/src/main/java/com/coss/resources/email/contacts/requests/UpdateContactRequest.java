@@ -6,12 +6,12 @@ package com.coss.resources.email.contacts.requests;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.resources.email.contacts.types.UpdateContactRequestPropertiesValue;
 import com.coss.resources.email.contacts.types.UpdateContactRequestStatus;
 import com.coss.resources.email.contacts.types.UpdateContactRequestTopicsItem;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,11 +27,11 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateContactRequest.Builder.class)
 public final class UpdateContactRequest {
-    private final Optional<String> firstName;
+    private final OptionalNullable<String> firstName;
 
-    private final Optional<String> lastName;
+    private final OptionalNullable<String> lastName;
 
-    private final Optional<Map<String, Optional<UpdateContactRequestPropertiesValue>>> properties;
+    private final Optional<Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>>> properties;
 
     private final Optional<UpdateContactRequestStatus> status;
 
@@ -40,9 +40,9 @@ public final class UpdateContactRequest {
     private final Map<String, Object> additionalProperties;
 
     private UpdateContactRequest(
-            Optional<String> firstName,
-            Optional<String> lastName,
-            Optional<Map<String, Optional<UpdateContactRequestPropertiesValue>>> properties,
+            OptionalNullable<String> firstName,
+            OptionalNullable<String> lastName,
+            Optional<Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>>> properties,
             Optional<UpdateContactRequestStatus> status,
             Optional<List<UpdateContactRequestTopicsItem>> topics,
             Map<String, Object> additionalProperties) {
@@ -54,18 +54,20 @@ public final class UpdateContactRequest {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getFirstName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("first_name")
+    public OptionalNullable<String> getFirstName() {
         if (firstName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return firstName;
     }
 
-    @JsonIgnore
-    public Optional<String> getLastName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_name")
+    public OptionalNullable<String> getLastName() {
         if (lastName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastName;
     }
@@ -74,7 +76,7 @@ public final class UpdateContactRequest {
      * @return Custom properties by key (define them first, see contact properties). Merged into the contact's existing properties; <code>null</code> removes one.
      */
     @JsonProperty("properties")
-    public Optional<Map<String, Optional<UpdateContactRequestPropertiesValue>>> getProperties() {
+    public Optional<Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>>> getProperties() {
         return properties;
     }
 
@@ -93,13 +95,13 @@ public final class UpdateContactRequest {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("first_name")
-    private Optional<String> _getFirstName() {
+    private OptionalNullable<String> _getFirstName() {
         return firstName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_name")
-    private Optional<String> _getLastName() {
+    private OptionalNullable<String> _getLastName() {
         return lastName;
     }
 
@@ -138,11 +140,12 @@ public final class UpdateContactRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> firstName = Optional.empty();
+        private OptionalNullable<String> firstName = OptionalNullable.absent();
 
-        private Optional<String> lastName = Optional.empty();
+        private OptionalNullable<String> lastName = OptionalNullable.absent();
 
-        private Optional<Map<String, Optional<UpdateContactRequestPropertiesValue>>> properties = Optional.empty();
+        private Optional<Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>>> properties =
+                Optional.empty();
 
         private Optional<UpdateContactRequestStatus> status = Optional.empty();
 
@@ -163,45 +166,63 @@ public final class UpdateContactRequest {
         }
 
         @JsonSetter(value = "first_name", nulls = Nulls.SKIP)
-        public Builder firstName(Optional<String> firstName) {
+        public Builder firstName(OptionalNullable<String> firstName) {
             this.firstName = firstName;
             return this;
         }
 
         public Builder firstName(String firstName) {
-            this.firstName = Optional.ofNullable(firstName);
+            this.firstName = OptionalNullable.of(firstName);
+            return this;
+        }
+
+        public Builder firstName(Optional<String> firstName) {
+            if (firstName.isPresent()) {
+                this.firstName = OptionalNullable.of(firstName.get());
+            } else {
+                this.firstName = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder firstName(Nullable<String> firstName) {
             if (firstName.isNull()) {
-                this.firstName = null;
+                this.firstName = OptionalNullable.ofNull();
             } else if (firstName.isEmpty()) {
-                this.firstName = Optional.empty();
+                this.firstName = OptionalNullable.absent();
             } else {
-                this.firstName = Optional.of(firstName.get());
+                this.firstName = OptionalNullable.of(firstName.get());
             }
             return this;
         }
 
         @JsonSetter(value = "last_name", nulls = Nulls.SKIP)
-        public Builder lastName(Optional<String> lastName) {
+        public Builder lastName(OptionalNullable<String> lastName) {
             this.lastName = lastName;
             return this;
         }
 
         public Builder lastName(String lastName) {
-            this.lastName = Optional.ofNullable(lastName);
+            this.lastName = OptionalNullable.of(lastName);
+            return this;
+        }
+
+        public Builder lastName(Optional<String> lastName) {
+            if (lastName.isPresent()) {
+                this.lastName = OptionalNullable.of(lastName.get());
+            } else {
+                this.lastName = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder lastName(Nullable<String> lastName) {
             if (lastName.isNull()) {
-                this.lastName = null;
+                this.lastName = OptionalNullable.ofNull();
             } else if (lastName.isEmpty()) {
-                this.lastName = Optional.empty();
+                this.lastName = OptionalNullable.absent();
             } else {
-                this.lastName = Optional.of(lastName.get());
+                this.lastName = OptionalNullable.of(lastName.get());
             }
             return this;
         }
@@ -210,12 +231,13 @@ public final class UpdateContactRequest {
          * <p>Custom properties by key (define them first, see contact properties). Merged into the contact's existing properties; <code>null</code> removes one.</p>
          */
         @JsonSetter(value = "properties", nulls = Nulls.SKIP)
-        public Builder properties(Optional<Map<String, Optional<UpdateContactRequestPropertiesValue>>> properties) {
+        public Builder properties(
+                Optional<Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>>> properties) {
             this.properties = properties;
             return this;
         }
 
-        public Builder properties(Map<String, Optional<UpdateContactRequestPropertiesValue>> properties) {
+        public Builder properties(Map<String, OptionalNullable<UpdateContactRequestPropertiesValue>> properties) {
             this.properties = Optional.ofNullable(properties);
             return this;
         }

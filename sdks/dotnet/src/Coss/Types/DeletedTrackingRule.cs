@@ -17,6 +17,7 @@ public record DeletedTrackingRule : IJsonOnDeserialized
     [JsonPropertyName("id")]
     public required string Id { get; set; }
 
+    [Nullable]
     [JsonPropertyName("category")]
     public string? Category { get; set; }
 

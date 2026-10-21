@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,23 +28,23 @@ public final class RiskCheckoutSignals {
 
     private final String currency;
 
-    private final Optional<String> cardCountry;
+    private final OptionalNullable<String> cardCountry;
 
-    private final Optional<RiskCheckoutSignalsCardFunding> cardFunding;
+    private final OptionalNullable<RiskCheckoutSignalsCardFunding> cardFunding;
 
-    private final Optional<String> billingCountry;
+    private final OptionalNullable<String> billingCountry;
 
-    private final Optional<String> shippingCountry;
+    private final OptionalNullable<String> shippingCountry;
 
     private final Map<String, Object> additionalProperties;
 
     private RiskCheckoutSignals(
             long amount,
             String currency,
-            Optional<String> cardCountry,
-            Optional<RiskCheckoutSignalsCardFunding> cardFunding,
-            Optional<String> billingCountry,
-            Optional<String> shippingCountry,
+            OptionalNullable<String> cardCountry,
+            OptionalNullable<RiskCheckoutSignalsCardFunding> cardFunding,
+            OptionalNullable<String> billingCountry,
+            OptionalNullable<String> shippingCountry,
             Map<String, Object> additionalProperties) {
         this.amount = amount;
         this.currency = currency;
@@ -65,59 +65,63 @@ public final class RiskCheckoutSignals {
         return currency;
     }
 
-    @JsonIgnore
-    public Optional<String> getCardCountry() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("card_country")
+    public OptionalNullable<String> getCardCountry() {
         if (cardCountry == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return cardCountry;
     }
 
-    @JsonIgnore
-    public Optional<RiskCheckoutSignalsCardFunding> getCardFunding() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("card_funding")
+    public OptionalNullable<RiskCheckoutSignalsCardFunding> getCardFunding() {
         if (cardFunding == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return cardFunding;
     }
 
-    @JsonIgnore
-    public Optional<String> getBillingCountry() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("billing_country")
+    public OptionalNullable<String> getBillingCountry() {
         if (billingCountry == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return billingCountry;
     }
 
-    @JsonIgnore
-    public Optional<String> getShippingCountry() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("shipping_country")
+    public OptionalNullable<String> getShippingCountry() {
         if (shippingCountry == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return shippingCountry;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("card_country")
-    private Optional<String> _getCardCountry() {
+    private OptionalNullable<String> _getCardCountry() {
         return cardCountry;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("card_funding")
-    private Optional<RiskCheckoutSignalsCardFunding> _getCardFunding() {
+    private OptionalNullable<RiskCheckoutSignalsCardFunding> _getCardFunding() {
         return cardFunding;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("billing_country")
-    private Optional<String> _getBillingCountry() {
+    private OptionalNullable<String> _getBillingCountry() {
         return billingCountry;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("shipping_country")
-    private Optional<String> _getShippingCountry() {
+    private OptionalNullable<String> _getShippingCountry() {
         return shippingCountry;
     }
 
@@ -178,27 +182,35 @@ public final class RiskCheckoutSignals {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage cardCountry(Optional<String> cardCountry);
+        _FinalStage cardCountry(OptionalNullable<String> cardCountry);
 
         _FinalStage cardCountry(String cardCountry);
 
+        _FinalStage cardCountry(Optional<String> cardCountry);
+
         _FinalStage cardCountry(Nullable<String> cardCountry);
 
-        _FinalStage cardFunding(Optional<RiskCheckoutSignalsCardFunding> cardFunding);
+        _FinalStage cardFunding(OptionalNullable<RiskCheckoutSignalsCardFunding> cardFunding);
 
         _FinalStage cardFunding(RiskCheckoutSignalsCardFunding cardFunding);
 
+        _FinalStage cardFunding(Optional<RiskCheckoutSignalsCardFunding> cardFunding);
+
         _FinalStage cardFunding(Nullable<RiskCheckoutSignalsCardFunding> cardFunding);
 
-        _FinalStage billingCountry(Optional<String> billingCountry);
+        _FinalStage billingCountry(OptionalNullable<String> billingCountry);
 
         _FinalStage billingCountry(String billingCountry);
 
+        _FinalStage billingCountry(Optional<String> billingCountry);
+
         _FinalStage billingCountry(Nullable<String> billingCountry);
 
-        _FinalStage shippingCountry(Optional<String> shippingCountry);
+        _FinalStage shippingCountry(OptionalNullable<String> shippingCountry);
 
         _FinalStage shippingCountry(String shippingCountry);
+
+        _FinalStage shippingCountry(Optional<String> shippingCountry);
 
         _FinalStage shippingCountry(Nullable<String> shippingCountry);
     }
@@ -209,13 +221,13 @@ public final class RiskCheckoutSignals {
 
         private String currency;
 
-        private Optional<String> shippingCountry = Optional.empty();
+        private OptionalNullable<String> shippingCountry = OptionalNullable.absent();
 
-        private Optional<String> billingCountry = Optional.empty();
+        private OptionalNullable<String> billingCountry = OptionalNullable.absent();
 
-        private Optional<RiskCheckoutSignalsCardFunding> cardFunding = Optional.empty();
+        private OptionalNullable<RiskCheckoutSignalsCardFunding> cardFunding = OptionalNullable.absent();
 
-        private Optional<String> cardCountry = Optional.empty();
+        private OptionalNullable<String> cardCountry = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -250,24 +262,34 @@ public final class RiskCheckoutSignals {
         @java.lang.Override
         public _FinalStage shippingCountry(Nullable<String> shippingCountry) {
             if (shippingCountry.isNull()) {
-                this.shippingCountry = null;
+                this.shippingCountry = OptionalNullable.ofNull();
             } else if (shippingCountry.isEmpty()) {
-                this.shippingCountry = Optional.empty();
+                this.shippingCountry = OptionalNullable.absent();
             } else {
-                this.shippingCountry = Optional.of(shippingCountry.get());
+                this.shippingCountry = OptionalNullable.of(shippingCountry.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage shippingCountry(Optional<String> shippingCountry) {
+            if (shippingCountry.isPresent()) {
+                this.shippingCountry = OptionalNullable.of(shippingCountry.get());
+            } else {
+                this.shippingCountry = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage shippingCountry(String shippingCountry) {
-            this.shippingCountry = Optional.ofNullable(shippingCountry);
+            this.shippingCountry = OptionalNullable.of(shippingCountry);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "shipping_country", nulls = Nulls.SKIP)
-        public _FinalStage shippingCountry(Optional<String> shippingCountry) {
+        public _FinalStage shippingCountry(OptionalNullable<String> shippingCountry) {
             this.shippingCountry = shippingCountry;
             return this;
         }
@@ -275,24 +297,34 @@ public final class RiskCheckoutSignals {
         @java.lang.Override
         public _FinalStage billingCountry(Nullable<String> billingCountry) {
             if (billingCountry.isNull()) {
-                this.billingCountry = null;
+                this.billingCountry = OptionalNullable.ofNull();
             } else if (billingCountry.isEmpty()) {
-                this.billingCountry = Optional.empty();
+                this.billingCountry = OptionalNullable.absent();
             } else {
-                this.billingCountry = Optional.of(billingCountry.get());
+                this.billingCountry = OptionalNullable.of(billingCountry.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage billingCountry(Optional<String> billingCountry) {
+            if (billingCountry.isPresent()) {
+                this.billingCountry = OptionalNullable.of(billingCountry.get());
+            } else {
+                this.billingCountry = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage billingCountry(String billingCountry) {
-            this.billingCountry = Optional.ofNullable(billingCountry);
+            this.billingCountry = OptionalNullable.of(billingCountry);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "billing_country", nulls = Nulls.SKIP)
-        public _FinalStage billingCountry(Optional<String> billingCountry) {
+        public _FinalStage billingCountry(OptionalNullable<String> billingCountry) {
             this.billingCountry = billingCountry;
             return this;
         }
@@ -300,24 +332,34 @@ public final class RiskCheckoutSignals {
         @java.lang.Override
         public _FinalStage cardFunding(Nullable<RiskCheckoutSignalsCardFunding> cardFunding) {
             if (cardFunding.isNull()) {
-                this.cardFunding = null;
+                this.cardFunding = OptionalNullable.ofNull();
             } else if (cardFunding.isEmpty()) {
-                this.cardFunding = Optional.empty();
+                this.cardFunding = OptionalNullable.absent();
             } else {
-                this.cardFunding = Optional.of(cardFunding.get());
+                this.cardFunding = OptionalNullable.of(cardFunding.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage cardFunding(Optional<RiskCheckoutSignalsCardFunding> cardFunding) {
+            if (cardFunding.isPresent()) {
+                this.cardFunding = OptionalNullable.of(cardFunding.get());
+            } else {
+                this.cardFunding = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage cardFunding(RiskCheckoutSignalsCardFunding cardFunding) {
-            this.cardFunding = Optional.ofNullable(cardFunding);
+            this.cardFunding = OptionalNullable.of(cardFunding);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "card_funding", nulls = Nulls.SKIP)
-        public _FinalStage cardFunding(Optional<RiskCheckoutSignalsCardFunding> cardFunding) {
+        public _FinalStage cardFunding(OptionalNullable<RiskCheckoutSignalsCardFunding> cardFunding) {
             this.cardFunding = cardFunding;
             return this;
         }
@@ -325,24 +367,34 @@ public final class RiskCheckoutSignals {
         @java.lang.Override
         public _FinalStage cardCountry(Nullable<String> cardCountry) {
             if (cardCountry.isNull()) {
-                this.cardCountry = null;
+                this.cardCountry = OptionalNullable.ofNull();
             } else if (cardCountry.isEmpty()) {
-                this.cardCountry = Optional.empty();
+                this.cardCountry = OptionalNullable.absent();
             } else {
-                this.cardCountry = Optional.of(cardCountry.get());
+                this.cardCountry = OptionalNullable.of(cardCountry.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage cardCountry(Optional<String> cardCountry) {
+            if (cardCountry.isPresent()) {
+                this.cardCountry = OptionalNullable.of(cardCountry.get());
+            } else {
+                this.cardCountry = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage cardCountry(String cardCountry) {
-            this.cardCountry = Optional.ofNullable(cardCountry);
+            this.cardCountry = OptionalNullable.of(cardCountry);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "card_country", nulls = Nulls.SKIP)
-        public _FinalStage cardCountry(Optional<String> cardCountry) {
+        public _FinalStage cardCountry(OptionalNullable<String> cardCountry) {
             this.cardCountry = cardCountry;
             return this;
         }

@@ -75,6 +75,7 @@ public class CheckTest : BaseMockServerTest
                   "address": "user@example.com",
                   "scope": "marketing",
                   "reason": "manual",
+                  "email_id": null,
                   "created_at": "2026-01-15T09:30:00.000Z"
                 }
               ]

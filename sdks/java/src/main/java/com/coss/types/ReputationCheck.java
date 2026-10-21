@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,17 +30,17 @@ public final class ReputationCheck {
 
     private final String message;
 
-    private final Optional<Double> rate;
+    private final OptionalNullable<Double> rate;
 
     private final long count;
 
     private final long volume;
 
-    private final Optional<Double> warningThreshold;
+    private final OptionalNullable<Double> warningThreshold;
 
-    private final Optional<Double> suspendThreshold;
+    private final OptionalNullable<Double> suspendThreshold;
 
-    private final Optional<Long> minimumVolume;
+    private final OptionalNullable<Long> minimumVolume;
 
     private final Map<String, Object> additionalProperties;
 
@@ -48,12 +48,12 @@ public final class ReputationCheck {
             String trigger,
             ReputationCheckSeverity severity,
             String message,
-            Optional<Double> rate,
+            OptionalNullable<Double> rate,
             long count,
             long volume,
-            Optional<Double> warningThreshold,
-            Optional<Double> suspendThreshold,
-            Optional<Long> minimumVolume,
+            OptionalNullable<Double> warningThreshold,
+            OptionalNullable<Double> suspendThreshold,
+            OptionalNullable<Long> minimumVolume,
             Map<String, Object> additionalProperties) {
         this.trigger = trigger;
         this.severity = severity;
@@ -91,10 +91,11 @@ public final class ReputationCheck {
     /**
      * @return <code>count / volume</code>; <code>null</code> with no volume.
      */
-    @JsonIgnore
-    public Optional<Double> getRate() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("rate")
+    public OptionalNullable<Double> getRate() {
         if (rate == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return rate;
     }
@@ -115,18 +116,20 @@ public final class ReputationCheck {
         return volume;
     }
 
-    @JsonIgnore
-    public Optional<Double> getWarningThreshold() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("warning_threshold")
+    public OptionalNullable<Double> getWarningThreshold() {
         if (warningThreshold == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return warningThreshold;
     }
 
-    @JsonIgnore
-    public Optional<Double> getSuspendThreshold() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("suspend_threshold")
+    public OptionalNullable<Double> getSuspendThreshold() {
         if (suspendThreshold == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return suspendThreshold;
     }
@@ -134,35 +137,36 @@ public final class ReputationCheck {
     /**
      * @return Below this volume the rate is reported but never acted on.
      */
-    @JsonIgnore
-    public Optional<Long> getMinimumVolume() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("minimum_volume")
+    public OptionalNullable<Long> getMinimumVolume() {
         if (minimumVolume == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return minimumVolume;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("rate")
-    private Optional<Double> _getRate() {
+    private OptionalNullable<Double> _getRate() {
         return rate;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("warning_threshold")
-    private Optional<Double> _getWarningThreshold() {
+    private OptionalNullable<Double> _getWarningThreshold() {
         return warningThreshold;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("suspend_threshold")
-    private Optional<Double> _getSuspendThreshold() {
+    private OptionalNullable<Double> _getSuspendThreshold() {
         return suspendThreshold;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("minimum_volume")
-    private Optional<Long> _getMinimumVolume() {
+    private OptionalNullable<Long> _getMinimumVolume() {
         return minimumVolume;
     }
 
@@ -256,30 +260,38 @@ public final class ReputationCheck {
         /**
          * <p><code>count / volume</code>; <code>null</code> with no volume.</p>
          */
-        _FinalStage rate(Optional<Double> rate);
+        _FinalStage rate(OptionalNullable<Double> rate);
 
         _FinalStage rate(Double rate);
 
+        _FinalStage rate(Optional<Double> rate);
+
         _FinalStage rate(Nullable<Double> rate);
 
-        _FinalStage warningThreshold(Optional<Double> warningThreshold);
+        _FinalStage warningThreshold(OptionalNullable<Double> warningThreshold);
 
         _FinalStage warningThreshold(Double warningThreshold);
 
+        _FinalStage warningThreshold(Optional<Double> warningThreshold);
+
         _FinalStage warningThreshold(Nullable<Double> warningThreshold);
 
-        _FinalStage suspendThreshold(Optional<Double> suspendThreshold);
+        _FinalStage suspendThreshold(OptionalNullable<Double> suspendThreshold);
 
         _FinalStage suspendThreshold(Double suspendThreshold);
+
+        _FinalStage suspendThreshold(Optional<Double> suspendThreshold);
 
         _FinalStage suspendThreshold(Nullable<Double> suspendThreshold);
 
         /**
          * <p>Below this volume the rate is reported but never acted on.</p>
          */
-        _FinalStage minimumVolume(Optional<Long> minimumVolume);
+        _FinalStage minimumVolume(OptionalNullable<Long> minimumVolume);
 
         _FinalStage minimumVolume(Long minimumVolume);
+
+        _FinalStage minimumVolume(Optional<Long> minimumVolume);
 
         _FinalStage minimumVolume(Nullable<Long> minimumVolume);
     }
@@ -297,13 +309,13 @@ public final class ReputationCheck {
 
         private long volume;
 
-        private Optional<Long> minimumVolume = Optional.empty();
+        private OptionalNullable<Long> minimumVolume = OptionalNullable.absent();
 
-        private Optional<Double> suspendThreshold = Optional.empty();
+        private OptionalNullable<Double> suspendThreshold = OptionalNullable.absent();
 
-        private Optional<Double> warningThreshold = Optional.empty();
+        private OptionalNullable<Double> warningThreshold = OptionalNullable.absent();
 
-        private Optional<Double> rate = Optional.empty();
+        private OptionalNullable<Double> rate = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -382,11 +394,25 @@ public final class ReputationCheck {
         @java.lang.Override
         public _FinalStage minimumVolume(Nullable<Long> minimumVolume) {
             if (minimumVolume.isNull()) {
-                this.minimumVolume = null;
+                this.minimumVolume = OptionalNullable.ofNull();
             } else if (minimumVolume.isEmpty()) {
-                this.minimumVolume = Optional.empty();
+                this.minimumVolume = OptionalNullable.absent();
             } else {
-                this.minimumVolume = Optional.of(minimumVolume.get());
+                this.minimumVolume = OptionalNullable.of(minimumVolume.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Below this volume the rate is reported but never acted on.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage minimumVolume(Optional<Long> minimumVolume) {
+            if (minimumVolume.isPresent()) {
+                this.minimumVolume = OptionalNullable.of(minimumVolume.get());
+            } else {
+                this.minimumVolume = OptionalNullable.absent();
             }
             return this;
         }
@@ -397,7 +423,7 @@ public final class ReputationCheck {
          */
         @java.lang.Override
         public _FinalStage minimumVolume(Long minimumVolume) {
-            this.minimumVolume = Optional.ofNullable(minimumVolume);
+            this.minimumVolume = OptionalNullable.of(minimumVolume);
             return this;
         }
 
@@ -406,7 +432,7 @@ public final class ReputationCheck {
          */
         @java.lang.Override
         @JsonSetter(value = "minimum_volume", nulls = Nulls.SKIP)
-        public _FinalStage minimumVolume(Optional<Long> minimumVolume) {
+        public _FinalStage minimumVolume(OptionalNullable<Long> minimumVolume) {
             this.minimumVolume = minimumVolume;
             return this;
         }
@@ -414,24 +440,34 @@ public final class ReputationCheck {
         @java.lang.Override
         public _FinalStage suspendThreshold(Nullable<Double> suspendThreshold) {
             if (suspendThreshold.isNull()) {
-                this.suspendThreshold = null;
+                this.suspendThreshold = OptionalNullable.ofNull();
             } else if (suspendThreshold.isEmpty()) {
-                this.suspendThreshold = Optional.empty();
+                this.suspendThreshold = OptionalNullable.absent();
             } else {
-                this.suspendThreshold = Optional.of(suspendThreshold.get());
+                this.suspendThreshold = OptionalNullable.of(suspendThreshold.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage suspendThreshold(Optional<Double> suspendThreshold) {
+            if (suspendThreshold.isPresent()) {
+                this.suspendThreshold = OptionalNullable.of(suspendThreshold.get());
+            } else {
+                this.suspendThreshold = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage suspendThreshold(Double suspendThreshold) {
-            this.suspendThreshold = Optional.ofNullable(suspendThreshold);
+            this.suspendThreshold = OptionalNullable.of(suspendThreshold);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "suspend_threshold", nulls = Nulls.SKIP)
-        public _FinalStage suspendThreshold(Optional<Double> suspendThreshold) {
+        public _FinalStage suspendThreshold(OptionalNullable<Double> suspendThreshold) {
             this.suspendThreshold = suspendThreshold;
             return this;
         }
@@ -439,24 +475,34 @@ public final class ReputationCheck {
         @java.lang.Override
         public _FinalStage warningThreshold(Nullable<Double> warningThreshold) {
             if (warningThreshold.isNull()) {
-                this.warningThreshold = null;
+                this.warningThreshold = OptionalNullable.ofNull();
             } else if (warningThreshold.isEmpty()) {
-                this.warningThreshold = Optional.empty();
+                this.warningThreshold = OptionalNullable.absent();
             } else {
-                this.warningThreshold = Optional.of(warningThreshold.get());
+                this.warningThreshold = OptionalNullable.of(warningThreshold.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage warningThreshold(Optional<Double> warningThreshold) {
+            if (warningThreshold.isPresent()) {
+                this.warningThreshold = OptionalNullable.of(warningThreshold.get());
+            } else {
+                this.warningThreshold = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage warningThreshold(Double warningThreshold) {
-            this.warningThreshold = Optional.ofNullable(warningThreshold);
+            this.warningThreshold = OptionalNullable.of(warningThreshold);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "warning_threshold", nulls = Nulls.SKIP)
-        public _FinalStage warningThreshold(Optional<Double> warningThreshold) {
+        public _FinalStage warningThreshold(OptionalNullable<Double> warningThreshold) {
             this.warningThreshold = warningThreshold;
             return this;
         }
@@ -468,11 +514,25 @@ public final class ReputationCheck {
         @java.lang.Override
         public _FinalStage rate(Nullable<Double> rate) {
             if (rate.isNull()) {
-                this.rate = null;
+                this.rate = OptionalNullable.ofNull();
             } else if (rate.isEmpty()) {
-                this.rate = Optional.empty();
+                this.rate = OptionalNullable.absent();
             } else {
-                this.rate = Optional.of(rate.get());
+                this.rate = OptionalNullable.of(rate.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>count / volume</code>; <code>null</code> with no volume.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage rate(Optional<Double> rate) {
+            if (rate.isPresent()) {
+                this.rate = OptionalNullable.of(rate.get());
+            } else {
+                this.rate = OptionalNullable.absent();
             }
             return this;
         }
@@ -483,7 +543,7 @@ public final class ReputationCheck {
          */
         @java.lang.Override
         public _FinalStage rate(Double rate) {
-            this.rate = Optional.ofNullable(rate);
+            this.rate = OptionalNullable.of(rate);
             return this;
         }
 
@@ -492,7 +552,7 @@ public final class ReputationCheck {
          */
         @java.lang.Override
         @JsonSetter(value = "rate", nulls = Nulls.SKIP)
-        public _FinalStage rate(Optional<Double> rate) {
+        public _FinalStage rate(OptionalNullable<Double> rate) {
             this.rate = rate;
             return this;
         }

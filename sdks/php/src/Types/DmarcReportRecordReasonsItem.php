@@ -30,6 +30,9 @@ class DmarcReportRecordReasonsItem extends JsonSerializableType
     ) {
         $this->type = $values['type'];
         $this->comment = $values['comment'] ?? null;
+        if (array_key_exists('comment', $values)) {
+            $this->_setField('comment');
+        }
     }
 
     /**

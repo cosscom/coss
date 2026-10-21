@@ -29,24 +29,28 @@ public record DomainBimi : IJsonOnDeserialized
     /// <summary>
     /// The `v=BIMI1` record found.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("record")]
     public string? Record { get; set; }
 
     /// <summary>
     /// The record's logo URL (`l=`).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("logo_url")]
     public string? LogoUrl { get; set; }
 
     /// <summary>
     /// The record's VMC or CMC certificate URL (`a=`).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("certificate_url")]
     public string? CertificateUrl { get; set; }
 
     /// <summary>
     /// The DMARC policy that applies to the domain (the organizational domain's `sp` when it has no record of its own), `null` without a DMARC record.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("dmarc_policy")]
     public DomainBimiDmarcPolicy? DmarcPolicy { get; set; }
 

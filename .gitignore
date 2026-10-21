@@ -16,7 +16,9 @@ CLAUDE.local.md
 .claude/settings.local.json
 sdks/fern/openapi.sdk.json
 
-# Generated SDKs (sdks/*): toolchain caches and build outputs
+# Generated SDKs (sdks/*): toolchain caches, build outputs, and Fern's record of the generating
+# commit (it would make every regeneration a change)
+sdks/*/.fern
 sdks/python/.venv
 sdks/**/__pycache__
 sdks/ruby/.bundle

@@ -55,7 +55,13 @@ class EnvironmentApiKey extends JsonSerializableType
     ) {
         $this->id = $values['id'];
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->start = $values['start'] ?? null;
+        if (array_key_exists('start', $values)) {
+            $this->_setField('start');
+        }
         $this->access = $values['access'];
         $this->permissions = $values['permissions'];
     }

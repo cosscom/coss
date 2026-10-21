@@ -41,6 +41,9 @@ class TrackingSettings extends JsonSerializableType
     ) {
         $this->object = $values['object'];
         $this->default = $values['default'] ?? null;
+        if (array_key_exists('default', $values)) {
+            $this->_setField('default');
+        }
         $this->categories = $values['categories'];
     }
 

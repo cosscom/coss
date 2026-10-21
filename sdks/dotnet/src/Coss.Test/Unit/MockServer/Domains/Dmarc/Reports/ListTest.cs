@@ -114,9 +114,12 @@ public class ListTest : BaseMockServerTest
                   "policy_published": {
                     "domain": "acme.com",
                     "p": "none",
+                    "sp": null,
+                    "np": null,
                     "adkim": "r",
                     "aspf": "r",
-                    "pct": 100
+                    "pct": 100,
+                    "testing": null
                   },
                   "messages": 1204,
                   "passing": 1200,

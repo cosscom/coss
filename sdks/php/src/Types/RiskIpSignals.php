@@ -89,11 +89,29 @@ class RiskIpSignals extends JsonSerializableType
         $this->tor = $values['tor'];
         $this->hosting = $values['hosting'];
         $this->hostingProvider = $values['hostingProvider'] ?? null;
+        if (array_key_exists('hostingProvider', $values)) {
+            $this->_setField('hostingProvider');
+        }
         $this->hostingKind = $values['hostingKind'] ?? null;
+        if (array_key_exists('hostingKind', $values)) {
+            $this->_setField('hostingKind');
+        }
         $this->asn = $values['asn'] ?? null;
+        if (array_key_exists('asn', $values)) {
+            $this->_setField('asn');
+        }
         $this->asName = $values['asName'] ?? null;
+        if (array_key_exists('asName', $values)) {
+            $this->_setField('asName');
+        }
         $this->country = $values['country'] ?? null;
+        if (array_key_exists('country', $values)) {
+            $this->_setField('country');
+        }
         $this->privacy = $values['privacy'] ?? null;
+        if (array_key_exists('privacy', $values)) {
+            $this->_setField('privacy');
+        }
     }
 
     /**

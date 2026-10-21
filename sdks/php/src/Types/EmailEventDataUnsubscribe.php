@@ -32,7 +32,13 @@ class EmailEventDataUnsubscribe extends JsonSerializableType
         array $values = [],
     ) {
         $this->contactId = $values['contactId'] ?? null;
+        if (array_key_exists('contactId', $values)) {
+            $this->_setField('contactId');
+        }
         $this->topic = $values['topic'] ?? null;
+        if (array_key_exists('topic', $values)) {
+            $this->_setField('topic');
+        }
     }
 
     /**

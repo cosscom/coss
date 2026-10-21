@@ -71,6 +71,9 @@ class WebhookListener extends JsonSerializableType
         $this->apiVersion = $values['apiVersion'];
         $this->eventTypes = $values['eventTypes'];
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->expiresAt = $values['expiresAt'];
         $this->createdAt = $values['createdAt'];
     }

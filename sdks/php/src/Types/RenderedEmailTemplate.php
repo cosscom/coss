@@ -66,10 +66,19 @@ class RenderedEmailTemplate extends JsonSerializableType
         $this->object = $values['object'];
         $this->templateId = $values['templateId'];
         $this->version = $values['version'] ?? null;
+        if (array_key_exists('version', $values)) {
+            $this->_setField('version');
+        }
         $this->locale = $values['locale'];
         $this->subject = $values['subject'];
         $this->html = $values['html'] ?? null;
+        if (array_key_exists('html', $values)) {
+            $this->_setField('html');
+        }
         $this->text = $values['text'] ?? null;
+        if (array_key_exists('text', $values)) {
+            $this->_setField('text');
+        }
     }
 
     /**

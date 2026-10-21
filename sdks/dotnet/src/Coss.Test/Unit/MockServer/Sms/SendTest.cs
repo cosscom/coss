@@ -116,7 +116,9 @@ public class SendTest : BaseMockServerTest
                   "value": "sign_in"
                 }
               ],
+              "failure": null,
               "sandbox": false,
+              "scheduled_at": null,
               "sent_at": "2026-11-10T12:00:01.000Z",
               "delivered_at": "2026-11-10T12:00:04.000Z",
               "created_at": "2026-11-10T12:00:00.000Z"

@@ -14,6 +14,7 @@ public record ReceivedEmailWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("received_email_id")]
     public required string ReceivedEmailId { get; set; }
 
+    [Nullable]
     [JsonPropertyName("from")]
     public string? From { get; set; }
 
@@ -23,9 +24,11 @@ public record ReceivedEmailWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("recipients")]
     public IEnumerable<string> Recipients { get; set; } = new List<string>();
 
+    [Nullable]
     [JsonPropertyName("subject")]
     public string? Subject { get; set; }
 
+    [Nullable]
     [JsonPropertyName("message_id")]
     public string? MessageId { get; set; }
 

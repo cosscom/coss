@@ -38,6 +38,7 @@ public record Suppression : IJsonOnDeserialized
     /// <summary>
     /// The email whose bounce or complaint added this entry.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("email_id")]
     public string? EmailId { get; set; }
 

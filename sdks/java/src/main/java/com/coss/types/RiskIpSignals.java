@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,17 +31,17 @@ public final class RiskIpSignals {
 
     private final boolean hosting;
 
-    private final Optional<String> hostingProvider;
+    private final OptionalNullable<String> hostingProvider;
 
-    private final Optional<RiskIpSignalsHostingKind> hostingKind;
+    private final OptionalNullable<RiskIpSignalsHostingKind> hostingKind;
 
-    private final Optional<Long> asn;
+    private final OptionalNullable<Long> asn;
 
-    private final Optional<String> asName;
+    private final OptionalNullable<String> asName;
 
-    private final Optional<String> country;
+    private final OptionalNullable<String> country;
 
-    private final Optional<RiskIpPrivacy> privacy;
+    private final OptionalNullable<RiskIpPrivacy> privacy;
 
     private final Map<String, Object> additionalProperties;
 
@@ -50,12 +50,12 @@ public final class RiskIpSignals {
             boolean private_,
             boolean tor,
             boolean hosting,
-            Optional<String> hostingProvider,
-            Optional<RiskIpSignalsHostingKind> hostingKind,
-            Optional<Long> asn,
-            Optional<String> asName,
-            Optional<String> country,
-            Optional<RiskIpPrivacy> privacy,
+            OptionalNullable<String> hostingProvider,
+            OptionalNullable<RiskIpSignalsHostingKind> hostingKind,
+            OptionalNullable<Long> asn,
+            OptionalNullable<String> asName,
+            OptionalNullable<String> country,
+            OptionalNullable<RiskIpPrivacy> privacy,
             Map<String, Object> additionalProperties) {
         this.version = version;
         this.private_ = private_;
@@ -90,34 +90,38 @@ public final class RiskIpSignals {
         return hosting;
     }
 
-    @JsonIgnore
-    public Optional<String> getHostingProvider() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("hosting_provider")
+    public OptionalNullable<String> getHostingProvider() {
         if (hostingProvider == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return hostingProvider;
     }
 
-    @JsonIgnore
-    public Optional<RiskIpSignalsHostingKind> getHostingKind() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("hosting_kind")
+    public OptionalNullable<RiskIpSignalsHostingKind> getHostingKind() {
         if (hostingKind == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return hostingKind;
     }
 
-    @JsonIgnore
-    public Optional<Long> getAsn() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("asn")
+    public OptionalNullable<Long> getAsn() {
         if (asn == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return asn;
     }
 
-    @JsonIgnore
-    public Optional<String> getAsName() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("as_name")
+    public OptionalNullable<String> getAsName() {
         if (asName == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return asName;
     }
@@ -125,10 +129,11 @@ public final class RiskIpSignals {
     /**
      * @return ISO 3166-1 alpha-2.
      */
-    @JsonIgnore
-    public Optional<String> getCountry() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("country")
+    public OptionalNullable<String> getCountry() {
         if (country == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return country;
     }
@@ -136,47 +141,48 @@ public final class RiskIpSignals {
     /**
      * @return From coss.com's IP privacy data provider (VPNs, proxies, relays). <code>null</code> when it isn't available or was not asked (private addresses).
      */
-    @JsonIgnore
-    public Optional<RiskIpPrivacy> getPrivacy() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privacy")
+    public OptionalNullable<RiskIpPrivacy> getPrivacy() {
         if (privacy == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return privacy;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("hosting_provider")
-    private Optional<String> _getHostingProvider() {
+    private OptionalNullable<String> _getHostingProvider() {
         return hostingProvider;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("hosting_kind")
-    private Optional<RiskIpSignalsHostingKind> _getHostingKind() {
+    private OptionalNullable<RiskIpSignalsHostingKind> _getHostingKind() {
         return hostingKind;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("asn")
-    private Optional<Long> _getAsn() {
+    private OptionalNullable<Long> _getAsn() {
         return asn;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("as_name")
-    private Optional<String> _getAsName() {
+    private OptionalNullable<String> _getAsName() {
         return asName;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("country")
-    private Optional<String> _getCountry() {
+    private OptionalNullable<String> _getCountry() {
         return country;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("privacy")
-    private Optional<RiskIpPrivacy> _getPrivacy() {
+    private OptionalNullable<RiskIpPrivacy> _getPrivacy() {
         return privacy;
     }
 
@@ -253,45 +259,57 @@ public final class RiskIpSignals {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage hostingProvider(Optional<String> hostingProvider);
+        _FinalStage hostingProvider(OptionalNullable<String> hostingProvider);
 
         _FinalStage hostingProvider(String hostingProvider);
 
+        _FinalStage hostingProvider(Optional<String> hostingProvider);
+
         _FinalStage hostingProvider(Nullable<String> hostingProvider);
 
-        _FinalStage hostingKind(Optional<RiskIpSignalsHostingKind> hostingKind);
+        _FinalStage hostingKind(OptionalNullable<RiskIpSignalsHostingKind> hostingKind);
 
         _FinalStage hostingKind(RiskIpSignalsHostingKind hostingKind);
 
+        _FinalStage hostingKind(Optional<RiskIpSignalsHostingKind> hostingKind);
+
         _FinalStage hostingKind(Nullable<RiskIpSignalsHostingKind> hostingKind);
 
-        _FinalStage asn(Optional<Long> asn);
+        _FinalStage asn(OptionalNullable<Long> asn);
 
         _FinalStage asn(Long asn);
 
+        _FinalStage asn(Optional<Long> asn);
+
         _FinalStage asn(Nullable<Long> asn);
 
-        _FinalStage asName(Optional<String> asName);
+        _FinalStage asName(OptionalNullable<String> asName);
 
         _FinalStage asName(String asName);
+
+        _FinalStage asName(Optional<String> asName);
 
         _FinalStage asName(Nullable<String> asName);
 
         /**
          * <p>ISO 3166-1 alpha-2.</p>
          */
-        _FinalStage country(Optional<String> country);
+        _FinalStage country(OptionalNullable<String> country);
 
         _FinalStage country(String country);
+
+        _FinalStage country(Optional<String> country);
 
         _FinalStage country(Nullable<String> country);
 
         /**
          * <p>From coss.com's IP privacy data provider (VPNs, proxies, relays). <code>null</code> when it isn't available or was not asked (private addresses).</p>
          */
-        _FinalStage privacy(Optional<RiskIpPrivacy> privacy);
+        _FinalStage privacy(OptionalNullable<RiskIpPrivacy> privacy);
 
         _FinalStage privacy(RiskIpPrivacy privacy);
+
+        _FinalStage privacy(Optional<RiskIpPrivacy> privacy);
 
         _FinalStage privacy(Nullable<RiskIpPrivacy> privacy);
     }
@@ -306,17 +324,17 @@ public final class RiskIpSignals {
 
         private boolean hosting;
 
-        private Optional<RiskIpPrivacy> privacy = Optional.empty();
+        private OptionalNullable<RiskIpPrivacy> privacy = OptionalNullable.absent();
 
-        private Optional<String> country = Optional.empty();
+        private OptionalNullable<String> country = OptionalNullable.absent();
 
-        private Optional<String> asName = Optional.empty();
+        private OptionalNullable<String> asName = OptionalNullable.absent();
 
-        private Optional<Long> asn = Optional.empty();
+        private OptionalNullable<Long> asn = OptionalNullable.absent();
 
-        private Optional<RiskIpSignalsHostingKind> hostingKind = Optional.empty();
+        private OptionalNullable<RiskIpSignalsHostingKind> hostingKind = OptionalNullable.absent();
 
-        private Optional<String> hostingProvider = Optional.empty();
+        private OptionalNullable<String> hostingProvider = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -373,11 +391,25 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage privacy(Nullable<RiskIpPrivacy> privacy) {
             if (privacy.isNull()) {
-                this.privacy = null;
+                this.privacy = OptionalNullable.ofNull();
             } else if (privacy.isEmpty()) {
-                this.privacy = Optional.empty();
+                this.privacy = OptionalNullable.absent();
             } else {
-                this.privacy = Optional.of(privacy.get());
+                this.privacy = OptionalNullable.of(privacy.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>From coss.com's IP privacy data provider (VPNs, proxies, relays). <code>null</code> when it isn't available or was not asked (private addresses).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage privacy(Optional<RiskIpPrivacy> privacy) {
+            if (privacy.isPresent()) {
+                this.privacy = OptionalNullable.of(privacy.get());
+            } else {
+                this.privacy = OptionalNullable.absent();
             }
             return this;
         }
@@ -388,7 +420,7 @@ public final class RiskIpSignals {
          */
         @java.lang.Override
         public _FinalStage privacy(RiskIpPrivacy privacy) {
-            this.privacy = Optional.ofNullable(privacy);
+            this.privacy = OptionalNullable.of(privacy);
             return this;
         }
 
@@ -397,7 +429,7 @@ public final class RiskIpSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "privacy", nulls = Nulls.SKIP)
-        public _FinalStage privacy(Optional<RiskIpPrivacy> privacy) {
+        public _FinalStage privacy(OptionalNullable<RiskIpPrivacy> privacy) {
             this.privacy = privacy;
             return this;
         }
@@ -409,11 +441,25 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage country(Nullable<String> country) {
             if (country.isNull()) {
-                this.country = null;
+                this.country = OptionalNullable.ofNull();
             } else if (country.isEmpty()) {
-                this.country = Optional.empty();
+                this.country = OptionalNullable.absent();
             } else {
-                this.country = Optional.of(country.get());
+                this.country = OptionalNullable.of(country.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>ISO 3166-1 alpha-2.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage country(Optional<String> country) {
+            if (country.isPresent()) {
+                this.country = OptionalNullable.of(country.get());
+            } else {
+                this.country = OptionalNullable.absent();
             }
             return this;
         }
@@ -424,7 +470,7 @@ public final class RiskIpSignals {
          */
         @java.lang.Override
         public _FinalStage country(String country) {
-            this.country = Optional.ofNullable(country);
+            this.country = OptionalNullable.of(country);
             return this;
         }
 
@@ -433,7 +479,7 @@ public final class RiskIpSignals {
          */
         @java.lang.Override
         @JsonSetter(value = "country", nulls = Nulls.SKIP)
-        public _FinalStage country(Optional<String> country) {
+        public _FinalStage country(OptionalNullable<String> country) {
             this.country = country;
             return this;
         }
@@ -441,24 +487,34 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage asName(Nullable<String> asName) {
             if (asName.isNull()) {
-                this.asName = null;
+                this.asName = OptionalNullable.ofNull();
             } else if (asName.isEmpty()) {
-                this.asName = Optional.empty();
+                this.asName = OptionalNullable.absent();
             } else {
-                this.asName = Optional.of(asName.get());
+                this.asName = OptionalNullable.of(asName.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage asName(Optional<String> asName) {
+            if (asName.isPresent()) {
+                this.asName = OptionalNullable.of(asName.get());
+            } else {
+                this.asName = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage asName(String asName) {
-            this.asName = Optional.ofNullable(asName);
+            this.asName = OptionalNullable.of(asName);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "as_name", nulls = Nulls.SKIP)
-        public _FinalStage asName(Optional<String> asName) {
+        public _FinalStage asName(OptionalNullable<String> asName) {
             this.asName = asName;
             return this;
         }
@@ -466,24 +522,34 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage asn(Nullable<Long> asn) {
             if (asn.isNull()) {
-                this.asn = null;
+                this.asn = OptionalNullable.ofNull();
             } else if (asn.isEmpty()) {
-                this.asn = Optional.empty();
+                this.asn = OptionalNullable.absent();
             } else {
-                this.asn = Optional.of(asn.get());
+                this.asn = OptionalNullable.of(asn.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage asn(Optional<Long> asn) {
+            if (asn.isPresent()) {
+                this.asn = OptionalNullable.of(asn.get());
+            } else {
+                this.asn = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage asn(Long asn) {
-            this.asn = Optional.ofNullable(asn);
+            this.asn = OptionalNullable.of(asn);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "asn", nulls = Nulls.SKIP)
-        public _FinalStage asn(Optional<Long> asn) {
+        public _FinalStage asn(OptionalNullable<Long> asn) {
             this.asn = asn;
             return this;
         }
@@ -491,24 +557,34 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage hostingKind(Nullable<RiskIpSignalsHostingKind> hostingKind) {
             if (hostingKind.isNull()) {
-                this.hostingKind = null;
+                this.hostingKind = OptionalNullable.ofNull();
             } else if (hostingKind.isEmpty()) {
-                this.hostingKind = Optional.empty();
+                this.hostingKind = OptionalNullable.absent();
             } else {
-                this.hostingKind = Optional.of(hostingKind.get());
+                this.hostingKind = OptionalNullable.of(hostingKind.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage hostingKind(Optional<RiskIpSignalsHostingKind> hostingKind) {
+            if (hostingKind.isPresent()) {
+                this.hostingKind = OptionalNullable.of(hostingKind.get());
+            } else {
+                this.hostingKind = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage hostingKind(RiskIpSignalsHostingKind hostingKind) {
-            this.hostingKind = Optional.ofNullable(hostingKind);
+            this.hostingKind = OptionalNullable.of(hostingKind);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "hosting_kind", nulls = Nulls.SKIP)
-        public _FinalStage hostingKind(Optional<RiskIpSignalsHostingKind> hostingKind) {
+        public _FinalStage hostingKind(OptionalNullable<RiskIpSignalsHostingKind> hostingKind) {
             this.hostingKind = hostingKind;
             return this;
         }
@@ -516,24 +592,34 @@ public final class RiskIpSignals {
         @java.lang.Override
         public _FinalStage hostingProvider(Nullable<String> hostingProvider) {
             if (hostingProvider.isNull()) {
-                this.hostingProvider = null;
+                this.hostingProvider = OptionalNullable.ofNull();
             } else if (hostingProvider.isEmpty()) {
-                this.hostingProvider = Optional.empty();
+                this.hostingProvider = OptionalNullable.absent();
             } else {
-                this.hostingProvider = Optional.of(hostingProvider.get());
+                this.hostingProvider = OptionalNullable.of(hostingProvider.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage hostingProvider(Optional<String> hostingProvider) {
+            if (hostingProvider.isPresent()) {
+                this.hostingProvider = OptionalNullable.of(hostingProvider.get());
+            } else {
+                this.hostingProvider = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage hostingProvider(String hostingProvider) {
-            this.hostingProvider = Optional.ofNullable(hostingProvider);
+            this.hostingProvider = OptionalNullable.of(hostingProvider);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "hosting_provider", nulls = Nulls.SKIP)
-        public _FinalStage hostingProvider(Optional<String> hostingProvider) {
+        public _FinalStage hostingProvider(OptionalNullable<String> hostingProvider) {
             this.hostingProvider = hostingProvider;
             return this;
         }

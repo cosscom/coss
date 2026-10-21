@@ -158,6 +158,7 @@ public class GetTest : BaseMockServerTest
               "object": "risk_assessment",
               "id": "rsk_01k7c8m4q2f3e9v6t5r1n0p8yz",
               "event": "signup",
+              "event_name": null,
               "decision": "review",
               "score": 0.62,
               "reasons": [
@@ -208,9 +209,12 @@ public class GetTest : BaseMockServerTest
                   "private": false,
                   "tor": false,
                   "hosting": false,
+                  "hosting_provider": null,
+                  "hosting_kind": null,
                   "asn": 64500,
                   "as_name": "Example Broadband",
-                  "country": "GB"
+                  "country": "GB",
+                  "privacy": null
                 },
                 "velocity": {
                   "ip_1h": 7,
@@ -221,15 +225,21 @@ public class GetTest : BaseMockServerTest
                 "captcha": {
                   "provided": true,
                   "passed": true
-                }
+                },
+                "login": null,
+                "content": null,
+                "checkout": null,
+                "device": null
               },
               "user": {
+                "id": null,
                 "email": "ada@gmail.con"
               },
               "ip": "203.0.113.7",
               "degraded": [
                 "email_dns"
               ],
+              "outcome": null,
               "review_status": "open",
               "created_at": "2026-01-15T09:30:00.000Z"
             }

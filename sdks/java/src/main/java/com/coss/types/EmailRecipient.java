@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +31,7 @@ public final class EmailRecipient {
 
     private final EmailRecipientStatus status;
 
-    private final Optional<OffsetDateTime> lastEventAt;
+    private final OptionalNullable<OffsetDateTime> lastEventAt;
 
     private final Map<String, Object> additionalProperties;
 
@@ -39,7 +39,7 @@ public final class EmailRecipient {
             String address,
             EmailRecipientType type,
             EmailRecipientStatus status,
-            Optional<OffsetDateTime> lastEventAt,
+            OptionalNullable<OffsetDateTime> lastEventAt,
             Map<String, Object> additionalProperties) {
         this.address = address;
         this.type = type;
@@ -69,17 +69,18 @@ public final class EmailRecipient {
         return status;
     }
 
-    @JsonIgnore
-    public Optional<OffsetDateTime> getLastEventAt() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last_event_at")
+    public OptionalNullable<OffsetDateTime> getLastEventAt() {
         if (lastEventAt == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return lastEventAt;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last_event_at")
-    private Optional<OffsetDateTime> _getLastEventAt() {
+    private OptionalNullable<OffsetDateTime> _getLastEventAt() {
         return lastEventAt;
     }
 
@@ -142,9 +143,11 @@ public final class EmailRecipient {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage lastEventAt(Optional<OffsetDateTime> lastEventAt);
+        _FinalStage lastEventAt(OptionalNullable<OffsetDateTime> lastEventAt);
 
         _FinalStage lastEventAt(OffsetDateTime lastEventAt);
+
+        _FinalStage lastEventAt(Optional<OffsetDateTime> lastEventAt);
 
         _FinalStage lastEventAt(Nullable<OffsetDateTime> lastEventAt);
     }
@@ -157,7 +160,7 @@ public final class EmailRecipient {
 
         private EmailRecipientStatus status;
 
-        private Optional<OffsetDateTime> lastEventAt = Optional.empty();
+        private OptionalNullable<OffsetDateTime> lastEventAt = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -205,24 +208,34 @@ public final class EmailRecipient {
         @java.lang.Override
         public _FinalStage lastEventAt(Nullable<OffsetDateTime> lastEventAt) {
             if (lastEventAt.isNull()) {
-                this.lastEventAt = null;
+                this.lastEventAt = OptionalNullable.ofNull();
             } else if (lastEventAt.isEmpty()) {
-                this.lastEventAt = Optional.empty();
+                this.lastEventAt = OptionalNullable.absent();
             } else {
-                this.lastEventAt = Optional.of(lastEventAt.get());
+                this.lastEventAt = OptionalNullable.of(lastEventAt.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage lastEventAt(Optional<OffsetDateTime> lastEventAt) {
+            if (lastEventAt.isPresent()) {
+                this.lastEventAt = OptionalNullable.of(lastEventAt.get());
+            } else {
+                this.lastEventAt = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage lastEventAt(OffsetDateTime lastEventAt) {
-            this.lastEventAt = Optional.ofNullable(lastEventAt);
+            this.lastEventAt = OptionalNullable.of(lastEventAt);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last_event_at", nulls = Nulls.SKIP)
-        public _FinalStage lastEventAt(Optional<OffsetDateTime> lastEventAt) {
+        public _FinalStage lastEventAt(OptionalNullable<OffsetDateTime> lastEventAt) {
             this.lastEventAt = lastEventAt;
             return this;
         }

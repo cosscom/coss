@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,7 +40,7 @@ public final class DmarcReportRecord {
 
     private final String headerFrom;
 
-    private final Optional<String> envelopeFrom;
+    private final OptionalNullable<String> envelopeFrom;
 
     private final boolean viaCoss;
 
@@ -58,7 +58,7 @@ public final class DmarcReportRecord {
             DmarcReportRecordSpf spf,
             boolean dmarcPass,
             String headerFrom,
-            Optional<String> envelopeFrom,
+            OptionalNullable<String> envelopeFrom,
             boolean viaCoss,
             DmarcReportRecordAuthResults authResults,
             List<DmarcReportRecordReasonsItem> reasons,
@@ -121,10 +121,11 @@ public final class DmarcReportRecord {
         return headerFrom;
     }
 
-    @JsonIgnore
-    public Optional<String> getEnvelopeFrom() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("envelope_from")
+    public OptionalNullable<String> getEnvelopeFrom() {
         if (envelopeFrom == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return envelopeFrom;
     }
@@ -146,7 +147,7 @@ public final class DmarcReportRecord {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("envelope_from")
-    private Optional<String> _getEnvelopeFrom() {
+    private OptionalNullable<String> _getEnvelopeFrom() {
         return envelopeFrom;
     }
 
@@ -254,9 +255,11 @@ public final class DmarcReportRecord {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage envelopeFrom(Optional<String> envelopeFrom);
+        _FinalStage envelopeFrom(OptionalNullable<String> envelopeFrom);
 
         _FinalStage envelopeFrom(String envelopeFrom);
+
+        _FinalStage envelopeFrom(Optional<String> envelopeFrom);
 
         _FinalStage envelopeFrom(Nullable<String> envelopeFrom);
 
@@ -299,7 +302,7 @@ public final class DmarcReportRecord {
 
         private List<DmarcReportRecordReasonsItem> reasons = new ArrayList<>();
 
-        private Optional<String> envelopeFrom = Optional.empty();
+        private OptionalNullable<String> envelopeFrom = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -424,24 +427,34 @@ public final class DmarcReportRecord {
         @java.lang.Override
         public _FinalStage envelopeFrom(Nullable<String> envelopeFrom) {
             if (envelopeFrom.isNull()) {
-                this.envelopeFrom = null;
+                this.envelopeFrom = OptionalNullable.ofNull();
             } else if (envelopeFrom.isEmpty()) {
-                this.envelopeFrom = Optional.empty();
+                this.envelopeFrom = OptionalNullable.absent();
             } else {
-                this.envelopeFrom = Optional.of(envelopeFrom.get());
+                this.envelopeFrom = OptionalNullable.of(envelopeFrom.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage envelopeFrom(Optional<String> envelopeFrom) {
+            if (envelopeFrom.isPresent()) {
+                this.envelopeFrom = OptionalNullable.of(envelopeFrom.get());
+            } else {
+                this.envelopeFrom = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage envelopeFrom(String envelopeFrom) {
-            this.envelopeFrom = Optional.ofNullable(envelopeFrom);
+            this.envelopeFrom = OptionalNullable.of(envelopeFrom);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "envelope_from", nulls = Nulls.SKIP)
-        public _FinalStage envelopeFrom(Optional<String> envelopeFrom) {
+        public _FinalStage envelopeFrom(OptionalNullable<String> envelopeFrom) {
             this.envelopeFrom = envelopeFrom;
             return this;
         }

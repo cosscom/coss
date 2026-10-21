@@ -76,8 +76,10 @@ public class GetTest : BaseMockServerTest
               "duration_ms": 48,
               "client_ip": "203.0.113.7",
               "user_agent": "coss-node/0.1.0",
+              "error_code": null,
               "resource_type": "email",
               "resource_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "recipient": null,
               "attributes": {
                 "request": {
                   "body": {

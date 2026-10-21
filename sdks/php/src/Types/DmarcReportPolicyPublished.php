@@ -75,12 +75,33 @@ class DmarcReportPolicyPublished extends JsonSerializableType
     ) {
         $this->domain = $values['domain'];
         $this->p = $values['p'] ?? null;
+        if (array_key_exists('p', $values)) {
+            $this->_setField('p');
+        }
         $this->sp = $values['sp'] ?? null;
+        if (array_key_exists('sp', $values)) {
+            $this->_setField('sp');
+        }
         $this->np = $values['np'] ?? null;
+        if (array_key_exists('np', $values)) {
+            $this->_setField('np');
+        }
         $this->adkim = $values['adkim'] ?? null;
+        if (array_key_exists('adkim', $values)) {
+            $this->_setField('adkim');
+        }
         $this->aspf = $values['aspf'] ?? null;
+        if (array_key_exists('aspf', $values)) {
+            $this->_setField('aspf');
+        }
         $this->pct = $values['pct'] ?? null;
+        if (array_key_exists('pct', $values)) {
+            $this->_setField('pct');
+        }
         $this->testing = $values['testing'] ?? null;
+        if (array_key_exists('testing', $values)) {
+            $this->_setField('testing');
+        }
     }
 
     /**

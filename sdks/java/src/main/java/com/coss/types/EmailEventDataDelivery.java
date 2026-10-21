@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,26 +23,27 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = EmailEventDataDelivery.Builder.class)
 public final class EmailEventDataDelivery {
-    private final Optional<String> smtpResponse;
+    private final OptionalNullable<String> smtpResponse;
 
     private final Map<String, Object> additionalProperties;
 
-    private EmailEventDataDelivery(Optional<String> smtpResponse, Map<String, Object> additionalProperties) {
+    private EmailEventDataDelivery(OptionalNullable<String> smtpResponse, Map<String, Object> additionalProperties) {
         this.smtpResponse = smtpResponse;
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<String> getSmtpResponse() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("smtp_response")
+    public OptionalNullable<String> getSmtpResponse() {
         if (smtpResponse == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return smtpResponse;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("smtp_response")
-    private Optional<String> _getSmtpResponse() {
+    private OptionalNullable<String> _getSmtpResponse() {
         return smtpResponse;
     }
 
@@ -77,7 +78,7 @@ public final class EmailEventDataDelivery {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<String> smtpResponse = Optional.empty();
+        private OptionalNullable<String> smtpResponse = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -90,23 +91,32 @@ public final class EmailEventDataDelivery {
         }
 
         @JsonSetter(value = "smtp_response", nulls = Nulls.SKIP)
-        public Builder smtpResponse(Optional<String> smtpResponse) {
+        public Builder smtpResponse(OptionalNullable<String> smtpResponse) {
             this.smtpResponse = smtpResponse;
             return this;
         }
 
         public Builder smtpResponse(String smtpResponse) {
-            this.smtpResponse = Optional.ofNullable(smtpResponse);
+            this.smtpResponse = OptionalNullable.of(smtpResponse);
+            return this;
+        }
+
+        public Builder smtpResponse(Optional<String> smtpResponse) {
+            if (smtpResponse.isPresent()) {
+                this.smtpResponse = OptionalNullable.of(smtpResponse.get());
+            } else {
+                this.smtpResponse = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder smtpResponse(Nullable<String> smtpResponse) {
             if (smtpResponse.isNull()) {
-                this.smtpResponse = null;
+                this.smtpResponse = OptionalNullable.ofNull();
             } else if (smtpResponse.isEmpty()) {
-                this.smtpResponse = Optional.empty();
+                this.smtpResponse = OptionalNullable.absent();
             } else {
-                this.smtpResponse = Optional.of(smtpResponse.get());
+                this.smtpResponse = OptionalNullable.of(smtpResponse.get());
             }
             return this;
         }

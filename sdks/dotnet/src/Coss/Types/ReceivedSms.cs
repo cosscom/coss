@@ -38,6 +38,7 @@ public record ReceivedSms : IJsonOnDeserialized
     /// <summary>
     /// `stop`: an opt-out (the sender is suppressed in every live environment), `start`: an opt-in again, `help`: a request for help. Twilio answers each.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("keyword")]
     public ReceivedSmsKeyword? Keyword { get; set; }
 

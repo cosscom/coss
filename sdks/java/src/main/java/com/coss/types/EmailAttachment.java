@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ public final class EmailAttachment {
 
     private final String contentType;
 
-    private final Optional<String> contentId;
+    private final OptionalNullable<String> contentId;
 
     private final long size;
 
@@ -40,7 +40,7 @@ public final class EmailAttachment {
             String id,
             String filename,
             String contentType,
-            Optional<String> contentId,
+            OptionalNullable<String> contentId,
             long size,
             Map<String, Object> additionalProperties) {
         this.id = id;
@@ -69,10 +69,11 @@ public final class EmailAttachment {
     /**
      * @return Set for inline attachments (<code>cid:</code> references).
      */
-    @JsonIgnore
-    public Optional<String> getContentId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("content_id")
+    public OptionalNullable<String> getContentId() {
         if (contentId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return contentId;
     }
@@ -87,7 +88,7 @@ public final class EmailAttachment {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("content_id")
-    private Optional<String> _getContentId() {
+    private OptionalNullable<String> _getContentId() {
         return contentId;
     }
 
@@ -155,9 +156,11 @@ public final class EmailAttachment {
         /**
          * <p>Set for inline attachments (<code>cid:</code> references).</p>
          */
-        _FinalStage contentId(Optional<String> contentId);
+        _FinalStage contentId(OptionalNullable<String> contentId);
 
         _FinalStage contentId(String contentId);
+
+        _FinalStage contentId(Optional<String> contentId);
 
         _FinalStage contentId(Nullable<String> contentId);
     }
@@ -172,7 +175,7 @@ public final class EmailAttachment {
 
         private long size;
 
-        private Optional<String> contentId = Optional.empty();
+        private OptionalNullable<String> contentId = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -228,11 +231,25 @@ public final class EmailAttachment {
         @java.lang.Override
         public _FinalStage contentId(Nullable<String> contentId) {
             if (contentId.isNull()) {
-                this.contentId = null;
+                this.contentId = OptionalNullable.ofNull();
             } else if (contentId.isEmpty()) {
-                this.contentId = Optional.empty();
+                this.contentId = OptionalNullable.absent();
             } else {
-                this.contentId = Optional.of(contentId.get());
+                this.contentId = OptionalNullable.of(contentId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set for inline attachments (<code>cid:</code> references).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage contentId(Optional<String> contentId) {
+            if (contentId.isPresent()) {
+                this.contentId = OptionalNullable.of(contentId.get());
+            } else {
+                this.contentId = OptionalNullable.absent();
             }
             return this;
         }
@@ -243,7 +260,7 @@ public final class EmailAttachment {
          */
         @java.lang.Override
         public _FinalStage contentId(String contentId) {
-            this.contentId = Optional.ofNullable(contentId);
+            this.contentId = OptionalNullable.of(contentId);
             return this;
         }
 
@@ -252,7 +269,7 @@ public final class EmailAttachment {
          */
         @java.lang.Override
         @JsonSetter(value = "content_id", nulls = Nulls.SKIP)
-        public _FinalStage contentId(Optional<String> contentId) {
+        public _FinalStage contentId(OptionalNullable<String> contentId) {
             this.contentId = contentId;
             return this;
         }

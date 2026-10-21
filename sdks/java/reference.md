@@ -1102,7 +1102,9 @@ client.webhookEndpoints().create(
     CreateWebhookEndpointRequest
         .builder()
         .url("https://example.com/webhooks/coss")
-        .description("Production receiver")
+        .description(
+            OptionalNullable.of("Production receiver")
+        )
         .eventTypes(
             Optional.of(
                 Arrays.asList(CreateWebhookEndpointRequestEventTypesItem.EMAIL_SENT, CreateWebhookEndpointRequestEventTypesItem.EMAIL_DELIVERED)
@@ -1545,12 +1547,14 @@ Listeners are how `coss listen` forwards events to a local server: coss.com can'
 client.webhookListeners().create(
     CreateWebhookListenerRequest
         .builder()
+        .description(
+            OptionalNullable.of("localhost:3000/webhooks")
+        )
         .eventTypes(
             Optional.of(
                 Arrays.asList(CreateWebhookListenerRequestEventTypesItem.EMAIL_SENT, CreateWebhookListenerRequestEventTypesItem.EMAIL_DELIVERED)
             )
         )
-        .description("localhost:3000/webhooks")
         .build()
 );
 ```
@@ -1634,7 +1638,9 @@ client.webhookListeners().poll(
                         .deliveryId("whlisdel_01k7c8n2b5d7f9h1k3m5p7r9tv")
                         .ackToken("mfz3k2a8")
                         .durationMs(12)
-                        .statusCode(200)
+                        .statusCode(
+                            OptionalNullable.of(200)
+                        )
                         .error(
                             Nullable.ofNull()
                         )
@@ -2819,7 +2825,9 @@ client.logDrains().create(
     CreateLogDrainRequest
         .builder()
         .url("https://logs.example.com/coss")
-        .description("Production logs")
+        .description(
+            OptionalNullable.of("Production logs")
+        )
         .sources(
             Optional.of(
                 Arrays.asList(LogDrainSource.API, LogDrainSource.EMAIL)
@@ -4390,13 +4398,17 @@ client.email().templates().create(
                         .builder()
                         .locale("en")
                         .subject("Welcome, {{first_name}}")
-                        .html("<p>Hi {{first_name}}, thanks for signing up!</p>")
+                        .html(
+                            OptionalNullable.of("<p>Hi {{first_name}}, thanks for signing up!</p>")
+                        )
                         .build(),
                     TemplateContentInput
                         .builder()
                         .locale("de")
                         .subject("Willkommen, {{first_name}}")
-                        .html("<p>Hallo {{first_name}}, danke für deine Anmeldung!</p>")
+                        .html(
+                            OptionalNullable.of("<p>Hallo {{first_name}}, danke für deine Anmeldung!</p>")
+                        )
                         .build()
                 )
             )
@@ -4795,13 +4807,17 @@ client.email().templates().updateDraft(
                         .builder()
                         .locale("en")
                         .subject("Welcome, {{first_name}}")
-                        .html("<p>Hi {{first_name}}, thanks for signing up!</p>")
+                        .html(
+                            OptionalNullable.of("<p>Hi {{first_name}}, thanks for signing up!</p>")
+                        )
                         .build(),
                     TemplateContentInput
                         .builder()
                         .locale("de")
                         .subject("Willkommen, {{first_name}}")
-                        .html("<p>Hallo {{first_name}}, danke für deine Anmeldung!</p>")
+                        .html(
+                            OptionalNullable.of("<p>Hallo {{first_name}}, danke für deine Anmeldung!</p>")
+                        )
                         .build()
                 )
             )
@@ -6033,10 +6049,12 @@ client.email().contacts().upsert(
     UpsertContactRequest
         .builder()
         .email("ada@example.com")
-        .firstName("Ada")
+        .firstName(
+            OptionalNullable.of("Ada")
+        )
         .properties(
-            new HashMap<String, Optional<UpsertContactRequestPropertiesValue>>() {{
-                put("plan", Optional.of(
+            new HashMap<String, OptionalNullable<UpsertContactRequestPropertiesValue>>() {{
+                put("plan", OptionalNullable.of(
                     UpsertContactRequestPropertiesValue.of("pro")
                 ));
             }}
@@ -6298,10 +6316,12 @@ client.email().contacts().import_(
                 ImportContactsRequestContactsItem
                     .builder()
                     .email("ada@example.com")
-                    .firstName("Ada")
+                    .firstName(
+                        OptionalNullable.of("Ada")
+                    )
                     .properties(
-                        new HashMap<String, Optional<ImportContactsRequestContactsItemPropertiesValue>>() {{
-                            put("plan", Optional.of(
+                        new HashMap<String, OptionalNullable<ImportContactsRequestContactsItemPropertiesValue>>() {{
+                            put("plan", OptionalNullable.of(
                                 ImportContactsRequestContactsItemPropertiesValue.of("pro")
                             ));
                         }}
@@ -6551,9 +6571,11 @@ client.email().contacts().update(
     "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
     UpdateContactRequest
         .builder()
-        .lastName("Byron")
+        .lastName(
+            OptionalNullable.of("Byron")
+        )
         .properties(
-            new HashMap<String, Optional<UpdateContactRequestPropertiesValue>>() {{
+            new HashMap<String, OptionalNullable<UpdateContactRequestPropertiesValue>>() {{
                 put("seats", Nullable.ofNull());
             }}
         )
@@ -8991,7 +9013,9 @@ Changes the fields given (`null` clears one).
 client.email().marketingSettings().update(
     UpdateMarketingSettingsRequest
         .builder()
-        .mailingAddress("Acme Inc., 548 Market St, San Francisco, CA 94104, USA")
+        .mailingAddress(
+            OptionalNullable.of("Acme Inc., 548 Market St, San Francisco, CA 94104, USA")
+        )
         .build()
 );
 ```
@@ -9500,7 +9524,9 @@ client.email().contacts().properties().create(
         .key("plan")
         .type(CreateContactPropertyRequestType.STRING)
         .fallback(
-            CreateContactPropertyRequestFallback.of("free")
+            OptionalNullable.of(
+                CreateContactPropertyRequestFallback.of("free")
+            )
         )
         .build()
 );
@@ -9668,7 +9694,9 @@ client.email().contacts().properties().update(
     UpdateContactPropertyRequest
         .builder()
         .fallback(
-            UpdateContactPropertyRequestFallback.of("starter")
+            OptionalNullable.of(
+                UpdateContactPropertyRequestFallback.of("starter")
+            )
         )
         .build()
 );
@@ -12859,15 +12887,17 @@ Changes the fields given. `review_threshold` must not exceed `block_threshold`. 
 client.risk().settings().update(
     UpdateRiskSettingsRequest
         .builder()
-        .blockThreshold(0.9)
         .captcha(
-            UpdateRiskSettingsRequestCaptcha
-                .builder()
-                .provider(UpdateRiskSettingsRequestCaptchaProvider.TURNSTILE)
-                .secret("0x4AAA…")
-                .required(true)
-                .build()
+            OptionalNullable.of(
+                UpdateRiskSettingsRequestCaptcha
+                    .builder()
+                    .provider(UpdateRiskSettingsRequestCaptchaProvider.TURNSTILE)
+                    .secret("0x4AAA…")
+                    .required(true)
+                    .build()
+            )
         )
+        .blockThreshold(0.9)
         .build()
 );
 ```

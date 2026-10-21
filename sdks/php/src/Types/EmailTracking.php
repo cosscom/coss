@@ -87,10 +87,22 @@ class EmailTracking extends JsonSerializableType
         $this->unsubscribe = $values['unsubscribe'];
         $this->openCount = $values['openCount'];
         $this->firstOpenedAt = $values['firstOpenedAt'] ?? null;
+        if (array_key_exists('firstOpenedAt', $values)) {
+            $this->_setField('firstOpenedAt');
+        }
         $this->lastOpenedAt = $values['lastOpenedAt'] ?? null;
+        if (array_key_exists('lastOpenedAt', $values)) {
+            $this->_setField('lastOpenedAt');
+        }
         $this->clickCount = $values['clickCount'];
         $this->firstClickedAt = $values['firstClickedAt'] ?? null;
+        if (array_key_exists('firstClickedAt', $values)) {
+            $this->_setField('firstClickedAt');
+        }
         $this->lastClickedAt = $values['lastClickedAt'] ?? null;
+        if (array_key_exists('lastClickedAt', $values)) {
+            $this->_setField('lastClickedAt');
+        }
     }
 
     /**

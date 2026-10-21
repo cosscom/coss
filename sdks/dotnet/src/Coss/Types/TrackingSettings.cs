@@ -17,6 +17,7 @@ public record TrackingSettings : IJsonOnDeserialized
     [JsonPropertyName("object")]
     public required TrackingSettingsObject Object { get; set; }
 
+    [Nullable]
     [JsonPropertyName("default")]
     public TrackingRule? Default { get; set; }
 

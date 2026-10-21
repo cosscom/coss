@@ -71,13 +71,22 @@ class RiskEmailSignals extends JsonSerializableType
         array $values,
     ) {
         $this->domain = $values['domain'] ?? null;
+        if (array_key_exists('domain', $values)) {
+            $this->_setField('domain');
+        }
         $this->valid = $values['valid'];
         $this->disposable = $values['disposable'];
         $this->deliverability = $values['deliverability'];
         $this->roleAccount = $values['roleAccount'];
         $this->freeProvider = $values['freeProvider'];
         $this->suggestion = $values['suggestion'] ?? null;
+        if (array_key_exists('suggestion', $values)) {
+            $this->_setField('suggestion');
+        }
         $this->domainAgeDays = $values['domainAgeDays'] ?? null;
+        if (array_key_exists('domainAgeDays', $values)) {
+            $this->_setField('domainAgeDays');
+        }
     }
 
     /**

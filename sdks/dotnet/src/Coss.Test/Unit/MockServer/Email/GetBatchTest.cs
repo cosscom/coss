@@ -263,6 +263,7 @@ public class GetBatchTest : BaseMockServerTest
                   ],
                   "subject": "Your weekly summary",
                   "html": "<p>Hi Ada, here is your week.</p>",
+                  "text": null,
                   "headers": {
                     "key": "value"
                   },
@@ -275,11 +276,13 @@ public class GetBatchTest : BaseMockServerTest
                   "category": "digest",
                   "stream": "transactional",
                   "status": "queued",
+                  "failure": null,
                   "recipients": [
                     {
                       "address": "ada@example.com",
                       "type": "to",
-                      "status": "queued"
+                      "status": "queued",
+                      "last_event_at": null
                     }
                   ],
                   "attachments": [
@@ -287,6 +290,7 @@ public class GetBatchTest : BaseMockServerTest
                       "id": "att_01k7c8m4q2f3e9v6t5r1n0p8yz",
                       "filename": "filename",
                       "content_type": "content_type",
+                      "content_id": null,
                       "size": 1000000
                     }
                   ],
@@ -296,12 +300,21 @@ public class GetBatchTest : BaseMockServerTest
                     "clicks": false,
                     "unsubscribe": false,
                     "open_count": 0,
-                    "click_count": 0
+                    "first_opened_at": null,
+                    "last_opened_at": null,
+                    "click_count": 0,
+                    "first_clicked_at": null,
+                    "last_clicked_at": null
                   },
                   "created_at": "2026-10-10T12:00:00.000Z",
+                  "sent_at": null,
+                  "scheduled_at": null,
                   "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
+                  "template": null,
+                  "broadcast_id": null,
                   "content_storage": {
-                    "mode": "store"
+                    "mode": "store",
+                    "discarded_at": null
                   }
                 }
               ],

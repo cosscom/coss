@@ -55,8 +55,17 @@ class RiskCheckoutRequest extends JsonSerializableType
         $this->amount = $values['amount'];
         $this->currency = $values['currency'];
         $this->card = $values['card'] ?? null;
+        if (array_key_exists('card', $values)) {
+            $this->_setField('card');
+        }
         $this->billingCountry = $values['billingCountry'] ?? null;
+        if (array_key_exists('billingCountry', $values)) {
+            $this->_setField('billingCountry');
+        }
         $this->shippingCountry = $values['shippingCountry'] ?? null;
+        if (array_key_exists('shippingCountry', $values)) {
+            $this->_setField('shippingCountry');
+        }
     }
 
     /**

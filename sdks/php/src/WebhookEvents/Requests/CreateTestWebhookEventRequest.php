@@ -32,5 +32,8 @@ class CreateTestWebhookEventRequest extends JsonSerializableType
     ) {
         $this->type = $values['type'];
         $this->data = $values['data'] ?? null;
+        if (array_key_exists('data', $values)) {
+            $this->_setField('data');
+        }
     }
 }

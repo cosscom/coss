@@ -14,24 +14,30 @@ public record ReceivedEmailVerdicts : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [Nullable]
     [JsonPropertyName("spam")]
     public ReceivedEmailVerdictsSpam? Spam { get; set; }
 
+    [Nullable]
     [JsonPropertyName("virus")]
     public ReceivedEmailVerdictsVirus? Virus { get; set; }
 
+    [Nullable]
     [JsonPropertyName("spf")]
     public ReceivedEmailVerdictsSpf? Spf { get; set; }
 
+    [Nullable]
     [JsonPropertyName("dkim")]
     public ReceivedEmailVerdictsDkim? Dkim { get; set; }
 
+    [Nullable]
     [JsonPropertyName("dmarc")]
     public ReceivedEmailVerdictsDmarc? Dmarc { get; set; }
 
     /// <summary>
     /// The sender domain's DMARC policy (`none`, `quarantine` or `reject`) when DMARC failed.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("dmarc_policy")]
     public string? DmarcPolicy { get; set; }
 

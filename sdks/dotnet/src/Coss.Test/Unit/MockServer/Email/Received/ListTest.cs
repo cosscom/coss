@@ -150,6 +150,7 @@ public class ListTest : BaseMockServerTest
                   "object": "received_email",
                   "id": "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz",
                   "status": "received",
+                  "blocked_reason": null,
                   "mail_from": "jane@example.com",
                   "recipients": [
                     "support@inbound.acme.com"
@@ -168,6 +169,7 @@ public class ListTest : BaseMockServerTest
                       "id": "rcvdatt_01k7c8m4r0c2b8w9y3d5f6g7h8",
                       "filename": "invoice.pdf",
                       "content_type": "application/pdf",
+                      "content_id": null,
                       "disposition": "attachment",
                       "size": 48213
                     }
@@ -179,7 +181,8 @@ public class ListTest : BaseMockServerTest
                     "virus": "pass",
                     "spf": "pass",
                     "dkim": "pass",
-                    "dmarc": "pass"
+                    "dmarc": "pass",
+                    "dmarc_policy": null
                   },
                   "sandbox": false,
                   "received_at": "2026-10-10T12:00:00.000Z"

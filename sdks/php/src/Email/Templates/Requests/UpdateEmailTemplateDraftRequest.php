@@ -53,9 +53,24 @@ class UpdateEmailTemplateDraftRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->revision = $values['revision'] ?? null;
+        if (array_key_exists('revision', $values)) {
+            $this->_setField('revision');
+        }
         $this->defaultLocale = $values['defaultLocale'] ?? null;
+        if (array_key_exists('defaultLocale', $values)) {
+            $this->_setField('defaultLocale');
+        }
         $this->variables = $values['variables'] ?? null;
+        if (array_key_exists('variables', $values)) {
+            $this->_setField('variables');
+        }
         $this->sampleVariables = $values['sampleVariables'] ?? null;
+        if (array_key_exists('sampleVariables', $values)) {
+            $this->_setField('sampleVariables');
+        }
         $this->contents = $values['contents'] ?? null;
+        if (array_key_exists('contents', $values)) {
+            $this->_setField('contents');
+        }
     }
 }

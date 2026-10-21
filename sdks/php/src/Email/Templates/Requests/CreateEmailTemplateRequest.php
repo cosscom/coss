@@ -68,10 +68,28 @@ class CreateEmailTemplateRequest extends JsonSerializableType
     ) {
         $this->name = $values['name'];
         $this->alias = $values['alias'] ?? null;
+        if (array_key_exists('alias', $values)) {
+            $this->_setField('alias');
+        }
         $this->description = $values['description'] ?? null;
+        if (array_key_exists('description', $values)) {
+            $this->_setField('description');
+        }
         $this->defaultLocale = $values['defaultLocale'] ?? null;
+        if (array_key_exists('defaultLocale', $values)) {
+            $this->_setField('defaultLocale');
+        }
         $this->variables = $values['variables'] ?? null;
+        if (array_key_exists('variables', $values)) {
+            $this->_setField('variables');
+        }
         $this->sampleVariables = $values['sampleVariables'] ?? null;
+        if (array_key_exists('sampleVariables', $values)) {
+            $this->_setField('sampleVariables');
+        }
         $this->contents = $values['contents'] ?? null;
+        if (array_key_exists('contents', $values)) {
+            $this->_setField('contents');
+        }
     }
 }

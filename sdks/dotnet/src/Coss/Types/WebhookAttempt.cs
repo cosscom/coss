@@ -23,6 +23,7 @@ public record WebhookAttempt : IJsonOnDeserialized
     /// <summary>
     /// The endpoint's HTTP status; `null` when no response arrived.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("status_code")]
     public long? StatusCode { get; set; }
 
@@ -32,12 +33,14 @@ public record WebhookAttempt : IJsonOnDeserialized
     /// <summary>
     /// Why the attempt failed (e.g. `HTTP 500`, a timeout); `null` on success.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("error")]
     public string? Error { get; set; }
 
     /// <summary>
     /// At most 1 KB of the response body, as text.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("response_excerpt")]
     public string? ResponseExcerpt { get; set; }
 

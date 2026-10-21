@@ -6,9 +6,9 @@ package com.coss.resources.risk.settings.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,21 +23,21 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateRiskSettingsRequestContentThresholds.Builder.class)
 public final class UpdateRiskSettingsRequestContentThresholds {
-    private final Optional<Double> spam;
+    private final OptionalNullable<Double> spam;
 
-    private final Optional<Double> phishing;
+    private final OptionalNullable<Double> phishing;
 
-    private final Optional<Double> malware;
+    private final OptionalNullable<Double> malware;
 
-    private final Optional<Double> fraud;
+    private final OptionalNullable<Double> fraud;
 
     private final Map<String, Object> additionalProperties;
 
     private UpdateRiskSettingsRequestContentThresholds(
-            Optional<Double> spam,
-            Optional<Double> phishing,
-            Optional<Double> malware,
-            Optional<Double> fraud,
+            OptionalNullable<Double> spam,
+            OptionalNullable<Double> phishing,
+            OptionalNullable<Double> malware,
+            OptionalNullable<Double> fraud,
             Map<String, Object> additionalProperties) {
         this.spam = spam;
         this.phishing = phishing;
@@ -46,59 +46,63 @@ public final class UpdateRiskSettingsRequestContentThresholds {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<Double> getSpam() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("spam")
+    public OptionalNullable<Double> getSpam() {
         if (spam == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return spam;
     }
 
-    @JsonIgnore
-    public Optional<Double> getPhishing() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("phishing")
+    public OptionalNullable<Double> getPhishing() {
         if (phishing == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return phishing;
     }
 
-    @JsonIgnore
-    public Optional<Double> getMalware() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("malware")
+    public OptionalNullable<Double> getMalware() {
         if (malware == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return malware;
     }
 
-    @JsonIgnore
-    public Optional<Double> getFraud() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("fraud")
+    public OptionalNullable<Double> getFraud() {
         if (fraud == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return fraud;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spam")
-    private Optional<Double> _getSpam() {
+    private OptionalNullable<Double> _getSpam() {
         return spam;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("phishing")
-    private Optional<Double> _getPhishing() {
+    private OptionalNullable<Double> _getPhishing() {
         return phishing;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("malware")
-    private Optional<Double> _getMalware() {
+    private OptionalNullable<Double> _getMalware() {
         return malware;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("fraud")
-    private Optional<Double> _getFraud() {
+    private OptionalNullable<Double> _getFraud() {
         return fraud;
     }
 
@@ -137,13 +141,13 @@ public final class UpdateRiskSettingsRequestContentThresholds {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<Double> spam = Optional.empty();
+        private OptionalNullable<Double> spam = OptionalNullable.absent();
 
-        private Optional<Double> phishing = Optional.empty();
+        private OptionalNullable<Double> phishing = OptionalNullable.absent();
 
-        private Optional<Double> malware = Optional.empty();
+        private OptionalNullable<Double> malware = OptionalNullable.absent();
 
-        private Optional<Double> fraud = Optional.empty();
+        private OptionalNullable<Double> fraud = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -159,89 +163,125 @@ public final class UpdateRiskSettingsRequestContentThresholds {
         }
 
         @JsonSetter(value = "spam", nulls = Nulls.SKIP)
-        public Builder spam(Optional<Double> spam) {
+        public Builder spam(OptionalNullable<Double> spam) {
             this.spam = spam;
             return this;
         }
 
         public Builder spam(Double spam) {
-            this.spam = Optional.ofNullable(spam);
+            this.spam = OptionalNullable.of(spam);
+            return this;
+        }
+
+        public Builder spam(Optional<Double> spam) {
+            if (spam.isPresent()) {
+                this.spam = OptionalNullable.of(spam.get());
+            } else {
+                this.spam = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder spam(Nullable<Double> spam) {
             if (spam.isNull()) {
-                this.spam = null;
+                this.spam = OptionalNullable.ofNull();
             } else if (spam.isEmpty()) {
-                this.spam = Optional.empty();
+                this.spam = OptionalNullable.absent();
             } else {
-                this.spam = Optional.of(spam.get());
+                this.spam = OptionalNullable.of(spam.get());
             }
             return this;
         }
 
         @JsonSetter(value = "phishing", nulls = Nulls.SKIP)
-        public Builder phishing(Optional<Double> phishing) {
+        public Builder phishing(OptionalNullable<Double> phishing) {
             this.phishing = phishing;
             return this;
         }
 
         public Builder phishing(Double phishing) {
-            this.phishing = Optional.ofNullable(phishing);
+            this.phishing = OptionalNullable.of(phishing);
+            return this;
+        }
+
+        public Builder phishing(Optional<Double> phishing) {
+            if (phishing.isPresent()) {
+                this.phishing = OptionalNullable.of(phishing.get());
+            } else {
+                this.phishing = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder phishing(Nullable<Double> phishing) {
             if (phishing.isNull()) {
-                this.phishing = null;
+                this.phishing = OptionalNullable.ofNull();
             } else if (phishing.isEmpty()) {
-                this.phishing = Optional.empty();
+                this.phishing = OptionalNullable.absent();
             } else {
-                this.phishing = Optional.of(phishing.get());
+                this.phishing = OptionalNullable.of(phishing.get());
             }
             return this;
         }
 
         @JsonSetter(value = "malware", nulls = Nulls.SKIP)
-        public Builder malware(Optional<Double> malware) {
+        public Builder malware(OptionalNullable<Double> malware) {
             this.malware = malware;
             return this;
         }
 
         public Builder malware(Double malware) {
-            this.malware = Optional.ofNullable(malware);
+            this.malware = OptionalNullable.of(malware);
+            return this;
+        }
+
+        public Builder malware(Optional<Double> malware) {
+            if (malware.isPresent()) {
+                this.malware = OptionalNullable.of(malware.get());
+            } else {
+                this.malware = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder malware(Nullable<Double> malware) {
             if (malware.isNull()) {
-                this.malware = null;
+                this.malware = OptionalNullable.ofNull();
             } else if (malware.isEmpty()) {
-                this.malware = Optional.empty();
+                this.malware = OptionalNullable.absent();
             } else {
-                this.malware = Optional.of(malware.get());
+                this.malware = OptionalNullable.of(malware.get());
             }
             return this;
         }
 
         @JsonSetter(value = "fraud", nulls = Nulls.SKIP)
-        public Builder fraud(Optional<Double> fraud) {
+        public Builder fraud(OptionalNullable<Double> fraud) {
             this.fraud = fraud;
             return this;
         }
 
         public Builder fraud(Double fraud) {
-            this.fraud = Optional.ofNullable(fraud);
+            this.fraud = OptionalNullable.of(fraud);
+            return this;
+        }
+
+        public Builder fraud(Optional<Double> fraud) {
+            if (fraud.isPresent()) {
+                this.fraud = OptionalNullable.of(fraud.get());
+            } else {
+                this.fraud = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder fraud(Nullable<Double> fraud) {
             if (fraud.isNull()) {
-                this.fraud = null;
+                this.fraud = OptionalNullable.ofNull();
             } else if (fraud.isEmpty()) {
-                this.fraud = Optional.empty();
+                this.fraud = OptionalNullable.absent();
             } else {
-                this.fraud = Optional.of(fraud.get());
+                this.fraud = OptionalNullable.of(fraud.get());
             }
             return this;
         }

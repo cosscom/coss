@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,11 +26,12 @@ import org.jetbrains.annotations.NotNull;
 public final class DmarcReportReporter {
     private final String orgName;
 
-    private final Optional<String> email;
+    private final OptionalNullable<String> email;
 
     private final Map<String, Object> additionalProperties;
 
-    private DmarcReportReporter(String orgName, Optional<String> email, Map<String, Object> additionalProperties) {
+    private DmarcReportReporter(
+            String orgName, OptionalNullable<String> email, Map<String, Object> additionalProperties) {
         this.orgName = orgName;
         this.email = email;
         this.additionalProperties = additionalProperties;
@@ -41,17 +42,18 @@ public final class DmarcReportReporter {
         return orgName;
     }
 
-    @JsonIgnore
-    public Optional<String> getEmail() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("email")
+    public OptionalNullable<String> getEmail() {
         if (email == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return email;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email")
-    private Optional<String> _getEmail() {
+    private OptionalNullable<String> _getEmail() {
         return email;
     }
 
@@ -97,9 +99,11 @@ public final class DmarcReportReporter {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage email(Optional<String> email);
+        _FinalStage email(OptionalNullable<String> email);
 
         _FinalStage email(String email);
+
+        _FinalStage email(Optional<String> email);
 
         _FinalStage email(Nullable<String> email);
     }
@@ -108,7 +112,7 @@ public final class DmarcReportReporter {
     public static final class Builder implements OrgNameStage, _FinalStage {
         private String orgName;
 
-        private Optional<String> email = Optional.empty();
+        private OptionalNullable<String> email = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -132,24 +136,34 @@ public final class DmarcReportReporter {
         @java.lang.Override
         public _FinalStage email(Nullable<String> email) {
             if (email.isNull()) {
-                this.email = null;
+                this.email = OptionalNullable.ofNull();
             } else if (email.isEmpty()) {
-                this.email = Optional.empty();
+                this.email = OptionalNullable.absent();
             } else {
-                this.email = Optional.of(email.get());
+                this.email = OptionalNullable.of(email.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage email(Optional<String> email) {
+            if (email.isPresent()) {
+                this.email = OptionalNullable.of(email.get());
+            } else {
+                this.email = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage email(String email) {
-            this.email = Optional.ofNullable(email);
+            this.email = OptionalNullable.of(email);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "email", nulls = Nulls.SKIP)
-        public _FinalStage email(Optional<String> email) {
+        public _FinalStage email(OptionalNullable<String> email) {
             this.email = email;
             return this;
         }

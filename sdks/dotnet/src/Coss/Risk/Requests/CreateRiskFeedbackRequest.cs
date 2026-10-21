@@ -18,6 +18,7 @@ public record CreateRiskFeedbackRequest
     /// <summary>
     /// For your team; never shared.
     /// </summary>
+    [Optional]
     [JsonPropertyName("note")]
     public string? Note { get; set; }
 

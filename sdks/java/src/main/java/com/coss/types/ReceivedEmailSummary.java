@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,21 +33,21 @@ public final class ReceivedEmailSummary {
 
     private final ReceivedEmailSummaryStatus status;
 
-    private final Optional<ReceivedEmailSummaryBlockedReason> blockedReason;
+    private final OptionalNullable<ReceivedEmailSummaryBlockedReason> blockedReason;
 
     private final String mailFrom;
 
     private final List<String> recipients;
 
-    private final Optional<String> from;
+    private final OptionalNullable<String> from;
 
     private final List<String> to;
 
     private final List<String> cc;
 
-    private final Optional<String> subject;
+    private final OptionalNullable<String> subject;
 
-    private final Optional<String> messageId;
+    private final OptionalNullable<String> messageId;
 
     private final List<ReceivedEmailAttachment> attachments;
 
@@ -67,14 +67,14 @@ public final class ReceivedEmailSummary {
             ReceivedEmailSummaryObject object,
             String id,
             ReceivedEmailSummaryStatus status,
-            Optional<ReceivedEmailSummaryBlockedReason> blockedReason,
+            OptionalNullable<ReceivedEmailSummaryBlockedReason> blockedReason,
             String mailFrom,
             List<String> recipients,
-            Optional<String> from,
+            OptionalNullable<String> from,
             List<String> to,
             List<String> cc,
-            Optional<String> subject,
-            Optional<String> messageId,
+            OptionalNullable<String> subject,
+            OptionalNullable<String> messageId,
             List<ReceivedEmailAttachment> attachments,
             long size,
             boolean spam,
@@ -120,10 +120,11 @@ public final class ReceivedEmailSummary {
         return status;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailSummaryBlockedReason> getBlockedReason() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("blocked_reason")
+    public OptionalNullable<ReceivedEmailSummaryBlockedReason> getBlockedReason() {
         if (blockedReason == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return blockedReason;
     }
@@ -147,10 +148,11 @@ public final class ReceivedEmailSummary {
     /**
      * @return The <code>From</code> header.
      */
-    @JsonIgnore
-    public Optional<String> getFrom() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("from")
+    public OptionalNullable<String> getFrom() {
         if (from == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return from;
     }
@@ -171,10 +173,11 @@ public final class ReceivedEmailSummary {
         return cc;
     }
 
-    @JsonIgnore
-    public Optional<String> getSubject() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subject")
+    public OptionalNullable<String> getSubject() {
         if (subject == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return subject;
     }
@@ -182,10 +185,11 @@ public final class ReceivedEmailSummary {
     /**
      * @return The <code>Message-ID</code> header.
      */
-    @JsonIgnore
-    public Optional<String> getMessageId() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("message_id")
+    public OptionalNullable<String> getMessageId() {
         if (messageId == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return messageId;
     }
@@ -231,25 +235,25 @@ public final class ReceivedEmailSummary {
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("blocked_reason")
-    private Optional<ReceivedEmailSummaryBlockedReason> _getBlockedReason() {
+    private OptionalNullable<ReceivedEmailSummaryBlockedReason> _getBlockedReason() {
         return blockedReason;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("from")
-    private Optional<String> _getFrom() {
+    private OptionalNullable<String> _getFrom() {
         return from;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("subject")
-    private Optional<String> _getSubject() {
+    private OptionalNullable<String> _getSubject() {
         return subject;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("message_id")
-    private Optional<String> _getMessageId() {
+    private OptionalNullable<String> _getMessageId() {
         return messageId;
     }
 
@@ -375,9 +379,11 @@ public final class ReceivedEmailSummary {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage blockedReason(Optional<ReceivedEmailSummaryBlockedReason> blockedReason);
+        _FinalStage blockedReason(OptionalNullable<ReceivedEmailSummaryBlockedReason> blockedReason);
 
         _FinalStage blockedReason(ReceivedEmailSummaryBlockedReason blockedReason);
+
+        _FinalStage blockedReason(Optional<ReceivedEmailSummaryBlockedReason> blockedReason);
 
         _FinalStage blockedReason(Nullable<ReceivedEmailSummaryBlockedReason> blockedReason);
 
@@ -393,9 +399,11 @@ public final class ReceivedEmailSummary {
         /**
          * <p>The <code>From</code> header.</p>
          */
-        _FinalStage from(Optional<String> from);
+        _FinalStage from(OptionalNullable<String> from);
 
         _FinalStage from(String from);
+
+        _FinalStage from(Optional<String> from);
 
         _FinalStage from(Nullable<String> from);
 
@@ -417,18 +425,22 @@ public final class ReceivedEmailSummary {
 
         _FinalStage addAllCc(List<String> cc);
 
-        _FinalStage subject(Optional<String> subject);
+        _FinalStage subject(OptionalNullable<String> subject);
 
         _FinalStage subject(String subject);
+
+        _FinalStage subject(Optional<String> subject);
 
         _FinalStage subject(Nullable<String> subject);
 
         /**
          * <p>The <code>Message-ID</code> header.</p>
          */
-        _FinalStage messageId(Optional<String> messageId);
+        _FinalStage messageId(OptionalNullable<String> messageId);
 
         _FinalStage messageId(String messageId);
+
+        _FinalStage messageId(Optional<String> messageId);
 
         _FinalStage messageId(Nullable<String> messageId);
 
@@ -471,19 +483,19 @@ public final class ReceivedEmailSummary {
 
         private List<ReceivedEmailAttachment> attachments = new ArrayList<>();
 
-        private Optional<String> messageId = Optional.empty();
+        private OptionalNullable<String> messageId = OptionalNullable.absent();
 
-        private Optional<String> subject = Optional.empty();
+        private OptionalNullable<String> subject = OptionalNullable.absent();
 
         private List<String> cc = new ArrayList<>();
 
         private List<String> to = new ArrayList<>();
 
-        private Optional<String> from = Optional.empty();
+        private OptionalNullable<String> from = OptionalNullable.absent();
 
         private List<String> recipients = new ArrayList<>();
 
-        private Optional<ReceivedEmailSummaryBlockedReason> blockedReason = Optional.empty();
+        private OptionalNullable<ReceivedEmailSummaryBlockedReason> blockedReason = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -626,11 +638,25 @@ public final class ReceivedEmailSummary {
         @java.lang.Override
         public _FinalStage messageId(Nullable<String> messageId) {
             if (messageId.isNull()) {
-                this.messageId = null;
+                this.messageId = OptionalNullable.ofNull();
             } else if (messageId.isEmpty()) {
-                this.messageId = Optional.empty();
+                this.messageId = OptionalNullable.absent();
             } else {
-                this.messageId = Optional.of(messageId.get());
+                this.messageId = OptionalNullable.of(messageId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The <code>Message-ID</code> header.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage messageId(Optional<String> messageId) {
+            if (messageId.isPresent()) {
+                this.messageId = OptionalNullable.of(messageId.get());
+            } else {
+                this.messageId = OptionalNullable.absent();
             }
             return this;
         }
@@ -641,7 +667,7 @@ public final class ReceivedEmailSummary {
          */
         @java.lang.Override
         public _FinalStage messageId(String messageId) {
-            this.messageId = Optional.ofNullable(messageId);
+            this.messageId = OptionalNullable.of(messageId);
             return this;
         }
 
@@ -650,7 +676,7 @@ public final class ReceivedEmailSummary {
          */
         @java.lang.Override
         @JsonSetter(value = "message_id", nulls = Nulls.SKIP)
-        public _FinalStage messageId(Optional<String> messageId) {
+        public _FinalStage messageId(OptionalNullable<String> messageId) {
             this.messageId = messageId;
             return this;
         }
@@ -658,24 +684,34 @@ public final class ReceivedEmailSummary {
         @java.lang.Override
         public _FinalStage subject(Nullable<String> subject) {
             if (subject.isNull()) {
-                this.subject = null;
+                this.subject = OptionalNullable.ofNull();
             } else if (subject.isEmpty()) {
-                this.subject = Optional.empty();
+                this.subject = OptionalNullable.absent();
             } else {
-                this.subject = Optional.of(subject.get());
+                this.subject = OptionalNullable.of(subject.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage subject(Optional<String> subject) {
+            if (subject.isPresent()) {
+                this.subject = OptionalNullable.of(subject.get());
+            } else {
+                this.subject = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage subject(String subject) {
-            this.subject = Optional.ofNullable(subject);
+            this.subject = OptionalNullable.of(subject);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "subject", nulls = Nulls.SKIP)
-        public _FinalStage subject(Optional<String> subject) {
+        public _FinalStage subject(OptionalNullable<String> subject) {
             this.subject = subject;
             return this;
         }
@@ -757,11 +793,25 @@ public final class ReceivedEmailSummary {
         @java.lang.Override
         public _FinalStage from(Nullable<String> from) {
             if (from.isNull()) {
-                this.from = null;
+                this.from = OptionalNullable.ofNull();
             } else if (from.isEmpty()) {
-                this.from = Optional.empty();
+                this.from = OptionalNullable.absent();
             } else {
-                this.from = Optional.of(from.get());
+                this.from = OptionalNullable.of(from.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The <code>From</code> header.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage from(Optional<String> from) {
+            if (from.isPresent()) {
+                this.from = OptionalNullable.of(from.get());
+            } else {
+                this.from = OptionalNullable.absent();
             }
             return this;
         }
@@ -772,7 +822,7 @@ public final class ReceivedEmailSummary {
          */
         @java.lang.Override
         public _FinalStage from(String from) {
-            this.from = Optional.ofNullable(from);
+            this.from = OptionalNullable.of(from);
             return this;
         }
 
@@ -781,7 +831,7 @@ public final class ReceivedEmailSummary {
          */
         @java.lang.Override
         @JsonSetter(value = "from", nulls = Nulls.SKIP)
-        public _FinalStage from(Optional<String> from) {
+        public _FinalStage from(OptionalNullable<String> from) {
             this.from = from;
             return this;
         }
@@ -824,24 +874,34 @@ public final class ReceivedEmailSummary {
         @java.lang.Override
         public _FinalStage blockedReason(Nullable<ReceivedEmailSummaryBlockedReason> blockedReason) {
             if (blockedReason.isNull()) {
-                this.blockedReason = null;
+                this.blockedReason = OptionalNullable.ofNull();
             } else if (blockedReason.isEmpty()) {
-                this.blockedReason = Optional.empty();
+                this.blockedReason = OptionalNullable.absent();
             } else {
-                this.blockedReason = Optional.of(blockedReason.get());
+                this.blockedReason = OptionalNullable.of(blockedReason.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage blockedReason(Optional<ReceivedEmailSummaryBlockedReason> blockedReason) {
+            if (blockedReason.isPresent()) {
+                this.blockedReason = OptionalNullable.of(blockedReason.get());
+            } else {
+                this.blockedReason = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage blockedReason(ReceivedEmailSummaryBlockedReason blockedReason) {
-            this.blockedReason = Optional.ofNullable(blockedReason);
+            this.blockedReason = OptionalNullable.of(blockedReason);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "blocked_reason", nulls = Nulls.SKIP)
-        public _FinalStage blockedReason(Optional<ReceivedEmailSummaryBlockedReason> blockedReason) {
+        public _FinalStage blockedReason(OptionalNullable<ReceivedEmailSummaryBlockedReason> blockedReason) {
             this.blockedReason = blockedReason;
             return this;
         }

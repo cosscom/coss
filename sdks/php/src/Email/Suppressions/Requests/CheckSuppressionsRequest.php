@@ -34,6 +34,12 @@ class CheckSuppressionsRequest extends JsonSerializableType
     ) {
         $this->address = $values['address'];
         $this->category = $values['category'] ?? null;
+        if (array_key_exists('category', $values)) {
+            $this->_setField('category');
+        }
         $this->stream = $values['stream'] ?? null;
+        if (array_key_exists('stream', $values)) {
+            $this->_setField('stream');
+        }
     }
 }

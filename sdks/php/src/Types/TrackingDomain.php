@@ -79,10 +79,22 @@ class TrackingDomain extends JsonSerializableType
         $this->status = $values['status'];
         $this->record = $values['record'];
         $this->message = $values['message'] ?? null;
+        if (array_key_exists('message', $values)) {
+            $this->_setField('message');
+        }
         $this->createdAt = $values['createdAt'];
         $this->lastCheckedAt = $values['lastCheckedAt'] ?? null;
+        if (array_key_exists('lastCheckedAt', $values)) {
+            $this->_setField('lastCheckedAt');
+        }
         $this->activatedAt = $values['activatedAt'] ?? null;
+        if (array_key_exists('activatedAt', $values)) {
+            $this->_setField('activatedAt');
+        }
         $this->failedAt = $values['failedAt'] ?? null;
+        if (array_key_exists('failedAt', $values)) {
+            $this->_setField('failedAt');
+        }
     }
 
     /**

@@ -46,9 +46,21 @@ class UpdateRiskSettingsRequestContentThresholds extends JsonSerializableType
         array $values = [],
     ) {
         $this->spam = $values['spam'] ?? null;
+        if (array_key_exists('spam', $values)) {
+            $this->_setField('spam');
+        }
         $this->phishing = $values['phishing'] ?? null;
+        if (array_key_exists('phishing', $values)) {
+            $this->_setField('phishing');
+        }
         $this->malware = $values['malware'] ?? null;
+        if (array_key_exists('malware', $values)) {
+            $this->_setField('malware');
+        }
         $this->fraud = $values['fraud'] ?? null;
+        if (array_key_exists('fraud', $values)) {
+            $this->_setField('fraud');
+        }
     }
 
     /**

@@ -10,21 +10,25 @@ public record CreateRiskRuleRequest
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 
+    [Optional]
     [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
 
     /// <summary>
     /// Default 0.
     /// </summary>
+    [Optional]
     [JsonPropertyName("position")]
     public int? Position { get; set; }
 
+    [Optional]
     [JsonPropertyName("events")]
     public IEnumerable<RiskEvent>? Events { get; set; }
 
     /// <summary>
     /// Default `all`.
     /// </summary>
+    [Optional]
     [JsonPropertyName("match")]
     public CreateRiskRuleRequestMatch? Match { get; set; }
 

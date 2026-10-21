@@ -21,6 +21,7 @@ public record ImportSuppressionsRequestSuppressionsItem : IJsonOnDeserialized
     /// <summary>
     /// `*` (the default) or a category.
     /// </summary>
+    [Optional]
     [JsonPropertyName("scope")]
     public string? Scope { get; set; }
 

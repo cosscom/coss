@@ -121,13 +121,28 @@ class Contact extends JsonSerializableType
         $this->id = $values['id'];
         $this->email = $values['email'];
         $this->firstName = $values['firstName'] ?? null;
+        if (array_key_exists('firstName', $values)) {
+            $this->_setField('firstName');
+        }
         $this->lastName = $values['lastName'] ?? null;
+        if (array_key_exists('lastName', $values)) {
+            $this->_setField('lastName');
+        }
         $this->status = $values['status'];
         $this->properties = $values['properties'];
         $this->source = $values['source'];
         $this->subscribedAt = $values['subscribedAt'] ?? null;
+        if (array_key_exists('subscribedAt', $values)) {
+            $this->_setField('subscribedAt');
+        }
         $this->unsubscribedAt = $values['unsubscribedAt'] ?? null;
+        if (array_key_exists('unsubscribedAt', $values)) {
+            $this->_setField('unsubscribedAt');
+        }
         $this->confirmedAt = $values['confirmedAt'] ?? null;
+        if (array_key_exists('confirmedAt', $values)) {
+            $this->_setField('confirmedAt');
+        }
         $this->createdAt = $values['createdAt'];
         $this->updatedAt = $values['updatedAt'];
     }

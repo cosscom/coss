@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +34,7 @@ public final class RiskCalibrationRule {
 
     private final long legitimate;
 
-    private final Optional<Double> precision;
+    private final OptionalNullable<Double> precision;
 
     private final Map<String, Object> additionalProperties;
 
@@ -44,7 +44,7 @@ public final class RiskCalibrationRule {
             long matched,
             long fraud,
             long legitimate,
-            Optional<Double> precision,
+            OptionalNullable<Double> precision,
             Map<String, Object> additionalProperties) {
         this.rule = rule;
         this.name = name;
@@ -92,17 +92,18 @@ public final class RiskCalibrationRule {
     /**
      * @return <code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.
      */
-    @JsonIgnore
-    public Optional<Double> getPrecision() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("precision")
+    public OptionalNullable<Double> getPrecision() {
         if (precision == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return precision;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("precision")
-    private Optional<Double> _getPrecision() {
+    private OptionalNullable<Double> _getPrecision() {
         return precision;
     }
 
@@ -181,9 +182,11 @@ public final class RiskCalibrationRule {
         /**
          * <p><code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.</p>
          */
-        _FinalStage precision(Optional<Double> precision);
+        _FinalStage precision(OptionalNullable<Double> precision);
 
         _FinalStage precision(Double precision);
+
+        _FinalStage precision(Optional<Double> precision);
 
         _FinalStage precision(Nullable<Double> precision);
     }
@@ -201,7 +204,7 @@ public final class RiskCalibrationRule {
 
         private long legitimate;
 
-        private Optional<Double> precision = Optional.empty();
+        private OptionalNullable<Double> precision = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -273,11 +276,25 @@ public final class RiskCalibrationRule {
         @java.lang.Override
         public _FinalStage precision(Nullable<Double> precision) {
             if (precision.isNull()) {
-                this.precision = null;
+                this.precision = OptionalNullable.ofNull();
             } else if (precision.isEmpty()) {
-                this.precision = Optional.empty();
+                this.precision = OptionalNullable.absent();
             } else {
-                this.precision = Optional.of(precision.get());
+                this.precision = OptionalNullable.of(precision.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p><code>fraud / (fraud + legitimate)</code>: how often it was right when you told coss.com. <code>null</code> without feedback.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage precision(Optional<Double> precision) {
+            if (precision.isPresent()) {
+                this.precision = OptionalNullable.of(precision.get());
+            } else {
+                this.precision = OptionalNullable.absent();
             }
             return this;
         }
@@ -288,7 +305,7 @@ public final class RiskCalibrationRule {
          */
         @java.lang.Override
         public _FinalStage precision(Double precision) {
-            this.precision = Optional.ofNullable(precision);
+            this.precision = OptionalNullable.of(precision);
             return this;
         }
 
@@ -297,7 +314,7 @@ public final class RiskCalibrationRule {
          */
         @java.lang.Override
         @JsonSetter(value = "precision", nulls = Nulls.SKIP)
-        public _FinalStage precision(Optional<Double> precision) {
+        public _FinalStage precision(OptionalNullable<Double> precision) {
             this.precision = precision;
             return this;
         }

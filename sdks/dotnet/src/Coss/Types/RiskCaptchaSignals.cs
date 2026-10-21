@@ -17,6 +17,7 @@ public record RiskCaptchaSignals : IJsonOnDeserialized
     /// <summary>
     /// `null` when it couldn't be checked (no captcha configured, or the provider was unreachable).
     /// </summary>
+    [Nullable]
     [JsonPropertyName("passed")]
     public bool? Passed { get; set; }
 

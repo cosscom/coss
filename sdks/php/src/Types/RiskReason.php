@@ -108,16 +108,49 @@ class RiskReason extends JsonSerializableType
         $this->code = $values['code'];
         $this->message = $values['message'];
         $this->value = $values['value'] ?? null;
+        if (array_key_exists('value', $values)) {
+            $this->_setField('value');
+        }
         $this->threshold = $values['threshold'] ?? null;
+        if (array_key_exists('threshold', $values)) {
+            $this->_setField('threshold');
+        }
         $this->window = $values['window'] ?? null;
+        if (array_key_exists('window', $values)) {
+            $this->_setField('window');
+        }
         $this->suggestion = $values['suggestion'] ?? null;
+        if (array_key_exists('suggestion', $values)) {
+            $this->_setField('suggestion');
+        }
         $this->provider = $values['provider'] ?? null;
+        if (array_key_exists('provider', $values)) {
+            $this->_setField('provider');
+        }
         $this->previousUser = $values['previousUser'] ?? null;
+        if (array_key_exists('previousUser', $values)) {
+            $this->_setField('previousUser');
+        }
         $this->previousAssessment = $values['previousAssessment'] ?? null;
+        if (array_key_exists('previousAssessment', $values)) {
+            $this->_setField('previousAssessment');
+        }
         $this->entry = $values['entry'] ?? null;
+        if (array_key_exists('entry', $values)) {
+            $this->_setField('entry');
+        }
         $this->rule = $values['rule'] ?? null;
+        if (array_key_exists('rule', $values)) {
+            $this->_setField('rule');
+        }
         $this->name = $values['name'] ?? null;
+        if (array_key_exists('name', $values)) {
+            $this->_setField('name');
+        }
         $this->type = $values['type'] ?? null;
+        if (array_key_exists('type', $values)) {
+            $this->_setField('type');
+        }
     }
 
     /**

@@ -31,5 +31,8 @@ class CreateRiskFeedbackRequest extends JsonSerializableType
     ) {
         $this->outcome = $values['outcome'];
         $this->note = $values['note'] ?? null;
+        if (array_key_exists('note', $values)) {
+            $this->_setField('note');
+        }
     }
 }

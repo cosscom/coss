@@ -20,10 +20,12 @@ public class ClientBehaviourTests
             .GetRawText();
 
         public List<HttpRequestMessage> Requests { get; } = [];
+        public List<string> Bodies { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Requests.Add(request);
+            Bodies.Add(request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken));
             var status = Requests.Count <= statuses.Length ? statuses[Requests.Count - 1] : 200;
             var body = status >= 300
                 ? """{"error":{"type":"api_error","code":"x","message":"No.","request_id":"req_1"}}"""
@@ -33,7 +35,7 @@ public class ClientBehaviourTests
                 Content = new StringContent(body, Encoding.UTF8, "application/json"),
             };
             response.Headers.Add("Retry-After", "0");
-            return Task.FromResult(response);
+            return response;
         }
     }
 
@@ -77,6 +79,22 @@ public class ClientBehaviourTests
             Body = new SendEmailRequest { From = "hello@acme.test", To = new[] { "someone@example.com" }, Subject = "Hi", Text = "Hi" },
         });
         Assert.That(api.Requests[0].Headers.GetValues("Idempotency-Key").Single(), Is.EqualTo("order-42"));
+    }
+
+    [Test]
+    public async Task SendsAnExplicitNullAndLeavesOmittedFieldsOut()
+    {
+        var api = new FakeApi();
+        try
+        {
+            await Client(api).WebhookEndpoints.UpdateAsync(new UpdateWebhookEndpointRequest { Id = "we_1", Description = null });
+        }
+        catch (Exception)
+        {
+            // The fake answers with an email, not an endpoint: only the request matters here.
+        }
+        var body = JsonSerializer.Serialize(JsonDocument.Parse(api.Bodies[0]).RootElement);
+        Assert.That(body, Is.EqualTo("""{"description":null}"""));
     }
 
     [TestCase(400)]

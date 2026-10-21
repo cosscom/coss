@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,27 +23,27 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ReceivedEmailVerdicts.Builder.class)
 public final class ReceivedEmailVerdicts {
-    private final Optional<ReceivedEmailVerdictsSpam> spam;
+    private final OptionalNullable<ReceivedEmailVerdictsSpam> spam;
 
-    private final Optional<ReceivedEmailVerdictsVirus> virus;
+    private final OptionalNullable<ReceivedEmailVerdictsVirus> virus;
 
-    private final Optional<ReceivedEmailVerdictsSpf> spf;
+    private final OptionalNullable<ReceivedEmailVerdictsSpf> spf;
 
-    private final Optional<ReceivedEmailVerdictsDkim> dkim;
+    private final OptionalNullable<ReceivedEmailVerdictsDkim> dkim;
 
-    private final Optional<ReceivedEmailVerdictsDmarc> dmarc;
+    private final OptionalNullable<ReceivedEmailVerdictsDmarc> dmarc;
 
-    private final Optional<String> dmarcPolicy;
+    private final OptionalNullable<String> dmarcPolicy;
 
     private final Map<String, Object> additionalProperties;
 
     private ReceivedEmailVerdicts(
-            Optional<ReceivedEmailVerdictsSpam> spam,
-            Optional<ReceivedEmailVerdictsVirus> virus,
-            Optional<ReceivedEmailVerdictsSpf> spf,
-            Optional<ReceivedEmailVerdictsDkim> dkim,
-            Optional<ReceivedEmailVerdictsDmarc> dmarc,
-            Optional<String> dmarcPolicy,
+            OptionalNullable<ReceivedEmailVerdictsSpam> spam,
+            OptionalNullable<ReceivedEmailVerdictsVirus> virus,
+            OptionalNullable<ReceivedEmailVerdictsSpf> spf,
+            OptionalNullable<ReceivedEmailVerdictsDkim> dkim,
+            OptionalNullable<ReceivedEmailVerdictsDmarc> dmarc,
+            OptionalNullable<String> dmarcPolicy,
             Map<String, Object> additionalProperties) {
         this.spam = spam;
         this.virus = virus;
@@ -54,42 +54,47 @@ public final class ReceivedEmailVerdicts {
         this.additionalProperties = additionalProperties;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailVerdictsSpam> getSpam() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("spam")
+    public OptionalNullable<ReceivedEmailVerdictsSpam> getSpam() {
         if (spam == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return spam;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailVerdictsVirus> getVirus() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("virus")
+    public OptionalNullable<ReceivedEmailVerdictsVirus> getVirus() {
         if (virus == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return virus;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailVerdictsSpf> getSpf() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("spf")
+    public OptionalNullable<ReceivedEmailVerdictsSpf> getSpf() {
         if (spf == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return spf;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailVerdictsDkim> getDkim() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dkim")
+    public OptionalNullable<ReceivedEmailVerdictsDkim> getDkim() {
         if (dkim == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dkim;
     }
 
-    @JsonIgnore
-    public Optional<ReceivedEmailVerdictsDmarc> getDmarc() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dmarc")
+    public OptionalNullable<ReceivedEmailVerdictsDmarc> getDmarc() {
         if (dmarc == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dmarc;
     }
@@ -97,47 +102,48 @@ public final class ReceivedEmailVerdicts {
     /**
      * @return The sender domain's DMARC policy (<code>none</code>, <code>quarantine</code> or <code>reject</code>) when DMARC failed.
      */
-    @JsonIgnore
-    public Optional<String> getDmarcPolicy() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("dmarc_policy")
+    public OptionalNullable<String> getDmarcPolicy() {
         if (dmarcPolicy == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return dmarcPolicy;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spam")
-    private Optional<ReceivedEmailVerdictsSpam> _getSpam() {
+    private OptionalNullable<ReceivedEmailVerdictsSpam> _getSpam() {
         return spam;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("virus")
-    private Optional<ReceivedEmailVerdictsVirus> _getVirus() {
+    private OptionalNullable<ReceivedEmailVerdictsVirus> _getVirus() {
         return virus;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("spf")
-    private Optional<ReceivedEmailVerdictsSpf> _getSpf() {
+    private OptionalNullable<ReceivedEmailVerdictsSpf> _getSpf() {
         return spf;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dkim")
-    private Optional<ReceivedEmailVerdictsDkim> _getDkim() {
+    private OptionalNullable<ReceivedEmailVerdictsDkim> _getDkim() {
         return dkim;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dmarc")
-    private Optional<ReceivedEmailVerdictsDmarc> _getDmarc() {
+    private OptionalNullable<ReceivedEmailVerdictsDmarc> _getDmarc() {
         return dmarc;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("dmarc_policy")
-    private Optional<String> _getDmarcPolicy() {
+    private OptionalNullable<String> _getDmarcPolicy() {
         return dmarcPolicy;
     }
 
@@ -177,17 +183,17 @@ public final class ReceivedEmailVerdicts {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
-        private Optional<ReceivedEmailVerdictsSpam> spam = Optional.empty();
+        private OptionalNullable<ReceivedEmailVerdictsSpam> spam = OptionalNullable.absent();
 
-        private Optional<ReceivedEmailVerdictsVirus> virus = Optional.empty();
+        private OptionalNullable<ReceivedEmailVerdictsVirus> virus = OptionalNullable.absent();
 
-        private Optional<ReceivedEmailVerdictsSpf> spf = Optional.empty();
+        private OptionalNullable<ReceivedEmailVerdictsSpf> spf = OptionalNullable.absent();
 
-        private Optional<ReceivedEmailVerdictsDkim> dkim = Optional.empty();
+        private OptionalNullable<ReceivedEmailVerdictsDkim> dkim = OptionalNullable.absent();
 
-        private Optional<ReceivedEmailVerdictsDmarc> dmarc = Optional.empty();
+        private OptionalNullable<ReceivedEmailVerdictsDmarc> dmarc = OptionalNullable.absent();
 
-        private Optional<String> dmarcPolicy = Optional.empty();
+        private OptionalNullable<String> dmarcPolicy = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -205,111 +211,156 @@ public final class ReceivedEmailVerdicts {
         }
 
         @JsonSetter(value = "spam", nulls = Nulls.SKIP)
-        public Builder spam(Optional<ReceivedEmailVerdictsSpam> spam) {
+        public Builder spam(OptionalNullable<ReceivedEmailVerdictsSpam> spam) {
             this.spam = spam;
             return this;
         }
 
         public Builder spam(ReceivedEmailVerdictsSpam spam) {
-            this.spam = Optional.ofNullable(spam);
+            this.spam = OptionalNullable.of(spam);
+            return this;
+        }
+
+        public Builder spam(Optional<ReceivedEmailVerdictsSpam> spam) {
+            if (spam.isPresent()) {
+                this.spam = OptionalNullable.of(spam.get());
+            } else {
+                this.spam = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder spam(Nullable<ReceivedEmailVerdictsSpam> spam) {
             if (spam.isNull()) {
-                this.spam = null;
+                this.spam = OptionalNullable.ofNull();
             } else if (spam.isEmpty()) {
-                this.spam = Optional.empty();
+                this.spam = OptionalNullable.absent();
             } else {
-                this.spam = Optional.of(spam.get());
+                this.spam = OptionalNullable.of(spam.get());
             }
             return this;
         }
 
         @JsonSetter(value = "virus", nulls = Nulls.SKIP)
-        public Builder virus(Optional<ReceivedEmailVerdictsVirus> virus) {
+        public Builder virus(OptionalNullable<ReceivedEmailVerdictsVirus> virus) {
             this.virus = virus;
             return this;
         }
 
         public Builder virus(ReceivedEmailVerdictsVirus virus) {
-            this.virus = Optional.ofNullable(virus);
+            this.virus = OptionalNullable.of(virus);
+            return this;
+        }
+
+        public Builder virus(Optional<ReceivedEmailVerdictsVirus> virus) {
+            if (virus.isPresent()) {
+                this.virus = OptionalNullable.of(virus.get());
+            } else {
+                this.virus = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder virus(Nullable<ReceivedEmailVerdictsVirus> virus) {
             if (virus.isNull()) {
-                this.virus = null;
+                this.virus = OptionalNullable.ofNull();
             } else if (virus.isEmpty()) {
-                this.virus = Optional.empty();
+                this.virus = OptionalNullable.absent();
             } else {
-                this.virus = Optional.of(virus.get());
+                this.virus = OptionalNullable.of(virus.get());
             }
             return this;
         }
 
         @JsonSetter(value = "spf", nulls = Nulls.SKIP)
-        public Builder spf(Optional<ReceivedEmailVerdictsSpf> spf) {
+        public Builder spf(OptionalNullable<ReceivedEmailVerdictsSpf> spf) {
             this.spf = spf;
             return this;
         }
 
         public Builder spf(ReceivedEmailVerdictsSpf spf) {
-            this.spf = Optional.ofNullable(spf);
+            this.spf = OptionalNullable.of(spf);
+            return this;
+        }
+
+        public Builder spf(Optional<ReceivedEmailVerdictsSpf> spf) {
+            if (spf.isPresent()) {
+                this.spf = OptionalNullable.of(spf.get());
+            } else {
+                this.spf = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder spf(Nullable<ReceivedEmailVerdictsSpf> spf) {
             if (spf.isNull()) {
-                this.spf = null;
+                this.spf = OptionalNullable.ofNull();
             } else if (spf.isEmpty()) {
-                this.spf = Optional.empty();
+                this.spf = OptionalNullable.absent();
             } else {
-                this.spf = Optional.of(spf.get());
+                this.spf = OptionalNullable.of(spf.get());
             }
             return this;
         }
 
         @JsonSetter(value = "dkim", nulls = Nulls.SKIP)
-        public Builder dkim(Optional<ReceivedEmailVerdictsDkim> dkim) {
+        public Builder dkim(OptionalNullable<ReceivedEmailVerdictsDkim> dkim) {
             this.dkim = dkim;
             return this;
         }
 
         public Builder dkim(ReceivedEmailVerdictsDkim dkim) {
-            this.dkim = Optional.ofNullable(dkim);
+            this.dkim = OptionalNullable.of(dkim);
+            return this;
+        }
+
+        public Builder dkim(Optional<ReceivedEmailVerdictsDkim> dkim) {
+            if (dkim.isPresent()) {
+                this.dkim = OptionalNullable.of(dkim.get());
+            } else {
+                this.dkim = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder dkim(Nullable<ReceivedEmailVerdictsDkim> dkim) {
             if (dkim.isNull()) {
-                this.dkim = null;
+                this.dkim = OptionalNullable.ofNull();
             } else if (dkim.isEmpty()) {
-                this.dkim = Optional.empty();
+                this.dkim = OptionalNullable.absent();
             } else {
-                this.dkim = Optional.of(dkim.get());
+                this.dkim = OptionalNullable.of(dkim.get());
             }
             return this;
         }
 
         @JsonSetter(value = "dmarc", nulls = Nulls.SKIP)
-        public Builder dmarc(Optional<ReceivedEmailVerdictsDmarc> dmarc) {
+        public Builder dmarc(OptionalNullable<ReceivedEmailVerdictsDmarc> dmarc) {
             this.dmarc = dmarc;
             return this;
         }
 
         public Builder dmarc(ReceivedEmailVerdictsDmarc dmarc) {
-            this.dmarc = Optional.ofNullable(dmarc);
+            this.dmarc = OptionalNullable.of(dmarc);
+            return this;
+        }
+
+        public Builder dmarc(Optional<ReceivedEmailVerdictsDmarc> dmarc) {
+            if (dmarc.isPresent()) {
+                this.dmarc = OptionalNullable.of(dmarc.get());
+            } else {
+                this.dmarc = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder dmarc(Nullable<ReceivedEmailVerdictsDmarc> dmarc) {
             if (dmarc.isNull()) {
-                this.dmarc = null;
+                this.dmarc = OptionalNullable.ofNull();
             } else if (dmarc.isEmpty()) {
-                this.dmarc = Optional.empty();
+                this.dmarc = OptionalNullable.absent();
             } else {
-                this.dmarc = Optional.of(dmarc.get());
+                this.dmarc = OptionalNullable.of(dmarc.get());
             }
             return this;
         }
@@ -318,23 +369,32 @@ public final class ReceivedEmailVerdicts {
          * <p>The sender domain's DMARC policy (<code>none</code>, <code>quarantine</code> or <code>reject</code>) when DMARC failed.</p>
          */
         @JsonSetter(value = "dmarc_policy", nulls = Nulls.SKIP)
-        public Builder dmarcPolicy(Optional<String> dmarcPolicy) {
+        public Builder dmarcPolicy(OptionalNullable<String> dmarcPolicy) {
             this.dmarcPolicy = dmarcPolicy;
             return this;
         }
 
         public Builder dmarcPolicy(String dmarcPolicy) {
-            this.dmarcPolicy = Optional.ofNullable(dmarcPolicy);
+            this.dmarcPolicy = OptionalNullable.of(dmarcPolicy);
+            return this;
+        }
+
+        public Builder dmarcPolicy(Optional<String> dmarcPolicy) {
+            if (dmarcPolicy.isPresent()) {
+                this.dmarcPolicy = OptionalNullable.of(dmarcPolicy.get());
+            } else {
+                this.dmarcPolicy = OptionalNullable.absent();
+            }
             return this;
         }
 
         public Builder dmarcPolicy(Nullable<String> dmarcPolicy) {
             if (dmarcPolicy.isNull()) {
-                this.dmarcPolicy = null;
+                this.dmarcPolicy = OptionalNullable.ofNull();
             } else if (dmarcPolicy.isEmpty()) {
-                this.dmarcPolicy = Optional.empty();
+                this.dmarcPolicy = OptionalNullable.absent();
             } else {
-                this.dmarcPolicy = Optional.of(dmarcPolicy.get());
+                this.dmarcPolicy = OptionalNullable.of(dmarcPolicy.get());
             }
             return this;
         }

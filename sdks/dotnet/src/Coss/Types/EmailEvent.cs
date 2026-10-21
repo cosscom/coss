@@ -26,6 +26,7 @@ public record EmailEvent : IJsonOnDeserialized
     /// <summary>
     /// The recipient this event is about; `null` for the whole email.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("recipient")]
     public string? Recipient { get; set; }
 

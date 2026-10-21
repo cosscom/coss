@@ -26,6 +26,7 @@ public record ContactTopicsTopicsItem : IJsonOnDeserialized
     /// <summary>
     /// The contact's explicit choice; `null`: the topic's default applies.
     /// </summary>
+    [Nullable]
     [JsonPropertyName("choice")]
     public ContactTopicsTopicsItemChoice? Choice { get; set; }
 

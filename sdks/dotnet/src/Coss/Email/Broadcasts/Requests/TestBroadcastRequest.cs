@@ -18,6 +18,7 @@ public record TestBroadcastRequest
     /// <summary>
     /// A contact (id or address) whose values fill the template; default: fallbacks.
     /// </summary>
+    [Optional]
     [JsonPropertyName("contact")]
     public string? Contact { get; set; }
 

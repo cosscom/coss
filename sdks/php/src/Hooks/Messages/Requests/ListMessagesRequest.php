@@ -32,7 +32,16 @@ class ListMessagesRequest extends JsonSerializableType
         array $values = [],
     ) {
         $this->eventType = $values['eventType'] ?? null;
+        if (array_key_exists('eventType', $values)) {
+            $this->_setField('eventType');
+        }
         $this->limit = $values['limit'] ?? null;
+        if (array_key_exists('limit', $values)) {
+            $this->_setField('limit');
+        }
         $this->after = $values['after'] ?? null;
+        if (array_key_exists('after', $values)) {
+            $this->_setField('after');
+        }
     }
 }

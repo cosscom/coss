@@ -6,9 +6,9 @@ package com.coss.types;
 import com.coss.core.Nullable;
 import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,14 +26,17 @@ import org.jetbrains.annotations.NotNull;
 public final class BillingPaymentMethod {
     private final String type;
 
-    private final Optional<String> brand;
+    private final OptionalNullable<String> brand;
 
-    private final Optional<String> last4;
+    private final OptionalNullable<String> last4;
 
     private final Map<String, Object> additionalProperties;
 
     private BillingPaymentMethod(
-            String type, Optional<String> brand, Optional<String> last4, Map<String, Object> additionalProperties) {
+            String type,
+            OptionalNullable<String> brand,
+            OptionalNullable<String> last4,
+            Map<String, Object> additionalProperties) {
         this.type = type;
         this.brand = brand;
         this.last4 = last4;
@@ -45,31 +48,33 @@ public final class BillingPaymentMethod {
         return type;
     }
 
-    @JsonIgnore
-    public Optional<String> getBrand() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("brand")
+    public OptionalNullable<String> getBrand() {
         if (brand == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return brand;
     }
 
-    @JsonIgnore
-    public Optional<String> getLast4() {
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("last4")
+    public OptionalNullable<String> getLast4() {
         if (last4 == null) {
-            return Optional.empty();
+            return OptionalNullable.absent();
         }
         return last4;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("brand")
-    private Optional<String> _getBrand() {
+    private OptionalNullable<String> _getBrand() {
         return brand;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("last4")
-    private Optional<String> _getLast4() {
+    private OptionalNullable<String> _getLast4() {
         return last4;
     }
 
@@ -115,15 +120,19 @@ public final class BillingPaymentMethod {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
-        _FinalStage brand(Optional<String> brand);
+        _FinalStage brand(OptionalNullable<String> brand);
 
         _FinalStage brand(String brand);
 
+        _FinalStage brand(Optional<String> brand);
+
         _FinalStage brand(Nullable<String> brand);
 
-        _FinalStage last4(Optional<String> last4);
+        _FinalStage last4(OptionalNullable<String> last4);
 
         _FinalStage last4(String last4);
+
+        _FinalStage last4(Optional<String> last4);
 
         _FinalStage last4(Nullable<String> last4);
     }
@@ -132,9 +141,9 @@ public final class BillingPaymentMethod {
     public static final class Builder implements TypeStage, _FinalStage {
         private String type;
 
-        private Optional<String> last4 = Optional.empty();
+        private OptionalNullable<String> last4 = OptionalNullable.absent();
 
-        private Optional<String> brand = Optional.empty();
+        private OptionalNullable<String> brand = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -159,24 +168,34 @@ public final class BillingPaymentMethod {
         @java.lang.Override
         public _FinalStage last4(Nullable<String> last4) {
             if (last4.isNull()) {
-                this.last4 = null;
+                this.last4 = OptionalNullable.ofNull();
             } else if (last4.isEmpty()) {
-                this.last4 = Optional.empty();
+                this.last4 = OptionalNullable.absent();
             } else {
-                this.last4 = Optional.of(last4.get());
+                this.last4 = OptionalNullable.of(last4.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage last4(Optional<String> last4) {
+            if (last4.isPresent()) {
+                this.last4 = OptionalNullable.of(last4.get());
+            } else {
+                this.last4 = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage last4(String last4) {
-            this.last4 = Optional.ofNullable(last4);
+            this.last4 = OptionalNullable.of(last4);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "last4", nulls = Nulls.SKIP)
-        public _FinalStage last4(Optional<String> last4) {
+        public _FinalStage last4(OptionalNullable<String> last4) {
             this.last4 = last4;
             return this;
         }
@@ -184,24 +203,34 @@ public final class BillingPaymentMethod {
         @java.lang.Override
         public _FinalStage brand(Nullable<String> brand) {
             if (brand.isNull()) {
-                this.brand = null;
+                this.brand = OptionalNullable.ofNull();
             } else if (brand.isEmpty()) {
-                this.brand = Optional.empty();
+                this.brand = OptionalNullable.absent();
             } else {
-                this.brand = Optional.of(brand.get());
+                this.brand = OptionalNullable.of(brand.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage brand(Optional<String> brand) {
+            if (brand.isPresent()) {
+                this.brand = OptionalNullable.of(brand.get());
+            } else {
+                this.brand = OptionalNullable.absent();
             }
             return this;
         }
 
         @java.lang.Override
         public _FinalStage brand(String brand) {
-            this.brand = Optional.ofNullable(brand);
+            this.brand = OptionalNullable.of(brand);
             return this;
         }
 
         @java.lang.Override
         @JsonSetter(value = "brand", nulls = Nulls.SKIP)
-        public _FinalStage brand(Optional<String> brand) {
+        public _FinalStage brand(OptionalNullable<String> brand) {
             this.brand = brand;
             return this;
         }
