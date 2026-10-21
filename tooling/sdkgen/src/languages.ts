@@ -40,6 +40,7 @@ export const LANGUAGES: readonly Language[] = [
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
  * - PHP serializes integers where a union takes a number (`float`).
+ * - Ruby returns the body of non-JSON responses (CSV exports, downloads) instead of nil.
  * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
  *   Ruby keeps the idempotency key out of the request body.
  * - PHP keeps an Idempotency-Key the caller passes (the generator overwrites it), and its
@@ -104,6 +105,14 @@ export async function postProcess(language: Language, dir: string): Promise<void
         ".rb",
         /^( +)(headers\["Idempotency-Key"\] = params\[:idempotency_key\] if params\[:idempotency_key\]\n)(?=\n\1request = Coss::Internal::JSON::Request\.new\(\n(?:\1 {2}.*\n)*?\1 {2}body: [\w:]+\.new\(params\)\.to_h,)/gm,
         "$1$2$1params = params.except(:idempotency_key)\n",
+      );
+      // Endpoints that answer with something other than JSON (CSV exports, raw messages,
+      // attachments) return nothing: return the body.
+      await replaceInTree(
+        join(dir, "lib"),
+        ".rb",
+        /^( +)return if code\.between\?\(200, 299\)$/gm,
+        "$1return response.body if code.between?(200, 299)",
       );
       // `nil.to_h` is `{}`: a nil kept above must stay nil.
       await replaceIn(

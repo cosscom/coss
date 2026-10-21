@@ -64,6 +64,13 @@ public class E2eTests
     }
 
     [Test]
+    public async Task CsvExport()
+    {
+        var csv = await _coss.Email.Suppressions.ExportAsync(new ExportSuppressionsRequest());
+        Assert.That(csv, Does.StartWith("address,scope,reason,"));
+    }
+
+    [Test]
     public async Task ReadsParse()
     {
         await _coss.Environment.GetAsync();

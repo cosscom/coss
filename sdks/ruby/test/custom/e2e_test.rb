@@ -36,6 +36,11 @@ class E2eTest < Minitest::Test
     assert_equal 404, not_found.code
   end
 
+  def test_csv_exports
+    assert @coss.email.suppressions.export.start_with?("address,scope,reason,")
+    assert @coss.email.contacts.export.start_with?("email,")
+  end
+
   def test_reads_parse
     @coss.environment.get
     @coss.reputation.get

@@ -97,4 +97,12 @@ class ClientBehaviourTest < Minitest::Test
 
     assert_requested stub
   end
+
+  def test_returns_the_body_of_non_json_responses
+    raw = "From: ada@example.com\r\nSubject: Hi\r\n\r\nHello"
+    stub_request(:get, "#{BASE}/v1/received_emails/inb_1/raw")
+      .to_return(status: 200, body: raw, headers: { "Content-Type" => "message/rfc822" })
+
+    assert_equal raw, @coss.email.received.get_raw(id: "inb_1")
+  end
 end

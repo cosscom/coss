@@ -68,6 +68,11 @@ class E2eTest {
     }
 
     @Test
+    void csvExport() {
+        assertTrue(coss.email().suppressions().export().startsWith("address,scope,reason,"));
+    }
+
+    @Test
     void readsParse() {
         coss.environment().get();
         coss.reputation().get();

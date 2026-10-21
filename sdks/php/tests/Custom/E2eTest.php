@@ -63,6 +63,11 @@ final class E2eTest extends TestCase
         }
     }
 
+    public function testCsvExport(): void
+    {
+        $this->assertStringStartsWith('address,scope,reason,', $this->coss->email->suppressions->export());
+    }
+
     public function testReadsParse(): void
     {
         $this->coss->environment->get();
