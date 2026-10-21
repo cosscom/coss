@@ -2,7 +2,7 @@ import type { EmailResponse } from "@coss/companion";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { type Href, Link, Stack, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import {
   Ban,
@@ -38,6 +38,7 @@ import {
   ApiRequestError,
   useCancelEmail,
   useEmail,
+  useOrganization,
   useRescheduleEmail,
 } from "../../../../../../../lib/queries";
 import {
@@ -71,7 +72,24 @@ function CopyId({ id }: { id: string }) {
   );
 }
 
-function Overview({ email }: { email: EmailResponse["email"] }) {
+function Overview({
+  email,
+  params,
+}: {
+  email: EmailResponse["email"];
+  params: { org: string; project: string; env: string };
+}) {
+  const organization = useOrganization(params.org);
+  const template = email.template;
+  const templateLabel = template
+    ? `${template.version === null ? "Draft (test send)" : `Version ${template.version}`} · ${template.locale}`
+    : "";
+  // The dashboard links the template (a version, or the template itself for a draft test send).
+  const templateHref =
+    template &&
+    (`/${params.org}/projects/${params.project}/${params.env}/templates/${template.id}${
+      template.version === null ? "" : `/versions/${template.version}`
+    }` as Href);
   return (
     <>
       <Panel title="Envelope">
@@ -97,6 +115,26 @@ function Overview({ email }: { email: EmailResponse["email"] }) {
           <SpecItem label="Category" mono>
             {email.category ?? "—"}
           </SpecItem>
+          {email.content_storage === "discard" ? (
+            <SpecItem label="Content" mono>
+              {email.content_discarded_at
+                ? `Discarded ${formatDateTime(email.content_discarded_at)}`
+                : "Discarded once sent"}
+            </SpecItem>
+          ) : null}
+          {templateHref ? (
+            <SpecItem label="Template" mono>
+              {organization.data?.can.read_template ? (
+                <Link href={templateHref}>
+                  <Text style={styles.link} variant="mono">
+                    {templateLabel}
+                  </Text>
+                </Link>
+              ) : (
+                templateLabel
+              )}
+            </SpecItem>
+          ) : null}
         </SpecList>
       </Panel>
       <Panel title="Engagement">
@@ -273,7 +311,9 @@ export default function EmailScreen() {
               </Text>
             </>
           }
-          title={email.subject || "(no subject)"}
+          title={
+            email.content_discarded_at ? "Content not stored" : email.subject || "(no subject)"
+          }
         />
         {email.status === "scheduled" && can_send ? (
           <View style={styles.actions}>
@@ -308,7 +348,7 @@ export default function EmailScreen() {
           onChange={setTab}
           value={tab}
         />
-        {tab === "overview" ? <Overview email={email} /> : null}
+        {tab === "overview" ? <Overview email={email} params={params} /> : null}
         {tab === "events" ? (
           <Panel footer={has_more_events ? "Older events are on coss.com." : undefined}>
             {events.length === 0 ? (
@@ -364,7 +404,15 @@ export default function EmailScreen() {
           </Panel>
         ) : null}
         {tab === "content" ? (
-          email.text !== null ? (
+          email.content_discarded_at ? (
+            <Panel title="Content">
+              <EmptyState
+                description="This environment's content storage was off when the email was sent: its subject, body, headers and attachment names were discarded once it left the queue."
+                icon={FileText}
+                title="No content stored"
+              />
+            </Panel>
+          ) : email.text !== null ? (
             <Panel
               action={
                 email.has_html ? (
@@ -415,7 +463,7 @@ export default function EmailScreen() {
                   key={attachment.id}
                   leading={<Icon color="mutedForeground" icon={Paperclip} />}
                   subtitle={attachment.content_type}
-                  title={attachment.filename}
+                  title={attachment.filename || "Name not stored"}
                 />
               ))}
             </Ruled>
@@ -427,6 +475,7 @@ export default function EmailScreen() {
 }
 
 const styles = StyleSheet.create({
+  link: { textDecorationLine: "underline" },
   actions: { flexDirection: "row", gap: 8 },
   action: { flex: 1 },
   sheet: { flex: 1, gap: 16, padding: 20, backgroundColor: colors.background },

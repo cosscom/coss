@@ -69,6 +69,13 @@ export default function BillingScreen() {
         <Stat label="Paid by credit" value={formatMoney(billing.estimate.credit)} />
         <Stat label="Estimated total" value={formatMoney(billing.estimate.total)} />
       </StatGrid>
+      <Panel>
+        <ListRow
+          detail={billing.plan_name}
+          href={{ pathname: "/[org]/settings/billing/plans", params: { org } }}
+          title="Compare plans"
+        />
+      </Panel>
       <Panel description={formatPeriod(billing.period)} title="Usage this month">
         {billing.usage.length === 0 ? (
           <EmptyState

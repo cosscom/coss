@@ -3,20 +3,33 @@ import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { type Href, Link, router, useLocalSearchParams } from "expo-router";
 import {
   Ban,
+  Bookmark,
   Boxes,
   Cable,
+  ContactRound,
+  Database,
+  Filter,
+  Gauge,
   Inbox,
   KeyRound,
+  LayoutTemplate,
   ListChecks,
   ListFilter,
   type LucideIcon,
   Mail,
+  Megaphone,
   MessageSquare,
   MessageSquareReply,
+  MessageSquareX,
   MousePointerClick,
+  PanelsTopLeft,
+  Scale,
   ScrollText,
+  Send,
   ShieldAlert,
+  SlidersHorizontal,
   Tags,
+  UsersRound,
   Webhook,
 } from "lucide-react-native";
 import { StyleSheet } from "react-native";
@@ -47,9 +60,16 @@ const SECTIONS: { label: string; items: Destination[] }[] = [
     label: "Email",
     items: [
       { label: "Emails", path: "emails", icon: Mail, can: "read_email" },
+      { label: "Templates", path: "templates", icon: LayoutTemplate, can: "read_template" },
       { label: "Received", path: "received", icon: Inbox, can: "read_email" },
       { label: "Suppressions", path: "suppressions", icon: Ban, can: "read_suppression" },
       { label: "Tracking", path: "tracking", icon: MousePointerClick, can: "read_environment" },
+      {
+        label: "Content storage",
+        path: "content-storage",
+        icon: Database,
+        can: "read_environment",
+      },
     ],
   },
   {
@@ -57,6 +77,23 @@ const SECTIONS: { label: string; items: Destination[] }[] = [
     items: [
       { label: "Messages", path: "sms", icon: MessageSquare, can: "read_sms" },
       { label: "Received", path: "sms/received", icon: MessageSquareReply, can: "read_sms" },
+      {
+        label: "Suppressions",
+        path: "sms/suppressions",
+        icon: MessageSquareX,
+        can: "read_sms_suppression",
+      },
+    ],
+  },
+  {
+    label: "Marketing",
+    items: [
+      { label: "Broadcasts", path: "broadcasts", icon: Send, can: "read_broadcast" },
+      { label: "Contacts", path: "contacts", icon: ContactRound, can: "read_contact" },
+      { label: "Audiences", path: "audiences", icon: UsersRound, can: "read_contact" },
+      { label: "Segments", path: "segments", icon: Filter, can: "read_contact" },
+      { label: "Topics", path: "topics", icon: Bookmark, can: "read_contact" },
+      { label: "Settings", path: "marketing", icon: Megaphone, can: "read_contact" },
     ],
   },
   {
@@ -65,6 +102,9 @@ const SECTIONS: { label: string; items: Destination[] }[] = [
       { label: "Assessments", path: "risk", icon: ShieldAlert, can: "read_risk" },
       { label: "Rules", path: "risk/rules", icon: ListFilter, can: "read_risk_rule" },
       { label: "Lists", path: "risk/lists", icon: ListChecks, can: "read_risk_list" },
+      { label: "Rate limits", path: "risk/limits", icon: Gauge, can: "read_risk" },
+      { label: "Calibration", path: "risk/calibration", icon: Scale, can: "read_risk" },
+      { label: "Settings", path: "risk/settings", icon: SlidersHorizontal, can: "read_risk" },
     ],
   },
   {
@@ -72,6 +112,7 @@ const SECTIONS: { label: string; items: Destination[] }[] = [
     items: [
       { label: "Applications", path: "hooks", icon: Boxes, can: "read_hook" },
       { label: "Event types", path: "hooks/event-types", icon: Tags, can: "read_hook" },
+      { label: "Portal settings", path: "hooks/settings", icon: PanelsTopLeft, can: "read_hook" },
     ],
   },
   {

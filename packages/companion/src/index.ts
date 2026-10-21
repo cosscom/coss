@@ -1,4 +1,12 @@
 // Wire types of the dashboard's iOS app API (`/api/mobile/v1`): snake_case, ISO 8601 dates.
+// Each product area added after the first release has a file of its own, re-exported here.
+
+export type * from "./broadcasts.ts";
+export type * from "./contacts.ts";
+export type * from "./organization-settings.ts";
+export type * from "./risk-settings.ts";
+export type * from "./sms-senders.ts";
+export type * from "./templates.ts";
 
 export type MobileErrorCode =
   | "invalid_request"
@@ -101,6 +109,13 @@ export type OrganizationResponse = {
     read_risk_rule: boolean;
     read_risk_list: boolean;
     read_environment: boolean;
+    read_template: boolean;
+    read_broadcast: boolean;
+    read_contact: boolean;
+    read_sms_suppression: boolean;
+    read_sms_sender: boolean;
+    read_sso: boolean;
+    read_scim: boolean;
   };
   projects: MobileProject[];
 };
@@ -155,6 +170,8 @@ export type MobileEmailSummary = {
   sandbox: boolean;
   created_at: string;
   scheduled_at: string | null;
+  /** The environment's content storage was off: subject, bodies and attachment names are gone. */
+  content_discarded_at: string | null;
 };
 
 export type EmailListResponse = { data: MobileEmailSummary[]; next_cursor: string | null };
@@ -188,6 +205,12 @@ export type MobileEmail = MobileEmailSummary & {
   }[];
   attachments: { id: string; filename: string; content_type: string; size: number }[];
   tracking: { opens: boolean; clicks: boolean; open_count: number; click_count: number };
+  /** `discard`: the environment's content storage was off when it was sent. */
+  content_storage: "store" | "discard";
+  /** The template it was rendered from (`version` `null`: a dashboard test send of the draft). */
+  template: { id: string; version: number | null; locale: string } | null;
+  /** The broadcast it is part of. */
+  broadcast_id: string | null;
 };
 
 export type EmailEventType =

@@ -116,6 +116,7 @@ export function toMobileEmailSummary(email: EmailListItem): MobileEmailSummary {
     sandbox: email.sandbox,
     created_at: email.created_at,
     scheduled_at: email.scheduled_at,
+    content_discarded_at: email.content_storage.discarded_at,
   };
 }
 
@@ -143,6 +144,9 @@ export function toMobileEmail(email: EmailObjectOutput): MobileEmail {
       open_count: email.tracking.open_count,
       click_count: email.tracking.click_count,
     },
+    content_storage: email.content_storage.mode,
+    template: email.template,
+    broadcast_id: email.broadcast_id,
   };
 }
 

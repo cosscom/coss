@@ -320,6 +320,13 @@ describe("mobile organization access", () => {
       read_risk_rule: true,
       read_risk_list: true,
       read_environment: true,
+      read_template: true,
+      read_broadcast: true,
+      read_contact: true,
+      read_sms_suppression: true,
+      read_sms_sender: true,
+      read_sso: false,
+      read_scim: false,
     });
     expect(body.projects[0].environments[0]).toEqual({
       id: "env_1",

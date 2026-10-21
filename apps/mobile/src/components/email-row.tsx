@@ -16,7 +16,7 @@ export function EmailRow(props: { email: MobileEmailSummary; params: Environment
       }}
       leading={<StatusDot tone={EMAIL_STATUS_TONE[email.status]} />}
       subtitle={`${EMAIL_STATUS_LABELS[email.status]} · ${email.to.join(", ")}`}
-      title={email.subject || "(no subject)"}
+      title={email.content_discarded_at ? "Content not stored" : email.subject || "(no subject)"}
     />
   );
 }
