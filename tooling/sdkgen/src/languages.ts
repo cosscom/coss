@@ -39,7 +39,8 @@ export const LANGUAGES: readonly Language[] = [
  *   publishing configuration.
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
- * - PHP serializes integers where a union takes a number (`float`).
+ * - PHP serializes integers where a union takes a number (`float`), and only arrays as a union's
+ *   array branch (it turned an omitted field into `[]`).
  * - Ruby honours the per-request `timeout_in_seconds` and `max_retries` (`request_options`).
  * - Ruby returns the body of non-JSON responses (CSV exports, downloads) instead of nil.
  * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
@@ -201,6 +202,13 @@ export async function postProcess(language: Language, dir: string): Promise<void
         join(dir, "src/Core/Json/JsonSerializer.php"),
         "if ($type === 'float' && is_float($data)) {",
         "if ($type === 'float' && (is_float($data) || is_int($data))) {",
+      );
+      // A union's array branch must not take anything else: `(array) null` is `[]`, so an omitted
+      // union field (a segment condition's `value` with `exists`) was sent as `[]`.
+      await replaceIn(
+        join(dir, "src/Core/Json/JsonSerializer.php"),
+        "            return self::serializeArray((array)$data, $type);\n",
+        "            if (!is_array($data)) {\n                throw new JsonException('Expected an array.');\n            }\n            return self::serializeArray($data, $type);\n",
       );
       // The exceptions are named after the Fern organization (`cosscom`).
       for (const name of ["CosscomApiException", "CosscomException"]) {

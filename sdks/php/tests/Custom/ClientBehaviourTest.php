@@ -148,4 +148,12 @@ final class ClientBehaviourTest extends TestCase
         }
         $this->assertSame('/v1/risk/users/alice%23secondary%2F1', $api->requests[0]->getUri()->getPath());
     }
+
+    public function testLeavesAnOmittedUnionFieldOut(): void
+    {
+        $condition = new SegmentFilterConditionsItemKey(['field' => 'property', 'key' => 'plan', 'op' => 'exists']);
+        $this->assertSame('{"field":"property","key":"plan","op":"exists"}', $condition->toJson());
+        $condition = new SegmentFilterConditionsItemKey(['field' => 'property', 'key' => 'plan', 'op' => 'in', 'value' => ['pro']]);
+        $this->assertSame('{"field":"property","key":"plan","op":"in","value":["pro"]}', $condition->toJson());
+    }
 }

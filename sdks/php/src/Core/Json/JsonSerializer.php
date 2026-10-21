@@ -68,7 +68,10 @@ class JsonSerializer
         }
 
         if (is_array($type)) {
-            return self::serializeArray((array)$data, $type);
+            if (!is_array($data)) {
+                throw new JsonException('Expected an array.');
+            }
+            return self::serializeArray($data, $type);
         }
 
         if (gettype($type) !== "string") {
