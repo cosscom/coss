@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Coss.Test/Coss.Test.csproj" />
+  <Project Path="src/Coss/Coss.csproj" />
+</Solution>

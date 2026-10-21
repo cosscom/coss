@@ -1,0 +1,115 @@
+---
+title: Python
+description: Install the cosscom package, configure the client, handle errors and verify webhooks in Python.
+---
+
+The Python SDK (Python 3.10+) is the `cosscom` package on PyPI, imported as `coss`. It has a
+synchronous client, `Coss`, and an async one, `AsyncCoss`, with the same methods.
+
+```sh
+pip install cosscom
+```
+
+```python
+from coss import Coss
+
+client = Coss()  # reads COSS_API_KEY
+
+email = client.email.send(
+    from_="Acme <hello@acme.com>",
+    to=["ada@example.com"],
+    subject="Welcome to Acme",
+    html="<p>Thanks for signing up!</p>",
+)
+print(email.id, email.status)
+```
+
+Fields are keyword arguments named like the API's (`reply_to`, `scheduled_at`); `from` is `from_`
+because `from` is a Python keyword. Responses are typed models (`email.subject`).
+
+## Options
+
+| Option         | Default                  | Description                                             |
+| -------------- | ------------------------ | ------------------------------------------------------- |
+| `api_key`      | `COSS_API_KEY`           | A `coss_live_…` or `coss_test_…` key                    |
+| `base_url`     | `https://api.coss.com`   | The API origin                                          |
+| `api_version`  | The SDK's API version    | The `Coss-Version` sent with every request              |
+| `timeout`      | `30`                     | Seconds per request                                     |
+| `max_retries`  | `2`                      | Retries of 408, 409, 429 and 5xx responses              |
+| `httpx_client` | One of its own           | An `httpx.Client` (`httpx.AsyncClient` for `AsyncCoss`) |
+
+Every method also takes `request_options`, e.g. `request_options={"max_retries": 0, "timeout": 5}`.
+
+```python
+from coss import AsyncCoss
+
+client = AsyncCoss()
+email = await client.email.get("email_01k7c8m4q2f3e9v6t5r1n0p8yz")
+```
+
+## Errors
+
+A failed request raises an `ApiError` subclass named after its status, with the API's
+[error envelope](/docs/api-reference/errors) as `body`:
+
+```python
+from coss import Coss
+from coss.errors import NotFoundError, UnprocessableEntityError
+
+client = Coss()
+try:
+    client.email.get("email_01k7c8m4q2f3e9v6t5r1n0p8yz")
+except NotFoundError as error:
+    print(error.status_code, error.body.error.code, error.body.error.request_id)
+except UnprocessableEntityError as error:
+    for issue in error.body.error.issues or []:
+        print(issue.path, issue.message)
+```
+
+`coss.core.api_error.ApiError` is the base class of all of them. Network failures raise `httpx`'s
+exceptions.
+
+## Idempotency and lists
+
+`send`, `send_batch` and the other methods whose endpoint takes an `Idempotency-Key` accept
+`idempotency_key=`; every other `POST` gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last `id` as `after` while `has_more` is true:
+
+```python
+from coss import Coss
+
+client = Coss()
+page = client.email.list(limit=100)
+while True:
+    for email in page.data:
+        print(email.id)
+    if not page.has_more:
+        break
+    page = client.email.list(limit=100, after=page.data[-1].id)
+```
+
+## Webhooks
+
+`verify_webhook` checks a [webhook](/docs/webhooks) request's signature and age and returns the
+parsed event; it raises `WebhookVerificationError` when you must reject the request. Pass the raw
+body exactly as received. `verify_log_drain_batch` does the same for [log drains](/docs/log-drains)
+and returns the batch's lines.
+
+```python
+import os
+
+from coss import WebhookVerificationError, verify_webhook
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.post("/webhooks/coss")
+def coss_webhook():
+    try:
+        event = verify_webhook(request.get_data(), request.headers, os.environ["COSS_WEBHOOK_SECRET"])
+    except WebhookVerificationError:
+        return "", 400
+    print(event["type"])
+    return "", 204
+```

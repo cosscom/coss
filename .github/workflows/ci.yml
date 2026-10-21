@@ -219,6 +219,146 @@ jobs:
           uv build
           uvx twine check dist/*
 
+  # The generated SDKs (sdks/*: not workspaces, so turbo never runs them): each one's tests (its
+  # generated ones and our own: the webhook and HTTP conformance, sdks/AGENTS.md) on the oldest
+  # and newest runtime it supports, plus, on the newest, the end-to-end tests against the API's
+  # test app. Regenerating them needs Docker and runs on main (sdks-regenerate.yml), not here.
+  sdks:
+    name: sdks (${{ matrix.sdk }}, ${{ matrix.versions }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { sdk: python, versions: "Python 3.14", python: "3.14", e2e: true }
+          - { sdk: python, versions: "Python 3.10", python: "3.10" }
+          - { sdk: go, versions: "Go stable", go: "stable", e2e: true }
+          - { sdk: go, versions: "Go 1.21", go: "1.21" }
+          - { sdk: ruby, versions: "Ruby 3.4", ruby: "3.4", e2e: true }
+          - { sdk: ruby, versions: "Ruby 3.3", ruby: "3.3" }
+          # PHPUnit 12 needs PHP 8.3; on 8.1 (the oldest supported) only the syntax check runs.
+          - { sdk: php, versions: "PHP 8.5", php: "8.5", e2e: true }
+          - { sdk: php, versions: "PHP 8.1", php: "8.1", syntax-only: true }
+          # Gradle runs on 17+; the jar targets Java 8.
+          - { sdk: java, versions: "Java 21", java: "21", e2e: true }
+          - { sdk: java, versions: "Java 17", java: "17" }
+          # The test project targets .NET 9; the package also builds for .NET Framework and Standard.
+          - { sdk: dotnet, versions: ".NET 10", dotnet: "10.0.x", e2e: true }
+          - { sdk: dotnet, versions: ".NET 9", dotnet: "9.0.x" }
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: coss_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: sdks/${{ matrix.sdk }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      # The API's test app, for the end-to-end tests: COSS_E2E is the line serve.ts prints.
+      - if: matrix.e2e
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version-file: package.json
+      - if: matrix.e2e
+        working-directory: .
+        run: |
+          bun install --frozen-lockfile
+          bun run db:migrate:test
+          bun run --cwd apps/api serve:test > "$RUNNER_TEMP/serve.log" 2>&1 &
+          for _ in $(seq 60); do
+            line="$(grep -m1 '^{"base_url"' "$RUNNER_TEMP/serve.log" || true)"
+            if [ -n "$line" ]; then
+              echo "COSS_E2E=$line" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/serve.log"
+          exit 1
+
+      - if: matrix.sdk == 'python'
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: false
+      - if: matrix.sdk == 'python'
+        run: |
+          uv venv
+          uv pip install -e . pytest pytest-asyncio
+          uv run --no-project ruff check src/coss/webhooks.py tests/custom
+          uv run --no-project pytest
+          uv build
+
+      - if: matrix.sdk == 'go'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: sdks/go/go.sum
+      - if: matrix.sdk == 'go'
+        run: |
+          test -z "$(gofmt -l webhooks.go custom_*_test.go)"
+          go vet ./...
+          go test ./...
+
+      - if: matrix.sdk == 'ruby'
+        uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          working-directory: sdks/ruby
+      - if: matrix.sdk == 'ruby'
+        run: |
+          bundle exec rubocop
+          bundle exec rake test
+          gem build coss.gemspec
+
+      - if: matrix.sdk == 'php'
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+      - if: matrix.sdk == 'php' && matrix.syntax-only
+        run: find src -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - if: matrix.sdk == 'php' && !matrix.syntax-only
+        run: |
+          composer validate
+          composer update --no-interaction --no-progress --prefer-stable
+          composer build
+          composer test
+
+      - if: matrix.sdk == 'java'
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - if: matrix.sdk == 'java'
+        run: ./gradlew --no-daemon test publishMavenPublicationToBundleRepository
+
+      - if: matrix.sdk == 'dotnet'
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: ${{ matrix.dotnet }}
+      - if: matrix.sdk == 'dotnet'
+        env:
+          # The test project targets .NET 9: run it on the newest runtime installed.
+          DOTNET_ROLL_FORWARD: Major
+        run: |
+          dotnet format whitespace src/Coss.Test/Coss.Test.csproj --verify-no-changes --include src/Coss/Webhooks.cs src/Coss.Test/Custom/
+          dotnet test src/Coss.Test/Coss.Test.csproj
+          dotnet pack src/Coss/Coss.csproj --configuration Release
+
   # Changes to the public packages' sources (packages/sdk/src, except generated version.ts,
   # packages/mcp/src and packages/cli/src) need a changeset: `bun run changeset`, or `bun run changeset --empty` when
   # nothing user-facing changed. Everything else in the repo is private and never versioned.

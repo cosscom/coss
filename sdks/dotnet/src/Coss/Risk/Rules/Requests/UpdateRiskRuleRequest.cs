@@ -1,0 +1,42 @@
+using Coss;
+using Coss.Core;
+using global::System.Text.Json.Serialization;
+
+namespace Coss.Risk;
+
+[Serializable]
+public record UpdateRiskRuleRequest
+{
+    /// <summary>
+    /// The rule's id.
+    /// </summary>
+    [JsonIgnore]
+    public required string Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("enabled")]
+    public bool? Enabled { get; set; }
+
+    [JsonPropertyName("position")]
+    public int? Position { get; set; }
+
+    [JsonPropertyName("events")]
+    public IEnumerable<RiskEvent>? Events { get; set; }
+
+    [JsonPropertyName("match")]
+    public UpdateRiskRuleRequestMatch? Match { get; set; }
+
+    [JsonPropertyName("conditions")]
+    public IEnumerable<RiskRuleCondition>? Conditions { get; set; }
+
+    [JsonPropertyName("action")]
+    public RiskDecision? Action { get; set; }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return JsonUtils.Serialize(this);
+    }
+}

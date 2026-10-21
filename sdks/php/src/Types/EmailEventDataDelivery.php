@@ -1,0 +1,34 @@
+<?php
+
+namespace Coss\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+
+class EmailEventDataDelivery extends JsonSerializableType
+{
+    /**
+     * @var ?string $smtpResponse
+     */
+    #[JsonProperty('smtp_response')]
+    public ?string $smtpResponse;
+
+    /**
+     * @param array{
+     *   smtpResponse?: ?string,
+     * } $values
+     */
+    public function __construct(
+        array $values = [],
+    ) {
+        $this->smtpResponse = $values['smtpResponse'] ?? null;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

@@ -1,0 +1,110 @@
+---
+title: .NET
+description: Install the Coss NuGet package, configure the client, handle errors and verify webhooks in C#.
+---
+
+The .NET SDK is the `Coss` package on NuGet, for .NET 8+, .NET Framework 4.6.2+ and .NET Standard
+2.0. Every method is async.
+
+```sh
+dotnet add package Coss
+```
+
+```csharp
+using Coss;
+
+var client = new CossClient(); // reads COSS_API_KEY
+
+var email = await client.Email.SendAsync(new SendEmailBody
+{
+    Body = new SendEmailRequest
+    {
+        From = "Acme <hello@acme.com>",
+        To = new[] { "ada@example.com" },
+        Subject = "Welcome to Acme",
+        Html = "<p>Thanks for signing up!</p>",
+    },
+});
+Console.WriteLine($"{email.Id} {email.Status}");
+```
+
+Requests are records with properties named like the API's fields in PascalCase
+(`ReplyTo`, `ScheduledAt`). The response models are in the `Coss` namespace; the email model is
+`EmailMessage` (`Coss.Email` holds the email methods' requests).
+
+## Options
+
+`new CossClient(apiKey, apiVersion, new ClientOptions { … })`:
+
+| Option                      | Default                | Description                                 |
+| --------------------------- | ---------------------- | ------------------------------------------- |
+| `apiKey`                    | `COSS_API_KEY`         | A `coss_live_…` or `coss_test_…` key        |
+| `apiVersion`                | The SDK's API version  | The `Coss-Version` sent with every request  |
+| `ClientOptions.BaseUrl`     | `https://api.coss.com` | The API origin                              |
+| `ClientOptions.Timeout`     | 30 seconds             | Per request                                 |
+| `ClientOptions.MaxRetries`  | `2`                    | Retries of 408, 409, 429 and 5xx responses  |
+| `ClientOptions.HttpClient`  | One of its own         | Your own `HttpClient`                       |
+
+Every method also takes `RequestOptions` and a `CancellationToken` for that call only.
+
+## Errors
+
+A failed request throws an exception named after its status (`NotFoundError`,
+`UnprocessableEntityError`, …) whose `Body` is the API's
+[error envelope](/docs/api-reference/errors). They all derive from `CossClientApiException`
+(`StatusCode`, `Body`); a request that never got a response throws `CossClientException`.
+
+```csharp
+try
+{
+    await client.Email.GetAsync(new GetEmailRequest { Id = "email_01k7c8m4q2f3e9v6t5r1n0p8yz" });
+}
+catch (NotFoundError e)
+{
+    Console.WriteLine($"{e.StatusCode} {e.Body.Error.Code} {e.Body.Error.RequestId}");
+}
+```
+
+## Idempotency and lists
+
+Requests of endpoints that take an `Idempotency-Key` have an `IdempotencyKey` property; every
+other `POST` gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last `Id` as `After` while `HasMore` is true:
+
+```csharp
+var request = new ListEmailRequest { Limit = 100 };
+while (true)
+{
+    var page = await client.Email.ListAsync(request);
+    foreach (var email in page.Data) Console.WriteLine(email.Id);
+    if (!page.HasMore) break;
+    request = request with { After = page.Data.Last().Id };
+}
+```
+
+## Webhooks
+
+`Webhooks.Verify` checks a [webhook](/docs/webhooks) request's signature and age and returns the
+parsed event (a `JsonElement`); it throws `WebhookVerificationException` when you must reject the
+request. Pass the raw body exactly as received and the headers as name/value pairs.
+`Webhooks.VerifyLogDrainBatch` does the same for [log drains](/docs/log-drains) and returns the
+batch's lines.
+
+```csharp
+app.MapPost("/webhooks/coss", async (HttpRequest request) =>
+{
+    var body = await new StreamReader(request.Body).ReadToEndAsync();
+    var headers = request.Headers.Select(h => KeyValuePair.Create(h.Key, h.Value.ToString()));
+    try
+    {
+        var e = Webhooks.Verify(body, headers, Environment.GetEnvironmentVariable("COSS_WEBHOOK_SECRET")!);
+        Console.WriteLine(e.GetProperty("type").GetString());
+        return Results.NoContent();
+    }
+    catch (WebhookVerificationException)
+    {
+        return Results.BadRequest();
+    }
+});
+```

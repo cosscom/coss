@@ -1,0 +1,9 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+LICENSE
+CHANGELOG.md
+publish.gradle
+src/main/java/com/coss/Webhooks.java
+src/main/java/com/coss/WebhookVerificationException.java
+src/test/java/com/coss/custom
+README.md

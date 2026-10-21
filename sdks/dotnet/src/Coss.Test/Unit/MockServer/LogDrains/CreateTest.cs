@@ -1,0 +1,124 @@
+using Coss;
+using Coss.Test.Unit.MockServer;
+using Coss.Test.Utils;
+using NUnit.Framework;
+
+namespace Coss.Test.Unit.MockServer.LogDrains;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class CreateTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string requestJson = """
+            {
+              "url": "x"
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "object": "log_drain",
+              "id": "id",
+              "url": "url",
+              "description": "description",
+              "sources": [
+                "api",
+                "api"
+              ],
+              "enabled": true,
+              "disabled_reason": "manual",
+              "disabled_at": "2024-01-15T09:30:00.000Z",
+              "created_at": "2024-01-15T09:30:00.000Z",
+              "updated_at": "2024-01-15T09:30:00.000Z",
+              "secret": "secret"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/v1/log_drains")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.LogDrains.CreateAsync(
+            new CreateLogDrainRequest
+            {
+                Url = "x",
+                Description = null,
+                Sources = null,
+            }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string requestJson = """
+            {
+              "url": "https://logs.example.com/coss",
+              "description": "Production logs",
+              "sources": [
+                "api",
+                "email"
+              ]
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "object": "log_drain",
+              "id": "drain_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "url": "https://logs.example.com/coss",
+              "description": "Production logs",
+              "sources": [
+                "api",
+                "email"
+              ],
+              "enabled": true,
+              "created_at": "2026-01-15T09:30:00.000Z",
+              "updated_at": "2026-01-15T09:30:00.000Z",
+              "secret": "whsec_6Jk…"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/v1/log_drains")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPost()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.LogDrains.CreateAsync(
+            new CreateLogDrainRequest
+            {
+                Url = "https://logs.example.com/coss",
+                Description = "Production logs",
+                Sources = new List<LogDrainSource>() { LogDrainSource.Api, LogDrainSource.Email },
+            }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

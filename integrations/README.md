@@ -9,6 +9,10 @@ so an app switches to coss.com by changing configuration, not call sites:
 | `rails/`   | `coss-rails` (RubyGems)          | Rails 7.2–8.1, Ruby 3.2+ | [coss.com/docs/integrations/rails](https://coss.com/docs/integrations/rails) |
 | `django/`  | `coss-django` (PyPI)             | Django 5.2–6.1, Python 3.10+ | [coss.com/docs/integrations/django](https://coss.com/docs/integrations/django) |
 
+For everything beyond sending a framework's mail, use the SDK of the language
+([`sdks/`](../sdks/AGENTS.md): Python, Go, Ruby, PHP, Java and .NET, generated from the OpenAPI
+document). The drivers keep their own small clients; they don't depend on those SDKs (yet).
+
 The JavaScript integrations (Nodemailer, Better Auth, Auth.js) live in the `coss` package itself
 (`packages/sdk`). Each driver here is MIT licensed (its own `LICENSE`), has no dependency beyond
 its framework (each has a small HTTP client of its own), and is not a Bun workspace: turbo, Biome
@@ -114,7 +118,9 @@ message id; Rails: the delivery's return value and `message.coss_email`; Django:
 ## Conformance
 
 `conformance/http.json` (retries, `Retry-After`, error mapping) and `conformance/message.json`
-(a canonical message and the exact request body it becomes) are run by every driver's tests.
+(a canonical message and the exact request body it becomes) are run by every driver's tests. `conformance/webhooks.json`
+(webhook and log drain signature checks) is the generated SDKs' (`sdks/`), checked against the
+TypeScript SDK by `packages/sdk/test/webhooks-conformance.test.ts`.
 Header names in `message.json` compare case-insensitively (frameworks normalize them).
 
 End to end: `bun run --cwd apps/api serve:test` (needs `TEST_DATABASE_URL`) starts the API's test

@@ -1,0 +1,95 @@
+using Coss.Core;
+using Coss.Hooks;
+
+namespace Coss;
+
+public partial class CossClient : ICossClient
+{
+    private readonly RawClient _client;
+
+    public CossClient(
+        string? apiKey = null,
+        string? apiVersion = null,
+        ClientOptions? clientOptions = null
+    )
+    {
+        apiKey ??= GetFromEnvironmentOrThrow(
+            "COSS_API_KEY",
+            "Please pass in apiKey or set the environment variable COSS_API_KEY."
+        );
+        clientOptions ??= new ClientOptions();
+        var platformHeaders = new Headers(
+            new Dictionary<string, string>()
+            {
+                { "X-Fern-Language", "C#" },
+                { "X-Fern-SDK-Name", "Coss" },
+                { "X-Fern-SDK-Version", global::Coss.Version.Current },
+                { "User-Agent", "coss-dotnet/0.1.0" },
+            }
+        );
+        foreach (var header in platformHeaders)
+        {
+            if (!clientOptions.Headers.ContainsKey(header.Key))
+            {
+                clientOptions.Headers[header.Key] = header.Value;
+            }
+        }
+        var clientOptionsWithAuth = clientOptions.Clone();
+        var authHeaders = new Headers(
+            new Dictionary<string, string>()
+            {
+                { "Authorization", $"Bearer {apiKey ?? ""}" },
+                { "Coss-Version", apiVersion ?? "2026-10-10" },
+            }
+        );
+        foreach (var header in authHeaders)
+        {
+            clientOptionsWithAuth.Headers[header.Key] = header.Value;
+        }
+        _client = new RawClient(clientOptionsWithAuth);
+        Environment = new EnvironmentClient(_client);
+        ApiKey = new ApiKeyClient(_client);
+        Email = new EmailClient(_client);
+        Domains = new DomainsClient(_client);
+        WebhookEndpoints = new WebhookEndpointsClient(_client);
+        WebhookListeners = new WebhookListenersClient(_client);
+        Reputation = new ReputationClient(_client);
+        Logs = new LogsClient(_client);
+        AuditEvents = new AuditEventsClient(_client);
+        Billing = new BillingClient(_client);
+        LogDrains = new LogDrainsClient(_client);
+        Risk = new RiskClient(_client);
+        Hooks = new HooksClient(_client);
+    }
+
+    public IEnvironmentClient Environment { get; }
+
+    public IApiKeyClient ApiKey { get; }
+
+    public IEmailClient Email { get; }
+
+    public IDomainsClient Domains { get; }
+
+    public IWebhookEndpointsClient WebhookEndpoints { get; }
+
+    public IWebhookListenersClient WebhookListeners { get; }
+
+    public IReputationClient Reputation { get; }
+
+    public ILogsClient Logs { get; }
+
+    public IAuditEventsClient AuditEvents { get; }
+
+    public IBillingClient Billing { get; }
+
+    public ILogDrainsClient LogDrains { get; }
+
+    public IRiskClient Risk { get; }
+
+    public IHooksClient Hooks { get; }
+
+    private static string GetFromEnvironmentOrThrow(string env, string message)
+    {
+        return System.Environment.GetEnvironmentVariable(env) ?? throw new Exception(message);
+    }
+}

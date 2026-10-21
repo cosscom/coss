@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+module Coss
+  module Types
+    module InvoiceKind
+      extend Coss::Internal::Types::Enum
+
+      PERIOD = "period"
+      PLAN_CHANGE = "plan_change"
+      ONE_OFF = "one_off"
+      FINAL = "final"
+    end
+  end
+end

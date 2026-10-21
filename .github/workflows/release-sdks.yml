@@ -1,0 +1,339 @@
+name: Release SDKs
+
+# Publishes the generated SDKs (sdks/*) whenever main has a version (sdks/VERSION, bumped by the
+# "Regenerate SDKs" PR) that a registry doesn't, and tags `coss-sdk-<language>@<version>` here.
+# Nothing is ever published from a laptop.
+#
+# - Python → PyPI (`cosscom`) and Ruby → RubyGems (`coss`) use trusted publishing (GitHub OIDC,
+#   no tokens): each registry trusts exactly cosscom/coss → this file → the `pypi` / `rubygems`
+#   environment. .NET → NuGet (`Coss`) too, through NuGet/login, in the `nuget` environment (the
+#   nuget.org account is the repository variable NUGET_USER).
+# - Java → Maven Central (`com.coss:coss`): a signed bundle uploaded to the Central Portal with
+#   the `maven-central` environment's secrets (MAVEN_CENTRAL_USERNAME / _PASSWORD, a Portal user
+#   token; SIGNING_KEY / SIGNING_PASSWORD, the armored GPG key of the com.coss namespace).
+# - Go and PHP install from git: the jobs push `git subtree split --prefix sdks/<language>` to the
+#   read-only mirrors cosscom/coss-go and cosscom/coss-php (deploy keys COSS_GO_DEPLOY_KEY in
+#   the `go-mirror` environment, COSS_PHP_DEPLOY_KEY in `packagist`) and tag them `v<version>`.
+#   The Go module proxy is asked for the version; Packagist's GitHub hook picks the tag up.
+#
+# Every job is skipped until the repository variable SDKS_PUBLISH is `true`, set once the
+# registries are configured (sdks/AGENTS.md, "Publishing").
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sdks/**"
+      - ".github/workflows/release-sdks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-sdks
+  cancel-in-progress: false
+
+jobs:
+  python:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: pypi
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # PyPI trusted publishing
+    defaults:
+      run:
+        working-directory: sdks/python
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.14"
+          enable-cache: false
+      - id: version
+        run: |
+          version="$(cat ../VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://pypi.org/pypi/cosscom/$version/json" >/dev/null; then
+            echo "cosscom $version is already on PyPI."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          uv venv
+          uv pip install -e . pytest pytest-asyncio
+          .venv/bin/pytest
+          uv build
+          uvx twine check dist/*
+      - if: steps.version.outputs.publish == 'true'
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: sdks/python/dist
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          tag="coss-sdk-python@${{ steps.version.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+  ruby:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: rubygems
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # RubyGems trusted publishing
+    defaults:
+      run:
+        working-directory: sdks/ruby
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ruby/setup-ruby@14594264cd68ce8a2345dd349bc3d138a4ef85c8 # v1.327.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          working-directory: sdks/ruby
+      - id: version
+        run: |
+          version="$(cat ../VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://rubygems.org/api/v2/rubygems/coss/versions/$version.json" >/dev/null; then
+            echo "coss $version is already on RubyGems."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          bundle exec rubocop
+          bundle exec rake test
+          gem build coss.gemspec
+      - if: steps.version.outputs.publish == 'true'
+        uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0
+      - if: steps.version.outputs.publish == 'true'
+        run: |
+          gem push "coss-${{ steps.version.outputs.version }}.gem"
+          tag="coss-sdk-ruby@${{ steps.version.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+  dotnet:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: nuget
+    permissions:
+      contents: write # the release's git tag
+      id-token: write # NuGet trusted publishing
+    defaults:
+      run:
+        working-directory: sdks/dotnet
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: "10.0.x"
+      - id: version
+        run: |
+          version="$(cat ../VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://api.nuget.org/v3-flatcontainer/coss/$version/coss.nuspec" >/dev/null; then
+            echo "Coss $version is already on NuGet."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          DOTNET_ROLL_FORWARD: Major
+        run: |
+          dotnet test src/Coss.Test/Coss.Test.csproj
+          dotnet pack src/Coss/Coss.csproj --configuration Release --output dist
+      - if: steps.version.outputs.publish == 'true'
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "dist/Coss.${{ steps.version.outputs.version }}.nupkg" \
+            --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+          tag="coss-sdk-dotnet@${{ steps.version.outputs.version }}"
+          git tag "$tag"
+          git push origin "$tag"
+
+  java:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    # Central validates and publishes asynchronously: usually minutes, sometimes half an hour.
+    timeout-minutes: 50
+    environment: maven-central
+    permissions:
+      contents: write # the release's git tag
+    defaults:
+      run:
+        working-directory: sdks/java
+    env:
+      PORTAL: https://central.sonatype.com/api/v1/publisher
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+      - id: version
+        env:
+          TOKEN: ${{ secrets.MAVEN_CENTRAL_USERNAME }}:${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: |
+          version="$(cat ../VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          published="$(curl -sf -H "Authorization: Bearer $(printf '%s' "$TOKEN" | base64 -w0)" \
+            "$PORTAL/published?namespace=com.coss&name=coss&version=$version" | jq -r .published)"
+          if [ "$published" = "true" ]; then
+            echo "com.coss:coss $version is already on Maven Central."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: ./gradlew --no-daemon test publishMavenPublicationToBundleRepository
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          TOKEN: ${{ secrets.MAVEN_CENTRAL_USERNAME }}:${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          # The bundle is the version's directory in Maven's layout (signed artifacts, POM,
+          # checksums), without the artifact-level maven-metadata.xml.
+          (cd build/central-bundle && zip -qr ../bundle.zip "com/coss/coss/$version")
+          auth="Authorization: Bearer $(printf '%s' "$TOKEN" | base64 -w0)"
+          id="$(curl -sf -X POST -H "$auth" -F bundle=@build/bundle.zip \
+            "$PORTAL/upload?publishingType=AUTOMATIC&name=coss-$version")"
+          echo "Deployment $id"
+          for _ in $(seq 180); do
+            state="$(curl -sf -X POST -H "$auth" "$PORTAL/status?id=$id" | jq -r .deploymentState)"
+            echo "$state"
+            case "$state" in
+              PUBLISHED) break ;;
+              FAILED) curl -sf -X POST -H "$auth" "$PORTAL/status?id=$id"; exit 1 ;;
+            esac
+            sleep 15
+          done
+          test "$state" = PUBLISHED
+          tag="coss-sdk-java@$version"
+          git tag "$tag"
+          git push origin "$tag"
+
+  go:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: go-mirror
+    permissions:
+      contents: write # the release's git tag
+    env:
+      MIRROR: git@github.com:cosscom/coss-go.git
+    steps:
+      # The whole history: the split replays it, so the mirror's history is the same every time.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: stable
+          cache-dependency-path: sdks/go/go.sum
+      - id: version
+        run: |
+          version="$(cat sdks/VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags https://github.com/cosscom/coss-go "refs/tags/v$version" >/dev/null; then
+            echo "github.com/cosscom/coss-go $version is already tagged on the mirror."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        working-directory: sdks/go
+        run: |
+          go vet ./...
+          go test ./...
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.COSS_GO_DEPLOY_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/coss-go
+          chmod 600 ~/.ssh/coss-go
+          # GitHub's published SSH host key (docs.github.com, "GitHub's SSH key fingerprints").
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/coss-go -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          version="${{ steps.version.outputs.version }}"
+          split="$(git subtree split --prefix sdks/go)"
+          # Never forced: the mirror only ever moves forward along main's history.
+          git push "$MIRROR" "$split:refs/heads/main"
+          git push "$MIRROR" "$split:refs/tags/v$version"
+          # Ask the module proxy for it, so `go get` finds it (and pkg.go.dev lists it) at once.
+          curl -sf "https://proxy.golang.org/github.com/cosscom/coss-go/@v/v$version.info"
+          tag="coss-sdk-go@$version"
+          git tag "$tag"
+          git push origin "$tag"
+
+  php:
+    if: vars.SDKS_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: packagist
+    permissions:
+      contents: write # the release's git tag
+    env:
+      MIRROR: git@github.com:cosscom/coss-php.git
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: "8.5"
+          tools: composer
+      - id: version
+        run: |
+          version="$(cat sdks/VERSION)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags https://github.com/cosscom/coss-php "refs/tags/v$version" >/dev/null; then
+            echo "coss/coss $version is already tagged on the mirror."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.version.outputs.publish == 'true'
+        working-directory: sdks/php
+        run: |
+          composer validate
+          composer update --no-interaction --no-progress
+          composer test
+      - if: steps.version.outputs.publish == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.COSS_PHP_DEPLOY_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/coss-php
+          chmod 600 ~/.ssh/coss-php
+          # GitHub's published SSH host key (docs.github.com, "GitHub's SSH key fingerprints").
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/coss-php -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          version="${{ steps.version.outputs.version }}"
+          split="$(git subtree split --prefix sdks/php)"
+          # Never forced: the mirror only ever moves forward along main's history.
+          git push "$MIRROR" "$split:refs/heads/main"
+          git push "$MIRROR" "$split:refs/tags/v$version"
+          tag="coss-sdk-php@$version"
+          git tag "$tag"
+          git push origin "$tag"

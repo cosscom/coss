@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+module Coss
+  module Email
+    module Broadcasts
+      module Types
+        class UpdateBroadcastRequestTracking < Internal::Types::Model
+          field :opens, -> { Internal::Types::Boolean }, optional: true, nullable: false
+
+          field :clicks, -> { Internal::Types::Boolean }, optional: true, nullable: false
+        end
+      end
+    end
+  end
+end

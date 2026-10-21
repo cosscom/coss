@@ -261,6 +261,15 @@ address too. Signed-in devices are listed under Settings → Sessions. See `apps
 Everything is also available in the dashboard, and through the SDK as `coss.email`, `coss.domains`,
 `coss.webhookEndpoints` and `coss.reputation`.
 
+### SDKs in other languages
+
+`sdks/` holds SDKs for Python (`cosscom`), Go (`github.com/cosscom/coss-go`), Ruby (`coss`), PHP (`coss/coss`),
+Java (`com.coss:coss`) and .NET (`Coss`), generated from `apps/api/openapi.json` with Fern's open-source generators:
+`bun run sdks:generate` (needs Docker). On main, the "Regenerate SDKs" pull request
+(`.github/workflows/sdks-regenerate.yml`) keeps them up to date, and merging it publishes them
+(`release-sdks.yml`, skipped until the repository variable `SDKS_PUBLISH` is `true`). How they're made, what's
+hand-written and the one-time registry setup: [`sdks/AGENTS.md`](./sdks/AGENTS.md).
+
 Requests are rate limited per API key by route class (reads, writes, sends; responses carry `RateLimit-Limit`,
 `RateLimit-Remaining` and `RateLimit-Reset`), and sends count their distinct recipients against the
 organization's quota per second and per day (sandbox environments have a small daily quota of their own).
@@ -904,6 +913,7 @@ coss.com is licensed under the [GNU Affero General Public License v3.0](./LICENS
 - `packages/mcp` (the `coss-mcp` npm package, coss.com's MCP server): [MIT](./packages/mcp/LICENSE), like the SDK it
   is built on.
 - `packages/cli` (the `coss-cli` npm package, the `coss` command): [MIT](./packages/cli/LICENSE), likewise.
+- The generated SDKs in `sdks/*` and the framework drivers in `integrations/*`: MIT, each with its own `LICENSE`.
 - `packages/kloq`: [MIT](./packages/kloq/LICENSE), vendored from `cosscom/calendar` (as is the kloq registry the
   site serves).
 - The fonts in `packages/ui/src/fonts`: [SIL Open Font License 1.1](./packages/ui/src/fonts/OFL.txt).

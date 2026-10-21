@@ -1,0 +1,8 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+LICENSE
+CHANGELOG.md
+src/Coss/Coss.Custom.props
+src/Coss/Webhooks.cs
+src/Coss.Test/Custom
+README.md

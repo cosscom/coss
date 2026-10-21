@@ -1,0 +1,21 @@
+{
+  "cliVersion": "5.146.2",
+  "generatorName": "fernapi/fern-go-sdk",
+  "generatorVersion": "1.65.1",
+  "generatorConfig": {
+    "module": {
+      "path": "github.com/cosscom/coss-go",
+      "version": "1.21"
+    },
+    "packageName": "coss",
+    "clientName": "Client",
+    "maxRetries": 2,
+    "enableWireTests": false,
+    "user-agent": "coss-go/{version}"
+  },
+  "originGitCommit": "22f1393886309f16341682ab6a08490f9064c8e4",
+  "originGitCommitIsDirty": true,
+  "invokedBy": "manual",
+  "requestedVersion": "0.1.0",
+  "sdkVersion": "v0.1.0"
+}

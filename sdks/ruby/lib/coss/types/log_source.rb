@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+module Coss
+  module Types
+    module LogSource
+      extend Coss::Internal::Types::Enum
+
+      API = "api"
+      EMAIL = "email"
+      WEBHOOK = "webhook"
+      RISK = "risk"
+      SMTP = "smtp"
+    end
+  end
+end

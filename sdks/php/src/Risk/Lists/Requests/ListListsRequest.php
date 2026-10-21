@@ -1,0 +1,47 @@
+<?php
+
+namespace Coss\Risk\Lists\Requests;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Types\RiskList;
+use Coss\Types\RiskListEntryType;
+
+class ListListsRequest extends JsonSerializableType
+{
+    /**
+     * @var ?value-of<RiskList> $list
+     */
+    public ?string $list;
+
+    /**
+     * @var ?value-of<RiskListEntryType> $type `email` (matched by mailbox, dots and `+tags` folded), `domain` (subdomains included), `ip` (an address or CIDR range), `asn`, `country` (ISO 3166-1 alpha-2), `user` (your user id).
+     */
+    public ?string $type;
+
+    /**
+     * @var ?int $limit 1-100, default 50.
+     */
+    public ?int $limit;
+
+    /**
+     * @var ?string $after Cursor: the `id` of the last entry of the previous page.
+     */
+    public ?string $after;
+
+    /**
+     * @param array{
+     *   list?: ?value-of<RiskList>,
+     *   type?: ?value-of<RiskListEntryType>,
+     *   limit?: ?int,
+     *   after?: ?string,
+     * } $values
+     */
+    public function __construct(
+        array $values = [],
+    ) {
+        $this->list = $values['list'] ?? null;
+        $this->type = $values['type'] ?? null;
+        $this->limit = $values['limit'] ?? null;
+        $this->after = $values['after'] ?? null;
+    }
+}

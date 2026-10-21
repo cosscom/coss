@@ -1,0 +1,50 @@
+<?php
+
+namespace Coss\Risk\Settings\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+
+class UpdateRiskSettingsRequestCaptcha extends JsonSerializableType
+{
+    /**
+     * @var value-of<UpdateRiskSettingsRequestCaptchaProvider> $provider
+     */
+    #[JsonProperty('provider')]
+    public string $provider;
+
+    /**
+     * @var ?string $secret The provider's secret key. Required when setting a provider for the first time or changing it; stored encrypted and never returned.
+     */
+    #[JsonProperty('secret')]
+    public ?string $secret;
+
+    /**
+     * @var ?bool $required Assessments without a `captcha` token get `captcha.missing`. Default false.
+     */
+    #[JsonProperty('required')]
+    public ?bool $required;
+
+    /**
+     * @param array{
+     *   provider: value-of<UpdateRiskSettingsRequestCaptchaProvider>,
+     *   secret?: ?string,
+     *   required?: ?bool,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->provider = $values['provider'];
+        $this->secret = $values['secret'] ?? null;
+        $this->required = $values['required'] ?? null;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

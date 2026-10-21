@@ -1,11 +1,13 @@
 {
   "title": "SDKs and tools",
-  "description": "The TypeScript SDK, framework integrations, the CLI and the MCP server.",
+  "description": "The TypeScript SDK, the SDKs of six more languages, framework integrations, the CLI and the MCP server.",
   "root": true,
   "icon": "Code",
   "pages": [
     "---TypeScript SDK---",
     "...sdk",
+    "---Other languages---",
+    "...sdks",
     "---Integrations---",
     "...integrations",
     "---CLI and agents---",

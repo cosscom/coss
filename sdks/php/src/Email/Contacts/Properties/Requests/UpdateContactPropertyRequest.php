@@ -1,0 +1,35 @@
+<?php
+
+namespace Coss\Email\Contacts\Properties\Requests;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+use Coss\Core\Types\Union;
+
+class UpdateContactPropertyRequest extends JsonSerializableType
+{
+    /**
+     * @var (
+     *    string
+     *   |float
+     *   |bool
+     * )|null $fallback
+     */
+    #[JsonProperty('fallback'), Union('string', 'float', 'bool', 'null')]
+    public string|float|bool|null $fallback;
+
+    /**
+     * @param array{
+     *   fallback?: (
+     *    string
+     *   |float
+     *   |bool
+     * )|null,
+     * } $values
+     */
+    public function __construct(
+        array $values = [],
+    ) {
+        $this->fallback = $values['fallback'] ?? null;
+    }
+}

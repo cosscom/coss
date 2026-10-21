@@ -14,3 +14,20 @@ next-env.d.ts
 # Personal Claude Code files
 CLAUDE.local.md
 .claude/settings.local.json
+sdks/fern/openapi.sdk.json
+
+# Generated SDKs (sdks/*): toolchain caches and build outputs
+sdks/python/.venv
+sdks/**/__pycache__
+sdks/ruby/.bundle
+sdks/ruby/vendor
+sdks/ruby/Gemfile.lock
+sdks/php/vendor
+sdks/php/composer.lock
+sdks/php/.phpunit.cache
+sdks/php/**/.php-cs-fixer.cache
+sdks/java/build
+sdks/java/.gradle
+sdks/java/sample-app/build
+sdks/dotnet/**/bin
+sdks/dotnet/**/obj

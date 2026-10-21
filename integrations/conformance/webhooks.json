@@ -1,0 +1,332 @@
+{
+  "description": "Webhook and log drain signature checks (Standard Webhooks). Every SDK runs these against its verify_webhook / verify_log_drain_batch: kind `webhook` returns the parsed event, `log_drain` the parsed NDJSON lines; `expect.error` is the exact message of the verification error. Each case uses `secret`, `now` (Unix seconds) and `tolerance_seconds` (300) from the top level unless it sets its own. packages/sdk/test/webhooks-conformance.test.ts checks this file against the TypeScript SDK.",
+  "secret": "whsec_Y29zcy1jb25mb3JtYW5jZS13ZWJob29rLXNlY3JldCE=",
+  "now": 1767225600,
+  "tolerance_seconds": 300,
+  "cases": [
+    {
+      "name": "valid event",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "header names are case-insensitive",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "Webhook-Id": "msg_01kconformance0000000000000",
+        "Webhook-Timestamp": "1767225600",
+        "Webhook-Signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "secret without the whsec_ prefix",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "secret": "Y29zcy1jb25mb3JtYW5jZS13ZWJob29rLXNlY3JldCE=",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "one of several signatures matches (secret rotation)",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,UNIaE7envybs3hQWzTdWB+wlADdsaMsQbAMW0CobfQc= v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "within the tolerance",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "now": 1767225900,
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "custom tolerance",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "now": 1767226100,
+      "tolerance_seconds": 600,
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "value": {
+          "id": "evt_01kconformance000000000000",
+          "object": "event",
+          "type": "email.delivered",
+          "created_at": "2026-01-01T00:00:00.000Z",
+          "data": {
+            "email_id": "email_01kconformance00000000000"
+          }
+        }
+      }
+    },
+    {
+      "name": "wrong secret",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,UNIaE7envybs3hQWzTdWB+wlADdsaMsQbAMW0CobfQc="
+      },
+      "expect": {
+        "error": "No webhook signature matches."
+      }
+    },
+    {
+      "name": "tampered body",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.bounced\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "No webhook signature matches."
+      }
+    },
+    {
+      "name": "signature of another message id",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,nS8Z/61N9SffLeurk6igQJlnaJj2ps4NmeaidaA3274="
+      },
+      "expect": {
+        "error": "No webhook signature matches."
+      }
+    },
+    {
+      "name": "unknown signature version only",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v2,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "No webhook signature matches."
+      }
+    },
+    {
+      "name": "missing webhook-signature",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600"
+      },
+      "expect": {
+        "error": "Missing webhook-id, webhook-timestamp or webhook-signature."
+      }
+    },
+    {
+      "name": "missing webhook-id",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "Missing webhook-id, webhook-timestamp or webhook-signature."
+      }
+    },
+    {
+      "name": "too old",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "now": 1767225901,
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "The webhook timestamp is too old or in the future."
+      }
+    },
+    {
+      "name": "in the future",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "now": 1767225299,
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "The webhook timestamp is too old or in the future."
+      }
+    },
+    {
+      "name": "timestamp not a number",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600.5",
+        "webhook-signature": "v1,EJMH7WQMumWHKlUA3fy1ar9cj++1Zi/aDgYepLK/Nqg="
+      },
+      "expect": {
+        "error": "The webhook timestamp is too old or in the future."
+      }
+    },
+    {
+      "name": "invalid secret",
+      "kind": "webhook",
+      "payload": "{\"id\":\"evt_01kconformance000000000000\",\"object\":\"event\",\"type\":\"email.delivered\",\"created_at\":\"2026-01-01T00:00:00.000Z\",\"data\":{\"email_id\":\"email_01kconformance00000000000\"}}",
+      "secret": "whsec_",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,cbHcGe09j6S/BMoXZkncbRT56cnbMgqIcJZZ1NT69+w="
+      },
+      "expect": {
+        "error": "The signing secret is not a valid whsec_… secret."
+      }
+    },
+    {
+      "name": "signed body that isn't JSON",
+      "kind": "webhook",
+      "payload": "not json",
+      "headers": {
+        "webhook-id": "msg_01kconformance0000000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,ROMHEM7MOwydpWucIq5L/pgPpFlJhh/rwiwBJEA3scA="
+      },
+      "expect": {
+        "error": "The webhook body is not valid JSON."
+      }
+    },
+    {
+      "name": "log drain batch",
+      "kind": "log_drain",
+      "payload": "{\"id\":\"log_01kconformance000000000001\",\"object\":\"log_entry\",\"source\":\"api\"}\n{\"id\":\"log_01kconformance000000000002\",\"object\":\"audit_event\",\"action\":\"domain.created\"}\n",
+      "headers": {
+        "webhook-id": "batch_01kconformance0000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,2Fp4hQn3NIFL3NUkmPwhNMpG2AuIBMCNBODJ5SjAMGI="
+      },
+      "expect": {
+        "value": [
+          {
+            "id": "log_01kconformance000000000001",
+            "object": "log_entry",
+            "source": "api"
+          },
+          {
+            "id": "log_01kconformance000000000002",
+            "object": "audit_event",
+            "action": "domain.created"
+          }
+        ]
+      }
+    },
+    {
+      "name": "log drain batch that isn't NDJSON",
+      "kind": "log_drain",
+      "payload": "{\"id\":1}\nnope\n",
+      "headers": {
+        "webhook-id": "batch_01kconformance0000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,KoaUNNVuSgTPXjUjDeWC5NXk8MR6g9w4VDD42wMNzao="
+      },
+      "expect": {
+        "error": "The log drain body is not valid NDJSON."
+      }
+    },
+    {
+      "name": "log drain batch with a bad signature",
+      "kind": "log_drain",
+      "payload": "{\"id\":\"log_01kconformance000000000001\",\"object\":\"log_entry\",\"source\":\"api\"}\n{\"id\":\"log_01kconformance000000000002\",\"object\":\"audit_event\",\"action\":\"domain.created\"}\n",
+      "headers": {
+        "webhook-id": "batch_01kconformance0000000000",
+        "webhook-timestamp": "1767225600",
+        "webhook-signature": "v1,wvGNWOfHpsuOBWHnaBN4pkGWfWVnJmgvajDF9Vo+Ibc="
+      },
+      "expect": {
+        "error": "No webhook signature matches."
+      }
+    }
+  ]
+}

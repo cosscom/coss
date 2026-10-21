@@ -20,8 +20,9 @@ signals are also building blocks of their own, next to rate limiting as a servic
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
 and `packages/cli` (MIT, published with the SDK), the framework drivers in `integrations/*` (MIT, each with its own
-`LICENSE`), `packages/kloq` (MIT, vendored) and the fonts (OFL). New code is AGPL
-unless it lives in one of those; never copy AGPL code into the SDK, the MCP server, the CLI or the drivers. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+`LICENSE`), the generated SDKs in `sdks/*` (MIT, each with its own `LICENSE`), `packages/kloq` (MIT, vendored) and
+the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into the SDK, the MCP server,
+the CLI, the drivers or the generated SDKs. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -61,6 +62,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
+| `tooling/sdkgen` | `@coss/sdkgen` | Builds the generated SDKs: `SDK_METHODS` (every operation's SDK method, named as in the TypeScript SDK) and `NO_RETRY` (`src/methods.ts`), the derive step that turns `apps/api/openapi.json` into the spec Fern generates from (`src/derive.ts`), the post-processing of each generator's output (`src/languages.ts`), the API reference's code samples (`snippets.json`, from each SDK's `reference.md`); `scripts/generate.ts` (`bun run sdks:generate`, needs Docker). See `sdks/AGENTS.md`. |
+| `sdks/{python,go,ruby,php,java,dotnet}` | `cosscom` (PyPI, `import coss`), `github.com/cosscom/coss-go`, `coss` (gem), `coss/coss` (Composer), `com.coss:coss` (Maven), `Coss` (NuGet) | **Public** SDKs generated from the OpenAPI document by Fern's open-source generators (`sdks/fern/generators.yml`), each with a few hand-written files kept by its `.fernignore` (webhook verification, tests, metadata). Not workspaces. Regenerated on main by the "Regenerate SDKs" PR; released by `release-sdks.yml`. See `sdks/AGENTS.md`. |
 | `integrations/{laravel,rails,django}` | `coss/laravel`, `coss-rails`, `coss-django` | **Public** framework mail drivers (PHP/Composer, Ruby gem, Python/PyPI), each sending its framework's messages to `POST /v1/emails` with a small HTTP client of its own. Not Bun workspaces (turbo, Biome and the images never see them). Shared rules in `integrations/README.md`, shared test scenarios in `integrations/conformance/*.json`. |
 | `infra` | `@coss/infra` | AWS deployment spec (ECS services, env vars, ALB rules, CloudFront behaviours), checked by tests, and the production Terraform + deploy scripts that apply it. See `infra/AGENTS.md`. |
 
@@ -71,8 +74,8 @@ billing enqueues `billing.*` events through it — and email imports only `./met
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
 `api → tenancy, email, sms, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
-`web → auth, tenancy, email, sms, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, migrate, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk` (only the client-safe `@coss/auth/{slugs,constants,api-key-permissions}`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}` and `@coss/risk/schemas`) +
-`@coss/api/openapi.json` (data only, never api code); `infra → auth, email, sms, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
+`web → auth, tenancy, email, sms, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, migrate, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention` (bundled by Metro: keep it dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk, sdkgen` (only the client-safe `@coss/auth/{slugs,constants,api-key-permissions}`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}`, `@coss/risk/schemas` and `@coss/sdkgen`'s `snippets.json` + `./methods`) +
+`@coss/api/openapi.json` (data only, never api code); `sdkgen → @coss/api/openapi.json` (data only); `infra → auth, email, sms, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
 `worker → auth (`./emails` only), email, sms, hooks, reputation, screening, webhooks, ratelimit, logs, risk, push, migrate, tenancy, retention, billing, db` (from tenancy only `./retention` and `./deletion`, which import nothing but `db`); `sdk`, `ui`, `kloq` and `companion` depend on no workspace (`site → kloq`); `mcp` and `cli` depend only on the published `coss` (a
 semver range, not `workspace:`).
 Dev-only: `email`/`sms`/`webhooks`/`hooks`/`reputation`/`screening`/`ratelimit`/`logs`/`billing`/`risk`/`push`/`migrate`/`worker → tenancy` (test fixtures — so tenancy and auth must never import email, webhooks, screening, ratelimit, logs or billing (plan limits reach Better Auth through `setMembershipLimitResolver` from `@coss/auth/limits`); Better Auth's own audit events reach the log through `setOrgAuditRecorder` from `@coss/auth/audit`) and
@@ -100,6 +103,8 @@ bun run auth:generate       # regenerate packages/db/src/schema/auth.ts after ch
                             #   then bun run db:generate && bun run db:migrate
 bun run signals:update-disposable  # refresh the vendored disposable-domain list (review the diff before committing)
 bun run openapi:generate    # rewrite apps/api/openapi.json after changing API routes (a test fails when stale)
+bun run sdks:generate       # regenerate sdks/* from it (Docker; [--lang python,go,…]); main's "Regenerate SDKs" PR
+                            #   does this, so API pull requests don't need to
 bun run changeset           # describe an SDK, MCP server or CLI change (CI requires one when
                             #   packages/{sdk,mcp,cli}/src changes; --empty if none)
 bun run version-packages    # apply changesets: bump the SDK's (and coss-mcp's, coss-cli's) package.json, src/version.ts,
@@ -268,8 +273,12 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Every operation needs an `operationId` (it names its docs page). Wire schemas carry a whole-object
   `.meta({ examples: [...] })` (OpenAPI 3.1 form; the singular `example` is ignored by the docs), checked by
   `packages/{email,webhooks}/test/schema-examples.test.ts`; they feed the reference's samples and playground. After route changes
-  run `bun run openapi:generate` and add the operation's SDK sample in `apps/site/src/lib/sdk-samples.ts` (tests
-  enforce both).
+  run `bun run openapi:generate`, add the operation's SDK sample in `apps/site/src/lib/sdk-samples.ts` and its method
+  to `SDK_METHODS` in `tooling/sdkgen/src/methods.ts` (the same name; to `NO_RETRY` too when the API doesn't
+  deduplicate it, like the TypeScript SDK's `retry: false`) — tests enforce all three. The generated SDKs
+  (`sdks/*`) and their docs samples (`tooling/sdkgen/snippets.json`) follow in main's "Regenerate SDKs" PR.
+  Webhook event schemas no route returns are listed in `src/webhook-events.ts` (components of the document, so the
+  generated SDKs type them).
 - **Versions** (`Coss-Version: YYYY-MM-DD`, `@coss/versioning`): handlers always build the latest shape. The
   `apiVersion` middleware (`src/middleware/api-version.ts`, on `/v1/*`) rejects unknown versions (400
   `invalid_api_version`, before authentication), echoes `Coss-Version` and renders 2xx JSON bodies in the caller's
@@ -313,7 +322,8 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   single-use tokens (hashed), never from OTP codes or invitation ids, which are legitimately resent.
 - **Framework drivers** (`integrations/*`, not part of the SDK): Laravel, Rails and Django follow the same mapping and
   retry rules as the JS integrations, written down in `integrations/README.md` and checked by every driver's tests
-  against `integrations/conformance/{http,message}.json` (generated from `src/core/mime.ts`'s behaviour: change the
+  against `integrations/conformance/{http,message}.json` (`webhooks.json` is the generated SDKs', checked against
+  `verifyWebhook` by `packages/sdk/test/webhooks-conformance.test.ts`) (generated from `src/core/mime.ts`'s behaviour: change the
   README, the JSON, the SDK and all three drivers together). Each keeps `Coss-Version` and the reserved-header list as
   hand mirrors of `API_VERSION` and `RESERVED_HEADERS`. Releases: `.github/workflows/release-integrations.yml` (below).
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
@@ -565,7 +575,7 @@ Never edit an applied migration; do renames as a separate step (drizzle-kit prom
    mapped in `toApiError`, OpenAPI path list in `test/app.test.ts` updated.
 5. SDK: types, resource, `Coss` property, `src/index.ts` exports, unit tests; extend `contract-types.ts` +
    `sdk-contract.test.ts`.
-6. Docs (`apps/site`): `bun run openapi:generate`, SDK samples for the new operations, a guide under
+6. Docs (`apps/site`): `bun run openapi:generate`, SDK samples (and `SDK_METHODS` entries) for the new operations, a guide under
    `content/docs/<product>/` (a section of its own: `"root": true`, an `icon` and a `description` in its `meta.json`,
    listed in `content/docs/meta.json`) with Twoslash SDK examples (per-method SDK usage lives in the API reference),
    and its API tags under a `---<Product>---` separator in `content/docs/api-reference/meta.json` (a test fails otherwise).
@@ -617,6 +627,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome).
 - `infra/terraform/spec.json` (`bun run --cwd infra aws:spec:write`; excluded from Biome).
 - `packages/sdk/package.json` `exports`/`main`/`module`/`types` (rewritten by the SDK build — commit the result).
+- `sdks/<language>/**` (`bun run sdks:generate`; excluded from Biome) except the files its `.fernignore` lists,
+  `sdks/VERSION` and the CHANGELOGs (the "Regenerate SDKs" PR bumps both), and `tooling/sdkgen/snippets.json`.
 - `packages/kloq/src`: kloq's library, vendored from `cosscom/calendar` (excluded from Biome); and
   `apps/site/src/lib/calendar/registry/generated.json` + `apps/site/src/components/calendar/registry/what-lands.json`
   (`bun run --cwd apps/site calendar:registry` after changing the library or the registry's blocks; a test fails when stale).
@@ -880,6 +892,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
+in the generated SDKs (`sdks/*`): auto-pagination, a `COSS_BASE_URL` default and typed events from webhook
+verification outside Go (the others return plain JSON), framework drivers built on the generated SDKs,
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 editing an API key's permissions (create a new key), API keys restricted to sending domains or IP addresses,
 org logos, uploading a profile picture, user account deletion (before adding it: `sso_provider.user_id` and `member.user_id` cascade, which

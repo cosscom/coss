@@ -1,0 +1,108 @@
+<?php
+
+namespace Coss\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+use DateTime;
+use Coss\Core\Types\Date;
+
+class EmailTemplate extends JsonSerializableType
+{
+    /**
+     * @var value-of<EmailTemplateObject> $object
+     */
+    #[JsonProperty('object')]
+    public string $object;
+
+    /**
+     * @var string $id
+     */
+    #[JsonProperty('id')]
+    public string $id;
+
+    /**
+     * @var ?string $alias
+     */
+    #[JsonProperty('alias')]
+    public ?string $alias;
+
+    /**
+     * @var string $name
+     */
+    #[JsonProperty('name')]
+    public string $name;
+
+    /**
+     * @var ?string $description
+     */
+    #[JsonProperty('description')]
+    public ?string $description;
+
+    /**
+     * @var ?int $publishedVersion The version sends use; `null` until the draft is first published.
+     */
+    #[JsonProperty('published_version')]
+    public ?int $publishedVersion;
+
+    /**
+     * @var ?DateTime $publishedAt
+     */
+    #[JsonProperty('published_at'), Date(Date::TYPE_DATETIME)]
+    public ?DateTime $publishedAt;
+
+    /**
+     * @var bool $hasUnpublishedChanges Whether the draft was changed since it was last published.
+     */
+    #[JsonProperty('has_unpublished_changes')]
+    public bool $hasUnpublishedChanges;
+
+    /**
+     * @var DateTime $createdAt
+     */
+    #[JsonProperty('created_at'), Date(Date::TYPE_DATETIME)]
+    public DateTime $createdAt;
+
+    /**
+     * @var DateTime $updatedAt
+     */
+    #[JsonProperty('updated_at'), Date(Date::TYPE_DATETIME)]
+    public DateTime $updatedAt;
+
+    /**
+     * @param array{
+     *   object: value-of<EmailTemplateObject>,
+     *   id: string,
+     *   name: string,
+     *   hasUnpublishedChanges: bool,
+     *   createdAt: DateTime,
+     *   updatedAt: DateTime,
+     *   alias?: ?string,
+     *   description?: ?string,
+     *   publishedVersion?: ?int,
+     *   publishedAt?: ?DateTime,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->object = $values['object'];
+        $this->id = $values['id'];
+        $this->alias = $values['alias'] ?? null;
+        $this->name = $values['name'];
+        $this->description = $values['description'] ?? null;
+        $this->publishedVersion = $values['publishedVersion'] ?? null;
+        $this->publishedAt = $values['publishedAt'] ?? null;
+        $this->hasUnpublishedChanges = $values['hasUnpublishedChanges'];
+        $this->createdAt = $values['createdAt'];
+        $this->updatedAt = $values['updatedAt'];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

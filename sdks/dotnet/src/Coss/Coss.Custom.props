@@ -1,0 +1,14 @@
+<!-- Hand-written (listed in .fernignore): the NuGet package's metadata, imported by Coss.csproj. -->
+<Project>
+  <PropertyGroup>
+    <Title>coss.com</Title>
+    <Authors>coss.com</Authors>
+    <Company>coss.com</Company>
+    <Description>The coss.com SDK for .NET: every endpoint of the coss.com API, typed, with retries, idempotency keys and webhook verification.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://coss.com/docs/sdks/dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cosscom/coss</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>coss;email;api;sdk</PackageTags>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,77 @@
+<?php
+
+namespace Coss\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+use Coss\Core\Types\Union;
+
+class SegmentFilterConditionsItemKey extends JsonSerializableType
+{
+    /**
+     * @var value-of<SegmentFilterConditionsItemKeyField> $field
+     */
+    #[JsonProperty('field')]
+    public string $field;
+
+    /**
+     * @var string $key
+     */
+    #[JsonProperty('key')]
+    public string $key;
+
+    /**
+     * @var value-of<SegmentFilterConditionsItemKeyOp> $op
+     */
+    #[JsonProperty('op')]
+    public string $op;
+
+    /**
+     * @var (
+     *    string
+     *   |float
+     *   |bool
+     *   |array<(
+     *    string
+     *   |float
+     *   |bool
+     * )>
+     * )|null $value A list for `in`/`not_in`; none for `exists`/`not_exists`.
+     */
+    #[JsonProperty('value'), Union('string', 'float', 'bool', [new Union('string', 'float', 'bool')], 'null')]
+    public string|float|bool|array|null $value;
+
+    /**
+     * @param array{
+     *   field: value-of<SegmentFilterConditionsItemKeyField>,
+     *   key: string,
+     *   op: value-of<SegmentFilterConditionsItemKeyOp>,
+     *   value?: (
+     *    string
+     *   |float
+     *   |bool
+     *   |array<(
+     *    string
+     *   |float
+     *   |bool
+     * )>
+     * )|null,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->field = $values['field'];
+        $this->key = $values['key'];
+        $this->op = $values['op'];
+        $this->value = $values['value'] ?? null;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

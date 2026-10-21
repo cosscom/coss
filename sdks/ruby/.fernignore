@@ -1,0 +1,11 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+LICENSE
+CHANGELOG.md
+lib/coss/webhooks.rb
+test/custom
+.bundle
+vendor
+Gemfile.lock
+custom.gemspec.rb
+README.md
