@@ -156,4 +156,26 @@ final class ClientBehaviourTest extends TestCase
         $condition = new SegmentFilterConditionsItemKey(['field' => 'property', 'key' => 'plan', 'op' => 'in', 'value' => ['pro']]);
         $this->assertSame('{"field":"property","key":"plan","op":"in","value":["pro"]}', $condition->toJson());
     }
+
+    public function testKeepsHttpErrorsWithATimeoutOnGuzzle(): void
+    {
+        $history = [];
+        $stack = \GuzzleHttp\HandlerStack::create(new \GuzzleHttp\Handler\MockHandler([
+            new Response(422, ['Content-Type' => 'application/json'], '{"error":{"type":"invalid_request_error","code":"validation_error","message":"No.","request_id":"req_1"}}'),
+        ]));
+        $stack->push(\GuzzleHttp\Middleware::history($history));
+        $coss = new Coss('coss_test_key', options: [
+            'baseUrl' => 'https://api.coss.test',
+            'client' => new \GuzzleHttp\Client(['handler' => $stack]),
+            'timeout' => 5.0,
+        ]);
+        try {
+            $coss->email->get('email_1');
+            $this->fail('No CossApiException');
+        } catch (CossApiException $e) {
+            $this->assertSame(422, $e->getCode());
+            $this->assertStringContainsString('validation_error', (string) $e->getBody());
+        }
+        $this->assertCount(1, $history);
+    }
 }

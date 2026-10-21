@@ -111,7 +111,7 @@ class RetryDecoratingClient implements ClientInterface
         if (interface_exists('GuzzleHttp\ClientInterface')
             && $this->client instanceof \GuzzleHttp\ClientInterface
         ) {
-            return $this->client->send($request, ['timeout' => $timeout]);
+            return $this->client->send($request, ['timeout' => $timeout, 'http_errors' => false]);
         }
         if (class_exists('Symfony\Component\HttpClient\Psr18Client')
             && $this->client instanceof \Symfony\Component\HttpClient\Psr18Client

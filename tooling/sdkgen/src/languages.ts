@@ -40,7 +40,8 @@ export const LANGUAGES: readonly Language[] = [
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
  * - PHP serializes integers where a union takes a number (`float`), and only arrays as a union's
- *   array branch (it turned an omitted field into `[]`).
+ *   array branch (it turned an omitted field into `[]`); with a timeout, Guzzle reports HTTP
+ *   errors as responses (not exceptions that were retried).
  * - Ruby honours the per-request `timeout_in_seconds` and `max_retries` (`request_options`).
  * - Ruby returns the body of non-JSON responses (CSV exports, downloads) instead of nil.
  * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
@@ -209,6 +210,13 @@ export async function postProcess(language: Language, dir: string): Promise<void
         join(dir, "src/Core/Json/JsonSerializer.php"),
         "            return self::serializeArray((array)$data, $type);\n",
         "            if (!is_array($data)) {\n                throw new JsonException('Expected an array.');\n            }\n            return self::serializeArray($data, $type);\n",
+      );
+      // With a timeout, Guzzle is called through `send()`, which throws on 4xx/5xx by default:
+      // the error was retried as a network failure and lost its body.
+      await replaceIn(
+        join(dir, "src/Core/Client/RetryDecoratingClient.php"),
+        "return $this->client->send($request, ['timeout' => $timeout]);",
+        "return $this->client->send($request, ['timeout' => $timeout, 'http_errors' => false]);",
       );
       // The exceptions are named after the Fern organization (`cosscom`).
       for (const name of ["CosscomApiException", "CosscomException"]) {
