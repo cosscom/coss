@@ -105,4 +105,26 @@ class ClientBehaviourTest < Minitest::Test
 
     assert_equal raw, @coss.email.received.get_raw(id: "inb_1")
   end
+
+  def test_honours_the_per_request_retries_and_timeout
+    stub = stub_request(:get, "#{BASE}/v1/emails/email_1").to_return(*responses(503, 200))
+    timeouts = []
+    recorder = Module.new { define_method(:read_timeout=) { |value| (timeouts << value) && super(value) } }
+    Net::HTTP.prepend(recorder)
+    assert_raises(Coss::Errors::ResponseError) do
+      @coss.email.get(id: "email_1", request_options: { max_retries: 0, timeout_in_seconds: 5 })
+    end
+
+    assert_requested stub, times: 1
+    assert_includes timeouts, 5
+  end
+
+  def test_never_retries_what_the_api_does_not_deduplicate_whatever_the_caller_asks
+    stub = stub_request(:post, "#{BASE}/v1/webhook_endpoints").to_return(*responses(503, 200))
+    assert_raises(Coss::Errors::ResponseError) do
+      @coss.webhook_endpoints.create(url: "https://example.com/hooks", request_options: { max_retries: 5 })
+    end
+
+    assert_requested stub, times: 1
+  end
 end

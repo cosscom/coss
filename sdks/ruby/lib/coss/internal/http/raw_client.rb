@@ -48,6 +48,9 @@ module Coss
           # providers refresh at most once here; static providers are cheap.
           auth_headers = resolve_auth_headers
           idempotency_headers = request.method.to_s.upcase == "POST" ? { "Idempotency-Key" => Coss::Internal::IdempotencyKey.generate } : {}
+          options = request.request_options || {}
+          timeout = options[:timeout_in_seconds] || options["timeout_in_seconds"] || @timeout
+          max_retries = request.max_retries || options[:max_retries] || options["max_retries"]
           attempt = 0
           response = nil
 
@@ -61,14 +64,14 @@ module Coss
             )
 
             conn = connect(url)
-            conn.open_timeout = @timeout
-            conn.read_timeout = @timeout
-            conn.write_timeout = @timeout
-            conn.continue_timeout = @timeout
+            conn.open_timeout = timeout
+            conn.read_timeout = timeout
+            conn.write_timeout = timeout
+            conn.continue_timeout = timeout
 
             response = conn.request(http_request)
 
-            break unless should_retry?(response, attempt, max_retries: request.max_retries)
+            break unless should_retry?(response, attempt, max_retries: max_retries)
 
             delay = retry_delay(response, attempt)
             sleep(delay)

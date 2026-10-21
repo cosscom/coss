@@ -40,6 +40,7 @@ export const LANGUAGES: readonly Language[] = [
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
  * - PHP serializes integers where a union takes a number (`float`).
+ * - Ruby honours the per-request `timeout_in_seconds` and `max_retries` (`request_options`).
  * - Ruby returns the body of non-JSON responses (CSV exports, downloads) instead of nil.
  * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
  *   Ruby keeps the idempotency key out of the request body.
@@ -113,6 +114,27 @@ export async function postProcess(language: Language, dir: string): Promise<void
         ".rb",
         /^( +)return if code\.between\?\(200, 299\)$/gm,
         "$1return response.body if code.between?(200, 299)",
+      );
+      // The per-request `timeout_in_seconds` and `max_retries` (`request_options`) are
+      // documented but never read: the transport uses the client's. An endpoint that is never
+      // retried (`max_retries: 0`, `NO_RETRY`) stays so.
+      await replaceIn(
+        join(dir, "lib/coss/internal/http/raw_client.rb"),
+        "          attempt = 0\n          response = nil\n",
+        "          options = request.request_options || {}\n" +
+          '          timeout = options[:timeout_in_seconds] || options["timeout_in_seconds"] || @timeout\n' +
+          '          max_retries = request.max_retries || options[:max_retries] || options["max_retries"]\n' +
+          "          attempt = 0\n          response = nil\n",
+      );
+      await replaceIn(
+        join(dir, "lib/coss/internal/http/raw_client.rb"),
+        "            conn.open_timeout = @timeout\n            conn.read_timeout = @timeout\n            conn.write_timeout = @timeout\n            conn.continue_timeout = @timeout\n",
+        "            conn.open_timeout = timeout\n            conn.read_timeout = timeout\n            conn.write_timeout = timeout\n            conn.continue_timeout = timeout\n",
+      );
+      await replaceIn(
+        join(dir, "lib/coss/internal/http/raw_client.rb"),
+        "break unless should_retry?(response, attempt, max_retries: request.max_retries)",
+        "break unless should_retry?(response, attempt, max_retries: max_retries)",
       );
       // `nil.to_h` is `{}`: a nil kept above must stay nil.
       await replaceIn(
