@@ -39,6 +39,7 @@ export const LANGUAGES: readonly Language[] = [
  *   publishing configuration.
  * - .NET keeps an Idempotency-Key the caller passes (the generator overwrites it), and the
  *   `environment` resource's property no longer hides `System.Environment` inside the client.
+ * - PHP serializes integers where a union takes a number (`float`).
  * - PHP and Ruby send a field the caller sets to null (clearing it) instead of dropping it, and
  *   Ruby keeps the idempotency key out of the request body.
  * - PHP keeps an Idempotency-Key the caller passes (the generator overwrites it), and its
@@ -162,6 +163,13 @@ export async function postProcess(language: Language, dir: string): Promise<void
         ".php",
         /^( {8})\$this->(\w+) = \$values\['(\w+)'\] \?\? null;$/gm,
         "$1$this->$2 = $values['$3'] ?? null;\n$1if (array_key_exists('$3', $values)) {\n$1    $this->_setField('$2');\n$1}",
+      );
+      // An integer is a JSON number too: `float` union branches (a segment filter's values)
+      // refuse it otherwise.
+      await replaceIn(
+        join(dir, "src/Core/Json/JsonSerializer.php"),
+        "if ($type === 'float' && is_float($data)) {",
+        "if ($type === 'float' && (is_float($data) || is_int($data))) {",
       );
       // The exceptions are named after the Fern organization (`cosscom`).
       for (const name of ["CosscomApiException", "CosscomException"]) {

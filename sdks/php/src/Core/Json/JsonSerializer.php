@@ -129,7 +129,7 @@ class JsonSerializer
         }
 
         // Handle floats as a special case since gettype($data) returns "double" for float values in PHP.
-        if ($type === 'float' && is_float($data)) {
+        if ($type === 'float' && (is_float($data) || is_int($data))) {
             return $data;
         }
 

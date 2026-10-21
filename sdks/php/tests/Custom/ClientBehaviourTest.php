@@ -8,6 +8,7 @@ namespace Coss\Tests\Custom;
 use Coss\Coss;
 use Coss\Email\Requests\SendEmailBody;
 use Coss\Exceptions\CossApiException;
+use Coss\Types\SegmentFilterConditionsItemKey;
 use Coss\Types\SendEmailRequest;
 use Coss\WebhookEndpoints\Requests\CreateWebhookEndpointRequest;
 use Coss\WebhookEndpoints\Requests\UpdateWebhookEndpointRequest;
@@ -124,5 +125,16 @@ final class ClientBehaviourTest extends TestCase
             // The fake answers with an email, not an endpoint: only the request matters here.
         }
         $this->assertSame('{"description":null}', (string) $api->requests[0]->getBody());
+    }
+
+    public function testSerializesIntegersWhereAUnionTakesANumber(): void
+    {
+        $condition = new SegmentFilterConditionsItemKey([
+            'field' => 'property',
+            'key' => 'seats',
+            'op' => 'in',
+            'value' => [1, 2.5],
+        ]);
+        $this->assertSame('{"field":"property","key":"seats","op":"in","value":[1,2.5]}', $condition->toJson());
     }
 }
