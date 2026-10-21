@@ -1,0 +1,8 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+src/coss/webhooks.py
+tests/custom
+LICENSE
+CHANGELOG.md
+.venv
+README.md

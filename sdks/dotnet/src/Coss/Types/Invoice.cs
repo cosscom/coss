@@ -1,0 +1,122 @@
+using Coss.Core;
+using global::System.Text.Json;
+using global::System.Text.Json.Serialization;
+
+namespace Coss;
+
+[Serializable]
+public record Invoice : IJsonOnDeserialized
+{
+    [JsonExtensionData]
+    private readonly IDictionary<string, JsonElement> _extensionData =
+        new Dictionary<string, JsonElement>();
+
+    [JsonPropertyName("object")]
+    public required InvoiceObject Object { get; set; }
+
+    [JsonPropertyName("id")]
+    public required string Id { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("number")]
+    public string? Number { get; set; }
+
+    [JsonPropertyName("kind")]
+    public required InvoiceKind Kind { get; set; }
+
+    [JsonPropertyName("status")]
+    public required InvoiceStatus Status { get; set; }
+
+    [JsonPropertyName("currency")]
+    public required InvoiceCurrency Currency { get; set; }
+
+    [JsonPropertyName("period")]
+    public required InvoicePeriod Period { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("subtotal")]
+    public required long Subtotal { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("discount")]
+    public required long Discount { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("credit")]
+    public required long Credit { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("tax")]
+    public required long Tax { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("total")]
+    public required long Total { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("amount_paid")]
+    public required long AmountPaid { get; set; }
+
+    /// <summary>
+    /// An amount in cents (USD).
+    /// </summary>
+    [JsonPropertyName("amount_due")]
+    public required long AmountDue { get; set; }
+
+    [JsonPropertyName("collection_method")]
+    public required InvoiceCollectionMethod CollectionMethod { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("due_at")]
+    public DateTime? DueAt { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("finalized_at")]
+    public DateTime? FinalizedAt { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("paid_at")]
+    public DateTime? PaidAt { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("voided_at")]
+    public DateTime? VoidedAt { get; set; }
+
+    /// <summary>
+    /// A page to view (and pay) the invoice.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("hosted_url")]
+    public string? HostedUrl { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("pdf_url")]
+    public string? PdfUrl { get; set; }
+
+    [JsonPropertyName("lines")]
+    public IEnumerable<InvoiceLine> Lines { get; set; } = new List<InvoiceLine>();
+
+    [JsonIgnore]
+    public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
+
+    void IJsonOnDeserialized.OnDeserialized() =>
+        AdditionalProperties.CopyFromExtensionData(_extensionData);
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return JsonUtils.Serialize(this);
+    }
+}

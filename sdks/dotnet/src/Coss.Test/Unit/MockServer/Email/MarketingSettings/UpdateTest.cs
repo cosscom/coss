@@ -1,0 +1,120 @@
+using Coss.Email;
+using Coss.Test.Unit.MockServer;
+using Coss.Test.Utils;
+using NUnit.Framework;
+
+namespace Coss.Test.Unit.MockServer.Email.MarketingSettings;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class UpdateTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string requestJson = """
+            {
+              "display_name": null,
+              "mailing_address": null,
+              "confirmation_from": null,
+              "confirmation_subject": null,
+              "confirmation_html": null,
+              "confirmation_text": null,
+              "confirmed_redirect_url": null
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "object": "marketing_settings",
+              "display_name": "display_name",
+              "mailing_address": "mailing_address",
+              "double_opt_in_default": true,
+              "confirmation_from": "confirmation_from",
+              "confirmation_subject": "confirmation_subject",
+              "confirmation_html": "confirmation_html",
+              "confirmation_text": "confirmation_text",
+              "confirmed_redirect_url": "confirmed_redirect_url"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/v1/marketing_settings")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPatch()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Email.MarketingSettings.UpdateAsync(
+            new UpdateMarketingSettingsRequest
+            {
+                DisplayName = null,
+                MailingAddress = null,
+                DoubleOptInDefault = null,
+                ConfirmationFrom = null,
+                ConfirmationSubject = null,
+                ConfirmationHtml = null,
+                ConfirmationText = null,
+                ConfirmedRedirectUrl = null,
+            }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string requestJson = """
+            {
+              "mailing_address": "Acme Inc., 548 Market St, San Francisco, CA 94104, USA"
+            }
+            """;
+
+        const string mockResponse = """
+            {
+              "object": "marketing_settings",
+              "display_name": "Acme",
+              "mailing_address": "Acme Inc., 548 Market St, San Francisco, CA 94104, USA",
+              "double_opt_in_default": true,
+              "confirmation_from": "Acme <news@acme.com>",
+              "confirmation_subject": null,
+              "confirmation_html": null,
+              "confirmation_text": null,
+              "confirmed_redirect_url": "https://acme.com/welcome"
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/v1/marketing_settings")
+                    .WithHeader("Content-Type", "application/json")
+                    .UsingPatch()
+                    .WithBodyAsJson(requestJson)
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Email.MarketingSettings.UpdateAsync(
+            new UpdateMarketingSettingsRequest
+            {
+                MailingAddress = "Acme Inc., 548 Market St, San Francisco, CA 94104, USA",
+            }
+        );
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

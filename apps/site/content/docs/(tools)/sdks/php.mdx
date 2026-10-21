@@ -1,0 +1,111 @@
+---
+title: PHP
+description: Install coss/coss with Composer, configure the client, handle errors and verify webhooks in PHP.
+---
+
+The PHP SDK (PHP 8.1+) is `coss/coss` on Packagist. For Laravel's mailer, use the
+[Laravel driver](/docs/integrations/laravel) instead: it sends your mailables unchanged.
+
+```sh
+composer require coss/coss
+```
+
+It sends requests with any [PSR-18](https://www.php-fig.org/psr/psr-18/) HTTP client the project
+has, found by `php-http/discovery`. Without one, add Guzzle: `composer require guzzlehttp/guzzle`.
+
+```php
+<?php
+
+use Coss\Coss;
+use Coss\Email\Requests\SendEmailBody;
+use Coss\Types\SendEmailRequest;
+
+$client = new Coss(); // reads COSS_API_KEY
+
+$email = $client->email->send(new SendEmailBody([
+    'body' => new SendEmailRequest([
+        'from' => 'Acme <hello@acme.com>',
+        'to' => ['ada@example.com'],
+        'subject' => 'Welcome to Acme',
+        'html' => '<p>Thanks for signing up!</p>',
+    ]),
+]));
+echo $email->id, ' ', $email->status;
+```
+
+Requests are objects built from arrays whose keys are the API's fields in camelCase (`replyTo`,
+`scheduledAt`).
+
+## Options
+
+`new Coss(apiKey: …, apiVersion: …, options: [...])`:
+
+| Option                 | Default                  | Description                                 |
+| ---------------------- | ------------------------ | ------------------------------------------- |
+| `apiKey`               | `COSS_API_KEY`           | A `coss_live_…` or `coss_test_…` key        |
+| `apiVersion`           | The SDK's API version    | The `Coss-Version` sent with every request  |
+| `options['baseUrl']`   | `https://api.coss.com`   | The API origin                              |
+| `options['maxRetries']`| `2`                      | Retries of 408, 409, 429 and 5xx responses  |
+| `options['timeout']`   | The HTTP client's        | Seconds per request                         |
+| `options['client']`    | Discovered               | A PSR-18 `ClientInterface`                  |
+
+Every method also takes the same `options` for that call only.
+
+## Errors
+
+A failed request throws `Coss\Exceptions\CossApiException`: `getCode()` is the HTTP status and
+`getBody()` the API's [error envelope](/docs/api-reference/errors), as JSON. A request that
+never got a response throws `Coss\Exceptions\CossException`.
+
+```php
+use Coss\Exceptions\CossApiException;
+
+try {
+    $client->email->get('email_01k7c8m4q2f3e9v6t5r1n0p8yz');
+} catch (CossApiException $e) {
+    $error = json_decode($e->getBody(), true)['error'];
+    echo $e->getCode(), ' ', $error['code'], ' ', $error['request_id'];
+}
+```
+
+## Idempotency and lists
+
+Requests of endpoints that take an `Idempotency-Key` have an `idempotencyKey` field; every other
+`POST` gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last `id` as `after` while `hasMore` is true:
+
+```php
+use Coss\Email\Requests\ListEmailRequest;
+
+$after = null;
+do {
+    $page = $client->email->list(new ListEmailRequest(['limit' => 100, 'after' => $after]));
+    foreach ($page->data as $email) {
+        echo $email->id, "\n";
+    }
+    $after = end($page->data)->id ?? null;
+} while ($page->hasMore);
+```
+
+## Webhooks
+
+`Coss\Webhooks::verify` checks a [webhook](/docs/webhooks) request's signature and age and returns
+the parsed event (an array); it throws `Coss\WebhookVerificationException` when you must reject
+the request. Pass the raw body exactly as received and the headers (`getallheaders()`, PSR-7's
+`getHeaders()` or `$_SERVER`). `Coss\Webhooks::verifyLogDrainBatch` does the same for
+[log drains](/docs/log-drains) and returns the batch's lines.
+
+```php
+use Coss\Webhooks;
+use Coss\WebhookVerificationException;
+
+try {
+    $event = Webhooks::verify(file_get_contents('php://input'), getallheaders(), getenv('COSS_WEBHOOK_SECRET'));
+} catch (WebhookVerificationException) {
+    http_response_code(400);
+    exit;
+}
+error_log($event['type']);
+http_response_code(204);
+```

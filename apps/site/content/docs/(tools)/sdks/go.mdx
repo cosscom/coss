@@ -1,0 +1,120 @@
+---
+title: Go
+description: Install github.com/cosscom/coss-go, configure the client, handle errors and verify webhooks in Go.
+---
+
+The Go SDK (Go 1.21+) is the module `github.com/cosscom/coss-go`: the client is in its `client`
+package, the request and response types in the root package `coss`.
+
+```sh
+go get github.com/cosscom/coss-go
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	coss "github.com/cosscom/coss-go"
+	cossclient "github.com/cosscom/coss-go/client"
+)
+
+func main() {
+	client := cossclient.NewClient() // reads COSS_API_KEY
+
+	email, err := client.Email.Send(context.Background(), &coss.SendEmailBody{
+		Body: &coss.SendEmailRequest{
+			From:    "Acme <hello@acme.com>",
+			To:      &coss.SendEmailRequestTo{StringList: []string{"ada@example.com"}},
+			Subject: coss.String("Welcome to Acme"),
+			HTML:    coss.String("<p>Thanks for signing up!</p>"),
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(email.ID, email.Status)
+}
+```
+
+Optional fields are pointers (`coss.String`, `coss.Int` and friends make them). Fields that take
+one value or a list, like `to`, are a struct with one field per shape.
+
+## Options
+
+`NewClient` takes options from the `option` package (`github.com/cosscom/coss-go/option`); every
+method takes them too, for that call only.
+
+| Option                          | Default                | Description                                      |
+| ------------------------------- | ---------------------- | ------------------------------------------------ |
+| `option.WithAPIKey(key)`        | `COSS_API_KEY`         | A `coss_live_…` or `coss_test_…` key             |
+| `option.WithBaseURL(url)`       | `https://api.coss.com` | The API origin                                   |
+| `option.WithAPIVersion(&v)`     | The SDK's API version  | The `Coss-Version` sent with every request       |
+| `option.WithMaxAttempts(n)`     | `3`                    | Attempts, retrying 408, 409, 429 and 5xx responses |
+| `option.WithHTTPClient(client)` | `http.DefaultClient`   | Anything with `Do(*http.Request)`                |
+
+Timeouts come from the `context.Context` you pass, or your own `http.Client`.
+
+## Errors
+
+A failed request returns an error named after its status, holding the API's
+[error envelope](/docs/api-reference/errors) as `Body`; each wraps `*core.APIError` with the
+`StatusCode`.
+
+```go
+email, err := client.Email.Get(ctx, &coss.GetEmailRequest{ID: "email_01k7c8m4q2f3e9v6t5r1n0p8yz"})
+var notFound *coss.NotFoundError
+if errors.As(err, &notFound) {
+	fmt.Println(notFound.Body.Error.Code, notFound.Body.Error.RequestID)
+}
+```
+
+## Idempotency and lists
+
+Request types of endpoints that take an `Idempotency-Key` have an `IdempotencyKey` field; every
+other `POST` gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last `ID` as `After` while `HasMore` is true:
+
+```go
+request := &coss.ListEmailRequest{Limit: coss.Int(100)}
+for {
+	page, err := client.Email.List(ctx, request)
+	if err != nil {
+		return err
+	}
+	for _, email := range page.Data {
+		fmt.Println(email.ID)
+	}
+	if !page.HasMore {
+		break
+	}
+	request.After = coss.String(page.Data[len(page.Data)-1].ID)
+}
+```
+
+## Webhooks
+
+`coss.VerifyWebhook` checks a [webhook](/docs/webhooks) request's signature and age, then decodes
+the event into the value you pass (like `json.Unmarshal`). It returns a
+`*coss.WebhookVerificationError` when you must reject the request. Pass the raw body exactly as
+received. `coss.VerifyLogDrainBatch` does the same for [log drains](/docs/log-drains) and returns
+the batch's lines.
+
+```go
+http.HandleFunc("/webhooks/coss", func(w http.ResponseWriter, r *http.Request) {
+	payload, _ := io.ReadAll(r.Body)
+	var event coss.EmailWebhookEvent
+	if err := coss.VerifyWebhook(payload, r.Header, os.Getenv("COSS_WEBHOOK_SECRET"), &event); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(event.Type)
+	w.WriteHeader(http.StatusNoContent)
+})
+```
+
+The event types (`coss.EmailWebhookEvent`, `coss.DomainWebhookEvent`, …) are generated from the
+API's; decode into a `map[string]any` first if one endpoint receives several kinds.

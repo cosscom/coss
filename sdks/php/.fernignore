@@ -1,0 +1,11 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+LICENSE
+CHANGELOG.md
+src/Webhooks.php
+src/WebhookVerificationException.php
+tests/Custom
+vendor
+composer.lock
+.phpunit.cache
+README.md

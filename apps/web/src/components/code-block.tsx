@@ -25,12 +25,12 @@ export function CodeBlock(props: { samples: CodeSample[]; className?: string }) 
           <span className="size-2.5 rounded-full border" />
           <span className="size-2.5 rounded-full border" />
         </div>
-        <div className="flex min-w-0 flex-1 gap-0.5" role="tablist">
+        <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto" role="tablist">
           {props.samples.map((item, index) => (
             <button
               aria-selected={index === selected}
               className={cn(
-                "rounded-md px-2 py-1 font-mono text-xs transition-colors",
+                "shrink-0 rounded-md px-2 py-1 font-mono text-xs transition-colors",
                 index === selected
                   ? "bg-accent text-foreground"
                   : "text-muted-foreground hover:text-foreground",

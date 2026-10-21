@@ -4,6 +4,8 @@
  */
 import { describe, expect, test } from "bun:test";
 import spec from "@coss/api/openapi.json";
+import { SDK_METHODS } from "@coss/sdkgen/methods";
+import snippets from "@coss/sdkgen/snippets.json";
 import { Coss } from "coss";
 import { renderSdkSample, type SampleRequest, SDK_SAMPLES, tsValue } from "../src/lib/sdk-samples";
 
@@ -21,6 +23,28 @@ describe("SDK samples", () => {
   test("cover exactly the operations in openapi.json", () => {
     expect(operations.length).toBeGreaterThan(0);
     expect(Object.keys(SDK_SAMPLES).sort()).toEqual(operations.sort());
+  });
+
+  // Every generated SDK (sdks/*) names its methods after these.
+  test("name the same methods as the generated SDKs", () => {
+    const methods = Object.fromEntries(
+      Object.entries(SDK_SAMPLES).map(([operation, sample]) => [operation, sample.method]),
+    );
+    expect(methods).toEqual({ ...SDK_METHODS });
+  });
+
+  // A new operation has none until main's "Regenerate SDKs" PR (`bun run sdks:generate`) adds it.
+  test("have the generated SDKs' samples of existing operations only, in every language", () => {
+    const languages = ["python", "go", "ruby", "php", "java", "csharp"];
+    expect(Object.keys(snippets).filter((operation) => !operations.includes(operation))).toEqual(
+      [],
+    );
+    for (const [operation, samples] of Object.entries(snippets)) {
+      expect({ operation, languages: Object.keys(samples).sort() }).toEqual({
+        operation,
+        languages: [...languages].sort(),
+      });
+    }
   });
 
   test("name methods that exist on the client", () => {

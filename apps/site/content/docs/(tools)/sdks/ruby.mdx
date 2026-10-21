@@ -1,0 +1,92 @@
+---
+title: Ruby
+description: Install the coss gem, configure the client, handle errors and verify webhooks in Ruby.
+---
+
+The Ruby SDK (Ruby 3.3+) is the `coss` gem. For Action Mailer, use the
+[Rails driver](/docs/integrations/rails) instead: it sends your mailers' messages unchanged.
+
+```sh
+bundle add coss
+```
+
+```ruby
+require "coss"
+
+client = Coss::Client.new # reads COSS_API_KEY
+
+email = client.email.send_(
+  from: "Acme <hello@acme.com>",
+  to: ["ada@example.com"],
+  subject: "Welcome to Acme",
+  html: "<p>Thanks for signing up!</p>"
+)
+puts email.id, email.status
+```
+
+Arguments are keywords named like the API's fields (`reply_to:`, `scheduled_at:`). Sending is
+`send_`: `send` is a method of every Ruby object.
+
+## Options
+
+| Option         | Default                | Description                                 |
+| -------------- | ---------------------- | ------------------------------------------- |
+| `api_key:`     | `COSS_API_KEY`         | A `coss_live_…` or `coss_test_…` key        |
+| `base_url:`    | `https://api.coss.com` | The API origin                              |
+| `api_version:` | The SDK's API version  | The `Coss-Version` sent with every request  |
+| `max_retries:` | `2`                    | Retries of 408, 409, 429 and 5xx responses  |
+
+Every method also takes `request_options:`, e.g. `request_options: { max_retries: 0, timeout_in_seconds: 5 }`.
+
+## Errors
+
+A failed request raises a `Coss::Errors::ResponseError` subclass named after its status
+(`Coss::Errors::NotFoundError`, `UnprocessableEntityError`, `TooManyRequestsError`, …; client
+errors are `ClientError`s, 5xx `ServerError`s). `code` is the HTTP status and the message is the
+API's [error envelope](/docs/api-reference/errors):
+
+```ruby
+begin
+  client.email.get(id: "email_01k7c8m4q2f3e9v6t5r1n0p8yz")
+rescue Coss::Errors::NotFoundError => e
+  error = JSON.parse(e.message)["error"]
+  puts e.code, error["code"], error["request_id"]
+end
+```
+
+## Idempotency and lists
+
+Methods whose endpoint takes an `Idempotency-Key` accept `idempotency_key:`; every other `POST`
+gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last `id` as `after:` while `has_more` is true:
+
+```ruby
+page = client.email.list(limit: 100)
+loop do
+  page.data.each { |email| puts email.id }
+  break unless page.has_more
+
+  page = client.email.list(limit: 100, after: page.data.last.id)
+end
+```
+
+## Webhooks
+
+`Coss::Webhooks.verify` checks a [webhook](/docs/webhooks) request's signature and age and
+returns the parsed event (a Hash); it raises `Coss::WebhookVerificationError` when you must
+reject the request. Pass the raw body exactly as received, and the headers as a Hash, a Rack env
+or Rails' `request.headers`. `Coss::Webhooks.verify_log_drain_batch` does the same for
+[log drains](/docs/log-drains) and returns the batch's lines.
+
+```ruby
+class CossWebhooksController < ActionController::API
+  def create
+    event = Coss::Webhooks.verify(request.raw_post, request.headers, ENV.fetch("COSS_WEBHOOK_SECRET"))
+    Rails.logger.info(event["type"])
+    head :no_content
+  rescue Coss::WebhookVerificationError
+    head :bad_request
+  end
+end
+```

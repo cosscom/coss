@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: Send your first email with the TypeScript SDK.
+description: Send your first email with the TypeScript SDK, or the SDK of another language.
 icon: Rocket
 ---
 
@@ -54,6 +54,110 @@ if (error) {
 ```
 
 Every method returns `{ data, error }` and never throws for API or network failures.
+
+The same email from one of the [other SDKs](/docs/sdks), which read `COSS_API_KEY` too:
+
+<Tabs items={["Python", "Go", "Ruby", "PHP", "Java", ".NET"]}>
+<Tab value="Python">
+
+```python
+# pip install cosscom
+from coss import Coss
+
+client = Coss()
+email = client.email.send(
+    from_="Acme <onboarding@acme.com>",
+    to=["user@example.com"],
+    subject="Hello from coss.com",
+    html="<p>It works!</p>",
+)
+print(email.id, email.status)
+```
+
+</Tab>
+<Tab value="Go">
+
+```go
+// go get github.com/cosscom/coss-go
+client := cossclient.NewClient()
+email, err := client.Email.Send(context.Background(), &coss.SendEmailBody{
+	Body: &coss.SendEmailRequest{
+		From:    "Acme <onboarding@acme.com>",
+		To:      &coss.SendEmailRequestTo{StringList: []string{"user@example.com"}},
+		Subject: coss.String("Hello from coss.com"),
+		HTML:    coss.String("<p>It works!</p>"),
+	},
+})
+```
+
+</Tab>
+<Tab value="Ruby">
+
+```ruby
+# bundle add coss
+require "coss"
+
+client = Coss::Client.new
+email = client.email.send_(
+  from: "Acme <onboarding@acme.com>",
+  to: ["user@example.com"],
+  subject: "Hello from coss.com",
+  html: "<p>It works!</p>"
+)
+puts email.id, email.status
+```
+
+</Tab>
+<Tab value="PHP">
+
+```php
+// composer require coss/coss
+$client = new Coss\Coss();
+$email = $client->email->send(new Coss\Email\Requests\SendEmailBody([
+    'body' => new Coss\Types\SendEmailRequest([
+        'from' => 'Acme <onboarding@acme.com>',
+        'to' => ['user@example.com'],
+        'subject' => 'Hello from coss.com',
+        'html' => '<p>It works!</p>',
+    ]),
+]));
+echo $email->id, ' ', $email->status;
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+// implementation("com.coss:coss:0.1.0")
+Coss client = Coss.builder().build();
+Email email = client.email().send(SendEmailRequest.builder()
+        .from("Acme <onboarding@acme.com>")
+        .to(SendEmailRequestTo.of(Arrays.asList("user@example.com")))
+        .subject("Hello from coss.com")
+        .html("<p>It works!</p>")
+        .build());
+```
+
+</Tab>
+<Tab value=".NET">
+
+```csharp
+// dotnet add package Coss
+var client = new Coss.CossClient();
+var email = await client.Email.SendAsync(new Coss.SendEmailBody
+{
+    Body = new Coss.SendEmailRequest
+    {
+        From = "Acme <onboarding@acme.com>",
+        To = new[] { "user@example.com" },
+        Subject = "Hello from coss.com",
+        Html = "<p>It works!</p>",
+    },
+});
+```
+
+</Tab>
+</Tabs>
 
 </Step>
 <Step>

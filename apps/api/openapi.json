@@ -36,6 +36,34 @@
       "description": "Send text messages from the organization's numbers, follow their delivery, and read replies and opt-outs."
     },
     {
+      "name": "Receiving",
+      "description": "Email received at the environment's inbound address and receiving domains."
+    },
+    {
+      "name": "Contacts",
+      "description": "The people marketing email goes to, with their properties and consent."
+    },
+    {
+      "name": "Audiences",
+      "description": "Lists of contacts that broadcasts are sent to."
+    },
+    {
+      "name": "Segments",
+      "description": "Contacts chosen by their properties, always up to date."
+    },
+    {
+      "name": "Topics",
+      "description": "What contacts subscribe to, and the environment's marketing settings."
+    },
+    {
+      "name": "Broadcasts",
+      "description": "Marketing email sent to an audience or segment."
+    },
+    {
+      "name": "Reputation",
+      "description": "The organization's sending standing (good, warning or suspended) and why."
+    },
+    {
       "name": "Domains",
       "description": "The organization's verified sending domains."
     },
@@ -72,8 +100,16 @@
       "description": "The environment's API requests, email events and webhook attempts."
     },
     {
+      "name": "Log drains",
+      "description": "Endpoints of yours that receive the environment's logs as signed batches."
+    },
+    {
       "name": "Audit log",
       "description": "Changes to the organization, by members, API keys and coss.com support."
+    },
+    {
+      "name": "Billing",
+      "description": "The organization's plan, usage, invoices and credits."
     },
     {
       "name": "Risk",
@@ -89,6 +125,2921 @@
       }
     },
     "schemas": {
+      "EmailWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id: the same as `EmailEvent.id`, and the `webhook-id` header.",
+            "examples": [
+              "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "email.sent",
+              "email.delivered",
+              "email.delivery_delayed",
+              "email.bounced",
+              "email.complained",
+              "email.failed",
+              "email.suppressed",
+              "email.scheduled",
+              "email.canceled",
+              "email.opened",
+              "email.clicked",
+              "email.rescheduled",
+              "email.unsubscribed"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "bounce": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "permanent",
+                      "transient",
+                      "undetermined"
+                    ]
+                  },
+                  "sub_type": {
+                    "type": "string"
+                  },
+                  "diagnostic_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "sub_type",
+                  "diagnostic_code"
+                ]
+              },
+              "complaint": {
+                "type": "object",
+                "properties": {
+                  "feedback_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sub_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "feedback_type",
+                  "sub_type"
+                ]
+              },
+              "delay": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "expires_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  },
+                  "diagnostic_code": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "expires_at",
+                  "diagnostic_code"
+                ]
+              },
+              "delivery": {
+                "type": "object",
+                "properties": {
+                  "smtp_response": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "smtp_response"
+                ]
+              },
+              "failure": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ]
+              },
+              "suppression": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "bounce",
+                      "complaint",
+                      "manual",
+                      "import",
+                      "unsubscribe"
+                    ],
+                    "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category."
+                  }
+                },
+                "required": [
+                  "id",
+                  "scope",
+                  "reason"
+                ],
+                "description": "Only for `email.suppressed`: the entry that matched the recipient."
+              },
+              "unsubscribe": {
+                "type": "object",
+                "properties": {
+                  "contact_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "topic": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "contact_id",
+                  "topic"
+                ],
+                "description": "Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed (from marketing, or from the email's topic, `topic`)."
+              },
+              "open": {
+                "type": "object",
+                "properties": {
+                  "user_agent": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "user_agent"
+                ],
+                "description": "Only for `email.opened`."
+              },
+              "click": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The original link that was clicked."
+                  },
+                  "link_position": {
+                    "type": "integer",
+                    "description": "Index of the link among the email's tracked links."
+                  },
+                  "user_agent": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "url",
+                  "link_position",
+                  "user_agent"
+                ],
+                "description": "Only for `email.clicked`."
+              },
+              "reschedule": {
+                "type": "object",
+                "properties": {
+                  "scheduled_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The new time."
+                  },
+                  "previous_scheduled_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "The time it replaced."
+                  }
+                },
+                "required": [
+                  "scheduled_at",
+                  "previous_scheduled_at"
+                ],
+                "description": "Only for `email.rescheduled`."
+              },
+              "email_id": {
+                "type": "string"
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subject": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "value"
+                  ]
+                }
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "recipient": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "email_id",
+              "from",
+              "to",
+              "subject",
+              "tags",
+              "category",
+              "sandbox",
+              "recipient",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "email.delivered",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-10T12:00:03.000Z",
+            "data": {
+              "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "Acme <onboarding@acme.com>",
+              "to": [
+                "user@example.com"
+              ],
+              "subject": "Welcome to Acme",
+              "tags": [
+                {
+                  "name": "template",
+                  "value": "welcome"
+                }
+              ],
+              "category": "onboarding",
+              "sandbox": false,
+              "recipient": "user@example.com",
+              "occurred_at": "2026-10-10T12:00:02.000Z",
+              "delivery": {
+                "smtp_response": "250 2.0.0 OK"
+              }
+            }
+          }
+        ]
+      },
+      "ReceivedEmailWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, and the `webhook-id` header.",
+            "examples": [
+              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "email.received"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "received_email_id": {
+                "type": "string"
+              },
+              "from": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "to": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "recipients": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "subject": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "message_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attachment_count": {
+                "type": "integer"
+              },
+              "size": {
+                "type": "integer"
+              },
+              "spam": {
+                "type": "boolean"
+              },
+              "verdicts": {
+                "$ref": "#/components/schemas/ReceivedEmailVerdicts"
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "received_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "received_email_id",
+              "from",
+              "to",
+              "recipients",
+              "subject",
+              "message_id",
+              "attachment_count",
+              "size",
+              "spam",
+              "verdicts",
+              "sandbox",
+              "received_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
+            "object": "event",
+            "type": "email.received",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-10T12:00:01.000Z",
+            "data": {
+              "received_email_id": "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "Jane Doe <jane@example.com>",
+              "to": [
+                "support@inbound.acme.com"
+              ],
+              "recipients": [
+                "support@inbound.acme.com"
+              ],
+              "subject": "Re: Your order",
+              "message_id": "<CAF3k2m9qp4ld8sv@mail.example.com>",
+              "attachment_count": 1,
+              "size": 61432,
+              "spam": false,
+              "verdicts": {
+                "spam": "pass",
+                "virus": "pass",
+                "spf": "pass",
+                "dkim": "pass",
+                "dmarc": "pass",
+                "dmarc_policy": null
+              },
+              "sandbox": false,
+              "received_at": "2026-10-10T12:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "ReceivedEmailVerdicts": {
+        "type": "object",
+        "properties": {
+          "spam": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "gray",
+                  "processing_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "virus": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "gray",
+                  "processing_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "spf": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "gray",
+                  "processing_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dkim": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "gray",
+                  "processing_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dmarc": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "gray",
+                  "processing_failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dmarc_policy": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sender domain's DMARC policy (`none`, `quarantine` or `reject`) when DMARC failed."
+          }
+        },
+        "required": [
+          "spam",
+          "virus",
+          "spf",
+          "dkim",
+          "dmarc",
+          "dmarc_policy"
+        ],
+        "description": "What the receiving server concluded: `pass`, `fail`, `gray` (could not decide) or `processing_failed`; `null` when the check did not run.",
+        "examples": [
+          {
+            "spam": "pass",
+            "virus": "pass",
+            "spf": "pass",
+            "dkim": "pass",
+            "dmarc": "pass",
+            "dmarc_policy": null
+          }
+        ]
+      },
+      "DomainWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, and the `webhook-id` header.",
+            "examples": [
+              "evt_01k7c8m4r0c2b8w9y3d5f6g7j1"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "domain.dmarc_report_received"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "organization_id": {
+                "type": "string"
+              },
+              "domain_id": {
+                "type": "string"
+              },
+              "domain": {
+                "type": "string"
+              },
+              "dmarc_report_id": {
+                "type": "string"
+              },
+              "reporter": {
+                "type": "string",
+                "description": "The reporting organization (`org_name`)."
+              },
+              "period_start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "period_end": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "messages": {
+                "type": "integer"
+              },
+              "passing": {
+                "type": "integer"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "organization_id",
+              "domain_id",
+              "domain",
+              "dmarc_report_id",
+              "reporter",
+              "period_start",
+              "period_end",
+              "messages",
+              "passing",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7j1",
+            "object": "event",
+            "type": "domain.dmarc_report_received",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-10T03:12:45.000Z",
+            "data": {
+              "organization_id": "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "domain_id": "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "domain": "acme.com",
+              "dmarc_report_id": "dmarcrep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "reporter": "google.com",
+              "period_start": "2026-10-09T00:00:00.000Z",
+              "period_end": "2026-10-09T23:59:59.000Z",
+              "messages": 1204,
+              "passing": 1200,
+              "occurred_at": "2026-10-10T03:12:44.000Z"
+            }
+          }
+        ]
+      },
+      "AccountWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, also sent as the `webhook-id` header.",
+            "example": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "account.reputation_warning",
+              "account.reputation_recovered",
+              "account.suspended",
+              "account.reinstated",
+              "account.marketing_paused",
+              "account.marketing_reinstated"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "organization_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "warning",
+                  "suspended"
+                ]
+              },
+              "previous_status": {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "warning",
+                  "suspended"
+                ]
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "checks": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReputationCheck"
+                }
+              },
+              "marketing": {
+                "$ref": "#/components/schemas/MarketingStanding"
+              }
+            },
+            "required": [
+              "organization_id",
+              "status",
+              "previous_status",
+              "reason",
+              "occurred_at",
+              "checks",
+              "marketing"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ]
+      },
+      "ReputationCheck": {
+        "type": "object",
+        "properties": {
+          "trigger": {
+            "type": "string",
+            "description": "What was measured, e.g. `bounce_rate` or `complaint_rate`.",
+            "example": "bounce_rate"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "warning",
+              "suspend"
+            ],
+            "description": "`ok`, `warning` (at or above the warning threshold) or `suspend` (at or above the suspension threshold)."
+          },
+          "message": {
+            "type": "string"
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "`count / volume`; `null` with no volume."
+          },
+          "count": {
+            "type": "integer",
+            "description": "Matching recipients, e.g. permanent bounces."
+          },
+          "volume": {
+            "type": "integer",
+            "description": "Recipients sent to (live environments) in the window."
+          },
+          "warning_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "suspend_threshold": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minimum_volume": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Below this volume the rate is reported but never acted on."
+          }
+        },
+        "required": [
+          "trigger",
+          "severity",
+          "message",
+          "rate",
+          "count",
+          "volume",
+          "warning_threshold",
+          "suspend_threshold",
+          "minimum_volume"
+        ]
+      },
+      "MarketingStanding": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "description": "`active`, or `paused`: the marketing stream's bounce or complaint rate reached its suspension threshold, so marketing sends are refused until coss.com support lifts the pause. Transactional email is unaffected."
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The trigger behind a pause.",
+            "example": "marketing_complaint_rate"
+          },
+          "paused_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "paused_at"
+        ]
+      },
+      "BillingWebhookEvent": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.invoice_finalized",
+                  "billing.invoice_paid",
+                  "billing.invoice_voided"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "invoice": {
+                    "$ref": "#/components/schemas/InvoiceSummary"
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "invoice"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.invoice_payment_failed"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "invoice": {
+                    "$ref": "#/components/schemas/InvoiceSummary"
+                  },
+                  "failure": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "message"
+                    ]
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "invoice",
+                  "failure"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.plan_changed"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "change": {
+                    "type": "string",
+                    "enum": [
+                      "upgrade",
+                      "downgrade",
+                      "cancellation",
+                      "reverted",
+                      "contract"
+                    ],
+                    "description": "`upgrade` (in effect now), `downgrade`/`cancellation` (scheduled), `reverted` (a scheduled change was undone), `contract` (a contract changed)."
+                  },
+                  "plan": {
+                    "type": "string",
+                    "enum": [
+                      "free",
+                      "pro",
+                      "scale",
+                      "enterprise"
+                    ],
+                    "description": "The plan from `effective_at`."
+                  },
+                  "previous_plan": {
+                    "type": "string",
+                    "enum": [
+                      "free",
+                      "pro",
+                      "scale",
+                      "enterprise"
+                    ]
+                  },
+                  "effective_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "change",
+                  "plan",
+                  "previous_plan",
+                  "effective_at"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.usage_threshold_reached"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "percent": {
+                    "type": "integer",
+                    "description": "The threshold crossed, e.g. 80."
+                  },
+                  "of": {
+                    "type": "string",
+                    "enum": [
+                      "credit",
+                      "allowance"
+                    ],
+                    "description": "`credit`: the month's usage credit; `allowance`: a capped plan's included units."
+                  },
+                  "meter": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "email.recipients",
+                      "email.dedicated_ip",
+                      "sms.segments",
+                      "sms.received_segments",
+                      "sms.numbers",
+                      "sms.registrations",
+                      "video.participant_minutes",
+                      "scheduling.bookings",
+                      null
+                    ],
+                    "description": "The allowance's meter (`of: allowance`)."
+                  },
+                  "period": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end"
+                    ]
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "percent",
+                  "of",
+                  "meter",
+                  "period"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.hold_placed",
+                  "billing.hold_lifted"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "delinquent",
+                      "spend_limit",
+                      "admin"
+                    ]
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "reason"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.credit_granted"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "credit": {
+                    "$ref": "#/components/schemas/Credit"
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "credit"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.budget_threshold_reached"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "project",
+                      "api_key"
+                    ],
+                    "description": "What the budget is for: a member's personal API keys (`user`), a project or an API key."
+                  },
+                  "target_id": {
+                    "type": "string",
+                    "description": "The user, project or API key id."
+                  },
+                  "percent": {
+                    "type": "integer",
+                    "description": "The threshold crossed, e.g. 80."
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "description": "The monthly budget, in cents."
+                  },
+                  "spent": {
+                    "type": "integer",
+                    "description": "Spent this month when it was crossed, in cents."
+                  },
+                  "period": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "end": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    },
+                    "required": [
+                      "start",
+                      "end"
+                    ]
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "scope",
+                  "target_id",
+                  "percent",
+                  "amount",
+                  "spent",
+                  "period"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "The event id, also sent as the `webhook-id` header.",
+                "examples": [
+                  "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                ]
+              },
+              "object": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "api_version": {
+                "type": "string",
+                "description": "The API version this event is rendered in: the receiving endpoint's `api_version`.",
+                "examples": [
+                  "2026-10-10"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "billing.budget_hold_placed",
+                  "billing.budget_hold_lifted"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "organization_id": {
+                    "type": "string"
+                  },
+                  "occurred_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "When it happened: sort events by it."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "project",
+                      "api_key"
+                    ],
+                    "description": "What the budget is for: a member's personal API keys (`user`), a project or an API key."
+                  },
+                  "target_id": {
+                    "type": "string",
+                    "description": "The user, project or API key id."
+                  }
+                },
+                "required": [
+                  "organization_id",
+                  "occurred_at",
+                  "scope",
+                  "target_id"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "api_version",
+              "created_at",
+              "type",
+              "data"
+            ]
+          }
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "billing.invoice_paid",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-01T00:21:00.000Z",
+            "data": {
+              "organization_id": "org_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "occurred_at": "2026-11-01T00:21:00.000Z",
+              "invoice": {
+                "object": "invoice",
+                "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "number": "COSS-000042",
+                "kind": "period",
+                "status": "paid",
+                "currency": "usd",
+                "period": {
+                  "start": "2026-10-01T00:00:00.000Z",
+                  "end": "2026-11-01T00:00:00.000Z"
+                },
+                "subtotal": 7300,
+                "discount": 0,
+                "credit": 2500,
+                "tax": 0,
+                "total": 4800,
+                "amount_paid": 4800,
+                "amount_due": 0,
+                "collection_method": "charge_automatically",
+                "due_at": "2026-11-01T00:20:00.000Z",
+                "finalized_at": "2026-11-01T00:20:00.000Z",
+                "paid_at": "2026-11-01T00:21:00.000Z",
+                "voided_at": null,
+                "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
+                "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
+              }
+            }
+          }
+        ]
+      },
+      "InvoiceSummary": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "invoice"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "period",
+              "plan_change",
+              "one_off",
+              "final"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "paid",
+              "void",
+              "uncollectible"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "usd"
+            ]
+          },
+          "period": {
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ]
+          },
+          "subtotal": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "discount": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "credit": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "tax": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "total": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_paid": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "amount_due": {
+            "type": "integer",
+            "description": "An amount in cents (USD)."
+          },
+          "collection_method": {
+            "type": "string",
+            "enum": [
+              "charge_automatically",
+              "send_invoice"
+            ]
+          },
+          "due_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "finalized_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "paid_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "voided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "hosted_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A page to view (and pay) the invoice."
+          },
+          "pdf_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "number",
+          "kind",
+          "status",
+          "currency",
+          "period",
+          "subtotal",
+          "discount",
+          "credit",
+          "tax",
+          "total",
+          "amount_paid",
+          "amount_due",
+          "collection_method",
+          "due_at",
+          "finalized_at",
+          "paid_at",
+          "voided_at",
+          "hosted_url",
+          "pdf_url"
+        ],
+        "examples": [
+          {
+            "object": "invoice",
+            "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "number": "COSS-000042",
+            "kind": "period",
+            "status": "paid",
+            "currency": "usd",
+            "period": {
+              "start": "2026-10-01T00:00:00.000Z",
+              "end": "2026-11-01T00:00:00.000Z"
+            },
+            "subtotal": 7300,
+            "discount": 0,
+            "credit": 2500,
+            "tax": 0,
+            "total": 4800,
+            "amount_paid": 4800,
+            "amount_due": 0,
+            "collection_method": "charge_automatically",
+            "due_at": "2026-11-01T00:20:00.000Z",
+            "finalized_at": "2026-11-01T00:20:00.000Z",
+            "paid_at": "2026-11-01T00:21:00.000Z",
+            "voided_at": null,
+            "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
+            "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
+          }
+        ]
+      },
+      "Credit": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "credit"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "amount",
+              "units"
+            ],
+            "description": "`amount`: dollars (`amount` and `remaining` in cents); `units`: free units of `meter`."
+          },
+          "amount": {
+            "type": "integer"
+          },
+          "remaining": {
+            "type": "integer"
+          },
+          "meter": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "email.recipients",
+              "email.dedicated_ip",
+              "sms.segments",
+              "sms.received_segments",
+              "sms.numbers",
+              "sms.registrations",
+              "video.participant_minutes",
+              "scheduling.bookings",
+              null
+            ],
+            "description": "What a `units` credit covers."
+          },
+          "meters": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string",
+              "enum": [
+                "email.recipients",
+                "email.dedicated_ip",
+                "sms.segments",
+                "sms.received_segments",
+                "sms.numbers",
+                "sms.registrations",
+                "video.participant_minutes",
+                "scheduling.bookings"
+              ],
+              "description": "What is counted, e.g. `email.recipients`."
+            },
+            "description": "What an `amount` credit pays for (`null`: any usage)."
+          },
+          "applies_to": {
+            "type": "string",
+            "enum": [
+              "usage",
+              "any"
+            ],
+            "description": "`any`: also fees and other charges."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "fee",
+              "commitment",
+              "support",
+              "promotion",
+              "refund",
+              "sla"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "voided_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "kind",
+          "amount",
+          "remaining",
+          "meter",
+          "meters",
+          "applies_to",
+          "source",
+          "description",
+          "effective_at",
+          "expires_at",
+          "voided_at",
+          "created_at"
+        ],
+        "examples": [
+          {
+            "object": "credit",
+            "id": "bcg_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "kind": "units",
+            "amount": 50000,
+            "remaining": 12000,
+            "meter": "email.recipients",
+            "meters": null,
+            "applies_to": "usage",
+            "source": "support",
+            "description": "Migration credit",
+            "effective_at": "2026-10-01T00:00:00.000Z",
+            "expires_at": "2027-01-01T00:00:00.000Z",
+            "voided_at": null,
+            "created_at": "2026-10-01T09:30:00.000Z"
+          }
+        ]
+      },
+      "RiskWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, also sent as the `webhook-id` header.",
+            "example": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "risk.assessment.review",
+              "risk.assessment.reviewed"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "assessment_id": {
+                "type": "string"
+              },
+              "event": {
+                "$ref": "#/components/schemas/RiskEvent"
+              },
+              "event_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "decision": {
+                "$ref": "#/components/schemas/RiskDecision"
+              },
+              "score": {
+                "type": "number"
+              },
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RiskReason"
+                }
+              },
+              "user_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "outcome": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RiskOutcome"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "`risk.assessment.reviewed`: the outcome that resolved the review."
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "assessment_id",
+              "event",
+              "event_name",
+              "decision",
+              "score",
+              "reasons",
+              "user_id",
+              "outcome",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ]
+      },
+      "RiskEvent": {
+        "type": "string",
+        "enum": [
+          "signup",
+          "login",
+          "message",
+          "checkout",
+          "custom"
+        ],
+        "description": "What is being assessed. `custom` events are named by `event_name`; velocity is counted per event."
+      },
+      "RiskDecision": {
+        "type": "string",
+        "enum": [
+          "allow",
+          "review",
+          "block"
+        ],
+        "description": "`allow`: go ahead. `review`: suspicious; let it through with limits, or hold it for a person. `block`: refuse it."
+      },
+      "RiskReason": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "email.invalid",
+              "email.disposable",
+              "email.undeliverable",
+              "email.role_account",
+              "email.typo",
+              "email.domain_new",
+              "ip.tor",
+              "ip.vpn_network",
+              "ip.hosting_provider",
+              "ip.vpn",
+              "ip.proxy",
+              "ip.relay",
+              "ip.private",
+              "velocity.signups_per_ip_1h",
+              "velocity.signups_per_ip_24h",
+              "velocity.signups_per_subnet_1h",
+              "velocity.signups_per_email_domain_1h",
+              "velocity.signups_per_mailbox_24h",
+              "velocity.signups_per_device_24h",
+              "velocity.checkouts_per_ip_1h",
+              "velocity.checkouts_per_user_1h",
+              "velocity.checkouts_per_card_24h",
+              "velocity.logins_per_ip_1h",
+              "velocity.logins_per_user_1h",
+              "velocity.events_per_ip_1h",
+              "velocity.events_per_user_1h",
+              "duplicate.canonical_mailbox",
+              "duplicate.device",
+              "history.fraud_mailbox",
+              "history.fraud_user",
+              "history.fraud_ip",
+              "history.fraud_subnet",
+              "history.fraud_card",
+              "history.fraud_device",
+              "checkout.card_country_mismatch",
+              "checkout.billing_country_mismatch",
+              "checkout.prepaid_card",
+              "device.automation",
+              "device.invalid",
+              "login.new_country",
+              "login.new_network",
+              "captcha.failed",
+              "captcha.missing",
+              "content.spam",
+              "content.phishing",
+              "content.malware",
+              "content.fraud",
+              "rule.matched",
+              "list.blocked",
+              "list.allowed"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "description": "The count behind a `velocity.*` reason, or the score behind a `content.*` one."
+          },
+          "threshold": {
+            "type": "number",
+            "description": "What a `velocity.*` or `content.*` reason fires at."
+          },
+          "window": {
+            "type": "string",
+            "enum": [
+              "1h",
+              "24h"
+            ]
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "`email.typo`: the likely domain."
+          },
+          "provider": {
+            "type": "string",
+            "description": "`ip.hosting_provider`, `ip.vpn_network`: the network's operator; `ip.vpn`: the VPN service."
+          },
+          "previous_user": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: your id of the user who has the mailbox or device, if known."
+          },
+          "previous_assessment": {
+            "type": "string",
+            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: the assessment that first saw the mailbox or device."
+          },
+          "entry": {
+            "type": "string",
+            "description": "`list.*`: the matching list entry."
+          },
+          "rule": {
+            "type": "string",
+            "description": "`rule.matched`: the rule's id."
+          },
+          "name": {
+            "type": "string",
+            "description": "`rule.matched`: the rule's name."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "email",
+              "domain",
+              "ip",
+              "asn",
+              "country",
+              "user"
+            ],
+            "description": "`list.*`: what matched."
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "RiskOutcome": {
+        "type": "string",
+        "enum": [
+          "legitimate",
+          "fraud",
+          "abuse"
+        ],
+        "description": "What really happened: `legitimate`, `fraud`, or `abuse` (spam, free-tier abuse and the like)."
+      },
+      "HookEndpointWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, also sent as the `webhook-id` header.",
+            "examples": [
+              "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hook_endpoint.disabled"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "application_id": {
+                "type": "string"
+              },
+              "application_uid": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "endpoint_id": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "failing_since": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "application_id",
+              "application_uid",
+              "endpoint_id",
+              "url",
+              "failing_since",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "hook_endpoint.disabled",
+            "api_version": "2026-10-10",
+            "created_at": "2026-01-20T09:30:00.000Z",
+            "data": {
+              "application_id": "happ_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "application_uid": "customer_8812",
+              "endpoint_id": "hep_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "url": "https://example.com/webhooks",
+              "failing_since": "2026-01-15T09:30:00.000Z",
+              "occurred_at": "2026-01-20T09:30:00.000Z"
+            }
+          }
+        ]
+      },
+      "ContactWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, and the `webhook-id` header.",
+            "examples": [
+              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "contact.created",
+              "contact.updated",
+              "contact.deleted",
+              "contact.unsubscribed",
+              "contact.confirmed"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "contact": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "subscribed",
+                      "unsubscribed",
+                      "pending"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "email",
+                  "status"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "api",
+                  "dashboard",
+                  "import",
+                  "preference_center"
+                ]
+              },
+              "topic": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "`contact.unsubscribed` from one topic (its key); `null`: from marketing altogether."
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "contact",
+              "source",
+              "topic",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
+            "object": "event",
+            "type": "contact.created",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-10T12:00:00.000Z",
+            "data": {
+              "contact": {
+                "id": "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "email": "ada@example.com",
+                "status": "subscribed"
+              },
+              "source": "api",
+              "topic": null,
+              "occurred_at": "2026-10-10T12:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "BroadcastWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "examples": [
+              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "broadcast.sending",
+              "broadcast.sent",
+              "broadcast.paused",
+              "broadcast.canceled",
+              "broadcast.failed"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "broadcast": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "scheduled",
+                      "sending",
+                      "paused",
+                      "sent",
+                      "canceled",
+                      "failed"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "status"
+                ]
+              },
+              "pause_reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "error": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ]
+              },
+              "stats": {
+                "$ref": "#/components/schemas/BroadcastStats"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "broadcast",
+              "pause_reason",
+              "error",
+              "stats",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
+            "object": "event",
+            "type": "broadcast.sent",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-20T09:12:40.000Z",
+            "data": {
+              "broadcast": {
+                "id": "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "name": "October newsletter",
+                "status": "sent"
+              },
+              "pause_reason": null,
+              "error": null,
+              "stats": {
+                "recipients": 1200,
+                "sent": 1200,
+                "delivered": 1180,
+                "bounced": 6,
+                "complained": 1,
+                "failed": 0,
+                "opened": 540,
+                "clicked": 120,
+                "unsubscribed": 4
+              },
+              "occurred_at": "2026-10-20T09:12:40.000Z"
+            }
+          }
+        ]
+      },
+      "BroadcastStats": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "type": "integer",
+            "description": "Emails made so far (one per reached contact)."
+          },
+          "sent": {
+            "type": "integer"
+          },
+          "delivered": {
+            "type": "integer"
+          },
+          "bounced": {
+            "type": "integer",
+            "description": "Permanent bounces."
+          },
+          "complained": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "opened": {
+            "type": "integer",
+            "description": "Emails opened at least once (with open tracking)."
+          },
+          "clicked": {
+            "type": "integer",
+            "description": "Emails clicked at least once (with click tracking)."
+          },
+          "unsubscribed": {
+            "type": "integer",
+            "description": "Unsubscribes through the broadcast's links."
+          }
+        },
+        "required": [
+          "recipients",
+          "sent",
+          "delivered",
+          "bounced",
+          "complained",
+          "failed",
+          "opened",
+          "clicked",
+          "unsubscribed"
+        ]
+      },
+      "SmsWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id: the same as `SmsEvent.id`."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sms.scheduled",
+              "sms.sent",
+              "sms.delivered",
+              "sms.undelivered",
+              "sms.failed",
+              "sms.suppressed",
+              "sms.canceled"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "failure": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ],
+                "description": "Why the message failed or wasn't delivered."
+              },
+              "provider_error_code": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The provider's or carrier's own error code, e.g. `30007`."
+              },
+              "suppression": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "opt_out",
+                      "manual",
+                      "invalid_number"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "reason"
+                ],
+                "description": "`sms.suppressed`: the entry that made coss.com skip the number."
+              },
+              "sms_id": {
+                "type": "string"
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              },
+              "segments": {
+                "type": "integer"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "value"
+                  ]
+                }
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "sms_id",
+              "from",
+              "to",
+              "country",
+              "segments",
+              "tags",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "smsevt_01k7c8m4r0c2b8w9y3d5f6g7h8",
+            "object": "event",
+            "type": "sms.delivered",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-10T12:00:04.100Z",
+            "data": {
+              "sms_id": "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "+14155550123",
+              "to": "+14155550199",
+              "country": "US",
+              "segments": 1,
+              "tags": [
+                {
+                  "name": "flow",
+                  "value": "sign_in"
+                }
+              ],
+              "sandbox": false,
+              "occurred_at": "2026-11-10T12:00:04.000Z"
+            }
+          }
+        ]
+      },
+      "ReceivedSmsWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sms.received",
+              "sms.opted_out",
+              "sms.opted_in"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "received_sms_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The received message; `null` for an opt-out to a number whose replies go to no environment."
+              },
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "keyword": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "stop",
+                  "start",
+                  "help",
+                  null
+                ]
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "received_sms_id",
+              "from",
+              "to",
+              "keyword",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "sms.received",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-10T12:05:00.100Z",
+            "data": {
+              "received_sms_id": "smsin_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "from": "+14155550199",
+              "to": "+14155550123",
+              "keyword": null,
+              "sandbox": false,
+              "occurred_at": "2026-11-10T12:05:00.000Z"
+            }
+          }
+        ]
+      },
       "Environment": {
         "type": "object",
         "properties": {
@@ -6523,1566 +9474,6 @@
           }
         ]
       },
-      "EmailWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id: the same as `EmailEvent.id`, and the `webhook-id` header.",
-            "examples": [
-              "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
-            ]
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "email.sent",
-              "email.delivered",
-              "email.delivery_delayed",
-              "email.bounced",
-              "email.complained",
-              "email.failed",
-              "email.suppressed",
-              "email.scheduled",
-              "email.canceled",
-              "email.opened",
-              "email.clicked",
-              "email.rescheduled",
-              "email.unsubscribed"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "bounce": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "permanent",
-                      "transient",
-                      "undetermined"
-                    ]
-                  },
-                  "sub_type": {
-                    "type": "string"
-                  },
-                  "diagnostic_code": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "type",
-                  "sub_type",
-                  "diagnostic_code"
-                ]
-              },
-              "complaint": {
-                "type": "object",
-                "properties": {
-                  "feedback_type": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "sub_type": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "feedback_type",
-                  "sub_type"
-                ]
-              },
-              "delay": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "expires_at": {
-                    "type": [
-                      "string",
-                      "null"
-                    ],
-                    "format": "date-time"
-                  },
-                  "diagnostic_code": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "type",
-                  "expires_at",
-                  "diagnostic_code"
-                ]
-              },
-              "delivery": {
-                "type": "object",
-                "properties": {
-                  "smtp_response": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "smtp_response"
-                ]
-              },
-              "failure": {
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "code",
-                  "message"
-                ]
-              },
-              "suppression": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "scope": {
-                    "type": "string"
-                  },
-                  "reason": {
-                    "type": "string",
-                    "enum": [
-                      "bounce",
-                      "complaint",
-                      "manual",
-                      "import",
-                      "unsubscribe"
-                    ],
-                    "description": "`bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category."
-                  }
-                },
-                "required": [
-                  "id",
-                  "scope",
-                  "reason"
-                ],
-                "description": "Only for `email.suppressed`: the entry that matched the recipient."
-              },
-              "unsubscribe": {
-                "type": "object",
-                "properties": {
-                  "contact_id": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "topic": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "contact_id",
-                  "topic"
-                ],
-                "description": "Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed (from marketing, or from the email's topic, `topic`)."
-              },
-              "open": {
-                "type": "object",
-                "properties": {
-                  "user_agent": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "user_agent"
-                ],
-                "description": "Only for `email.opened`."
-              },
-              "click": {
-                "type": "object",
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "description": "The original link that was clicked."
-                  },
-                  "link_position": {
-                    "type": "integer",
-                    "description": "Index of the link among the email's tracked links."
-                  },
-                  "user_agent": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "url",
-                  "link_position",
-                  "user_agent"
-                ],
-                "description": "Only for `email.clicked`."
-              },
-              "reschedule": {
-                "type": "object",
-                "properties": {
-                  "scheduled_at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "The new time."
-                  },
-                  "previous_scheduled_at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "The time it replaced."
-                  }
-                },
-                "required": [
-                  "scheduled_at",
-                  "previous_scheduled_at"
-                ],
-                "description": "Only for `email.rescheduled`."
-              },
-              "email_id": {
-                "type": "string"
-              },
-              "from": {
-                "type": "string"
-              },
-              "to": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "subject": {
-                "type": "string"
-              },
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "value"
-                  ]
-                }
-              },
-              "category": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "sandbox": {
-                "type": "boolean"
-              },
-              "recipient": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "email_id",
-              "from",
-              "to",
-              "subject",
-              "tags",
-              "category",
-              "sandbox",
-              "recipient",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
-            "object": "event",
-            "type": "email.delivered",
-            "api_version": "2026-10-10",
-            "created_at": "2026-10-10T12:00:03.000Z",
-            "data": {
-              "email_id": "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "from": "Acme <onboarding@acme.com>",
-              "to": [
-                "user@example.com"
-              ],
-              "subject": "Welcome to Acme",
-              "tags": [
-                {
-                  "name": "template",
-                  "value": "welcome"
-                }
-              ],
-              "category": "onboarding",
-              "sandbox": false,
-              "recipient": "user@example.com",
-              "occurred_at": "2026-10-10T12:00:02.000Z",
-              "delivery": {
-                "smtp_response": "250 2.0.0 OK"
-              }
-            }
-          }
-        ]
-      },
-      "ReceivedEmailWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id, and the `webhook-id` header.",
-            "examples": [
-              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
-            ]
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "email.received"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "received_email_id": {
-                "type": "string"
-              },
-              "from": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "to": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "recipients": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "subject": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "message_id": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "attachment_count": {
-                "type": "integer"
-              },
-              "size": {
-                "type": "integer"
-              },
-              "spam": {
-                "type": "boolean"
-              },
-              "verdicts": {
-                "$ref": "#/components/schemas/ReceivedEmailVerdicts"
-              },
-              "sandbox": {
-                "type": "boolean"
-              },
-              "received_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "received_email_id",
-              "from",
-              "to",
-              "recipients",
-              "subject",
-              "message_id",
-              "attachment_count",
-              "size",
-              "spam",
-              "verdicts",
-              "sandbox",
-              "received_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
-            "object": "event",
-            "type": "email.received",
-            "api_version": "2026-10-10",
-            "created_at": "2026-10-10T12:00:01.000Z",
-            "data": {
-              "received_email_id": "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "from": "Jane Doe <jane@example.com>",
-              "to": [
-                "support@inbound.acme.com"
-              ],
-              "recipients": [
-                "support@inbound.acme.com"
-              ],
-              "subject": "Re: Your order",
-              "message_id": "<CAF3k2m9qp4ld8sv@mail.example.com>",
-              "attachment_count": 1,
-              "size": 61432,
-              "spam": false,
-              "verdicts": {
-                "spam": "pass",
-                "virus": "pass",
-                "spf": "pass",
-                "dkim": "pass",
-                "dmarc": "pass",
-                "dmarc_policy": null
-              },
-              "sandbox": false,
-              "received_at": "2026-10-10T12:00:00.000Z"
-            }
-          }
-        ]
-      },
-      "ReceivedEmailVerdicts": {
-        "type": "object",
-        "properties": {
-          "spam": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pass",
-                  "fail",
-                  "gray",
-                  "processing_failed"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "virus": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pass",
-                  "fail",
-                  "gray",
-                  "processing_failed"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "spf": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pass",
-                  "fail",
-                  "gray",
-                  "processing_failed"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "dkim": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pass",
-                  "fail",
-                  "gray",
-                  "processing_failed"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "dmarc": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pass",
-                  "fail",
-                  "gray",
-                  "processing_failed"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "dmarc_policy": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "The sender domain's DMARC policy (`none`, `quarantine` or `reject`) when DMARC failed."
-          }
-        },
-        "required": [
-          "spam",
-          "virus",
-          "spf",
-          "dkim",
-          "dmarc",
-          "dmarc_policy"
-        ],
-        "description": "What the receiving server concluded: `pass`, `fail`, `gray` (could not decide) or `processing_failed`; `null` when the check did not run.",
-        "examples": [
-          {
-            "spam": "pass",
-            "virus": "pass",
-            "spf": "pass",
-            "dkim": "pass",
-            "dmarc": "pass",
-            "dmarc_policy": null
-          }
-        ]
-      },
-      "HookEndpointWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id, also sent as the `webhook-id` header.",
-            "examples": [
-              "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
-            ]
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "hook_endpoint.disabled"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "application_id": {
-                "type": "string"
-              },
-              "application_uid": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "endpoint_id": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string"
-              },
-              "failing_since": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "application_id",
-              "application_uid",
-              "endpoint_id",
-              "url",
-              "failing_since",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
-            "object": "event",
-            "type": "hook_endpoint.disabled",
-            "api_version": "2026-10-10",
-            "created_at": "2026-01-20T09:30:00.000Z",
-            "data": {
-              "application_id": "happ_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "application_uid": "customer_8812",
-              "endpoint_id": "hep_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "url": "https://example.com/webhooks",
-              "failing_since": "2026-01-15T09:30:00.000Z",
-              "occurred_at": "2026-01-20T09:30:00.000Z"
-            }
-          }
-        ]
-      },
-      "RiskWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id, also sent as the `webhook-id` header.",
-            "example": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz"
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "risk.assessment.review",
-              "risk.assessment.reviewed"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "assessment_id": {
-                "type": "string"
-              },
-              "event": {
-                "$ref": "#/components/schemas/RiskEvent"
-              },
-              "event_name": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "decision": {
-                "$ref": "#/components/schemas/RiskDecision"
-              },
-              "score": {
-                "type": "number"
-              },
-              "reasons": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/RiskReason"
-                }
-              },
-              "user_id": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "outcome": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/RiskOutcome"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ],
-                "description": "`risk.assessment.reviewed`: the outcome that resolved the review."
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "assessment_id",
-              "event",
-              "event_name",
-              "decision",
-              "score",
-              "reasons",
-              "user_id",
-              "outcome",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ]
-      },
-      "RiskEvent": {
-        "type": "string",
-        "enum": [
-          "signup",
-          "login",
-          "message",
-          "checkout",
-          "custom"
-        ],
-        "description": "What is being assessed. `custom` events are named by `event_name`; velocity is counted per event."
-      },
-      "RiskDecision": {
-        "type": "string",
-        "enum": [
-          "allow",
-          "review",
-          "block"
-        ],
-        "description": "`allow`: go ahead. `review`: suspicious; let it through with limits, or hold it for a person. `block`: refuse it."
-      },
-      "RiskReason": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "enum": [
-              "email.invalid",
-              "email.disposable",
-              "email.undeliverable",
-              "email.role_account",
-              "email.typo",
-              "email.domain_new",
-              "ip.tor",
-              "ip.vpn_network",
-              "ip.hosting_provider",
-              "ip.vpn",
-              "ip.proxy",
-              "ip.relay",
-              "ip.private",
-              "velocity.signups_per_ip_1h",
-              "velocity.signups_per_ip_24h",
-              "velocity.signups_per_subnet_1h",
-              "velocity.signups_per_email_domain_1h",
-              "velocity.signups_per_mailbox_24h",
-              "velocity.signups_per_device_24h",
-              "velocity.checkouts_per_ip_1h",
-              "velocity.checkouts_per_user_1h",
-              "velocity.checkouts_per_card_24h",
-              "velocity.logins_per_ip_1h",
-              "velocity.logins_per_user_1h",
-              "velocity.events_per_ip_1h",
-              "velocity.events_per_user_1h",
-              "duplicate.canonical_mailbox",
-              "duplicate.device",
-              "history.fraud_mailbox",
-              "history.fraud_user",
-              "history.fraud_ip",
-              "history.fraud_subnet",
-              "history.fraud_card",
-              "history.fraud_device",
-              "checkout.card_country_mismatch",
-              "checkout.billing_country_mismatch",
-              "checkout.prepaid_card",
-              "device.automation",
-              "device.invalid",
-              "login.new_country",
-              "login.new_network",
-              "captcha.failed",
-              "captcha.missing",
-              "content.spam",
-              "content.phishing",
-              "content.malware",
-              "content.fraud",
-              "rule.matched",
-              "list.blocked",
-              "list.allowed"
-            ]
-          },
-          "message": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number",
-            "description": "The count behind a `velocity.*` reason, or the score behind a `content.*` one."
-          },
-          "threshold": {
-            "type": "number",
-            "description": "What a `velocity.*` or `content.*` reason fires at."
-          },
-          "window": {
-            "type": "string",
-            "enum": [
-              "1h",
-              "24h"
-            ]
-          },
-          "suggestion": {
-            "type": "string",
-            "description": "`email.typo`: the likely domain."
-          },
-          "provider": {
-            "type": "string",
-            "description": "`ip.hosting_provider`, `ip.vpn_network`: the network's operator; `ip.vpn`: the VPN service."
-          },
-          "previous_user": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: your id of the user who has the mailbox or device, if known."
-          },
-          "previous_assessment": {
-            "type": "string",
-            "description": "`duplicate.canonical_mailbox`, `duplicate.device`: the assessment that first saw the mailbox or device."
-          },
-          "entry": {
-            "type": "string",
-            "description": "`list.*`: the matching list entry."
-          },
-          "rule": {
-            "type": "string",
-            "description": "`rule.matched`: the rule's id."
-          },
-          "name": {
-            "type": "string",
-            "description": "`rule.matched`: the rule's name."
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "email",
-              "domain",
-              "ip",
-              "asn",
-              "country",
-              "user"
-            ],
-            "description": "`list.*`: what matched."
-          }
-        },
-        "required": [
-          "code",
-          "message"
-        ]
-      },
-      "RiskOutcome": {
-        "type": "string",
-        "enum": [
-          "legitimate",
-          "fraud",
-          "abuse"
-        ],
-        "description": "What really happened: `legitimate`, `fraud`, or `abuse` (spam, free-tier abuse and the like)."
-      },
-      "ContactWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id, and the `webhook-id` header.",
-            "examples": [
-              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
-            ]
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "contact.created",
-              "contact.updated",
-              "contact.deleted",
-              "contact.unsubscribed",
-              "contact.confirmed"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "contact": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "subscribed",
-                      "unsubscribed",
-                      "pending"
-                    ]
-                  }
-                },
-                "required": [
-                  "id",
-                  "email",
-                  "status"
-                ]
-              },
-              "source": {
-                "type": "string",
-                "enum": [
-                  "api",
-                  "dashboard",
-                  "import",
-                  "preference_center"
-                ]
-              },
-              "topic": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "`contact.unsubscribed` from one topic (its key); `null`: from marketing altogether."
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "contact",
-              "source",
-              "topic",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
-            "object": "event",
-            "type": "contact.created",
-            "api_version": "2026-10-10",
-            "created_at": "2026-10-10T12:00:00.000Z",
-            "data": {
-              "contact": {
-                "id": "contact_01k7c8m4q2f3e9v6t5r1n0p8yz",
-                "email": "ada@example.com",
-                "status": "subscribed"
-              },
-              "source": "api",
-              "topic": null,
-              "occurred_at": "2026-10-10T12:00:00.000Z"
-            }
-          }
-        ]
-      },
-      "BroadcastWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "examples": [
-              "evt_01k7c8m4r0c2b8w9y3d5f6g7h9"
-            ]
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "broadcast.sending",
-              "broadcast.sent",
-              "broadcast.paused",
-              "broadcast.canceled",
-              "broadcast.failed"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "broadcast": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "draft",
-                      "scheduled",
-                      "sending",
-                      "paused",
-                      "sent",
-                      "canceled",
-                      "failed"
-                    ]
-                  }
-                },
-                "required": [
-                  "id",
-                  "name",
-                  "status"
-                ]
-              },
-              "pause_reason": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "error": {
-                "type": [
-                  "object",
-                  "null"
-                ],
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "code",
-                  "message"
-                ]
-              },
-              "stats": {
-                "$ref": "#/components/schemas/BroadcastStats"
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "broadcast",
-              "pause_reason",
-              "error",
-              "stats",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4r0c2b8w9y3d5f6g7h9",
-            "object": "event",
-            "type": "broadcast.sent",
-            "api_version": "2026-10-10",
-            "created_at": "2026-10-20T09:12:40.000Z",
-            "data": {
-              "broadcast": {
-                "id": "bcast_01k7c8m4q2f3e9v6t5r1n0p8yz",
-                "name": "October newsletter",
-                "status": "sent"
-              },
-              "pause_reason": null,
-              "error": null,
-              "stats": {
-                "recipients": 1200,
-                "sent": 1200,
-                "delivered": 1180,
-                "bounced": 6,
-                "complained": 1,
-                "failed": 0,
-                "opened": 540,
-                "clicked": 120,
-                "unsubscribed": 4
-              },
-              "occurred_at": "2026-10-20T09:12:40.000Z"
-            }
-          }
-        ]
-      },
-      "BroadcastStats": {
-        "type": "object",
-        "properties": {
-          "recipients": {
-            "type": "integer",
-            "description": "Emails made so far (one per reached contact)."
-          },
-          "sent": {
-            "type": "integer"
-          },
-          "delivered": {
-            "type": "integer"
-          },
-          "bounced": {
-            "type": "integer",
-            "description": "Permanent bounces."
-          },
-          "complained": {
-            "type": "integer"
-          },
-          "failed": {
-            "type": "integer"
-          },
-          "opened": {
-            "type": "integer",
-            "description": "Emails opened at least once (with open tracking)."
-          },
-          "clicked": {
-            "type": "integer",
-            "description": "Emails clicked at least once (with click tracking)."
-          },
-          "unsubscribed": {
-            "type": "integer",
-            "description": "Unsubscribes through the broadcast's links."
-          }
-        },
-        "required": [
-          "recipients",
-          "sent",
-          "delivered",
-          "bounced",
-          "complained",
-          "failed",
-          "opened",
-          "clicked",
-          "unsubscribed"
-        ]
-      },
-      "SmsWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The event id: the same as `SmsEvent.id`."
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "sms.scheduled",
-              "sms.sent",
-              "sms.delivered",
-              "sms.undelivered",
-              "sms.failed",
-              "sms.suppressed",
-              "sms.canceled"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "failure": {
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "code",
-                  "message"
-                ],
-                "description": "Why the message failed or wasn't delivered."
-              },
-              "provider_error_code": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "The provider's or carrier's own error code, e.g. `30007`."
-              },
-              "suppression": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "reason": {
-                    "type": "string",
-                    "enum": [
-                      "opt_out",
-                      "manual",
-                      "invalid_number"
-                    ]
-                  }
-                },
-                "required": [
-                  "id",
-                  "reason"
-                ],
-                "description": "`sms.suppressed`: the entry that made coss.com skip the number."
-              },
-              "sms_id": {
-                "type": "string"
-              },
-              "from": {
-                "type": "string"
-              },
-              "to": {
-                "type": "string"
-              },
-              "country": {
-                "type": "string"
-              },
-              "segments": {
-                "type": "integer"
-              },
-              "tags": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "name",
-                    "value"
-                  ]
-                }
-              },
-              "sandbox": {
-                "type": "boolean"
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "sms_id",
-              "from",
-              "to",
-              "country",
-              "segments",
-              "tags",
-              "sandbox",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "smsevt_01k7c8m4r0c2b8w9y3d5f6g7h8",
-            "object": "event",
-            "type": "sms.delivered",
-            "api_version": "2026-10-10",
-            "created_at": "2026-11-10T12:00:04.100Z",
-            "data": {
-              "sms_id": "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "from": "+14155550123",
-              "to": "+14155550199",
-              "country": "US",
-              "segments": 1,
-              "tags": [
-                {
-                  "name": "flow",
-                  "value": "sign_in"
-                }
-              ],
-              "sandbox": false,
-              "occurred_at": "2026-11-10T12:00:04.000Z"
-            }
-          }
-        ]
-      },
-      "ReceivedSmsWebhookEvent": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "object": {
-            "type": "string",
-            "enum": [
-              "event"
-            ]
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "sms.received",
-              "sms.opted_out",
-              "sms.opted_in"
-            ]
-          },
-          "api_version": {
-            "type": "string",
-            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
-            "examples": [
-              "2026-10-10"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "properties": {
-              "received_sms_id": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "description": "The received message; `null` for an opt-out to a number whose replies go to no environment."
-              },
-              "from": {
-                "type": "string"
-              },
-              "to": {
-                "type": "string"
-              },
-              "keyword": {
-                "type": [
-                  "string",
-                  "null"
-                ],
-                "enum": [
-                  "stop",
-                  "start",
-                  "help",
-                  null
-                ]
-              },
-              "sandbox": {
-                "type": "boolean"
-              },
-              "occurred_at": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "received_sms_id",
-              "from",
-              "to",
-              "keyword",
-              "sandbox",
-              "occurred_at"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "object",
-          "type",
-          "api_version",
-          "created_at",
-          "data"
-        ],
-        "examples": [
-          {
-            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
-            "object": "event",
-            "type": "sms.received",
-            "api_version": "2026-10-10",
-            "created_at": "2026-11-10T12:05:00.100Z",
-            "data": {
-              "received_sms_id": "smsin_01k7c8m4q2f3e9v6t5r1n0p8yz",
-              "from": "+14155550199",
-              "to": "+14155550123",
-              "keyword": null,
-              "sandbox": false,
-              "occurred_at": "2026-11-10T12:05:00.000Z"
-            }
-          }
-        ]
-      },
       "CreateTestWebhookEventRequest": {
         "type": "object",
         "properties": {
@@ -12640,106 +14031,6 @@
           "marketing"
         ]
       },
-      "ReputationCheck": {
-        "type": "object",
-        "properties": {
-          "trigger": {
-            "type": "string",
-            "description": "What was measured, e.g. `bounce_rate` or `complaint_rate`.",
-            "example": "bounce_rate"
-          },
-          "severity": {
-            "type": "string",
-            "enum": [
-              "ok",
-              "warning",
-              "suspend"
-            ],
-            "description": "`ok`, `warning` (at or above the warning threshold) or `suspend` (at or above the suspension threshold)."
-          },
-          "message": {
-            "type": "string"
-          },
-          "rate": {
-            "type": [
-              "number",
-              "null"
-            ],
-            "description": "`count / volume`; `null` with no volume."
-          },
-          "count": {
-            "type": "integer",
-            "description": "Matching recipients, e.g. permanent bounces."
-          },
-          "volume": {
-            "type": "integer",
-            "description": "Recipients sent to (live environments) in the window."
-          },
-          "warning_threshold": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "suspend_threshold": {
-            "type": [
-              "number",
-              "null"
-            ]
-          },
-          "minimum_volume": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "description": "Below this volume the rate is reported but never acted on."
-          }
-        },
-        "required": [
-          "trigger",
-          "severity",
-          "message",
-          "rate",
-          "count",
-          "volume",
-          "warning_threshold",
-          "suspend_threshold",
-          "minimum_volume"
-        ]
-      },
-      "MarketingStanding": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "active",
-              "paused"
-            ],
-            "description": "`active`, or `paused`: the marketing stream's bounce or complaint rate reached its suspension threshold, so marketing sends are refused until coss.com support lifts the pause. Transactional email is unaffected."
-          },
-          "reason": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "The trigger behind a pause.",
-            "example": "marketing_complaint_rate"
-          },
-          "paused_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "status",
-          "reason",
-          "paused_at"
-        ]
-      },
       "LogList": {
         "type": "object",
         "properties": {
@@ -13861,194 +15152,6 @@
           }
         ]
       },
-      "InvoiceSummary": {
-        "type": "object",
-        "properties": {
-          "object": {
-            "type": "string",
-            "enum": [
-              "invoice"
-            ]
-          },
-          "id": {
-            "type": "string"
-          },
-          "number": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "period",
-              "plan_change",
-              "one_off",
-              "final"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "open",
-              "paid",
-              "void",
-              "uncollectible"
-            ]
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "usd"
-            ]
-          },
-          "period": {
-            "type": "object",
-            "properties": {
-              "start": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "end": {
-                "type": "string",
-                "format": "date-time"
-              }
-            },
-            "required": [
-              "start",
-              "end"
-            ]
-          },
-          "subtotal": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "discount": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "credit": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "tax": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "total": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "amount_paid": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "amount_due": {
-            "type": "integer",
-            "description": "An amount in cents (USD)."
-          },
-          "collection_method": {
-            "type": "string",
-            "enum": [
-              "charge_automatically",
-              "send_invoice"
-            ]
-          },
-          "due_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "finalized_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "paid_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "voided_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "hosted_url": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "A page to view (and pay) the invoice."
-          },
-          "pdf_url": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "object",
-          "id",
-          "number",
-          "kind",
-          "status",
-          "currency",
-          "period",
-          "subtotal",
-          "discount",
-          "credit",
-          "tax",
-          "total",
-          "amount_paid",
-          "amount_due",
-          "collection_method",
-          "due_at",
-          "finalized_at",
-          "paid_at",
-          "voided_at",
-          "hosted_url",
-          "pdf_url"
-        ],
-        "examples": [
-          {
-            "object": "invoice",
-            "id": "inv_01k7c8m4q2f3e9v6t5r1n0p8yz",
-            "number": "COSS-000042",
-            "kind": "period",
-            "status": "paid",
-            "currency": "usd",
-            "period": {
-              "start": "2026-10-01T00:00:00.000Z",
-              "end": "2026-11-01T00:00:00.000Z"
-            },
-            "subtotal": 7300,
-            "discount": 0,
-            "credit": 2500,
-            "tax": 0,
-            "total": 4800,
-            "amount_paid": 4800,
-            "amount_due": 0,
-            "collection_method": "charge_automatically",
-            "due_at": "2026-11-01T00:20:00.000Z",
-            "finalized_at": "2026-11-01T00:20:00.000Z",
-            "paid_at": "2026-11-01T00:21:00.000Z",
-            "voided_at": null,
-            "hosted_url": "https://invoice.stripe.com/i/acct_123/test_YWNjdF8x",
-            "pdf_url": "https://pay.stripe.com/invoice/acct_123/test_YWNjdF8x/pdf"
-          }
-        ]
-      },
       "Invoice": {
         "type": "object",
         "properties": {
@@ -14436,151 +15539,6 @@
               }
             ],
             "has_more": false
-          }
-        ]
-      },
-      "Credit": {
-        "type": "object",
-        "properties": {
-          "object": {
-            "type": "string",
-            "enum": [
-              "credit"
-            ]
-          },
-          "id": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "amount",
-              "units"
-            ],
-            "description": "`amount`: dollars (`amount` and `remaining` in cents); `units`: free units of `meter`."
-          },
-          "amount": {
-            "type": "integer"
-          },
-          "remaining": {
-            "type": "integer"
-          },
-          "meter": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "enum": [
-              "email.recipients",
-              "email.dedicated_ip",
-              "sms.segments",
-              "sms.received_segments",
-              "sms.numbers",
-              "sms.registrations",
-              "video.participant_minutes",
-              "scheduling.bookings",
-              null
-            ],
-            "description": "What a `units` credit covers."
-          },
-          "meters": {
-            "type": [
-              "array",
-              "null"
-            ],
-            "items": {
-              "type": "string",
-              "enum": [
-                "email.recipients",
-                "email.dedicated_ip",
-                "sms.segments",
-                "sms.received_segments",
-                "sms.numbers",
-                "sms.registrations",
-                "video.participant_minutes",
-                "scheduling.bookings"
-              ],
-              "description": "What is counted, e.g. `email.recipients`."
-            },
-            "description": "What an `amount` credit pays for (`null`: any usage)."
-          },
-          "applies_to": {
-            "type": "string",
-            "enum": [
-              "usage",
-              "any"
-            ],
-            "description": "`any`: also fees and other charges."
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "fee",
-              "commitment",
-              "support",
-              "promotion",
-              "refund",
-              "sla"
-            ]
-          },
-          "description": {
-            "type": "string"
-          },
-          "effective_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "expires_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "voided_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "object",
-          "id",
-          "kind",
-          "amount",
-          "remaining",
-          "meter",
-          "meters",
-          "applies_to",
-          "source",
-          "description",
-          "effective_at",
-          "expires_at",
-          "voided_at",
-          "created_at"
-        ],
-        "examples": [
-          {
-            "object": "credit",
-            "id": "bcg_01k7c8m4q2f3e9v6t5r1n0p8yz",
-            "kind": "units",
-            "amount": 50000,
-            "remaining": 12000,
-            "meter": "email.recipients",
-            "meters": null,
-            "applies_to": "usage",
-            "source": "support",
-            "description": "Migration credit",
-            "effective_at": "2026-10-01T00:00:00.000Z",
-            "expires_at": "2027-01-01T00:00:00.000Z",
-            "voided_at": null,
-            "created_at": "2026-10-01T09:30:00.000Z"
           }
         ]
       },

@@ -1,0 +1,56 @@
+// Hand-written (listed in .fernignore) and applied by the generated build.gradle: the Maven
+// coordinates, POM and signing of com.coss:coss. `./gradlew publishMavenPublicationToBundleRepository`
+// writes the signed artifacts to build/central-bundle, which .github/workflows/release-sdks.yml
+// zips and uploads to the Maven Central Portal. Signing needs SIGNING_KEY (an armored private key)
+// and SIGNING_PASSWORD; without them (tests, local builds) nothing is signed.
+apply plugin: 'signing'
+
+group = 'com.coss'
+version = file('../VERSION').text.trim()
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.coss'
+            artifactId = 'coss'
+            version = project.version
+            from components.java
+            pom {
+                name = 'coss'
+                description = 'The coss.com SDK for Java'
+                url = 'https://coss.com/docs/sdks/java'
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://opensource.org/license/mit'
+                    }
+                }
+                developers {
+                    developer {
+                        name = 'coss.com'
+                        url = 'https://coss.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/cosscom/coss.git'
+                    url = 'https://github.com/cosscom/coss/tree/main/sdks/java'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'bundle'
+            url = layout.buildDirectory.dir('central-bundle')
+        }
+    }
+}
+
+signing {
+    def key = System.getenv('SIGNING_KEY')
+    required { key != null }
+    if (key != null) {
+        useInMemoryPgpKeys(key, System.getenv('SIGNING_PASSWORD'))
+        sign publishing.publications.maven
+    }
+}

@@ -30,6 +30,7 @@ import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 import type { AppEnv } from "./types.ts";
 import { validationHook } from "./validation.ts";
+import { registerWebhookEvents } from "./webhook-events.ts";
 
 export type CreateAppOptions = {
   /** Sends store the email and enqueue its dispatch (`createEmailService`). */
@@ -214,6 +215,7 @@ export function createApp(opts: CreateAppOptions) {
       "A secret API key from the dashboard: `coss_live_…` for production environments, " +
       "`coss_test_…` for sandbox environments.",
   });
+  registerWebhookEvents(app);
 
   // The origin this document was served from, so local and deployed copies both work.
   // Request origin is a dev/test fallback only: it is Host-header controlled and loses https
@@ -272,6 +274,25 @@ export function openApiDocumentConfig(serverUrl: string) {
         description:
           "Send text messages from the organization's numbers, follow their delivery, and read replies and opt-outs.",
       },
+      {
+        name: "Receiving",
+        description: "Email received at the environment's inbound address and receiving domains.",
+      },
+      {
+        name: "Contacts",
+        description: "The people marketing email goes to, with their properties and consent.",
+      },
+      { name: "Audiences", description: "Lists of contacts that broadcasts are sent to." },
+      { name: "Segments", description: "Contacts chosen by their properties, always up to date." },
+      {
+        name: "Topics",
+        description: "What contacts subscribe to, and the environment's marketing settings.",
+      },
+      { name: "Broadcasts", description: "Marketing email sent to an audience or segment." },
+      {
+        name: "Reputation",
+        description: "The organization's sending standing (good, warning or suspended) and why.",
+      },
       { name: "Domains", description: "The organization's verified sending domains." },
       {
         name: "Dedicated IPs",
@@ -309,8 +330,16 @@ export function openApiDocumentConfig(serverUrl: string) {
         description: "The environment's API requests, email events and webhook attempts.",
       },
       {
+        name: "Log drains",
+        description: "Endpoints of yours that receive the environment's logs as signed batches.",
+      },
+      {
         name: "Audit log",
         description: "Changes to the organization, by members, API keys and coss.com support.",
+      },
+      {
+        name: "Billing",
+        description: "The organization's plan, usage, invoices and credits.",
       },
       {
         name: "Risk",

@@ -18,7 +18,7 @@ the macro API, `staticSource` and code-usage APIs are recent.
 | `source.config.ts` | Global MDX options only: Shiki themes/langs and the Twoslash transformer. |
 | `src/lib/openapi.ts` | `createOpenAPI` over the committed `apps/api/openapi.json` (imported, so it is bundled). |
 | `src/lib/source.ts` | `loader()` merging MDX + `openapi.staticSource()` (one virtual page per operation at `/docs/api-reference/<tag>/<kebab operationId>`, each tag a folder titled with its name, operations in the document's order), plus `docsLlms` (`/llms.txt`, `/llms-full.txt`). Server-only. |
-| `src/components/api-page.tsx` | `createOpenAPIPage`: code-usage tabs (TypeScript SDK, cURL, Python, Go) and the playground, which calls the API from the browser (allowed by the API's `API_CORS_ORIGINS`). In `next dev` the reference targets `http://localhost:3001` first (`src/lib/openapi.ts`). |
+| `src/components/api-page.tsx` | `createOpenAPIPage`: code-usage tabs (TypeScript SDK, cURL, then the generated SDKs' Python, Go, Ruby, PHP, Java and .NET samples, which `src/lib/openapi.ts` adds to each operation as `x-codeSamples` from `@coss/sdkgen/snippets.json`) and the playground, which calls the API from the browser (allowed by the API's `API_CORS_ORIGINS`). In `next dev` the reference targets `http://localhost:3001` first (`src/lib/openapi.ts`). |
 | `src/lib/use-account.ts`, `src/components/account-links.tsx` | Signed-in detection: Better Auth's `/api/auth/get-session` from the browser (the session cookie is HttpOnly), so pages stay static. Shows "Dashboard" (`/dashboard`, which opens the user's organization) or "Sign in"/"Sign up". |
 | `src/lib/security-headers.ts` | CSP and framing headers for every response (`next.config.ts`); the playground's `connect-src` comes from the OpenAPI document's `servers`. |
 | `src/app/docs/search.json`, `src/app/api/health` | Docs search (Fumadocs, `SEARCH_API`); the load balancer's health check (never routed on coss.com). |
@@ -49,8 +49,10 @@ the macro API, `staticSource` and code-usage APIs are recent.
 - **API reference comes from the snapshot.** After changing API routes run `bun run openapi:generate` (root) and
   commit `apps/api/openapi.json`; `apps/api/test/openapi-snapshot.test.ts` fails when it is stale. Never import
   `@coss/api` code (it pulls in the DB and AWS SDK) — only `@coss/api/openapi.json`.
-- **New endpoint ⇒ SDK sample.** Add its `METHOD /path` to `SDK_SAMPLES`; `test/sdk-samples.test.ts` fails for
-  any operation without one, or a sample naming a method missing from the `Coss` client. Samples and the playground
+- **New endpoint ⇒ SDK sample.** Add its `METHOD /path` to `SDK_SAMPLES` and its method to `SDK_METHODS`
+  (`tooling/sdkgen/src/methods.ts`); `test/sdk-samples.test.ts` fails for any operation without one, a sample naming
+  a method missing from the `Coss` client, or the two tables disagreeing. The other languages' tabs of a new
+  endpoint appear with main's "Regenerate SDKs" PR (`tooling/sdkgen/snippets.json`). Samples and the playground
   start from the schemas' `examples` (see the root AGENTS.md); without them they show `"string"` placeholders.
 - **No per-method SDK pages:** each endpoint's SDK call is its API reference page's TypeScript tab. The SDK pages
   cover only what isn't an endpoint (client setup, results and errors, retries, `verifyWebhook`); guides show SDK

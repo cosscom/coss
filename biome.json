@@ -21,7 +21,9 @@
       "!!packages/kloq/src",
       "!!apps/site/src/lib/calendar/registry/generated.json",
       "!!apps/site/src/components/calendar/registry/what-lands.json",
-      "!!integrations"
+      "!!integrations",
+      "!!sdks",
+      "!!tooling/sdkgen/snippets.json"
     ]
   },
   "formatter": {

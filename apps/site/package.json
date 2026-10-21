@@ -19,6 +19,7 @@
     "@coss/observability": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/risk": "workspace:*",
+    "@coss/sdkgen": "workspace:*",
     "@coss/ui": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@hugeicons/core-free-icons": "^4.3.5",

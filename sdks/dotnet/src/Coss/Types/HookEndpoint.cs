@@ -1,0 +1,85 @@
+using Coss.Core;
+using global::System.Text.Json;
+using global::System.Text.Json.Serialization;
+
+namespace Coss;
+
+[Serializable]
+public record HookEndpoint : IJsonOnDeserialized
+{
+    [JsonExtensionData]
+    private readonly IDictionary<string, JsonElement> _extensionData =
+        new Dictionary<string, JsonElement>();
+
+    [JsonPropertyName("object")]
+    public required HookEndpointObject Object { get; set; }
+
+    [JsonPropertyName("id")]
+    public required string Id { get; set; }
+
+    [JsonPropertyName("application_id")]
+    public required string ApplicationId { get; set; }
+
+    [JsonPropertyName("url")]
+    public required string Url { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("filter_types")]
+    public IEnumerable<string> FilterTypes { get; set; } = new List<string>();
+
+    [Nullable]
+    [JsonPropertyName("rate_limit_per_second")]
+    public long? RateLimitPerSecond { get; set; }
+
+    [JsonPropertyName("enabled")]
+    public required bool Enabled { get; set; }
+
+    /// <summary>
+    /// `manual`: disabled by you or its user. `failing`: its deliveries failed every attempt for five days, so coss.com disabled it. `null` while enabled.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("disabled_reason")]
+    public HookEndpointDisabledReason? DisabledReason { get; set; }
+
+    [Nullable]
+    [JsonPropertyName("disabled_at")]
+    public DateTime? DisabledAt { get; set; }
+
+    /// <summary>
+    /// When its current run of failed deliveries began; cleared by the next success. `null` while healthy.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("failing_since")]
+    public DateTime? FailingSince { get; set; }
+
+    /// <summary>
+    /// After a secret roll, requests are also signed with the previous secret until then.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("previous_secret_expires_at")]
+    public DateTime? PreviousSecretExpiresAt { get; set; }
+
+    [JsonPropertyName("metadata")]
+    public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
+
+    [JsonPropertyName("created_at")]
+    public required DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName("updated_at")]
+    public required DateTime UpdatedAt { get; set; }
+
+    [JsonIgnore]
+    public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
+
+    void IJsonOnDeserialized.OnDeserialized() =>
+        AdditionalProperties.CopyFromExtensionData(_extensionData);
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return JsonUtils.Serialize(this);
+    }
+}

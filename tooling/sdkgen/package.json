@@ -1,0 +1,23 @@
+{
+  "name": "@coss/sdkgen",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./methods": "./src/methods.ts",
+    "./snippets.json": "./snippets.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "generate": "bun scripts/generate.ts",
+    "snippets": "bun scripts/snippets.ts",
+    "bump": "bun scripts/bump.ts"
+  },
+  "devDependencies": {
+    "@coss/api": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

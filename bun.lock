@@ -129,6 +129,7 @@
         "@coss/observability": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/risk": "workspace:*",
+        "@coss/sdkgen": "workspace:*",
         "@coss/ui": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@hugeicons/core-free-icons": "^4.3.5",
@@ -786,6 +787,16 @@
         "typescript": "catalog:",
       },
     },
+    "tooling/sdkgen": {
+      "name": "@coss/sdkgen",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@coss/api": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "tooling/typescript": {
       "name": "@coss/tsconfig",
       "version": "0.0.0",
@@ -1204,6 +1215,8 @@
     "@coss/risk": ["@coss/risk@workspace:packages/risk"],
 
     "@coss/screening": ["@coss/screening@workspace:packages/screening"],
+
+    "@coss/sdkgen": ["@coss/sdkgen@workspace:tooling/sdkgen"],
 
     "@coss/signals": ["@coss/signals@workspace:packages/signals"],
 

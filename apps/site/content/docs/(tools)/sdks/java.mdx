@@ -1,0 +1,120 @@
+---
+title: Java
+description: Add com.coss:coss with Gradle or Maven, configure the client, handle errors and verify webhooks in Java.
+---
+
+The Java SDK (Java 8+) is `com.coss:coss` on Maven Central, built on OkHttp and Jackson.
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("com.coss:coss:0.1.0")
+}
+```
+
+```xml
+<!-- pom.xml -->
+<dependency>
+  <groupId>com.coss</groupId>
+  <artifactId>coss</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+```java
+import com.coss.Coss;
+import com.coss.types.Email;
+import com.coss.types.SendEmailRequest;
+import com.coss.types.SendEmailRequestTo;
+import java.util.Arrays;
+
+Coss client = Coss.builder().build(); // reads COSS_API_KEY
+
+Email email = client.email().send(SendEmailRequest.builder()
+        .from("Acme <hello@acme.com>")
+        .to(SendEmailRequestTo.of(Arrays.asList("ada@example.com")))
+        .subject("Welcome to Acme")
+        .html("<p>Thanks for signing up!</p>")
+        .build());
+System.out.println(email.getId() + " " + email.getStatus());
+```
+
+Requests are immutable objects with builders; required fields come first. `AsyncCoss`
+(`AsyncCoss.builder()`) has the same methods returning `CompletableFuture`s.
+
+## Options
+
+| Builder method                   | Default                | Description                                   |
+| -------------------------------- | ---------------------- | --------------------------------------------- |
+| `.apiKey(key)`                   | `COSS_API_KEY`         | A `coss_live_…` or `coss_test_…` key          |
+| `.url(url)`                      | `https://api.coss.com` | The API origin                                |
+| `.apiVersion(version)`           | The SDK's API version  | The `Coss-Version` sent with every request    |
+| `.timeout(seconds)`              | `60`                   | Seconds per request                           |
+| `.maxRetries(n)`                 | `2`                    | Retries of 408, 409, 429 and 5xx responses    |
+| `.httpClient(okHttpClient)`      | One of its own         | Your own `OkHttpClient`                       |
+
+Every method also takes a `RequestOptions` (`RequestOptions.builder()`) for that call only.
+
+## Errors
+
+A failed request throws an exception named after its status (`com.coss.errors.NotFoundError`,
+`UnprocessableEntityError`, …) whose `body()` is the API's
+[error envelope](/docs/api-reference/errors). They all extend `com.coss.core.CossApiException`
+(`statusCode()`, `body()`); a request that never got a response throws
+`com.coss.core.CossException`.
+
+```java
+import com.coss.errors.NotFoundError;
+
+try {
+    client.email().get("email_01k7c8m4q2f3e9v6t5r1n0p8yz");
+} catch (NotFoundError e) {
+    System.out.println(e.statusCode() + " " + e.body().getError().getCode() + " " + e.body().getError().getRequestId());
+}
+```
+
+## Idempotency and lists
+
+Requests of endpoints that take an `Idempotency-Key` have an `idempotencyKey(…)` builder method;
+every other `POST` gets a random key of its own, reused by its retries.
+
+List methods return one page. Pass the last id as `after` while `getHasMore()` is true:
+
+```java
+import com.coss.resources.email.requests.ListEmailRequest;
+import com.coss.types.EmailSummary;
+import com.coss.types.EmailSummaryList;
+
+EmailSummaryList page = client.email().list(ListEmailRequest.builder().limit(100).build());
+while (true) {
+    for (EmailSummary email : page.getData()) System.out.println(email.getId());
+    if (!page.getHasMore()) break;
+    String last = page.getData().get(page.getData().size() - 1).getId();
+    page = client.email().list(ListEmailRequest.builder().limit(100).after(last).build());
+}
+```
+
+## Webhooks
+
+`com.coss.Webhooks.verify` checks a [webhook](/docs/webhooks) request's signature and age and
+returns the parsed event (a Jackson `JsonNode`); it throws `WebhookVerificationException` when
+you must reject the request. Pass the raw body exactly as received and the headers as a `Map`
+(values may be strings or lists of them). `Webhooks.verifyLogDrainBatch` does the same for
+[log drains](/docs/log-drains) and returns the batch's lines.
+
+```java
+import com.coss.WebhookVerificationException;
+import com.coss.Webhooks;
+import com.fasterxml.jackson.databind.JsonNode;
+
+@PostMapping("/webhooks/coss")
+ResponseEntity<Void> webhook(@RequestBody String body, @RequestHeader Map<String, String> headers) {
+    try {
+        JsonNode event = Webhooks.verify(body, headers, System.getenv("COSS_WEBHOOK_SECRET"));
+        log.info(event.get("type").asText());
+        return ResponseEntity.noContent().build();
+    } catch (WebhookVerificationException e) {
+        return ResponseEntity.badRequest().build();
+    }
+}
+```

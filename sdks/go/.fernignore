@@ -1,0 +1,9 @@
+# Hand-written (kept by `bun run sdks:generate`)
+.fernignore
+webhooks.go
+custom_webhooks_test.go
+custom_client_test.go
+custom_e2e_test.go
+LICENSE
+CHANGELOG.md
+README.md

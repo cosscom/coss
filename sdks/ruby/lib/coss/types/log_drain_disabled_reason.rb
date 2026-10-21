@@ -1,0 +1,12 @@
+# frozen_string_literal: true
+
+module Coss
+  module Types
+    module LogDrainDisabledReason
+      extend Coss::Internal::Types::Enum
+
+      MANUAL = "manual"
+      FAILING = "failing"
+    end
+  end
+end

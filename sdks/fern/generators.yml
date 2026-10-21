@@ -1,0 +1,99 @@
+# The six generated SDKs (sdks/<language>): `bun run sdks:generate` (tooling/sdkgen, needs Docker)
+# derives openapi.sdk.json from apps/api/openapi.json and runs each group with `fern generate
+# --local`. Generator versions are pinned; bump them deliberately and review the diff.
+api:
+  specs:
+    - openapi: openapi.sdk.json
+  settings:
+    # A UUID per call, reused by every retry of it, unless the caller passes its own key.
+    auto-generate-idempotency-key:
+      header-name: Idempotency-Key
+      methods: [POST]
+groups:
+  python:
+    generators:
+      - name: fernapi/fern-python-sdk
+        version: 5.34.2
+        output: { location: local-file-system, path: ../python }
+        config:
+          package_name: coss
+          # Resources under coss.resources: the `environment` resource would shadow environment.py.
+          improved_imports: false
+          client: { class_name: Coss }
+          additional_init_exports:
+            - from: webhooks
+              imports: [WebhookVerificationError, verify_webhook, verify_log_drain_batch]
+          user-agent: coss-python/{version}
+          timeout: 30
+  go:
+    generators:
+      - name: fernapi/fern-go-sdk
+        version: 1.65.1
+        output: { location: local-file-system, path: ../go }
+        config:
+          module: { path: github.com/cosscom/coss-go, version: "1.21" }
+          packageName: coss
+          clientName: Client
+          maxRetries: 2
+          # Wire tests need a WireMock container; our tests cover the HTTP behaviour.
+          enableWireTests: false
+          user-agent: coss-go/{version}
+  ruby:
+    generators:
+      - name: fernapi/fern-ruby-sdk
+        version: 1.28.3
+        output: { location: local-file-system, path: ../ruby }
+        config:
+          moduleName: Coss
+          maxRetries: 2
+          user-agent: coss-ruby/{version}
+          respectAuthSchemeNames: true
+          requireAuthCredentials: true
+          wrapInvalidJsonResponses: true
+          allowCustomHttpClient: true
+  php:
+    generators:
+      - name: fernapi/fern-php-sdk
+        version: 2.24.2
+        output: { location: local-file-system, path: ../php }
+        config:
+          namespace: Coss
+          packageName: coss/coss
+          clientName: Coss
+          maxRetries: 2
+          user-agent: coss-php/{version}
+          # Escape path parameters (a risk user id with `#` or `/` would address another path).
+          encode-path-params: true
+          composerJson:
+            description: The coss.com SDK for PHP
+            license: MIT
+            homepage: https://coss.com/docs/sdks/php
+            keywords: [coss, email, api, sdk]
+  java:
+    generators:
+      - name: fernapi/fern-java-sdk
+        version: 4.23.2
+        output: { location: local-file-system, path: ../java }
+        config:
+          package-prefix: com.coss
+          client-class-name: Coss
+          maxRetries: 2
+          user-agent: coss-java/{version}
+          enable-forward-compatible-enums: true
+          # OptionalNullable<T>: an explicit null (which clears a field) apart from an omitted one.
+          collapse-optional-nullable: true
+  csharp:
+    generators:
+      - name: fernapi/fern-csharp-sdk
+        version: 2.86.1
+        output: { location: local-file-system, path: ../dotnet }
+        config:
+          namespace: Coss
+          package-id: Coss
+          # Not `Coss`: a class named like its namespace can't be used unqualified.
+          client-class-name: CossClient
+          maxRetries: 2
+          user-agent: coss-dotnet/{version}
+          enable-forward-compatible-enums: true
+          # An explicit null (which clears a field) apart from an omitted one.
+          experimental-explicit-nullable-optional: true
