@@ -129,7 +129,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   only and always signed (`DOMAIN_CONNECT_PRIVATE_KEY`; providers check `sig` against the TXT records at
   `<DOMAIN_CONNECT_KEY_ID>.coss.com`). `domain-connect/coss.com.email.json` is the contract with every DNS provider
   (submitted to github.com/Domain-Connect/Templates; providers onboard it one by one, and until then discovery's
-  template check is a 404 and no button shows): change it only with a new `version`, the conformance test in
+  template check is a 404 and no button shows): once merged there, change it only with a new `version` (providers
+  import a version once; until then the open PR is updated in place), the conformance test in
   `test/domain-connect.test.ts` (the template applied must equal `expectedRecords` + the tracking CNAME) and a PR
   upstream. Groups: `dkim`, `mail_from`, `dmarc` (only when the domain has no DMARC record and inherits none, asked of DNS
   each time, never from the stored check — a `p=none` subdomain record would weaken an enforced parent), `tracking` (fixed target `track.cosslinks.com`);
