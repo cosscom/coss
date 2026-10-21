@@ -21,6 +21,9 @@ public class UsageTest : BaseMockServerTest
                   "meter": "email.recipients",
                   "dimension": "dimension",
                   "environment_id": "environment_id",
+                  "project_id": "project_id",
+                  "api_key_id": "api_key_id",
+                  "user_id": "user_id",
                   "start": "2024-01-15T09:30:00.000Z",
                   "end": "2024-01-15T09:30:00.000Z",
                   "quantity": 1000000
@@ -30,6 +33,9 @@ public class UsageTest : BaseMockServerTest
                   "meter": "email.recipients",
                   "dimension": "dimension",
                   "environment_id": "environment_id",
+                  "project_id": "project_id",
+                  "api_key_id": "api_key_id",
+                  "user_id": "user_id",
                   "start": "2024-01-15T09:30:00.000Z",
                   "end": "2024-01-15T09:30:00.000Z",
                   "quantity": 1000000

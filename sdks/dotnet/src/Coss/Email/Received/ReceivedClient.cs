@@ -1039,7 +1039,7 @@ public partial class ReceivedClient : IReceivedClient
     /// Emails received by the API key's environment, newest first, without their bodies and headers (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true. An `email.received` webhook announces each one as it arrives.
     /// </summary>
     /// <example><code>
-    /// await client.Email.Received.ListAsync(new ListReceivedRequest());
+    /// await client.Email.Received.ListAsync(new Coss.Email.ListReceivedRequest());
     /// </code></example>
     public WithRawResponseTask<ReceivedEmailList> ListAsync(
         ListReceivedRequest request,
@@ -1073,7 +1073,7 @@ public partial class ReceivedClient : IReceivedClient
     /// </summary>
     /// <example><code>
     /// await client.Email.Received.GetAsync(
-    ///     new GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    ///     new Coss.Email.GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
     /// );
     /// </code></example>
     public WithRawResponseTask<ReceivedEmail> GetAsync(

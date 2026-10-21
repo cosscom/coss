@@ -1,0 +1,142 @@
+using Coss;
+using Coss.Test.Unit.MockServer;
+using Coss.Test.Utils;
+using NUnit.Framework;
+
+namespace Coss.Test.Unit.MockServer.Sms;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class ListTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string mockResponse = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "sms",
+                  "id": "id",
+                  "from": "from",
+                  "to": "to",
+                  "body": "body",
+                  "status": "queued",
+                  "segments": 1000000,
+                  "encoding": "gsm7",
+                  "country": "country",
+                  "tags": [
+                    {
+                      "name": "name",
+                      "value": "value"
+                    },
+                    {
+                      "name": "name",
+                      "value": "value"
+                    }
+                  ],
+                  "failure": {
+                    "code": "code",
+                    "message": "message"
+                  },
+                  "sandbox": true,
+                  "scheduled_at": "2024-01-15T09:30:00.000Z",
+                  "sent_at": "2024-01-15T09:30:00.000Z",
+                  "delivered_at": "2024-01-15T09:30:00.000Z",
+                  "created_at": "2024-01-15T09:30:00.000Z"
+                },
+                {
+                  "object": "sms",
+                  "id": "id",
+                  "from": "from",
+                  "to": "to",
+                  "body": "body",
+                  "status": "queued",
+                  "segments": 1000000,
+                  "encoding": "gsm7",
+                  "country": "country",
+                  "tags": [
+                    {
+                      "name": "name",
+                      "value": "value"
+                    },
+                    {
+                      "name": "name",
+                      "value": "value"
+                    }
+                  ],
+                  "failure": {
+                    "code": "code",
+                    "message": "message"
+                  },
+                  "sandbox": true,
+                  "scheduled_at": "2024-01-15T09:30:00.000Z",
+                  "sent_at": "2024-01-15T09:30:00.000Z",
+                  "delivered_at": "2024-01-15T09:30:00.000Z",
+                  "created_at": "2024-01-15T09:30:00.000Z"
+                }
+              ],
+              "has_more": true
+            }
+            """;
+
+        Server
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/v1/sms").UsingGet())
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Sms.ListAsync(new ListSmsRequest());
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string mockResponse = """
+            {
+              "object": "list",
+              "data": [
+                {
+                  "object": "sms",
+                  "id": "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                  "from": "+14155550123",
+                  "to": "+14155550199",
+                  "body": "Your Acme code is 482913",
+                  "status": "delivered",
+                  "segments": 1,
+                  "encoding": "gsm7",
+                  "country": "US",
+                  "tags": [
+                    {
+                      "name": "flow",
+                      "value": "sign_in"
+                    }
+                  ],
+                  "sandbox": false,
+                  "sent_at": "2026-11-10T12:00:01.000Z",
+                  "delivered_at": "2026-11-10T12:00:04.000Z",
+                  "created_at": "2026-11-10T12:00:00.000Z"
+                }
+              ],
+              "has_more": false
+            }
+            """;
+
+        Server
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/v1/sms").UsingGet())
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Sms.ListAsync(new ListSmsRequest());
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

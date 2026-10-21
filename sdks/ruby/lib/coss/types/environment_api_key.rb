@@ -9,6 +9,10 @@ module Coss
       field :name, -> { String }, optional: false, nullable: true
 
       field :start, -> { String }, optional: false, nullable: true
+
+      field :access, -> { Coss::Types::EnvironmentAPIKeyAccess }, optional: false, nullable: false
+
+      field :permissions, -> { Internal::Types::Array[String] }, optional: false, nullable: false
     end
   end
 end

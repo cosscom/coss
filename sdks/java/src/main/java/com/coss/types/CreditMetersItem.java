@@ -9,17 +9,25 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public final class CreditMetersItem {
     public static final CreditMetersItem SMS_SEGMENTS = new CreditMetersItem(Value.SMS_SEGMENTS, "sms.segments");
 
+    public static final CreditMetersItem SMS_REGISTRATIONS =
+            new CreditMetersItem(Value.SMS_REGISTRATIONS, "sms.registrations");
+
     public static final CreditMetersItem EMAIL_RECIPIENTS =
             new CreditMetersItem(Value.EMAIL_RECIPIENTS, "email.recipients");
 
     public static final CreditMetersItem EMAIL_DEDICATED_IP =
             new CreditMetersItem(Value.EMAIL_DEDICATED_IP, "email.dedicated_ip");
 
+    public static final CreditMetersItem SMS_RECEIVED_SEGMENTS =
+            new CreditMetersItem(Value.SMS_RECEIVED_SEGMENTS, "sms.received_segments");
+
     public static final CreditMetersItem SCHEDULING_BOOKINGS =
             new CreditMetersItem(Value.SCHEDULING_BOOKINGS, "scheduling.bookings");
 
     public static final CreditMetersItem VIDEO_PARTICIPANT_MINUTES =
             new CreditMetersItem(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
+
+    public static final CreditMetersItem SMS_NUMBERS = new CreditMetersItem(Value.SMS_NUMBERS, "sms.numbers");
 
     private final Value value;
 
@@ -55,14 +63,20 @@ public final class CreditMetersItem {
         switch (value) {
             case SMS_SEGMENTS:
                 return visitor.visitSmsSegments();
+            case SMS_REGISTRATIONS:
+                return visitor.visitSmsRegistrations();
             case EMAIL_RECIPIENTS:
                 return visitor.visitEmailRecipients();
             case EMAIL_DEDICATED_IP:
                 return visitor.visitEmailDedicatedIp();
+            case SMS_RECEIVED_SEGMENTS:
+                return visitor.visitSmsReceivedSegments();
             case SCHEDULING_BOOKINGS:
                 return visitor.visitSchedulingBookings();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case SMS_NUMBERS:
+                return visitor.visitSmsNumbers();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -74,14 +88,20 @@ public final class CreditMetersItem {
         switch (value) {
             case "sms.segments":
                 return SMS_SEGMENTS;
+            case "sms.registrations":
+                return SMS_REGISTRATIONS;
             case "email.recipients":
                 return EMAIL_RECIPIENTS;
             case "email.dedicated_ip":
                 return EMAIL_DEDICATED_IP;
+            case "sms.received_segments":
+                return SMS_RECEIVED_SEGMENTS;
             case "scheduling.bookings":
                 return SCHEDULING_BOOKINGS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "sms.numbers":
+                return SMS_NUMBERS;
             default:
                 return new CreditMetersItem(Value.UNKNOWN, value);
         }
@@ -93,6 +113,12 @@ public final class CreditMetersItem {
         EMAIL_DEDICATED_IP,
 
         SMS_SEGMENTS,
+
+        SMS_RECEIVED_SEGMENTS,
+
+        SMS_NUMBERS,
+
+        SMS_REGISTRATIONS,
 
         VIDEO_PARTICIPANT_MINUTES,
 
@@ -107,6 +133,12 @@ public final class CreditMetersItem {
         T visitEmailDedicatedIp();
 
         T visitSmsSegments();
+
+        T visitSmsReceivedSegments();
+
+        T visitSmsNumbers();
+
+        T visitSmsRegistrations();
 
         T visitVideoParticipantMinutes();
 

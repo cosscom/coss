@@ -9,5 +9,6 @@ enum LogDrainSource: string
     case Webhook = "webhook";
     case Risk = "risk";
     case Smtp = "smtp";
+    case Sms = "sms";
     case Audit = "audit";
 }

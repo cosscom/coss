@@ -1292,7 +1292,7 @@ public partial class SuppressionsClient : ISuppressionsClient
     /// The suppression list of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
     /// </summary>
     /// <example><code>
-    /// await client.Email.Suppressions.ListAsync(new ListSuppressionsRequest());
+    /// await client.Email.Suppressions.ListAsync(new Coss.Email.ListSuppressionsRequest());
     /// </code></example>
     public WithRawResponseTask<SuppressionList> ListAsync(
         ListSuppressionsRequest request,
@@ -1329,7 +1329,7 @@ public partial class SuppressionsClient : ISuppressionsClient
     /// </summary>
     /// <example><code>
     /// await client.Email.Suppressions.CheckAsync(
-    ///     new CheckSuppressionsRequest { Address = "user@example.com" }
+    ///     new Coss.Email.CheckSuppressionsRequest { Address = "user@example.com" }
     /// );
     /// </code></example>
     public WithRawResponseTask<SuppressionCheck> CheckAsync(
@@ -1392,7 +1392,7 @@ public partial class SuppressionsClient : ISuppressionsClient
 
     /// <example><code>
     /// await client.Email.Suppressions.GetAsync(
-    ///     new GetSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    ///     new Coss.Email.GetSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
     /// );
     /// </code></example>
     public WithRawResponseTask<Suppression> GetAsync(
@@ -1411,7 +1411,7 @@ public partial class SuppressionsClient : ISuppressionsClient
     /// </summary>
     /// <example><code>
     /// await client.Email.Suppressions.RemoveAsync(
-    ///     new RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    ///     new Coss.Email.RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
     /// );
     /// </code></example>
     public WithRawResponseTask<DeletedSuppression> RemoveAsync(

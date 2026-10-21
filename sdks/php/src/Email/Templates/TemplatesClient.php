@@ -22,6 +22,8 @@ use Coss\Email\Templates\Requests\UpdateEmailTemplateRequest;
 use Coss\Types\EmailTemplateVersion;
 use Coss\Email\Templates\Requests\UpdateEmailTemplateDraftRequest;
 use Coss\Email\Templates\Requests\PublishEmailTemplateRequest;
+use Coss\Email\Templates\Requests\RenderEmailTemplateRequest;
+use Coss\Types\RenderedEmailTemplate;
 
 class TemplatesClient
 {
@@ -573,6 +575,72 @@ class TemplatesClient
                     return null;
                 }
                 return EmailTemplateVersion::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+     *
+     * Example:
+     * ```php
+     * $client->email->templates->render(
+     *     'etpl_01k7c8m4q2f3e9v6t5r1n0p8yz',
+     *     new RenderEmailTemplateRequest([
+     *         'locale' => 'en',
+     *         'variables' => [
+     *             'first_name' => "Ada",
+     *         ],
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $id The template's id or alias.
+     * @param RenderEmailTemplateRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?RenderedEmailTemplate
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function render(string $id, RenderEmailTemplateRequest $request = new RenderEmailTemplateRequest(), ?array $options = null): ?RenderedEmailTemplate
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $headers = [];
+        $headers['Idempotency-Key'] ??= IdempotencyKey::generate();
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/email_templates/{$id}/render",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return RenderedEmailTemplate::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

@@ -29,6 +29,7 @@ import com.coss.resources.email.templates.requests.GetDraftTemplatesRequest;
 import com.coss.resources.email.templates.requests.GetTemplatesRequest;
 import com.coss.resources.email.templates.requests.ListTemplatesRequest;
 import com.coss.resources.email.templates.requests.PublishEmailTemplateRequest;
+import com.coss.resources.email.templates.requests.RenderEmailTemplateRequest;
 import com.coss.resources.email.templates.requests.UpdateEmailTemplateDraftRequest;
 import com.coss.resources.email.templates.requests.UpdateEmailTemplateRequest;
 import com.coss.types.DeletedEmailTemplate;
@@ -36,6 +37,7 @@ import com.coss.types.EmailTemplate;
 import com.coss.types.EmailTemplateList;
 import com.coss.types.EmailTemplateVersion;
 import com.coss.types.Error;
+import com.coss.types.RenderedEmailTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import okhttp3.Headers;
@@ -839,6 +841,123 @@ public class RawTemplatesClient {
             if (response.isSuccessful()) {
                 return new CossHttpResponse<>(
                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, EmailTemplateVersion.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 413:
+                        throw new ContentTooLargeError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 415:
+                        throw new UnsupportedMediaTypeError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 500:
+                        throw new InternalServerError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 503:
+                        throw new ServiceUnavailableError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new CossApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new CossException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CossHttpResponse<RenderedEmailTemplate> render(String id) {
+        return render(id, RenderEmailTemplateRequest.builder().build());
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CossHttpResponse<RenderedEmailTemplate> render(String id, RequestOptions requestOptions) {
+        return render(id, RenderEmailTemplateRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CossHttpResponse<RenderedEmailTemplate> render(String id, RenderEmailTemplateRequest request) {
+        return render(id, request, null);
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CossHttpResponse<RenderedEmailTemplate> render(
+            String id, RenderEmailTemplateRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("v1/email_templates")
+                .addPathSegment(id)
+                .addPathSegments("render");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(request), MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(IdempotencyUtils.withGeneratedIdempotencyKey(
+                        clientOptions.headers(requestOptions), "Idempotency-Key")))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        if (requestOptions != null && requestOptions.getMaxRetries().isPresent()) {
+            okhttpRequest = okhttpRequest
+                    .newBuilder()
+                    .tag(
+                            RetryInterceptor.MaxRetriesOverride.class,
+                            new RetryInterceptor.MaxRetriesOverride(
+                                    requestOptions.getMaxRetries().get()))
+                    .build();
+        }
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new CossHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, RenderedEmailTemplate.class), response);
             }
             try {
                 switch (response.code()) {

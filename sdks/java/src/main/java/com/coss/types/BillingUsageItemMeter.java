@@ -10,17 +10,25 @@ public final class BillingUsageItemMeter {
     public static final BillingUsageItemMeter SMS_SEGMENTS =
             new BillingUsageItemMeter(Value.SMS_SEGMENTS, "sms.segments");
 
+    public static final BillingUsageItemMeter SMS_REGISTRATIONS =
+            new BillingUsageItemMeter(Value.SMS_REGISTRATIONS, "sms.registrations");
+
     public static final BillingUsageItemMeter EMAIL_RECIPIENTS =
             new BillingUsageItemMeter(Value.EMAIL_RECIPIENTS, "email.recipients");
 
     public static final BillingUsageItemMeter EMAIL_DEDICATED_IP =
             new BillingUsageItemMeter(Value.EMAIL_DEDICATED_IP, "email.dedicated_ip");
 
+    public static final BillingUsageItemMeter SMS_RECEIVED_SEGMENTS =
+            new BillingUsageItemMeter(Value.SMS_RECEIVED_SEGMENTS, "sms.received_segments");
+
     public static final BillingUsageItemMeter SCHEDULING_BOOKINGS =
             new BillingUsageItemMeter(Value.SCHEDULING_BOOKINGS, "scheduling.bookings");
 
     public static final BillingUsageItemMeter VIDEO_PARTICIPANT_MINUTES =
             new BillingUsageItemMeter(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
+
+    public static final BillingUsageItemMeter SMS_NUMBERS = new BillingUsageItemMeter(Value.SMS_NUMBERS, "sms.numbers");
 
     private final Value value;
 
@@ -57,14 +65,20 @@ public final class BillingUsageItemMeter {
         switch (value) {
             case SMS_SEGMENTS:
                 return visitor.visitSmsSegments();
+            case SMS_REGISTRATIONS:
+                return visitor.visitSmsRegistrations();
             case EMAIL_RECIPIENTS:
                 return visitor.visitEmailRecipients();
             case EMAIL_DEDICATED_IP:
                 return visitor.visitEmailDedicatedIp();
+            case SMS_RECEIVED_SEGMENTS:
+                return visitor.visitSmsReceivedSegments();
             case SCHEDULING_BOOKINGS:
                 return visitor.visitSchedulingBookings();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case SMS_NUMBERS:
+                return visitor.visitSmsNumbers();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -76,14 +90,20 @@ public final class BillingUsageItemMeter {
         switch (value) {
             case "sms.segments":
                 return SMS_SEGMENTS;
+            case "sms.registrations":
+                return SMS_REGISTRATIONS;
             case "email.recipients":
                 return EMAIL_RECIPIENTS;
             case "email.dedicated_ip":
                 return EMAIL_DEDICATED_IP;
+            case "sms.received_segments":
+                return SMS_RECEIVED_SEGMENTS;
             case "scheduling.bookings":
                 return SCHEDULING_BOOKINGS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "sms.numbers":
+                return SMS_NUMBERS;
             default:
                 return new BillingUsageItemMeter(Value.UNKNOWN, value);
         }
@@ -95,6 +115,12 @@ public final class BillingUsageItemMeter {
         EMAIL_DEDICATED_IP,
 
         SMS_SEGMENTS,
+
+        SMS_RECEIVED_SEGMENTS,
+
+        SMS_NUMBERS,
+
+        SMS_REGISTRATIONS,
 
         VIDEO_PARTICIPANT_MINUTES,
 
@@ -109,6 +135,12 @@ public final class BillingUsageItemMeter {
         T visitEmailDedicatedIp();
 
         T visitSmsSegments();
+
+        T visitSmsReceivedSegments();
+
+        T visitSmsNumbers();
+
+        T visitSmsRegistrations();
 
         T visitVideoParticipantMinutes();
 

@@ -37,6 +37,9 @@ module Coss
         BILLING_HOLD_PLACED = "billing.hold_placed"
         BILLING_HOLD_LIFTED = "billing.hold_lifted"
         BILLING_CREDIT_GRANTED = "billing.credit_granted"
+        BILLING_BUDGET_THRESHOLD_REACHED = "billing.budget_threshold_reached"
+        BILLING_BUDGET_HOLD_PLACED = "billing.budget_hold_placed"
+        BILLING_BUDGET_HOLD_LIFTED = "billing.budget_hold_lifted"
         RISK_ASSESSMENT_REVIEW = "risk.assessment.review"
         RISK_ASSESSMENT_REVIEWED = "risk.assessment.reviewed"
         CONTACT_CREATED = "contact.created"
@@ -49,6 +52,16 @@ module Coss
         BROADCAST_PAUSED = "broadcast.paused"
         BROADCAST_CANCELED = "broadcast.canceled"
         BROADCAST_FAILED = "broadcast.failed"
+        SMS_SCHEDULED = "sms.scheduled"
+        SMS_SENT = "sms.sent"
+        SMS_DELIVERED = "sms.delivered"
+        SMS_UNDELIVERED = "sms.undelivered"
+        SMS_FAILED = "sms.failed"
+        SMS_SUPPRESSED = "sms.suppressed"
+        SMS_CANCELED = "sms.canceled"
+        SMS_RECEIVED = "sms.received"
+        SMS_OPTED_OUT = "sms.opted_out"
+        SMS_OPTED_IN = "sms.opted_in"
       end
     end
   end

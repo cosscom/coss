@@ -212,9 +212,11 @@ func (e *Environment) String() string {
 }
 
 var (
-	environmentAPIKeyFieldID    = big.NewInt(1 << 0)
-	environmentAPIKeyFieldName  = big.NewInt(1 << 1)
-	environmentAPIKeyFieldStart = big.NewInt(1 << 2)
+	environmentAPIKeyFieldID          = big.NewInt(1 << 0)
+	environmentAPIKeyFieldName        = big.NewInt(1 << 1)
+	environmentAPIKeyFieldStart       = big.NewInt(1 << 2)
+	environmentAPIKeyFieldAccess      = big.NewInt(1 << 3)
+	environmentAPIKeyFieldPermissions = big.NewInt(1 << 4)
 )
 
 // environmentAPIKeyNullableFields maps the wire names of EnvironmentAPIKey's nullable fields (required or optional) to their field bits.
@@ -230,6 +232,10 @@ type EnvironmentAPIKey struct {
 	Name *string `json:"name,omitempty" url:"name,omitempty"`
 	// The key's first characters, as shown in the dashboard.
 	Start *string `json:"start,omitempty" url:"start,omitempty"`
+	// `full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created.
+	Access EnvironmentAPIKeyAccess `json:"access" url:"access"`
+	// What the key may do now, as `resource:action` (the names `insufficient_permissions` errors use), e.g. `email:send`.
+	Permissions []string `json:"permissions" url:"permissions"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -257,6 +263,20 @@ func (e *EnvironmentAPIKey) GetStart() *string {
 		return nil
 	}
 	return e.Start
+}
+
+func (e *EnvironmentAPIKey) GetAccess() EnvironmentAPIKeyAccess {
+	if e == nil {
+		return ""
+	}
+	return e.Access
+}
+
+func (e *EnvironmentAPIKey) GetPermissions() []string {
+	if e == nil {
+		return nil
+	}
+	return e.Permissions
 }
 
 func (e *EnvironmentAPIKey) GetExtraProperties() map[string]interface{} {
@@ -294,6 +314,20 @@ func (e *EnvironmentAPIKey) SetName(name *string) {
 func (e *EnvironmentAPIKey) SetStart(start *string) {
 	e.Start = start
 	e.require(environmentAPIKeyFieldStart)
+}
+
+// SetAccess sets the Access field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EnvironmentAPIKey) SetAccess(access EnvironmentAPIKeyAccess) {
+	e.Access = access
+	e.require(environmentAPIKeyFieldAccess)
+}
+
+// SetPermissions sets the Permissions field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EnvironmentAPIKey) SetPermissions(permissions []string) {
+	e.Permissions = permissions
+	e.require(environmentAPIKeyFieldPermissions)
 }
 
 func (e *EnvironmentAPIKey) UnmarshalJSON(data []byte) error {
@@ -343,6 +377,29 @@ func (e *EnvironmentAPIKey) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", e)
+}
+
+// `full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created.
+type EnvironmentAPIKeyAccess string
+
+const (
+	EnvironmentAPIKeyAccessFull       EnvironmentAPIKeyAccess = "full"
+	EnvironmentAPIKeyAccessRestricted EnvironmentAPIKeyAccess = "restricted"
+)
+
+func NewEnvironmentAPIKeyAccessFromString(s string) (EnvironmentAPIKeyAccess, error) {
+	switch s {
+	case "full":
+		return EnvironmentAPIKeyAccessFull, nil
+	case "restricted":
+		return EnvironmentAPIKeyAccessRestricted, nil
+	}
+	var t EnvironmentAPIKeyAccess
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (e EnvironmentAPIKeyAccess) Ptr() *EnvironmentAPIKeyAccess {
+	return &e
 }
 
 // `live` delivers email; `sandbox` (`coss_test_` keys) never does.

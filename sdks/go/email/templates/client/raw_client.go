@@ -405,3 +405,52 @@ func (r *RawClient) Publish(
 		Body:       response,
 	}, nil
 }
+
+func (r *RawClient) Render(
+	ctx context.Context,
+	request *email.RenderEmailTemplateRequest,
+	opts ...option.RequestOption,
+) (*core.Response[*coss.RenderedEmailTemplate], error) {
+	options := core.NewRequestOptions(opts...)
+	baseURL := internal.ResolveBaseURL(
+		options.BaseURL,
+		r.baseURL,
+		"https://api.coss.com",
+	)
+	endpointURL := internal.EncodeURL(
+		baseURL+"/v1/email_templates/%v/render",
+		request.ID,
+	)
+	headers := internal.MergeHeaders(
+		r.options.ToHeader(),
+		options.ToHeader(),
+	)
+	headers.Add("Content-Type", "application/json")
+	core.SetIdempotencyKeyHeader(headers)
+
+	var response *coss.RenderedEmailTemplate
+	raw, err := r.caller.Call(
+		ctx,
+		&internal.CallParams{
+			URL:             endpointURL,
+			Method:          http.MethodPost,
+			Headers:         headers,
+			MaxAttempts:     options.MaxAttempts,
+			DisableRetries:  options.DisableRetries,
+			BodyProperties:  options.BodyProperties,
+			QueryParameters: options.QueryParameters,
+			Client:          options.HTTPClient,
+			Request:         request,
+			Response:        &response,
+			ErrorDecoder:    internal.NewErrorDecoder(email.ErrorCodes),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &core.Response[*coss.RenderedEmailTemplate]{
+		StatusCode: raw.StatusCode,
+		Header:     raw.Header,
+		Body:       response,
+	}, nil
+}

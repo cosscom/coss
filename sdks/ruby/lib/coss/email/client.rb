@@ -464,6 +464,11 @@ module Coss
         @tracking ||= Coss::Email::Tracking::Client.new(client: @client)
       end
 
+      # @return [Coss::Storage::Client]
+      def storage
+        @storage ||= Coss::Email::Storage::Client.new(client: @client)
+      end
+
       # @return [Coss::Contacts::Client]
       def contacts
         @contacts ||= Coss::Email::Contacts::Client.new(client: @client)

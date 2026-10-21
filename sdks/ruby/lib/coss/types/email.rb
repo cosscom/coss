@@ -54,6 +54,8 @@ module Coss
       field :template, -> { Coss::Types::EmailTemplateReference }, optional: false, nullable: true
 
       field :broadcast_id, -> { String }, optional: false, nullable: true
+
+      field :content_storage, -> { Coss::Types::EmailContentStorage }, optional: false, nullable: false
     end
   end
 end

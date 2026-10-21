@@ -13,35 +13,20 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
     public static final CreateWebhookEndpointRequestEventTypesItem BILLING_INVOICE_VOIDED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_INVOICE_VOIDED, "billing.invoice_voided");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_USAGE_THRESHOLD_REACHED =
-            new CreateWebhookEndpointRequestEventTypesItem(
-                    Value.BILLING_USAGE_THRESHOLD_REACHED, "billing.usage_threshold_reached");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_MARKETING_PAUSED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.ACCOUNT_MARKETING_PAUSED, "account.marketing_paused");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_SUPPRESSED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_SUPPRESSED, "sms.suppressed");
 
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_BOUNCED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_BOUNCED, "email.bounced");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_REPUTATION_WARNING =
-            new CreateWebhookEndpointRequestEventTypesItem(
-                    Value.ACCOUNT_REPUTATION_WARNING, "account.reputation_warning");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_OPTED_OUT =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_OPTED_OUT, "sms.opted_out");
 
     public static final CreateWebhookEndpointRequestEventTypesItem CONTACT_CREATED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.CONTACT_CREATED, "contact.created");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_FAILED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_FAILED, "email.failed");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_MARKETING_REINSTATED =
-            new CreateWebhookEndpointRequestEventTypesItem(
-                    Value.ACCOUNT_MARKETING_REINSTATED, "account.marketing_reinstated");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem BROADCAST_CANCELED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.BROADCAST_CANCELED, "broadcast.canceled");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_CREDIT_GRANTED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_CREDIT_GRANTED, "billing.credit_granted");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_CANCELED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_CANCELED, "sms.canceled");
 
     public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_REPUTATION_RECOVERED =
             new CreateWebhookEndpointRequestEventTypesItem(
@@ -57,23 +42,21 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_DELIVERY_DELAYED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_DELIVERY_DELAYED, "email.delivery_delayed");
 
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_BUDGET_HOLD_PLACED =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.BILLING_BUDGET_HOLD_PLACED, "billing.budget_hold_placed");
+
     public static final CreateWebhookEndpointRequestEventTypesItem BROADCAST_SENDING =
             new CreateWebhookEndpointRequestEventTypesItem(Value.BROADCAST_SENDING, "broadcast.sending");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem RISK_ASSESSMENT_REVIEWED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEWED, "risk.assessment.reviewed");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_FAILED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_FAILED, "sms.failed");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_REINSTATED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.ACCOUNT_REINSTATED, "account.reinstated");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_RECEIVED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_RECEIVED, "sms.received");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_OPENED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_OPENED, "email.opened");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_CANCELED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_CANCELED, "email.canceled");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_UNSUBSCRIBED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_UNSUBSCRIBED, "email.unsubscribed");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_UNDELIVERED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_UNDELIVERED, "sms.undelivered");
 
     public static final CreateWebhookEndpointRequestEventTypesItem BILLING_INVOICE_FINALIZED =
             new CreateWebhookEndpointRequestEventTypesItem(
@@ -82,15 +65,12 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_DELIVERED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_DELIVERED, "email.delivered");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem RISK_ASSESSMENT_REVIEW =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEW, "risk.assessment.review");
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_SCHEDULED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_SCHEDULED, "sms.scheduled");
 
     public static final CreateWebhookEndpointRequestEventTypesItem BILLING_INVOICE_PAYMENT_FAILED =
             new CreateWebhookEndpointRequestEventTypesItem(
                     Value.BILLING_INVOICE_PAYMENT_FAILED, "billing.invoice_payment_failed");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_SCHEDULED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_SCHEDULED, "email.scheduled");
 
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_RESCHEDULED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_RESCHEDULED, "email.rescheduled");
@@ -101,29 +81,18 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_CLICKED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_CLICKED, "email.clicked");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem HOOK_ENDPOINT_DISABLED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.HOOK_ENDPOINT_DISABLED, "hook_endpoint.disabled");
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_BUDGET_THRESHOLD_REACHED =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.BILLING_BUDGET_THRESHOLD_REACHED, "billing.budget_threshold_reached");
 
     public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_SENT =
             new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_SENT, "email.sent");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_HOLD_LIFTED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_HOLD_LIFTED, "billing.hold_lifted");
-
     public static final CreateWebhookEndpointRequestEventTypesItem BROADCAST_SENT =
             new CreateWebhookEndpointRequestEventTypesItem(Value.BROADCAST_SENT, "broadcast.sent");
 
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_SUPPRESSED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_SUPPRESSED, "email.suppressed");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_HOLD_PLACED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_HOLD_PLACED, "billing.hold_placed");
-
     public static final CreateWebhookEndpointRequestEventTypesItem CONTACT_CONFIRMED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.CONTACT_CONFIRMED, "contact.confirmed");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_RECEIVED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_RECEIVED, "email.received");
 
     public static final CreateWebhookEndpointRequestEventTypesItem BILLING_INVOICE_PAID =
             new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_INVOICE_PAID, "billing.invoice_paid");
@@ -134,14 +103,87 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
     public static final CreateWebhookEndpointRequestEventTypesItem CONTACT_DELETED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.CONTACT_DELETED, "contact.deleted");
 
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_OPTED_IN =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_OPTED_IN, "sms.opted_in");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_COMPLAINED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_COMPLAINED, "email.complained");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_USAGE_THRESHOLD_REACHED =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.BILLING_USAGE_THRESHOLD_REACHED, "billing.usage_threshold_reached");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_MARKETING_PAUSED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.ACCOUNT_MARKETING_PAUSED, "account.marketing_paused");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_REPUTATION_WARNING =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.ACCOUNT_REPUTATION_WARNING, "account.reputation_warning");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_FAILED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_FAILED, "email.failed");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_MARKETING_REINSTATED =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.ACCOUNT_MARKETING_REINSTATED, "account.marketing_reinstated");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BROADCAST_CANCELED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.BROADCAST_CANCELED, "broadcast.canceled");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_CREDIT_GRANTED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_CREDIT_GRANTED, "billing.credit_granted");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_BUDGET_HOLD_LIFTED =
+            new CreateWebhookEndpointRequestEventTypesItem(
+                    Value.BILLING_BUDGET_HOLD_LIFTED, "billing.budget_hold_lifted");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem RISK_ASSESSMENT_REVIEWED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEWED, "risk.assessment.reviewed");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_SENT =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_SENT, "sms.sent");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_REINSTATED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.ACCOUNT_REINSTATED, "account.reinstated");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_OPENED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_OPENED, "email.opened");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_CANCELED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_CANCELED, "email.canceled");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem SMS_DELIVERED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.SMS_DELIVERED, "sms.delivered");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_UNSUBSCRIBED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_UNSUBSCRIBED, "email.unsubscribed");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem RISK_ASSESSMENT_REVIEW =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEW, "risk.assessment.review");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_SCHEDULED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_SCHEDULED, "email.scheduled");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem HOOK_ENDPOINT_DISABLED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.HOOK_ENDPOINT_DISABLED, "hook_endpoint.disabled");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_HOLD_LIFTED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_HOLD_LIFTED, "billing.hold_lifted");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_SUPPRESSED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_SUPPRESSED, "email.suppressed");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem BILLING_HOLD_PLACED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.BILLING_HOLD_PLACED, "billing.hold_placed");
+
+    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_RECEIVED =
+            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_RECEIVED, "email.received");
+
     public static final CreateWebhookEndpointRequestEventTypesItem ACCOUNT_SUSPENDED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.ACCOUNT_SUSPENDED, "account.suspended");
 
     public static final CreateWebhookEndpointRequestEventTypesItem BROADCAST_FAILED =
             new CreateWebhookEndpointRequestEventTypesItem(Value.BROADCAST_FAILED, "broadcast.failed");
-
-    public static final CreateWebhookEndpointRequestEventTypesItem EMAIL_COMPLAINED =
-            new CreateWebhookEndpointRequestEventTypesItem(Value.EMAIL_COMPLAINED, "email.complained");
 
     private final Value value;
 
@@ -180,24 +222,16 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
                 return visitor.visitBillingPlanChanged();
             case BILLING_INVOICE_VOIDED:
                 return visitor.visitBillingInvoiceVoided();
-            case BILLING_USAGE_THRESHOLD_REACHED:
-                return visitor.visitBillingUsageThresholdReached();
-            case ACCOUNT_MARKETING_PAUSED:
-                return visitor.visitAccountMarketingPaused();
+            case SMS_SUPPRESSED:
+                return visitor.visitSmsSuppressed();
             case EMAIL_BOUNCED:
                 return visitor.visitEmailBounced();
-            case ACCOUNT_REPUTATION_WARNING:
-                return visitor.visitAccountReputationWarning();
+            case SMS_OPTED_OUT:
+                return visitor.visitSmsOptedOut();
             case CONTACT_CREATED:
                 return visitor.visitContactCreated();
-            case EMAIL_FAILED:
-                return visitor.visitEmailFailed();
-            case ACCOUNT_MARKETING_REINSTATED:
-                return visitor.visitAccountMarketingReinstated();
-            case BROADCAST_CANCELED:
-                return visitor.visitBroadcastCanceled();
-            case BILLING_CREDIT_GRANTED:
-                return visitor.visitBillingCreditGranted();
+            case SMS_CANCELED:
+                return visitor.visitSmsCanceled();
             case ACCOUNT_REPUTATION_RECOVERED:
                 return visitor.visitAccountReputationRecovered();
             case DOMAIN_DMARC_REPORT_RECEIVED:
@@ -206,62 +240,96 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
                 return visitor.visitContactUpdated();
             case EMAIL_DELIVERY_DELAYED:
                 return visitor.visitEmailDeliveryDelayed();
+            case BILLING_BUDGET_HOLD_PLACED:
+                return visitor.visitBillingBudgetHoldPlaced();
             case BROADCAST_SENDING:
                 return visitor.visitBroadcastSending();
-            case RISK_ASSESSMENT_REVIEWED:
-                return visitor.visitRiskAssessmentReviewed();
-            case ACCOUNT_REINSTATED:
-                return visitor.visitAccountReinstated();
-            case EMAIL_OPENED:
-                return visitor.visitEmailOpened();
-            case EMAIL_CANCELED:
-                return visitor.visitEmailCanceled();
-            case EMAIL_UNSUBSCRIBED:
-                return visitor.visitEmailUnsubscribed();
+            case SMS_FAILED:
+                return visitor.visitSmsFailed();
+            case SMS_RECEIVED:
+                return visitor.visitSmsReceived();
+            case SMS_UNDELIVERED:
+                return visitor.visitSmsUndelivered();
             case BILLING_INVOICE_FINALIZED:
                 return visitor.visitBillingInvoiceFinalized();
             case EMAIL_DELIVERED:
                 return visitor.visitEmailDelivered();
-            case RISK_ASSESSMENT_REVIEW:
-                return visitor.visitRiskAssessmentReview();
+            case SMS_SCHEDULED:
+                return visitor.visitSmsScheduled();
             case BILLING_INVOICE_PAYMENT_FAILED:
                 return visitor.visitBillingInvoicePaymentFailed();
-            case EMAIL_SCHEDULED:
-                return visitor.visitEmailScheduled();
             case EMAIL_RESCHEDULED:
                 return visitor.visitEmailRescheduled();
             case BROADCAST_PAUSED:
                 return visitor.visitBroadcastPaused();
             case EMAIL_CLICKED:
                 return visitor.visitEmailClicked();
-            case HOOK_ENDPOINT_DISABLED:
-                return visitor.visitHookEndpointDisabled();
+            case BILLING_BUDGET_THRESHOLD_REACHED:
+                return visitor.visitBillingBudgetThresholdReached();
             case EMAIL_SENT:
                 return visitor.visitEmailSent();
-            case BILLING_HOLD_LIFTED:
-                return visitor.visitBillingHoldLifted();
             case BROADCAST_SENT:
                 return visitor.visitBroadcastSent();
-            case EMAIL_SUPPRESSED:
-                return visitor.visitEmailSuppressed();
-            case BILLING_HOLD_PLACED:
-                return visitor.visitBillingHoldPlaced();
             case CONTACT_CONFIRMED:
                 return visitor.visitContactConfirmed();
-            case EMAIL_RECEIVED:
-                return visitor.visitEmailReceived();
             case BILLING_INVOICE_PAID:
                 return visitor.visitBillingInvoicePaid();
             case CONTACT_UNSUBSCRIBED:
                 return visitor.visitContactUnsubscribed();
             case CONTACT_DELETED:
                 return visitor.visitContactDeleted();
+            case SMS_OPTED_IN:
+                return visitor.visitSmsOptedIn();
+            case EMAIL_COMPLAINED:
+                return visitor.visitEmailComplained();
+            case BILLING_USAGE_THRESHOLD_REACHED:
+                return visitor.visitBillingUsageThresholdReached();
+            case ACCOUNT_MARKETING_PAUSED:
+                return visitor.visitAccountMarketingPaused();
+            case ACCOUNT_REPUTATION_WARNING:
+                return visitor.visitAccountReputationWarning();
+            case EMAIL_FAILED:
+                return visitor.visitEmailFailed();
+            case ACCOUNT_MARKETING_REINSTATED:
+                return visitor.visitAccountMarketingReinstated();
+            case BROADCAST_CANCELED:
+                return visitor.visitBroadcastCanceled();
+            case BILLING_CREDIT_GRANTED:
+                return visitor.visitBillingCreditGranted();
+            case BILLING_BUDGET_HOLD_LIFTED:
+                return visitor.visitBillingBudgetHoldLifted();
+            case RISK_ASSESSMENT_REVIEWED:
+                return visitor.visitRiskAssessmentReviewed();
+            case SMS_SENT:
+                return visitor.visitSmsSent();
+            case ACCOUNT_REINSTATED:
+                return visitor.visitAccountReinstated();
+            case EMAIL_OPENED:
+                return visitor.visitEmailOpened();
+            case EMAIL_CANCELED:
+                return visitor.visitEmailCanceled();
+            case SMS_DELIVERED:
+                return visitor.visitSmsDelivered();
+            case EMAIL_UNSUBSCRIBED:
+                return visitor.visitEmailUnsubscribed();
+            case RISK_ASSESSMENT_REVIEW:
+                return visitor.visitRiskAssessmentReview();
+            case EMAIL_SCHEDULED:
+                return visitor.visitEmailScheduled();
+            case HOOK_ENDPOINT_DISABLED:
+                return visitor.visitHookEndpointDisabled();
+            case BILLING_HOLD_LIFTED:
+                return visitor.visitBillingHoldLifted();
+            case EMAIL_SUPPRESSED:
+                return visitor.visitEmailSuppressed();
+            case BILLING_HOLD_PLACED:
+                return visitor.visitBillingHoldPlaced();
+            case EMAIL_RECEIVED:
+                return visitor.visitEmailReceived();
             case ACCOUNT_SUSPENDED:
                 return visitor.visitAccountSuspended();
             case BROADCAST_FAILED:
                 return visitor.visitBroadcastFailed();
-            case EMAIL_COMPLAINED:
-                return visitor.visitEmailComplained();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -275,24 +343,16 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
                 return BILLING_PLAN_CHANGED;
             case "billing.invoice_voided":
                 return BILLING_INVOICE_VOIDED;
-            case "billing.usage_threshold_reached":
-                return BILLING_USAGE_THRESHOLD_REACHED;
-            case "account.marketing_paused":
-                return ACCOUNT_MARKETING_PAUSED;
+            case "sms.suppressed":
+                return SMS_SUPPRESSED;
             case "email.bounced":
                 return EMAIL_BOUNCED;
-            case "account.reputation_warning":
-                return ACCOUNT_REPUTATION_WARNING;
+            case "sms.opted_out":
+                return SMS_OPTED_OUT;
             case "contact.created":
                 return CONTACT_CREATED;
-            case "email.failed":
-                return EMAIL_FAILED;
-            case "account.marketing_reinstated":
-                return ACCOUNT_MARKETING_REINSTATED;
-            case "broadcast.canceled":
-                return BROADCAST_CANCELED;
-            case "billing.credit_granted":
-                return BILLING_CREDIT_GRANTED;
+            case "sms.canceled":
+                return SMS_CANCELED;
             case "account.reputation_recovered":
                 return ACCOUNT_REPUTATION_RECOVERED;
             case "domain.dmarc_report_received":
@@ -301,62 +361,96 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
                 return CONTACT_UPDATED;
             case "email.delivery_delayed":
                 return EMAIL_DELIVERY_DELAYED;
+            case "billing.budget_hold_placed":
+                return BILLING_BUDGET_HOLD_PLACED;
             case "broadcast.sending":
                 return BROADCAST_SENDING;
-            case "risk.assessment.reviewed":
-                return RISK_ASSESSMENT_REVIEWED;
-            case "account.reinstated":
-                return ACCOUNT_REINSTATED;
-            case "email.opened":
-                return EMAIL_OPENED;
-            case "email.canceled":
-                return EMAIL_CANCELED;
-            case "email.unsubscribed":
-                return EMAIL_UNSUBSCRIBED;
+            case "sms.failed":
+                return SMS_FAILED;
+            case "sms.received":
+                return SMS_RECEIVED;
+            case "sms.undelivered":
+                return SMS_UNDELIVERED;
             case "billing.invoice_finalized":
                 return BILLING_INVOICE_FINALIZED;
             case "email.delivered":
                 return EMAIL_DELIVERED;
-            case "risk.assessment.review":
-                return RISK_ASSESSMENT_REVIEW;
+            case "sms.scheduled":
+                return SMS_SCHEDULED;
             case "billing.invoice_payment_failed":
                 return BILLING_INVOICE_PAYMENT_FAILED;
-            case "email.scheduled":
-                return EMAIL_SCHEDULED;
             case "email.rescheduled":
                 return EMAIL_RESCHEDULED;
             case "broadcast.paused":
                 return BROADCAST_PAUSED;
             case "email.clicked":
                 return EMAIL_CLICKED;
-            case "hook_endpoint.disabled":
-                return HOOK_ENDPOINT_DISABLED;
+            case "billing.budget_threshold_reached":
+                return BILLING_BUDGET_THRESHOLD_REACHED;
             case "email.sent":
                 return EMAIL_SENT;
-            case "billing.hold_lifted":
-                return BILLING_HOLD_LIFTED;
             case "broadcast.sent":
                 return BROADCAST_SENT;
-            case "email.suppressed":
-                return EMAIL_SUPPRESSED;
-            case "billing.hold_placed":
-                return BILLING_HOLD_PLACED;
             case "contact.confirmed":
                 return CONTACT_CONFIRMED;
-            case "email.received":
-                return EMAIL_RECEIVED;
             case "billing.invoice_paid":
                 return BILLING_INVOICE_PAID;
             case "contact.unsubscribed":
                 return CONTACT_UNSUBSCRIBED;
             case "contact.deleted":
                 return CONTACT_DELETED;
+            case "sms.opted_in":
+                return SMS_OPTED_IN;
+            case "email.complained":
+                return EMAIL_COMPLAINED;
+            case "billing.usage_threshold_reached":
+                return BILLING_USAGE_THRESHOLD_REACHED;
+            case "account.marketing_paused":
+                return ACCOUNT_MARKETING_PAUSED;
+            case "account.reputation_warning":
+                return ACCOUNT_REPUTATION_WARNING;
+            case "email.failed":
+                return EMAIL_FAILED;
+            case "account.marketing_reinstated":
+                return ACCOUNT_MARKETING_REINSTATED;
+            case "broadcast.canceled":
+                return BROADCAST_CANCELED;
+            case "billing.credit_granted":
+                return BILLING_CREDIT_GRANTED;
+            case "billing.budget_hold_lifted":
+                return BILLING_BUDGET_HOLD_LIFTED;
+            case "risk.assessment.reviewed":
+                return RISK_ASSESSMENT_REVIEWED;
+            case "sms.sent":
+                return SMS_SENT;
+            case "account.reinstated":
+                return ACCOUNT_REINSTATED;
+            case "email.opened":
+                return EMAIL_OPENED;
+            case "email.canceled":
+                return EMAIL_CANCELED;
+            case "sms.delivered":
+                return SMS_DELIVERED;
+            case "email.unsubscribed":
+                return EMAIL_UNSUBSCRIBED;
+            case "risk.assessment.review":
+                return RISK_ASSESSMENT_REVIEW;
+            case "email.scheduled":
+                return EMAIL_SCHEDULED;
+            case "hook_endpoint.disabled":
+                return HOOK_ENDPOINT_DISABLED;
+            case "billing.hold_lifted":
+                return BILLING_HOLD_LIFTED;
+            case "email.suppressed":
+                return EMAIL_SUPPRESSED;
+            case "billing.hold_placed":
+                return BILLING_HOLD_PLACED;
+            case "email.received":
+                return EMAIL_RECEIVED;
             case "account.suspended":
                 return ACCOUNT_SUSPENDED;
             case "broadcast.failed":
                 return BROADCAST_FAILED;
-            case "email.complained":
-                return EMAIL_COMPLAINED;
             default:
                 return new CreateWebhookEndpointRequestEventTypesItem(Value.UNKNOWN, value);
         }
@@ -425,6 +519,12 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
 
         BILLING_CREDIT_GRANTED,
 
+        BILLING_BUDGET_THRESHOLD_REACHED,
+
+        BILLING_BUDGET_HOLD_PLACED,
+
+        BILLING_BUDGET_HOLD_LIFTED,
+
         RISK_ASSESSMENT_REVIEW,
 
         RISK_ASSESSMENT_REVIEWED,
@@ -448,6 +548,26 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
         BROADCAST_CANCELED,
 
         BROADCAST_FAILED,
+
+        SMS_SCHEDULED,
+
+        SMS_SENT,
+
+        SMS_DELIVERED,
+
+        SMS_UNDELIVERED,
+
+        SMS_FAILED,
+
+        SMS_SUPPRESSED,
+
+        SMS_CANCELED,
+
+        SMS_RECEIVED,
+
+        SMS_OPTED_OUT,
+
+        SMS_OPTED_IN,
 
         UNKNOWN
     }
@@ -515,6 +635,12 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
 
         T visitBillingCreditGranted();
 
+        T visitBillingBudgetThresholdReached();
+
+        T visitBillingBudgetHoldPlaced();
+
+        T visitBillingBudgetHoldLifted();
+
         T visitRiskAssessmentReview();
 
         T visitRiskAssessmentReviewed();
@@ -538,6 +664,26 @@ public final class CreateWebhookEndpointRequestEventTypesItem {
         T visitBroadcastCanceled();
 
         T visitBroadcastFailed();
+
+        T visitSmsScheduled();
+
+        T visitSmsSent();
+
+        T visitSmsDelivered();
+
+        T visitSmsUndelivered();
+
+        T visitSmsFailed();
+
+        T visitSmsSuppressed();
+
+        T visitSmsCanceled();
+
+        T visitSmsReceived();
+
+        T visitSmsOptedOut();
+
+        T visitSmsOptedIn();
 
         T visitUnknown(String unknownType);
     }

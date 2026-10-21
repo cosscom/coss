@@ -25,14 +25,14 @@ public class EnvironmentClient {
     }
 
     /**
-     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
      */
     public Environment get() {
         return this.rawClient.get().body();
     }
 
     /**
-     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
      */
     public Environment get(RequestOptions requestOptions) {
         return this.rawClient.get(requestOptions).body();

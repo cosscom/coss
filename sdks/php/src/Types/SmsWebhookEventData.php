@@ -1,0 +1,117 @@
+<?php
+
+namespace Coss\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+use Coss\Core\Types\ArrayType;
+use DateTime;
+use Coss\Core\Types\Date;
+
+class SmsWebhookEventData extends JsonSerializableType
+{
+    /**
+     * @var ?SmsWebhookEventDataFailure $failure Why the message failed or wasn't delivered.
+     */
+    #[JsonProperty('failure')]
+    public ?SmsWebhookEventDataFailure $failure;
+
+    /**
+     * @var ?string $providerErrorCode The provider's or carrier's own error code, e.g. `30007`.
+     */
+    #[JsonProperty('provider_error_code')]
+    public ?string $providerErrorCode;
+
+    /**
+     * @var ?SmsWebhookEventDataSuppression $suppression `sms.suppressed`: the entry that made coss.com skip the number.
+     */
+    #[JsonProperty('suppression')]
+    public ?SmsWebhookEventDataSuppression $suppression;
+
+    /**
+     * @var string $smsId
+     */
+    #[JsonProperty('sms_id')]
+    public string $smsId;
+
+    /**
+     * @var string $from
+     */
+    #[JsonProperty('from')]
+    public string $from;
+
+    /**
+     * @var string $to
+     */
+    #[JsonProperty('to')]
+    public string $to;
+
+    /**
+     * @var string $country
+     */
+    #[JsonProperty('country')]
+    public string $country;
+
+    /**
+     * @var int $segments
+     */
+    #[JsonProperty('segments')]
+    public int $segments;
+
+    /**
+     * @var array<SmsWebhookEventDataTagsItem> $tags
+     */
+    #[JsonProperty('tags'), ArrayType([SmsWebhookEventDataTagsItem::class])]
+    public array $tags;
+
+    /**
+     * @var bool $sandbox
+     */
+    #[JsonProperty('sandbox')]
+    public bool $sandbox;
+
+    /**
+     * @var DateTime $occurredAt
+     */
+    #[JsonProperty('occurred_at'), Date(Date::TYPE_DATETIME)]
+    public DateTime $occurredAt;
+
+    /**
+     * @param array{
+     *   smsId: string,
+     *   from: string,
+     *   to: string,
+     *   country: string,
+     *   segments: int,
+     *   tags: array<SmsWebhookEventDataTagsItem>,
+     *   sandbox: bool,
+     *   occurredAt: DateTime,
+     *   failure?: ?SmsWebhookEventDataFailure,
+     *   providerErrorCode?: ?string,
+     *   suppression?: ?SmsWebhookEventDataSuppression,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->failure = $values['failure'] ?? null;
+        $this->providerErrorCode = $values['providerErrorCode'] ?? null;
+        $this->suppression = $values['suppression'] ?? null;
+        $this->smsId = $values['smsId'];
+        $this->from = $values['from'];
+        $this->to = $values['to'];
+        $this->country = $values['country'];
+        $this->segments = $values['segments'];
+        $this->tags = $values['tags'];
+        $this->sandbox = $values['sandbox'];
+        $this->occurredAt = $values['occurredAt'];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

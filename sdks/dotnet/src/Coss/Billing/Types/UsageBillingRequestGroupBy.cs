@@ -10,6 +10,12 @@ public readonly record struct UsageBillingRequestGroupBy : IStringEnum
 {
     public static readonly UsageBillingRequestGroupBy Environment = new(Values.Environment);
 
+    public static readonly UsageBillingRequestGroupBy Project = new(Values.Project);
+
+    public static readonly UsageBillingRequestGroupBy ApiKey = new(Values.ApiKey);
+
+    public static readonly UsageBillingRequestGroupBy User = new(Values.User);
+
     public UsageBillingRequestGroupBy(string value)
     {
         Value = value;
@@ -107,5 +113,11 @@ public readonly record struct UsageBillingRequestGroupBy : IStringEnum
     public static class Values
     {
         public const string Environment = "environment";
+
+        public const string Project = "project";
+
+        public const string ApiKey = "api_key";
+
+        public const string User = "user";
     }
 }

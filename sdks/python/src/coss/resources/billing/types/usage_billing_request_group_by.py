@@ -2,4 +2,4 @@
 
 import typing
 
-UsageBillingRequestGroupBy = typing.Union[typing.Literal["environment"], typing.Any]
+UsageBillingRequestGroupBy = typing.Union[typing.Literal["environment", "project", "api_key", "user"], typing.Any]

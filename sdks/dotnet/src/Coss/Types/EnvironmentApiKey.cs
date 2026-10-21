@@ -29,6 +29,18 @@ public record EnvironmentApiKey : IJsonOnDeserialized
     [JsonPropertyName("start")]
     public string? Start { get; set; }
 
+    /// <summary>
+    /// `full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created.
+    /// </summary>
+    [JsonPropertyName("access")]
+    public required EnvironmentApiKeyAccess Access { get; set; }
+
+    /// <summary>
+    /// What the key may do now, as `resource:action` (the names `insufficient_permissions` errors use), e.g. `email:send`.
+    /// </summary>
+    [JsonPropertyName("permissions")]
+    public IEnumerable<string> Permissions { get; set; } = new List<string>();
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

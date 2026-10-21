@@ -50,7 +50,7 @@ class EnvironmentClient
     }
 
     /**
-     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+     * Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
      *
      * Example:
      * ```php

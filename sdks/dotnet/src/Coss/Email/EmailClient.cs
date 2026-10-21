@@ -13,24 +13,27 @@ public partial class EmailClient : IEmailClient
         _client = client;
         Templates = new TemplatesClient(_client);
         DedicatedIps = new DedicatedIpsClient(_client);
-        Suppressions = new SuppressionsClient(_client);
+        Suppressions = new Coss.Email.SuppressionsClient(_client);
         Tracking = new Coss.Email.TrackingClient(_client);
+        Storage = new StorageClient(_client);
         Contacts = new ContactsClient(_client);
         Broadcasts = new BroadcastsClient(_client);
         Audiences = new AudiencesClient(_client);
         Segments = new SegmentsClient(_client);
         Topics = new TopicsClient(_client);
         MarketingSettings = new MarketingSettingsClient(_client);
-        Received = new ReceivedClient(_client);
+        Received = new Coss.Email.ReceivedClient(_client);
     }
 
     public ITemplatesClient Templates { get; }
 
     public IDedicatedIpsClient DedicatedIps { get; }
 
-    public ISuppressionsClient Suppressions { get; }
+    public Coss.Email.ISuppressionsClient Suppressions { get; }
 
     public Coss.Email.ITrackingClient Tracking { get; }
+
+    public IStorageClient Storage { get; }
 
     public IContactsClient Contacts { get; }
 
@@ -44,7 +47,7 @@ public partial class EmailClient : IEmailClient
 
     public IMarketingSettingsClient MarketingSettings { get; }
 
-    public IReceivedClient Received { get; }
+    public Coss.Email.IReceivedClient Received { get; }
 
     private async Task<WithRawResponse<EmailSummaryList>> ListAsyncCore(
         ListEmailRequest request,

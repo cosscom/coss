@@ -20,6 +20,16 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
 
     public static readonly BillingWebhookEventThreeDataMeter SmsSegments = new(Values.SmsSegments);
 
+    public static readonly BillingWebhookEventThreeDataMeter SmsReceivedSegments = new(
+        Values.SmsReceivedSegments
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter SmsNumbers = new(Values.SmsNumbers);
+
+    public static readonly BillingWebhookEventThreeDataMeter SmsRegistrations = new(
+        Values.SmsRegistrations
+    );
+
     public static readonly BillingWebhookEventThreeDataMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -130,6 +140,12 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
         public const string SmsSegments = "sms.segments";
+
+        public const string SmsReceivedSegments = "sms.received_segments";
+
+        public const string SmsNumbers = "sms.numbers";
+
+        public const string SmsRegistrations = "sms.registrations";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

@@ -7,8 +7,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class UsageBillingRequestGroupBy {
+    public static final UsageBillingRequestGroupBy PROJECT = new UsageBillingRequestGroupBy(Value.PROJECT, "project");
+
+    public static final UsageBillingRequestGroupBy USER = new UsageBillingRequestGroupBy(Value.USER, "user");
+
     public static final UsageBillingRequestGroupBy ENVIRONMENT =
             new UsageBillingRequestGroupBy(Value.ENVIRONMENT, "environment");
+
+    public static final UsageBillingRequestGroupBy API_KEY = new UsageBillingRequestGroupBy(Value.API_KEY, "api_key");
 
     private final Value value;
 
@@ -43,8 +49,14 @@ public final class UsageBillingRequestGroupBy {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case PROJECT:
+                return visitor.visitProject();
+            case USER:
+                return visitor.visitUser();
             case ENVIRONMENT:
                 return visitor.visitEnvironment();
+            case API_KEY:
+                return visitor.visitApiKey();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -54,8 +66,14 @@ public final class UsageBillingRequestGroupBy {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static UsageBillingRequestGroupBy valueOf(String value) {
         switch (value) {
+            case "project":
+                return PROJECT;
+            case "user":
+                return USER;
             case "environment":
                 return ENVIRONMENT;
+            case "api_key":
+                return API_KEY;
             default:
                 return new UsageBillingRequestGroupBy(Value.UNKNOWN, value);
         }
@@ -64,11 +82,23 @@ public final class UsageBillingRequestGroupBy {
     public enum Value {
         ENVIRONMENT,
 
+        PROJECT,
+
+        API_KEY,
+
+        USER,
+
         UNKNOWN
     }
 
     public interface Visitor<T> {
         T visitEnvironment();
+
+        T visitProject();
+
+        T visitApiKey();
+
+        T visitUser();
 
         T visitUnknown(String unknownType);
     }

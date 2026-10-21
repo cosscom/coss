@@ -107,7 +107,11 @@ public class CancelTest : BaseMockServerTest
                 "version": 1000000,
                 "locale": "locale"
               },
-              "broadcast_id": "broadcast_id"
+              "broadcast_id": "broadcast_id",
+              "content_storage": {
+                "mode": "store",
+                "discarded_at": "2024-01-15T09:30:00.000Z"
+              }
             }
             """;
 
@@ -189,7 +193,10 @@ public class CancelTest : BaseMockServerTest
                 "click_count": 0
               },
               "created_at": "2026-10-10T12:00:00.000Z",
-              "sent_at": "2026-10-10T12:00:01.000Z"
+              "sent_at": "2026-10-10T12:00:01.000Z",
+              "content_storage": {
+                "mode": "store"
+              }
             }
             """;
 

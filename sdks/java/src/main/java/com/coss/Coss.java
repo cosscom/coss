@@ -16,7 +16,9 @@ import com.coss.resources.logdrains.LogDrainsClient;
 import com.coss.resources.logs.LogsClient;
 import com.coss.resources.reputation.ReputationClient;
 import com.coss.resources.risk.RiskClient;
+import com.coss.resources.sms.SmsClient;
 import com.coss.resources.webhookendpoints.WebhookEndpointsClient;
+import com.coss.resources.webhookevents.WebhookEventsClient;
 import com.coss.resources.webhooklisteners.WebhookListenersClient;
 import java.util.function.Supplier;
 
@@ -34,6 +36,10 @@ public class Coss implements AutoCloseable {
     protected final Supplier<WebhookEndpointsClient> webhookEndpointsClient;
 
     protected final Supplier<WebhookListenersClient> webhookListenersClient;
+
+    protected final Supplier<WebhookEventsClient> webhookEventsClient;
+
+    protected final Supplier<SmsClient> smsClient;
 
     protected final Supplier<ReputationClient> reputationClient;
 
@@ -57,6 +63,8 @@ public class Coss implements AutoCloseable {
         this.domainsClient = Suppliers.memoize(() -> new DomainsClient(clientOptions));
         this.webhookEndpointsClient = Suppliers.memoize(() -> new WebhookEndpointsClient(clientOptions));
         this.webhookListenersClient = Suppliers.memoize(() -> new WebhookListenersClient(clientOptions));
+        this.webhookEventsClient = Suppliers.memoize(() -> new WebhookEventsClient(clientOptions));
+        this.smsClient = Suppliers.memoize(() -> new SmsClient(clientOptions));
         this.reputationClient = Suppliers.memoize(() -> new ReputationClient(clientOptions));
         this.logsClient = Suppliers.memoize(() -> new LogsClient(clientOptions));
         this.auditEventsClient = Suppliers.memoize(() -> new AuditEventsClient(clientOptions));
@@ -88,6 +96,14 @@ public class Coss implements AutoCloseable {
 
     public WebhookListenersClient webhookListeners() {
         return this.webhookListenersClient.get();
+    }
+
+    public WebhookEventsClient webhookEvents() {
+        return this.webhookEventsClient.get();
+    }
+
+    public SmsClient sms() {
+        return this.smsClient.get();
     }
 
     public ReputationClient reputation() {

@@ -23,7 +23,22 @@ class Usage(UniversalBaseModel):
 
     environment_id: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Set with `group_by=environment`.
+    Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees).
+    """
+
+    project_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Set with `group_by=project` (`null`: organization-wide usage, or usage recorded before projects were).
+    """
+
+    api_key_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Set with `group_by=api_key` (`null`: the dashboard, or usage recorded before keys were).
+    """
+
+    user_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Set with `group_by=user`: the member whose personal API key caused it (`null`: organization keys and the dashboard).
     """
 
     start: dt.datetime

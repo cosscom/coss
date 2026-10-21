@@ -18,6 +18,8 @@ public readonly record struct LogSource : IStringEnum
 
     public static readonly LogSource Smtp = new(Values.Smtp);
 
+    public static readonly LogSource Sms = new(Values.Sms);
+
     public LogSource(string value)
     {
         Value = value;
@@ -121,5 +123,7 @@ public readonly record struct LogSource : IStringEnum
         public const string Risk = "risk";
 
         public const string Smtp = "smtp";
+
+        public const string Sms = "sms";
     }
 }

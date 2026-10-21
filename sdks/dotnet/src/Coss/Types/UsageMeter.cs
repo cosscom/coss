@@ -14,6 +14,12 @@ public readonly record struct UsageMeter : IStringEnum
 
     public static readonly UsageMeter SmsSegments = new(Values.SmsSegments);
 
+    public static readonly UsageMeter SmsReceivedSegments = new(Values.SmsReceivedSegments);
+
+    public static readonly UsageMeter SmsNumbers = new(Values.SmsNumbers);
+
+    public static readonly UsageMeter SmsRegistrations = new(Values.SmsRegistrations);
+
     public static readonly UsageMeter VideoParticipantMinutes = new(Values.VideoParticipantMinutes);
 
     public static readonly UsageMeter SchedulingBookings = new(Values.SchedulingBookings);
@@ -118,6 +124,12 @@ public readonly record struct UsageMeter : IStringEnum
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
         public const string SmsSegments = "sms.segments";
+
+        public const string SmsReceivedSegments = "sms.received_segments";
+
+        public const string SmsNumbers = "sms.numbers";
+
+        public const string SmsRegistrations = "sms.registrations";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

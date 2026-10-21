@@ -16,6 +16,10 @@ module Coss
       member -> { Coss::Types::BillingWebhookEventFour }
 
       member -> { Coss::Types::BillingWebhookEventFive }
+
+      member -> { Coss::Types::BillingWebhookEventSix }
+
+      member -> { Coss::Types::BillingWebhookEventSeven }
     end
   end
 end

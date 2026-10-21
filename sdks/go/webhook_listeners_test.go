@@ -2691,6 +2691,27 @@ func TestEnumCreateWebhookListenerRequestEventTypesItem(t *testing.T) {
 		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("billing.credit_granted"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_billing_budget_threshold_reached", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("billing.budget_threshold_reached")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("billing.budget_threshold_reached"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_billing_budget_hold_placed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("billing.budget_hold_placed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("billing.budget_hold_placed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_billing_budget_hold_lifted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("billing.budget_hold_lifted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("billing.budget_hold_lifted"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_risk_assessment_review", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("risk.assessment.review")
@@ -2773,6 +2794,76 @@ func TestEnumCreateWebhookListenerRequestEventTypesItem(t *testing.T) {
 		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("broadcast.failed")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("broadcast.failed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_scheduled", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.scheduled")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.scheduled"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_sent", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.sent")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.sent"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_delivered", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.delivered")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.delivered"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_undelivered", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.undelivered")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.undelivered"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_failed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.failed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.failed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_suppressed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.suppressed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.suppressed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_canceled", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.canceled")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.canceled"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_received", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.received")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.received"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_opted_out", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.opted_out")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.opted_out"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_opted_in", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreateWebhookListenerRequestEventTypesItemFromString("sms.opted_in")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreateWebhookListenerRequestEventTypesItem("sms.opted_in"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_Invalid", func(t *testing.T) {

@@ -14,6 +14,12 @@ public readonly record struct CreditMeter : IStringEnum
 
     public static readonly CreditMeter SmsSegments = new(Values.SmsSegments);
 
+    public static readonly CreditMeter SmsReceivedSegments = new(Values.SmsReceivedSegments);
+
+    public static readonly CreditMeter SmsNumbers = new(Values.SmsNumbers);
+
+    public static readonly CreditMeter SmsRegistrations = new(Values.SmsRegistrations);
+
     public static readonly CreditMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -121,6 +127,12 @@ public readonly record struct CreditMeter : IStringEnum
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
         public const string SmsSegments = "sms.segments";
+
+        public const string SmsReceivedSegments = "sms.received_segments";
+
+        public const string SmsNumbers = "sms.numbers";
+
+        public const string SmsRegistrations = "sms.registrations";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

@@ -12,6 +12,7 @@ import com.coss.resources.email.templates.requests.GetDraftTemplatesRequest;
 import com.coss.resources.email.templates.requests.GetTemplatesRequest;
 import com.coss.resources.email.templates.requests.ListTemplatesRequest;
 import com.coss.resources.email.templates.requests.PublishEmailTemplateRequest;
+import com.coss.resources.email.templates.requests.RenderEmailTemplateRequest;
 import com.coss.resources.email.templates.requests.UpdateEmailTemplateDraftRequest;
 import com.coss.resources.email.templates.requests.UpdateEmailTemplateRequest;
 import com.coss.resources.email.templates.versions.AsyncVersionsClient;
@@ -19,6 +20,7 @@ import com.coss.types.DeletedEmailTemplate;
 import com.coss.types.EmailTemplate;
 import com.coss.types.EmailTemplateList;
 import com.coss.types.EmailTemplateVersion;
+import com.coss.types.RenderedEmailTemplate;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -255,6 +257,35 @@ public class AsyncTemplatesClient {
     public CompletableFuture<EmailTemplateVersion> publish(
             String id, PublishEmailTemplateRequest request, RequestOptions requestOptions) {
         return this.rawClient.publish(id, request, requestOptions).thenApply(response -> response.body());
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CompletableFuture<RenderedEmailTemplate> render(String id) {
+        return this.rawClient.render(id).thenApply(response -> response.body());
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CompletableFuture<RenderedEmailTemplate> render(String id, RequestOptions requestOptions) {
+        return this.rawClient.render(id, requestOptions).thenApply(response -> response.body());
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CompletableFuture<RenderedEmailTemplate> render(String id, RenderEmailTemplateRequest request) {
+        return this.rawClient.render(id, request).thenApply(response -> response.body());
+    }
+
+    /**
+     * Renders the draft (or a published <code>version</code>) with <code>variables</code>, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without <code>variables</code> it renders the version's <code>sample_variables</code>.
+     */
+    public CompletableFuture<RenderedEmailTemplate> render(
+            String id, RenderEmailTemplateRequest request, RequestOptions requestOptions) {
+        return this.rawClient.render(id, request, requestOptions).thenApply(response -> response.body());
     }
 
     public AsyncVersionsClient versions() {

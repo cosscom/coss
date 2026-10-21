@@ -333,3 +333,36 @@ func (c *Client) Publish(
 	}
 	return response.Body, nil
 }
+
+// Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+//
+// Example:
+//
+//	request := &email.RenderEmailTemplateRequest{
+//	    ID: "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+//	    Locale: coss.String(
+//	        "en",
+//	    ),
+//	    Variables: map[string]any{
+//	        "first_name": "Ada",
+//	    },
+//	}
+//	client.Email.Templates.Render(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) Render(
+	ctx context.Context,
+	request *email.RenderEmailTemplateRequest,
+	opts ...option.RequestOption,
+) (*coss.RenderedEmailTemplate, error) {
+	response, err := c.WithRawResponse.Render(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}

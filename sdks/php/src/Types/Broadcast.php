@@ -131,7 +131,7 @@ class Broadcast extends JsonSerializableType
     public ?int $recipientsEstimated;
 
     /**
-     * @var ?string $pauseReason Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
+     * @var ?string $pauseReason Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
      */
     #[JsonProperty('pause_reason')]
     public ?string $pauseReason;

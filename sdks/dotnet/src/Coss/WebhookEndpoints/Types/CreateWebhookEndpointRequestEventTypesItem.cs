@@ -128,6 +128,17 @@ public readonly record struct CreateWebhookEndpointRequestEventTypesItem : IStri
         Values.BillingCreditGranted
     );
 
+    public static readonly CreateWebhookEndpointRequestEventTypesItem BillingBudgetThresholdReached =
+        new(Values.BillingBudgetThresholdReached);
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem BillingBudgetHoldPlaced = new(
+        Values.BillingBudgetHoldPlaced
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem BillingBudgetHoldLifted = new(
+        Values.BillingBudgetHoldLifted
+    );
+
     public static readonly CreateWebhookEndpointRequestEventTypesItem RiskAssessmentReview = new(
         Values.RiskAssessmentReview
     );
@@ -174,6 +185,44 @@ public readonly record struct CreateWebhookEndpointRequestEventTypesItem : IStri
 
     public static readonly CreateWebhookEndpointRequestEventTypesItem BroadcastFailed = new(
         Values.BroadcastFailed
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsScheduled = new(
+        Values.SmsScheduled
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsSent = new(Values.SmsSent);
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsDelivered = new(
+        Values.SmsDelivered
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsUndelivered = new(
+        Values.SmsUndelivered
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsFailed = new(
+        Values.SmsFailed
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsSuppressed = new(
+        Values.SmsSuppressed
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsCanceled = new(
+        Values.SmsCanceled
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsReceived = new(
+        Values.SmsReceived
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsOptedOut = new(
+        Values.SmsOptedOut
+    );
+
+    public static readonly CreateWebhookEndpointRequestEventTypesItem SmsOptedIn = new(
+        Values.SmsOptedIn
     );
 
     public CreateWebhookEndpointRequestEventTypesItem(string value)
@@ -341,6 +390,12 @@ public readonly record struct CreateWebhookEndpointRequestEventTypesItem : IStri
 
         public const string BillingCreditGranted = "billing.credit_granted";
 
+        public const string BillingBudgetThresholdReached = "billing.budget_threshold_reached";
+
+        public const string BillingBudgetHoldPlaced = "billing.budget_hold_placed";
+
+        public const string BillingBudgetHoldLifted = "billing.budget_hold_lifted";
+
         public const string RiskAssessmentReview = "risk.assessment.review";
 
         public const string RiskAssessmentReviewed = "risk.assessment.reviewed";
@@ -364,5 +419,25 @@ public readonly record struct CreateWebhookEndpointRequestEventTypesItem : IStri
         public const string BroadcastCanceled = "broadcast.canceled";
 
         public const string BroadcastFailed = "broadcast.failed";
+
+        public const string SmsScheduled = "sms.scheduled";
+
+        public const string SmsSent = "sms.sent";
+
+        public const string SmsDelivered = "sms.delivered";
+
+        public const string SmsUndelivered = "sms.undelivered";
+
+        public const string SmsFailed = "sms.failed";
+
+        public const string SmsSuppressed = "sms.suppressed";
+
+        public const string SmsCanceled = "sms.canceled";
+
+        public const string SmsReceived = "sms.received";
+
+        public const string SmsOptedOut = "sms.opted_out";
+
+        public const string SmsOptedIn = "sms.opted_in";
     }
 }

@@ -10,6 +10,7 @@ module Coss
       WEBHOOK = "webhook"
       RISK = "risk"
       SMTP = "smtp"
+      SMS = "sms"
       AUDIT = "audit"
     end
   end

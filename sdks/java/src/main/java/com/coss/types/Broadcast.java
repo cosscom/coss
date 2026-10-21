@@ -277,7 +277,7 @@ public final class Broadcast {
     }
 
     /**
-     * @return Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.
+     * @return Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.
      */
     @JsonIgnore
     public Optional<String> getPauseReason() {
@@ -606,7 +606,7 @@ public final class Broadcast {
         _FinalStage recipientsEstimated(Nullable<Long> recipientsEstimated);
 
         /**
-         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
+         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
          */
         _FinalStage pauseReason(Optional<String> pauseReason);
 
@@ -819,7 +819,7 @@ public final class Broadcast {
         }
 
         /**
-         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
+         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -835,7 +835,7 @@ public final class Broadcast {
         }
 
         /**
-         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
+         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -845,7 +845,7 @@ public final class Broadcast {
         }
 
         /**
-         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
+         * <p>Why a paused broadcast waits: <code>paused</code> (by you), <code>billing_hold</code>, <code>budget_exceeded</code>, <code>usage_limit</code>, <code>marketing_paused</code>, <code>account_suspended</code>, <code>sending_paused</code>.</p>
          */
         @java.lang.Override
         @JsonSetter(value = "pause_reason", nulls = Nulls.SKIP)

@@ -33,6 +33,12 @@ public final class Usage {
 
     private final Optional<String> environmentId;
 
+    private final Optional<String> projectId;
+
+    private final Optional<String> apiKeyId;
+
+    private final Optional<String> userId;
+
     private final OffsetDateTime start;
 
     private final OffsetDateTime end;
@@ -46,6 +52,9 @@ public final class Usage {
             UsageMeter meter,
             Optional<String> dimension,
             Optional<String> environmentId,
+            Optional<String> projectId,
+            Optional<String> apiKeyId,
+            Optional<String> userId,
             OffsetDateTime start,
             OffsetDateTime end,
             long quantity,
@@ -54,6 +63,9 @@ public final class Usage {
         this.meter = meter;
         this.dimension = dimension;
         this.environmentId = environmentId;
+        this.projectId = projectId;
+        this.apiKeyId = apiKeyId;
+        this.userId = userId;
         this.start = start;
         this.end = end;
         this.quantity = quantity;
@@ -85,7 +97,7 @@ public final class Usage {
     }
 
     /**
-     * @return Set with <code>group_by=environment</code>.
+     * @return Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).
      */
     @JsonIgnore
     public Optional<String> getEnvironmentId() {
@@ -93,6 +105,39 @@ public final class Usage {
             return Optional.empty();
         }
         return environmentId;
+    }
+
+    /**
+     * @return Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).
+     */
+    @JsonIgnore
+    public Optional<String> getProjectId() {
+        if (projectId == null) {
+            return Optional.empty();
+        }
+        return projectId;
+    }
+
+    /**
+     * @return Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).
+     */
+    @JsonIgnore
+    public Optional<String> getApiKeyId() {
+        if (apiKeyId == null) {
+            return Optional.empty();
+        }
+        return apiKeyId;
+    }
+
+    /**
+     * @return Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).
+     */
+    @JsonIgnore
+    public Optional<String> getUserId() {
+        if (userId == null) {
+            return Optional.empty();
+        }
+        return userId;
     }
 
     @JsonProperty("start")
@@ -122,6 +167,24 @@ public final class Usage {
         return environmentId;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("project_id")
+    private Optional<String> _getProjectId() {
+        return projectId;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("api_key_id")
+    private Optional<String> _getApiKeyId() {
+        return apiKeyId;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("user_id")
+    private Optional<String> _getUserId() {
+        return userId;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -138,6 +201,9 @@ public final class Usage {
                 && meter.equals(other.meter)
                 && dimension.equals(other.dimension)
                 && environmentId.equals(other.environmentId)
+                && projectId.equals(other.projectId)
+                && apiKeyId.equals(other.apiKeyId)
+                && userId.equals(other.userId)
                 && start.equals(other.start)
                 && end.equals(other.end)
                 && quantity == other.quantity;
@@ -146,7 +212,16 @@ public final class Usage {
     @java.lang.Override
     public int hashCode() {
         return Objects.hash(
-                this.object, this.meter, this.dimension, this.environmentId, this.start, this.end, this.quantity);
+                this.object,
+                this.meter,
+                this.dimension,
+                this.environmentId,
+                this.projectId,
+                this.apiKeyId,
+                this.userId,
+                this.start,
+                this.end,
+                this.quantity);
     }
 
     @java.lang.Override
@@ -200,13 +275,40 @@ public final class Usage {
         _FinalStage dimension(Nullable<String> dimension);
 
         /**
-         * <p>Set with <code>group_by=environment</code>.</p>
+         * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
          */
         _FinalStage environmentId(Optional<String> environmentId);
 
         _FinalStage environmentId(String environmentId);
 
         _FinalStage environmentId(Nullable<String> environmentId);
+
+        /**
+         * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
+         */
+        _FinalStage projectId(Optional<String> projectId);
+
+        _FinalStage projectId(String projectId);
+
+        _FinalStage projectId(Nullable<String> projectId);
+
+        /**
+         * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
+         */
+        _FinalStage apiKeyId(Optional<String> apiKeyId);
+
+        _FinalStage apiKeyId(String apiKeyId);
+
+        _FinalStage apiKeyId(Nullable<String> apiKeyId);
+
+        /**
+         * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
+         */
+        _FinalStage userId(Optional<String> userId);
+
+        _FinalStage userId(String userId);
+
+        _FinalStage userId(Nullable<String> userId);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -221,6 +323,12 @@ public final class Usage {
         private OffsetDateTime end;
 
         private long quantity;
+
+        private Optional<String> userId = Optional.empty();
+
+        private Optional<String> apiKeyId = Optional.empty();
+
+        private Optional<String> projectId = Optional.empty();
 
         private Optional<String> environmentId = Optional.empty();
 
@@ -237,6 +345,9 @@ public final class Usage {
             meter(other.getMeter());
             dimension(other.getDimension());
             environmentId(other.getEnvironmentId());
+            projectId(other.getProjectId());
+            apiKeyId(other.getApiKeyId());
+            userId(other.getUserId());
             start(other.getStart());
             end(other.getEnd());
             quantity(other.getQuantity());
@@ -283,7 +394,115 @@ public final class Usage {
         }
 
         /**
-         * <p>Set with <code>group_by=environment</code>.</p>
+         * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage userId(Nullable<String> userId) {
+            if (userId.isNull()) {
+                this.userId = null;
+            } else if (userId.isEmpty()) {
+                this.userId = Optional.empty();
+            } else {
+                this.userId = Optional.of(userId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage userId(String userId) {
+            this.userId = Optional.ofNullable(userId);
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=user</code>: the member whose personal API key caused it (<code>null</code>: organization keys and the dashboard).</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "user_id", nulls = Nulls.SKIP)
+        public _FinalStage userId(Optional<String> userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage apiKeyId(Nullable<String> apiKeyId) {
+            if (apiKeyId.isNull()) {
+                this.apiKeyId = null;
+            } else if (apiKeyId.isEmpty()) {
+                this.apiKeyId = Optional.empty();
+            } else {
+                this.apiKeyId = Optional.of(apiKeyId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage apiKeyId(String apiKeyId) {
+            this.apiKeyId = Optional.ofNullable(apiKeyId);
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=api_key</code> (<code>null</code>: the dashboard, or usage recorded before keys were).</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "api_key_id", nulls = Nulls.SKIP)
+        public _FinalStage apiKeyId(Optional<String> apiKeyId) {
+            this.apiKeyId = apiKeyId;
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage projectId(Nullable<String> projectId) {
+            if (projectId.isNull()) {
+                this.projectId = null;
+            } else if (projectId.isEmpty()) {
+                this.projectId = Optional.empty();
+            } else {
+                this.projectId = Optional.of(projectId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage projectId(String projectId) {
+            this.projectId = Optional.ofNullable(projectId);
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=project</code> (<code>null</code>: organization-wide usage, or usage recorded before projects were).</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "project_id", nulls = Nulls.SKIP)
+        public _FinalStage projectId(Optional<String> projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        /**
+         * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -299,7 +518,7 @@ public final class Usage {
         }
 
         /**
-         * <p>Set with <code>group_by=environment</code>.</p>
+         * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -309,7 +528,7 @@ public final class Usage {
         }
 
         /**
-         * <p>Set with <code>group_by=environment</code>.</p>
+         * <p>Set with <code>group_by=environment</code>; <code>null</code> there for organization-wide usage (SMS numbers and registration fees).</p>
          */
         @java.lang.Override
         @JsonSetter(value = "environment_id", nulls = Nulls.SKIP)
@@ -356,7 +575,18 @@ public final class Usage {
 
         @java.lang.Override
         public Usage build() {
-            return new Usage(object, meter, dimension, environmentId, start, end, quantity, additionalProperties);
+            return new Usage(
+                    object,
+                    meter,
+                    dimension,
+                    environmentId,
+                    projectId,
+                    apiKeyId,
+                    userId,
+                    start,
+                    end,
+                    quantity,
+                    additionalProperties);
         }
 
         @java.lang.Override

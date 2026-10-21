@@ -26,7 +26,7 @@ class UsageBillingRequest extends JsonSerializableType
     public ?string $granularity;
 
     /**
-     * @var ?value-of<UsageBillingRequestGroupBy> $groupBy Split each bucket per environment.
+     * @var ?value-of<UsageBillingRequestGroupBy> $groupBy Split each bucket per environment, project, API key or user (the member whose personal key it was).
      */
     public ?string $groupBy;
 

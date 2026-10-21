@@ -22,6 +22,7 @@ import com.coss.resources.email.requests.RescheduleEmailRequest;
 import com.coss.resources.email.requests.SendEmailBatchRequest;
 import com.coss.resources.email.requests.SendEmailBody;
 import com.coss.resources.email.segments.SegmentsClient;
+import com.coss.resources.email.storage.StorageClient;
 import com.coss.resources.email.suppressions.SuppressionsClient;
 import com.coss.resources.email.templates.TemplatesClient;
 import com.coss.resources.email.topics.TopicsClient;
@@ -47,6 +48,8 @@ public class EmailClient {
 
     protected final Supplier<TrackingClient> trackingClient;
 
+    protected final Supplier<StorageClient> storageClient;
+
     protected final Supplier<ContactsClient> contactsClient;
 
     protected final Supplier<BroadcastsClient> broadcastsClient;
@@ -68,6 +71,7 @@ public class EmailClient {
         this.dedicatedIpsClient = Suppliers.memoize(() -> new DedicatedIpsClient(clientOptions));
         this.suppressionsClient = Suppliers.memoize(() -> new SuppressionsClient(clientOptions));
         this.trackingClient = Suppliers.memoize(() -> new TrackingClient(clientOptions));
+        this.storageClient = Suppliers.memoize(() -> new StorageClient(clientOptions));
         this.contactsClient = Suppliers.memoize(() -> new ContactsClient(clientOptions));
         this.broadcastsClient = Suppliers.memoize(() -> new BroadcastsClient(clientOptions));
         this.audiencesClient = Suppliers.memoize(() -> new AudiencesClient(clientOptions));
@@ -322,6 +326,10 @@ public class EmailClient {
 
     public TrackingClient tracking() {
         return this.trackingClient.get();
+    }
+
+    public StorageClient storage() {
+        return this.storageClient.get();
     }
 
     public ContactsClient contacts() {

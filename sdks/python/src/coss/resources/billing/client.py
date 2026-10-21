@@ -89,7 +89,7 @@ class BillingClient:
             Bucket size (UTC). Defaults to `day`.
 
         group_by : typing.Optional[UsageBillingRequestGroupBy]
-            Split each bucket per environment.
+            Split each bucket per environment, project, API key or user (the member whose personal key it was).
 
         meter : typing.Optional[UsageBillingRequestMeter]
             Only this meter.
@@ -212,7 +212,7 @@ class AsyncBillingClient:
             Bucket size (UTC). Defaults to `day`.
 
         group_by : typing.Optional[UsageBillingRequestGroupBy]
-            Split each bucket per environment.
+            Split each bucket per environment, project, API key or user (the member whose personal key it was).
 
         meter : typing.Optional[UsageBillingRequestMeter]
             Only this meter.

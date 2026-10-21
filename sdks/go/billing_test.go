@@ -3690,6 +3690,30 @@ func TestSettersUsage(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetProjectID", func(t *testing.T) {
+		obj := &Usage{}
+		var fernTestValueProjectID *string
+		obj.SetProjectID(fernTestValueProjectID)
+		assert.Equal(t, fernTestValueProjectID, obj.ProjectID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetAPIKeyID", func(t *testing.T) {
+		obj := &Usage{}
+		var fernTestValueAPIKeyID *string
+		obj.SetAPIKeyID(fernTestValueAPIKeyID)
+		assert.Equal(t, fernTestValueAPIKeyID, obj.APIKeyID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetUserID", func(t *testing.T) {
+		obj := &Usage{}
+		var fernTestValueUserID *string
+		obj.SetUserID(fernTestValueUserID)
+		assert.Equal(t, fernTestValueUserID, obj.UserID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetStart", func(t *testing.T) {
 		obj := &Usage{}
 		var fernTestValueStart time.Time
@@ -3827,6 +3851,105 @@ func TestGettersUsage(t *testing.T) {
 			}
 		}()
 		_ = obj.GetEnvironmentID() // Should return zero value
+	})
+
+	t.Run("GetProjectID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var expected *string
+		obj.ProjectID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetProjectID(), "getter should return the property value")
+	})
+
+	t.Run("GetProjectID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		obj.ProjectID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetProjectID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetProjectID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *Usage
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetProjectID() // Should return zero value
+	})
+
+	t.Run("GetAPIKeyID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var expected *string
+		obj.APIKeyID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAPIKeyID(), "getter should return the property value")
+	})
+
+	t.Run("GetAPIKeyID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		obj.APIKeyID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetAPIKeyID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetAPIKeyID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *Usage
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAPIKeyID() // Should return zero value
+	})
+
+	t.Run("GetUserID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var expected *string
+		obj.UserID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetUserID(), "getter should return the property value")
+	})
+
+	t.Run("GetUserID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		obj.UserID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetUserID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetUserID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *Usage
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetUserID() // Should return zero value
 	})
 
 	t.Run("GetStart", func(t *testing.T) {
@@ -4002,6 +4125,99 @@ func TestSettersMarkExplicitUsage(t *testing.T) {
 
 		// Act
 		obj.SetEnvironmentID(fernTestValueEnvironmentID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetProjectID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var fernTestValueProjectID *string
+
+		// Act
+		obj.SetProjectID(fernTestValueProjectID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetAPIKeyID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var fernTestValueAPIKeyID *string
+
+		// Act
+		obj.SetAPIKeyID(fernTestValueAPIKeyID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetUserID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Usage{}
+		var fernTestValueUserID *string
+
+		// Act
+		obj.SetUserID(fernTestValueUserID)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -5182,6 +5398,9 @@ func TestRequiredNullableRoundTripUsage(t *testing.T) {
 	requiredNullableKeys := []string{
 		"dimension",
 		"environment_id",
+		"project_id",
+		"api_key_id",
+		"user_id",
 	}
 	marshalToMap := func(t *testing.T, obj *Usage) map[string]json.RawMessage {
 		data, err := json.Marshal(obj)
@@ -5194,7 +5413,7 @@ func TestRequiredNullableRoundTripUsage(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj Usage
-		require.NoError(t, json.Unmarshal([]byte(`{"dimension":null,"environment_id":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"dimension":null,"environment_id":null,"project_id":null,"api_key_id":null,"user_id":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range requiredNullableKeys {
 			value, ok := result[key]
@@ -5726,6 +5945,27 @@ func TestEnumBillingUsageItemMeter(t *testing.T) {
 		assert.Equal(t, BillingUsageItemMeter("sms.segments"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_sms_received_segments", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewBillingUsageItemMeterFromString("sms.received_segments")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, BillingUsageItemMeter("sms.received_segments"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_numbers", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewBillingUsageItemMeterFromString("sms.numbers")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, BillingUsageItemMeter("sms.numbers"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_registrations", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewBillingUsageItemMeterFromString("sms.registrations")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, BillingUsageItemMeter("sms.registrations"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewBillingUsageItemMeterFromString("video.participant_minutes")
@@ -5798,6 +6038,27 @@ func TestEnumUsageBillingRequestGroupBy(t *testing.T) {
 		assert.Equal(t, UsageBillingRequestGroupBy("environment"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_project", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestGroupByFromString("project")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestGroupBy("project"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_api_key", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestGroupByFromString("api_key")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestGroupBy("api_key"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_user", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestGroupByFromString("user")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestGroupBy("user"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewUsageBillingRequestGroupByFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)
@@ -5832,6 +6093,27 @@ func TestEnumUsageBillingRequestMeter(t *testing.T) {
 		val, err := NewUsageBillingRequestMeterFromString("sms.segments")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, UsageBillingRequestMeter("sms.segments"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_received_segments", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestMeterFromString("sms.received_segments")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestMeter("sms.received_segments"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_numbers", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestMeterFromString("sms.numbers")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestMeter("sms.numbers"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_registrations", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestMeterFromString("sms.registrations")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestMeter("sms.registrations"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
@@ -5904,6 +6186,27 @@ func TestEnumUsageMeter(t *testing.T) {
 		val, err := NewUsageMeterFromString("sms.segments")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, UsageMeter("sms.segments"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_received_segments", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageMeterFromString("sms.received_segments")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageMeter("sms.received_segments"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_numbers", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageMeterFromString("sms.numbers")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageMeter("sms.numbers"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sms_registrations", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageMeterFromString("sms.registrations")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageMeter("sms.registrations"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {

@@ -80,6 +80,8 @@ public final class Email {
 
     private final Optional<String> broadcastId;
 
+    private final EmailContentStorage contentStorage;
+
     private final Map<String, Object> additionalProperties;
 
     private Email(
@@ -109,6 +111,7 @@ public final class Email {
             Optional<String> batchId,
             Optional<EmailTemplateReference> template,
             Optional<String> broadcastId,
+            EmailContentStorage contentStorage,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -136,6 +139,7 @@ public final class Email {
         this.batchId = batchId;
         this.template = template;
         this.broadcastId = broadcastId;
+        this.contentStorage = contentStorage;
         this.additionalProperties = additionalProperties;
     }
 
@@ -320,6 +324,11 @@ public final class Email {
         return broadcastId;
     }
 
+    @JsonProperty("content_storage")
+    public EmailContentStorage getContentStorage() {
+        return contentStorage;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("html")
     private Optional<String> _getHtml() {
@@ -411,7 +420,8 @@ public final class Email {
                 && scheduledAt.equals(other.scheduledAt)
                 && batchId.equals(other.batchId)
                 && template.equals(other.template)
-                && broadcastId.equals(other.broadcastId);
+                && broadcastId.equals(other.broadcastId)
+                && contentStorage.equals(other.contentStorage);
     }
 
     @java.lang.Override
@@ -442,7 +452,8 @@ public final class Email {
                 this.scheduledAt,
                 this.batchId,
                 this.template,
-                this.broadcastId);
+                this.broadcastId,
+                this.contentStorage);
     }
 
     @java.lang.Override
@@ -495,7 +506,11 @@ public final class Email {
     }
 
     public interface CreatedAtStage {
-        _FinalStage createdAt(@NotNull OffsetDateTime createdAt);
+        ContentStorageStage createdAt(@NotNull OffsetDateTime createdAt);
+    }
+
+    public interface ContentStorageStage {
+        _FinalStage contentStorage(@NotNull EmailContentStorage contentStorage);
     }
 
     public interface _FinalStage {
@@ -637,6 +652,7 @@ public final class Email {
                     SandboxStage,
                     TrackingStage,
                     CreatedAtStage,
+                    ContentStorageStage,
                     _FinalStage {
         private EmailObject object;
 
@@ -655,6 +671,8 @@ public final class Email {
         private EmailTracking tracking;
 
         private OffsetDateTime createdAt;
+
+        private EmailContentStorage contentStorage;
 
         private Optional<String> broadcastId = Optional.empty();
 
@@ -723,6 +741,7 @@ public final class Email {
             batchId(other.getBatchId());
             template(other.getTemplate());
             broadcastId(other.getBroadcastId());
+            contentStorage(other.getContentStorage());
             return this;
         }
 
@@ -792,8 +811,15 @@ public final class Email {
 
         @java.lang.Override
         @JsonSetter("created_at")
-        public _FinalStage createdAt(@NotNull OffsetDateTime createdAt) {
+        public ContentStorageStage createdAt(@NotNull OffsetDateTime createdAt) {
             this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("content_storage")
+        public _FinalStage contentStorage(@NotNull EmailContentStorage contentStorage) {
+            this.contentStorage = Objects.requireNonNull(contentStorage, "contentStorage must not be null");
             return this;
         }
 
@@ -1309,6 +1335,7 @@ public final class Email {
                     batchId,
                     template,
                     broadcastId,
+                    contentStorage,
                     additionalProperties);
         }
 

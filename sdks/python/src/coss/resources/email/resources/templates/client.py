@@ -10,6 +10,7 @@ from .....types.deleted_email_template import DeletedEmailTemplate
 from .....types.email_template import EmailTemplate
 from .....types.email_template_list import EmailTemplateList
 from .....types.email_template_version import EmailTemplateVersion
+from .....types.rendered_email_template import RenderedEmailTemplate
 from .....types.template_content_input import TemplateContentInput
 from .....types.template_variable_input import TemplateVariableInput
 from .raw_client import AsyncRawTemplatesClient, RawTemplatesClient
@@ -436,6 +437,59 @@ class TemplatesClient:
         )
         """
         _response = self._raw_client.publish(id, revision=revision, request_options=request_options)
+        return _response.data
+
+    def render(
+        self,
+        id: str,
+        *,
+        version: typing.Optional[int] = OMIT,
+        locale: typing.Optional[str] = OMIT,
+        variables: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RenderedEmailTemplate:
+        """
+        Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+
+        Parameters
+        ----------
+        id : str
+            The template's id or alias.
+
+        version : typing.Optional[int]
+            A published version to render. Default: the draft.
+
+        locale : typing.Optional[str]
+            The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the default locale, as sends do.
+
+        variables : typing.Optional[typing.Dict[str, typing.Any]]
+            Values by variable name, checked as a send checks them. Default: `sample_variables`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RenderedEmailTemplate
+            The rendered template.
+
+        Examples
+        --------
+        from coss import Coss
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.email.templates.render(
+            id="etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            locale="en",
+            variables={"first_name": "Ada"},
+        )
+        """
+        _response = self._raw_client.render(
+            id, version=version, locale=locale, variables=variables, request_options=request_options
+        )
         return _response.data
 
     @property
@@ -929,6 +983,67 @@ class AsyncTemplatesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.publish(id, revision=revision, request_options=request_options)
+        return _response.data
+
+    async def render(
+        self,
+        id: str,
+        *,
+        version: typing.Optional[int] = OMIT,
+        locale: typing.Optional[str] = OMIT,
+        variables: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RenderedEmailTemplate:
+        """
+        Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+
+        Parameters
+        ----------
+        id : str
+            The template's id or alias.
+
+        version : typing.Optional[int]
+            A published version to render. Default: the draft.
+
+        locale : typing.Optional[str]
+            The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the default locale, as sends do.
+
+        variables : typing.Optional[typing.Dict[str, typing.Any]]
+            Values by variable name, checked as a send checks them. Default: `sample_variables`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RenderedEmailTemplate
+            The rendered template.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.email.templates.render(
+                id="etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                locale="en",
+                variables={"first_name": "Ada"},
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.render(
+            id, version=version, locale=locale, variables=variables, request_options=request_options
+        )
         return _response.data
 
     @property

@@ -988,6 +988,8 @@ type BillingWebhookEvent struct {
 	BillingWebhookEventThree *BillingWebhookEventThree
 	BillingWebhookEventFour  *BillingWebhookEventFour
 	BillingWebhookEventFive  *BillingWebhookEventFive
+	BillingWebhookEventSix   *BillingWebhookEventSix
+	BillingWebhookEventSeven *BillingWebhookEventSeven
 
 	typ string
 }
@@ -1032,6 +1034,20 @@ func (b *BillingWebhookEvent) GetBillingWebhookEventFive() *BillingWebhookEventF
 		return nil
 	}
 	return b.BillingWebhookEventFive
+}
+
+func (b *BillingWebhookEvent) GetBillingWebhookEventSix() *BillingWebhookEventSix {
+	if b == nil {
+		return nil
+	}
+	return b.BillingWebhookEventSix
+}
+
+func (b *BillingWebhookEvent) GetBillingWebhookEventSeven() *BillingWebhookEventSeven {
+	if b == nil {
+		return nil
+	}
+	return b.BillingWebhookEventSeven
 }
 
 func (b *BillingWebhookEvent) UnmarshalJSON(data []byte) error {
@@ -1083,6 +1099,22 @@ func (b *BillingWebhookEvent) UnmarshalJSON(data []byte) error {
 			return nil
 		}
 	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueBillingWebhookEventSix := new(BillingWebhookEventSix)
+		if err := json.Unmarshal(data, &valueBillingWebhookEventSix); err == nil {
+			b.typ = "BillingWebhookEventSix"
+			b.BillingWebhookEventSix = valueBillingWebhookEventSix
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueBillingWebhookEventSeven := new(BillingWebhookEventSeven)
+		if err := json.Unmarshal(data, &valueBillingWebhookEventSeven); err == nil {
+			b.typ = "BillingWebhookEventSeven"
+			b.BillingWebhookEventSeven = valueBillingWebhookEventSeven
+			return nil
+		}
+	}
 	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
 		valueBillingWebhookEventZero := new(BillingWebhookEventZero)
 		if err := json.Unmarshal(data, &valueBillingWebhookEventZero); err == nil {
@@ -1131,6 +1163,22 @@ func (b *BillingWebhookEvent) UnmarshalJSON(data []byte) error {
 			return nil
 		}
 	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueBillingWebhookEventSix := new(BillingWebhookEventSix)
+		if err := json.Unmarshal(data, &valueBillingWebhookEventSix); err == nil {
+			b.typ = "BillingWebhookEventSix"
+			b.BillingWebhookEventSix = valueBillingWebhookEventSix
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueBillingWebhookEventSeven := new(BillingWebhookEventSeven)
+		if err := json.Unmarshal(data, &valueBillingWebhookEventSeven); err == nil {
+			b.typ = "BillingWebhookEventSeven"
+			b.BillingWebhookEventSeven = valueBillingWebhookEventSeven
+			return nil
+		}
+	}
 	valueBillingWebhookEventZero := new(BillingWebhookEventZero)
 	if err := json.Unmarshal(data, &valueBillingWebhookEventZero); err == nil {
 		b.typ = "BillingWebhookEventZero"
@@ -1167,6 +1215,18 @@ func (b *BillingWebhookEvent) UnmarshalJSON(data []byte) error {
 		b.BillingWebhookEventFive = valueBillingWebhookEventFive
 		return nil
 	}
+	valueBillingWebhookEventSix := new(BillingWebhookEventSix)
+	if err := json.Unmarshal(data, &valueBillingWebhookEventSix); err == nil {
+		b.typ = "BillingWebhookEventSix"
+		b.BillingWebhookEventSix = valueBillingWebhookEventSix
+		return nil
+	}
+	valueBillingWebhookEventSeven := new(BillingWebhookEventSeven)
+	if err := json.Unmarshal(data, &valueBillingWebhookEventSeven); err == nil {
+		b.typ = "BillingWebhookEventSeven"
+		b.BillingWebhookEventSeven = valueBillingWebhookEventSeven
+		return nil
+	}
 	return fmt.Errorf("%s cannot be deserialized as a %T", data, b)
 }
 
@@ -1189,6 +1249,12 @@ func (b BillingWebhookEvent) MarshalJSON() ([]byte, error) {
 	if b.typ == "BillingWebhookEventFive" || b.BillingWebhookEventFive != nil {
 		return json.Marshal(b.BillingWebhookEventFive)
 	}
+	if b.typ == "BillingWebhookEventSix" || b.BillingWebhookEventSix != nil {
+		return json.Marshal(b.BillingWebhookEventSix)
+	}
+	if b.typ == "BillingWebhookEventSeven" || b.BillingWebhookEventSeven != nil {
+		return json.Marshal(b.BillingWebhookEventSeven)
+	}
 	return nil, fmt.Errorf("type %T does not include a non-empty union type", b)
 }
 
@@ -1199,6 +1265,8 @@ type BillingWebhookEventVisitor interface {
 	VisitBillingWebhookEventThree(*BillingWebhookEventThree) error
 	VisitBillingWebhookEventFour(*BillingWebhookEventFour) error
 	VisitBillingWebhookEventFive(*BillingWebhookEventFive) error
+	VisitBillingWebhookEventSix(*BillingWebhookEventSix) error
+	VisitBillingWebhookEventSeven(*BillingWebhookEventSeven) error
 }
 
 func (b *BillingWebhookEvent) Accept(visitor BillingWebhookEventVisitor) error {
@@ -1219,6 +1287,12 @@ func (b *BillingWebhookEvent) Accept(visitor BillingWebhookEventVisitor) error {
 	}
 	if b.typ == "BillingWebhookEventFive" || b.BillingWebhookEventFive != nil {
 		return visitor.VisitBillingWebhookEventFive(b.BillingWebhookEventFive)
+	}
+	if b.typ == "BillingWebhookEventSix" || b.BillingWebhookEventSix != nil {
+		return visitor.VisitBillingWebhookEventSix(b.BillingWebhookEventSix)
+	}
+	if b.typ == "BillingWebhookEventSeven" || b.BillingWebhookEventSeven != nil {
+		return visitor.VisitBillingWebhookEventSeven(b.BillingWebhookEventSeven)
 	}
 	return fmt.Errorf("type %T does not include a non-empty union type", b)
 }
@@ -2377,6 +2451,960 @@ func (b BillingWebhookEventOneType) Ptr() *BillingWebhookEventOneType {
 }
 
 var (
+	billingWebhookEventSevenFieldID         = big.NewInt(1 << 0)
+	billingWebhookEventSevenFieldObject     = big.NewInt(1 << 1)
+	billingWebhookEventSevenFieldAPIVersion = big.NewInt(1 << 2)
+	billingWebhookEventSevenFieldCreatedAt  = big.NewInt(1 << 3)
+	billingWebhookEventSevenFieldType       = big.NewInt(1 << 4)
+	billingWebhookEventSevenFieldData       = big.NewInt(1 << 5)
+)
+
+type BillingWebhookEventSeven struct {
+	// The event id, also sent as the `webhook-id` header.
+	ID     string                         `json:"id" url:"id"`
+	Object BillingWebhookEventSevenObject `json:"object" url:"object"`
+	// The API version this event is rendered in: the receiving endpoint's `api_version`.
+	APIVersion string                        `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                     `json:"created_at" url:"created_at"`
+	Type       BillingWebhookEventSevenType  `json:"type" url:"type"`
+	Data       *BillingWebhookEventSevenData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BillingWebhookEventSeven) GetID() string {
+	if b == nil {
+		return ""
+	}
+	return b.ID
+}
+
+func (b *BillingWebhookEventSeven) GetObject() BillingWebhookEventSevenObject {
+	if b == nil {
+		return ""
+	}
+	return b.Object
+}
+
+func (b *BillingWebhookEventSeven) GetAPIVersion() string {
+	if b == nil {
+		return ""
+	}
+	return b.APIVersion
+}
+
+func (b *BillingWebhookEventSeven) GetCreatedAt() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.CreatedAt
+}
+
+func (b *BillingWebhookEventSeven) GetType() BillingWebhookEventSevenType {
+	if b == nil {
+		return ""
+	}
+	return b.Type
+}
+
+func (b *BillingWebhookEventSeven) GetData() *BillingWebhookEventSevenData {
+	if b == nil {
+		return nil
+	}
+	return b.Data
+}
+
+func (b *BillingWebhookEventSeven) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BillingWebhookEventSeven) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetID(id string) {
+	b.ID = id
+	b.require(billingWebhookEventSevenFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetObject(object BillingWebhookEventSevenObject) {
+	b.Object = object
+	b.require(billingWebhookEventSevenFieldObject)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetAPIVersion(apiVersion string) {
+	b.APIVersion = apiVersion
+	b.require(billingWebhookEventSevenFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetCreatedAt(createdAt time.Time) {
+	b.CreatedAt = createdAt
+	b.require(billingWebhookEventSevenFieldCreatedAt)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetType(type_ BillingWebhookEventSevenType) {
+	b.Type = type_
+	b.require(billingWebhookEventSevenFieldType)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSeven) SetData(data *BillingWebhookEventSevenData) {
+	b.Data = data
+	b.require(billingWebhookEventSevenFieldData)
+}
+
+func (b *BillingWebhookEventSeven) UnmarshalJSON(data []byte) error {
+	type embed BillingWebhookEventSeven
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*b),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*b = BillingWebhookEventSeven(unmarshaler.embed)
+	b.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BillingWebhookEventSeven) MarshalJSON() ([]byte, error) {
+	type embed BillingWebhookEventSeven
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*b),
+		CreatedAt: internal.NewDateTime(b.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BillingWebhookEventSeven) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+var (
+	billingWebhookEventSevenDataFieldOrganizationID = big.NewInt(1 << 0)
+	billingWebhookEventSevenDataFieldOccurredAt     = big.NewInt(1 << 1)
+	billingWebhookEventSevenDataFieldScope          = big.NewInt(1 << 2)
+	billingWebhookEventSevenDataFieldTargetID       = big.NewInt(1 << 3)
+)
+
+type BillingWebhookEventSevenData struct {
+	OrganizationID string `json:"organization_id" url:"organization_id"`
+	// When it happened: sort events by it.
+	OccurredAt time.Time `json:"occurred_at" url:"occurred_at"`
+	// What the budget is for: a member's personal API keys (`user`), a project or an API key.
+	Scope BillingWebhookEventSevenDataScope `json:"scope" url:"scope"`
+	// The user, project or API key id.
+	TargetID string `json:"target_id" url:"target_id"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BillingWebhookEventSevenData) GetOrganizationID() string {
+	if b == nil {
+		return ""
+	}
+	return b.OrganizationID
+}
+
+func (b *BillingWebhookEventSevenData) GetOccurredAt() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.OccurredAt
+}
+
+func (b *BillingWebhookEventSevenData) GetScope() BillingWebhookEventSevenDataScope {
+	if b == nil {
+		return ""
+	}
+	return b.Scope
+}
+
+func (b *BillingWebhookEventSevenData) GetTargetID() string {
+	if b == nil {
+		return ""
+	}
+	return b.TargetID
+}
+
+func (b *BillingWebhookEventSevenData) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BillingWebhookEventSevenData) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetOrganizationID sets the OrganizationID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSevenData) SetOrganizationID(organizationID string) {
+	b.OrganizationID = organizationID
+	b.require(billingWebhookEventSevenDataFieldOrganizationID)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSevenData) SetOccurredAt(occurredAt time.Time) {
+	b.OccurredAt = occurredAt
+	b.require(billingWebhookEventSevenDataFieldOccurredAt)
+}
+
+// SetScope sets the Scope field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSevenData) SetScope(scope BillingWebhookEventSevenDataScope) {
+	b.Scope = scope
+	b.require(billingWebhookEventSevenDataFieldScope)
+}
+
+// SetTargetID sets the TargetID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSevenData) SetTargetID(targetID string) {
+	b.TargetID = targetID
+	b.require(billingWebhookEventSevenDataFieldTargetID)
+}
+
+func (b *BillingWebhookEventSevenData) UnmarshalJSON(data []byte) error {
+	type embed BillingWebhookEventSevenData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*b),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*b = BillingWebhookEventSevenData(unmarshaler.embed)
+	b.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BillingWebhookEventSevenData) MarshalJSON() ([]byte, error) {
+	type embed BillingWebhookEventSevenData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*b),
+		OccurredAt: internal.NewDateTime(b.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BillingWebhookEventSevenData) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+// What the budget is for: a member's personal API keys (`user`), a project or an API key.
+type BillingWebhookEventSevenDataScope string
+
+const (
+	BillingWebhookEventSevenDataScopeUser    BillingWebhookEventSevenDataScope = "user"
+	BillingWebhookEventSevenDataScopeProject BillingWebhookEventSevenDataScope = "project"
+	BillingWebhookEventSevenDataScopeAPIKey  BillingWebhookEventSevenDataScope = "api_key"
+)
+
+func NewBillingWebhookEventSevenDataScopeFromString(s string) (BillingWebhookEventSevenDataScope, error) {
+	switch s {
+	case "user":
+		return BillingWebhookEventSevenDataScopeUser, nil
+	case "project":
+		return BillingWebhookEventSevenDataScopeProject, nil
+	case "api_key":
+		return BillingWebhookEventSevenDataScopeAPIKey, nil
+	}
+	var t BillingWebhookEventSevenDataScope
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSevenDataScope) Ptr() *BillingWebhookEventSevenDataScope {
+	return &b
+}
+
+type BillingWebhookEventSevenObject string
+
+const (
+	BillingWebhookEventSevenObjectEvent BillingWebhookEventSevenObject = "event"
+)
+
+func NewBillingWebhookEventSevenObjectFromString(s string) (BillingWebhookEventSevenObject, error) {
+	switch s {
+	case "event":
+		return BillingWebhookEventSevenObjectEvent, nil
+	}
+	var t BillingWebhookEventSevenObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSevenObject) Ptr() *BillingWebhookEventSevenObject {
+	return &b
+}
+
+type BillingWebhookEventSevenType string
+
+const (
+	BillingWebhookEventSevenTypeBillingBudgetHoldPlaced BillingWebhookEventSevenType = "billing.budget_hold_placed"
+	BillingWebhookEventSevenTypeBillingBudgetHoldLifted BillingWebhookEventSevenType = "billing.budget_hold_lifted"
+)
+
+func NewBillingWebhookEventSevenTypeFromString(s string) (BillingWebhookEventSevenType, error) {
+	switch s {
+	case "billing.budget_hold_placed":
+		return BillingWebhookEventSevenTypeBillingBudgetHoldPlaced, nil
+	case "billing.budget_hold_lifted":
+		return BillingWebhookEventSevenTypeBillingBudgetHoldLifted, nil
+	}
+	var t BillingWebhookEventSevenType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSevenType) Ptr() *BillingWebhookEventSevenType {
+	return &b
+}
+
+var (
+	billingWebhookEventSixFieldID         = big.NewInt(1 << 0)
+	billingWebhookEventSixFieldObject     = big.NewInt(1 << 1)
+	billingWebhookEventSixFieldAPIVersion = big.NewInt(1 << 2)
+	billingWebhookEventSixFieldCreatedAt  = big.NewInt(1 << 3)
+	billingWebhookEventSixFieldType       = big.NewInt(1 << 4)
+	billingWebhookEventSixFieldData       = big.NewInt(1 << 5)
+)
+
+type BillingWebhookEventSix struct {
+	// The event id, also sent as the `webhook-id` header.
+	ID     string                       `json:"id" url:"id"`
+	Object BillingWebhookEventSixObject `json:"object" url:"object"`
+	// The API version this event is rendered in: the receiving endpoint's `api_version`.
+	APIVersion string                      `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                   `json:"created_at" url:"created_at"`
+	Type       BillingWebhookEventSixType  `json:"type" url:"type"`
+	Data       *BillingWebhookEventSixData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BillingWebhookEventSix) GetID() string {
+	if b == nil {
+		return ""
+	}
+	return b.ID
+}
+
+func (b *BillingWebhookEventSix) GetObject() BillingWebhookEventSixObject {
+	if b == nil {
+		return ""
+	}
+	return b.Object
+}
+
+func (b *BillingWebhookEventSix) GetAPIVersion() string {
+	if b == nil {
+		return ""
+	}
+	return b.APIVersion
+}
+
+func (b *BillingWebhookEventSix) GetCreatedAt() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.CreatedAt
+}
+
+func (b *BillingWebhookEventSix) GetType() BillingWebhookEventSixType {
+	if b == nil {
+		return ""
+	}
+	return b.Type
+}
+
+func (b *BillingWebhookEventSix) GetData() *BillingWebhookEventSixData {
+	if b == nil {
+		return nil
+	}
+	return b.Data
+}
+
+func (b *BillingWebhookEventSix) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BillingWebhookEventSix) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetID(id string) {
+	b.ID = id
+	b.require(billingWebhookEventSixFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetObject(object BillingWebhookEventSixObject) {
+	b.Object = object
+	b.require(billingWebhookEventSixFieldObject)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetAPIVersion(apiVersion string) {
+	b.APIVersion = apiVersion
+	b.require(billingWebhookEventSixFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetCreatedAt(createdAt time.Time) {
+	b.CreatedAt = createdAt
+	b.require(billingWebhookEventSixFieldCreatedAt)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetType(type_ BillingWebhookEventSixType) {
+	b.Type = type_
+	b.require(billingWebhookEventSixFieldType)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSix) SetData(data *BillingWebhookEventSixData) {
+	b.Data = data
+	b.require(billingWebhookEventSixFieldData)
+}
+
+func (b *BillingWebhookEventSix) UnmarshalJSON(data []byte) error {
+	type embed BillingWebhookEventSix
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*b),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*b = BillingWebhookEventSix(unmarshaler.embed)
+	b.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BillingWebhookEventSix) MarshalJSON() ([]byte, error) {
+	type embed BillingWebhookEventSix
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*b),
+		CreatedAt: internal.NewDateTime(b.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BillingWebhookEventSix) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+var (
+	billingWebhookEventSixDataFieldOrganizationID = big.NewInt(1 << 0)
+	billingWebhookEventSixDataFieldOccurredAt     = big.NewInt(1 << 1)
+	billingWebhookEventSixDataFieldScope          = big.NewInt(1 << 2)
+	billingWebhookEventSixDataFieldTargetID       = big.NewInt(1 << 3)
+	billingWebhookEventSixDataFieldPercent        = big.NewInt(1 << 4)
+	billingWebhookEventSixDataFieldAmount         = big.NewInt(1 << 5)
+	billingWebhookEventSixDataFieldSpent          = big.NewInt(1 << 6)
+	billingWebhookEventSixDataFieldPeriod         = big.NewInt(1 << 7)
+)
+
+type BillingWebhookEventSixData struct {
+	OrganizationID string `json:"organization_id" url:"organization_id"`
+	// When it happened: sort events by it.
+	OccurredAt time.Time `json:"occurred_at" url:"occurred_at"`
+	// What the budget is for: a member's personal API keys (`user`), a project or an API key.
+	Scope BillingWebhookEventSixDataScope `json:"scope" url:"scope"`
+	// The user, project or API key id.
+	TargetID string `json:"target_id" url:"target_id"`
+	// The threshold crossed, e.g. 80.
+	Percent int64 `json:"percent" url:"percent"`
+	// The monthly budget, in cents.
+	Amount int64 `json:"amount" url:"amount"`
+	// Spent this month when it was crossed, in cents.
+	Spent  int64                             `json:"spent" url:"spent"`
+	Period *BillingWebhookEventSixDataPeriod `json:"period" url:"period"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BillingWebhookEventSixData) GetOrganizationID() string {
+	if b == nil {
+		return ""
+	}
+	return b.OrganizationID
+}
+
+func (b *BillingWebhookEventSixData) GetOccurredAt() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.OccurredAt
+}
+
+func (b *BillingWebhookEventSixData) GetScope() BillingWebhookEventSixDataScope {
+	if b == nil {
+		return ""
+	}
+	return b.Scope
+}
+
+func (b *BillingWebhookEventSixData) GetTargetID() string {
+	if b == nil {
+		return ""
+	}
+	return b.TargetID
+}
+
+func (b *BillingWebhookEventSixData) GetPercent() int64 {
+	if b == nil {
+		return 0
+	}
+	return b.Percent
+}
+
+func (b *BillingWebhookEventSixData) GetAmount() int64 {
+	if b == nil {
+		return 0
+	}
+	return b.Amount
+}
+
+func (b *BillingWebhookEventSixData) GetSpent() int64 {
+	if b == nil {
+		return 0
+	}
+	return b.Spent
+}
+
+func (b *BillingWebhookEventSixData) GetPeriod() *BillingWebhookEventSixDataPeriod {
+	if b == nil {
+		return nil
+	}
+	return b.Period
+}
+
+func (b *BillingWebhookEventSixData) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BillingWebhookEventSixData) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetOrganizationID sets the OrganizationID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetOrganizationID(organizationID string) {
+	b.OrganizationID = organizationID
+	b.require(billingWebhookEventSixDataFieldOrganizationID)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetOccurredAt(occurredAt time.Time) {
+	b.OccurredAt = occurredAt
+	b.require(billingWebhookEventSixDataFieldOccurredAt)
+}
+
+// SetScope sets the Scope field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetScope(scope BillingWebhookEventSixDataScope) {
+	b.Scope = scope
+	b.require(billingWebhookEventSixDataFieldScope)
+}
+
+// SetTargetID sets the TargetID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetTargetID(targetID string) {
+	b.TargetID = targetID
+	b.require(billingWebhookEventSixDataFieldTargetID)
+}
+
+// SetPercent sets the Percent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetPercent(percent int64) {
+	b.Percent = percent
+	b.require(billingWebhookEventSixDataFieldPercent)
+}
+
+// SetAmount sets the Amount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetAmount(amount int64) {
+	b.Amount = amount
+	b.require(billingWebhookEventSixDataFieldAmount)
+}
+
+// SetSpent sets the Spent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetSpent(spent int64) {
+	b.Spent = spent
+	b.require(billingWebhookEventSixDataFieldSpent)
+}
+
+// SetPeriod sets the Period field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixData) SetPeriod(period *BillingWebhookEventSixDataPeriod) {
+	b.Period = period
+	b.require(billingWebhookEventSixDataFieldPeriod)
+}
+
+func (b *BillingWebhookEventSixData) UnmarshalJSON(data []byte) error {
+	type embed BillingWebhookEventSixData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*b),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*b = BillingWebhookEventSixData(unmarshaler.embed)
+	b.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BillingWebhookEventSixData) MarshalJSON() ([]byte, error) {
+	type embed BillingWebhookEventSixData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*b),
+		OccurredAt: internal.NewDateTime(b.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BillingWebhookEventSixData) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+var (
+	billingWebhookEventSixDataPeriodFieldStart = big.NewInt(1 << 0)
+	billingWebhookEventSixDataPeriodFieldEnd   = big.NewInt(1 << 1)
+)
+
+type BillingWebhookEventSixDataPeriod struct {
+	Start time.Time `json:"start" url:"start"`
+	End   time.Time `json:"end" url:"end"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (b *BillingWebhookEventSixDataPeriod) GetStart() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.Start
+}
+
+func (b *BillingWebhookEventSixDataPeriod) GetEnd() time.Time {
+	if b == nil {
+		return time.Time{}
+	}
+	return b.End
+}
+
+func (b *BillingWebhookEventSixDataPeriod) GetExtraProperties() map[string]interface{} {
+	if b == nil {
+		return nil
+	}
+	return b.extraProperties
+}
+
+func (b *BillingWebhookEventSixDataPeriod) require(field *big.Int) {
+	next := new(big.Int)
+	if b.explicitFields != nil {
+		next.Set(b.explicitFields)
+	}
+	next.Or(next, field)
+	b.explicitFields = next
+}
+
+// SetStart sets the Start field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixDataPeriod) SetStart(start time.Time) {
+	b.Start = start
+	b.require(billingWebhookEventSixDataPeriodFieldStart)
+}
+
+// SetEnd sets the End field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingWebhookEventSixDataPeriod) SetEnd(end time.Time) {
+	b.End = end
+	b.require(billingWebhookEventSixDataPeriodFieldEnd)
+}
+
+func (b *BillingWebhookEventSixDataPeriod) UnmarshalJSON(data []byte) error {
+	type embed BillingWebhookEventSixDataPeriod
+	var unmarshaler = struct {
+		embed
+		Start *internal.DateTime `json:"start"`
+		End   *internal.DateTime `json:"end"`
+	}{
+		embed: embed(*b),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*b = BillingWebhookEventSixDataPeriod(unmarshaler.embed)
+	b.Start = unmarshaler.Start.Time()
+	b.End = unmarshaler.End.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *b)
+	if err != nil {
+		return err
+	}
+	b.extraProperties = extraProperties
+	b.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (b *BillingWebhookEventSixDataPeriod) MarshalJSON() ([]byte, error) {
+	type embed BillingWebhookEventSixDataPeriod
+	var marshaler = struct {
+		embed
+		Start *internal.DateTime `json:"start"`
+		End   *internal.DateTime `json:"end"`
+	}{
+		embed: embed(*b),
+		Start: internal.NewDateTime(b.Start),
+		End:   internal.NewDateTime(b.End),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (b *BillingWebhookEventSixDataPeriod) String() string {
+	if b == nil {
+		return "<nil>"
+	}
+	if len(b.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(b); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", b)
+}
+
+// What the budget is for: a member's personal API keys (`user`), a project or an API key.
+type BillingWebhookEventSixDataScope string
+
+const (
+	BillingWebhookEventSixDataScopeUser    BillingWebhookEventSixDataScope = "user"
+	BillingWebhookEventSixDataScopeProject BillingWebhookEventSixDataScope = "project"
+	BillingWebhookEventSixDataScopeAPIKey  BillingWebhookEventSixDataScope = "api_key"
+)
+
+func NewBillingWebhookEventSixDataScopeFromString(s string) (BillingWebhookEventSixDataScope, error) {
+	switch s {
+	case "user":
+		return BillingWebhookEventSixDataScopeUser, nil
+	case "project":
+		return BillingWebhookEventSixDataScopeProject, nil
+	case "api_key":
+		return BillingWebhookEventSixDataScopeAPIKey, nil
+	}
+	var t BillingWebhookEventSixDataScope
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSixDataScope) Ptr() *BillingWebhookEventSixDataScope {
+	return &b
+}
+
+type BillingWebhookEventSixObject string
+
+const (
+	BillingWebhookEventSixObjectEvent BillingWebhookEventSixObject = "event"
+)
+
+func NewBillingWebhookEventSixObjectFromString(s string) (BillingWebhookEventSixObject, error) {
+	switch s {
+	case "event":
+		return BillingWebhookEventSixObjectEvent, nil
+	}
+	var t BillingWebhookEventSixObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSixObject) Ptr() *BillingWebhookEventSixObject {
+	return &b
+}
+
+type BillingWebhookEventSixType string
+
+const (
+	BillingWebhookEventSixTypeBillingBudgetThresholdReached BillingWebhookEventSixType = "billing.budget_threshold_reached"
+)
+
+func NewBillingWebhookEventSixTypeFromString(s string) (BillingWebhookEventSixType, error) {
+	switch s {
+	case "billing.budget_threshold_reached":
+		return BillingWebhookEventSixTypeBillingBudgetThresholdReached, nil
+	}
+	var t BillingWebhookEventSixType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (b BillingWebhookEventSixType) Ptr() *BillingWebhookEventSixType {
+	return &b
+}
+
+var (
 	billingWebhookEventThreeFieldID         = big.NewInt(1 << 0)
 	billingWebhookEventThreeFieldObject     = big.NewInt(1 << 1)
 	billingWebhookEventThreeFieldAPIVersion = big.NewInt(1 << 2)
@@ -2749,6 +3777,9 @@ const (
 	BillingWebhookEventThreeDataMeterEmailRecipients         BillingWebhookEventThreeDataMeter = "email.recipients"
 	BillingWebhookEventThreeDataMeterEmailDedicatedIP        BillingWebhookEventThreeDataMeter = "email.dedicated_ip"
 	BillingWebhookEventThreeDataMeterSmsSegments             BillingWebhookEventThreeDataMeter = "sms.segments"
+	BillingWebhookEventThreeDataMeterSmsReceivedSegments     BillingWebhookEventThreeDataMeter = "sms.received_segments"
+	BillingWebhookEventThreeDataMeterSmsNumbers              BillingWebhookEventThreeDataMeter = "sms.numbers"
+	BillingWebhookEventThreeDataMeterSmsRegistrations        BillingWebhookEventThreeDataMeter = "sms.registrations"
 	BillingWebhookEventThreeDataMeterVideoParticipantMinutes BillingWebhookEventThreeDataMeter = "video.participant_minutes"
 	BillingWebhookEventThreeDataMeterSchedulingBookings      BillingWebhookEventThreeDataMeter = "scheduling.bookings"
 )
@@ -2761,6 +3792,12 @@ func NewBillingWebhookEventThreeDataMeterFromString(s string) (BillingWebhookEve
 		return BillingWebhookEventThreeDataMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return BillingWebhookEventThreeDataMeterSmsSegments, nil
+	case "sms.received_segments":
+		return BillingWebhookEventThreeDataMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return BillingWebhookEventThreeDataMeterSmsNumbers, nil
+	case "sms.registrations":
+		return BillingWebhookEventThreeDataMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return BillingWebhookEventThreeDataMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -3849,7 +4886,7 @@ type Broadcast struct {
 	CanceledAt    *time.Time         `json:"canceled_at,omitempty" url:"canceled_at,omitempty"`
 	// How many contacts it would reach, counted when it started.
 	RecipientsEstimated *int64 `json:"recipients_estimated,omitempty" url:"recipients_estimated,omitempty"`
-	// Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
+	// Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
 	PauseReason *string         `json:"pause_reason,omitempty" url:"pause_reason,omitempty"`
 	Error       *BroadcastError `json:"error,omitempty" url:"error,omitempty"`
 	Stats       *BroadcastStats `json:"stats" url:"stats"`
@@ -5179,659 +6216,6 @@ func (b *BroadcastTracking) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", b)
-}
-
-var (
-	broadcastWebhookEventFieldID         = big.NewInt(1 << 0)
-	broadcastWebhookEventFieldObject     = big.NewInt(1 << 1)
-	broadcastWebhookEventFieldType       = big.NewInt(1 << 2)
-	broadcastWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	broadcastWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	broadcastWebhookEventFieldData       = big.NewInt(1 << 5)
-)
-
-type BroadcastWebhookEvent struct {
-	ID     string                      `json:"id" url:"id"`
-	Object BroadcastWebhookEventObject `json:"object" url:"object"`
-	Type   BroadcastWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                     `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time                  `json:"created_at" url:"created_at"`
-	Data       *BroadcastWebhookEventData `json:"data" url:"data"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (b *BroadcastWebhookEvent) GetID() string {
-	if b == nil {
-		return ""
-	}
-	return b.ID
-}
-
-func (b *BroadcastWebhookEvent) GetObject() BroadcastWebhookEventObject {
-	if b == nil {
-		return ""
-	}
-	return b.Object
-}
-
-func (b *BroadcastWebhookEvent) GetType() BroadcastWebhookEventType {
-	if b == nil {
-		return ""
-	}
-	return b.Type
-}
-
-func (b *BroadcastWebhookEvent) GetAPIVersion() string {
-	if b == nil {
-		return ""
-	}
-	return b.APIVersion
-}
-
-func (b *BroadcastWebhookEvent) GetCreatedAt() time.Time {
-	if b == nil {
-		return time.Time{}
-	}
-	return b.CreatedAt
-}
-
-func (b *BroadcastWebhookEvent) GetData() *BroadcastWebhookEventData {
-	if b == nil {
-		return nil
-	}
-	return b.Data
-}
-
-func (b *BroadcastWebhookEvent) GetExtraProperties() map[string]interface{} {
-	if b == nil {
-		return nil
-	}
-	return b.extraProperties
-}
-
-func (b *BroadcastWebhookEvent) require(field *big.Int) {
-	next := new(big.Int)
-	if b.explicitFields != nil {
-		next.Set(b.explicitFields)
-	}
-	next.Or(next, field)
-	b.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetID(id string) {
-	b.ID = id
-	b.require(broadcastWebhookEventFieldID)
-}
-
-// SetObject sets the Object field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetObject(object BroadcastWebhookEventObject) {
-	b.Object = object
-	b.require(broadcastWebhookEventFieldObject)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetType(type_ BroadcastWebhookEventType) {
-	b.Type = type_
-	b.require(broadcastWebhookEventFieldType)
-}
-
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetAPIVersion(apiVersion string) {
-	b.APIVersion = apiVersion
-	b.require(broadcastWebhookEventFieldAPIVersion)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetCreatedAt(createdAt time.Time) {
-	b.CreatedAt = createdAt
-	b.require(broadcastWebhookEventFieldCreatedAt)
-}
-
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEvent) SetData(data *BroadcastWebhookEventData) {
-	b.Data = data
-	b.require(broadcastWebhookEventFieldData)
-}
-
-func (b *BroadcastWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed BroadcastWebhookEvent
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed: embed(*b),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*b = BroadcastWebhookEvent(unmarshaler.embed)
-	b.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *b)
-	if err != nil {
-		return err
-	}
-	b.extraProperties = extraProperties
-	b.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (b *BroadcastWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed BroadcastWebhookEvent
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed:     embed(*b),
-		CreatedAt: internal.NewDateTime(b.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (b *BroadcastWebhookEvent) String() string {
-	if b == nil {
-		return "<nil>"
-	}
-	if len(b.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(b); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", b)
-}
-
-var (
-	broadcastWebhookEventDataFieldBroadcast   = big.NewInt(1 << 0)
-	broadcastWebhookEventDataFieldPauseReason = big.NewInt(1 << 1)
-	broadcastWebhookEventDataFieldError       = big.NewInt(1 << 2)
-	broadcastWebhookEventDataFieldStats       = big.NewInt(1 << 3)
-	broadcastWebhookEventDataFieldOccurredAt  = big.NewInt(1 << 4)
-)
-
-// broadcastWebhookEventDataNullableFields maps the wire names of BroadcastWebhookEventData's nullable fields (required or optional) to their field bits.
-var broadcastWebhookEventDataNullableFields = map[string]*big.Int{
-	"pause_reason": broadcastWebhookEventDataFieldPauseReason,
-	"error":        broadcastWebhookEventDataFieldError,
-}
-
-type BroadcastWebhookEventData struct {
-	Broadcast   *BroadcastWebhookEventDataBroadcast `json:"broadcast" url:"broadcast"`
-	PauseReason *string                             `json:"pause_reason,omitempty" url:"pause_reason,omitempty"`
-	Error       *BroadcastWebhookEventDataError     `json:"error,omitempty" url:"error,omitempty"`
-	Stats       *BroadcastStats                     `json:"stats" url:"stats"`
-	OccurredAt  time.Time                           `json:"occurred_at" url:"occurred_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (b *BroadcastWebhookEventData) GetBroadcast() *BroadcastWebhookEventDataBroadcast {
-	if b == nil {
-		return nil
-	}
-	return b.Broadcast
-}
-
-func (b *BroadcastWebhookEventData) GetPauseReason() *string {
-	if b == nil {
-		return nil
-	}
-	return b.PauseReason
-}
-
-func (b *BroadcastWebhookEventData) GetError() *BroadcastWebhookEventDataError {
-	if b == nil {
-		return nil
-	}
-	return b.Error
-}
-
-func (b *BroadcastWebhookEventData) GetStats() *BroadcastStats {
-	if b == nil {
-		return nil
-	}
-	return b.Stats
-}
-
-func (b *BroadcastWebhookEventData) GetOccurredAt() time.Time {
-	if b == nil {
-		return time.Time{}
-	}
-	return b.OccurredAt
-}
-
-func (b *BroadcastWebhookEventData) GetExtraProperties() map[string]interface{} {
-	if b == nil {
-		return nil
-	}
-	return b.extraProperties
-}
-
-func (b *BroadcastWebhookEventData) require(field *big.Int) {
-	next := new(big.Int)
-	if b.explicitFields != nil {
-		next.Set(b.explicitFields)
-	}
-	next.Or(next, field)
-	b.explicitFields = next
-}
-
-// SetBroadcast sets the Broadcast field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventData) SetBroadcast(broadcast *BroadcastWebhookEventDataBroadcast) {
-	b.Broadcast = broadcast
-	b.require(broadcastWebhookEventDataFieldBroadcast)
-}
-
-// SetPauseReason sets the PauseReason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventData) SetPauseReason(pauseReason *string) {
-	b.PauseReason = pauseReason
-	b.require(broadcastWebhookEventDataFieldPauseReason)
-}
-
-// SetError sets the Error field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventData) SetError(error_ *BroadcastWebhookEventDataError) {
-	b.Error = error_
-	b.require(broadcastWebhookEventDataFieldError)
-}
-
-// SetStats sets the Stats field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventData) SetStats(stats *BroadcastStats) {
-	b.Stats = stats
-	b.require(broadcastWebhookEventDataFieldStats)
-}
-
-// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventData) SetOccurredAt(occurredAt time.Time) {
-	b.OccurredAt = occurredAt
-	b.require(broadcastWebhookEventDataFieldOccurredAt)
-}
-
-func (b *BroadcastWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed BroadcastWebhookEventData
-	var unmarshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed: embed(*b),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*b = BroadcastWebhookEventData(unmarshaler.embed)
-	b.OccurredAt = unmarshaler.OccurredAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *b)
-	if err != nil {
-		return err
-	}
-	b.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, broadcastWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		b.require(presentFields)
-	}
-	b.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (b *BroadcastWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed BroadcastWebhookEventData
-	var marshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed:      embed(*b),
-		OccurredAt: internal.NewDateTime(b.OccurredAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (b *BroadcastWebhookEventData) String() string {
-	if b == nil {
-		return "<nil>"
-	}
-	if len(b.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(b); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", b)
-}
-
-var (
-	broadcastWebhookEventDataBroadcastFieldID     = big.NewInt(1 << 0)
-	broadcastWebhookEventDataBroadcastFieldName   = big.NewInt(1 << 1)
-	broadcastWebhookEventDataBroadcastFieldStatus = big.NewInt(1 << 2)
-)
-
-type BroadcastWebhookEventDataBroadcast struct {
-	ID     string                                   `json:"id" url:"id"`
-	Name   string                                   `json:"name" url:"name"`
-	Status BroadcastWebhookEventDataBroadcastStatus `json:"status" url:"status"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) GetID() string {
-	if b == nil {
-		return ""
-	}
-	return b.ID
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) GetName() string {
-	if b == nil {
-		return ""
-	}
-	return b.Name
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) GetStatus() BroadcastWebhookEventDataBroadcastStatus {
-	if b == nil {
-		return ""
-	}
-	return b.Status
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) GetExtraProperties() map[string]interface{} {
-	if b == nil {
-		return nil
-	}
-	return b.extraProperties
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) require(field *big.Int) {
-	next := new(big.Int)
-	if b.explicitFields != nil {
-		next.Set(b.explicitFields)
-	}
-	next.Or(next, field)
-	b.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventDataBroadcast) SetID(id string) {
-	b.ID = id
-	b.require(broadcastWebhookEventDataBroadcastFieldID)
-}
-
-// SetName sets the Name field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventDataBroadcast) SetName(name string) {
-	b.Name = name
-	b.require(broadcastWebhookEventDataBroadcastFieldName)
-}
-
-// SetStatus sets the Status field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventDataBroadcast) SetStatus(status BroadcastWebhookEventDataBroadcastStatus) {
-	b.Status = status
-	b.require(broadcastWebhookEventDataBroadcastFieldStatus)
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) UnmarshalJSON(data []byte) error {
-	type unmarshaler BroadcastWebhookEventDataBroadcast
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*b = BroadcastWebhookEventDataBroadcast(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *b)
-	if err != nil {
-		return err
-	}
-	b.extraProperties = extraProperties
-	b.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) MarshalJSON() ([]byte, error) {
-	type embed BroadcastWebhookEventDataBroadcast
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*b),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (b *BroadcastWebhookEventDataBroadcast) String() string {
-	if b == nil {
-		return "<nil>"
-	}
-	if len(b.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(b); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", b)
-}
-
-type BroadcastWebhookEventDataBroadcastStatus string
-
-const (
-	BroadcastWebhookEventDataBroadcastStatusDraft     BroadcastWebhookEventDataBroadcastStatus = "draft"
-	BroadcastWebhookEventDataBroadcastStatusScheduled BroadcastWebhookEventDataBroadcastStatus = "scheduled"
-	BroadcastWebhookEventDataBroadcastStatusSending   BroadcastWebhookEventDataBroadcastStatus = "sending"
-	BroadcastWebhookEventDataBroadcastStatusPaused    BroadcastWebhookEventDataBroadcastStatus = "paused"
-	BroadcastWebhookEventDataBroadcastStatusSent      BroadcastWebhookEventDataBroadcastStatus = "sent"
-	BroadcastWebhookEventDataBroadcastStatusCanceled  BroadcastWebhookEventDataBroadcastStatus = "canceled"
-	BroadcastWebhookEventDataBroadcastStatusFailed    BroadcastWebhookEventDataBroadcastStatus = "failed"
-)
-
-func NewBroadcastWebhookEventDataBroadcastStatusFromString(s string) (BroadcastWebhookEventDataBroadcastStatus, error) {
-	switch s {
-	case "draft":
-		return BroadcastWebhookEventDataBroadcastStatusDraft, nil
-	case "scheduled":
-		return BroadcastWebhookEventDataBroadcastStatusScheduled, nil
-	case "sending":
-		return BroadcastWebhookEventDataBroadcastStatusSending, nil
-	case "paused":
-		return BroadcastWebhookEventDataBroadcastStatusPaused, nil
-	case "sent":
-		return BroadcastWebhookEventDataBroadcastStatusSent, nil
-	case "canceled":
-		return BroadcastWebhookEventDataBroadcastStatusCanceled, nil
-	case "failed":
-		return BroadcastWebhookEventDataBroadcastStatusFailed, nil
-	}
-	var t BroadcastWebhookEventDataBroadcastStatus
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (b BroadcastWebhookEventDataBroadcastStatus) Ptr() *BroadcastWebhookEventDataBroadcastStatus {
-	return &b
-}
-
-var (
-	broadcastWebhookEventDataErrorFieldCode    = big.NewInt(1 << 0)
-	broadcastWebhookEventDataErrorFieldMessage = big.NewInt(1 << 1)
-)
-
-type BroadcastWebhookEventDataError struct {
-	Code    string `json:"code" url:"code"`
-	Message string `json:"message" url:"message"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (b *BroadcastWebhookEventDataError) GetCode() string {
-	if b == nil {
-		return ""
-	}
-	return b.Code
-}
-
-func (b *BroadcastWebhookEventDataError) GetMessage() string {
-	if b == nil {
-		return ""
-	}
-	return b.Message
-}
-
-func (b *BroadcastWebhookEventDataError) GetExtraProperties() map[string]interface{} {
-	if b == nil {
-		return nil
-	}
-	return b.extraProperties
-}
-
-func (b *BroadcastWebhookEventDataError) require(field *big.Int) {
-	next := new(big.Int)
-	if b.explicitFields != nil {
-		next.Set(b.explicitFields)
-	}
-	next.Or(next, field)
-	b.explicitFields = next
-}
-
-// SetCode sets the Code field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventDataError) SetCode(code string) {
-	b.Code = code
-	b.require(broadcastWebhookEventDataErrorFieldCode)
-}
-
-// SetMessage sets the Message field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BroadcastWebhookEventDataError) SetMessage(message string) {
-	b.Message = message
-	b.require(broadcastWebhookEventDataErrorFieldMessage)
-}
-
-func (b *BroadcastWebhookEventDataError) UnmarshalJSON(data []byte) error {
-	type unmarshaler BroadcastWebhookEventDataError
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*b = BroadcastWebhookEventDataError(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *b)
-	if err != nil {
-		return err
-	}
-	b.extraProperties = extraProperties
-	b.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (b *BroadcastWebhookEventDataError) MarshalJSON() ([]byte, error) {
-	type embed BroadcastWebhookEventDataError
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*b),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, b.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (b *BroadcastWebhookEventDataError) String() string {
-	if b == nil {
-		return "<nil>"
-	}
-	if len(b.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(b.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(b); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", b)
-}
-
-type BroadcastWebhookEventObject string
-
-const (
-	BroadcastWebhookEventObjectEvent BroadcastWebhookEventObject = "event"
-)
-
-func NewBroadcastWebhookEventObjectFromString(s string) (BroadcastWebhookEventObject, error) {
-	switch s {
-	case "event":
-		return BroadcastWebhookEventObjectEvent, nil
-	}
-	var t BroadcastWebhookEventObject
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (b BroadcastWebhookEventObject) Ptr() *BroadcastWebhookEventObject {
-	return &b
-}
-
-type BroadcastWebhookEventType string
-
-const (
-	BroadcastWebhookEventTypeBroadcastSending  BroadcastWebhookEventType = "broadcast.sending"
-	BroadcastWebhookEventTypeBroadcastSent     BroadcastWebhookEventType = "broadcast.sent"
-	BroadcastWebhookEventTypeBroadcastPaused   BroadcastWebhookEventType = "broadcast.paused"
-	BroadcastWebhookEventTypeBroadcastCanceled BroadcastWebhookEventType = "broadcast.canceled"
-	BroadcastWebhookEventTypeBroadcastFailed   BroadcastWebhookEventType = "broadcast.failed"
-)
-
-func NewBroadcastWebhookEventTypeFromString(s string) (BroadcastWebhookEventType, error) {
-	switch s {
-	case "broadcast.sending":
-		return BroadcastWebhookEventTypeBroadcastSending, nil
-	case "broadcast.sent":
-		return BroadcastWebhookEventTypeBroadcastSent, nil
-	case "broadcast.paused":
-		return BroadcastWebhookEventTypeBroadcastPaused, nil
-	case "broadcast.canceled":
-		return BroadcastWebhookEventTypeBroadcastCanceled, nil
-	case "broadcast.failed":
-		return BroadcastWebhookEventTypeBroadcastFailed, nil
-	}
-	var t BroadcastWebhookEventType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (b BroadcastWebhookEventType) Ptr() *BroadcastWebhookEventType {
-	return &b
 }
 
 var (
@@ -7690,558 +8074,6 @@ func (c ContactTopicsTopicsItemChoice) Ptr() *ContactTopicsTopicsItemChoice {
 }
 
 var (
-	contactWebhookEventFieldID         = big.NewInt(1 << 0)
-	contactWebhookEventFieldObject     = big.NewInt(1 << 1)
-	contactWebhookEventFieldType       = big.NewInt(1 << 2)
-	contactWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	contactWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	contactWebhookEventFieldData       = big.NewInt(1 << 5)
-)
-
-type ContactWebhookEvent struct {
-	// The event id, and the `webhook-id` header.
-	ID     string                    `json:"id" url:"id"`
-	Object ContactWebhookEventObject `json:"object" url:"object"`
-	Type   ContactWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                   `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time                `json:"created_at" url:"created_at"`
-	Data       *ContactWebhookEventData `json:"data" url:"data"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (c *ContactWebhookEvent) GetID() string {
-	if c == nil {
-		return ""
-	}
-	return c.ID
-}
-
-func (c *ContactWebhookEvent) GetObject() ContactWebhookEventObject {
-	if c == nil {
-		return ""
-	}
-	return c.Object
-}
-
-func (c *ContactWebhookEvent) GetType() ContactWebhookEventType {
-	if c == nil {
-		return ""
-	}
-	return c.Type
-}
-
-func (c *ContactWebhookEvent) GetAPIVersion() string {
-	if c == nil {
-		return ""
-	}
-	return c.APIVersion
-}
-
-func (c *ContactWebhookEvent) GetCreatedAt() time.Time {
-	if c == nil {
-		return time.Time{}
-	}
-	return c.CreatedAt
-}
-
-func (c *ContactWebhookEvent) GetData() *ContactWebhookEventData {
-	if c == nil {
-		return nil
-	}
-	return c.Data
-}
-
-func (c *ContactWebhookEvent) GetExtraProperties() map[string]interface{} {
-	if c == nil {
-		return nil
-	}
-	return c.extraProperties
-}
-
-func (c *ContactWebhookEvent) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetID(id string) {
-	c.ID = id
-	c.require(contactWebhookEventFieldID)
-}
-
-// SetObject sets the Object field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetObject(object ContactWebhookEventObject) {
-	c.Object = object
-	c.require(contactWebhookEventFieldObject)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetType(type_ ContactWebhookEventType) {
-	c.Type = type_
-	c.require(contactWebhookEventFieldType)
-}
-
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetAPIVersion(apiVersion string) {
-	c.APIVersion = apiVersion
-	c.require(contactWebhookEventFieldAPIVersion)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetCreatedAt(createdAt time.Time) {
-	c.CreatedAt = createdAt
-	c.require(contactWebhookEventFieldCreatedAt)
-}
-
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEvent) SetData(data *ContactWebhookEventData) {
-	c.Data = data
-	c.require(contactWebhookEventFieldData)
-}
-
-func (c *ContactWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed ContactWebhookEvent
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed: embed(*c),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*c = ContactWebhookEvent(unmarshaler.embed)
-	c.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *c)
-	if err != nil {
-		return err
-	}
-	c.extraProperties = extraProperties
-	c.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (c *ContactWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed ContactWebhookEvent
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed:     embed(*c),
-		CreatedAt: internal.NewDateTime(c.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (c *ContactWebhookEvent) String() string {
-	if c == nil {
-		return "<nil>"
-	}
-	if len(c.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(c); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", c)
-}
-
-var (
-	contactWebhookEventDataFieldContact    = big.NewInt(1 << 0)
-	contactWebhookEventDataFieldSource     = big.NewInt(1 << 1)
-	contactWebhookEventDataFieldTopic      = big.NewInt(1 << 2)
-	contactWebhookEventDataFieldOccurredAt = big.NewInt(1 << 3)
-)
-
-// contactWebhookEventDataNullableFields maps the wire names of ContactWebhookEventData's nullable fields (required or optional) to their field bits.
-var contactWebhookEventDataNullableFields = map[string]*big.Int{
-	"topic": contactWebhookEventDataFieldTopic,
-}
-
-type ContactWebhookEventData struct {
-	Contact *ContactWebhookEventDataContact `json:"contact" url:"contact"`
-	Source  ContactWebhookEventDataSource   `json:"source" url:"source"`
-	// `contact.unsubscribed` from one topic (its key); `null`: from marketing altogether.
-	Topic      *string   `json:"topic,omitempty" url:"topic,omitempty"`
-	OccurredAt time.Time `json:"occurred_at" url:"occurred_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (c *ContactWebhookEventData) GetContact() *ContactWebhookEventDataContact {
-	if c == nil {
-		return nil
-	}
-	return c.Contact
-}
-
-func (c *ContactWebhookEventData) GetSource() ContactWebhookEventDataSource {
-	if c == nil {
-		return ""
-	}
-	return c.Source
-}
-
-func (c *ContactWebhookEventData) GetTopic() *string {
-	if c == nil {
-		return nil
-	}
-	return c.Topic
-}
-
-func (c *ContactWebhookEventData) GetOccurredAt() time.Time {
-	if c == nil {
-		return time.Time{}
-	}
-	return c.OccurredAt
-}
-
-func (c *ContactWebhookEventData) GetExtraProperties() map[string]interface{} {
-	if c == nil {
-		return nil
-	}
-	return c.extraProperties
-}
-
-func (c *ContactWebhookEventData) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetContact sets the Contact field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventData) SetContact(contact *ContactWebhookEventDataContact) {
-	c.Contact = contact
-	c.require(contactWebhookEventDataFieldContact)
-}
-
-// SetSource sets the Source field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventData) SetSource(source ContactWebhookEventDataSource) {
-	c.Source = source
-	c.require(contactWebhookEventDataFieldSource)
-}
-
-// SetTopic sets the Topic field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventData) SetTopic(topic *string) {
-	c.Topic = topic
-	c.require(contactWebhookEventDataFieldTopic)
-}
-
-// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventData) SetOccurredAt(occurredAt time.Time) {
-	c.OccurredAt = occurredAt
-	c.require(contactWebhookEventDataFieldOccurredAt)
-}
-
-func (c *ContactWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed ContactWebhookEventData
-	var unmarshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed: embed(*c),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*c = ContactWebhookEventData(unmarshaler.embed)
-	c.OccurredAt = unmarshaler.OccurredAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *c)
-	if err != nil {
-		return err
-	}
-	c.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, contactWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		c.require(presentFields)
-	}
-	c.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (c *ContactWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed ContactWebhookEventData
-	var marshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed:      embed(*c),
-		OccurredAt: internal.NewDateTime(c.OccurredAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (c *ContactWebhookEventData) String() string {
-	if c == nil {
-		return "<nil>"
-	}
-	if len(c.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(c); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", c)
-}
-
-var (
-	contactWebhookEventDataContactFieldID     = big.NewInt(1 << 0)
-	contactWebhookEventDataContactFieldEmail  = big.NewInt(1 << 1)
-	contactWebhookEventDataContactFieldStatus = big.NewInt(1 << 2)
-)
-
-type ContactWebhookEventDataContact struct {
-	ID     string                               `json:"id" url:"id"`
-	Email  string                               `json:"email" url:"email"`
-	Status ContactWebhookEventDataContactStatus `json:"status" url:"status"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (c *ContactWebhookEventDataContact) GetID() string {
-	if c == nil {
-		return ""
-	}
-	return c.ID
-}
-
-func (c *ContactWebhookEventDataContact) GetEmail() string {
-	if c == nil {
-		return ""
-	}
-	return c.Email
-}
-
-func (c *ContactWebhookEventDataContact) GetStatus() ContactWebhookEventDataContactStatus {
-	if c == nil {
-		return ""
-	}
-	return c.Status
-}
-
-func (c *ContactWebhookEventDataContact) GetExtraProperties() map[string]interface{} {
-	if c == nil {
-		return nil
-	}
-	return c.extraProperties
-}
-
-func (c *ContactWebhookEventDataContact) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventDataContact) SetID(id string) {
-	c.ID = id
-	c.require(contactWebhookEventDataContactFieldID)
-}
-
-// SetEmail sets the Email field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventDataContact) SetEmail(email string) {
-	c.Email = email
-	c.require(contactWebhookEventDataContactFieldEmail)
-}
-
-// SetStatus sets the Status field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ContactWebhookEventDataContact) SetStatus(status ContactWebhookEventDataContactStatus) {
-	c.Status = status
-	c.require(contactWebhookEventDataContactFieldStatus)
-}
-
-func (c *ContactWebhookEventDataContact) UnmarshalJSON(data []byte) error {
-	type unmarshaler ContactWebhookEventDataContact
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*c = ContactWebhookEventDataContact(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *c)
-	if err != nil {
-		return err
-	}
-	c.extraProperties = extraProperties
-	c.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (c *ContactWebhookEventDataContact) MarshalJSON() ([]byte, error) {
-	type embed ContactWebhookEventDataContact
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*c),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (c *ContactWebhookEventDataContact) String() string {
-	if c == nil {
-		return "<nil>"
-	}
-	if len(c.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(c.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(c); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", c)
-}
-
-type ContactWebhookEventDataContactStatus string
-
-const (
-	ContactWebhookEventDataContactStatusSubscribed   ContactWebhookEventDataContactStatus = "subscribed"
-	ContactWebhookEventDataContactStatusUnsubscribed ContactWebhookEventDataContactStatus = "unsubscribed"
-	ContactWebhookEventDataContactStatusPending      ContactWebhookEventDataContactStatus = "pending"
-)
-
-func NewContactWebhookEventDataContactStatusFromString(s string) (ContactWebhookEventDataContactStatus, error) {
-	switch s {
-	case "subscribed":
-		return ContactWebhookEventDataContactStatusSubscribed, nil
-	case "unsubscribed":
-		return ContactWebhookEventDataContactStatusUnsubscribed, nil
-	case "pending":
-		return ContactWebhookEventDataContactStatusPending, nil
-	}
-	var t ContactWebhookEventDataContactStatus
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (c ContactWebhookEventDataContactStatus) Ptr() *ContactWebhookEventDataContactStatus {
-	return &c
-}
-
-type ContactWebhookEventDataSource string
-
-const (
-	ContactWebhookEventDataSourceAPI              ContactWebhookEventDataSource = "api"
-	ContactWebhookEventDataSourceDashboard        ContactWebhookEventDataSource = "dashboard"
-	ContactWebhookEventDataSourceImport           ContactWebhookEventDataSource = "import"
-	ContactWebhookEventDataSourcePreferenceCenter ContactWebhookEventDataSource = "preference_center"
-)
-
-func NewContactWebhookEventDataSourceFromString(s string) (ContactWebhookEventDataSource, error) {
-	switch s {
-	case "api":
-		return ContactWebhookEventDataSourceAPI, nil
-	case "dashboard":
-		return ContactWebhookEventDataSourceDashboard, nil
-	case "import":
-		return ContactWebhookEventDataSourceImport, nil
-	case "preference_center":
-		return ContactWebhookEventDataSourcePreferenceCenter, nil
-	}
-	var t ContactWebhookEventDataSource
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (c ContactWebhookEventDataSource) Ptr() *ContactWebhookEventDataSource {
-	return &c
-}
-
-type ContactWebhookEventObject string
-
-const (
-	ContactWebhookEventObjectEvent ContactWebhookEventObject = "event"
-)
-
-func NewContactWebhookEventObjectFromString(s string) (ContactWebhookEventObject, error) {
-	switch s {
-	case "event":
-		return ContactWebhookEventObjectEvent, nil
-	}
-	var t ContactWebhookEventObject
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (c ContactWebhookEventObject) Ptr() *ContactWebhookEventObject {
-	return &c
-}
-
-type ContactWebhookEventType string
-
-const (
-	ContactWebhookEventTypeContactCreated      ContactWebhookEventType = "contact.created"
-	ContactWebhookEventTypeContactUpdated      ContactWebhookEventType = "contact.updated"
-	ContactWebhookEventTypeContactDeleted      ContactWebhookEventType = "contact.deleted"
-	ContactWebhookEventTypeContactUnsubscribed ContactWebhookEventType = "contact.unsubscribed"
-	ContactWebhookEventTypeContactConfirmed    ContactWebhookEventType = "contact.confirmed"
-)
-
-func NewContactWebhookEventTypeFromString(s string) (ContactWebhookEventType, error) {
-	switch s {
-	case "contact.created":
-		return ContactWebhookEventTypeContactCreated, nil
-	case "contact.updated":
-		return ContactWebhookEventTypeContactUpdated, nil
-	case "contact.deleted":
-		return ContactWebhookEventTypeContactDeleted, nil
-	case "contact.unsubscribed":
-		return ContactWebhookEventTypeContactUnsubscribed, nil
-	case "contact.confirmed":
-		return ContactWebhookEventTypeContactConfirmed, nil
-	}
-	var t ContactWebhookEventType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (c ContactWebhookEventType) Ptr() *ContactWebhookEventType {
-	return &c
-}
-
-var (
 	creditFieldObject      = big.NewInt(1 << 0)
 	creditFieldID          = big.NewInt(1 << 1)
 	creditFieldKind        = big.NewInt(1 << 2)
@@ -8764,6 +8596,9 @@ const (
 	CreditMeterEmailRecipients         CreditMeter = "email.recipients"
 	CreditMeterEmailDedicatedIP        CreditMeter = "email.dedicated_ip"
 	CreditMeterSmsSegments             CreditMeter = "sms.segments"
+	CreditMeterSmsReceivedSegments     CreditMeter = "sms.received_segments"
+	CreditMeterSmsNumbers              CreditMeter = "sms.numbers"
+	CreditMeterSmsRegistrations        CreditMeter = "sms.registrations"
 	CreditMeterVideoParticipantMinutes CreditMeter = "video.participant_minutes"
 	CreditMeterSchedulingBookings      CreditMeter = "scheduling.bookings"
 )
@@ -8776,6 +8611,12 @@ func NewCreditMeterFromString(s string) (CreditMeter, error) {
 		return CreditMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return CreditMeterSmsSegments, nil
+	case "sms.received_segments":
+		return CreditMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return CreditMeterSmsNumbers, nil
+	case "sms.registrations":
+		return CreditMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return CreditMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -8796,6 +8637,9 @@ const (
 	CreditMetersItemEmailRecipients         CreditMetersItem = "email.recipients"
 	CreditMetersItemEmailDedicatedIP        CreditMetersItem = "email.dedicated_ip"
 	CreditMetersItemSmsSegments             CreditMetersItem = "sms.segments"
+	CreditMetersItemSmsReceivedSegments     CreditMetersItem = "sms.received_segments"
+	CreditMetersItemSmsNumbers              CreditMetersItem = "sms.numbers"
+	CreditMetersItemSmsRegistrations        CreditMetersItem = "sms.registrations"
 	CreditMetersItemVideoParticipantMinutes CreditMetersItem = "video.participant_minutes"
 	CreditMetersItemSchedulingBookings      CreditMetersItem = "scheduling.bookings"
 )
@@ -8808,6 +8652,12 @@ func NewCreditMetersItemFromString(s string) (CreditMetersItem, error) {
 		return CreditMetersItemEmailDedicatedIP, nil
 	case "sms.segments":
 		return CreditMetersItemSmsSegments, nil
+	case "sms.received_segments":
+		return CreditMetersItemSmsReceivedSegments, nil
+	case "sms.numbers":
+		return CreditMetersItemSmsNumbers, nil
+	case "sms.registrations":
+		return CreditMetersItemSmsRegistrations, nil
 	case "video.participant_minutes":
 		return CreditMetersItemVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -10888,6 +10738,143 @@ func NewDeletedSegmentObjectFromString(s string) (DeletedSegmentObject, error) {
 }
 
 func (d DeletedSegmentObject) Ptr() *DeletedSegmentObject {
+	return &d
+}
+
+var (
+	deletedSmsSuppressionFieldObject  = big.NewInt(1 << 0)
+	deletedSmsSuppressionFieldID      = big.NewInt(1 << 1)
+	deletedSmsSuppressionFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedSmsSuppression struct {
+	Object  DeletedSmsSuppressionObject `json:"object" url:"object"`
+	ID      string                      `json:"id" url:"id"`
+	Deleted bool                        `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedSmsSuppression) GetObject() DeletedSmsSuppressionObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedSmsSuppression) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedSmsSuppression) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedSmsSuppression) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedSmsSuppression) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSmsSuppression) SetObject(object DeletedSmsSuppressionObject) {
+	d.Object = object
+	d.require(deletedSmsSuppressionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSmsSuppression) SetID(id string) {
+	d.ID = id
+	d.require(deletedSmsSuppressionFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSmsSuppression) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedSmsSuppressionFieldDeleted)
+}
+
+func (d *DeletedSmsSuppression) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedSmsSuppression
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedSmsSuppression(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedSmsSuppression) MarshalJSON() ([]byte, error) {
+	type embed DeletedSmsSuppression
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedSmsSuppression) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedSmsSuppressionObject string
+
+const (
+	DeletedSmsSuppressionObjectSmsSuppression DeletedSmsSuppressionObject = "sms_suppression"
+)
+
+func NewDeletedSmsSuppressionObjectFromString(s string) (DeletedSmsSuppressionObject, error) {
+	switch s {
+	case "sms_suppression":
+		return DeletedSmsSuppressionObjectSmsSuppression, nil
+	}
+	var t DeletedSmsSuppressionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedSmsSuppressionObject) Ptr() *DeletedSmsSuppressionObject {
 	return &d
 }
 
@@ -16709,32 +16696,33 @@ func (d DomainWebhookEventType) Ptr() *DomainWebhookEventType {
 }
 
 var (
-	emailFieldObject      = big.NewInt(1 << 0)
-	emailFieldID          = big.NewInt(1 << 1)
-	emailFieldFrom        = big.NewInt(1 << 2)
-	emailFieldTo          = big.NewInt(1 << 3)
-	emailFieldCc          = big.NewInt(1 << 4)
-	emailFieldBcc         = big.NewInt(1 << 5)
-	emailFieldReplyTo     = big.NewInt(1 << 6)
-	emailFieldSubject     = big.NewInt(1 << 7)
-	emailFieldHTML        = big.NewInt(1 << 8)
-	emailFieldText        = big.NewInt(1 << 9)
-	emailFieldHeaders     = big.NewInt(1 << 10)
-	emailFieldTags        = big.NewInt(1 << 11)
-	emailFieldCategory    = big.NewInt(1 << 12)
-	emailFieldStream      = big.NewInt(1 << 13)
-	emailFieldStatus      = big.NewInt(1 << 14)
-	emailFieldFailure     = big.NewInt(1 << 15)
-	emailFieldRecipients  = big.NewInt(1 << 16)
-	emailFieldAttachments = big.NewInt(1 << 17)
-	emailFieldSandbox     = big.NewInt(1 << 18)
-	emailFieldTracking    = big.NewInt(1 << 19)
-	emailFieldCreatedAt   = big.NewInt(1 << 20)
-	emailFieldSentAt      = big.NewInt(1 << 21)
-	emailFieldScheduledAt = big.NewInt(1 << 22)
-	emailFieldBatchID     = big.NewInt(1 << 23)
-	emailFieldTemplate    = big.NewInt(1 << 24)
-	emailFieldBroadcastID = big.NewInt(1 << 25)
+	emailFieldObject         = big.NewInt(1 << 0)
+	emailFieldID             = big.NewInt(1 << 1)
+	emailFieldFrom           = big.NewInt(1 << 2)
+	emailFieldTo             = big.NewInt(1 << 3)
+	emailFieldCc             = big.NewInt(1 << 4)
+	emailFieldBcc            = big.NewInt(1 << 5)
+	emailFieldReplyTo        = big.NewInt(1 << 6)
+	emailFieldSubject        = big.NewInt(1 << 7)
+	emailFieldHTML           = big.NewInt(1 << 8)
+	emailFieldText           = big.NewInt(1 << 9)
+	emailFieldHeaders        = big.NewInt(1 << 10)
+	emailFieldTags           = big.NewInt(1 << 11)
+	emailFieldCategory       = big.NewInt(1 << 12)
+	emailFieldStream         = big.NewInt(1 << 13)
+	emailFieldStatus         = big.NewInt(1 << 14)
+	emailFieldFailure        = big.NewInt(1 << 15)
+	emailFieldRecipients     = big.NewInt(1 << 16)
+	emailFieldAttachments    = big.NewInt(1 << 17)
+	emailFieldSandbox        = big.NewInt(1 << 18)
+	emailFieldTracking       = big.NewInt(1 << 19)
+	emailFieldCreatedAt      = big.NewInt(1 << 20)
+	emailFieldSentAt         = big.NewInt(1 << 21)
+	emailFieldScheduledAt    = big.NewInt(1 << 22)
+	emailFieldBatchID        = big.NewInt(1 << 23)
+	emailFieldTemplate       = big.NewInt(1 << 24)
+	emailFieldBroadcastID    = big.NewInt(1 << 25)
+	emailFieldContentStorage = big.NewInt(1 << 26)
 )
 
 // emailNullableFields maps the wire names of Email's nullable fields (required or optional) to their field bits.
@@ -16784,7 +16772,8 @@ type Email struct {
 	// The template the email was rendered from; `null` if it was sent without one.
 	Template *EmailTemplateReference `json:"template,omitempty" url:"template,omitempty"`
 	// The broadcast the email is part of; `null` for any other email.
-	BroadcastID *string `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	BroadcastID    *string              `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	ContentStorage *EmailContentStorage `json:"content_storage" url:"content_storage"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -16973,6 +16962,13 @@ func (e *Email) GetBroadcastID() *string {
 		return nil
 	}
 	return e.BroadcastID
+}
+
+func (e *Email) GetContentStorage() *EmailContentStorage {
+	if e == nil {
+		return nil
+	}
+	return e.ContentStorage
 }
 
 func (e *Email) GetExtraProperties() map[string]interface{} {
@@ -17171,6 +17167,13 @@ func (e *Email) SetTemplate(template *EmailTemplateReference) {
 func (e *Email) SetBroadcastID(broadcastID *string) {
 	e.BroadcastID = broadcastID
 	e.require(emailFieldBroadcastID)
+}
+
+// SetContentStorage sets the ContentStorage field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *Email) SetContentStorage(contentStorage *EmailContentStorage) {
+	e.ContentStorage = contentStorage
+	e.require(emailFieldContentStorage)
 }
 
 func (e *Email) UnmarshalJSON(data []byte) error {
@@ -17400,6 +17403,154 @@ func (e *EmailAttachment) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", e)
+}
+
+var (
+	emailContentStorageFieldMode        = big.NewInt(1 << 0)
+	emailContentStorageFieldDiscardedAt = big.NewInt(1 << 1)
+)
+
+// emailContentStorageNullableFields maps the wire names of EmailContentStorage's nullable fields (required or optional) to their field bits.
+var emailContentStorageNullableFields = map[string]*big.Int{
+	"discarded_at": emailContentStorageFieldDiscardedAt,
+}
+
+// Whether coss.com keeps the email's content after sending it.
+type EmailContentStorage struct {
+	// The environment's content storage when the email was sent. With `discard`, the subject, `html`, `text`, `headers`, template variables and attachment filenames are cleared once the email is sent, fails or is canceled.
+	Mode EmailContentStorageMode `json:"mode" url:"mode"`
+	// When the content was cleared; `null` while it is kept. A cleared email has an empty `subject`, `html` and `text` `null` and no `headers`.
+	DiscardedAt *time.Time `json:"discarded_at,omitempty" url:"discarded_at,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (e *EmailContentStorage) GetMode() EmailContentStorageMode {
+	if e == nil {
+		return ""
+	}
+	return e.Mode
+}
+
+func (e *EmailContentStorage) GetDiscardedAt() *time.Time {
+	if e == nil {
+		return nil
+	}
+	return e.DiscardedAt
+}
+
+func (e *EmailContentStorage) GetExtraProperties() map[string]interface{} {
+	if e == nil {
+		return nil
+	}
+	return e.extraProperties
+}
+
+func (e *EmailContentStorage) require(field *big.Int) {
+	next := new(big.Int)
+	if e.explicitFields != nil {
+		next.Set(e.explicitFields)
+	}
+	next.Or(next, field)
+	e.explicitFields = next
+}
+
+// SetMode sets the Mode field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailContentStorage) SetMode(mode EmailContentStorageMode) {
+	e.Mode = mode
+	e.require(emailContentStorageFieldMode)
+}
+
+// SetDiscardedAt sets the DiscardedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailContentStorage) SetDiscardedAt(discardedAt *time.Time) {
+	e.DiscardedAt = discardedAt
+	e.require(emailContentStorageFieldDiscardedAt)
+}
+
+func (e *EmailContentStorage) UnmarshalJSON(data []byte) error {
+	type embed EmailContentStorage
+	var unmarshaler = struct {
+		embed
+		DiscardedAt *internal.DateTime `json:"discarded_at,omitempty"`
+	}{
+		embed: embed(*e),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*e = EmailContentStorage(unmarshaler.embed)
+	e.DiscardedAt = unmarshaler.DiscardedAt.TimePtr()
+	extraProperties, err := internal.ExtractExtraProperties(data, *e)
+	if err != nil {
+		return err
+	}
+	e.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailContentStorageNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		e.require(presentFields)
+	}
+	e.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (e *EmailContentStorage) MarshalJSON() ([]byte, error) {
+	type embed EmailContentStorage
+	var marshaler = struct {
+		embed
+		DiscardedAt *internal.DateTime `json:"discarded_at,omitempty"`
+	}{
+		embed:       embed(*e),
+		DiscardedAt: internal.NewOptionalDateTime(e.DiscardedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (e *EmailContentStorage) String() string {
+	if e == nil {
+		return "<nil>"
+	}
+	if len(e.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(e); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", e)
+}
+
+// The environment's content storage when the email was sent. With `discard`, the subject, `html`, `text`, `headers`, template variables and attachment filenames are cleared once the email is sent, fails or is canceled.
+type EmailContentStorageMode string
+
+const (
+	EmailContentStorageModeStore   EmailContentStorageMode = "store"
+	EmailContentStorageModeDiscard EmailContentStorageMode = "discard"
+)
+
+func NewEmailContentStorageModeFromString(s string) (EmailContentStorageMode, error) {
+	switch s {
+	case "store":
+		return EmailContentStorageModeStore, nil
+	case "discard":
+		return EmailContentStorageModeDiscard, nil
+	}
+	var t EmailContentStorageMode
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (e EmailContentStorageMode) Ptr() *EmailContentStorageMode {
+	return &e
 }
 
 var (
@@ -19156,1984 +19307,6 @@ func (e *EmailTracking) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventFieldID         = big.NewInt(1 << 0)
-	emailWebhookEventFieldObject     = big.NewInt(1 << 1)
-	emailWebhookEventFieldType       = big.NewInt(1 << 2)
-	emailWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	emailWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	emailWebhookEventFieldData       = big.NewInt(1 << 5)
-)
-
-type EmailWebhookEvent struct {
-	// The event id: the same as `EmailEvent.id`, and the `webhook-id` header.
-	ID     string                  `json:"id" url:"id"`
-	Object EmailWebhookEventObject `json:"object" url:"object"`
-	Type   EmailWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                 `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time              `json:"created_at" url:"created_at"`
-	Data       *EmailWebhookEventData `json:"data" url:"data"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEvent) GetID() string {
-	if e == nil {
-		return ""
-	}
-	return e.ID
-}
-
-func (e *EmailWebhookEvent) GetObject() EmailWebhookEventObject {
-	if e == nil {
-		return ""
-	}
-	return e.Object
-}
-
-func (e *EmailWebhookEvent) GetType() EmailWebhookEventType {
-	if e == nil {
-		return ""
-	}
-	return e.Type
-}
-
-func (e *EmailWebhookEvent) GetAPIVersion() string {
-	if e == nil {
-		return ""
-	}
-	return e.APIVersion
-}
-
-func (e *EmailWebhookEvent) GetCreatedAt() time.Time {
-	if e == nil {
-		return time.Time{}
-	}
-	return e.CreatedAt
-}
-
-func (e *EmailWebhookEvent) GetData() *EmailWebhookEventData {
-	if e == nil {
-		return nil
-	}
-	return e.Data
-}
-
-func (e *EmailWebhookEvent) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEvent) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetID(id string) {
-	e.ID = id
-	e.require(emailWebhookEventFieldID)
-}
-
-// SetObject sets the Object field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetObject(object EmailWebhookEventObject) {
-	e.Object = object
-	e.require(emailWebhookEventFieldObject)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetType(type_ EmailWebhookEventType) {
-	e.Type = type_
-	e.require(emailWebhookEventFieldType)
-}
-
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetAPIVersion(apiVersion string) {
-	e.APIVersion = apiVersion
-	e.require(emailWebhookEventFieldAPIVersion)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetCreatedAt(createdAt time.Time) {
-	e.CreatedAt = createdAt
-	e.require(emailWebhookEventFieldCreatedAt)
-}
-
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEvent) SetData(data *EmailWebhookEventData) {
-	e.Data = data
-	e.require(emailWebhookEventFieldData)
-}
-
-func (e *EmailWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed EmailWebhookEvent
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed: embed(*e),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*e = EmailWebhookEvent(unmarshaler.embed)
-	e.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEvent
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed:     embed(*e),
-		CreatedAt: internal.NewDateTime(e.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEvent) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataFieldBounce      = big.NewInt(1 << 0)
-	emailWebhookEventDataFieldComplaint   = big.NewInt(1 << 1)
-	emailWebhookEventDataFieldDelay       = big.NewInt(1 << 2)
-	emailWebhookEventDataFieldDelivery    = big.NewInt(1 << 3)
-	emailWebhookEventDataFieldFailure     = big.NewInt(1 << 4)
-	emailWebhookEventDataFieldSuppression = big.NewInt(1 << 5)
-	emailWebhookEventDataFieldUnsubscribe = big.NewInt(1 << 6)
-	emailWebhookEventDataFieldOpen        = big.NewInt(1 << 7)
-	emailWebhookEventDataFieldClick       = big.NewInt(1 << 8)
-	emailWebhookEventDataFieldReschedule  = big.NewInt(1 << 9)
-	emailWebhookEventDataFieldEmailID     = big.NewInt(1 << 10)
-	emailWebhookEventDataFieldFrom        = big.NewInt(1 << 11)
-	emailWebhookEventDataFieldTo          = big.NewInt(1 << 12)
-	emailWebhookEventDataFieldSubject     = big.NewInt(1 << 13)
-	emailWebhookEventDataFieldTags        = big.NewInt(1 << 14)
-	emailWebhookEventDataFieldCategory    = big.NewInt(1 << 15)
-	emailWebhookEventDataFieldSandbox     = big.NewInt(1 << 16)
-	emailWebhookEventDataFieldRecipient   = big.NewInt(1 << 17)
-	emailWebhookEventDataFieldOccurredAt  = big.NewInt(1 << 18)
-)
-
-// emailWebhookEventDataNullableFields maps the wire names of EmailWebhookEventData's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataNullableFields = map[string]*big.Int{
-	"category":  emailWebhookEventDataFieldCategory,
-	"recipient": emailWebhookEventDataFieldRecipient,
-}
-
-type EmailWebhookEventData struct {
-	Bounce    *EmailWebhookEventDataBounce    `json:"bounce,omitempty" url:"bounce,omitempty"`
-	Complaint *EmailWebhookEventDataComplaint `json:"complaint,omitempty" url:"complaint,omitempty"`
-	Delay     *EmailWebhookEventDataDelay     `json:"delay,omitempty" url:"delay,omitempty"`
-	Delivery  *EmailWebhookEventDataDelivery  `json:"delivery,omitempty" url:"delivery,omitempty"`
-	Failure   *EmailWebhookEventDataFailure   `json:"failure,omitempty" url:"failure,omitempty"`
-	// Only for `email.suppressed`: the entry that matched the recipient.
-	Suppression *EmailWebhookEventDataSuppression `json:"suppression,omitempty" url:"suppression,omitempty"`
-	// Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed (from marketing, or from the email's topic, `topic`).
-	Unsubscribe *EmailWebhookEventDataUnsubscribe `json:"unsubscribe,omitempty" url:"unsubscribe,omitempty"`
-	// Only for `email.opened`.
-	Open *EmailWebhookEventDataOpen `json:"open,omitempty" url:"open,omitempty"`
-	// Only for `email.clicked`.
-	Click *EmailWebhookEventDataClick `json:"click,omitempty" url:"click,omitempty"`
-	// Only for `email.rescheduled`.
-	Reschedule *EmailWebhookEventDataReschedule `json:"reschedule,omitempty" url:"reschedule,omitempty"`
-	EmailID    string                           `json:"email_id" url:"email_id"`
-	From       string                           `json:"from" url:"from"`
-	To         []string                         `json:"to" url:"to"`
-	Subject    string                           `json:"subject" url:"subject"`
-	Tags       []*EmailWebhookEventDataTagsItem `json:"tags" url:"tags"`
-	Category   *string                          `json:"category,omitempty" url:"category,omitempty"`
-	Sandbox    bool                             `json:"sandbox" url:"sandbox"`
-	Recipient  *string                          `json:"recipient,omitempty" url:"recipient,omitempty"`
-	OccurredAt time.Time                        `json:"occurred_at" url:"occurred_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventData) GetBounce() *EmailWebhookEventDataBounce {
-	if e == nil {
-		return nil
-	}
-	return e.Bounce
-}
-
-func (e *EmailWebhookEventData) GetComplaint() *EmailWebhookEventDataComplaint {
-	if e == nil {
-		return nil
-	}
-	return e.Complaint
-}
-
-func (e *EmailWebhookEventData) GetDelay() *EmailWebhookEventDataDelay {
-	if e == nil {
-		return nil
-	}
-	return e.Delay
-}
-
-func (e *EmailWebhookEventData) GetDelivery() *EmailWebhookEventDataDelivery {
-	if e == nil {
-		return nil
-	}
-	return e.Delivery
-}
-
-func (e *EmailWebhookEventData) GetFailure() *EmailWebhookEventDataFailure {
-	if e == nil {
-		return nil
-	}
-	return e.Failure
-}
-
-func (e *EmailWebhookEventData) GetSuppression() *EmailWebhookEventDataSuppression {
-	if e == nil {
-		return nil
-	}
-	return e.Suppression
-}
-
-func (e *EmailWebhookEventData) GetUnsubscribe() *EmailWebhookEventDataUnsubscribe {
-	if e == nil {
-		return nil
-	}
-	return e.Unsubscribe
-}
-
-func (e *EmailWebhookEventData) GetOpen() *EmailWebhookEventDataOpen {
-	if e == nil {
-		return nil
-	}
-	return e.Open
-}
-
-func (e *EmailWebhookEventData) GetClick() *EmailWebhookEventDataClick {
-	if e == nil {
-		return nil
-	}
-	return e.Click
-}
-
-func (e *EmailWebhookEventData) GetReschedule() *EmailWebhookEventDataReschedule {
-	if e == nil {
-		return nil
-	}
-	return e.Reschedule
-}
-
-func (e *EmailWebhookEventData) GetEmailID() string {
-	if e == nil {
-		return ""
-	}
-	return e.EmailID
-}
-
-func (e *EmailWebhookEventData) GetFrom() string {
-	if e == nil {
-		return ""
-	}
-	return e.From
-}
-
-func (e *EmailWebhookEventData) GetTo() []string {
-	if e == nil {
-		return nil
-	}
-	return e.To
-}
-
-func (e *EmailWebhookEventData) GetSubject() string {
-	if e == nil {
-		return ""
-	}
-	return e.Subject
-}
-
-func (e *EmailWebhookEventData) GetTags() []*EmailWebhookEventDataTagsItem {
-	if e == nil {
-		return nil
-	}
-	return e.Tags
-}
-
-func (e *EmailWebhookEventData) GetCategory() *string {
-	if e == nil {
-		return nil
-	}
-	return e.Category
-}
-
-func (e *EmailWebhookEventData) GetSandbox() bool {
-	if e == nil {
-		return false
-	}
-	return e.Sandbox
-}
-
-func (e *EmailWebhookEventData) GetRecipient() *string {
-	if e == nil {
-		return nil
-	}
-	return e.Recipient
-}
-
-func (e *EmailWebhookEventData) GetOccurredAt() time.Time {
-	if e == nil {
-		return time.Time{}
-	}
-	return e.OccurredAt
-}
-
-func (e *EmailWebhookEventData) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventData) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetBounce sets the Bounce field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetBounce(bounce *EmailWebhookEventDataBounce) {
-	e.Bounce = bounce
-	e.require(emailWebhookEventDataFieldBounce)
-}
-
-// SetComplaint sets the Complaint field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetComplaint(complaint *EmailWebhookEventDataComplaint) {
-	e.Complaint = complaint
-	e.require(emailWebhookEventDataFieldComplaint)
-}
-
-// SetDelay sets the Delay field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetDelay(delay *EmailWebhookEventDataDelay) {
-	e.Delay = delay
-	e.require(emailWebhookEventDataFieldDelay)
-}
-
-// SetDelivery sets the Delivery field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetDelivery(delivery *EmailWebhookEventDataDelivery) {
-	e.Delivery = delivery
-	e.require(emailWebhookEventDataFieldDelivery)
-}
-
-// SetFailure sets the Failure field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetFailure(failure *EmailWebhookEventDataFailure) {
-	e.Failure = failure
-	e.require(emailWebhookEventDataFieldFailure)
-}
-
-// SetSuppression sets the Suppression field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetSuppression(suppression *EmailWebhookEventDataSuppression) {
-	e.Suppression = suppression
-	e.require(emailWebhookEventDataFieldSuppression)
-}
-
-// SetUnsubscribe sets the Unsubscribe field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetUnsubscribe(unsubscribe *EmailWebhookEventDataUnsubscribe) {
-	e.Unsubscribe = unsubscribe
-	e.require(emailWebhookEventDataFieldUnsubscribe)
-}
-
-// SetOpen sets the Open field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetOpen(open *EmailWebhookEventDataOpen) {
-	e.Open = open
-	e.require(emailWebhookEventDataFieldOpen)
-}
-
-// SetClick sets the Click field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetClick(click *EmailWebhookEventDataClick) {
-	e.Click = click
-	e.require(emailWebhookEventDataFieldClick)
-}
-
-// SetReschedule sets the Reschedule field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetReschedule(reschedule *EmailWebhookEventDataReschedule) {
-	e.Reschedule = reschedule
-	e.require(emailWebhookEventDataFieldReschedule)
-}
-
-// SetEmailID sets the EmailID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetEmailID(emailID string) {
-	e.EmailID = emailID
-	e.require(emailWebhookEventDataFieldEmailID)
-}
-
-// SetFrom sets the From field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetFrom(from string) {
-	e.From = from
-	e.require(emailWebhookEventDataFieldFrom)
-}
-
-// SetTo sets the To field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetTo(to []string) {
-	e.To = to
-	e.require(emailWebhookEventDataFieldTo)
-}
-
-// SetSubject sets the Subject field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetSubject(subject string) {
-	e.Subject = subject
-	e.require(emailWebhookEventDataFieldSubject)
-}
-
-// SetTags sets the Tags field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetTags(tags []*EmailWebhookEventDataTagsItem) {
-	e.Tags = tags
-	e.require(emailWebhookEventDataFieldTags)
-}
-
-// SetCategory sets the Category field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetCategory(category *string) {
-	e.Category = category
-	e.require(emailWebhookEventDataFieldCategory)
-}
-
-// SetSandbox sets the Sandbox field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetSandbox(sandbox bool) {
-	e.Sandbox = sandbox
-	e.require(emailWebhookEventDataFieldSandbox)
-}
-
-// SetRecipient sets the Recipient field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetRecipient(recipient *string) {
-	e.Recipient = recipient
-	e.require(emailWebhookEventDataFieldRecipient)
-}
-
-// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventData) SetOccurredAt(occurredAt time.Time) {
-	e.OccurredAt = occurredAt
-	e.require(emailWebhookEventDataFieldOccurredAt)
-}
-
-func (e *EmailWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed EmailWebhookEventData
-	var unmarshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed: embed(*e),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventData(unmarshaler.embed)
-	e.OccurredAt = unmarshaler.OccurredAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventData
-	var marshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed:      embed(*e),
-		OccurredAt: internal.NewDateTime(e.OccurredAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventData) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataBounceFieldType           = big.NewInt(1 << 0)
-	emailWebhookEventDataBounceFieldSubType        = big.NewInt(1 << 1)
-	emailWebhookEventDataBounceFieldDiagnosticCode = big.NewInt(1 << 2)
-)
-
-// emailWebhookEventDataBounceNullableFields maps the wire names of EmailWebhookEventDataBounce's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataBounceNullableFields = map[string]*big.Int{
-	"diagnostic_code": emailWebhookEventDataBounceFieldDiagnosticCode,
-}
-
-type EmailWebhookEventDataBounce struct {
-	Type           EmailWebhookEventDataBounceType `json:"type" url:"type"`
-	SubType        string                          `json:"sub_type" url:"sub_type"`
-	DiagnosticCode *string                         `json:"diagnostic_code,omitempty" url:"diagnostic_code,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataBounce) GetType() EmailWebhookEventDataBounceType {
-	if e == nil {
-		return ""
-	}
-	return e.Type
-}
-
-func (e *EmailWebhookEventDataBounce) GetSubType() string {
-	if e == nil {
-		return ""
-	}
-	return e.SubType
-}
-
-func (e *EmailWebhookEventDataBounce) GetDiagnosticCode() *string {
-	if e == nil {
-		return nil
-	}
-	return e.DiagnosticCode
-}
-
-func (e *EmailWebhookEventDataBounce) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataBounce) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataBounce) SetType(type_ EmailWebhookEventDataBounceType) {
-	e.Type = type_
-	e.require(emailWebhookEventDataBounceFieldType)
-}
-
-// SetSubType sets the SubType field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataBounce) SetSubType(subType string) {
-	e.SubType = subType
-	e.require(emailWebhookEventDataBounceFieldSubType)
-}
-
-// SetDiagnosticCode sets the DiagnosticCode field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataBounce) SetDiagnosticCode(diagnosticCode *string) {
-	e.DiagnosticCode = diagnosticCode
-	e.require(emailWebhookEventDataBounceFieldDiagnosticCode)
-}
-
-func (e *EmailWebhookEventDataBounce) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataBounce
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataBounce(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataBounceNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataBounce) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataBounce
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataBounce) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-type EmailWebhookEventDataBounceType string
-
-const (
-	EmailWebhookEventDataBounceTypePermanent    EmailWebhookEventDataBounceType = "permanent"
-	EmailWebhookEventDataBounceTypeTransient    EmailWebhookEventDataBounceType = "transient"
-	EmailWebhookEventDataBounceTypeUndetermined EmailWebhookEventDataBounceType = "undetermined"
-)
-
-func NewEmailWebhookEventDataBounceTypeFromString(s string) (EmailWebhookEventDataBounceType, error) {
-	switch s {
-	case "permanent":
-		return EmailWebhookEventDataBounceTypePermanent, nil
-	case "transient":
-		return EmailWebhookEventDataBounceTypeTransient, nil
-	case "undetermined":
-		return EmailWebhookEventDataBounceTypeUndetermined, nil
-	}
-	var t EmailWebhookEventDataBounceType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (e EmailWebhookEventDataBounceType) Ptr() *EmailWebhookEventDataBounceType {
-	return &e
-}
-
-var (
-	emailWebhookEventDataClickFieldURL          = big.NewInt(1 << 0)
-	emailWebhookEventDataClickFieldLinkPosition = big.NewInt(1 << 1)
-	emailWebhookEventDataClickFieldUserAgent    = big.NewInt(1 << 2)
-)
-
-// emailWebhookEventDataClickNullableFields maps the wire names of EmailWebhookEventDataClick's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataClickNullableFields = map[string]*big.Int{
-	"user_agent": emailWebhookEventDataClickFieldUserAgent,
-}
-
-// Only for `email.clicked`.
-type EmailWebhookEventDataClick struct {
-	// The original link that was clicked.
-	URL string `json:"url" url:"url"`
-	// Index of the link among the email's tracked links.
-	LinkPosition int64   `json:"link_position" url:"link_position"`
-	UserAgent    *string `json:"user_agent,omitempty" url:"user_agent,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataClick) GetURL() string {
-	if e == nil {
-		return ""
-	}
-	return e.URL
-}
-
-func (e *EmailWebhookEventDataClick) GetLinkPosition() int64 {
-	if e == nil {
-		return 0
-	}
-	return e.LinkPosition
-}
-
-func (e *EmailWebhookEventDataClick) GetUserAgent() *string {
-	if e == nil {
-		return nil
-	}
-	return e.UserAgent
-}
-
-func (e *EmailWebhookEventDataClick) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataClick) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetURL sets the URL field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataClick) SetURL(url string) {
-	e.URL = url
-	e.require(emailWebhookEventDataClickFieldURL)
-}
-
-// SetLinkPosition sets the LinkPosition field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataClick) SetLinkPosition(linkPosition int64) {
-	e.LinkPosition = linkPosition
-	e.require(emailWebhookEventDataClickFieldLinkPosition)
-}
-
-// SetUserAgent sets the UserAgent field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataClick) SetUserAgent(userAgent *string) {
-	e.UserAgent = userAgent
-	e.require(emailWebhookEventDataClickFieldUserAgent)
-}
-
-func (e *EmailWebhookEventDataClick) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataClick
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataClick(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataClickNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataClick) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataClick
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataClick) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataComplaintFieldFeedbackType = big.NewInt(1 << 0)
-	emailWebhookEventDataComplaintFieldSubType      = big.NewInt(1 << 1)
-)
-
-// emailWebhookEventDataComplaintNullableFields maps the wire names of EmailWebhookEventDataComplaint's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataComplaintNullableFields = map[string]*big.Int{
-	"feedback_type": emailWebhookEventDataComplaintFieldFeedbackType,
-	"sub_type":      emailWebhookEventDataComplaintFieldSubType,
-}
-
-type EmailWebhookEventDataComplaint struct {
-	FeedbackType *string `json:"feedback_type,omitempty" url:"feedback_type,omitempty"`
-	SubType      *string `json:"sub_type,omitempty" url:"sub_type,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataComplaint) GetFeedbackType() *string {
-	if e == nil {
-		return nil
-	}
-	return e.FeedbackType
-}
-
-func (e *EmailWebhookEventDataComplaint) GetSubType() *string {
-	if e == nil {
-		return nil
-	}
-	return e.SubType
-}
-
-func (e *EmailWebhookEventDataComplaint) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataComplaint) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetFeedbackType sets the FeedbackType field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataComplaint) SetFeedbackType(feedbackType *string) {
-	e.FeedbackType = feedbackType
-	e.require(emailWebhookEventDataComplaintFieldFeedbackType)
-}
-
-// SetSubType sets the SubType field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataComplaint) SetSubType(subType *string) {
-	e.SubType = subType
-	e.require(emailWebhookEventDataComplaintFieldSubType)
-}
-
-func (e *EmailWebhookEventDataComplaint) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataComplaint
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataComplaint(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataComplaintNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataComplaint) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataComplaint
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataComplaint) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataDelayFieldType           = big.NewInt(1 << 0)
-	emailWebhookEventDataDelayFieldExpiresAt      = big.NewInt(1 << 1)
-	emailWebhookEventDataDelayFieldDiagnosticCode = big.NewInt(1 << 2)
-)
-
-// emailWebhookEventDataDelayNullableFields maps the wire names of EmailWebhookEventDataDelay's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataDelayNullableFields = map[string]*big.Int{
-	"expires_at":      emailWebhookEventDataDelayFieldExpiresAt,
-	"diagnostic_code": emailWebhookEventDataDelayFieldDiagnosticCode,
-}
-
-type EmailWebhookEventDataDelay struct {
-	Type           string     `json:"type" url:"type"`
-	ExpiresAt      *time.Time `json:"expires_at,omitempty" url:"expires_at,omitempty"`
-	DiagnosticCode *string    `json:"diagnostic_code,omitempty" url:"diagnostic_code,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataDelay) GetType() string {
-	if e == nil {
-		return ""
-	}
-	return e.Type
-}
-
-func (e *EmailWebhookEventDataDelay) GetExpiresAt() *time.Time {
-	if e == nil {
-		return nil
-	}
-	return e.ExpiresAt
-}
-
-func (e *EmailWebhookEventDataDelay) GetDiagnosticCode() *string {
-	if e == nil {
-		return nil
-	}
-	return e.DiagnosticCode
-}
-
-func (e *EmailWebhookEventDataDelay) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataDelay) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataDelay) SetType(type_ string) {
-	e.Type = type_
-	e.require(emailWebhookEventDataDelayFieldType)
-}
-
-// SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataDelay) SetExpiresAt(expiresAt *time.Time) {
-	e.ExpiresAt = expiresAt
-	e.require(emailWebhookEventDataDelayFieldExpiresAt)
-}
-
-// SetDiagnosticCode sets the DiagnosticCode field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataDelay) SetDiagnosticCode(diagnosticCode *string) {
-	e.DiagnosticCode = diagnosticCode
-	e.require(emailWebhookEventDataDelayFieldDiagnosticCode)
-}
-
-func (e *EmailWebhookEventDataDelay) UnmarshalJSON(data []byte) error {
-	type embed EmailWebhookEventDataDelay
-	var unmarshaler = struct {
-		embed
-		ExpiresAt *internal.DateTime `json:"expires_at,omitempty"`
-	}{
-		embed: embed(*e),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataDelay(unmarshaler.embed)
-	e.ExpiresAt = unmarshaler.ExpiresAt.TimePtr()
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataDelayNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataDelay) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataDelay
-	var marshaler = struct {
-		embed
-		ExpiresAt *internal.DateTime `json:"expires_at,omitempty"`
-	}{
-		embed:     embed(*e),
-		ExpiresAt: internal.NewOptionalDateTime(e.ExpiresAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataDelay) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataDeliveryFieldSMTPResponse = big.NewInt(1 << 0)
-)
-
-// emailWebhookEventDataDeliveryNullableFields maps the wire names of EmailWebhookEventDataDelivery's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataDeliveryNullableFields = map[string]*big.Int{
-	"smtp_response": emailWebhookEventDataDeliveryFieldSMTPResponse,
-}
-
-type EmailWebhookEventDataDelivery struct {
-	SMTPResponse *string `json:"smtp_response,omitempty" url:"smtp_response,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataDelivery) GetSMTPResponse() *string {
-	if e == nil {
-		return nil
-	}
-	return e.SMTPResponse
-}
-
-func (e *EmailWebhookEventDataDelivery) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataDelivery) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetSMTPResponse sets the SMTPResponse field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataDelivery) SetSMTPResponse(smtpResponse *string) {
-	e.SMTPResponse = smtpResponse
-	e.require(emailWebhookEventDataDeliveryFieldSMTPResponse)
-}
-
-func (e *EmailWebhookEventDataDelivery) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataDelivery
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataDelivery(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataDeliveryNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataDelivery) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataDelivery
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataDelivery) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataFailureFieldCode    = big.NewInt(1 << 0)
-	emailWebhookEventDataFailureFieldMessage = big.NewInt(1 << 1)
-)
-
-type EmailWebhookEventDataFailure struct {
-	Code    string `json:"code" url:"code"`
-	Message string `json:"message" url:"message"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataFailure) GetCode() string {
-	if e == nil {
-		return ""
-	}
-	return e.Code
-}
-
-func (e *EmailWebhookEventDataFailure) GetMessage() string {
-	if e == nil {
-		return ""
-	}
-	return e.Message
-}
-
-func (e *EmailWebhookEventDataFailure) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataFailure) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetCode sets the Code field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataFailure) SetCode(code string) {
-	e.Code = code
-	e.require(emailWebhookEventDataFailureFieldCode)
-}
-
-// SetMessage sets the Message field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataFailure) SetMessage(message string) {
-	e.Message = message
-	e.require(emailWebhookEventDataFailureFieldMessage)
-}
-
-func (e *EmailWebhookEventDataFailure) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataFailure
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataFailure(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataFailure) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataFailure
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataFailure) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataOpenFieldUserAgent = big.NewInt(1 << 0)
-)
-
-// emailWebhookEventDataOpenNullableFields maps the wire names of EmailWebhookEventDataOpen's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataOpenNullableFields = map[string]*big.Int{
-	"user_agent": emailWebhookEventDataOpenFieldUserAgent,
-}
-
-// Only for `email.opened`.
-type EmailWebhookEventDataOpen struct {
-	UserAgent *string `json:"user_agent,omitempty" url:"user_agent,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataOpen) GetUserAgent() *string {
-	if e == nil {
-		return nil
-	}
-	return e.UserAgent
-}
-
-func (e *EmailWebhookEventDataOpen) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataOpen) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetUserAgent sets the UserAgent field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataOpen) SetUserAgent(userAgent *string) {
-	e.UserAgent = userAgent
-	e.require(emailWebhookEventDataOpenFieldUserAgent)
-}
-
-func (e *EmailWebhookEventDataOpen) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataOpen
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataOpen(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataOpenNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataOpen) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataOpen
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataOpen) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataRescheduleFieldScheduledAt         = big.NewInt(1 << 0)
-	emailWebhookEventDataRescheduleFieldPreviousScheduledAt = big.NewInt(1 << 1)
-)
-
-// Only for `email.rescheduled`.
-type EmailWebhookEventDataReschedule struct {
-	// The new time.
-	ScheduledAt time.Time `json:"scheduled_at" url:"scheduled_at"`
-	// The time it replaced.
-	PreviousScheduledAt time.Time `json:"previous_scheduled_at" url:"previous_scheduled_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataReschedule) GetScheduledAt() time.Time {
-	if e == nil {
-		return time.Time{}
-	}
-	return e.ScheduledAt
-}
-
-func (e *EmailWebhookEventDataReschedule) GetPreviousScheduledAt() time.Time {
-	if e == nil {
-		return time.Time{}
-	}
-	return e.PreviousScheduledAt
-}
-
-func (e *EmailWebhookEventDataReschedule) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataReschedule) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetScheduledAt sets the ScheduledAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataReschedule) SetScheduledAt(scheduledAt time.Time) {
-	e.ScheduledAt = scheduledAt
-	e.require(emailWebhookEventDataRescheduleFieldScheduledAt)
-}
-
-// SetPreviousScheduledAt sets the PreviousScheduledAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataReschedule) SetPreviousScheduledAt(previousScheduledAt time.Time) {
-	e.PreviousScheduledAt = previousScheduledAt
-	e.require(emailWebhookEventDataRescheduleFieldPreviousScheduledAt)
-}
-
-func (e *EmailWebhookEventDataReschedule) UnmarshalJSON(data []byte) error {
-	type embed EmailWebhookEventDataReschedule
-	var unmarshaler = struct {
-		embed
-		ScheduledAt         *internal.DateTime `json:"scheduled_at"`
-		PreviousScheduledAt *internal.DateTime `json:"previous_scheduled_at"`
-	}{
-		embed: embed(*e),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataReschedule(unmarshaler.embed)
-	e.ScheduledAt = unmarshaler.ScheduledAt.Time()
-	e.PreviousScheduledAt = unmarshaler.PreviousScheduledAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataReschedule) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataReschedule
-	var marshaler = struct {
-		embed
-		ScheduledAt         *internal.DateTime `json:"scheduled_at"`
-		PreviousScheduledAt *internal.DateTime `json:"previous_scheduled_at"`
-	}{
-		embed:               embed(*e),
-		ScheduledAt:         internal.NewDateTime(e.ScheduledAt),
-		PreviousScheduledAt: internal.NewDateTime(e.PreviousScheduledAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataReschedule) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataSuppressionFieldID     = big.NewInt(1 << 0)
-	emailWebhookEventDataSuppressionFieldScope  = big.NewInt(1 << 1)
-	emailWebhookEventDataSuppressionFieldReason = big.NewInt(1 << 2)
-)
-
-// Only for `email.suppressed`: the entry that matched the recipient.
-type EmailWebhookEventDataSuppression struct {
-	ID    string `json:"id" url:"id"`
-	Scope string `json:"scope" url:"scope"`
-	// `bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.
-	Reason EmailWebhookEventDataSuppressionReason `json:"reason" url:"reason"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataSuppression) GetID() string {
-	if e == nil {
-		return ""
-	}
-	return e.ID
-}
-
-func (e *EmailWebhookEventDataSuppression) GetScope() string {
-	if e == nil {
-		return ""
-	}
-	return e.Scope
-}
-
-func (e *EmailWebhookEventDataSuppression) GetReason() EmailWebhookEventDataSuppressionReason {
-	if e == nil {
-		return ""
-	}
-	return e.Reason
-}
-
-func (e *EmailWebhookEventDataSuppression) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataSuppression) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataSuppression) SetID(id string) {
-	e.ID = id
-	e.require(emailWebhookEventDataSuppressionFieldID)
-}
-
-// SetScope sets the Scope field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataSuppression) SetScope(scope string) {
-	e.Scope = scope
-	e.require(emailWebhookEventDataSuppressionFieldScope)
-}
-
-// SetReason sets the Reason field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataSuppression) SetReason(reason EmailWebhookEventDataSuppressionReason) {
-	e.Reason = reason
-	e.require(emailWebhookEventDataSuppressionFieldReason)
-}
-
-func (e *EmailWebhookEventDataSuppression) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataSuppression
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataSuppression(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataSuppression) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataSuppression
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataSuppression) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-// `bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.
-type EmailWebhookEventDataSuppressionReason string
-
-const (
-	EmailWebhookEventDataSuppressionReasonBounce      EmailWebhookEventDataSuppressionReason = "bounce"
-	EmailWebhookEventDataSuppressionReasonComplaint   EmailWebhookEventDataSuppressionReason = "complaint"
-	EmailWebhookEventDataSuppressionReasonManual      EmailWebhookEventDataSuppressionReason = "manual"
-	EmailWebhookEventDataSuppressionReasonImport      EmailWebhookEventDataSuppressionReason = "import"
-	EmailWebhookEventDataSuppressionReasonUnsubscribe EmailWebhookEventDataSuppressionReason = "unsubscribe"
-)
-
-func NewEmailWebhookEventDataSuppressionReasonFromString(s string) (EmailWebhookEventDataSuppressionReason, error) {
-	switch s {
-	case "bounce":
-		return EmailWebhookEventDataSuppressionReasonBounce, nil
-	case "complaint":
-		return EmailWebhookEventDataSuppressionReasonComplaint, nil
-	case "manual":
-		return EmailWebhookEventDataSuppressionReasonManual, nil
-	case "import":
-		return EmailWebhookEventDataSuppressionReasonImport, nil
-	case "unsubscribe":
-		return EmailWebhookEventDataSuppressionReasonUnsubscribe, nil
-	}
-	var t EmailWebhookEventDataSuppressionReason
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (e EmailWebhookEventDataSuppressionReason) Ptr() *EmailWebhookEventDataSuppressionReason {
-	return &e
-}
-
-var (
-	emailWebhookEventDataTagsItemFieldName  = big.NewInt(1 << 0)
-	emailWebhookEventDataTagsItemFieldValue = big.NewInt(1 << 1)
-)
-
-type EmailWebhookEventDataTagsItem struct {
-	Name  string `json:"name" url:"name"`
-	Value string `json:"value" url:"value"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataTagsItem) GetName() string {
-	if e == nil {
-		return ""
-	}
-	return e.Name
-}
-
-func (e *EmailWebhookEventDataTagsItem) GetValue() string {
-	if e == nil {
-		return ""
-	}
-	return e.Value
-}
-
-func (e *EmailWebhookEventDataTagsItem) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataTagsItem) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetName sets the Name field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataTagsItem) SetName(name string) {
-	e.Name = name
-	e.require(emailWebhookEventDataTagsItemFieldName)
-}
-
-// SetValue sets the Value field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataTagsItem) SetValue(value string) {
-	e.Value = value
-	e.require(emailWebhookEventDataTagsItemFieldValue)
-}
-
-func (e *EmailWebhookEventDataTagsItem) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataTagsItem
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataTagsItem(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataTagsItem) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataTagsItem
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataTagsItem) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-var (
-	emailWebhookEventDataUnsubscribeFieldContactID = big.NewInt(1 << 0)
-	emailWebhookEventDataUnsubscribeFieldTopic     = big.NewInt(1 << 1)
-)
-
-// emailWebhookEventDataUnsubscribeNullableFields maps the wire names of EmailWebhookEventDataUnsubscribe's nullable fields (required or optional) to their field bits.
-var emailWebhookEventDataUnsubscribeNullableFields = map[string]*big.Int{
-	"contact_id": emailWebhookEventDataUnsubscribeFieldContactID,
-	"topic":      emailWebhookEventDataUnsubscribeFieldTopic,
-}
-
-// Only for `email.suppressed` without `suppression`: the recipient is a contact who unsubscribed (from marketing, or from the email's topic, `topic`).
-type EmailWebhookEventDataUnsubscribe struct {
-	ContactID *string `json:"contact_id,omitempty" url:"contact_id,omitempty"`
-	Topic     *string `json:"topic,omitempty" url:"topic,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) GetContactID() *string {
-	if e == nil {
-		return nil
-	}
-	return e.ContactID
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) GetTopic() *string {
-	if e == nil {
-		return nil
-	}
-	return e.Topic
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) GetExtraProperties() map[string]interface{} {
-	if e == nil {
-		return nil
-	}
-	return e.extraProperties
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) require(field *big.Int) {
-	next := new(big.Int)
-	if e.explicitFields != nil {
-		next.Set(e.explicitFields)
-	}
-	next.Or(next, field)
-	e.explicitFields = next
-}
-
-// SetContactID sets the ContactID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataUnsubscribe) SetContactID(contactID *string) {
-	e.ContactID = contactID
-	e.require(emailWebhookEventDataUnsubscribeFieldContactID)
-}
-
-// SetTopic sets the Topic field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EmailWebhookEventDataUnsubscribe) SetTopic(topic *string) {
-	e.Topic = topic
-	e.require(emailWebhookEventDataUnsubscribeFieldTopic)
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) UnmarshalJSON(data []byte) error {
-	type unmarshaler EmailWebhookEventDataUnsubscribe
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*e = EmailWebhookEventDataUnsubscribe(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *e)
-	if err != nil {
-		return err
-	}
-	e.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, emailWebhookEventDataUnsubscribeNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		e.require(presentFields)
-	}
-	e.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) MarshalJSON() ([]byte, error) {
-	type embed EmailWebhookEventDataUnsubscribe
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*e),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, e.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (e *EmailWebhookEventDataUnsubscribe) String() string {
-	if e == nil {
-		return "<nil>"
-	}
-	if len(e.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(e.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(e); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", e)
-}
-
-type EmailWebhookEventObject string
-
-const (
-	EmailWebhookEventObjectEvent EmailWebhookEventObject = "event"
-)
-
-func NewEmailWebhookEventObjectFromString(s string) (EmailWebhookEventObject, error) {
-	switch s {
-	case "event":
-		return EmailWebhookEventObjectEvent, nil
-	}
-	var t EmailWebhookEventObject
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (e EmailWebhookEventObject) Ptr() *EmailWebhookEventObject {
-	return &e
-}
-
-type EmailWebhookEventType string
-
-const (
-	EmailWebhookEventTypeEmailSent            EmailWebhookEventType = "email.sent"
-	EmailWebhookEventTypeEmailDelivered       EmailWebhookEventType = "email.delivered"
-	EmailWebhookEventTypeEmailDeliveryDelayed EmailWebhookEventType = "email.delivery_delayed"
-	EmailWebhookEventTypeEmailBounced         EmailWebhookEventType = "email.bounced"
-	EmailWebhookEventTypeEmailComplained      EmailWebhookEventType = "email.complained"
-	EmailWebhookEventTypeEmailFailed          EmailWebhookEventType = "email.failed"
-	EmailWebhookEventTypeEmailSuppressed      EmailWebhookEventType = "email.suppressed"
-	EmailWebhookEventTypeEmailScheduled       EmailWebhookEventType = "email.scheduled"
-	EmailWebhookEventTypeEmailCanceled        EmailWebhookEventType = "email.canceled"
-	EmailWebhookEventTypeEmailOpened          EmailWebhookEventType = "email.opened"
-	EmailWebhookEventTypeEmailClicked         EmailWebhookEventType = "email.clicked"
-	EmailWebhookEventTypeEmailRescheduled     EmailWebhookEventType = "email.rescheduled"
-	EmailWebhookEventTypeEmailUnsubscribed    EmailWebhookEventType = "email.unsubscribed"
-)
-
-func NewEmailWebhookEventTypeFromString(s string) (EmailWebhookEventType, error) {
-	switch s {
-	case "email.sent":
-		return EmailWebhookEventTypeEmailSent, nil
-	case "email.delivered":
-		return EmailWebhookEventTypeEmailDelivered, nil
-	case "email.delivery_delayed":
-		return EmailWebhookEventTypeEmailDeliveryDelayed, nil
-	case "email.bounced":
-		return EmailWebhookEventTypeEmailBounced, nil
-	case "email.complained":
-		return EmailWebhookEventTypeEmailComplained, nil
-	case "email.failed":
-		return EmailWebhookEventTypeEmailFailed, nil
-	case "email.suppressed":
-		return EmailWebhookEventTypeEmailSuppressed, nil
-	case "email.scheduled":
-		return EmailWebhookEventTypeEmailScheduled, nil
-	case "email.canceled":
-		return EmailWebhookEventTypeEmailCanceled, nil
-	case "email.opened":
-		return EmailWebhookEventTypeEmailOpened, nil
-	case "email.clicked":
-		return EmailWebhookEventTypeEmailClicked, nil
-	case "email.rescheduled":
-		return EmailWebhookEventTypeEmailRescheduled, nil
-	case "email.unsubscribed":
-		return EmailWebhookEventTypeEmailUnsubscribed, nil
-	}
-	var t EmailWebhookEventType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (e EmailWebhookEventType) Ptr() *EmailWebhookEventType {
-	return &e
 }
 
 var (
@@ -23992,410 +22165,6 @@ func (h HookEndpointSecretObject) Ptr() *HookEndpointSecretObject {
 }
 
 var (
-	hookEndpointWebhookEventFieldID         = big.NewInt(1 << 0)
-	hookEndpointWebhookEventFieldObject     = big.NewInt(1 << 1)
-	hookEndpointWebhookEventFieldType       = big.NewInt(1 << 2)
-	hookEndpointWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	hookEndpointWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	hookEndpointWebhookEventFieldData       = big.NewInt(1 << 5)
-)
-
-type HookEndpointWebhookEvent struct {
-	// The event id, also sent as the `webhook-id` header.
-	ID     string                         `json:"id" url:"id"`
-	Object HookEndpointWebhookEventObject `json:"object" url:"object"`
-	Type   HookEndpointWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                        `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time                     `json:"created_at" url:"created_at"`
-	Data       *HookEndpointWebhookEventData `json:"data" url:"data"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (h *HookEndpointWebhookEvent) GetID() string {
-	if h == nil {
-		return ""
-	}
-	return h.ID
-}
-
-func (h *HookEndpointWebhookEvent) GetObject() HookEndpointWebhookEventObject {
-	if h == nil {
-		return ""
-	}
-	return h.Object
-}
-
-func (h *HookEndpointWebhookEvent) GetType() HookEndpointWebhookEventType {
-	if h == nil {
-		return ""
-	}
-	return h.Type
-}
-
-func (h *HookEndpointWebhookEvent) GetAPIVersion() string {
-	if h == nil {
-		return ""
-	}
-	return h.APIVersion
-}
-
-func (h *HookEndpointWebhookEvent) GetCreatedAt() time.Time {
-	if h == nil {
-		return time.Time{}
-	}
-	return h.CreatedAt
-}
-
-func (h *HookEndpointWebhookEvent) GetData() *HookEndpointWebhookEventData {
-	if h == nil {
-		return nil
-	}
-	return h.Data
-}
-
-func (h *HookEndpointWebhookEvent) GetExtraProperties() map[string]interface{} {
-	if h == nil {
-		return nil
-	}
-	return h.extraProperties
-}
-
-func (h *HookEndpointWebhookEvent) require(field *big.Int) {
-	next := new(big.Int)
-	if h.explicitFields != nil {
-		next.Set(h.explicitFields)
-	}
-	next.Or(next, field)
-	h.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetID(id string) {
-	h.ID = id
-	h.require(hookEndpointWebhookEventFieldID)
-}
-
-// SetObject sets the Object field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetObject(object HookEndpointWebhookEventObject) {
-	h.Object = object
-	h.require(hookEndpointWebhookEventFieldObject)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetType(type_ HookEndpointWebhookEventType) {
-	h.Type = type_
-	h.require(hookEndpointWebhookEventFieldType)
-}
-
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetAPIVersion(apiVersion string) {
-	h.APIVersion = apiVersion
-	h.require(hookEndpointWebhookEventFieldAPIVersion)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetCreatedAt(createdAt time.Time) {
-	h.CreatedAt = createdAt
-	h.require(hookEndpointWebhookEventFieldCreatedAt)
-}
-
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEvent) SetData(data *HookEndpointWebhookEventData) {
-	h.Data = data
-	h.require(hookEndpointWebhookEventFieldData)
-}
-
-func (h *HookEndpointWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed HookEndpointWebhookEvent
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed: embed(*h),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*h = HookEndpointWebhookEvent(unmarshaler.embed)
-	h.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *h)
-	if err != nil {
-		return err
-	}
-	h.extraProperties = extraProperties
-	h.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (h *HookEndpointWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed HookEndpointWebhookEvent
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed:     embed(*h),
-		CreatedAt: internal.NewDateTime(h.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, h.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (h *HookEndpointWebhookEvent) String() string {
-	if h == nil {
-		return "<nil>"
-	}
-	if len(h.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(h.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(h); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", h)
-}
-
-var (
-	hookEndpointWebhookEventDataFieldApplicationID  = big.NewInt(1 << 0)
-	hookEndpointWebhookEventDataFieldApplicationUID = big.NewInt(1 << 1)
-	hookEndpointWebhookEventDataFieldEndpointID     = big.NewInt(1 << 2)
-	hookEndpointWebhookEventDataFieldURL            = big.NewInt(1 << 3)
-	hookEndpointWebhookEventDataFieldFailingSince   = big.NewInt(1 << 4)
-	hookEndpointWebhookEventDataFieldOccurredAt     = big.NewInt(1 << 5)
-)
-
-// hookEndpointWebhookEventDataNullableFields maps the wire names of HookEndpointWebhookEventData's nullable fields (required or optional) to their field bits.
-var hookEndpointWebhookEventDataNullableFields = map[string]*big.Int{
-	"application_uid": hookEndpointWebhookEventDataFieldApplicationUID,
-}
-
-type HookEndpointWebhookEventData struct {
-	ApplicationID  string    `json:"application_id" url:"application_id"`
-	ApplicationUID *string   `json:"application_uid,omitempty" url:"application_uid,omitempty"`
-	EndpointID     string    `json:"endpoint_id" url:"endpoint_id"`
-	URL            string    `json:"url" url:"url"`
-	FailingSince   time.Time `json:"failing_since" url:"failing_since"`
-	OccurredAt     time.Time `json:"occurred_at" url:"occurred_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (h *HookEndpointWebhookEventData) GetApplicationID() string {
-	if h == nil {
-		return ""
-	}
-	return h.ApplicationID
-}
-
-func (h *HookEndpointWebhookEventData) GetApplicationUID() *string {
-	if h == nil {
-		return nil
-	}
-	return h.ApplicationUID
-}
-
-func (h *HookEndpointWebhookEventData) GetEndpointID() string {
-	if h == nil {
-		return ""
-	}
-	return h.EndpointID
-}
-
-func (h *HookEndpointWebhookEventData) GetURL() string {
-	if h == nil {
-		return ""
-	}
-	return h.URL
-}
-
-func (h *HookEndpointWebhookEventData) GetFailingSince() time.Time {
-	if h == nil {
-		return time.Time{}
-	}
-	return h.FailingSince
-}
-
-func (h *HookEndpointWebhookEventData) GetOccurredAt() time.Time {
-	if h == nil {
-		return time.Time{}
-	}
-	return h.OccurredAt
-}
-
-func (h *HookEndpointWebhookEventData) GetExtraProperties() map[string]interface{} {
-	if h == nil {
-		return nil
-	}
-	return h.extraProperties
-}
-
-func (h *HookEndpointWebhookEventData) require(field *big.Int) {
-	next := new(big.Int)
-	if h.explicitFields != nil {
-		next.Set(h.explicitFields)
-	}
-	next.Or(next, field)
-	h.explicitFields = next
-}
-
-// SetApplicationID sets the ApplicationID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetApplicationID(applicationID string) {
-	h.ApplicationID = applicationID
-	h.require(hookEndpointWebhookEventDataFieldApplicationID)
-}
-
-// SetApplicationUID sets the ApplicationUID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetApplicationUID(applicationUID *string) {
-	h.ApplicationUID = applicationUID
-	h.require(hookEndpointWebhookEventDataFieldApplicationUID)
-}
-
-// SetEndpointID sets the EndpointID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetEndpointID(endpointID string) {
-	h.EndpointID = endpointID
-	h.require(hookEndpointWebhookEventDataFieldEndpointID)
-}
-
-// SetURL sets the URL field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetURL(url string) {
-	h.URL = url
-	h.require(hookEndpointWebhookEventDataFieldURL)
-}
-
-// SetFailingSince sets the FailingSince field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetFailingSince(failingSince time.Time) {
-	h.FailingSince = failingSince
-	h.require(hookEndpointWebhookEventDataFieldFailingSince)
-}
-
-// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (h *HookEndpointWebhookEventData) SetOccurredAt(occurredAt time.Time) {
-	h.OccurredAt = occurredAt
-	h.require(hookEndpointWebhookEventDataFieldOccurredAt)
-}
-
-func (h *HookEndpointWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed HookEndpointWebhookEventData
-	var unmarshaler = struct {
-		embed
-		FailingSince *internal.DateTime `json:"failing_since"`
-		OccurredAt   *internal.DateTime `json:"occurred_at"`
-	}{
-		embed: embed(*h),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*h = HookEndpointWebhookEventData(unmarshaler.embed)
-	h.FailingSince = unmarshaler.FailingSince.Time()
-	h.OccurredAt = unmarshaler.OccurredAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *h)
-	if err != nil {
-		return err
-	}
-	h.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, hookEndpointWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		h.require(presentFields)
-	}
-	h.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (h *HookEndpointWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed HookEndpointWebhookEventData
-	var marshaler = struct {
-		embed
-		FailingSince *internal.DateTime `json:"failing_since"`
-		OccurredAt   *internal.DateTime `json:"occurred_at"`
-	}{
-		embed:        embed(*h),
-		FailingSince: internal.NewDateTime(h.FailingSince),
-		OccurredAt:   internal.NewDateTime(h.OccurredAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, h.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (h *HookEndpointWebhookEventData) String() string {
-	if h == nil {
-		return "<nil>"
-	}
-	if len(h.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(h.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(h); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", h)
-}
-
-type HookEndpointWebhookEventObject string
-
-const (
-	HookEndpointWebhookEventObjectEvent HookEndpointWebhookEventObject = "event"
-)
-
-func NewHookEndpointWebhookEventObjectFromString(s string) (HookEndpointWebhookEventObject, error) {
-	switch s {
-	case "event":
-		return HookEndpointWebhookEventObjectEvent, nil
-	}
-	var t HookEndpointWebhookEventObject
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (h HookEndpointWebhookEventObject) Ptr() *HookEndpointWebhookEventObject {
-	return &h
-}
-
-type HookEndpointWebhookEventType string
-
-const (
-	HookEndpointWebhookEventTypeHookEndpointDisabled HookEndpointWebhookEventType = "hook_endpoint.disabled"
-)
-
-func NewHookEndpointWebhookEventTypeFromString(s string) (HookEndpointWebhookEventType, error) {
-	switch s {
-	case "hook_endpoint.disabled":
-		return HookEndpointWebhookEventTypeHookEndpointDisabled, nil
-	}
-	var t HookEndpointWebhookEventType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (h HookEndpointWebhookEventType) Ptr() *HookEndpointWebhookEventType {
-	return &h
-}
-
-var (
 	hookEndpointWithSecretFieldObject                  = big.NewInt(1 << 0)
 	hookEndpointWithSecretFieldID                      = big.NewInt(1 << 1)
 	hookEndpointWithSecretFieldApplicationID           = big.NewInt(1 << 2)
@@ -26725,6 +24494,9 @@ const (
 	InvoiceLineMeterEmailRecipients         InvoiceLineMeter = "email.recipients"
 	InvoiceLineMeterEmailDedicatedIP        InvoiceLineMeter = "email.dedicated_ip"
 	InvoiceLineMeterSmsSegments             InvoiceLineMeter = "sms.segments"
+	InvoiceLineMeterSmsReceivedSegments     InvoiceLineMeter = "sms.received_segments"
+	InvoiceLineMeterSmsNumbers              InvoiceLineMeter = "sms.numbers"
+	InvoiceLineMeterSmsRegistrations        InvoiceLineMeter = "sms.registrations"
 	InvoiceLineMeterVideoParticipantMinutes InvoiceLineMeter = "video.participant_minutes"
 	InvoiceLineMeterSchedulingBookings      InvoiceLineMeter = "scheduling.bookings"
 )
@@ -26737,6 +24509,12 @@ func NewInvoiceLineMeterFromString(s string) (InvoiceLineMeter, error) {
 		return InvoiceLineMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return InvoiceLineMeterSmsSegments, nil
+	case "sms.received_segments":
+		return InvoiceLineMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return InvoiceLineMeterSmsNumbers, nil
+	case "sms.registrations":
+		return InvoiceLineMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return InvoiceLineMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -30920,23 +28698,35 @@ func (r ReceivedEmailVerdictsVirus) Ptr() *ReceivedEmailVerdictsVirus {
 }
 
 var (
-	receivedEmailWebhookEventFieldID         = big.NewInt(1 << 0)
-	receivedEmailWebhookEventFieldObject     = big.NewInt(1 << 1)
-	receivedEmailWebhookEventFieldType       = big.NewInt(1 << 2)
-	receivedEmailWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	receivedEmailWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	receivedEmailWebhookEventFieldData       = big.NewInt(1 << 5)
+	receivedSmsFieldObject    = big.NewInt(1 << 0)
+	receivedSmsFieldID        = big.NewInt(1 << 1)
+	receivedSmsFieldFrom      = big.NewInt(1 << 2)
+	receivedSmsFieldTo        = big.NewInt(1 << 3)
+	receivedSmsFieldBody      = big.NewInt(1 << 4)
+	receivedSmsFieldSegments  = big.NewInt(1 << 5)
+	receivedSmsFieldKeyword   = big.NewInt(1 << 6)
+	receivedSmsFieldSandbox   = big.NewInt(1 << 7)
+	receivedSmsFieldCreatedAt = big.NewInt(1 << 8)
 )
 
-type ReceivedEmailWebhookEvent struct {
-	// The event id, and the `webhook-id` header.
-	ID     string                          `json:"id" url:"id"`
-	Object ReceivedEmailWebhookEventObject `json:"object" url:"object"`
-	Type   ReceivedEmailWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                         `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time                      `json:"created_at" url:"created_at"`
-	Data       *ReceivedEmailWebhookEventData `json:"data" url:"data"`
+// receivedSmsNullableFields maps the wire names of ReceivedSms's nullable fields (required or optional) to their field bits.
+var receivedSmsNullableFields = map[string]*big.Int{
+	"keyword": receivedSmsFieldKeyword,
+}
+
+type ReceivedSms struct {
+	Object ReceivedSmsObject `json:"object" url:"object"`
+	ID     string            `json:"id" url:"id"`
+	// Who sent it.
+	From string `json:"from" url:"from"`
+	// Your number that received it.
+	To       string `json:"to" url:"to"`
+	Body     string `json:"body" url:"body"`
+	Segments int64  `json:"segments" url:"segments"`
+	// `stop`: an opt-out (the sender is suppressed in every live environment), `start`: an opt-in again, `help`: a request for help. Twilio answers each.
+	Keyword   *ReceivedSmsKeyword `json:"keyword,omitempty" url:"keyword,omitempty"`
+	Sandbox   bool                `json:"sandbox" url:"sandbox"`
+	CreatedAt time.Time           `json:"created_at" url:"created_at"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -30945,56 +28735,77 @@ type ReceivedEmailWebhookEvent struct {
 	rawJSON         json.RawMessage
 }
 
-func (r *ReceivedEmailWebhookEvent) GetID() string {
-	if r == nil {
-		return ""
-	}
-	return r.ID
-}
-
-func (r *ReceivedEmailWebhookEvent) GetObject() ReceivedEmailWebhookEventObject {
+func (r *ReceivedSms) GetObject() ReceivedSmsObject {
 	if r == nil {
 		return ""
 	}
 	return r.Object
 }
 
-func (r *ReceivedEmailWebhookEvent) GetType() ReceivedEmailWebhookEventType {
+func (r *ReceivedSms) GetID() string {
 	if r == nil {
 		return ""
 	}
-	return r.Type
+	return r.ID
 }
 
-func (r *ReceivedEmailWebhookEvent) GetAPIVersion() string {
+func (r *ReceivedSms) GetFrom() string {
 	if r == nil {
 		return ""
 	}
-	return r.APIVersion
+	return r.From
 }
 
-func (r *ReceivedEmailWebhookEvent) GetCreatedAt() time.Time {
+func (r *ReceivedSms) GetTo() string {
+	if r == nil {
+		return ""
+	}
+	return r.To
+}
+
+func (r *ReceivedSms) GetBody() string {
+	if r == nil {
+		return ""
+	}
+	return r.Body
+}
+
+func (r *ReceivedSms) GetSegments() int64 {
+	if r == nil {
+		return 0
+	}
+	return r.Segments
+}
+
+func (r *ReceivedSms) GetKeyword() *ReceivedSmsKeyword {
+	if r == nil {
+		return nil
+	}
+	return r.Keyword
+}
+
+func (r *ReceivedSms) GetSandbox() bool {
+	if r == nil {
+		return false
+	}
+	return r.Sandbox
+}
+
+func (r *ReceivedSms) GetCreatedAt() time.Time {
 	if r == nil {
 		return time.Time{}
 	}
 	return r.CreatedAt
 }
 
-func (r *ReceivedEmailWebhookEvent) GetData() *ReceivedEmailWebhookEventData {
-	if r == nil {
-		return nil
-	}
-	return r.Data
-}
-
-func (r *ReceivedEmailWebhookEvent) GetExtraProperties() map[string]interface{} {
+func (r *ReceivedSms) GetExtraProperties() map[string]interface{} {
 	if r == nil {
 		return nil
 	}
 	return r.extraProperties
 }
 
-func (r *ReceivedEmailWebhookEvent) require(field *big.Int) {
+func (r *ReceivedSms) require(field *big.Int) {
 	next := new(big.Int)
 	if r.explicitFields != nil {
 		next.Set(r.explicitFields)
@@ -31003,50 +28814,71 @@ func (r *ReceivedEmailWebhookEvent) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetID(id string) {
-	r.ID = id
-	r.require(receivedEmailWebhookEventFieldID)
-}
-
 // SetObject sets the Object field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetObject(object ReceivedEmailWebhookEventObject) {
+func (r *ReceivedSms) SetObject(object ReceivedSmsObject) {
 	r.Object = object
-	r.require(receivedEmailWebhookEventFieldObject)
+	r.require(receivedSmsFieldObject)
 }
 
-// SetType sets the Type field and marks it as non-optional;
+// SetID sets the ID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetType(type_ ReceivedEmailWebhookEventType) {
-	r.Type = type_
-	r.require(receivedEmailWebhookEventFieldType)
+func (r *ReceivedSms) SetID(id string) {
+	r.ID = id
+	r.require(receivedSmsFieldID)
 }
 
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// SetFrom sets the From field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetAPIVersion(apiVersion string) {
-	r.APIVersion = apiVersion
-	r.require(receivedEmailWebhookEventFieldAPIVersion)
+func (r *ReceivedSms) SetFrom(from string) {
+	r.From = from
+	r.require(receivedSmsFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReceivedSms) SetTo(to string) {
+	r.To = to
+	r.require(receivedSmsFieldTo)
+}
+
+// SetBody sets the Body field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReceivedSms) SetBody(body string) {
+	r.Body = body
+	r.require(receivedSmsFieldBody)
+}
+
+// SetSegments sets the Segments field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReceivedSms) SetSegments(segments int64) {
+	r.Segments = segments
+	r.require(receivedSmsFieldSegments)
+}
+
+// SetKeyword sets the Keyword field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReceivedSms) SetKeyword(keyword *ReceivedSmsKeyword) {
+	r.Keyword = keyword
+	r.require(receivedSmsFieldKeyword)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReceivedSms) SetSandbox(sandbox bool) {
+	r.Sandbox = sandbox
+	r.require(receivedSmsFieldSandbox)
 }
 
 // SetCreatedAt sets the CreatedAt field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetCreatedAt(createdAt time.Time) {
+func (r *ReceivedSms) SetCreatedAt(createdAt time.Time) {
 	r.CreatedAt = createdAt
-	r.require(receivedEmailWebhookEventFieldCreatedAt)
+	r.require(receivedSmsFieldCreatedAt)
 }
 
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEvent) SetData(data *ReceivedEmailWebhookEventData) {
-	r.Data = data
-	r.require(receivedEmailWebhookEventFieldData)
-}
-
-func (r *ReceivedEmailWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed ReceivedEmailWebhookEvent
+func (r *ReceivedSms) UnmarshalJSON(data []byte) error {
+	type embed ReceivedSms
 	var unmarshaler = struct {
 		embed
 		CreatedAt *internal.DateTime `json:"created_at"`
@@ -31056,19 +28888,26 @@ func (r *ReceivedEmailWebhookEvent) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &unmarshaler); err != nil {
 		return err
 	}
-	*r = ReceivedEmailWebhookEvent(unmarshaler.embed)
+	*r = ReceivedSms(unmarshaler.embed)
 	r.CreatedAt = unmarshaler.CreatedAt.Time()
 	extraProperties, err := internal.ExtractExtraProperties(data, *r)
 	if err != nil {
 		return err
 	}
 	r.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, receivedSmsNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		r.require(presentFields)
+	}
 	r.rawJSON = json.RawMessage(data)
 	return nil
 }
 
-func (r *ReceivedEmailWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed ReceivedEmailWebhookEvent
+func (r *ReceivedSms) MarshalJSON() ([]byte, error) {
+	type embed ReceivedSms
 	var marshaler = struct {
 		embed
 		CreatedAt *internal.DateTime `json:"created_at"`
@@ -31080,7 +28919,7 @@ func (r *ReceivedEmailWebhookEvent) MarshalJSON() ([]byte, error) {
 	return json.Marshal(explicitMarshaler)
 }
 
-func (r *ReceivedEmailWebhookEvent) String() string {
+func (r *ReceivedSms) String() string {
 	if r == nil {
 		return "<nil>"
 	}
@@ -31095,41 +28934,42 @@ func (r *ReceivedEmailWebhookEvent) String() string {
 	return fmt.Sprintf("%#v", r)
 }
 
-var (
-	receivedEmailWebhookEventDataFieldReceivedEmailID = big.NewInt(1 << 0)
-	receivedEmailWebhookEventDataFieldFrom            = big.NewInt(1 << 1)
-	receivedEmailWebhookEventDataFieldTo              = big.NewInt(1 << 2)
-	receivedEmailWebhookEventDataFieldRecipients      = big.NewInt(1 << 3)
-	receivedEmailWebhookEventDataFieldSubject         = big.NewInt(1 << 4)
-	receivedEmailWebhookEventDataFieldMessageID       = big.NewInt(1 << 5)
-	receivedEmailWebhookEventDataFieldAttachmentCount = big.NewInt(1 << 6)
-	receivedEmailWebhookEventDataFieldSize            = big.NewInt(1 << 7)
-	receivedEmailWebhookEventDataFieldSpam            = big.NewInt(1 << 8)
-	receivedEmailWebhookEventDataFieldVerdicts        = big.NewInt(1 << 9)
-	receivedEmailWebhookEventDataFieldSandbox         = big.NewInt(1 << 10)
-	receivedEmailWebhookEventDataFieldReceivedAt      = big.NewInt(1 << 11)
+// `stop`: an opt-out (the sender is suppressed in every live environment), `start`: an opt-in again, `help`: a request for help. Twilio answers each.
+type ReceivedSmsKeyword string
+
+const (
+	ReceivedSmsKeywordStop  ReceivedSmsKeyword = "stop"
+	ReceivedSmsKeywordStart ReceivedSmsKeyword = "start"
+	ReceivedSmsKeywordHelp  ReceivedSmsKeyword = "help"
 )
 
-// receivedEmailWebhookEventDataNullableFields maps the wire names of ReceivedEmailWebhookEventData's nullable fields (required or optional) to their field bits.
-var receivedEmailWebhookEventDataNullableFields = map[string]*big.Int{
-	"from":       receivedEmailWebhookEventDataFieldFrom,
-	"subject":    receivedEmailWebhookEventDataFieldSubject,
-	"message_id": receivedEmailWebhookEventDataFieldMessageID,
+func NewReceivedSmsKeywordFromString(s string) (ReceivedSmsKeyword, error) {
+	switch s {
+	case "stop":
+		return ReceivedSmsKeywordStop, nil
+	case "start":
+		return ReceivedSmsKeywordStart, nil
+	case "help":
+		return ReceivedSmsKeywordHelp, nil
+	}
+	var t ReceivedSmsKeyword
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
 }
 
-type ReceivedEmailWebhookEventData struct {
-	ReceivedEmailID string                 `json:"received_email_id" url:"received_email_id"`
-	From            *string                `json:"from,omitempty" url:"from,omitempty"`
-	To              []string               `json:"to" url:"to"`
-	Recipients      []string               `json:"recipients" url:"recipients"`
-	Subject         *string                `json:"subject,omitempty" url:"subject,omitempty"`
-	MessageID       *string                `json:"message_id,omitempty" url:"message_id,omitempty"`
-	AttachmentCount int64                  `json:"attachment_count" url:"attachment_count"`
-	Size            int64                  `json:"size" url:"size"`
-	Spam            bool                   `json:"spam" url:"spam"`
-	Verdicts        *ReceivedEmailVerdicts `json:"verdicts" url:"verdicts"`
-	Sandbox         bool                   `json:"sandbox" url:"sandbox"`
-	ReceivedAt      time.Time              `json:"received_at" url:"received_at"`
+func (r ReceivedSmsKeyword) Ptr() *ReceivedSmsKeyword {
+	return &r
+}
+
+var (
+	receivedSmsListFieldObject  = big.NewInt(1 << 0)
+	receivedSmsListFieldData    = big.NewInt(1 << 1)
+	receivedSmsListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type ReceivedSmsList struct {
+	Object  ReceivedSmsListObject `json:"object" url:"object"`
+	Data    []*ReceivedSms        `json:"data" url:"data"`
+	HasMore bool                  `json:"has_more" url:"has_more"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31138,98 +28978,35 @@ type ReceivedEmailWebhookEventData struct {
 	rawJSON         json.RawMessage
 }
 
-func (r *ReceivedEmailWebhookEventData) GetReceivedEmailID() string {
+func (r *ReceivedSmsList) GetObject() ReceivedSmsListObject {
 	if r == nil {
 		return ""
 	}
-	return r.ReceivedEmailID
+	return r.Object
 }
 
-func (r *ReceivedEmailWebhookEventData) GetFrom() *string {
+func (r *ReceivedSmsList) GetData() []*ReceivedSms {
 	if r == nil {
 		return nil
 	}
-	return r.From
+	return r.Data
 }
 
-func (r *ReceivedEmailWebhookEventData) GetTo() []string {
-	if r == nil {
-		return nil
-	}
-	return r.To
-}
-
-func (r *ReceivedEmailWebhookEventData) GetRecipients() []string {
-	if r == nil {
-		return nil
-	}
-	return r.Recipients
-}
-
-func (r *ReceivedEmailWebhookEventData) GetSubject() *string {
-	if r == nil {
-		return nil
-	}
-	return r.Subject
-}
-
-func (r *ReceivedEmailWebhookEventData) GetMessageID() *string {
-	if r == nil {
-		return nil
-	}
-	return r.MessageID
-}
-
-func (r *ReceivedEmailWebhookEventData) GetAttachmentCount() int64 {
-	if r == nil {
-		return 0
-	}
-	return r.AttachmentCount
-}
-
-func (r *ReceivedEmailWebhookEventData) GetSize() int64 {
-	if r == nil {
-		return 0
-	}
-	return r.Size
-}
-
-func (r *ReceivedEmailWebhookEventData) GetSpam() bool {
+func (r *ReceivedSmsList) GetHasMore() bool {
 	if r == nil {
 		return false
 	}
-	return r.Spam
+	return r.HasMore
 }
 
-func (r *ReceivedEmailWebhookEventData) GetVerdicts() *ReceivedEmailVerdicts {
-	if r == nil {
-		return nil
-	}
-	return r.Verdicts
-}
-
-func (r *ReceivedEmailWebhookEventData) GetSandbox() bool {
-	if r == nil {
-		return false
-	}
-	return r.Sandbox
-}
-
-func (r *ReceivedEmailWebhookEventData) GetReceivedAt() time.Time {
-	if r == nil {
-		return time.Time{}
-	}
-	return r.ReceivedAt
-}
-
-func (r *ReceivedEmailWebhookEventData) GetExtraProperties() map[string]interface{} {
+func (r *ReceivedSmsList) GetExtraProperties() map[string]interface{} {
 	if r == nil {
 		return nil
 	}
 	return r.extraProperties
 }
 
-func (r *ReceivedEmailWebhookEventData) require(field *big.Int) {
+func (r *ReceivedSmsList) require(field *big.Int) {
 	next := new(big.Int)
 	if r.explicitFields != nil {
 		next.Set(r.explicitFields)
@@ -31238,133 +29015,55 @@ func (r *ReceivedEmailWebhookEventData) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetReceivedEmailID sets the ReceivedEmailID field and marks it as non-optional;
+// SetObject sets the Object field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetReceivedEmailID(receivedEmailID string) {
-	r.ReceivedEmailID = receivedEmailID
-	r.require(receivedEmailWebhookEventDataFieldReceivedEmailID)
+func (r *ReceivedSmsList) SetObject(object ReceivedSmsListObject) {
+	r.Object = object
+	r.require(receivedSmsListFieldObject)
 }
 
-// SetFrom sets the From field and marks it as non-optional;
+// SetData sets the Data field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetFrom(from *string) {
-	r.From = from
-	r.require(receivedEmailWebhookEventDataFieldFrom)
+func (r *ReceivedSmsList) SetData(data []*ReceivedSms) {
+	r.Data = data
+	r.require(receivedSmsListFieldData)
 }
 
-// SetTo sets the To field and marks it as non-optional;
+// SetHasMore sets the HasMore field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetTo(to []string) {
-	r.To = to
-	r.require(receivedEmailWebhookEventDataFieldTo)
+func (r *ReceivedSmsList) SetHasMore(hasMore bool) {
+	r.HasMore = hasMore
+	r.require(receivedSmsListFieldHasMore)
 }
 
-// SetRecipients sets the Recipients field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetRecipients(recipients []string) {
-	r.Recipients = recipients
-	r.require(receivedEmailWebhookEventDataFieldRecipients)
-}
-
-// SetSubject sets the Subject field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetSubject(subject *string) {
-	r.Subject = subject
-	r.require(receivedEmailWebhookEventDataFieldSubject)
-}
-
-// SetMessageID sets the MessageID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetMessageID(messageID *string) {
-	r.MessageID = messageID
-	r.require(receivedEmailWebhookEventDataFieldMessageID)
-}
-
-// SetAttachmentCount sets the AttachmentCount field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetAttachmentCount(attachmentCount int64) {
-	r.AttachmentCount = attachmentCount
-	r.require(receivedEmailWebhookEventDataFieldAttachmentCount)
-}
-
-// SetSize sets the Size field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetSize(size int64) {
-	r.Size = size
-	r.require(receivedEmailWebhookEventDataFieldSize)
-}
-
-// SetSpam sets the Spam field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetSpam(spam bool) {
-	r.Spam = spam
-	r.require(receivedEmailWebhookEventDataFieldSpam)
-}
-
-// SetVerdicts sets the Verdicts field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetVerdicts(verdicts *ReceivedEmailVerdicts) {
-	r.Verdicts = verdicts
-	r.require(receivedEmailWebhookEventDataFieldVerdicts)
-}
-
-// SetSandbox sets the Sandbox field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetSandbox(sandbox bool) {
-	r.Sandbox = sandbox
-	r.require(receivedEmailWebhookEventDataFieldSandbox)
-}
-
-// SetReceivedAt sets the ReceivedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReceivedEmailWebhookEventData) SetReceivedAt(receivedAt time.Time) {
-	r.ReceivedAt = receivedAt
-	r.require(receivedEmailWebhookEventDataFieldReceivedAt)
-}
-
-func (r *ReceivedEmailWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed ReceivedEmailWebhookEventData
-	var unmarshaler = struct {
-		embed
-		ReceivedAt *internal.DateTime `json:"received_at"`
-	}{
-		embed: embed(*r),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+func (r *ReceivedSmsList) UnmarshalJSON(data []byte) error {
+	type unmarshaler ReceivedSmsList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*r = ReceivedEmailWebhookEventData(unmarshaler.embed)
-	r.ReceivedAt = unmarshaler.ReceivedAt.Time()
+	*r = ReceivedSmsList(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *r)
 	if err != nil {
 		return err
 	}
 	r.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, receivedEmailWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		r.require(presentFields)
-	}
 	r.rawJSON = json.RawMessage(data)
 	return nil
 }
 
-func (r *ReceivedEmailWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed ReceivedEmailWebhookEventData
+func (r *ReceivedSmsList) MarshalJSON() ([]byte, error) {
+	type embed ReceivedSmsList
 	var marshaler = struct {
 		embed
-		ReceivedAt *internal.DateTime `json:"received_at"`
 	}{
-		embed:      embed(*r),
-		ReceivedAt: internal.NewDateTime(r.ReceivedAt),
+		embed: embed(*r),
 	}
 	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
 	return json.Marshal(explicitMarshaler)
 }
 
-func (r *ReceivedEmailWebhookEventData) String() string {
+func (r *ReceivedSmsList) String() string {
 	if r == nil {
 		return "<nil>"
 	}
@@ -31379,41 +29078,41 @@ func (r *ReceivedEmailWebhookEventData) String() string {
 	return fmt.Sprintf("%#v", r)
 }
 
-type ReceivedEmailWebhookEventObject string
+type ReceivedSmsListObject string
 
 const (
-	ReceivedEmailWebhookEventObjectEvent ReceivedEmailWebhookEventObject = "event"
+	ReceivedSmsListObjectList ReceivedSmsListObject = "list"
 )
 
-func NewReceivedEmailWebhookEventObjectFromString(s string) (ReceivedEmailWebhookEventObject, error) {
+func NewReceivedSmsListObjectFromString(s string) (ReceivedSmsListObject, error) {
 	switch s {
-	case "event":
-		return ReceivedEmailWebhookEventObjectEvent, nil
+	case "list":
+		return ReceivedSmsListObjectList, nil
 	}
-	var t ReceivedEmailWebhookEventObject
+	var t ReceivedSmsListObject
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
 }
 
-func (r ReceivedEmailWebhookEventObject) Ptr() *ReceivedEmailWebhookEventObject {
+func (r ReceivedSmsListObject) Ptr() *ReceivedSmsListObject {
 	return &r
 }
 
-type ReceivedEmailWebhookEventType string
+type ReceivedSmsObject string
 
 const (
-	ReceivedEmailWebhookEventTypeEmailReceived ReceivedEmailWebhookEventType = "email.received"
+	ReceivedSmsObjectReceivedSms ReceivedSmsObject = "received_sms"
 )
 
-func NewReceivedEmailWebhookEventTypeFromString(s string) (ReceivedEmailWebhookEventType, error) {
+func NewReceivedSmsObjectFromString(s string) (ReceivedSmsObject, error) {
 	switch s {
-	case "email.received":
-		return ReceivedEmailWebhookEventTypeEmailReceived, nil
+	case "received_sms":
+		return ReceivedSmsObjectReceivedSms, nil
 	}
-	var t ReceivedEmailWebhookEventType
+	var t ReceivedSmsObject
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
 }
 
-func (r ReceivedEmailWebhookEventType) Ptr() *ReceivedEmailWebhookEventType {
+func (r ReceivedSmsObject) Ptr() *ReceivedSmsObject {
 	return &r
 }
 
@@ -31811,6 +29510,223 @@ func NewReceivingDomainRecordTypeFromString(s string) (ReceivingDomainRecordType
 }
 
 func (r ReceivingDomainRecordType) Ptr() *ReceivingDomainRecordType {
+	return &r
+}
+
+var (
+	renderedEmailTemplateFieldObject     = big.NewInt(1 << 0)
+	renderedEmailTemplateFieldTemplateID = big.NewInt(1 << 1)
+	renderedEmailTemplateFieldVersion    = big.NewInt(1 << 2)
+	renderedEmailTemplateFieldLocale     = big.NewInt(1 << 3)
+	renderedEmailTemplateFieldSubject    = big.NewInt(1 << 4)
+	renderedEmailTemplateFieldHTML       = big.NewInt(1 << 5)
+	renderedEmailTemplateFieldText       = big.NewInt(1 << 6)
+)
+
+// renderedEmailTemplateNullableFields maps the wire names of RenderedEmailTemplate's nullable fields (required or optional) to their field bits.
+var renderedEmailTemplateNullableFields = map[string]*big.Int{
+	"version": renderedEmailTemplateFieldVersion,
+	"html":    renderedEmailTemplateFieldHTML,
+	"text":    renderedEmailTemplateFieldText,
+}
+
+type RenderedEmailTemplate struct {
+	Object     RenderedEmailTemplateObject `json:"object" url:"object"`
+	TemplateID string                      `json:"template_id" url:"template_id"`
+	// The version rendered; `null` for the draft.
+	Version *int64 `json:"version,omitempty" url:"version,omitempty"`
+	// The locale rendered.
+	Locale  string  `json:"locale" url:"locale"`
+	Subject string  `json:"subject" url:"subject"`
+	HTML    *string `json:"html,omitempty" url:"html,omitempty"`
+	Text    *string `json:"text,omitempty" url:"text,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *RenderedEmailTemplate) GetObject() RenderedEmailTemplateObject {
+	if r == nil {
+		return ""
+	}
+	return r.Object
+}
+
+func (r *RenderedEmailTemplate) GetTemplateID() string {
+	if r == nil {
+		return ""
+	}
+	return r.TemplateID
+}
+
+func (r *RenderedEmailTemplate) GetVersion() *int64 {
+	if r == nil {
+		return nil
+	}
+	return r.Version
+}
+
+func (r *RenderedEmailTemplate) GetLocale() string {
+	if r == nil {
+		return ""
+	}
+	return r.Locale
+}
+
+func (r *RenderedEmailTemplate) GetSubject() string {
+	if r == nil {
+		return ""
+	}
+	return r.Subject
+}
+
+func (r *RenderedEmailTemplate) GetHTML() *string {
+	if r == nil {
+		return nil
+	}
+	return r.HTML
+}
+
+func (r *RenderedEmailTemplate) GetText() *string {
+	if r == nil {
+		return nil
+	}
+	return r.Text
+}
+
+func (r *RenderedEmailTemplate) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *RenderedEmailTemplate) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetObject(object RenderedEmailTemplateObject) {
+	r.Object = object
+	r.require(renderedEmailTemplateFieldObject)
+}
+
+// SetTemplateID sets the TemplateID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetTemplateID(templateID string) {
+	r.TemplateID = templateID
+	r.require(renderedEmailTemplateFieldTemplateID)
+}
+
+// SetVersion sets the Version field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetVersion(version *int64) {
+	r.Version = version
+	r.require(renderedEmailTemplateFieldVersion)
+}
+
+// SetLocale sets the Locale field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetLocale(locale string) {
+	r.Locale = locale
+	r.require(renderedEmailTemplateFieldLocale)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetSubject(subject string) {
+	r.Subject = subject
+	r.require(renderedEmailTemplateFieldSubject)
+}
+
+// SetHTML sets the HTML field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetHTML(html *string) {
+	r.HTML = html
+	r.require(renderedEmailTemplateFieldHTML)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderedEmailTemplate) SetText(text *string) {
+	r.Text = text
+	r.require(renderedEmailTemplateFieldText)
+}
+
+func (r *RenderedEmailTemplate) UnmarshalJSON(data []byte) error {
+	type unmarshaler RenderedEmailTemplate
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = RenderedEmailTemplate(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, renderedEmailTemplateNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		r.require(presentFields)
+	}
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *RenderedEmailTemplate) MarshalJSON() ([]byte, error) {
+	type embed RenderedEmailTemplate
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *RenderedEmailTemplate) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
+}
+
+type RenderedEmailTemplateObject string
+
+const (
+	RenderedEmailTemplateObjectEmailTemplateRender RenderedEmailTemplateObject = "email_template_render"
+)
+
+func NewRenderedEmailTemplateObjectFromString(s string) (RenderedEmailTemplateObject, error) {
+	switch s {
+	case "email_template_render":
+		return RenderedEmailTemplateObjectEmailTemplateRender, nil
+	}
+	var t RenderedEmailTemplateObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r RenderedEmailTemplateObject) Ptr() *RenderedEmailTemplateObject {
 	return &r
 }
 
@@ -37940,460 +35856,6 @@ func (r *RiskSettingsReasonWeights) String() string {
 type RiskVelocitySignals = map[string]int64
 
 var (
-	riskWebhookEventFieldID         = big.NewInt(1 << 0)
-	riskWebhookEventFieldObject     = big.NewInt(1 << 1)
-	riskWebhookEventFieldType       = big.NewInt(1 << 2)
-	riskWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
-	riskWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
-	riskWebhookEventFieldData       = big.NewInt(1 << 5)
-)
-
-type RiskWebhookEvent struct {
-	// The event id, also sent as the `webhook-id` header.
-	ID     string                 `json:"id" url:"id"`
-	Object RiskWebhookEventObject `json:"object" url:"object"`
-	Type   RiskWebhookEventType   `json:"type" url:"type"`
-	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
-	APIVersion string                `json:"api_version" url:"api_version"`
-	CreatedAt  time.Time             `json:"created_at" url:"created_at"`
-	Data       *RiskWebhookEventData `json:"data" url:"data"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (r *RiskWebhookEvent) GetID() string {
-	if r == nil {
-		return ""
-	}
-	return r.ID
-}
-
-func (r *RiskWebhookEvent) GetObject() RiskWebhookEventObject {
-	if r == nil {
-		return ""
-	}
-	return r.Object
-}
-
-func (r *RiskWebhookEvent) GetType() RiskWebhookEventType {
-	if r == nil {
-		return ""
-	}
-	return r.Type
-}
-
-func (r *RiskWebhookEvent) GetAPIVersion() string {
-	if r == nil {
-		return ""
-	}
-	return r.APIVersion
-}
-
-func (r *RiskWebhookEvent) GetCreatedAt() time.Time {
-	if r == nil {
-		return time.Time{}
-	}
-	return r.CreatedAt
-}
-
-func (r *RiskWebhookEvent) GetData() *RiskWebhookEventData {
-	if r == nil {
-		return nil
-	}
-	return r.Data
-}
-
-func (r *RiskWebhookEvent) GetExtraProperties() map[string]interface{} {
-	if r == nil {
-		return nil
-	}
-	return r.extraProperties
-}
-
-func (r *RiskWebhookEvent) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetID sets the ID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetID(id string) {
-	r.ID = id
-	r.require(riskWebhookEventFieldID)
-}
-
-// SetObject sets the Object field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetObject(object RiskWebhookEventObject) {
-	r.Object = object
-	r.require(riskWebhookEventFieldObject)
-}
-
-// SetType sets the Type field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetType(type_ RiskWebhookEventType) {
-	r.Type = type_
-	r.require(riskWebhookEventFieldType)
-}
-
-// SetAPIVersion sets the APIVersion field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetAPIVersion(apiVersion string) {
-	r.APIVersion = apiVersion
-	r.require(riskWebhookEventFieldAPIVersion)
-}
-
-// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetCreatedAt(createdAt time.Time) {
-	r.CreatedAt = createdAt
-	r.require(riskWebhookEventFieldCreatedAt)
-}
-
-// SetData sets the Data field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEvent) SetData(data *RiskWebhookEventData) {
-	r.Data = data
-	r.require(riskWebhookEventFieldData)
-}
-
-func (r *RiskWebhookEvent) UnmarshalJSON(data []byte) error {
-	type embed RiskWebhookEvent
-	var unmarshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed: embed(*r),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*r = RiskWebhookEvent(unmarshaler.embed)
-	r.CreatedAt = unmarshaler.CreatedAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *r)
-	if err != nil {
-		return err
-	}
-	r.extraProperties = extraProperties
-	r.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (r *RiskWebhookEvent) MarshalJSON() ([]byte, error) {
-	type embed RiskWebhookEvent
-	var marshaler = struct {
-		embed
-		CreatedAt *internal.DateTime `json:"created_at"`
-	}{
-		embed:     embed(*r),
-		CreatedAt: internal.NewDateTime(r.CreatedAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (r *RiskWebhookEvent) String() string {
-	if r == nil {
-		return "<nil>"
-	}
-	if len(r.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(r); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", r)
-}
-
-var (
-	riskWebhookEventDataFieldAssessmentID = big.NewInt(1 << 0)
-	riskWebhookEventDataFieldEvent        = big.NewInt(1 << 1)
-	riskWebhookEventDataFieldEventName    = big.NewInt(1 << 2)
-	riskWebhookEventDataFieldDecision     = big.NewInt(1 << 3)
-	riskWebhookEventDataFieldScore        = big.NewInt(1 << 4)
-	riskWebhookEventDataFieldReasons      = big.NewInt(1 << 5)
-	riskWebhookEventDataFieldUserID       = big.NewInt(1 << 6)
-	riskWebhookEventDataFieldOutcome      = big.NewInt(1 << 7)
-	riskWebhookEventDataFieldOccurredAt   = big.NewInt(1 << 8)
-)
-
-// riskWebhookEventDataNullableFields maps the wire names of RiskWebhookEventData's nullable fields (required or optional) to their field bits.
-var riskWebhookEventDataNullableFields = map[string]*big.Int{
-	"event_name": riskWebhookEventDataFieldEventName,
-	"user_id":    riskWebhookEventDataFieldUserID,
-	"outcome":    riskWebhookEventDataFieldOutcome,
-}
-
-type RiskWebhookEventData struct {
-	AssessmentID string        `json:"assessment_id" url:"assessment_id"`
-	Event        RiskEvent     `json:"event" url:"event"`
-	EventName    *string       `json:"event_name,omitempty" url:"event_name,omitempty"`
-	Decision     RiskDecision  `json:"decision" url:"decision"`
-	Score        float64       `json:"score" url:"score"`
-	Reasons      []*RiskReason `json:"reasons" url:"reasons"`
-	UserID       *string       `json:"user_id,omitempty" url:"user_id,omitempty"`
-	// `risk.assessment.reviewed`: the outcome that resolved the review.
-	Outcome    *RiskOutcome `json:"outcome,omitempty" url:"outcome,omitempty"`
-	OccurredAt time.Time    `json:"occurred_at" url:"occurred_at"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (r *RiskWebhookEventData) GetAssessmentID() string {
-	if r == nil {
-		return ""
-	}
-	return r.AssessmentID
-}
-
-func (r *RiskWebhookEventData) GetEvent() RiskEvent {
-	if r == nil {
-		return ""
-	}
-	return r.Event
-}
-
-func (r *RiskWebhookEventData) GetEventName() *string {
-	if r == nil {
-		return nil
-	}
-	return r.EventName
-}
-
-func (r *RiskWebhookEventData) GetDecision() RiskDecision {
-	if r == nil {
-		return ""
-	}
-	return r.Decision
-}
-
-func (r *RiskWebhookEventData) GetScore() float64 {
-	if r == nil {
-		return 0
-	}
-	return r.Score
-}
-
-func (r *RiskWebhookEventData) GetReasons() []*RiskReason {
-	if r == nil {
-		return nil
-	}
-	return r.Reasons
-}
-
-func (r *RiskWebhookEventData) GetUserID() *string {
-	if r == nil {
-		return nil
-	}
-	return r.UserID
-}
-
-func (r *RiskWebhookEventData) GetOutcome() *RiskOutcome {
-	if r == nil {
-		return nil
-	}
-	return r.Outcome
-}
-
-func (r *RiskWebhookEventData) GetOccurredAt() time.Time {
-	if r == nil {
-		return time.Time{}
-	}
-	return r.OccurredAt
-}
-
-func (r *RiskWebhookEventData) GetExtraProperties() map[string]interface{} {
-	if r == nil {
-		return nil
-	}
-	return r.extraProperties
-}
-
-func (r *RiskWebhookEventData) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetAssessmentID sets the AssessmentID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetAssessmentID(assessmentID string) {
-	r.AssessmentID = assessmentID
-	r.require(riskWebhookEventDataFieldAssessmentID)
-}
-
-// SetEvent sets the Event field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetEvent(event RiskEvent) {
-	r.Event = event
-	r.require(riskWebhookEventDataFieldEvent)
-}
-
-// SetEventName sets the EventName field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetEventName(eventName *string) {
-	r.EventName = eventName
-	r.require(riskWebhookEventDataFieldEventName)
-}
-
-// SetDecision sets the Decision field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetDecision(decision RiskDecision) {
-	r.Decision = decision
-	r.require(riskWebhookEventDataFieldDecision)
-}
-
-// SetScore sets the Score field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetScore(score float64) {
-	r.Score = score
-	r.require(riskWebhookEventDataFieldScore)
-}
-
-// SetReasons sets the Reasons field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetReasons(reasons []*RiskReason) {
-	r.Reasons = reasons
-	r.require(riskWebhookEventDataFieldReasons)
-}
-
-// SetUserID sets the UserID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetUserID(userID *string) {
-	r.UserID = userID
-	r.require(riskWebhookEventDataFieldUserID)
-}
-
-// SetOutcome sets the Outcome field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetOutcome(outcome *RiskOutcome) {
-	r.Outcome = outcome
-	r.require(riskWebhookEventDataFieldOutcome)
-}
-
-// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RiskWebhookEventData) SetOccurredAt(occurredAt time.Time) {
-	r.OccurredAt = occurredAt
-	r.require(riskWebhookEventDataFieldOccurredAt)
-}
-
-func (r *RiskWebhookEventData) UnmarshalJSON(data []byte) error {
-	type embed RiskWebhookEventData
-	var unmarshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed: embed(*r),
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	*r = RiskWebhookEventData(unmarshaler.embed)
-	r.OccurredAt = unmarshaler.OccurredAt.Time()
-	extraProperties, err := internal.ExtractExtraProperties(data, *r)
-	if err != nil {
-		return err
-	}
-	r.extraProperties = extraProperties
-	presentFields, err := internal.ExplicitFieldsFromJSON(data, riskWebhookEventDataNullableFields)
-	if err != nil {
-		return err
-	}
-	if presentFields != nil {
-		r.require(presentFields)
-	}
-	r.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (r *RiskWebhookEventData) MarshalJSON() ([]byte, error) {
-	type embed RiskWebhookEventData
-	var marshaler = struct {
-		embed
-		OccurredAt *internal.DateTime `json:"occurred_at"`
-	}{
-		embed:      embed(*r),
-		OccurredAt: internal.NewDateTime(r.OccurredAt),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (r *RiskWebhookEventData) String() string {
-	if r == nil {
-		return "<nil>"
-	}
-	if len(r.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(r); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", r)
-}
-
-type RiskWebhookEventObject string
-
-const (
-	RiskWebhookEventObjectEvent RiskWebhookEventObject = "event"
-)
-
-func NewRiskWebhookEventObjectFromString(s string) (RiskWebhookEventObject, error) {
-	switch s {
-	case "event":
-		return RiskWebhookEventObjectEvent, nil
-	}
-	var t RiskWebhookEventObject
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (r RiskWebhookEventObject) Ptr() *RiskWebhookEventObject {
-	return &r
-}
-
-type RiskWebhookEventType string
-
-const (
-	RiskWebhookEventTypeRiskAssessmentReview   RiskWebhookEventType = "risk.assessment.review"
-	RiskWebhookEventTypeRiskAssessmentReviewed RiskWebhookEventType = "risk.assessment.reviewed"
-)
-
-func NewRiskWebhookEventTypeFromString(s string) (RiskWebhookEventType, error) {
-	switch s {
-	case "risk.assessment.review":
-		return RiskWebhookEventTypeRiskAssessmentReview, nil
-	case "risk.assessment.reviewed":
-		return RiskWebhookEventTypeRiskAssessmentReviewed, nil
-	}
-	var t RiskWebhookEventType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (r RiskWebhookEventType) Ptr() *RiskWebhookEventType {
-	return &r
-}
-
-var (
 	segmentFieldObject    = big.NewInt(1 << 0)
 	segmentFieldID        = big.NewInt(1 << 1)
 	segmentFieldName      = big.NewInt(1 << 2)
@@ -41456,6 +38918,1449 @@ func NewSegmentObjectFromString(s string) (SegmentObject, error) {
 }
 
 func (s SegmentObject) Ptr() *SegmentObject {
+	return &s
+}
+
+var (
+	smsNumberFieldObject             = big.NewInt(1 << 0)
+	smsNumberFieldID                 = big.NewInt(1 << 1)
+	smsNumberFieldPhoneNumber        = big.NewInt(1 << 2)
+	smsNumberFieldKind               = big.NewInt(1 << 3)
+	smsNumberFieldCountry            = big.NewInt(1 << 4)
+	smsNumberFieldStatus             = big.NewInt(1 << 5)
+	smsNumberFieldRegistrationStatus = big.NewInt(1 << 6)
+	smsNumberFieldCanSend            = big.NewInt(1 << 7)
+	smsNumberFieldReceivesHere       = big.NewInt(1 << 8)
+	smsNumberFieldCreatedAt          = big.NewInt(1 << 9)
+)
+
+// smsNumberNullableFields maps the wire names of SmsNumber's nullable fields (required or optional) to their field bits.
+var smsNumberNullableFields = map[string]*big.Int{
+	"registration_status": smsNumberFieldRegistrationStatus,
+}
+
+type SmsNumber struct {
+	Object      SmsNumberObject `json:"object" url:"object"`
+	ID          string          `json:"id" url:"id"`
+	PhoneNumber string          `json:"phone_number" url:"phone_number"`
+	Kind        SmsNumberKind   `json:"kind" url:"kind"`
+	Country     string          `json:"country" url:"country"`
+	Status      SmsNumberStatus `json:"status" url:"status"`
+	// Its carrier registration's status; live sends need `approved`.
+	RegistrationStatus *SmsNumberRegistrationStatus `json:"registration_status,omitempty" url:"registration_status,omitempty"`
+	// Whether live sends can go from it now.
+	CanSend bool `json:"can_send" url:"can_send"`
+	// Whether replies to it arrive in the environment of the key making the request.
+	ReceivesHere bool      `json:"receives_here" url:"receives_here"`
+	CreatedAt    time.Time `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsNumber) GetObject() SmsNumberObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsNumber) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SmsNumber) GetPhoneNumber() string {
+	if s == nil {
+		return ""
+	}
+	return s.PhoneNumber
+}
+
+func (s *SmsNumber) GetKind() SmsNumberKind {
+	if s == nil {
+		return ""
+	}
+	return s.Kind
+}
+
+func (s *SmsNumber) GetCountry() string {
+	if s == nil {
+		return ""
+	}
+	return s.Country
+}
+
+func (s *SmsNumber) GetStatus() SmsNumberStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SmsNumber) GetRegistrationStatus() *SmsNumberRegistrationStatus {
+	if s == nil {
+		return nil
+	}
+	return s.RegistrationStatus
+}
+
+func (s *SmsNumber) GetCanSend() bool {
+	if s == nil {
+		return false
+	}
+	return s.CanSend
+}
+
+func (s *SmsNumber) GetReceivesHere() bool {
+	if s == nil {
+		return false
+	}
+	return s.ReceivesHere
+}
+
+func (s *SmsNumber) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SmsNumber) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsNumber) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetObject(object SmsNumberObject) {
+	s.Object = object
+	s.require(smsNumberFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetID(id string) {
+	s.ID = id
+	s.require(smsNumberFieldID)
+}
+
+// SetPhoneNumber sets the PhoneNumber field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetPhoneNumber(phoneNumber string) {
+	s.PhoneNumber = phoneNumber
+	s.require(smsNumberFieldPhoneNumber)
+}
+
+// SetKind sets the Kind field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetKind(kind SmsNumberKind) {
+	s.Kind = kind
+	s.require(smsNumberFieldKind)
+}
+
+// SetCountry sets the Country field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetCountry(country string) {
+	s.Country = country
+	s.require(smsNumberFieldCountry)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetStatus(status SmsNumberStatus) {
+	s.Status = status
+	s.require(smsNumberFieldStatus)
+}
+
+// SetRegistrationStatus sets the RegistrationStatus field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetRegistrationStatus(registrationStatus *SmsNumberRegistrationStatus) {
+	s.RegistrationStatus = registrationStatus
+	s.require(smsNumberFieldRegistrationStatus)
+}
+
+// SetCanSend sets the CanSend field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetCanSend(canSend bool) {
+	s.CanSend = canSend
+	s.require(smsNumberFieldCanSend)
+}
+
+// SetReceivesHere sets the ReceivesHere field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetReceivesHere(receivesHere bool) {
+	s.ReceivesHere = receivesHere
+	s.require(smsNumberFieldReceivesHere)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumber) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(smsNumberFieldCreatedAt)
+}
+
+func (s *SmsNumber) UnmarshalJSON(data []byte) error {
+	type embed SmsNumber
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SmsNumber(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, smsNumberNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsNumber) MarshalJSON() ([]byte, error) {
+	type embed SmsNumber
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsNumber) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SmsNumberKind string
+
+const (
+	SmsNumberKindLocal    SmsNumberKind = "local"
+	SmsNumberKindTollFree SmsNumberKind = "toll_free"
+)
+
+func NewSmsNumberKindFromString(s string) (SmsNumberKind, error) {
+	switch s {
+	case "local":
+		return SmsNumberKindLocal, nil
+	case "toll_free":
+		return SmsNumberKindTollFree, nil
+	}
+	var t SmsNumberKind
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsNumberKind) Ptr() *SmsNumberKind {
+	return &s
+}
+
+var (
+	smsNumberListFieldObject  = big.NewInt(1 << 0)
+	smsNumberListFieldData    = big.NewInt(1 << 1)
+	smsNumberListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SmsNumberList struct {
+	Object  SmsNumberListObject `json:"object" url:"object"`
+	Data    []*SmsNumber        `json:"data" url:"data"`
+	HasMore bool                `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsNumberList) GetObject() SmsNumberListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsNumberList) GetData() []*SmsNumber {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SmsNumberList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SmsNumberList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsNumberList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumberList) SetObject(object SmsNumberListObject) {
+	s.Object = object
+	s.require(smsNumberListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumberList) SetData(data []*SmsNumber) {
+	s.Data = data
+	s.require(smsNumberListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsNumberList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(smsNumberListFieldHasMore)
+}
+
+func (s *SmsNumberList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SmsNumberList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SmsNumberList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsNumberList) MarshalJSON() ([]byte, error) {
+	type embed SmsNumberList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsNumberList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SmsNumberListObject string
+
+const (
+	SmsNumberListObjectList SmsNumberListObject = "list"
+)
+
+func NewSmsNumberListObjectFromString(s string) (SmsNumberListObject, error) {
+	switch s {
+	case "list":
+		return SmsNumberListObjectList, nil
+	}
+	var t SmsNumberListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsNumberListObject) Ptr() *SmsNumberListObject {
+	return &s
+}
+
+type SmsNumberObject string
+
+const (
+	SmsNumberObjectSmsNumber SmsNumberObject = "sms_number"
+)
+
+func NewSmsNumberObjectFromString(s string) (SmsNumberObject, error) {
+	switch s {
+	case "sms_number":
+		return SmsNumberObjectSmsNumber, nil
+	}
+	var t SmsNumberObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsNumberObject) Ptr() *SmsNumberObject {
+	return &s
+}
+
+// Its carrier registration's status; live sends need `approved`.
+type SmsNumberRegistrationStatus string
+
+const (
+	SmsNumberRegistrationStatusDraft     SmsNumberRegistrationStatus = "draft"
+	SmsNumberRegistrationStatusSubmitted SmsNumberRegistrationStatus = "submitted"
+	SmsNumberRegistrationStatusInReview  SmsNumberRegistrationStatus = "in_review"
+	SmsNumberRegistrationStatusApproved  SmsNumberRegistrationStatus = "approved"
+	SmsNumberRegistrationStatusRejected  SmsNumberRegistrationStatus = "rejected"
+	SmsNumberRegistrationStatusFailed    SmsNumberRegistrationStatus = "failed"
+)
+
+func NewSmsNumberRegistrationStatusFromString(s string) (SmsNumberRegistrationStatus, error) {
+	switch s {
+	case "draft":
+		return SmsNumberRegistrationStatusDraft, nil
+	case "submitted":
+		return SmsNumberRegistrationStatusSubmitted, nil
+	case "in_review":
+		return SmsNumberRegistrationStatusInReview, nil
+	case "approved":
+		return SmsNumberRegistrationStatusApproved, nil
+	case "rejected":
+		return SmsNumberRegistrationStatusRejected, nil
+	case "failed":
+		return SmsNumberRegistrationStatusFailed, nil
+	}
+	var t SmsNumberRegistrationStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsNumberRegistrationStatus) Ptr() *SmsNumberRegistrationStatus {
+	return &s
+}
+
+type SmsNumberStatus string
+
+const (
+	SmsNumberStatusPending   SmsNumberStatus = "pending"
+	SmsNumberStatusActive    SmsNumberStatus = "active"
+	SmsNumberStatusReleasing SmsNumberStatus = "releasing"
+)
+
+func NewSmsNumberStatusFromString(s string) (SmsNumberStatus, error) {
+	switch s {
+	case "pending":
+		return SmsNumberStatusPending, nil
+	case "active":
+		return SmsNumberStatusActive, nil
+	case "releasing":
+		return SmsNumberStatusReleasing, nil
+	}
+	var t SmsNumberStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsNumberStatus) Ptr() *SmsNumberStatus {
+	return &s
+}
+
+var (
+	smsSuppressionFieldObject      = big.NewInt(1 << 0)
+	smsSuppressionFieldID          = big.NewInt(1 << 1)
+	smsSuppressionFieldPhoneNumber = big.NewInt(1 << 2)
+	smsSuppressionFieldReason      = big.NewInt(1 << 3)
+	smsSuppressionFieldSmsID       = big.NewInt(1 << 4)
+	smsSuppressionFieldCreatedAt   = big.NewInt(1 << 5)
+)
+
+// smsSuppressionNullableFields maps the wire names of SmsSuppression's nullable fields (required or optional) to their field bits.
+var smsSuppressionNullableFields = map[string]*big.Int{
+	"sms_id": smsSuppressionFieldSmsID,
+}
+
+type SmsSuppression struct {
+	Object      SmsSuppressionObject `json:"object" url:"object"`
+	ID          string               `json:"id" url:"id"`
+	PhoneNumber string               `json:"phone_number" url:"phone_number"`
+	// `opt_out`: the number replied STOP (or the carrier says it opted out). `invalid_number`: not a number that can receive SMS. `manual`: added by you.
+	Reason SmsSuppressionReason `json:"reason" url:"reason"`
+	// The message whose failure added it, if any.
+	SmsID     *string   `json:"sms_id,omitempty" url:"sms_id,omitempty"`
+	CreatedAt time.Time `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsSuppression) GetObject() SmsSuppressionObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsSuppression) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SmsSuppression) GetPhoneNumber() string {
+	if s == nil {
+		return ""
+	}
+	return s.PhoneNumber
+}
+
+func (s *SmsSuppression) GetReason() SmsSuppressionReason {
+	if s == nil {
+		return ""
+	}
+	return s.Reason
+}
+
+func (s *SmsSuppression) GetSmsID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SmsID
+}
+
+func (s *SmsSuppression) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SmsSuppression) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsSuppression) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetObject(object SmsSuppressionObject) {
+	s.Object = object
+	s.require(smsSuppressionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetID(id string) {
+	s.ID = id
+	s.require(smsSuppressionFieldID)
+}
+
+// SetPhoneNumber sets the PhoneNumber field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetPhoneNumber(phoneNumber string) {
+	s.PhoneNumber = phoneNumber
+	s.require(smsSuppressionFieldPhoneNumber)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetReason(reason SmsSuppressionReason) {
+	s.Reason = reason
+	s.require(smsSuppressionFieldReason)
+}
+
+// SetSmsID sets the SmsID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetSmsID(smsID *string) {
+	s.SmsID = smsID
+	s.require(smsSuppressionFieldSmsID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppression) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(smsSuppressionFieldCreatedAt)
+}
+
+func (s *SmsSuppression) UnmarshalJSON(data []byte) error {
+	type embed SmsSuppression
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SmsSuppression(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, smsSuppressionNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsSuppression) MarshalJSON() ([]byte, error) {
+	type embed SmsSuppression
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsSuppression) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	smsSuppressionCheckFieldObject      = big.NewInt(1 << 0)
+	smsSuppressionCheckFieldPhoneNumber = big.NewInt(1 << 1)
+	smsSuppressionCheckFieldSuppressed  = big.NewInt(1 << 2)
+	smsSuppressionCheckFieldSuppression = big.NewInt(1 << 3)
+)
+
+// smsSuppressionCheckNullableFields maps the wire names of SmsSuppressionCheck's nullable fields (required or optional) to their field bits.
+var smsSuppressionCheckNullableFields = map[string]*big.Int{
+	"suppression": smsSuppressionCheckFieldSuppression,
+}
+
+type SmsSuppressionCheck struct {
+	Object      SmsSuppressionCheckObject `json:"object" url:"object"`
+	PhoneNumber string                    `json:"phone_number" url:"phone_number"`
+	// Whether a send to this number would be skipped.
+	Suppressed  bool                            `json:"suppressed" url:"suppressed"`
+	Suppression *SmsSuppressionCheckSuppression `json:"suppression,omitempty" url:"suppression,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsSuppressionCheck) GetObject() SmsSuppressionCheckObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsSuppressionCheck) GetPhoneNumber() string {
+	if s == nil {
+		return ""
+	}
+	return s.PhoneNumber
+}
+
+func (s *SmsSuppressionCheck) GetSuppressed() bool {
+	if s == nil {
+		return false
+	}
+	return s.Suppressed
+}
+
+func (s *SmsSuppressionCheck) GetSuppression() *SmsSuppressionCheckSuppression {
+	if s == nil {
+		return nil
+	}
+	return s.Suppression
+}
+
+func (s *SmsSuppressionCheck) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsSuppressionCheck) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheck) SetObject(object SmsSuppressionCheckObject) {
+	s.Object = object
+	s.require(smsSuppressionCheckFieldObject)
+}
+
+// SetPhoneNumber sets the PhoneNumber field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheck) SetPhoneNumber(phoneNumber string) {
+	s.PhoneNumber = phoneNumber
+	s.require(smsSuppressionCheckFieldPhoneNumber)
+}
+
+// SetSuppressed sets the Suppressed field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheck) SetSuppressed(suppressed bool) {
+	s.Suppressed = suppressed
+	s.require(smsSuppressionCheckFieldSuppressed)
+}
+
+// SetSuppression sets the Suppression field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheck) SetSuppression(suppression *SmsSuppressionCheckSuppression) {
+	s.Suppression = suppression
+	s.require(smsSuppressionCheckFieldSuppression)
+}
+
+func (s *SmsSuppressionCheck) UnmarshalJSON(data []byte) error {
+	type unmarshaler SmsSuppressionCheck
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SmsSuppressionCheck(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, smsSuppressionCheckNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsSuppressionCheck) MarshalJSON() ([]byte, error) {
+	type embed SmsSuppressionCheck
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsSuppressionCheck) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SmsSuppressionCheckObject string
+
+const (
+	SmsSuppressionCheckObjectSmsSuppressionCheck SmsSuppressionCheckObject = "sms_suppression_check"
+)
+
+func NewSmsSuppressionCheckObjectFromString(s string) (SmsSuppressionCheckObject, error) {
+	switch s {
+	case "sms_suppression_check":
+		return SmsSuppressionCheckObjectSmsSuppressionCheck, nil
+	}
+	var t SmsSuppressionCheckObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionCheckObject) Ptr() *SmsSuppressionCheckObject {
+	return &s
+}
+
+var (
+	smsSuppressionCheckSuppressionFieldObject      = big.NewInt(1 << 0)
+	smsSuppressionCheckSuppressionFieldID          = big.NewInt(1 << 1)
+	smsSuppressionCheckSuppressionFieldPhoneNumber = big.NewInt(1 << 2)
+	smsSuppressionCheckSuppressionFieldReason      = big.NewInt(1 << 3)
+	smsSuppressionCheckSuppressionFieldSmsID       = big.NewInt(1 << 4)
+	smsSuppressionCheckSuppressionFieldCreatedAt   = big.NewInt(1 << 5)
+)
+
+// smsSuppressionCheckSuppressionNullableFields maps the wire names of SmsSuppressionCheckSuppression's nullable fields (required or optional) to their field bits.
+var smsSuppressionCheckSuppressionNullableFields = map[string]*big.Int{
+	"sms_id": smsSuppressionCheckSuppressionFieldSmsID,
+}
+
+type SmsSuppressionCheckSuppression struct {
+	Object      SmsSuppressionCheckSuppressionObject `json:"object" url:"object"`
+	ID          string                               `json:"id" url:"id"`
+	PhoneNumber string                               `json:"phone_number" url:"phone_number"`
+	// `opt_out`: the number replied STOP (or the carrier says it opted out). `invalid_number`: not a number that can receive SMS. `manual`: added by you.
+	Reason SmsSuppressionCheckSuppressionReason `json:"reason" url:"reason"`
+	// The message whose failure added it, if any.
+	SmsID     *string   `json:"sms_id,omitempty" url:"sms_id,omitempty"`
+	CreatedAt time.Time `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsSuppressionCheckSuppression) GetObject() SmsSuppressionCheckSuppressionObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsSuppressionCheckSuppression) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SmsSuppressionCheckSuppression) GetPhoneNumber() string {
+	if s == nil {
+		return ""
+	}
+	return s.PhoneNumber
+}
+
+func (s *SmsSuppressionCheckSuppression) GetReason() SmsSuppressionCheckSuppressionReason {
+	if s == nil {
+		return ""
+	}
+	return s.Reason
+}
+
+func (s *SmsSuppressionCheckSuppression) GetSmsID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SmsID
+}
+
+func (s *SmsSuppressionCheckSuppression) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SmsSuppressionCheckSuppression) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsSuppressionCheckSuppression) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetObject(object SmsSuppressionCheckSuppressionObject) {
+	s.Object = object
+	s.require(smsSuppressionCheckSuppressionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetID(id string) {
+	s.ID = id
+	s.require(smsSuppressionCheckSuppressionFieldID)
+}
+
+// SetPhoneNumber sets the PhoneNumber field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetPhoneNumber(phoneNumber string) {
+	s.PhoneNumber = phoneNumber
+	s.require(smsSuppressionCheckSuppressionFieldPhoneNumber)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetReason(reason SmsSuppressionCheckSuppressionReason) {
+	s.Reason = reason
+	s.require(smsSuppressionCheckSuppressionFieldReason)
+}
+
+// SetSmsID sets the SmsID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetSmsID(smsID *string) {
+	s.SmsID = smsID
+	s.require(smsSuppressionCheckSuppressionFieldSmsID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionCheckSuppression) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(smsSuppressionCheckSuppressionFieldCreatedAt)
+}
+
+func (s *SmsSuppressionCheckSuppression) UnmarshalJSON(data []byte) error {
+	type embed SmsSuppressionCheckSuppression
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SmsSuppressionCheckSuppression(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, smsSuppressionCheckSuppressionNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsSuppressionCheckSuppression) MarshalJSON() ([]byte, error) {
+	type embed SmsSuppressionCheckSuppression
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsSuppressionCheckSuppression) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SmsSuppressionCheckSuppressionObject string
+
+const (
+	SmsSuppressionCheckSuppressionObjectSmsSuppression SmsSuppressionCheckSuppressionObject = "sms_suppression"
+)
+
+func NewSmsSuppressionCheckSuppressionObjectFromString(s string) (SmsSuppressionCheckSuppressionObject, error) {
+	switch s {
+	case "sms_suppression":
+		return SmsSuppressionCheckSuppressionObjectSmsSuppression, nil
+	}
+	var t SmsSuppressionCheckSuppressionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionCheckSuppressionObject) Ptr() *SmsSuppressionCheckSuppressionObject {
+	return &s
+}
+
+// `opt_out`: the number replied STOP (or the carrier says it opted out). `invalid_number`: not a number that can receive SMS. `manual`: added by you.
+type SmsSuppressionCheckSuppressionReason string
+
+const (
+	SmsSuppressionCheckSuppressionReasonOptOut        SmsSuppressionCheckSuppressionReason = "opt_out"
+	SmsSuppressionCheckSuppressionReasonManual        SmsSuppressionCheckSuppressionReason = "manual"
+	SmsSuppressionCheckSuppressionReasonInvalidNumber SmsSuppressionCheckSuppressionReason = "invalid_number"
+)
+
+func NewSmsSuppressionCheckSuppressionReasonFromString(s string) (SmsSuppressionCheckSuppressionReason, error) {
+	switch s {
+	case "opt_out":
+		return SmsSuppressionCheckSuppressionReasonOptOut, nil
+	case "manual":
+		return SmsSuppressionCheckSuppressionReasonManual, nil
+	case "invalid_number":
+		return SmsSuppressionCheckSuppressionReasonInvalidNumber, nil
+	}
+	var t SmsSuppressionCheckSuppressionReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionCheckSuppressionReason) Ptr() *SmsSuppressionCheckSuppressionReason {
+	return &s
+}
+
+var (
+	smsSuppressionListFieldObject  = big.NewInt(1 << 0)
+	smsSuppressionListFieldData    = big.NewInt(1 << 1)
+	smsSuppressionListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SmsSuppressionList struct {
+	Object  SmsSuppressionListObject `json:"object" url:"object"`
+	Data    []*SmsSuppression        `json:"data" url:"data"`
+	HasMore bool                     `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SmsSuppressionList) GetObject() SmsSuppressionListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SmsSuppressionList) GetData() []*SmsSuppression {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SmsSuppressionList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SmsSuppressionList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SmsSuppressionList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionList) SetObject(object SmsSuppressionListObject) {
+	s.Object = object
+	s.require(smsSuppressionListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionList) SetData(data []*SmsSuppression) {
+	s.Data = data
+	s.require(smsSuppressionListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsSuppressionList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(smsSuppressionListFieldHasMore)
+}
+
+func (s *SmsSuppressionList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SmsSuppressionList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SmsSuppressionList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SmsSuppressionList) MarshalJSON() ([]byte, error) {
+	type embed SmsSuppressionList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SmsSuppressionList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SmsSuppressionListObject string
+
+const (
+	SmsSuppressionListObjectList SmsSuppressionListObject = "list"
+)
+
+func NewSmsSuppressionListObjectFromString(s string) (SmsSuppressionListObject, error) {
+	switch s {
+	case "list":
+		return SmsSuppressionListObjectList, nil
+	}
+	var t SmsSuppressionListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionListObject) Ptr() *SmsSuppressionListObject {
+	return &s
+}
+
+type SmsSuppressionObject string
+
+const (
+	SmsSuppressionObjectSmsSuppression SmsSuppressionObject = "sms_suppression"
+)
+
+func NewSmsSuppressionObjectFromString(s string) (SmsSuppressionObject, error) {
+	switch s {
+	case "sms_suppression":
+		return SmsSuppressionObjectSmsSuppression, nil
+	}
+	var t SmsSuppressionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionObject) Ptr() *SmsSuppressionObject {
+	return &s
+}
+
+// `opt_out`: the number replied STOP (or the carrier says it opted out). `invalid_number`: not a number that can receive SMS. `manual`: added by you.
+type SmsSuppressionReason string
+
+const (
+	SmsSuppressionReasonOptOut        SmsSuppressionReason = "opt_out"
+	SmsSuppressionReasonManual        SmsSuppressionReason = "manual"
+	SmsSuppressionReasonInvalidNumber SmsSuppressionReason = "invalid_number"
+)
+
+func NewSmsSuppressionReasonFromString(s string) (SmsSuppressionReason, error) {
+	switch s {
+	case "opt_out":
+		return SmsSuppressionReasonOptOut, nil
+	case "manual":
+		return SmsSuppressionReasonManual, nil
+	case "invalid_number":
+		return SmsSuppressionReasonInvalidNumber, nil
+	}
+	var t SmsSuppressionReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SmsSuppressionReason) Ptr() *SmsSuppressionReason {
+	return &s
+}
+
+var (
+	storageSettingsFieldObject         = big.NewInt(1 << 0)
+	storageSettingsFieldContentStorage = big.NewInt(1 << 1)
+	storageSettingsFieldUpdatedAt      = big.NewInt(1 << 2)
+)
+
+// storageSettingsNullableFields maps the wire names of StorageSettings's nullable fields (required or optional) to their field bits.
+var storageSettingsNullableFields = map[string]*big.Int{
+	"updated_at": storageSettingsFieldUpdatedAt,
+}
+
+// What coss.com keeps of the API key's environment's emails. Emails keep the setting that applied when they were sent.
+type StorageSettings struct {
+	Object StorageSettingsObject `json:"object" url:"object"`
+	// `store` (the default) keeps each email's content (subject, body, headers, template variables, attachment filenames) for the email retention period. `discard` keeps it only until the email is sent, fails or is canceled; its metadata (addresses, tags, category, status, recipients, events) is kept as usual.
+	ContentStorage StorageSettingsContentStorage `json:"content_storage" url:"content_storage"`
+	// When the setting last changed; `null` if it never did (content is stored).
+	UpdatedAt *time.Time `json:"updated_at,omitempty" url:"updated_at,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *StorageSettings) GetObject() StorageSettingsObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *StorageSettings) GetContentStorage() StorageSettingsContentStorage {
+	if s == nil {
+		return ""
+	}
+	return s.ContentStorage
+}
+
+func (s *StorageSettings) GetUpdatedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.UpdatedAt
+}
+
+func (s *StorageSettings) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *StorageSettings) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StorageSettings) SetObject(object StorageSettingsObject) {
+	s.Object = object
+	s.require(storageSettingsFieldObject)
+}
+
+// SetContentStorage sets the ContentStorage field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StorageSettings) SetContentStorage(contentStorage StorageSettingsContentStorage) {
+	s.ContentStorage = contentStorage
+	s.require(storageSettingsFieldContentStorage)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *StorageSettings) SetUpdatedAt(updatedAt *time.Time) {
+	s.UpdatedAt = updatedAt
+	s.require(storageSettingsFieldUpdatedAt)
+}
+
+func (s *StorageSettings) UnmarshalJSON(data []byte) error {
+	type embed StorageSettings
+	var unmarshaler = struct {
+		embed
+		UpdatedAt *internal.DateTime `json:"updated_at,omitempty"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = StorageSettings(unmarshaler.embed)
+	s.UpdatedAt = unmarshaler.UpdatedAt.TimePtr()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, storageSettingsNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *StorageSettings) MarshalJSON() ([]byte, error) {
+	type embed StorageSettings
+	var marshaler = struct {
+		embed
+		UpdatedAt *internal.DateTime `json:"updated_at,omitempty"`
+	}{
+		embed:     embed(*s),
+		UpdatedAt: internal.NewOptionalDateTime(s.UpdatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *StorageSettings) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// `store` (the default) keeps each email's content (subject, body, headers, template variables, attachment filenames) for the email retention period. `discard` keeps it only until the email is sent, fails or is canceled; its metadata (addresses, tags, category, status, recipients, events) is kept as usual.
+type StorageSettingsContentStorage string
+
+const (
+	StorageSettingsContentStorageStore   StorageSettingsContentStorage = "store"
+	StorageSettingsContentStorageDiscard StorageSettingsContentStorage = "discard"
+)
+
+func NewStorageSettingsContentStorageFromString(s string) (StorageSettingsContentStorage, error) {
+	switch s {
+	case "store":
+		return StorageSettingsContentStorageStore, nil
+	case "discard":
+		return StorageSettingsContentStorageDiscard, nil
+	}
+	var t StorageSettingsContentStorage
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s StorageSettingsContentStorage) Ptr() *StorageSettingsContentStorage {
+	return &s
+}
+
+type StorageSettingsObject string
+
+const (
+	StorageSettingsObjectStorageSettings StorageSettingsObject = "storage_settings"
+)
+
+func NewStorageSettingsObjectFromString(s string) (StorageSettingsObject, error) {
+	switch s {
+	case "storage_settings":
+		return StorageSettingsObjectStorageSettings, nil
+	}
+	var t StorageSettingsObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s StorageSettingsObject) Ptr() *StorageSettingsObject {
 	return &s
 }
 

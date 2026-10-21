@@ -22,6 +22,7 @@ import com.coss.resources.email.requests.RescheduleEmailRequest;
 import com.coss.resources.email.requests.SendEmailBatchRequest;
 import com.coss.resources.email.requests.SendEmailBody;
 import com.coss.resources.email.segments.AsyncSegmentsClient;
+import com.coss.resources.email.storage.AsyncStorageClient;
 import com.coss.resources.email.suppressions.AsyncSuppressionsClient;
 import com.coss.resources.email.templates.AsyncTemplatesClient;
 import com.coss.resources.email.topics.AsyncTopicsClient;
@@ -48,6 +49,8 @@ public class AsyncEmailClient {
 
     protected final Supplier<AsyncTrackingClient> trackingClient;
 
+    protected final Supplier<AsyncStorageClient> storageClient;
+
     protected final Supplier<AsyncContactsClient> contactsClient;
 
     protected final Supplier<AsyncBroadcastsClient> broadcastsClient;
@@ -69,6 +72,7 @@ public class AsyncEmailClient {
         this.dedicatedIpsClient = Suppliers.memoize(() -> new AsyncDedicatedIpsClient(clientOptions));
         this.suppressionsClient = Suppliers.memoize(() -> new AsyncSuppressionsClient(clientOptions));
         this.trackingClient = Suppliers.memoize(() -> new AsyncTrackingClient(clientOptions));
+        this.storageClient = Suppliers.memoize(() -> new AsyncStorageClient(clientOptions));
         this.contactsClient = Suppliers.memoize(() -> new AsyncContactsClient(clientOptions));
         this.broadcastsClient = Suppliers.memoize(() -> new AsyncBroadcastsClient(clientOptions));
         this.audiencesClient = Suppliers.memoize(() -> new AsyncAudiencesClient(clientOptions));
@@ -327,6 +331,10 @@ public class AsyncEmailClient {
 
     public AsyncTrackingClient tracking() {
         return this.trackingClient.get();
+    }
+
+    public AsyncStorageClient storage() {
+        return this.storageClient.get();
     }
 
     public AsyncContactsClient contacts() {

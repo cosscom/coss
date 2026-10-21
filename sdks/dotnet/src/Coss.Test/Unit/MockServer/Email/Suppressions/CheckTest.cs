@@ -1,4 +1,3 @@
-using Coss.Email;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -56,7 +55,7 @@ public class CheckTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.CheckAsync(
-            new CheckSuppressionsRequest { Address = "address" }
+            new Coss.Email.CheckSuppressionsRequest { Address = "address" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -98,7 +97,7 @@ public class CheckTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.CheckAsync(
-            new CheckSuppressionsRequest { Address = "user@example.com" }
+            new Coss.Email.CheckSuppressionsRequest { Address = "user@example.com" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

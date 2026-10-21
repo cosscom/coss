@@ -2854,28 +2854,29 @@ func (e EmailLinkObject) Ptr() *EmailLinkObject {
 }
 
 var (
-	emailSummaryFieldObject      = big.NewInt(1 << 0)
-	emailSummaryFieldID          = big.NewInt(1 << 1)
-	emailSummaryFieldFrom        = big.NewInt(1 << 2)
-	emailSummaryFieldTo          = big.NewInt(1 << 3)
-	emailSummaryFieldCc          = big.NewInt(1 << 4)
-	emailSummaryFieldBcc         = big.NewInt(1 << 5)
-	emailSummaryFieldReplyTo     = big.NewInt(1 << 6)
-	emailSummaryFieldSubject     = big.NewInt(1 << 7)
-	emailSummaryFieldTags        = big.NewInt(1 << 8)
-	emailSummaryFieldCategory    = big.NewInt(1 << 9)
-	emailSummaryFieldStream      = big.NewInt(1 << 10)
-	emailSummaryFieldStatus      = big.NewInt(1 << 11)
-	emailSummaryFieldFailure     = big.NewInt(1 << 12)
-	emailSummaryFieldRecipients  = big.NewInt(1 << 13)
-	emailSummaryFieldSandbox     = big.NewInt(1 << 14)
-	emailSummaryFieldTracking    = big.NewInt(1 << 15)
-	emailSummaryFieldCreatedAt   = big.NewInt(1 << 16)
-	emailSummaryFieldSentAt      = big.NewInt(1 << 17)
-	emailSummaryFieldScheduledAt = big.NewInt(1 << 18)
-	emailSummaryFieldBatchID     = big.NewInt(1 << 19)
-	emailSummaryFieldTemplate    = big.NewInt(1 << 20)
-	emailSummaryFieldBroadcastID = big.NewInt(1 << 21)
+	emailSummaryFieldObject         = big.NewInt(1 << 0)
+	emailSummaryFieldID             = big.NewInt(1 << 1)
+	emailSummaryFieldFrom           = big.NewInt(1 << 2)
+	emailSummaryFieldTo             = big.NewInt(1 << 3)
+	emailSummaryFieldCc             = big.NewInt(1 << 4)
+	emailSummaryFieldBcc            = big.NewInt(1 << 5)
+	emailSummaryFieldReplyTo        = big.NewInt(1 << 6)
+	emailSummaryFieldSubject        = big.NewInt(1 << 7)
+	emailSummaryFieldTags           = big.NewInt(1 << 8)
+	emailSummaryFieldCategory       = big.NewInt(1 << 9)
+	emailSummaryFieldStream         = big.NewInt(1 << 10)
+	emailSummaryFieldStatus         = big.NewInt(1 << 11)
+	emailSummaryFieldFailure        = big.NewInt(1 << 12)
+	emailSummaryFieldRecipients     = big.NewInt(1 << 13)
+	emailSummaryFieldSandbox        = big.NewInt(1 << 14)
+	emailSummaryFieldTracking       = big.NewInt(1 << 15)
+	emailSummaryFieldCreatedAt      = big.NewInt(1 << 16)
+	emailSummaryFieldSentAt         = big.NewInt(1 << 17)
+	emailSummaryFieldScheduledAt    = big.NewInt(1 << 18)
+	emailSummaryFieldBatchID        = big.NewInt(1 << 19)
+	emailSummaryFieldTemplate       = big.NewInt(1 << 20)
+	emailSummaryFieldBroadcastID    = big.NewInt(1 << 21)
+	emailSummaryFieldContentStorage = big.NewInt(1 << 22)
 )
 
 // emailSummaryNullableFields maps the wire names of EmailSummary's nullable fields (required or optional) to their field bits.
@@ -2919,7 +2920,8 @@ type EmailSummary struct {
 	// The template the email was rendered from; `null` if it was sent without one.
 	Template *EmailTemplateReference `json:"template,omitempty" url:"template,omitempty"`
 	// The broadcast the email is part of; `null` for any other email.
-	BroadcastID *string `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	BroadcastID    *string              `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	ContentStorage *EmailContentStorage `json:"content_storage" url:"content_storage"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -3080,6 +3082,13 @@ func (e *EmailSummary) GetBroadcastID() *string {
 		return nil
 	}
 	return e.BroadcastID
+}
+
+func (e *EmailSummary) GetContentStorage() *EmailContentStorage {
+	if e == nil {
+		return nil
+	}
+	return e.ContentStorage
 }
 
 func (e *EmailSummary) GetExtraProperties() map[string]interface{} {
@@ -3250,6 +3259,13 @@ func (e *EmailSummary) SetTemplate(template *EmailTemplateReference) {
 func (e *EmailSummary) SetBroadcastID(broadcastID *string) {
 	e.BroadcastID = broadcastID
 	e.require(emailSummaryFieldBroadcastID)
+}
+
+// SetContentStorage sets the ContentStorage field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailSummary) SetContentStorage(contentStorage *EmailContentStorage) {
+	e.ContentStorage = contentStorage
+	e.require(emailSummaryFieldContentStorage)
 }
 
 func (e *EmailSummary) UnmarshalJSON(data []byte) error {

@@ -15,7 +15,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,13 +32,24 @@ public final class EnvironmentApiKey {
 
     private final Optional<String> start;
 
+    private final EnvironmentApiKeyAccess access;
+
+    private final List<String> permissions;
+
     private final Map<String, Object> additionalProperties;
 
     private EnvironmentApiKey(
-            String id, Optional<String> name, Optional<String> start, Map<String, Object> additionalProperties) {
+            String id,
+            Optional<String> name,
+            Optional<String> start,
+            EnvironmentApiKeyAccess access,
+            List<String> permissions,
+            Map<String, Object> additionalProperties) {
         this.id = id;
         this.name = name;
         this.start = start;
+        this.access = access;
+        this.permissions = permissions;
         this.additionalProperties = additionalProperties;
     }
 
@@ -67,6 +80,22 @@ public final class EnvironmentApiKey {
         return start;
     }
 
+    /**
+     * @return <code>full</code>: every permission, including ones new products add later. <code>restricted</code>: only <code>permissions</code>, chosen when the key was created.
+     */
+    @JsonProperty("access")
+    public EnvironmentApiKeyAccess getAccess() {
+        return access;
+    }
+
+    /**
+     * @return What the key may do now, as <code>resource:action</code> (the names <code>insufficient_permissions</code> errors use), e.g. <code>email:send</code>.
+     */
+    @JsonProperty("permissions")
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("name")
     private Optional<String> _getName() {
@@ -91,12 +120,16 @@ public final class EnvironmentApiKey {
     }
 
     private boolean equalTo(EnvironmentApiKey other) {
-        return id.equals(other.id) && name.equals(other.name) && start.equals(other.start);
+        return id.equals(other.id)
+                && name.equals(other.name)
+                && start.equals(other.start)
+                && access.equals(other.access)
+                && permissions.equals(other.permissions);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.id, this.name, this.start);
+        return Objects.hash(this.id, this.name, this.start, this.access, this.permissions);
     }
 
     @java.lang.Override
@@ -112,9 +145,16 @@ public final class EnvironmentApiKey {
         /**
          * <p>The key's id.</p>
          */
-        _FinalStage id(@NotNull String id);
+        AccessStage id(@NotNull String id);
 
         Builder from(EnvironmentApiKey other);
+    }
+
+    public interface AccessStage {
+        /**
+         * <p><code>full</code>: every permission, including ones new products add later. <code>restricted</code>: only <code>permissions</code>, chosen when the key was created.</p>
+         */
+        _FinalStage access(@NotNull EnvironmentApiKeyAccess access);
     }
 
     public interface _FinalStage {
@@ -138,11 +178,24 @@ public final class EnvironmentApiKey {
         _FinalStage start(String start);
 
         _FinalStage start(Nullable<String> start);
+
+        /**
+         * <p>What the key may do now, as <code>resource:action</code> (the names <code>insufficient_permissions</code> errors use), e.g. <code>email:send</code>.</p>
+         */
+        _FinalStage permissions(List<String> permissions);
+
+        _FinalStage addPermissions(String permissions);
+
+        _FinalStage addAllPermissions(List<String> permissions);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements IdStage, _FinalStage {
+    public static final class Builder implements IdStage, AccessStage, _FinalStage {
         private String id;
+
+        private EnvironmentApiKeyAccess access;
+
+        private List<String> permissions = new ArrayList<>();
 
         private Optional<String> start = Optional.empty();
 
@@ -158,6 +211,8 @@ public final class EnvironmentApiKey {
             id(other.getId());
             name(other.getName());
             start(other.getStart());
+            access(other.getAccess());
+            permissions(other.getPermissions());
             return this;
         }
 
@@ -167,8 +222,54 @@ public final class EnvironmentApiKey {
          */
         @java.lang.Override
         @JsonSetter("id")
-        public _FinalStage id(@NotNull String id) {
+        public AccessStage id(@NotNull String id) {
             this.id = Objects.requireNonNull(id, "id must not be null");
+            return this;
+        }
+
+        /**
+         * <p><code>full</code>: every permission, including ones new products add later. <code>restricted</code>: only <code>permissions</code>, chosen when the key was created.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        @JsonSetter("access")
+        public _FinalStage access(@NotNull EnvironmentApiKeyAccess access) {
+            this.access = Objects.requireNonNull(access, "access must not be null");
+            return this;
+        }
+
+        /**
+         * <p>What the key may do now, as <code>resource:action</code> (the names <code>insufficient_permissions</code> errors use), e.g. <code>email:send</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage addAllPermissions(List<String> permissions) {
+            if (permissions != null) {
+                this.permissions.addAll(permissions);
+            }
+            return this;
+        }
+
+        /**
+         * <p>What the key may do now, as <code>resource:action</code> (the names <code>insufficient_permissions</code> errors use), e.g. <code>email:send</code>.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage addPermissions(String permissions) {
+            this.permissions.add(permissions);
+            return this;
+        }
+
+        /**
+         * <p>What the key may do now, as <code>resource:action</code> (the names <code>insufficient_permissions</code> errors use), e.g. <code>email:send</code>.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "permissions", nulls = Nulls.SKIP)
+        public _FinalStage permissions(List<String> permissions) {
+            this.permissions.clear();
+            if (permissions != null) {
+                this.permissions.addAll(permissions);
+            }
             return this;
         }
 
@@ -235,7 +336,7 @@ public final class EnvironmentApiKey {
 
         @java.lang.Override
         public EnvironmentApiKey build() {
-            return new EnvironmentApiKey(id, name, start, additionalProperties);
+            return new EnvironmentApiKey(id, name, start, access, permissions, additionalProperties);
         }
 
         @java.lang.Override

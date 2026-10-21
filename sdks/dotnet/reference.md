@@ -12,7 +12,7 @@
 <dl>
 <dd>
 
-Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
 </dd>
 </dl>
 </dd>
@@ -1453,6 +1453,338 @@ await client.WebhookListeners.DeleteAsync(
 <dd>
 
 **request:** `DeleteWebhookListenersRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## WebhookEvents
+<details><summary><code>client.WebhookEvents.<a href="/src/Coss/WebhookEvents/WebhookEventsClient.cs">TestAsync</a>(CreateTestWebhookEventRequest { ... }) -> WithRawResponseTask&lt;WebhookTestEvent&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a sample event of a type to the environment's enabled endpoints subscribed to it and its open listeners (`coss listen`), exactly as a real one is sent: same body, signature, retries and log lines. `coss trigger` calls it. Sandbox environments only. The ids in the sample are made up (pass real ones in `data` for a handler that looks them up), and nothing marks the event as a test: your handler takes it like the real thing. When nothing is subscribed, the event goes nowhere and isn't kept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.WebhookEvents.TestAsync(
+    new CreateTestWebhookEventRequest
+    {
+        Type = CreateTestWebhookEventRequestType.EmailBounced,
+        Data = new Dictionary<string, object?>() { { "recipient", "ada@example.com" } },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateTestWebhookEventRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## SMS
+<details><summary><code>client.Sms.<a href="/src/Coss/Sms/SmsClient.cs">ListAsync</a>(ListSmsRequest { ... }) -> WithRawResponseTask&lt;SmsList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent from the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.ListAsync(new ListSmsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListSmsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.<a href="/src/Coss/Sms/SmsClient.cs">SendAsync</a>(SendSmsRequest { ... }) -> WithRawResponseTask&lt;Sms&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Queues a text message from the API key's environment and returns it with `status: "queued"`; it is handed to the carrier moments later. Follow it with `GET /v1/sms/{id}` or the `sms.sent`, `sms.delivered`, `sms.undelivered` and `sms.failed` webhooks. Live (`coss_live_…`) keys send `from` one of the organization's numbers whose carrier registration is approved, to the countries the organization allows (US and Canada unless changed in the dashboard). Sandbox (`coss_test_…`) keys accept any `from`, deliver nothing and answer the SMS simulator's numbers (`+15005550006` delivered, `+15005550001` invalid, `+15005550004` filtered by the carrier, `+15005550009` opted out, `+15005550008` replies). A number on the environment's SMS suppression list (it replied STOP, or it can't receive SMS) is skipped: the message is `failed` with `suppressed`. Segments count against the organization's send quota, and each is billed by the destination country.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.SendAsync(
+    new SendSmsRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        From = "+14155550123",
+        To = "+14155550199",
+        Body = "Your Acme code is 482913",
+        Tags = new List<SendSmsRequestTagsItem>()
+        {
+            new SendSmsRequestTagsItem { Name = "flow", Value = "sign_in" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `SendSmsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.<a href="/src/Coss/Sms/SmsClient.cs">GetAsync</a>(GetSmsRequest { ... }) -> WithRawResponseTask&lt;Sms&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.GetAsync(new GetSmsRequest { Id = "sms_01k7c8m4q2f3e9v6t5r1n0p8yz" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetSmsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.<a href="/src/Coss/Sms/SmsClient.cs">ListEventsAsync</a>(ListEventsSmsRequest { ... }) -> WithRawResponseTask&lt;SmsEventList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the message, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.ListEventsAsync(
+    new ListEventsSmsRequest { Id = "sms_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListEventsSmsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.<a href="/src/Coss/Sms/SmsClient.cs">CancelAsync</a>(CancelSmsRequest { ... }) -> WithRawResponseTask&lt;Sms&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a message scheduled with `scheduled_at` before it is sent. Canceling a canceled message returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.CancelAsync(new CancelSmsRequest { Id = "sms_01k7c8m4q2f3e9v6t5r1n0p8yz" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CancelSmsRequest` 
     
 </dd>
 </dl>
@@ -3533,6 +3865,67 @@ await client.Email.Templates.PublishAsync(
 </dl>
 </details>
 
+<details><summary><code>client.Email.Templates.<a href="/src/Coss/Email/Templates/TemplatesClient.cs">RenderAsync</a>(RenderEmailTemplateRequest { ... }) -> WithRawResponseTask&lt;RenderedEmailTemplate&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Templates.RenderAsync(
+    new RenderEmailTemplateRequest
+    {
+        Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        Locale = "en",
+        Variables = new Dictionary<string, object?>() { { "first_name", "Ada" } },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RenderEmailTemplateRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Email DedicatedIps
 <details><summary><code>client.Email.DedicatedIps.<a href="/src/Coss/Email/DedicatedIps/DedicatedIpsClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;DedicatedIpPool&gt;</code></summary>
 <dl>
@@ -3601,7 +3994,7 @@ The suppression list of the API key's environment, newest first. Pass the last `
 <dd>
 
 ```csharp
-await client.Email.Suppressions.ListAsync(new ListSuppressionsRequest());
+await client.Email.Suppressions.ListAsync(new Coss.Email.ListSuppressionsRequest());
 ```
 </dd>
 </dl>
@@ -3712,7 +4105,7 @@ Whether a send to `address` (with `category`, if given) would skip it, and the e
 
 ```csharp
 await client.Email.Suppressions.CheckAsync(
-    new CheckSuppressionsRequest { Address = "user@example.com" }
+    new Coss.Email.CheckSuppressionsRequest { Address = "user@example.com" }
 );
 ```
 </dd>
@@ -3875,7 +4268,7 @@ await client.Email.Suppressions.ExportAsync(new ExportSuppressionsRequest());
 
 ```csharp
 await client.Email.Suppressions.GetAsync(
-    new GetSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    new Coss.Email.GetSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
 );
 ```
 </dd>
@@ -3931,7 +4324,7 @@ Removes the entry, so later sends reach the address again (unless another entry 
 
 ```csharp
 await client.Email.Suppressions.RemoveAsync(
-    new RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    new Coss.Email.RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
 );
 ```
 </dd>
@@ -4199,6 +4592,105 @@ await client.Email.Tracking.UpdateCategoryAsync(
 <dd>
 
 **request:** `UpdateCategoryTrackingRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Storage
+<details><summary><code>client.Email.Storage.<a href="/src/Coss/Email/Storage/StorageClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;StorageSettings&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Whether coss.com keeps the content of the environment's emails (`content_storage: "store"`, the default) or only until each email is sent, fails or is canceled (`"discard"`). Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Storage.GetAsync();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Storage.<a href="/src/Coss/Email/Storage/StorageClient.cs">UpdateAsync</a>(UpdateStorageSettingsRequest { ... }) -> WithRawResponseTask&lt;StorageSettings&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With `content_storage: "discard"`, emails sent from now on keep their subject, body, headers, template variables and attachment filenames only until they are sent, fail or are canceled (scheduled emails keep them until their time comes); request logs never keep them. Their metadata (addresses, tags, category, status, recipients, events) is kept as usual. Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Storage.UpdateAsync(
+    new UpdateStorageSettingsRequest
+    {
+        ContentStorage = UpdateStorageSettingsRequestContentStorage.Discard,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateStorageSettingsRequest` 
     
 </dd>
 </dl>
@@ -6634,7 +7126,7 @@ Emails received by the API key's environment, newest first, without their bodies
 <dd>
 
 ```csharp
-await client.Email.Received.ListAsync(new ListReceivedRequest());
+await client.Email.Received.ListAsync(new Coss.Email.ListReceivedRequest());
 ```
 </dd>
 </dl>
@@ -6728,7 +7220,7 @@ The received email with its headers, text and HTML bodies (each cut at 2 MB, see
 
 ```csharp
 await client.Email.Received.GetAsync(
-    new GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    new Coss.Email.GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
 );
 ```
 </dd>
@@ -10140,6 +10632,394 @@ await client.Risk.LimitBuckets.UpdateAsync(
 
 **request:** `UpdateRiskLimitBucketRequest` 
     
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Suppressions
+<details><summary><code>client.Sms.Suppressions.<a href="/src/Coss/Sms/Suppressions/SuppressionsClient.cs">ListAsync</a>(ListSuppressionsRequest { ... }) -> WithRawResponseTask&lt;SmsSuppressionList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The SMS suppression list of the API key's environment, newest first: opt-outs, invalid numbers and numbers you added.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Suppressions.ListAsync(new Coss.Sms_.ListSuppressionsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListSuppressionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.<a href="/src/Coss/Sms/Suppressions/SuppressionsClient.cs">AddAsync</a>(CreateSmsSuppressionRequest { ... }) -> WithRawResponseTask&lt;SmsSuppression&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Later sends from the API key's environment to the number are skipped. Adding a number already on the list returns its entry with status 200.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Suppressions.AddAsync(
+    new CreateSmsSuppressionRequest { PhoneNumber = "+14155550199" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSmsSuppressionRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.<a href="/src/Coss/Sms/Suppressions/SuppressionsClient.cs">CheckAsync</a>(CheckSuppressionsRequest { ... }) -> WithRawResponseTask&lt;SmsSuppressionCheck&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Suppressions.CheckAsync(
+    new Coss.Sms_.CheckSuppressionsRequest { PhoneNumber = "phone_number" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CheckSuppressionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.<a href="/src/Coss/Sms/Suppressions/SuppressionsClient.cs">GetAsync</a>(GetSuppressionsRequest { ... }) -> WithRawResponseTask&lt;SmsSuppression&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Suppressions.GetAsync(
+    new Coss.Sms_.GetSuppressionsRequest { Id = "smssup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetSuppressionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.<a href="/src/Coss/Sms/Suppressions/SuppressionsClient.cs">RemoveAsync</a>(RemoveSuppressionsRequest { ... }) -> WithRawResponseTask&lt;DeletedSmsSuppression&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends to the number go out again. Remove an opt-out only when the person asked to receive messages again (they can also reply START).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Suppressions.RemoveAsync(
+    new Coss.Sms_.RemoveSuppressionsRequest { Id = "smssup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveSuppressionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Received
+<details><summary><code>client.Sms.Received.<a href="/src/Coss/Sms/Received/ReceivedClient.cs">ListAsync</a>(ListReceivedRequest { ... }) -> WithRawResponseTask&lt;ReceivedSmsList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent to the organization's numbers whose replies go to the API key's environment, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Received.ListAsync(new Coss.Sms_.ListReceivedRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListReceivedRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Received.<a href="/src/Coss/Sms/Received/ReceivedClient.cs">GetAsync</a>(GetReceivedRequest { ... }) -> WithRawResponseTask&lt;ReceivedSms&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Received.GetAsync(
+    new Coss.Sms_.GetReceivedRequest { Id = "smsin_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetReceivedRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Numbers
+<details><summary><code>client.Sms.Numbers.<a href="/src/Coss/Sms/Numbers/NumbersClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;SmsNumberList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Every number of the organization, whether it can send live messages now (its carrier registration is approved) and whether its replies arrive in the API key's environment. Numbers are bought and registered in the dashboard.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sms.Numbers.ListAsync();
+```
 </dd>
 </dl>
 </dd>

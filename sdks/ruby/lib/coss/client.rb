@@ -52,6 +52,16 @@ module Coss
       @webhook_listeners ||= Coss::WebhookListeners::Client.new(client: @raw_client)
     end
 
+    # @return [Coss::WebhookEvents::Client]
+    def webhook_events
+      @webhook_events ||= Coss::WebhookEvents::Client.new(client: @raw_client)
+    end
+
+    # @return [Coss::Sms::Client]
+    def sms
+      @sms ||= Coss::Sms::Client.new(client: @raw_client)
+    end
+
     # @return [Coss::Reputation::Client]
     def reputation
       @reputation ||= Coss::Reputation::Client.new(client: @raw_client)

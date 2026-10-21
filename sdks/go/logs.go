@@ -823,7 +823,7 @@ func (l LogObject) Ptr() *LogObject {
 	return &l
 }
 
-// `api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay.
+// `api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay. `sms`: an SMS event.
 type LogSource string
 
 const (
@@ -832,6 +832,7 @@ const (
 	LogSourceWebhook LogSource = "webhook"
 	LogSourceRisk    LogSource = "risk"
 	LogSourceSMTP    LogSource = "smtp"
+	LogSourceSms     LogSource = "sms"
 )
 
 func NewLogSourceFromString(s string) (LogSource, error) {
@@ -846,6 +847,8 @@ func NewLogSourceFromString(s string) (LogSource, error) {
 		return LogSourceRisk, nil
 	case "smtp":
 		return LogSourceSMTP, nil
+	case "sms":
+		return LogSourceSms, nil
 	}
 	var t LogSource
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

@@ -299,6 +299,85 @@ func (p *PublishEmailTemplateRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	renderEmailTemplateRequestFieldID        = big.NewInt(1 << 0)
+	renderEmailTemplateRequestFieldVersion   = big.NewInt(1 << 1)
+	renderEmailTemplateRequestFieldLocale    = big.NewInt(1 << 2)
+	renderEmailTemplateRequestFieldVariables = big.NewInt(1 << 3)
+)
+
+type RenderEmailTemplateRequest struct {
+	// The template's id or alias.
+	ID string `json:"-" url:"-"`
+	// A published version to render. Default: the draft.
+	Version *int64 `json:"version,omitempty" url:"-"`
+	// The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the default locale, as sends do.
+	Locale *string `json:"locale,omitempty" url:"-"`
+	// Values by variable name, checked as a send checks them. Default: `sample_variables`.
+	Variables map[string]any `json:"variables,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (r *RenderEmailTemplateRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderEmailTemplateRequest) SetID(id string) {
+	r.ID = id
+	r.require(renderEmailTemplateRequestFieldID)
+}
+
+// SetVersion sets the Version field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderEmailTemplateRequest) SetVersion(version *int64) {
+	r.Version = version
+	r.require(renderEmailTemplateRequestFieldVersion)
+}
+
+// SetLocale sets the Locale field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderEmailTemplateRequest) SetLocale(locale *string) {
+	r.Locale = locale
+	r.require(renderEmailTemplateRequestFieldLocale)
+}
+
+// SetVariables sets the Variables field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RenderEmailTemplateRequest) SetVariables(variables map[string]any) {
+	r.Variables = variables
+	r.require(renderEmailTemplateRequestFieldVariables)
+}
+
+func (r *RenderEmailTemplateRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler RenderEmailTemplateRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*r = RenderEmailTemplateRequest(body)
+	return nil
+}
+
+func (r *RenderEmailTemplateRequest) MarshalJSON() ([]byte, error) {
+	type embed RenderEmailTemplateRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	updateEmailTemplateRequestFieldID          = big.NewInt(1 << 0)
 	updateEmailTemplateRequestFieldName        = big.NewInt(1 << 1)
 	updateEmailTemplateRequestFieldAlias       = big.NewInt(1 << 2)

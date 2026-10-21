@@ -13,7 +13,7 @@
     "enableWireTests": false,
     "user-agent": "coss-go/{version}"
   },
-  "originGitCommit": "22f1393886309f16341682ab6a08490f9064c8e4",
+  "originGitCommit": "d0301a609489f8f501c6bcadf209b524c230247e",
   "originGitCommitIsDirty": true,
   "invokedBy": "manual",
   "requestedVersion": "0.1.0",

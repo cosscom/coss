@@ -45,7 +45,7 @@ class Broadcast(UniversalBaseModel):
 
     pause_reason: typing.Optional[str] = pydantic.Field(default=None)
     """
-    Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
+    Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
     """
 
     error: typing.Optional[BroadcastError] = None

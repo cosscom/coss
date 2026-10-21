@@ -17,6 +17,8 @@ public final class LogDrainSource {
 
     public static final LogDrainSource SMTP = new LogDrainSource(Value.SMTP, "smtp");
 
+    public static final LogDrainSource SMS = new LogDrainSource(Value.SMS, "sms");
+
     public static final LogDrainSource API = new LogDrainSource(Value.API, "api");
 
     private final Value value;
@@ -61,6 +63,8 @@ public final class LogDrainSource {
                 return visitor.visitRisk();
             case SMTP:
                 return visitor.visitSmtp();
+            case SMS:
+                return visitor.visitSms();
             case API:
                 return visitor.visitApi();
             case UNKNOWN:
@@ -82,6 +86,8 @@ public final class LogDrainSource {
                 return RISK;
             case "smtp":
                 return SMTP;
+            case "sms":
+                return SMS;
             case "api":
                 return API;
             default:
@@ -100,6 +106,8 @@ public final class LogDrainSource {
 
         SMTP,
 
+        SMS,
+
         AUDIT,
 
         UNKNOWN
@@ -115,6 +123,8 @@ public final class LogDrainSource {
         T visitRisk();
 
         T visitSmtp();
+
+        T visitSms();
 
         T visitAudit();
 

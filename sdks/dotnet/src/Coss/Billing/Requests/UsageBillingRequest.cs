@@ -25,7 +25,7 @@ public record UsageBillingRequest
     public UsageBillingRequestGranularity? Granularity { get; set; }
 
     /// <summary>
-    /// Split each bucket per environment.
+    /// Split each bucket per environment, project, API key or user (the member whose personal key it was).
     /// </summary>
     [JsonIgnore]
     public UsageBillingRequestGroupBy? GroupBy { get; set; }

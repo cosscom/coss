@@ -467,17 +467,17 @@
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.suppressions.list()",
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.ListSuppressionsRequest{}\nclient.Email.Suppressions.List(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.suppressions.list",
-    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Suppressions\\Requests\\ListSuppressionsRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->list(\n    new ListSuppressionsRequest([]),\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.suppressions.requests.ListSuppressionsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().list(\n    ListSuppressionsRequest\n        .builder()\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.ListAsync(new ListSuppressionsRequest());"
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->list(\n    new ListSuppressionsRequest([]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().list(\n    ListSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.ListAsync(new Coss.Email.ListSuppressionsRequest());"
   },
   "GET /v1/suppressions/check": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.suppressions.check(\n    address=\"user@example.com\",\n)",
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.CheckSuppressionsRequest{\n    Address: \"user@example.com\",\n}\nclient.Email.Suppressions.Check(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.suppressions.check(address: \"user@example.com\")",
-    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Suppressions\\Requests\\CheckSuppressionsRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->check(\n    new CheckSuppressionsRequest([\n        'address' => 'user@example.com',\n    ]),\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.suppressions.requests.CheckSuppressionsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().check(\n    CheckSuppressionsRequest\n        .builder()\n        .address(\"user@example.com\")\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.CheckAsync(\n    new CheckSuppressionsRequest { Address = \"user@example.com\" }\n);"
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->check(\n    new CheckSuppressionsRequest([\n        'address' => 'user@example.com',\n    ]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().check(\n    CheckSuppressionsRequest\n        .builder()\n        .address(\"user@example.com\")\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.CheckAsync(\n    new Coss.Email.CheckSuppressionsRequest { Address = \"user@example.com\" }\n);"
   },
   "POST /v1/suppressions/import": {
     "python": "from coss import Coss\nfrom coss.email.suppressions import ImportSuppressionsRequestSuppressionsItem\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.suppressions.import_(\n    suppressions=[\n        ImportSuppressionsRequestSuppressionsItem(\n            address=\"user@example.com\",\n        ),\n        ImportSuppressionsRequestSuppressionsItem(\n            address=\"other@example.com\",\n            scope=\"marketing\",\n        )\n    ],\n)",
@@ -500,16 +500,120 @@
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.GetSuppressionsRequest{\n    ID: \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Email.Suppressions.Get(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.suppressions.get(id: \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
     "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->get(\n    'sup_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.suppressions.requests.GetSuppressionsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().get(\n    \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetSuppressionsRequest\n        .builder()\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.GetAsync(\n    new GetSuppressionsRequest { Id = \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().get(\n    \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.GetAsync(\n    new Coss.Email.GetSuppressionsRequest { Id = \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
   },
   "DELETE /v1/suppressions/{id}": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.suppressions.remove(\n    id=\"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.RemoveSuppressionsRequest{\n    ID: \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Email.Suppressions.Remove(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.suppressions.remove(id: \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
     "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->suppressions->remove(\n    'sup_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.suppressions.requests.RemoveSuppressionsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().remove(\n    \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    RemoveSuppressionsRequest\n        .builder()\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.RemoveAsync(\n    new RemoveSuppressionsRequest { Id = \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().suppressions().remove(\n    \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    RemoveSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Suppressions.RemoveAsync(\n    new Coss.Email.RemoveSuppressionsRequest { Id = \"sup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "POST /v1/sms": {
+    "python": "from coss import Coss\nfrom coss.sms import SendSmsRequestTagsItem\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.send(\n    idempotency_key=\"welcome-user-123\",\n    from_=\"+14155550123\",\n    to=\"+14155550199\",\n    body=\"Your Acme code is 482913\",\n    tags=[\n        SendSmsRequestTagsItem(\n            name=\"flow\",\n            value=\"sign_in\",\n        )\n    ],\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.SendSmsRequest{\n    IdempotencyKey: coss.String(\n        \"welcome-user-123\",\n    ),\n    From: \"+14155550123\",\n    To: \"+14155550199\",\n    Body: \"Your Acme code is 482913\",\n    Tags: []*coss.SendSmsRequestTagsItem{\n        &coss.SendSmsRequestTagsItem{\n            Name: \"flow\",\n            Value: \"sign_in\",\n        },\n    },\n}\nclient.Sms.Send(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.send_(\n  idempotency_key: \"welcome-user-123\",\n  from: \"+14155550123\",\n  to: \"+14155550199\",\n  body: \"Your Acme code is 482913\",\n  tags: [{\n    name: \"flow\",\n    value: \"sign_in\"\n  }]\n)",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Sms\\Requests\\SendSmsRequest;\nuse Coss\\Sms\\Types\\SendSmsRequestTagsItem;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->send(\n    new SendSmsRequest([\n        'idempotencyKey' => 'welcome-user-123',\n        'from' => '+14155550123',\n        'to' => '+14155550199',\n        'body' => 'Your Acme code is 482913',\n        'tags' => [\n            new SendSmsRequestTagsItem([\n                'name' => 'flow',\n                'value' => 'sign_in',\n            ]),\n        ],\n    ]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.requests.SendSmsRequest;\nimport com.coss.resources.sms.types.SendSmsRequestTagsItem;\nimport java.util.Arrays;\nimport java.util.Optional;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().send(\n    SendSmsRequest\n        .builder()\n        .from(\"+14155550123\")\n        .to(\"+14155550199\")\n        .body(\"Your Acme code is 482913\")\n        .idempotencyKey(\"welcome-user-123\")\n        .tags(\n            Optional.of(\n                Arrays.asList(\n                    SendSmsRequestTagsItem\n                        .builder()\n                        .name(\"flow\")\n                        .value(\"sign_in\")\n                        .build()\n                )\n            )\n        )\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.SendAsync(\n    new SendSmsRequest\n    {\n        IdempotencyKey = \"welcome-user-123\",\n        From = \"+14155550123\",\n        To = \"+14155550199\",\n        Body = \"Your Acme code is 482913\",\n        Tags = new List<SendSmsRequestTagsItem>()\n        {\n            new SendSmsRequestTagsItem { Name = \"flow\", Value = \"sign_in\" },\n        },\n    }\n);"
+  },
+  "GET /v1/sms": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.list()",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.ListSmsRequest{}\nclient.Sms.List(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.list",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Sms\\Requests\\ListSmsRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->list(\n    new ListSmsRequest([]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.requests.ListSmsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().list(\n    ListSmsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.ListAsync(new ListSmsRequest());"
+  },
+  "POST /v1/sms/suppressions": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.suppressions.add(\n    phone_number=\"+14155550199\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.CreateSmsSuppressionRequest{\n    PhoneNumber: \"+14155550199\",\n}\nclient.Sms.Suppressions.Add(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.suppressions.add(phone_number: \"+14155550199\")",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Sms\\Suppressions\\Requests\\CreateSmsSuppressionRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->suppressions->add(\n    new CreateSmsSuppressionRequest([\n        'phoneNumber' => '+14155550199',\n    ]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.suppressions.requests.CreateSmsSuppressionRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().suppressions().add(\n    CreateSmsSuppressionRequest\n        .builder()\n        .phoneNumber(\"+14155550199\")\n        .build()\n);",
+    "csharp": "using Coss;\nusing Coss.Sms_;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Suppressions.AddAsync(\n    new CreateSmsSuppressionRequest { PhoneNumber = \"+14155550199\" }\n);"
+  },
+  "GET /v1/sms/suppressions": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.suppressions.list()",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.ListSuppressionsRequest{}\nclient.Sms.Suppressions.List(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.suppressions.list",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->suppressions->list(\n    new ListSuppressionsRequest([]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().suppressions().list(\n    ListSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Suppressions.ListAsync(new Coss.Sms_.ListSuppressionsRequest());"
+  },
+  "GET /v1/sms/suppressions/check": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.suppressions.check(\n    phone_number=\"phone_number\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.CheckSuppressionsRequest{\n    PhoneNumber: \"phone_number\",\n}\nclient.Sms.Suppressions.Check(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.suppressions.check(phone_number: \"phone_number\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->suppressions->check(\n    new CheckSuppressionsRequest([\n        'phoneNumber' => 'phone_number',\n    ]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().suppressions().check(\n    CheckSuppressionsRequest\n        .builder()\n        .phoneNumber(\"phone_number\")\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Suppressions.CheckAsync(\n    new Coss.Sms_.CheckSuppressionsRequest { PhoneNumber = \"phone_number\" }\n);"
+  },
+  "GET /v1/sms/suppressions/{id}": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.suppressions.get(\n    id=\"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.GetSuppressionsRequest{\n    ID: \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.Suppressions.Get(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.suppressions.get(id: \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->suppressions->get(\n    'smssup_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().suppressions().get(\n    \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Suppressions.GetAsync(\n    new Coss.Sms_.GetSuppressionsRequest { Id = \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "DELETE /v1/sms/suppressions/{id}": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.suppressions.remove(\n    id=\"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.RemoveSuppressionsRequest{\n    ID: \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.Suppressions.Remove(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.suppressions.remove(id: \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->suppressions->remove(\n    'smssup_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().suppressions().remove(\n    \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    RemoveSuppressionsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Suppressions.RemoveAsync(\n    new Coss.Sms_.RemoveSuppressionsRequest { Id = \"smssup_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "GET /v1/sms/received": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.received.list()",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.ListReceivedRequest{}\nclient.Sms.Received.List(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.received.list",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->received->list(\n    new ListReceivedRequest([]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().received().list(\n    ListReceivedRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Received.ListAsync(new Coss.Sms_.ListReceivedRequest());"
+  },
+  "GET /v1/sms/received/{id}": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.received.get(\n    id=\"smsin_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\tsms \"github.com/cosscom/coss-go/sms\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &sms.GetReceivedRequest{\n    ID: \"smsin_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.Received.Get(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.received.get(id: \"smsin_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->received->get(\n    'smsin_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().received().get(\n    \"smsin_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetReceivedRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Received.GetAsync(\n    new Coss.Sms_.GetReceivedRequest { Id = \"smsin_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "GET /v1/sms/numbers": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.numbers.list()",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nclient.Sms.Numbers.List(\n    context.TODO(),\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.numbers.list",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->numbers->list();",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().numbers().list();",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.Numbers.ListAsync();"
+  },
+  "GET /v1/sms/{id}": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.get(\n    id=\"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.GetSmsRequest{\n    ID: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.Get(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.get(id: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->get(\n    'sms_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.requests.GetSmsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().get(\n    \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetSmsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.GetAsync(new GetSmsRequest { Id = \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\" });"
+  },
+  "GET /v1/sms/{id}/events": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.list_events(\n    id=\"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.ListEventsSmsRequest{\n    ID: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.ListEvents(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.list_events(id: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->listEvents(\n    'sms_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.requests.ListEventsSmsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().listEvents(\n    \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    ListEventsSmsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.ListEventsAsync(\n    new ListEventsSmsRequest { Id = \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "POST /v1/sms/{id}/cancel": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.sms.cancel(\n    id=\"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.CancelSmsRequest{\n    ID: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Sms.Cancel(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.sms.cancel(id: \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->sms->cancel(\n    'sms_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.sms.requests.CancelSmsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.sms().cancel(\n    \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    CancelSmsRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Sms.CancelAsync(new CancelSmsRequest { Id = \"sms_01k7c8m4q2f3e9v6t5r1n0p8yz\" });"
   },
   "POST /v1/email_templates": {
     "python": "from coss import Coss\nfrom coss import Coss, TemplateVariableInput, TemplateContentInput\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.templates.create(\n    name=\"Welcome\",\n    alias=\"welcome\",\n    default_locale=\"en\",\n    variables=[\n        TemplateVariableInput(\n            name=\"first_name\",\n            type=\"string\",\n            required=True,\n        )\n    ],\n    sample_variables={\n        \"first_name\": \"Ada\"\n    },\n    contents=[\n        TemplateContentInput(\n            locale=\"en\",\n            subject=\"Welcome, {{first_name}}\",\n            html=\"<p>Hi {{first_name}}, thanks for signing up!</p>\",\n        ),\n        TemplateContentInput(\n            locale=\"de\",\n            subject=\"Willkommen, {{first_name}}\",\n            html=\"<p>Hallo {{first_name}}, danke für deine Anmeldung!</p>\",\n        )\n    ],\n)",
@@ -574,6 +678,14 @@
     "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Templates\\Requests\\PublishEmailTemplateRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->templates->publish(\n    'etpl_01k7c8m4q2f3e9v6t5r1n0p8yz',\n    new PublishEmailTemplateRequest([\n        'revision' => 3,\n    ]),\n);",
     "java": "import com.coss.Coss;\nimport com.coss.resources.email.templates.requests.PublishEmailTemplateRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().templates().publish(\n    \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    PublishEmailTemplateRequest\n        .builder()\n        .revision(3L)\n        .build()\n);",
     "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Templates.PublishAsync(\n    new PublishEmailTemplateRequest { Id = \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\", Revision = 3 }\n);"
+  },
+  "POST /v1/email_templates/{id}/render": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.templates.render(\n    id=\"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    locale=\"en\",\n    variables={\n        \"first_name\": \"Ada\"\n    },\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.RenderEmailTemplateRequest{\n    ID: \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    Locale: coss.String(\n        \"en\",\n    ),\n    Variables: map[string]any{\n        \"first_name\": \"Ada\",\n    },\n}\nclient.Email.Templates.Render(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.templates.render(\n  id: \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n  locale: \"en\",\n  variables: {\n    first_name: \"Ada\"\n  }\n)",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Templates\\Requests\\RenderEmailTemplateRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->templates->render(\n    'etpl_01k7c8m4q2f3e9v6t5r1n0p8yz',\n    new RenderEmailTemplateRequest([\n        'locale' => 'en',\n        'variables' => [\n            'first_name' => \"Ada\",\n        ],\n    ]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.email.templates.requests.RenderEmailTemplateRequest;\nimport java.util.HashMap;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().templates().render(\n    \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    RenderEmailTemplateRequest\n        .builder()\n        .locale(\"en\")\n        .variables(\n            new HashMap<String, Object>() {{\n                put(\"first_name\", \"Ada\");\n            }}\n        )\n        .build()\n);",
+    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Templates.RenderAsync(\n    new RenderEmailTemplateRequest\n    {\n        Id = \"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n        Locale = \"en\",\n        Variables = new Dictionary<string, object?>() { { \"first_name\", \"Ada\" } },\n    }\n);"
   },
   "GET /v1/email_templates/{id}/versions": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.templates.versions.list(\n    id=\"etpl_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n)",
@@ -983,6 +1095,22 @@
     "java": "import com.coss.Coss;\nimport com.coss.resources.email.marketingsettings.requests.UpdateMarketingSettingsRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().marketingSettings().update(\n    UpdateMarketingSettingsRequest\n        .builder()\n        .mailingAddress(\"Acme Inc., 548 Market St, San Francisco, CA 94104, USA\")\n        .build()\n);",
     "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.MarketingSettings.UpdateAsync(\n    new UpdateMarketingSettingsRequest\n    {\n        MailingAddress = \"Acme Inc., 548 Market St, San Francisco, CA 94104, USA\",\n    }\n);"
   },
+  "GET /v1/storage_settings": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.storage.get()",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nclient.Email.Storage.Get(\n    context.TODO(),\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.storage.get",
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->storage->get();",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().storage().get();",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Storage.GetAsync();"
+  },
+  "PATCH /v1/storage_settings": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.storage.update(\n    content_storage=\"discard\",\n)",
+    "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.UpdateStorageSettingsRequest{\n    ContentStorage: email.UpdateStorageSettingsRequestContentStorageDiscard,\n}\nclient.Email.Storage.Update(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.storage.update(content_storage: \"discard\")",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Storage\\Requests\\UpdateStorageSettingsRequest;\nuse Coss\\Email\\Storage\\Types\\UpdateStorageSettingsRequestContentStorage;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->storage->update(\n    new UpdateStorageSettingsRequest([\n        'contentStorage' => UpdateStorageSettingsRequestContentStorage::Discard->value,\n    ]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.email.storage.requests.UpdateStorageSettingsRequest;\nimport com.coss.resources.email.storage.types.UpdateStorageSettingsRequestContentStorage;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().storage().update(\n    UpdateStorageSettingsRequest\n        .builder()\n        .contentStorage(UpdateStorageSettingsRequestContentStorage.DISCARD)\n        .build()\n);",
+    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Storage.UpdateAsync(\n    new UpdateStorageSettingsRequest\n    {\n        ContentStorage = UpdateStorageSettingsRequestContentStorage.Discard,\n    }\n);"
+  },
   "GET /v1/tracking_settings": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.tracking.get()",
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nclient.Email.Tracking.Get(\n    context.TODO(),\n)",
@@ -1131,9 +1259,9 @@
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.received.list()",
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.ListReceivedRequest{}\nclient.Email.Received.List(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.received.list",
-    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\Email\\Received\\Requests\\ListReceivedRequest;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->received->list(\n    new ListReceivedRequest([]),\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.received.requests.ListReceivedRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().received().list(\n    ListReceivedRequest\n        .builder()\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Received.ListAsync(new ListReceivedRequest());"
+    "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->received->list(\n    new ListReceivedRequest([]),\n);",
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().received().list(\n    ListReceivedRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Received.ListAsync(new Coss.Email.ListReceivedRequest());"
   },
   "GET /v1/received_emails/address": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.received.address()",
@@ -1148,8 +1276,8 @@
     "go": "import (\n\t\"context\"\n\n\tcossclient \"github.com/cosscom/coss-go/client\"\n\temail \"github.com/cosscom/coss-go/email\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &email.GetReceivedRequest{\n    ID: \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n}\nclient.Email.Received.Get(\n    context.TODO(),\n    request,\n)",
     "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.email.received.get(id: \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\")",
     "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->email->received->get(\n    'rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
-    "java": "import com.coss.Coss;\nimport com.coss.resources.email.received.requests.GetReceivedRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().received().get(\n    \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetReceivedRequest\n        .builder()\n        .build()\n);",
-    "csharp": "using Coss;\nusing Coss.Email;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Received.GetAsync(\n    new GetReceivedRequest { Id = \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+    "java": "import com.coss.Coss;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.email().received().get(\n    \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    GetReceivedRequest\n        .builder()\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.Email.Received.GetAsync(\n    new Coss.Email.GetReceivedRequest { Id = \"rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
   },
   "GET /v1/received_emails/{id}/raw": {
     "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.email.received.get_raw(\n    id=\"id\",\n)",
@@ -1278,6 +1406,14 @@
     "php": "<?php\n\nuse Coss\\Coss;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->webhookListeners->delete(\n    'whlis_01k7c8m4q2f3e9v6t5r1n0p8yz',\n);",
     "java": "import com.coss.Coss;\nimport com.coss.resources.webhooklisteners.requests.DeleteWebhookListenersRequest;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.webhookListeners().delete(\n    \"whlis_01k7c8m4q2f3e9v6t5r1n0p8yz\",\n    DeleteWebhookListenersRequest\n        .builder()\n        .build()\n);",
     "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.WebhookListeners.DeleteAsync(\n    new DeleteWebhookListenersRequest { Id = \"whlis_01k7c8m4q2f3e9v6t5r1n0p8yz\" }\n);"
+  },
+  "POST /v1/webhook_events/test": {
+    "python": "from coss import Coss\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.webhook_events.test(\n    type=\"email.bounced\",\n    data={\n        \"recipient\": \"ada@example.com\"\n    },\n)",
+    "go": "import (\n\t\"context\"\n\n\tcoss \"github.com/cosscom/coss-go\"\n\tcossclient \"github.com/cosscom/coss-go/client\"\n)\n\nclient := cossclient.NewClient() // option.WithAPIKey(…) or COSS_API_KEY\n\nrequest := &coss.CreateTestWebhookEventRequest{\n    Type: coss.CreateTestWebhookEventRequestTypeEmailBounced,\n    Data: map[string]any{\n        \"recipient\": \"ada@example.com\",\n    },\n}\nclient.WebhookEvents.Test(\n    context.TODO(),\n    request,\n)",
+    "ruby": "require \"coss\"\n\nclient = Coss::Client.new # api_key: or COSS_API_KEY\n\nclient.webhook_events.test(\n  type: \"email.bounced\",\n  data: {\n    recipient: \"ada@example.com\"\n  }\n)",
+    "php": "<?php\n\nuse Coss\\Coss;\nuse Coss\\WebhookEvents\\Requests\\CreateTestWebhookEventRequest;\nuse Coss\\WebhookEvents\\Types\\CreateTestWebhookEventRequestType;\n\n$client = new Coss(); // apiKey: or COSS_API_KEY\n\n$client->webhookEvents->test(\n    new CreateTestWebhookEventRequest([\n        'type' => CreateTestWebhookEventRequestType::EmailBounced->value,\n        'data' => [\n            'recipient' => \"ada@example.com\",\n        ],\n    ]),\n);",
+    "java": "import com.coss.Coss;\nimport com.coss.resources.webhookevents.requests.CreateTestWebhookEventRequest;\nimport com.coss.resources.webhookevents.types.CreateTestWebhookEventRequestType;\nimport java.util.HashMap;\n\nCoss client = Coss.builder().build(); // .apiKey(…) or COSS_API_KEY\n\nclient.webhookEvents().test(\n    CreateTestWebhookEventRequest\n        .builder()\n        .type(CreateTestWebhookEventRequestType.EMAIL_BOUNCED)\n        .data(\n            new HashMap<String, Object>() {{\n                put(\"recipient\", \"ada@example.com\");\n            }}\n        )\n        .build()\n);",
+    "csharp": "using Coss;\n\nvar client = new CossClient(); // apiKey: or COSS_API_KEY\n\nawait client.WebhookEvents.TestAsync(\n    new CreateTestWebhookEventRequest\n    {\n        Type = CreateTestWebhookEventRequestType.EmailBounced,\n        Data = new Dictionary<string, object?>() { { \"recipient\", \"ada@example.com\" } },\n    }\n);"
   },
   "POST /v1/risk/assessments": {
     "python": "from coss import Coss\nfrom coss.risk import CreateRiskAssessmentRequestUser\n\nclient = Coss()  # api_key= or COSS_API_KEY\n\nclient.risk.assess(\n    idempotency_key=\"welcome-user-123\",\n    event=\"signup\",\n    user=CreateRiskAssessmentRequestUser(\n        email=\"ada@gmail.con\",\n    ),\n    ip=\"203.0.113.7\",\n    user_agent=\"Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15\",\n)",

@@ -10,6 +10,8 @@ public partial interface ICossClient
     public IDomainsClient Domains { get; }
     public IWebhookEndpointsClient WebhookEndpoints { get; }
     public IWebhookListenersClient WebhookListeners { get; }
+    public IWebhookEventsClient WebhookEvents { get; }
+    public ISmsClient Sms { get; }
     public IReputationClient Reputation { get; }
     public ILogsClient Logs { get; }
     public IAuditEventsClient AuditEvents { get; }

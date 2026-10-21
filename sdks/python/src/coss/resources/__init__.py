@@ -18,7 +18,9 @@ if typing.TYPE_CHECKING:
         logs,
         reputation,
         risk,
+        sms,
         webhook_endpoints,
+        webhook_events,
         webhook_listeners,
     )
     from .billing import UsageBillingRequestGranularity, UsageBillingRequestGroupBy, UsageBillingRequestMeter
@@ -28,22 +30,26 @@ if typing.TYPE_CHECKING:
         CreateRiskAssessmentRequestDevice,
         CreateRiskAssessmentRequestUser,
     )
+    from .sms import SendSmsRequestTagsItem
     from .webhook_endpoints import (
         CreateWebhookEndpointRequestApiVersion,
         CreateWebhookEndpointRequestEventTypesItem,
         UpdateWebhookEndpointRequestApiVersion,
         UpdateWebhookEndpointRequestEventTypesItem,
     )
+    from .webhook_events import CreateTestWebhookEventRequestType
     from .webhook_listeners import CreateWebhookListenerRequestApiVersion, CreateWebhookListenerRequestEventTypesItem
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateRiskAssessmentRequestCaptcha": ".risk",
     "CreateRiskAssessmentRequestContent": ".risk",
     "CreateRiskAssessmentRequestDevice": ".risk",
     "CreateRiskAssessmentRequestUser": ".risk",
+    "CreateTestWebhookEventRequestType": ".webhook_events",
     "CreateWebhookEndpointRequestApiVersion": ".webhook_endpoints",
     "CreateWebhookEndpointRequestEventTypesItem": ".webhook_endpoints",
     "CreateWebhookListenerRequestApiVersion": ".webhook_listeners",
     "CreateWebhookListenerRequestEventTypesItem": ".webhook_listeners",
+    "SendSmsRequestTagsItem": ".sms",
     "UpdateWebhookEndpointRequestApiVersion": ".webhook_endpoints",
     "UpdateWebhookEndpointRequestEventTypesItem": ".webhook_endpoints",
     "UsageBillingRequestGranularity": ".billing",
@@ -60,7 +66,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "logs": ".logs",
     "reputation": ".reputation",
     "risk": ".risk",
+    "sms": ".sms",
     "webhook_endpoints": ".webhook_endpoints",
+    "webhook_events": ".webhook_events",
     "webhook_listeners": ".webhook_listeners",
 }
 
@@ -91,10 +99,12 @@ __all__ = [
     "CreateRiskAssessmentRequestContent",
     "CreateRiskAssessmentRequestDevice",
     "CreateRiskAssessmentRequestUser",
+    "CreateTestWebhookEventRequestType",
     "CreateWebhookEndpointRequestApiVersion",
     "CreateWebhookEndpointRequestEventTypesItem",
     "CreateWebhookListenerRequestApiVersion",
     "CreateWebhookListenerRequestEventTypesItem",
+    "SendSmsRequestTagsItem",
     "UpdateWebhookEndpointRequestApiVersion",
     "UpdateWebhookEndpointRequestEventTypesItem",
     "UsageBillingRequestGranularity",
@@ -111,6 +121,8 @@ __all__ = [
     "logs",
     "reputation",
     "risk",
+    "sms",
     "webhook_endpoints",
+    "webhook_events",
     "webhook_listeners",
 ]

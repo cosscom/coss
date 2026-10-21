@@ -569,6 +569,22 @@ func TestSettersEnvironmentAPIKey(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetAccess", func(t *testing.T) {
+		obj := &EnvironmentAPIKey{}
+		var fernTestValueAccess EnvironmentAPIKeyAccess
+		obj.SetAccess(fernTestValueAccess)
+		assert.Equal(t, fernTestValueAccess, obj.Access)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPermissions", func(t *testing.T) {
+		obj := &EnvironmentAPIKey{}
+		var fernTestValuePermissions []string
+		obj.SetPermissions(fernTestValuePermissions)
+		assert.Equal(t, fernTestValuePermissions, obj.Permissions)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 }
 
 func TestGettersEnvironmentAPIKey(t *testing.T) {
@@ -661,6 +677,62 @@ func TestGettersEnvironmentAPIKey(t *testing.T) {
 		_ = obj.GetStart() // Should return zero value
 	})
 
+	t.Run("GetAccess", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EnvironmentAPIKey{}
+		var expected EnvironmentAPIKeyAccess
+		obj.Access = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAccess(), "getter should return the property value")
+	})
+
+	t.Run("GetAccess_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *EnvironmentAPIKey
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAccess() // Should return zero value
+	})
+
+	t.Run("GetPermissions", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EnvironmentAPIKey{}
+		var expected []string
+		obj.Permissions = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPermissions(), "getter should return the property value")
+	})
+
+	t.Run("GetPermissions_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EnvironmentAPIKey{}
+		obj.Permissions = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPermissions(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPermissions_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *EnvironmentAPIKey
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPermissions() // Should return zero value
+	})
+
 }
 
 func TestSettersMarkExplicitEnvironmentAPIKey(t *testing.T) {
@@ -734,6 +806,68 @@ func TestSettersMarkExplicitEnvironmentAPIKey(t *testing.T) {
 
 		// Act
 		obj.SetStart(fernTestValueStart)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetAccess_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EnvironmentAPIKey{}
+		var fernTestValueAccess EnvironmentAPIKeyAccess
+
+		// Act
+		obj.SetAccess(fernTestValueAccess)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPermissions_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EnvironmentAPIKey{}
+		var fernTestValuePermissions []string
+
+		// Act
+		obj.SetPermissions(fernTestValuePermissions)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -1448,6 +1582,35 @@ func TestStringEnvironmentProject(t *testing.T) {
 		var obj *EnvironmentProject
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestEnumEnvironmentAPIKeyAccess(t *testing.T) {
+	t.Run("NewFromString_full", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewEnvironmentAPIKeyAccessFromString("full")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, EnvironmentAPIKeyAccess("full"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_restricted", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewEnvironmentAPIKeyAccessFromString("restricted")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, EnvironmentAPIKeyAccess("restricted"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewEnvironmentAPIKeyAccessFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewEnvironmentAPIKeyAccessFromString("full")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
 	})
 }
 

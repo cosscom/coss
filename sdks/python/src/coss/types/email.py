@@ -8,6 +8,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .email_attachment import EmailAttachment
+from .email_content_storage import EmailContentStorage
 from .email_failure import EmailFailure
 from .email_object import EmailObject
 from .email_recipient import EmailRecipient
@@ -76,6 +77,8 @@ class Email(UniversalBaseModel):
     """
     The broadcast the email is part of; `null` for any other email.
     """
+
+    content_storage: EmailContentStorage
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

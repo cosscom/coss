@@ -78,7 +78,7 @@ public record Broadcast : IJsonOnDeserialized
     public long? RecipientsEstimated { get; set; }
 
     /// <summary>
-    /// Why a paused broadcast waits: `paused` (by you), `billing_hold`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
+    /// Why a paused broadcast waits: `paused` (by you), `billing_hold`, `budget_exceeded`, `usage_limit`, `marketing_paused`, `account_suspended`, `sending_paused`.
     /// </summary>
     [JsonPropertyName("pause_reason")]
     public string? PauseReason { get; set; }

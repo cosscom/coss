@@ -19,7 +19,9 @@ import (
 	option "github.com/cosscom/coss-go/option"
 	reputation "github.com/cosscom/coss-go/reputation"
 	riskclient "github.com/cosscom/coss-go/risk/client"
+	smsclient "github.com/cosscom/coss-go/sms/client"
 	webhookendpointsclient "github.com/cosscom/coss-go/webhookendpoints/client"
+	webhookevents "github.com/cosscom/coss-go/webhookevents"
 	webhooklisteners "github.com/cosscom/coss-go/webhooklisteners"
 )
 
@@ -30,6 +32,8 @@ type Client struct {
 	Domains          *domainsclient.Client
 	WebhookEndpoints *webhookendpointsclient.Client
 	WebhookListeners *webhooklisteners.Client
+	WebhookEvents    *webhookevents.Client
+	Sms              *smsclient.Client
 	Reputation       *reputation.Client
 	Logs             *logs.Client
 	AuditEvents      *auditevents.Client
@@ -59,6 +63,8 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Domains:          domainsclient.NewClient(options),
 		WebhookEndpoints: webhookendpointsclient.NewClient(options),
 		WebhookListeners: webhooklisteners.NewClient(options),
+		WebhookEvents:    webhookevents.NewClient(options),
+		Sms:              smsclient.NewClient(options),
 		Reputation:       reputation.NewClient(options),
 		Logs:             logs.NewClient(options),
 		AuditEvents:      auditevents.NewClient(options),

@@ -1,4 +1,3 @@
-using Coss.Email;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -35,7 +34,7 @@ public class RemoveTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.RemoveAsync(
-            new RemoveSuppressionsRequest { Id = "id" }
+            new Coss.Email.RemoveSuppressionsRequest { Id = "id" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -66,7 +65,7 @@ public class RemoveTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.RemoveAsync(
-            new RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+            new Coss.Email.RemoveSuppressionsRequest { Id = "sup_01k7c8m4q2f3e9v6t5r1n0p8yz" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

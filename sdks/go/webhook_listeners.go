@@ -1124,49 +1124,62 @@ func (c CreateWebhookListenerRequestAPIVersion) Ptr() *CreateWebhookListenerRequ
 type CreateWebhookListenerRequestEventTypesItem string
 
 const (
-	CreateWebhookListenerRequestEventTypesItemEmailSent                    CreateWebhookListenerRequestEventTypesItem = "email.sent"
-	CreateWebhookListenerRequestEventTypesItemEmailDelivered               CreateWebhookListenerRequestEventTypesItem = "email.delivered"
-	CreateWebhookListenerRequestEventTypesItemEmailDeliveryDelayed         CreateWebhookListenerRequestEventTypesItem = "email.delivery_delayed"
-	CreateWebhookListenerRequestEventTypesItemEmailBounced                 CreateWebhookListenerRequestEventTypesItem = "email.bounced"
-	CreateWebhookListenerRequestEventTypesItemEmailComplained              CreateWebhookListenerRequestEventTypesItem = "email.complained"
-	CreateWebhookListenerRequestEventTypesItemEmailFailed                  CreateWebhookListenerRequestEventTypesItem = "email.failed"
-	CreateWebhookListenerRequestEventTypesItemEmailSuppressed              CreateWebhookListenerRequestEventTypesItem = "email.suppressed"
-	CreateWebhookListenerRequestEventTypesItemEmailScheduled               CreateWebhookListenerRequestEventTypesItem = "email.scheduled"
-	CreateWebhookListenerRequestEventTypesItemEmailCanceled                CreateWebhookListenerRequestEventTypesItem = "email.canceled"
-	CreateWebhookListenerRequestEventTypesItemEmailOpened                  CreateWebhookListenerRequestEventTypesItem = "email.opened"
-	CreateWebhookListenerRequestEventTypesItemEmailClicked                 CreateWebhookListenerRequestEventTypesItem = "email.clicked"
-	CreateWebhookListenerRequestEventTypesItemEmailRescheduled             CreateWebhookListenerRequestEventTypesItem = "email.rescheduled"
-	CreateWebhookListenerRequestEventTypesItemEmailUnsubscribed            CreateWebhookListenerRequestEventTypesItem = "email.unsubscribed"
-	CreateWebhookListenerRequestEventTypesItemEmailReceived                CreateWebhookListenerRequestEventTypesItem = "email.received"
-	CreateWebhookListenerRequestEventTypesItemDomainDmarcReportReceived    CreateWebhookListenerRequestEventTypesItem = "domain.dmarc_report_received"
-	CreateWebhookListenerRequestEventTypesItemAccountReputationWarning     CreateWebhookListenerRequestEventTypesItem = "account.reputation_warning"
-	CreateWebhookListenerRequestEventTypesItemAccountReputationRecovered   CreateWebhookListenerRequestEventTypesItem = "account.reputation_recovered"
-	CreateWebhookListenerRequestEventTypesItemAccountSuspended             CreateWebhookListenerRequestEventTypesItem = "account.suspended"
-	CreateWebhookListenerRequestEventTypesItemAccountReinstated            CreateWebhookListenerRequestEventTypesItem = "account.reinstated"
-	CreateWebhookListenerRequestEventTypesItemAccountMarketingPaused       CreateWebhookListenerRequestEventTypesItem = "account.marketing_paused"
-	CreateWebhookListenerRequestEventTypesItemAccountMarketingReinstated   CreateWebhookListenerRequestEventTypesItem = "account.marketing_reinstated"
-	CreateWebhookListenerRequestEventTypesItemHookEndpointDisabled         CreateWebhookListenerRequestEventTypesItem = "hook_endpoint.disabled"
-	CreateWebhookListenerRequestEventTypesItemBillingInvoiceFinalized      CreateWebhookListenerRequestEventTypesItem = "billing.invoice_finalized"
-	CreateWebhookListenerRequestEventTypesItemBillingInvoicePaid           CreateWebhookListenerRequestEventTypesItem = "billing.invoice_paid"
-	CreateWebhookListenerRequestEventTypesItemBillingInvoicePaymentFailed  CreateWebhookListenerRequestEventTypesItem = "billing.invoice_payment_failed"
-	CreateWebhookListenerRequestEventTypesItemBillingInvoiceVoided         CreateWebhookListenerRequestEventTypesItem = "billing.invoice_voided"
-	CreateWebhookListenerRequestEventTypesItemBillingPlanChanged           CreateWebhookListenerRequestEventTypesItem = "billing.plan_changed"
-	CreateWebhookListenerRequestEventTypesItemBillingUsageThresholdReached CreateWebhookListenerRequestEventTypesItem = "billing.usage_threshold_reached"
-	CreateWebhookListenerRequestEventTypesItemBillingHoldPlaced            CreateWebhookListenerRequestEventTypesItem = "billing.hold_placed"
-	CreateWebhookListenerRequestEventTypesItemBillingHoldLifted            CreateWebhookListenerRequestEventTypesItem = "billing.hold_lifted"
-	CreateWebhookListenerRequestEventTypesItemBillingCreditGranted         CreateWebhookListenerRequestEventTypesItem = "billing.credit_granted"
-	CreateWebhookListenerRequestEventTypesItemRiskAssessmentReview         CreateWebhookListenerRequestEventTypesItem = "risk.assessment.review"
-	CreateWebhookListenerRequestEventTypesItemRiskAssessmentReviewed       CreateWebhookListenerRequestEventTypesItem = "risk.assessment.reviewed"
-	CreateWebhookListenerRequestEventTypesItemContactCreated               CreateWebhookListenerRequestEventTypesItem = "contact.created"
-	CreateWebhookListenerRequestEventTypesItemContactUpdated               CreateWebhookListenerRequestEventTypesItem = "contact.updated"
-	CreateWebhookListenerRequestEventTypesItemContactDeleted               CreateWebhookListenerRequestEventTypesItem = "contact.deleted"
-	CreateWebhookListenerRequestEventTypesItemContactUnsubscribed          CreateWebhookListenerRequestEventTypesItem = "contact.unsubscribed"
-	CreateWebhookListenerRequestEventTypesItemContactConfirmed             CreateWebhookListenerRequestEventTypesItem = "contact.confirmed"
-	CreateWebhookListenerRequestEventTypesItemBroadcastSending             CreateWebhookListenerRequestEventTypesItem = "broadcast.sending"
-	CreateWebhookListenerRequestEventTypesItemBroadcastSent                CreateWebhookListenerRequestEventTypesItem = "broadcast.sent"
-	CreateWebhookListenerRequestEventTypesItemBroadcastPaused              CreateWebhookListenerRequestEventTypesItem = "broadcast.paused"
-	CreateWebhookListenerRequestEventTypesItemBroadcastCanceled            CreateWebhookListenerRequestEventTypesItem = "broadcast.canceled"
-	CreateWebhookListenerRequestEventTypesItemBroadcastFailed              CreateWebhookListenerRequestEventTypesItem = "broadcast.failed"
+	CreateWebhookListenerRequestEventTypesItemEmailSent                     CreateWebhookListenerRequestEventTypesItem = "email.sent"
+	CreateWebhookListenerRequestEventTypesItemEmailDelivered                CreateWebhookListenerRequestEventTypesItem = "email.delivered"
+	CreateWebhookListenerRequestEventTypesItemEmailDeliveryDelayed          CreateWebhookListenerRequestEventTypesItem = "email.delivery_delayed"
+	CreateWebhookListenerRequestEventTypesItemEmailBounced                  CreateWebhookListenerRequestEventTypesItem = "email.bounced"
+	CreateWebhookListenerRequestEventTypesItemEmailComplained               CreateWebhookListenerRequestEventTypesItem = "email.complained"
+	CreateWebhookListenerRequestEventTypesItemEmailFailed                   CreateWebhookListenerRequestEventTypesItem = "email.failed"
+	CreateWebhookListenerRequestEventTypesItemEmailSuppressed               CreateWebhookListenerRequestEventTypesItem = "email.suppressed"
+	CreateWebhookListenerRequestEventTypesItemEmailScheduled                CreateWebhookListenerRequestEventTypesItem = "email.scheduled"
+	CreateWebhookListenerRequestEventTypesItemEmailCanceled                 CreateWebhookListenerRequestEventTypesItem = "email.canceled"
+	CreateWebhookListenerRequestEventTypesItemEmailOpened                   CreateWebhookListenerRequestEventTypesItem = "email.opened"
+	CreateWebhookListenerRequestEventTypesItemEmailClicked                  CreateWebhookListenerRequestEventTypesItem = "email.clicked"
+	CreateWebhookListenerRequestEventTypesItemEmailRescheduled              CreateWebhookListenerRequestEventTypesItem = "email.rescheduled"
+	CreateWebhookListenerRequestEventTypesItemEmailUnsubscribed             CreateWebhookListenerRequestEventTypesItem = "email.unsubscribed"
+	CreateWebhookListenerRequestEventTypesItemEmailReceived                 CreateWebhookListenerRequestEventTypesItem = "email.received"
+	CreateWebhookListenerRequestEventTypesItemDomainDmarcReportReceived     CreateWebhookListenerRequestEventTypesItem = "domain.dmarc_report_received"
+	CreateWebhookListenerRequestEventTypesItemAccountReputationWarning      CreateWebhookListenerRequestEventTypesItem = "account.reputation_warning"
+	CreateWebhookListenerRequestEventTypesItemAccountReputationRecovered    CreateWebhookListenerRequestEventTypesItem = "account.reputation_recovered"
+	CreateWebhookListenerRequestEventTypesItemAccountSuspended              CreateWebhookListenerRequestEventTypesItem = "account.suspended"
+	CreateWebhookListenerRequestEventTypesItemAccountReinstated             CreateWebhookListenerRequestEventTypesItem = "account.reinstated"
+	CreateWebhookListenerRequestEventTypesItemAccountMarketingPaused        CreateWebhookListenerRequestEventTypesItem = "account.marketing_paused"
+	CreateWebhookListenerRequestEventTypesItemAccountMarketingReinstated    CreateWebhookListenerRequestEventTypesItem = "account.marketing_reinstated"
+	CreateWebhookListenerRequestEventTypesItemHookEndpointDisabled          CreateWebhookListenerRequestEventTypesItem = "hook_endpoint.disabled"
+	CreateWebhookListenerRequestEventTypesItemBillingInvoiceFinalized       CreateWebhookListenerRequestEventTypesItem = "billing.invoice_finalized"
+	CreateWebhookListenerRequestEventTypesItemBillingInvoicePaid            CreateWebhookListenerRequestEventTypesItem = "billing.invoice_paid"
+	CreateWebhookListenerRequestEventTypesItemBillingInvoicePaymentFailed   CreateWebhookListenerRequestEventTypesItem = "billing.invoice_payment_failed"
+	CreateWebhookListenerRequestEventTypesItemBillingInvoiceVoided          CreateWebhookListenerRequestEventTypesItem = "billing.invoice_voided"
+	CreateWebhookListenerRequestEventTypesItemBillingPlanChanged            CreateWebhookListenerRequestEventTypesItem = "billing.plan_changed"
+	CreateWebhookListenerRequestEventTypesItemBillingUsageThresholdReached  CreateWebhookListenerRequestEventTypesItem = "billing.usage_threshold_reached"
+	CreateWebhookListenerRequestEventTypesItemBillingHoldPlaced             CreateWebhookListenerRequestEventTypesItem = "billing.hold_placed"
+	CreateWebhookListenerRequestEventTypesItemBillingHoldLifted             CreateWebhookListenerRequestEventTypesItem = "billing.hold_lifted"
+	CreateWebhookListenerRequestEventTypesItemBillingCreditGranted          CreateWebhookListenerRequestEventTypesItem = "billing.credit_granted"
+	CreateWebhookListenerRequestEventTypesItemBillingBudgetThresholdReached CreateWebhookListenerRequestEventTypesItem = "billing.budget_threshold_reached"
+	CreateWebhookListenerRequestEventTypesItemBillingBudgetHoldPlaced       CreateWebhookListenerRequestEventTypesItem = "billing.budget_hold_placed"
+	CreateWebhookListenerRequestEventTypesItemBillingBudgetHoldLifted       CreateWebhookListenerRequestEventTypesItem = "billing.budget_hold_lifted"
+	CreateWebhookListenerRequestEventTypesItemRiskAssessmentReview          CreateWebhookListenerRequestEventTypesItem = "risk.assessment.review"
+	CreateWebhookListenerRequestEventTypesItemRiskAssessmentReviewed        CreateWebhookListenerRequestEventTypesItem = "risk.assessment.reviewed"
+	CreateWebhookListenerRequestEventTypesItemContactCreated                CreateWebhookListenerRequestEventTypesItem = "contact.created"
+	CreateWebhookListenerRequestEventTypesItemContactUpdated                CreateWebhookListenerRequestEventTypesItem = "contact.updated"
+	CreateWebhookListenerRequestEventTypesItemContactDeleted                CreateWebhookListenerRequestEventTypesItem = "contact.deleted"
+	CreateWebhookListenerRequestEventTypesItemContactUnsubscribed           CreateWebhookListenerRequestEventTypesItem = "contact.unsubscribed"
+	CreateWebhookListenerRequestEventTypesItemContactConfirmed              CreateWebhookListenerRequestEventTypesItem = "contact.confirmed"
+	CreateWebhookListenerRequestEventTypesItemBroadcastSending              CreateWebhookListenerRequestEventTypesItem = "broadcast.sending"
+	CreateWebhookListenerRequestEventTypesItemBroadcastSent                 CreateWebhookListenerRequestEventTypesItem = "broadcast.sent"
+	CreateWebhookListenerRequestEventTypesItemBroadcastPaused               CreateWebhookListenerRequestEventTypesItem = "broadcast.paused"
+	CreateWebhookListenerRequestEventTypesItemBroadcastCanceled             CreateWebhookListenerRequestEventTypesItem = "broadcast.canceled"
+	CreateWebhookListenerRequestEventTypesItemBroadcastFailed               CreateWebhookListenerRequestEventTypesItem = "broadcast.failed"
+	CreateWebhookListenerRequestEventTypesItemSmsScheduled                  CreateWebhookListenerRequestEventTypesItem = "sms.scheduled"
+	CreateWebhookListenerRequestEventTypesItemSmsSent                       CreateWebhookListenerRequestEventTypesItem = "sms.sent"
+	CreateWebhookListenerRequestEventTypesItemSmsDelivered                  CreateWebhookListenerRequestEventTypesItem = "sms.delivered"
+	CreateWebhookListenerRequestEventTypesItemSmsUndelivered                CreateWebhookListenerRequestEventTypesItem = "sms.undelivered"
+	CreateWebhookListenerRequestEventTypesItemSmsFailed                     CreateWebhookListenerRequestEventTypesItem = "sms.failed"
+	CreateWebhookListenerRequestEventTypesItemSmsSuppressed                 CreateWebhookListenerRequestEventTypesItem = "sms.suppressed"
+	CreateWebhookListenerRequestEventTypesItemSmsCanceled                   CreateWebhookListenerRequestEventTypesItem = "sms.canceled"
+	CreateWebhookListenerRequestEventTypesItemSmsReceived                   CreateWebhookListenerRequestEventTypesItem = "sms.received"
+	CreateWebhookListenerRequestEventTypesItemSmsOptedOut                   CreateWebhookListenerRequestEventTypesItem = "sms.opted_out"
+	CreateWebhookListenerRequestEventTypesItemSmsOptedIn                    CreateWebhookListenerRequestEventTypesItem = "sms.opted_in"
 )
 
 func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWebhookListenerRequestEventTypesItem, error) {
@@ -1233,6 +1246,12 @@ func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookListenerRequestEventTypesItemBillingHoldLifted, nil
 	case "billing.credit_granted":
 		return CreateWebhookListenerRequestEventTypesItemBillingCreditGranted, nil
+	case "billing.budget_threshold_reached":
+		return CreateWebhookListenerRequestEventTypesItemBillingBudgetThresholdReached, nil
+	case "billing.budget_hold_placed":
+		return CreateWebhookListenerRequestEventTypesItemBillingBudgetHoldPlaced, nil
+	case "billing.budget_hold_lifted":
+		return CreateWebhookListenerRequestEventTypesItemBillingBudgetHoldLifted, nil
 	case "risk.assessment.review":
 		return CreateWebhookListenerRequestEventTypesItemRiskAssessmentReview, nil
 	case "risk.assessment.reviewed":
@@ -1257,6 +1276,26 @@ func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookListenerRequestEventTypesItemBroadcastCanceled, nil
 	case "broadcast.failed":
 		return CreateWebhookListenerRequestEventTypesItemBroadcastFailed, nil
+	case "sms.scheduled":
+		return CreateWebhookListenerRequestEventTypesItemSmsScheduled, nil
+	case "sms.sent":
+		return CreateWebhookListenerRequestEventTypesItemSmsSent, nil
+	case "sms.delivered":
+		return CreateWebhookListenerRequestEventTypesItemSmsDelivered, nil
+	case "sms.undelivered":
+		return CreateWebhookListenerRequestEventTypesItemSmsUndelivered, nil
+	case "sms.failed":
+		return CreateWebhookListenerRequestEventTypesItemSmsFailed, nil
+	case "sms.suppressed":
+		return CreateWebhookListenerRequestEventTypesItemSmsSuppressed, nil
+	case "sms.canceled":
+		return CreateWebhookListenerRequestEventTypesItemSmsCanceled, nil
+	case "sms.received":
+		return CreateWebhookListenerRequestEventTypesItemSmsReceived, nil
+	case "sms.opted_out":
+		return CreateWebhookListenerRequestEventTypesItemSmsOptedOut, nil
+	case "sms.opted_in":
+		return CreateWebhookListenerRequestEventTypesItemSmsOptedIn, nil
 	}
 	var t CreateWebhookListenerRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

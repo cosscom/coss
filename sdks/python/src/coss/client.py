@@ -23,7 +23,9 @@ if typing.TYPE_CHECKING:
     from .resources.logs.client import AsyncLogsClient, LogsClient
     from .resources.reputation.client import AsyncReputationClient, ReputationClient
     from .resources.risk.client import AsyncRiskClient, RiskClient
+    from .resources.sms.client import AsyncSmsClient, SmsClient
     from .resources.webhook_endpoints.client import AsyncWebhookEndpointsClient, WebhookEndpointsClient
+    from .resources.webhook_events.client import AsyncWebhookEventsClient, WebhookEventsClient
     from .resources.webhook_listeners.client import AsyncWebhookListenersClient, WebhookListenersClient
 
 
@@ -123,6 +125,8 @@ class Coss:
         self._domains: typing.Optional[DomainsClient] = None
         self._webhook_endpoints: typing.Optional[WebhookEndpointsClient] = None
         self._webhook_listeners: typing.Optional[WebhookListenersClient] = None
+        self._webhook_events: typing.Optional[WebhookEventsClient] = None
+        self._sms: typing.Optional[SmsClient] = None
         self._reputation: typing.Optional[ReputationClient] = None
         self._logs: typing.Optional[LogsClient] = None
         self._audit_events: typing.Optional[AuditEventsClient] = None
@@ -178,6 +182,22 @@ class Coss:
 
             self._webhook_listeners = WebhookListenersClient(client_wrapper=self._client_wrapper)
         return self._webhook_listeners
+
+    @property
+    def webhook_events(self):
+        if self._webhook_events is None:
+            from .resources.webhook_events.client import WebhookEventsClient  # noqa: E402
+
+            self._webhook_events = WebhookEventsClient(client_wrapper=self._client_wrapper)
+        return self._webhook_events
+
+    @property
+    def sms(self):
+        if self._sms is None:
+            from .resources.sms.client import SmsClient  # noqa: E402
+
+            self._sms = SmsClient(client_wrapper=self._client_wrapper)
+        return self._sms
 
     @property
     def reputation(self):
@@ -353,6 +373,8 @@ class AsyncCoss:
         self._domains: typing.Optional[AsyncDomainsClient] = None
         self._webhook_endpoints: typing.Optional[AsyncWebhookEndpointsClient] = None
         self._webhook_listeners: typing.Optional[AsyncWebhookListenersClient] = None
+        self._webhook_events: typing.Optional[AsyncWebhookEventsClient] = None
+        self._sms: typing.Optional[AsyncSmsClient] = None
         self._reputation: typing.Optional[AsyncReputationClient] = None
         self._logs: typing.Optional[AsyncLogsClient] = None
         self._audit_events: typing.Optional[AsyncAuditEventsClient] = None
@@ -408,6 +430,22 @@ class AsyncCoss:
 
             self._webhook_listeners = AsyncWebhookListenersClient(client_wrapper=self._client_wrapper)
         return self._webhook_listeners
+
+    @property
+    def webhook_events(self):
+        if self._webhook_events is None:
+            from .resources.webhook_events.client import AsyncWebhookEventsClient  # noqa: E402
+
+            self._webhook_events = AsyncWebhookEventsClient(client_wrapper=self._client_wrapper)
+        return self._webhook_events
+
+    @property
+    def sms(self):
+        if self._sms is None:
+            from .resources.sms.client import AsyncSmsClient  # noqa: E402
+
+            self._sms = AsyncSmsClient(client_wrapper=self._client_wrapper)
+        return self._sms
 
     @property
     def reputation(self):

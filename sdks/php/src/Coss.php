@@ -8,6 +8,8 @@ use Coss\Email\EmailClient;
 use Coss\Domains\DomainsClient;
 use Coss\WebhookEndpoints\WebhookEndpointsClient;
 use Coss\WebhookListeners\WebhookListenersClient;
+use Coss\WebhookEvents\WebhookEventsClient;
+use Coss\Sms\SmsClient;
 use Coss\Reputation\ReputationClient;
 use Coss\Logs\LogsClient;
 use Coss\AuditEvents\AuditEventsClient;
@@ -50,6 +52,16 @@ class Coss
      * @var WebhookListenersClient $webhookListeners
      */
     public WebhookListenersClient $webhookListeners;
+
+    /**
+     * @var WebhookEventsClient $webhookEvents
+     */
+    public WebhookEventsClient $webhookEvents;
+
+    /**
+     * @var SmsClient $sms
+     */
+    public SmsClient $sms;
 
     /**
      * @var ReputationClient $reputation
@@ -148,6 +160,8 @@ class Coss
         $this->domains = new DomainsClient($this->client, $this->options);
         $this->webhookEndpoints = new WebhookEndpointsClient($this->client, $this->options);
         $this->webhookListeners = new WebhookListenersClient($this->client, $this->options);
+        $this->webhookEvents = new WebhookEventsClient($this->client, $this->options);
+        $this->sms = new SmsClient($this->client, $this->options);
         $this->reputation = new ReputationClient($this->client, $this->options);
         $this->logs = new LogsClient($this->client, $this->options);
         $this->auditEvents = new AuditEventsClient($this->client, $this->options);

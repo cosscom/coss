@@ -32,7 +32,12 @@ public class GetTest : BaseMockServerTest
               "api_key": {
                 "id": "id",
                 "name": "name",
-                "start": "start"
+                "start": "start",
+                "access": "full",
+                "permissions": [
+                  "permissions",
+                  "permissions"
+                ]
               }
             }
             """;
@@ -74,7 +79,12 @@ public class GetTest : BaseMockServerTest
               "api_key": {
                 "id": "key_01k7c8m4q2f3e9v6t5r1n0p8yz",
                 "name": "Backend",
-                "start": "coss_test_Ab"
+                "start": "coss_test_Ab",
+                "access": "restricted",
+                "permissions": [
+                  "email:send",
+                  "email:read"
+                ]
               }
             }
             """;

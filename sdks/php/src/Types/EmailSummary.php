@@ -146,6 +146,12 @@ class EmailSummary extends JsonSerializableType
     public ?string $broadcastId;
 
     /**
+     * @var EmailContentStorage $contentStorage
+     */
+    #[JsonProperty('content_storage')]
+    public EmailContentStorage $contentStorage;
+
+    /**
      * @param array{
      *   object: value-of<EmailSummaryObject>,
      *   id: string,
@@ -162,6 +168,7 @@ class EmailSummary extends JsonSerializableType
      *   sandbox: bool,
      *   tracking: EmailTracking,
      *   createdAt: DateTime,
+     *   contentStorage: EmailContentStorage,
      *   category?: ?string,
      *   failure?: ?EmailFailure,
      *   sentAt?: ?DateTime,
@@ -196,6 +203,7 @@ class EmailSummary extends JsonSerializableType
         $this->batchId = $values['batchId'] ?? null;
         $this->template = $values['template'] ?? null;
         $this->broadcastId = $values['broadcastId'] ?? null;
+        $this->contentStorage = $values['contentStorage'];
     }
 
     /**

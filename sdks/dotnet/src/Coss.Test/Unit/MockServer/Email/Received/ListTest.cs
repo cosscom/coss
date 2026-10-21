@@ -1,4 +1,3 @@
-using Coss.Email;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -136,7 +135,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Email.Received.ListAsync(new ListReceivedRequest());
+        var response = await Client.Email.Received.ListAsync(new Coss.Email.ListReceivedRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -201,7 +200,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Email.Received.ListAsync(new ListReceivedRequest());
+        var response = await Client.Email.Received.ListAsync(new Coss.Email.ListReceivedRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

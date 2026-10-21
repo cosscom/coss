@@ -126,7 +126,11 @@ public class SendBatchTest : BaseMockServerTest
                     "version": 1000000,
                     "locale": "locale"
                   },
-                  "broadcast_id": "broadcast_id"
+                  "broadcast_id": "broadcast_id",
+                  "content_storage": {
+                    "mode": "store",
+                    "discarded_at": "2024-01-15T09:30:00.000Z"
+                  }
                 },
                 {
                   "object": "email",
@@ -222,7 +226,11 @@ public class SendBatchTest : BaseMockServerTest
                     "version": 1000000,
                     "locale": "locale"
                   },
-                  "broadcast_id": "broadcast_id"
+                  "broadcast_id": "broadcast_id",
+                  "content_storage": {
+                    "mode": "store",
+                    "discarded_at": "2024-01-15T09:30:00.000Z"
+                  }
                 }
               ],
               "created_at": "2024-01-15T09:30:00.000Z"
@@ -383,7 +391,10 @@ public class SendBatchTest : BaseMockServerTest
                     "click_count": 0
                   },
                   "created_at": "2026-10-10T12:00:00.000Z",
-                  "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8"
+                  "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
+                  "content_storage": {
+                    "mode": "store"
+                  }
                 }
               ],
               "created_at": "2026-10-10T12:00:00.000Z"

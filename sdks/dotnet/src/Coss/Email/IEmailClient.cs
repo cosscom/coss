@@ -6,15 +6,16 @@ public partial interface IEmailClient
 {
     public ITemplatesClient Templates { get; }
     public IDedicatedIpsClient DedicatedIps { get; }
-    public ISuppressionsClient Suppressions { get; }
+    public Coss.Email.ISuppressionsClient Suppressions { get; }
     public Coss.Email.ITrackingClient Tracking { get; }
+    public IStorageClient Storage { get; }
     public IContactsClient Contacts { get; }
     public IBroadcastsClient Broadcasts { get; }
     public IAudiencesClient Audiences { get; }
     public ISegmentsClient Segments { get; }
     public ITopicsClient Topics { get; }
     public IMarketingSettingsClient MarketingSettings { get; }
-    public IReceivedClient Received { get; }
+    public Coss.Email.IReceivedClient Received { get; }
 
     /// <summary>
     /// Emails sent from the API key's environment, newest first, without their content (retrieve an email for `html`, `text`, `headers` and `attachments`). Filter by recipient (`to`), by the email's or a recipient's status, by category, batch or creation time. Pass the last `id` as `after` to get the next page while `has_more` is true.

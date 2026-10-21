@@ -15,6 +15,8 @@ public final class LogSource {
 
     public static final LogSource SMTP = new LogSource(Value.SMTP, "smtp");
 
+    public static final LogSource SMS = new LogSource(Value.SMS, "sms");
+
     public static final LogSource API = new LogSource(Value.API, "api");
 
     private final Value value;
@@ -56,6 +58,8 @@ public final class LogSource {
                 return visitor.visitRisk();
             case SMTP:
                 return visitor.visitSmtp();
+            case SMS:
+                return visitor.visitSms();
             case API:
                 return visitor.visitApi();
             case UNKNOWN:
@@ -75,6 +79,8 @@ public final class LogSource {
                 return RISK;
             case "smtp":
                 return SMTP;
+            case "sms":
+                return SMS;
             case "api":
                 return API;
             default:
@@ -93,6 +99,8 @@ public final class LogSource {
 
         SMTP,
 
+        SMS,
+
         UNKNOWN
     }
 
@@ -106,6 +114,8 @@ public final class LogSource {
         T visitRisk();
 
         T visitSmtp();
+
+        T visitSms();
 
         T visitUnknown(String unknownType);
     }

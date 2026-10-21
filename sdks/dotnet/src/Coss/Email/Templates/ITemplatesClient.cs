@@ -78,4 +78,13 @@ public partial interface ITemplatesClient
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+    /// </summary>
+    WithRawResponseTask<RenderedEmailTemplate> RenderAsync(
+        RenderEmailTemplateRequest request,
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
 }

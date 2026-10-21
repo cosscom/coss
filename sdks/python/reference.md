@@ -12,7 +12,7 @@
 <dl>
 <dd>
 
-Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
 </dd>
 </dl>
 </dd>
@@ -2131,6 +2131,531 @@ client.webhook_listeners.delete(
 </dl>
 </details>
 
+## WebhookEvents
+<details><summary><code>client.webhook_events.<a href="src/coss/webhook_events/client.py">test</a>(...) -> WebhookTestEvent</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a sample event of a type to the environment's enabled endpoints subscribed to it and its open listeners (`coss listen`), exactly as a real one is sent: same body, signature, retries and log lines. `coss trigger` calls it. Sandbox environments only. The ids in the sample are made up (pass real ones in `data` for a handler that looks them up), and nothing marks the event as a test: your handler takes it like the real thing. When nothing is subscribed, the event goes nowhere and isn't kept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.webhook_events.test(
+    type="email.bounced",
+    data={
+        "recipient": "ada@example.com"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**type:** `CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**data:** `typing.Optional[typing.Dict[str, typing.Any]]` — Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## SMS
+<details><summary><code>client.sms.<a href="src/coss/sms/client.py">list</a>(...) -> SmsList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent from the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[str]` — Only messages to this number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[str]` — Only messages in these statuses, comma-separated: `failed`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` — Only messages created at or after this time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` — Only messages created before this time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.<a href="src/coss/sms/client.py">send</a>(...) -> Sms</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Queues a text message from the API key's environment and returns it with `status: "queued"`; it is handed to the carrier moments later. Follow it with `GET /v1/sms/{id}` or the `sms.sent`, `sms.delivered`, `sms.undelivered` and `sms.failed` webhooks. Live (`coss_live_…`) keys send `from` one of the organization's numbers whose carrier registration is approved, to the countries the organization allows (US and Canada unless changed in the dashboard). Sandbox (`coss_test_…`) keys accept any `from`, deliver nothing and answer the SMS simulator's numbers (`+15005550006` delivered, `+15005550001` invalid, `+15005550004` filtered by the carrier, `+15005550009` opted out, `+15005550008` replies). A number on the environment's SMS suppression list (it replied STOP, or it can't receive SMS) is skipped: the message is `failed` with `suppressed`. Segments count against the organization's send quota, and each is billed by the destination country.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.sms import SendSmsRequestTagsItem
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.send(
+    idempotency_key="welcome-user-123",
+    from_="+14155550123",
+    to="+14155550199",
+    body="Your Acme code is 482913",
+    tags=[
+        SendSmsRequestTagsItem(
+            name="flow",
+            value="sign_in",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**from:** `str` — One of your organization's phone numbers, in E.164 form. Sandbox environments accept any number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `str` — The recipient's mobile number, in E.164 form.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**body:** `str` — The text. Messages are split into segments of 153 GSM-7 or 67 Unicode characters (152 or 66 from a toll-free number; 160 or 70 for a single one), each billed; at most 10 (1,520 GSM-7 or 660 Unicode characters).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated request with the same key and body returns the original message (with its current status) instead of sending again, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.List[SendSmsRequestTagsItem]]` — Up to 10 tags.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduled_at:** `typing.Optional[datetime.datetime]` — Send at this time instead of now (ISO 8601 with an offset, at most 30 days ahead). A time that is not in the future sends immediately.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.<a href="src/coss/sms/client.py">get</a>(...) -> Sms</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.get(
+    id="sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.<a href="src/coss/sms/client.py">list_events</a>(...) -> SmsEventList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the message, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.list_events(
+    id="sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.<a href="src/coss/sms/client.py">cancel</a>(...) -> Sms</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a message scheduled with `scheduled_at` before it is sent. Canceling a canceled message returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.cancel(
+    id="sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Reputation
 <details><summary><code>client.reputation.<a href="src/coss/reputation/client.py">get</a>() -> Reputation</code></summary>
 <dl>
@@ -2764,7 +3289,7 @@ client.billing.usage()
 <dl>
 <dd>
 
-**group_by:** `typing.Optional[UsageBillingRequestGroupBy]` — Split each bucket per environment.
+**group_by:** `typing.Optional[UsageBillingRequestGroupBy]` — Split each bucket per environment, project, API key or user (the member whose personal key it was).
     
 </dd>
 </dl>
@@ -5394,6 +5919,107 @@ client.email.templates.publish(
 </dl>
 </details>
 
+<details><summary><code>client.email.templates.<a href="src/coss/email/templates/client.py">render</a>(...) -> RenderedEmailTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.templates.render(
+    id="etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    locale="en",
+    variables={
+        "first_name": "Ada"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id or alias.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**version:** `typing.Optional[int]` — A published version to render. Default: the draft.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale:** `typing.Optional[str]` — The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the default locale, as sends do.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**variables:** `typing.Optional[typing.Dict[str, typing.Any]]` — Values by variable name, checked as a send checks them. Default: `sample_variables`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Email DedicatedIps
 <details><summary><code>client.email.dedicated_ips.<a href="src/coss/email/dedicated_ips/client.py">get</a>() -> DedicatedIpPool</code></summary>
 <dl>
@@ -6356,6 +6982,143 @@ client.email.tracking.update_category(
 <dd>
 
 **request:** `UpdateTrackingRuleRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Storage
+<details><summary><code>client.email.storage.<a href="src/coss/email/storage/client.py">get</a>() -> StorageSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Whether coss.com keeps the content of the environment's emails (`content_storage: "store"`, the default) or only until each email is sent, fails or is canceled (`"discard"`). Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.storage.get()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.storage.<a href="src/coss/email/storage/client.py">update</a>(...) -> StorageSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With `content_storage: "discard"`, emails sent from now on keep their subject, body, headers, template variables and attachment filenames only until they are sent, fail or are canceled (scheduled emails keep them until their time comes); request logs never keep them. Their metadata (addresses, tags, category, status, recipients, events) is kept as usual. Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.storage.update(
+    content_storage="discard",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**content_storage:** `UpdateStorageSettingsRequestContentStorage` — `store` keeps emails' content; `discard` clears it once they are sent.
     
 </dd>
 </dl>
@@ -15576,6 +16339,593 @@ client.risk.limit_buckets.update(
     
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Suppressions
+<details><summary><code>client.sms.suppressions.<a href="src/coss/sms/suppressions/client.py">list</a>(...) -> SmsSuppressionList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The SMS suppression list of the API key's environment, newest first: opt-outs, invalid numbers and numbers you added.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.suppressions.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone_number:** `typing.Optional[str]` — Only this number's entry.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.suppressions.<a href="src/coss/sms/suppressions/client.py">add</a>(...) -> SmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Later sends from the API key's environment to the number are skipped. Adding a number already on the list returns its entry with status 200.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.suppressions.add(
+    phone_number="+14155550199",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone_number:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.suppressions.<a href="src/coss/sms/suppressions/client.py">check</a>(...) -> SmsSuppressionCheck</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.suppressions.check(
+    phone_number="phone_number",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone_number:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.suppressions.<a href="src/coss/sms/suppressions/client.py">get</a>(...) -> SmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.suppressions.get(
+    id="smssup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.suppressions.<a href="src/coss/sms/suppressions/client.py">remove</a>(...) -> DeletedSmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends to the number go out again. Remove an opt-out only when the person asked to receive messages again (they can also reply START).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.suppressions.remove(
+    id="smssup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Received
+<details><summary><code>client.sms.received.<a href="src/coss/sms/received/client.py">list</a>(...) -> ReceivedSmsList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent to the organization's numbers whose replies go to the API key's environment, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.received.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**from:** `typing.Optional[str]` — Only messages from this number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[str]` — Only messages to this number of yours.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_after:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**created_before:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sms.received.<a href="src/coss/sms/received/client.py">get</a>(...) -> ReceivedSms</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.received.get(
+    id="smsin_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The received message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Numbers
+<details><summary><code>client.sms.numbers.<a href="src/coss/sms/numbers/client.py">list</a>() -> SmsNumberList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Every number of the organization, whether it can send live messages now (its carrier registration is approved) and whether its replies arrive in the API key's environment. Numbers are bought and registered in the dashboard.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sms.numbers.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
 
 <dl>
 <dd>

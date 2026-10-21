@@ -12,7 +12,7 @@
 <dl>
 <dd>
 
-Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key and show where it sends.
+Which environment, project and organization the API key belongs to, and the key itself. Any valid key can read its own environment (no permission needed): use it to check a key, show where it sends and what it may do.
 </dd>
 </dl>
 </dd>
@@ -1802,6 +1802,454 @@ client.WebhookListeners.Delete(
 </dl>
 </details>
 
+## WebhookEvents
+<details><summary><code>client.WebhookEvents.Test(request) -> *coss.WebhookTestEvent</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a sample event of a type to the environment's enabled endpoints subscribed to it and its open listeners (`coss listen`), exactly as a real one is sent: same body, signature, retries and log lines. `coss trigger` calls it. Sandbox environments only. The ids in the sample are made up (pass real ones in `data` for a handler that looks them up), and nothing marks the event as a test: your handler takes it like the real thing. When nothing is subscribed, the event goes nowhere and isn't kept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CreateTestWebhookEventRequest{
+    Type: coss.CreateTestWebhookEventRequestTypeEmailBounced,
+    Data: map[string]any{
+        "recipient": "ada@example.com",
+    },
+}
+client.WebhookEvents.Test(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**type_:** `coss.CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**data:** `map[string]any` — Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## SMS
+<details><summary><code>client.Sms.List() -> *coss.SmsList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent from the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.ListSmsRequest{}
+client.Sms.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `*string` — Only messages to this number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*string` — Only messages in these statuses, comma-separated: `failed`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**createdAfter:** `*time.Time` — Only messages created at or after this time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**createdBefore:** `*time.Time` — Only messages created before this time.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Send(request) -> *coss.Sms</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Queues a text message from the API key's environment and returns it with `status: "queued"`; it is handed to the carrier moments later. Follow it with `GET /v1/sms/{id}` or the `sms.sent`, `sms.delivered`, `sms.undelivered` and `sms.failed` webhooks. Live (`coss_live_…`) keys send `from` one of the organization's numbers whose carrier registration is approved, to the countries the organization allows (US and Canada unless changed in the dashboard). Sandbox (`coss_test_…`) keys accept any `from`, deliver nothing and answer the SMS simulator's numbers (`+15005550006` delivered, `+15005550001` invalid, `+15005550004` filtered by the carrier, `+15005550009` opted out, `+15005550008` replies). A number on the environment's SMS suppression list (it replied STOP, or it can't receive SMS) is skipped: the message is `failed` with `suppressed`. Segments count against the organization's send quota, and each is billed by the destination country.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.SendSmsRequest{
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    From: "+14155550123",
+    To: "+14155550199",
+    Body: "Your Acme code is 482913",
+    Tags: []*coss.SendSmsRequestTagsItem{
+        &coss.SendSmsRequestTagsItem{
+            Name: "flow",
+            Value: "sign_in",
+        },
+    },
+}
+client.Sms.Send(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated request with the same key and body returns the original message (with its current status) instead of sending again, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `string` — One of your organization's phone numbers, in E.164 form. Sandbox environments accept any number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `string` — The recipient's mobile number, in E.164 form.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**body:** `string` — The text. Messages are split into segments of 153 GSM-7 or 67 Unicode characters (152 or 66 from a toll-free number; 160 or 70 for a single one), each billed; at most 10 (1,520 GSM-7 or 660 Unicode characters).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `[]*coss.SendSmsRequestTagsItem` — Up to 10 tags.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduledAt:** `*time.Time` — Send at this time instead of now (ISO 8601 with an offset, at most 30 days ahead). A time that is not in the future sends immediately.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Get(ID) -> *coss.Sms</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.GetSmsRequest{
+    ID: "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.ListEvents(ID) -> *coss.SmsEventList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the message, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.ListEventsSmsRequest{
+    ID: "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.ListEvents(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Cancel(ID) -> *coss.Sms</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a message scheduled with `scheduled_at` before it is sent. Canceling a canceled message returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CancelSmsRequest{
+    ID: "sms_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.Cancel(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Reputation
 <details><summary><code>client.Reputation.Get() -> *coss.Reputation</code></summary>
 <dl>
@@ -2334,7 +2782,7 @@ client.Billing.Usage(
 <dl>
 <dd>
 
-**groupBy:** `*coss.UsageBillingRequestGroupBy` — Split each bucket per environment.
+**groupBy:** `*coss.UsageBillingRequestGroupBy` — Split each bucket per environment, project, API key or user (the member whose personal key it was).
     
 </dd>
 </dl>
@@ -4585,6 +5033,96 @@ client.Email.Templates.Publish(
 </dl>
 </details>
 
+<details><summary><code>client.Email.Templates.Render(ID, request) -> *coss.RenderedEmailTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's `sample_variables`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.RenderEmailTemplateRequest{
+    ID: "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    Locale: coss.String(
+        "en",
+    ),
+    Variables: map[string]any{
+        "first_name": "Ada",
+    },
+}
+client.Email.Templates.Render(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id or alias.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**version:** `*int64` — A published version to render. Default: the draft.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale:** `*string` — The locale to render, e.g. "pt-BR". Falls back to the language ("pt"), then to the default locale, as sends do.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**variables:** `map[string]any` — Values by variable name, checked as a send checks them. Default: `sample_variables`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Email DedicatedIps
 <details><summary><code>client.Email.DedicatedIps.Get() -> *coss.DedicatedIPPool</code></summary>
 <dl>
@@ -5372,6 +5910,108 @@ client.Email.Tracking.UpdateCategory(
 <dd>
 
 **request:** `*coss.UpdateTrackingRuleRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Storage
+<details><summary><code>client.Email.Storage.Get() -> *coss.StorageSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Whether coss.com keeps the content of the environment's emails (`content_storage: "store"`, the default) or only until each email is sent, fails or is canceled (`"discard"`). Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Email.Storage.Get(
+    context.TODO(),
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Storage.Update(request) -> *coss.StorageSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With `content_storage: "discard"`, emails sent from now on keep their subject, body, headers, template variables and attachment filenames only until they are sent, fail or are canceled (scheduled emails keep them until their time comes); request logs never keep them. Their metadata (addresses, tags, category, status, recipients, events) is kept as usual. Settings belong to the API key's own environment: a `coss_test_…` key only ever changes sandbox settings. Emails keep the setting that applied when they were sent.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.UpdateStorageSettingsRequest{
+    ContentStorage: email.UpdateStorageSettingsRequestContentStorageDiscard,
+}
+client.Email.Storage.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**contentStorage:** `email.UpdateStorageSettingsRequestContentStorage` — `store` keeps emails' content; `discard` clears it once they are sent.
     
 </dd>
 </dl>
@@ -13222,6 +13862,480 @@ client.Risk.LimitBuckets.Update(
 
 **onFailure:** `*risk.UpdateRiskLimitBucketRequestOnFailure` 
     
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Suppressions
+<details><summary><code>client.Sms.Suppressions.List() -> *coss.SmsSuppressionList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The SMS suppression list of the API key's environment, newest first: opt-outs, invalid numbers and numbers you added.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.ListSuppressionsRequest{}
+client.Sms.Suppressions.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phoneNumber:** `*string` — Only this number's entry.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.Add(request) -> *coss.SmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Later sends from the API key's environment to the number are skipped. Adding a number already on the list returns its entry with status 200.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.CreateSmsSuppressionRequest{
+    PhoneNumber: "+14155550199",
+}
+client.Sms.Suppressions.Add(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phoneNumber:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.Check() -> *coss.SmsSuppressionCheck</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.CheckSuppressionsRequest{
+    PhoneNumber: "phone_number",
+}
+client.Sms.Suppressions.Check(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phoneNumber:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.Get(ID) -> *coss.SmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.GetSuppressionsRequest{
+    ID: "smssup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.Suppressions.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Suppressions.Remove(ID) -> *coss.DeletedSmsSuppression</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends to the number go out again. Remove an opt-out only when the person asked to receive messages again (they can also reply START).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.RemoveSuppressionsRequest{
+    ID: "smssup_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.Suppressions.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Received
+<details><summary><code>client.Sms.Received.List() -> *coss.ReceivedSmsList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages sent to the organization's numbers whose replies go to the API key's environment, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.ListReceivedRequest{}
+client.Sms.Received.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**from:** `*string` — Only messages from this number.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `*string` — Only messages to this number of yours.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**createdAfter:** `*time.Time` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**createdBefore:** `*time.Time` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sms.Received.Get(ID) -> *coss.ReceivedSms</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sms.GetReceivedRequest{
+    ID: "smsin_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sms.Received.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The received message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sms Numbers
+<details><summary><code>client.Sms.Numbers.List() -> *coss.SmsNumberList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Every number of the organization, whether it can send live messages now (its carrier registration is approved) and whether its replies arrive in the API key's environment. Numbers are bought and registered in the dashboard.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Sms.Numbers.List(
+    context.TODO(),
+)
+```
 </dd>
 </dl>
 </dd>

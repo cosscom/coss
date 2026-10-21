@@ -4,7 +4,14 @@ import typing
 
 UsageMeter = typing.Union[
     typing.Literal[
-        "email.recipients", "email.dedicated_ip", "sms.segments", "video.participant_minutes", "scheduling.bookings"
+        "email.recipients",
+        "email.dedicated_ip",
+        "sms.segments",
+        "sms.received_segments",
+        "sms.numbers",
+        "sms.registrations",
+        "video.participant_minutes",
+        "scheduling.bookings",
     ],
     typing.Any,
 ]

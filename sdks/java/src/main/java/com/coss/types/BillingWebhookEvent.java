@@ -44,6 +44,10 @@ public final class BillingWebhookEvent {
             return visitor.visit((BillingWebhookEventFour) this.value);
         } else if (this.type == 5) {
             return visitor.visit((BillingWebhookEventFive) this.value);
+        } else if (this.type == 6) {
+            return visitor.visit((BillingWebhookEventSix) this.value);
+        } else if (this.type == 7) {
+            return visitor.visit((BillingWebhookEventSeven) this.value);
         }
         throw new IllegalStateException("Failed to visit value. This should never happen.");
     }
@@ -92,6 +96,14 @@ public final class BillingWebhookEvent {
         return new BillingWebhookEvent(value, 5);
     }
 
+    public static BillingWebhookEvent of(BillingWebhookEventSix value) {
+        return new BillingWebhookEvent(value, 6);
+    }
+
+    public static BillingWebhookEvent of(BillingWebhookEventSeven value) {
+        return new BillingWebhookEvent(value, 7);
+    }
+
     public interface Visitor<T> {
         T visit(BillingWebhookEventZero value);
 
@@ -104,6 +116,10 @@ public final class BillingWebhookEvent {
         T visit(BillingWebhookEventFour value);
 
         T visit(BillingWebhookEventFive value);
+
+        T visit(BillingWebhookEventSix value);
+
+        T visit(BillingWebhookEventSeven value);
     }
 
     static final class Deserializer extends StdDeserializer<BillingWebhookEvent> {
@@ -183,6 +199,30 @@ public final class BillingWebhookEvent {
                     && ((Map<?, ?>) value).containsKey("data")) {
                 try {
                     return of(ObjectMappers.JSON_MAPPER.convertValue(value, BillingWebhookEventFive.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, BillingWebhookEventSix.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, BillingWebhookEventSeven.class));
                 } catch (RuntimeException e) {
                 }
             }

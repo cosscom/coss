@@ -1984,6 +1984,9 @@ const (
 	BillingUsageItemMeterEmailRecipients         BillingUsageItemMeter = "email.recipients"
 	BillingUsageItemMeterEmailDedicatedIP        BillingUsageItemMeter = "email.dedicated_ip"
 	BillingUsageItemMeterSmsSegments             BillingUsageItemMeter = "sms.segments"
+	BillingUsageItemMeterSmsReceivedSegments     BillingUsageItemMeter = "sms.received_segments"
+	BillingUsageItemMeterSmsNumbers              BillingUsageItemMeter = "sms.numbers"
+	BillingUsageItemMeterSmsRegistrations        BillingUsageItemMeter = "sms.registrations"
 	BillingUsageItemMeterVideoParticipantMinutes BillingUsageItemMeter = "video.participant_minutes"
 	BillingUsageItemMeterSchedulingBookings      BillingUsageItemMeter = "scheduling.bookings"
 )
@@ -1996,6 +1999,12 @@ func NewBillingUsageItemMeterFromString(s string) (BillingUsageItemMeter, error)
 		return BillingUsageItemMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return BillingUsageItemMeterSmsSegments, nil
+	case "sms.received_segments":
+		return BillingUsageItemMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return BillingUsageItemMeterSmsNumbers, nil
+	case "sms.registrations":
+		return BillingUsageItemMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return BillingUsageItemMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2014,15 +2023,21 @@ var (
 	usageFieldMeter         = big.NewInt(1 << 1)
 	usageFieldDimension     = big.NewInt(1 << 2)
 	usageFieldEnvironmentID = big.NewInt(1 << 3)
-	usageFieldStart         = big.NewInt(1 << 4)
-	usageFieldEnd           = big.NewInt(1 << 5)
-	usageFieldQuantity      = big.NewInt(1 << 6)
+	usageFieldProjectID     = big.NewInt(1 << 4)
+	usageFieldAPIKeyID      = big.NewInt(1 << 5)
+	usageFieldUserID        = big.NewInt(1 << 6)
+	usageFieldStart         = big.NewInt(1 << 7)
+	usageFieldEnd           = big.NewInt(1 << 8)
+	usageFieldQuantity      = big.NewInt(1 << 9)
 )
 
 // usageNullableFields maps the wire names of Usage's nullable fields (required or optional) to their field bits.
 var usageNullableFields = map[string]*big.Int{
 	"dimension":      usageFieldDimension,
 	"environment_id": usageFieldEnvironmentID,
+	"project_id":     usageFieldProjectID,
+	"api_key_id":     usageFieldAPIKeyID,
+	"user_id":        usageFieldUserID,
 }
 
 type Usage struct {
@@ -2031,11 +2046,17 @@ type Usage struct {
 	Meter UsageMeter `json:"meter" url:"meter"`
 	// e.g. `country=US` for SMS; `null` for none.
 	Dimension *string `json:"dimension,omitempty" url:"dimension,omitempty"`
-	// Set with `group_by=environment`.
-	EnvironmentID *string   `json:"environment_id,omitempty" url:"environment_id,omitempty"`
-	Start         time.Time `json:"start" url:"start"`
-	End           time.Time `json:"end" url:"end"`
-	Quantity      int64     `json:"quantity" url:"quantity"`
+	// Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees).
+	EnvironmentID *string `json:"environment_id,omitempty" url:"environment_id,omitempty"`
+	// Set with `group_by=project` (`null`: organization-wide usage, or usage recorded before projects were).
+	ProjectID *string `json:"project_id,omitempty" url:"project_id,omitempty"`
+	// Set with `group_by=api_key` (`null`: the dashboard, or usage recorded before keys were).
+	APIKeyID *string `json:"api_key_id,omitempty" url:"api_key_id,omitempty"`
+	// Set with `group_by=user`: the member whose personal API key caused it (`null`: organization keys and the dashboard).
+	UserID   *string   `json:"user_id,omitempty" url:"user_id,omitempty"`
+	Start    time.Time `json:"start" url:"start"`
+	End      time.Time `json:"end" url:"end"`
+	Quantity int64     `json:"quantity" url:"quantity"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2070,6 +2091,27 @@ func (u *Usage) GetEnvironmentID() *string {
 		return nil
 	}
 	return u.EnvironmentID
+}
+
+func (u *Usage) GetProjectID() *string {
+	if u == nil {
+		return nil
+	}
+	return u.ProjectID
+}
+
+func (u *Usage) GetAPIKeyID() *string {
+	if u == nil {
+		return nil
+	}
+	return u.APIKeyID
+}
+
+func (u *Usage) GetUserID() *string {
+	if u == nil {
+		return nil
+	}
+	return u.UserID
 }
 
 func (u *Usage) GetStart() time.Time {
@@ -2135,6 +2177,27 @@ func (u *Usage) SetDimension(dimension *string) {
 func (u *Usage) SetEnvironmentID(environmentID *string) {
 	u.EnvironmentID = environmentID
 	u.require(usageFieldEnvironmentID)
+}
+
+// SetProjectID sets the ProjectID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *Usage) SetProjectID(projectID *string) {
+	u.ProjectID = projectID
+	u.require(usageFieldProjectID)
+}
+
+// SetAPIKeyID sets the APIKeyID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *Usage) SetAPIKeyID(apiKeyID *string) {
+	u.APIKeyID = apiKeyID
+	u.require(usageFieldAPIKeyID)
+}
+
+// SetUserID sets the UserID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *Usage) SetUserID(userID *string) {
+	u.UserID = userID
+	u.require(usageFieldUserID)
 }
 
 // SetStart sets the Start field and marks it as non-optional;
@@ -2363,6 +2426,9 @@ const (
 	UsageMeterEmailRecipients         UsageMeter = "email.recipients"
 	UsageMeterEmailDedicatedIP        UsageMeter = "email.dedicated_ip"
 	UsageMeterSmsSegments             UsageMeter = "sms.segments"
+	UsageMeterSmsReceivedSegments     UsageMeter = "sms.received_segments"
+	UsageMeterSmsNumbers              UsageMeter = "sms.numbers"
+	UsageMeterSmsRegistrations        UsageMeter = "sms.registrations"
 	UsageMeterVideoParticipantMinutes UsageMeter = "video.participant_minutes"
 	UsageMeterSchedulingBookings      UsageMeter = "scheduling.bookings"
 )
@@ -2375,6 +2441,12 @@ func NewUsageMeterFromString(s string) (UsageMeter, error) {
 		return UsageMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return UsageMeterSmsSegments, nil
+	case "sms.received_segments":
+		return UsageMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return UsageMeterSmsNumbers, nil
+	case "sms.registrations":
+		return UsageMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return UsageMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2433,17 +2505,26 @@ func (u UsageBillingRequestGranularity) Ptr() *UsageBillingRequestGranularity {
 	return &u
 }
 
-// Split each bucket per environment.
+// Split each bucket per environment, project, API key or user (the member whose personal key it was).
 type UsageBillingRequestGroupBy string
 
 const (
 	UsageBillingRequestGroupByEnvironment UsageBillingRequestGroupBy = "environment"
+	UsageBillingRequestGroupByProject     UsageBillingRequestGroupBy = "project"
+	UsageBillingRequestGroupByAPIKey      UsageBillingRequestGroupBy = "api_key"
+	UsageBillingRequestGroupByUser        UsageBillingRequestGroupBy = "user"
 )
 
 func NewUsageBillingRequestGroupByFromString(s string) (UsageBillingRequestGroupBy, error) {
 	switch s {
 	case "environment":
 		return UsageBillingRequestGroupByEnvironment, nil
+	case "project":
+		return UsageBillingRequestGroupByProject, nil
+	case "api_key":
+		return UsageBillingRequestGroupByAPIKey, nil
+	case "user":
+		return UsageBillingRequestGroupByUser, nil
 	}
 	var t UsageBillingRequestGroupBy
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -2460,6 +2541,9 @@ const (
 	UsageBillingRequestMeterEmailRecipients         UsageBillingRequestMeter = "email.recipients"
 	UsageBillingRequestMeterEmailDedicatedIP        UsageBillingRequestMeter = "email.dedicated_ip"
 	UsageBillingRequestMeterSmsSegments             UsageBillingRequestMeter = "sms.segments"
+	UsageBillingRequestMeterSmsReceivedSegments     UsageBillingRequestMeter = "sms.received_segments"
+	UsageBillingRequestMeterSmsNumbers              UsageBillingRequestMeter = "sms.numbers"
+	UsageBillingRequestMeterSmsRegistrations        UsageBillingRequestMeter = "sms.registrations"
 	UsageBillingRequestMeterVideoParticipantMinutes UsageBillingRequestMeter = "video.participant_minutes"
 	UsageBillingRequestMeterSchedulingBookings      UsageBillingRequestMeter = "scheduling.bookings"
 )
@@ -2472,6 +2556,12 @@ func NewUsageBillingRequestMeterFromString(s string) (UsageBillingRequestMeter, 
 		return UsageBillingRequestMeterEmailDedicatedIP, nil
 	case "sms.segments":
 		return UsageBillingRequestMeterSmsSegments, nil
+	case "sms.received_segments":
+		return UsageBillingRequestMeterSmsReceivedSegments, nil
+	case "sms.numbers":
+		return UsageBillingRequestMeterSmsNumbers, nil
+	case "sms.registrations":
+		return UsageBillingRequestMeterSmsRegistrations, nil
 	case "video.participant_minutes":
 		return UsageBillingRequestMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2500,7 +2590,7 @@ type UsageBillingRequest struct {
 	To *time.Time `json:"-" url:"to,omitempty"`
 	// Bucket size (UTC). Defaults to `day`.
 	Granularity *UsageBillingRequestGranularity `json:"-" url:"granularity,omitempty"`
-	// Split each bucket per environment.
+	// Split each bucket per environment, project, API key or user (the member whose personal key it was).
 	GroupBy *UsageBillingRequestGroupBy `json:"-" url:"group_by,omitempty"`
 	// Only this meter.
 	Meter *UsageBillingRequestMeter `json:"-" url:"meter,omitempty"`

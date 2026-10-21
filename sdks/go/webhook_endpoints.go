@@ -1472,49 +1472,62 @@ func (c CreateWebhookEndpointRequestAPIVersion) Ptr() *CreateWebhookEndpointRequ
 type CreateWebhookEndpointRequestEventTypesItem string
 
 const (
-	CreateWebhookEndpointRequestEventTypesItemEmailSent                    CreateWebhookEndpointRequestEventTypesItem = "email.sent"
-	CreateWebhookEndpointRequestEventTypesItemEmailDelivered               CreateWebhookEndpointRequestEventTypesItem = "email.delivered"
-	CreateWebhookEndpointRequestEventTypesItemEmailDeliveryDelayed         CreateWebhookEndpointRequestEventTypesItem = "email.delivery_delayed"
-	CreateWebhookEndpointRequestEventTypesItemEmailBounced                 CreateWebhookEndpointRequestEventTypesItem = "email.bounced"
-	CreateWebhookEndpointRequestEventTypesItemEmailComplained              CreateWebhookEndpointRequestEventTypesItem = "email.complained"
-	CreateWebhookEndpointRequestEventTypesItemEmailFailed                  CreateWebhookEndpointRequestEventTypesItem = "email.failed"
-	CreateWebhookEndpointRequestEventTypesItemEmailSuppressed              CreateWebhookEndpointRequestEventTypesItem = "email.suppressed"
-	CreateWebhookEndpointRequestEventTypesItemEmailScheduled               CreateWebhookEndpointRequestEventTypesItem = "email.scheduled"
-	CreateWebhookEndpointRequestEventTypesItemEmailCanceled                CreateWebhookEndpointRequestEventTypesItem = "email.canceled"
-	CreateWebhookEndpointRequestEventTypesItemEmailOpened                  CreateWebhookEndpointRequestEventTypesItem = "email.opened"
-	CreateWebhookEndpointRequestEventTypesItemEmailClicked                 CreateWebhookEndpointRequestEventTypesItem = "email.clicked"
-	CreateWebhookEndpointRequestEventTypesItemEmailRescheduled             CreateWebhookEndpointRequestEventTypesItem = "email.rescheduled"
-	CreateWebhookEndpointRequestEventTypesItemEmailUnsubscribed            CreateWebhookEndpointRequestEventTypesItem = "email.unsubscribed"
-	CreateWebhookEndpointRequestEventTypesItemEmailReceived                CreateWebhookEndpointRequestEventTypesItem = "email.received"
-	CreateWebhookEndpointRequestEventTypesItemDomainDmarcReportReceived    CreateWebhookEndpointRequestEventTypesItem = "domain.dmarc_report_received"
-	CreateWebhookEndpointRequestEventTypesItemAccountReputationWarning     CreateWebhookEndpointRequestEventTypesItem = "account.reputation_warning"
-	CreateWebhookEndpointRequestEventTypesItemAccountReputationRecovered   CreateWebhookEndpointRequestEventTypesItem = "account.reputation_recovered"
-	CreateWebhookEndpointRequestEventTypesItemAccountSuspended             CreateWebhookEndpointRequestEventTypesItem = "account.suspended"
-	CreateWebhookEndpointRequestEventTypesItemAccountReinstated            CreateWebhookEndpointRequestEventTypesItem = "account.reinstated"
-	CreateWebhookEndpointRequestEventTypesItemAccountMarketingPaused       CreateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
-	CreateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated   CreateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
-	CreateWebhookEndpointRequestEventTypesItemHookEndpointDisabled         CreateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
-	CreateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized      CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
-	CreateWebhookEndpointRequestEventTypesItemBillingInvoicePaid           CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
-	CreateWebhookEndpointRequestEventTypesItemBillingInvoicePaymentFailed  CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_payment_failed"
-	CreateWebhookEndpointRequestEventTypesItemBillingInvoiceVoided         CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_voided"
-	CreateWebhookEndpointRequestEventTypesItemBillingPlanChanged           CreateWebhookEndpointRequestEventTypesItem = "billing.plan_changed"
-	CreateWebhookEndpointRequestEventTypesItemBillingUsageThresholdReached CreateWebhookEndpointRequestEventTypesItem = "billing.usage_threshold_reached"
-	CreateWebhookEndpointRequestEventTypesItemBillingHoldPlaced            CreateWebhookEndpointRequestEventTypesItem = "billing.hold_placed"
-	CreateWebhookEndpointRequestEventTypesItemBillingHoldLifted            CreateWebhookEndpointRequestEventTypesItem = "billing.hold_lifted"
-	CreateWebhookEndpointRequestEventTypesItemBillingCreditGranted         CreateWebhookEndpointRequestEventTypesItem = "billing.credit_granted"
-	CreateWebhookEndpointRequestEventTypesItemRiskAssessmentReview         CreateWebhookEndpointRequestEventTypesItem = "risk.assessment.review"
-	CreateWebhookEndpointRequestEventTypesItemRiskAssessmentReviewed       CreateWebhookEndpointRequestEventTypesItem = "risk.assessment.reviewed"
-	CreateWebhookEndpointRequestEventTypesItemContactCreated               CreateWebhookEndpointRequestEventTypesItem = "contact.created"
-	CreateWebhookEndpointRequestEventTypesItemContactUpdated               CreateWebhookEndpointRequestEventTypesItem = "contact.updated"
-	CreateWebhookEndpointRequestEventTypesItemContactDeleted               CreateWebhookEndpointRequestEventTypesItem = "contact.deleted"
-	CreateWebhookEndpointRequestEventTypesItemContactUnsubscribed          CreateWebhookEndpointRequestEventTypesItem = "contact.unsubscribed"
-	CreateWebhookEndpointRequestEventTypesItemContactConfirmed             CreateWebhookEndpointRequestEventTypesItem = "contact.confirmed"
-	CreateWebhookEndpointRequestEventTypesItemBroadcastSending             CreateWebhookEndpointRequestEventTypesItem = "broadcast.sending"
-	CreateWebhookEndpointRequestEventTypesItemBroadcastSent                CreateWebhookEndpointRequestEventTypesItem = "broadcast.sent"
-	CreateWebhookEndpointRequestEventTypesItemBroadcastPaused              CreateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
-	CreateWebhookEndpointRequestEventTypesItemBroadcastCanceled            CreateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
-	CreateWebhookEndpointRequestEventTypesItemBroadcastFailed              CreateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	CreateWebhookEndpointRequestEventTypesItemEmailSent                     CreateWebhookEndpointRequestEventTypesItem = "email.sent"
+	CreateWebhookEndpointRequestEventTypesItemEmailDelivered                CreateWebhookEndpointRequestEventTypesItem = "email.delivered"
+	CreateWebhookEndpointRequestEventTypesItemEmailDeliveryDelayed          CreateWebhookEndpointRequestEventTypesItem = "email.delivery_delayed"
+	CreateWebhookEndpointRequestEventTypesItemEmailBounced                  CreateWebhookEndpointRequestEventTypesItem = "email.bounced"
+	CreateWebhookEndpointRequestEventTypesItemEmailComplained               CreateWebhookEndpointRequestEventTypesItem = "email.complained"
+	CreateWebhookEndpointRequestEventTypesItemEmailFailed                   CreateWebhookEndpointRequestEventTypesItem = "email.failed"
+	CreateWebhookEndpointRequestEventTypesItemEmailSuppressed               CreateWebhookEndpointRequestEventTypesItem = "email.suppressed"
+	CreateWebhookEndpointRequestEventTypesItemEmailScheduled                CreateWebhookEndpointRequestEventTypesItem = "email.scheduled"
+	CreateWebhookEndpointRequestEventTypesItemEmailCanceled                 CreateWebhookEndpointRequestEventTypesItem = "email.canceled"
+	CreateWebhookEndpointRequestEventTypesItemEmailOpened                   CreateWebhookEndpointRequestEventTypesItem = "email.opened"
+	CreateWebhookEndpointRequestEventTypesItemEmailClicked                  CreateWebhookEndpointRequestEventTypesItem = "email.clicked"
+	CreateWebhookEndpointRequestEventTypesItemEmailRescheduled              CreateWebhookEndpointRequestEventTypesItem = "email.rescheduled"
+	CreateWebhookEndpointRequestEventTypesItemEmailUnsubscribed             CreateWebhookEndpointRequestEventTypesItem = "email.unsubscribed"
+	CreateWebhookEndpointRequestEventTypesItemEmailReceived                 CreateWebhookEndpointRequestEventTypesItem = "email.received"
+	CreateWebhookEndpointRequestEventTypesItemDomainDmarcReportReceived     CreateWebhookEndpointRequestEventTypesItem = "domain.dmarc_report_received"
+	CreateWebhookEndpointRequestEventTypesItemAccountReputationWarning      CreateWebhookEndpointRequestEventTypesItem = "account.reputation_warning"
+	CreateWebhookEndpointRequestEventTypesItemAccountReputationRecovered    CreateWebhookEndpointRequestEventTypesItem = "account.reputation_recovered"
+	CreateWebhookEndpointRequestEventTypesItemAccountSuspended              CreateWebhookEndpointRequestEventTypesItem = "account.suspended"
+	CreateWebhookEndpointRequestEventTypesItemAccountReinstated             CreateWebhookEndpointRequestEventTypesItem = "account.reinstated"
+	CreateWebhookEndpointRequestEventTypesItemAccountMarketingPaused        CreateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
+	CreateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated    CreateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
+	CreateWebhookEndpointRequestEventTypesItemHookEndpointDisabled          CreateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
+	CreateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized       CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
+	CreateWebhookEndpointRequestEventTypesItemBillingInvoicePaid            CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
+	CreateWebhookEndpointRequestEventTypesItemBillingInvoicePaymentFailed   CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_payment_failed"
+	CreateWebhookEndpointRequestEventTypesItemBillingInvoiceVoided          CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_voided"
+	CreateWebhookEndpointRequestEventTypesItemBillingPlanChanged            CreateWebhookEndpointRequestEventTypesItem = "billing.plan_changed"
+	CreateWebhookEndpointRequestEventTypesItemBillingUsageThresholdReached  CreateWebhookEndpointRequestEventTypesItem = "billing.usage_threshold_reached"
+	CreateWebhookEndpointRequestEventTypesItemBillingHoldPlaced             CreateWebhookEndpointRequestEventTypesItem = "billing.hold_placed"
+	CreateWebhookEndpointRequestEventTypesItemBillingHoldLifted             CreateWebhookEndpointRequestEventTypesItem = "billing.hold_lifted"
+	CreateWebhookEndpointRequestEventTypesItemBillingCreditGranted          CreateWebhookEndpointRequestEventTypesItem = "billing.credit_granted"
+	CreateWebhookEndpointRequestEventTypesItemBillingBudgetThresholdReached CreateWebhookEndpointRequestEventTypesItem = "billing.budget_threshold_reached"
+	CreateWebhookEndpointRequestEventTypesItemBillingBudgetHoldPlaced       CreateWebhookEndpointRequestEventTypesItem = "billing.budget_hold_placed"
+	CreateWebhookEndpointRequestEventTypesItemBillingBudgetHoldLifted       CreateWebhookEndpointRequestEventTypesItem = "billing.budget_hold_lifted"
+	CreateWebhookEndpointRequestEventTypesItemRiskAssessmentReview          CreateWebhookEndpointRequestEventTypesItem = "risk.assessment.review"
+	CreateWebhookEndpointRequestEventTypesItemRiskAssessmentReviewed        CreateWebhookEndpointRequestEventTypesItem = "risk.assessment.reviewed"
+	CreateWebhookEndpointRequestEventTypesItemContactCreated                CreateWebhookEndpointRequestEventTypesItem = "contact.created"
+	CreateWebhookEndpointRequestEventTypesItemContactUpdated                CreateWebhookEndpointRequestEventTypesItem = "contact.updated"
+	CreateWebhookEndpointRequestEventTypesItemContactDeleted                CreateWebhookEndpointRequestEventTypesItem = "contact.deleted"
+	CreateWebhookEndpointRequestEventTypesItemContactUnsubscribed           CreateWebhookEndpointRequestEventTypesItem = "contact.unsubscribed"
+	CreateWebhookEndpointRequestEventTypesItemContactConfirmed              CreateWebhookEndpointRequestEventTypesItem = "contact.confirmed"
+	CreateWebhookEndpointRequestEventTypesItemBroadcastSending              CreateWebhookEndpointRequestEventTypesItem = "broadcast.sending"
+	CreateWebhookEndpointRequestEventTypesItemBroadcastSent                 CreateWebhookEndpointRequestEventTypesItem = "broadcast.sent"
+	CreateWebhookEndpointRequestEventTypesItemBroadcastPaused               CreateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
+	CreateWebhookEndpointRequestEventTypesItemBroadcastCanceled             CreateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
+	CreateWebhookEndpointRequestEventTypesItemBroadcastFailed               CreateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	CreateWebhookEndpointRequestEventTypesItemSmsScheduled                  CreateWebhookEndpointRequestEventTypesItem = "sms.scheduled"
+	CreateWebhookEndpointRequestEventTypesItemSmsSent                       CreateWebhookEndpointRequestEventTypesItem = "sms.sent"
+	CreateWebhookEndpointRequestEventTypesItemSmsDelivered                  CreateWebhookEndpointRequestEventTypesItem = "sms.delivered"
+	CreateWebhookEndpointRequestEventTypesItemSmsUndelivered                CreateWebhookEndpointRequestEventTypesItem = "sms.undelivered"
+	CreateWebhookEndpointRequestEventTypesItemSmsFailed                     CreateWebhookEndpointRequestEventTypesItem = "sms.failed"
+	CreateWebhookEndpointRequestEventTypesItemSmsSuppressed                 CreateWebhookEndpointRequestEventTypesItem = "sms.suppressed"
+	CreateWebhookEndpointRequestEventTypesItemSmsCanceled                   CreateWebhookEndpointRequestEventTypesItem = "sms.canceled"
+	CreateWebhookEndpointRequestEventTypesItemSmsReceived                   CreateWebhookEndpointRequestEventTypesItem = "sms.received"
+	CreateWebhookEndpointRequestEventTypesItemSmsOptedOut                   CreateWebhookEndpointRequestEventTypesItem = "sms.opted_out"
+	CreateWebhookEndpointRequestEventTypesItemSmsOptedIn                    CreateWebhookEndpointRequestEventTypesItem = "sms.opted_in"
 )
 
 func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWebhookEndpointRequestEventTypesItem, error) {
@@ -1581,6 +1594,12 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemBillingHoldLifted, nil
 	case "billing.credit_granted":
 		return CreateWebhookEndpointRequestEventTypesItemBillingCreditGranted, nil
+	case "billing.budget_threshold_reached":
+		return CreateWebhookEndpointRequestEventTypesItemBillingBudgetThresholdReached, nil
+	case "billing.budget_hold_placed":
+		return CreateWebhookEndpointRequestEventTypesItemBillingBudgetHoldPlaced, nil
+	case "billing.budget_hold_lifted":
+		return CreateWebhookEndpointRequestEventTypesItemBillingBudgetHoldLifted, nil
 	case "risk.assessment.review":
 		return CreateWebhookEndpointRequestEventTypesItemRiskAssessmentReview, nil
 	case "risk.assessment.reviewed":
@@ -1605,6 +1624,26 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemBroadcastCanceled, nil
 	case "broadcast.failed":
 		return CreateWebhookEndpointRequestEventTypesItemBroadcastFailed, nil
+	case "sms.scheduled":
+		return CreateWebhookEndpointRequestEventTypesItemSmsScheduled, nil
+	case "sms.sent":
+		return CreateWebhookEndpointRequestEventTypesItemSmsSent, nil
+	case "sms.delivered":
+		return CreateWebhookEndpointRequestEventTypesItemSmsDelivered, nil
+	case "sms.undelivered":
+		return CreateWebhookEndpointRequestEventTypesItemSmsUndelivered, nil
+	case "sms.failed":
+		return CreateWebhookEndpointRequestEventTypesItemSmsFailed, nil
+	case "sms.suppressed":
+		return CreateWebhookEndpointRequestEventTypesItemSmsSuppressed, nil
+	case "sms.canceled":
+		return CreateWebhookEndpointRequestEventTypesItemSmsCanceled, nil
+	case "sms.received":
+		return CreateWebhookEndpointRequestEventTypesItemSmsReceived, nil
+	case "sms.opted_out":
+		return CreateWebhookEndpointRequestEventTypesItemSmsOptedOut, nil
+	case "sms.opted_in":
+		return CreateWebhookEndpointRequestEventTypesItemSmsOptedIn, nil
 	}
 	var t CreateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -1637,49 +1676,62 @@ func (u UpdateWebhookEndpointRequestAPIVersion) Ptr() *UpdateWebhookEndpointRequ
 type UpdateWebhookEndpointRequestEventTypesItem string
 
 const (
-	UpdateWebhookEndpointRequestEventTypesItemEmailSent                    UpdateWebhookEndpointRequestEventTypesItem = "email.sent"
-	UpdateWebhookEndpointRequestEventTypesItemEmailDelivered               UpdateWebhookEndpointRequestEventTypesItem = "email.delivered"
-	UpdateWebhookEndpointRequestEventTypesItemEmailDeliveryDelayed         UpdateWebhookEndpointRequestEventTypesItem = "email.delivery_delayed"
-	UpdateWebhookEndpointRequestEventTypesItemEmailBounced                 UpdateWebhookEndpointRequestEventTypesItem = "email.bounced"
-	UpdateWebhookEndpointRequestEventTypesItemEmailComplained              UpdateWebhookEndpointRequestEventTypesItem = "email.complained"
-	UpdateWebhookEndpointRequestEventTypesItemEmailFailed                  UpdateWebhookEndpointRequestEventTypesItem = "email.failed"
-	UpdateWebhookEndpointRequestEventTypesItemEmailSuppressed              UpdateWebhookEndpointRequestEventTypesItem = "email.suppressed"
-	UpdateWebhookEndpointRequestEventTypesItemEmailScheduled               UpdateWebhookEndpointRequestEventTypesItem = "email.scheduled"
-	UpdateWebhookEndpointRequestEventTypesItemEmailCanceled                UpdateWebhookEndpointRequestEventTypesItem = "email.canceled"
-	UpdateWebhookEndpointRequestEventTypesItemEmailOpened                  UpdateWebhookEndpointRequestEventTypesItem = "email.opened"
-	UpdateWebhookEndpointRequestEventTypesItemEmailClicked                 UpdateWebhookEndpointRequestEventTypesItem = "email.clicked"
-	UpdateWebhookEndpointRequestEventTypesItemEmailRescheduled             UpdateWebhookEndpointRequestEventTypesItem = "email.rescheduled"
-	UpdateWebhookEndpointRequestEventTypesItemEmailUnsubscribed            UpdateWebhookEndpointRequestEventTypesItem = "email.unsubscribed"
-	UpdateWebhookEndpointRequestEventTypesItemEmailReceived                UpdateWebhookEndpointRequestEventTypesItem = "email.received"
-	UpdateWebhookEndpointRequestEventTypesItemDomainDmarcReportReceived    UpdateWebhookEndpointRequestEventTypesItem = "domain.dmarc_report_received"
-	UpdateWebhookEndpointRequestEventTypesItemAccountReputationWarning     UpdateWebhookEndpointRequestEventTypesItem = "account.reputation_warning"
-	UpdateWebhookEndpointRequestEventTypesItemAccountReputationRecovered   UpdateWebhookEndpointRequestEventTypesItem = "account.reputation_recovered"
-	UpdateWebhookEndpointRequestEventTypesItemAccountSuspended             UpdateWebhookEndpointRequestEventTypesItem = "account.suspended"
-	UpdateWebhookEndpointRequestEventTypesItemAccountReinstated            UpdateWebhookEndpointRequestEventTypesItem = "account.reinstated"
-	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingPaused       UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
-	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated   UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
-	UpdateWebhookEndpointRequestEventTypesItemHookEndpointDisabled         UpdateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
-	UpdateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized      UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
-	UpdateWebhookEndpointRequestEventTypesItemBillingInvoicePaid           UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
-	UpdateWebhookEndpointRequestEventTypesItemBillingInvoicePaymentFailed  UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_payment_failed"
-	UpdateWebhookEndpointRequestEventTypesItemBillingInvoiceVoided         UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_voided"
-	UpdateWebhookEndpointRequestEventTypesItemBillingPlanChanged           UpdateWebhookEndpointRequestEventTypesItem = "billing.plan_changed"
-	UpdateWebhookEndpointRequestEventTypesItemBillingUsageThresholdReached UpdateWebhookEndpointRequestEventTypesItem = "billing.usage_threshold_reached"
-	UpdateWebhookEndpointRequestEventTypesItemBillingHoldPlaced            UpdateWebhookEndpointRequestEventTypesItem = "billing.hold_placed"
-	UpdateWebhookEndpointRequestEventTypesItemBillingHoldLifted            UpdateWebhookEndpointRequestEventTypesItem = "billing.hold_lifted"
-	UpdateWebhookEndpointRequestEventTypesItemBillingCreditGranted         UpdateWebhookEndpointRequestEventTypesItem = "billing.credit_granted"
-	UpdateWebhookEndpointRequestEventTypesItemRiskAssessmentReview         UpdateWebhookEndpointRequestEventTypesItem = "risk.assessment.review"
-	UpdateWebhookEndpointRequestEventTypesItemRiskAssessmentReviewed       UpdateWebhookEndpointRequestEventTypesItem = "risk.assessment.reviewed"
-	UpdateWebhookEndpointRequestEventTypesItemContactCreated               UpdateWebhookEndpointRequestEventTypesItem = "contact.created"
-	UpdateWebhookEndpointRequestEventTypesItemContactUpdated               UpdateWebhookEndpointRequestEventTypesItem = "contact.updated"
-	UpdateWebhookEndpointRequestEventTypesItemContactDeleted               UpdateWebhookEndpointRequestEventTypesItem = "contact.deleted"
-	UpdateWebhookEndpointRequestEventTypesItemContactUnsubscribed          UpdateWebhookEndpointRequestEventTypesItem = "contact.unsubscribed"
-	UpdateWebhookEndpointRequestEventTypesItemContactConfirmed             UpdateWebhookEndpointRequestEventTypesItem = "contact.confirmed"
-	UpdateWebhookEndpointRequestEventTypesItemBroadcastSending             UpdateWebhookEndpointRequestEventTypesItem = "broadcast.sending"
-	UpdateWebhookEndpointRequestEventTypesItemBroadcastSent                UpdateWebhookEndpointRequestEventTypesItem = "broadcast.sent"
-	UpdateWebhookEndpointRequestEventTypesItemBroadcastPaused              UpdateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
-	UpdateWebhookEndpointRequestEventTypesItemBroadcastCanceled            UpdateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
-	UpdateWebhookEndpointRequestEventTypesItemBroadcastFailed              UpdateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	UpdateWebhookEndpointRequestEventTypesItemEmailSent                     UpdateWebhookEndpointRequestEventTypesItem = "email.sent"
+	UpdateWebhookEndpointRequestEventTypesItemEmailDelivered                UpdateWebhookEndpointRequestEventTypesItem = "email.delivered"
+	UpdateWebhookEndpointRequestEventTypesItemEmailDeliveryDelayed          UpdateWebhookEndpointRequestEventTypesItem = "email.delivery_delayed"
+	UpdateWebhookEndpointRequestEventTypesItemEmailBounced                  UpdateWebhookEndpointRequestEventTypesItem = "email.bounced"
+	UpdateWebhookEndpointRequestEventTypesItemEmailComplained               UpdateWebhookEndpointRequestEventTypesItem = "email.complained"
+	UpdateWebhookEndpointRequestEventTypesItemEmailFailed                   UpdateWebhookEndpointRequestEventTypesItem = "email.failed"
+	UpdateWebhookEndpointRequestEventTypesItemEmailSuppressed               UpdateWebhookEndpointRequestEventTypesItem = "email.suppressed"
+	UpdateWebhookEndpointRequestEventTypesItemEmailScheduled                UpdateWebhookEndpointRequestEventTypesItem = "email.scheduled"
+	UpdateWebhookEndpointRequestEventTypesItemEmailCanceled                 UpdateWebhookEndpointRequestEventTypesItem = "email.canceled"
+	UpdateWebhookEndpointRequestEventTypesItemEmailOpened                   UpdateWebhookEndpointRequestEventTypesItem = "email.opened"
+	UpdateWebhookEndpointRequestEventTypesItemEmailClicked                  UpdateWebhookEndpointRequestEventTypesItem = "email.clicked"
+	UpdateWebhookEndpointRequestEventTypesItemEmailRescheduled              UpdateWebhookEndpointRequestEventTypesItem = "email.rescheduled"
+	UpdateWebhookEndpointRequestEventTypesItemEmailUnsubscribed             UpdateWebhookEndpointRequestEventTypesItem = "email.unsubscribed"
+	UpdateWebhookEndpointRequestEventTypesItemEmailReceived                 UpdateWebhookEndpointRequestEventTypesItem = "email.received"
+	UpdateWebhookEndpointRequestEventTypesItemDomainDmarcReportReceived     UpdateWebhookEndpointRequestEventTypesItem = "domain.dmarc_report_received"
+	UpdateWebhookEndpointRequestEventTypesItemAccountReputationWarning      UpdateWebhookEndpointRequestEventTypesItem = "account.reputation_warning"
+	UpdateWebhookEndpointRequestEventTypesItemAccountReputationRecovered    UpdateWebhookEndpointRequestEventTypesItem = "account.reputation_recovered"
+	UpdateWebhookEndpointRequestEventTypesItemAccountSuspended              UpdateWebhookEndpointRequestEventTypesItem = "account.suspended"
+	UpdateWebhookEndpointRequestEventTypesItemAccountReinstated             UpdateWebhookEndpointRequestEventTypesItem = "account.reinstated"
+	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingPaused        UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
+	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated    UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
+	UpdateWebhookEndpointRequestEventTypesItemHookEndpointDisabled          UpdateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
+	UpdateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized       UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
+	UpdateWebhookEndpointRequestEventTypesItemBillingInvoicePaid            UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
+	UpdateWebhookEndpointRequestEventTypesItemBillingInvoicePaymentFailed   UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_payment_failed"
+	UpdateWebhookEndpointRequestEventTypesItemBillingInvoiceVoided          UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_voided"
+	UpdateWebhookEndpointRequestEventTypesItemBillingPlanChanged            UpdateWebhookEndpointRequestEventTypesItem = "billing.plan_changed"
+	UpdateWebhookEndpointRequestEventTypesItemBillingUsageThresholdReached  UpdateWebhookEndpointRequestEventTypesItem = "billing.usage_threshold_reached"
+	UpdateWebhookEndpointRequestEventTypesItemBillingHoldPlaced             UpdateWebhookEndpointRequestEventTypesItem = "billing.hold_placed"
+	UpdateWebhookEndpointRequestEventTypesItemBillingHoldLifted             UpdateWebhookEndpointRequestEventTypesItem = "billing.hold_lifted"
+	UpdateWebhookEndpointRequestEventTypesItemBillingCreditGranted          UpdateWebhookEndpointRequestEventTypesItem = "billing.credit_granted"
+	UpdateWebhookEndpointRequestEventTypesItemBillingBudgetThresholdReached UpdateWebhookEndpointRequestEventTypesItem = "billing.budget_threshold_reached"
+	UpdateWebhookEndpointRequestEventTypesItemBillingBudgetHoldPlaced       UpdateWebhookEndpointRequestEventTypesItem = "billing.budget_hold_placed"
+	UpdateWebhookEndpointRequestEventTypesItemBillingBudgetHoldLifted       UpdateWebhookEndpointRequestEventTypesItem = "billing.budget_hold_lifted"
+	UpdateWebhookEndpointRequestEventTypesItemRiskAssessmentReview          UpdateWebhookEndpointRequestEventTypesItem = "risk.assessment.review"
+	UpdateWebhookEndpointRequestEventTypesItemRiskAssessmentReviewed        UpdateWebhookEndpointRequestEventTypesItem = "risk.assessment.reviewed"
+	UpdateWebhookEndpointRequestEventTypesItemContactCreated                UpdateWebhookEndpointRequestEventTypesItem = "contact.created"
+	UpdateWebhookEndpointRequestEventTypesItemContactUpdated                UpdateWebhookEndpointRequestEventTypesItem = "contact.updated"
+	UpdateWebhookEndpointRequestEventTypesItemContactDeleted                UpdateWebhookEndpointRequestEventTypesItem = "contact.deleted"
+	UpdateWebhookEndpointRequestEventTypesItemContactUnsubscribed           UpdateWebhookEndpointRequestEventTypesItem = "contact.unsubscribed"
+	UpdateWebhookEndpointRequestEventTypesItemContactConfirmed              UpdateWebhookEndpointRequestEventTypesItem = "contact.confirmed"
+	UpdateWebhookEndpointRequestEventTypesItemBroadcastSending              UpdateWebhookEndpointRequestEventTypesItem = "broadcast.sending"
+	UpdateWebhookEndpointRequestEventTypesItemBroadcastSent                 UpdateWebhookEndpointRequestEventTypesItem = "broadcast.sent"
+	UpdateWebhookEndpointRequestEventTypesItemBroadcastPaused               UpdateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
+	UpdateWebhookEndpointRequestEventTypesItemBroadcastCanceled             UpdateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
+	UpdateWebhookEndpointRequestEventTypesItemBroadcastFailed               UpdateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	UpdateWebhookEndpointRequestEventTypesItemSmsScheduled                  UpdateWebhookEndpointRequestEventTypesItem = "sms.scheduled"
+	UpdateWebhookEndpointRequestEventTypesItemSmsSent                       UpdateWebhookEndpointRequestEventTypesItem = "sms.sent"
+	UpdateWebhookEndpointRequestEventTypesItemSmsDelivered                  UpdateWebhookEndpointRequestEventTypesItem = "sms.delivered"
+	UpdateWebhookEndpointRequestEventTypesItemSmsUndelivered                UpdateWebhookEndpointRequestEventTypesItem = "sms.undelivered"
+	UpdateWebhookEndpointRequestEventTypesItemSmsFailed                     UpdateWebhookEndpointRequestEventTypesItem = "sms.failed"
+	UpdateWebhookEndpointRequestEventTypesItemSmsSuppressed                 UpdateWebhookEndpointRequestEventTypesItem = "sms.suppressed"
+	UpdateWebhookEndpointRequestEventTypesItemSmsCanceled                   UpdateWebhookEndpointRequestEventTypesItem = "sms.canceled"
+	UpdateWebhookEndpointRequestEventTypesItemSmsReceived                   UpdateWebhookEndpointRequestEventTypesItem = "sms.received"
+	UpdateWebhookEndpointRequestEventTypesItemSmsOptedOut                   UpdateWebhookEndpointRequestEventTypesItem = "sms.opted_out"
+	UpdateWebhookEndpointRequestEventTypesItemSmsOptedIn                    UpdateWebhookEndpointRequestEventTypesItem = "sms.opted_in"
 )
 
 func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWebhookEndpointRequestEventTypesItem, error) {
@@ -1746,6 +1798,12 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemBillingHoldLifted, nil
 	case "billing.credit_granted":
 		return UpdateWebhookEndpointRequestEventTypesItemBillingCreditGranted, nil
+	case "billing.budget_threshold_reached":
+		return UpdateWebhookEndpointRequestEventTypesItemBillingBudgetThresholdReached, nil
+	case "billing.budget_hold_placed":
+		return UpdateWebhookEndpointRequestEventTypesItemBillingBudgetHoldPlaced, nil
+	case "billing.budget_hold_lifted":
+		return UpdateWebhookEndpointRequestEventTypesItemBillingBudgetHoldLifted, nil
 	case "risk.assessment.review":
 		return UpdateWebhookEndpointRequestEventTypesItemRiskAssessmentReview, nil
 	case "risk.assessment.reviewed":
@@ -1770,6 +1828,26 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemBroadcastCanceled, nil
 	case "broadcast.failed":
 		return UpdateWebhookEndpointRequestEventTypesItemBroadcastFailed, nil
+	case "sms.scheduled":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsScheduled, nil
+	case "sms.sent":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsSent, nil
+	case "sms.delivered":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsDelivered, nil
+	case "sms.undelivered":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsUndelivered, nil
+	case "sms.failed":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsFailed, nil
+	case "sms.suppressed":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsSuppressed, nil
+	case "sms.canceled":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsCanceled, nil
+	case "sms.received":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsReceived, nil
+	case "sms.opted_out":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsOptedOut, nil
+	case "sms.opted_in":
+		return UpdateWebhookEndpointRequestEventTypesItemSmsOptedIn, nil
 	}
 	var t UpdateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

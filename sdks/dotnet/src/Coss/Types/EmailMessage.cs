@@ -113,6 +113,9 @@ public record EmailMessage : IJsonOnDeserialized
     [JsonPropertyName("broadcast_id")]
     public string? BroadcastId { get; set; }
 
+    [JsonPropertyName("content_storage")]
+    public required EmailContentStorage ContentStorage { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

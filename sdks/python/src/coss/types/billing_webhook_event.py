@@ -5,6 +5,8 @@ import typing
 from .billing_webhook_event_five import BillingWebhookEventFive
 from .billing_webhook_event_four import BillingWebhookEventFour
 from .billing_webhook_event_one import BillingWebhookEventOne
+from .billing_webhook_event_seven import BillingWebhookEventSeven
+from .billing_webhook_event_six import BillingWebhookEventSix
 from .billing_webhook_event_three import BillingWebhookEventThree
 from .billing_webhook_event_two import BillingWebhookEventTwo
 from .billing_webhook_event_zero import BillingWebhookEventZero
@@ -16,4 +18,6 @@ BillingWebhookEvent = typing.Union[
     BillingWebhookEventThree,
     BillingWebhookEventFour,
     BillingWebhookEventFive,
+    BillingWebhookEventSix,
+    BillingWebhookEventSeven,
 ]

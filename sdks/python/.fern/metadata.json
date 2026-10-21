@@ -21,8 +21,8 @@
     "user-agent": "coss-python/{version}",
     "timeout": 30
   },
-  "originGitCommit": "22f1393886309f16341682ab6a08490f9064c8e4",
-  "originGitCommitIsDirty": true,
+  "originGitCommit": "d0301a609489f8f501c6bcadf209b524c230247e",
+  "originGitCommitIsDirty": false,
   "invokedBy": "manual",
   "requestedVersion": "0.1.0"
 }

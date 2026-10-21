@@ -35,6 +35,9 @@ enum CreateWebhookEndpointRequestEventTypesItem: string
     case BillingHoldPlaced = "billing.hold_placed";
     case BillingHoldLifted = "billing.hold_lifted";
     case BillingCreditGranted = "billing.credit_granted";
+    case BillingBudgetThresholdReached = "billing.budget_threshold_reached";
+    case BillingBudgetHoldPlaced = "billing.budget_hold_placed";
+    case BillingBudgetHoldLifted = "billing.budget_hold_lifted";
     case RiskAssessmentReview = "risk.assessment.review";
     case RiskAssessmentReviewed = "risk.assessment.reviewed";
     case ContactCreated = "contact.created";
@@ -47,4 +50,14 @@ enum CreateWebhookEndpointRequestEventTypesItem: string
     case BroadcastPaused = "broadcast.paused";
     case BroadcastCanceled = "broadcast.canceled";
     case BroadcastFailed = "broadcast.failed";
+    case SmsScheduled = "sms.scheduled";
+    case SmsSent = "sms.sent";
+    case SmsDelivered = "sms.delivered";
+    case SmsUndelivered = "sms.undelivered";
+    case SmsFailed = "sms.failed";
+    case SmsSuppressed = "sms.suppressed";
+    case SmsCanceled = "sms.canceled";
+    case SmsReceived = "sms.received";
+    case SmsOptedOut = "sms.opted_out";
+    case SmsOptedIn = "sms.opted_in";
 }

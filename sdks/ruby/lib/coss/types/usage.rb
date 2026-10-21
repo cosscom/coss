@@ -11,6 +11,12 @@ module Coss
 
       field :environment_id, -> { String }, optional: false, nullable: true
 
+      field :project_id, -> { String }, optional: false, nullable: true
+
+      field :api_key_id, -> { String }, optional: false, nullable: true
+
+      field :user_id, -> { String }, optional: false, nullable: true
+
       field :start, -> { String }, optional: false, nullable: false
 
       field :end_, -> { String }, optional: false, nullable: false, api_name: "end"

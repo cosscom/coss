@@ -18,6 +18,16 @@ public readonly record struct BillingOverviewUsageItemMeter : IStringEnum
 
     public static readonly BillingOverviewUsageItemMeter SmsSegments = new(Values.SmsSegments);
 
+    public static readonly BillingOverviewUsageItemMeter SmsReceivedSegments = new(
+        Values.SmsReceivedSegments
+    );
+
+    public static readonly BillingOverviewUsageItemMeter SmsNumbers = new(Values.SmsNumbers);
+
+    public static readonly BillingOverviewUsageItemMeter SmsRegistrations = new(
+        Values.SmsRegistrations
+    );
+
     public static readonly BillingOverviewUsageItemMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -128,6 +138,12 @@ public readonly record struct BillingOverviewUsageItemMeter : IStringEnum
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
         public const string SmsSegments = "sms.segments";
+
+        public const string SmsReceivedSegments = "sms.received_segments";
+
+        public const string SmsNumbers = "sms.numbers";
+
+        public const string SmsRegistrations = "sms.registrations";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

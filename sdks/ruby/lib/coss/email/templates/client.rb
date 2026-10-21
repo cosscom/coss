@@ -393,6 +393,58 @@ module Coss
           end
         end
 
+        # Renders the draft (or a published `version`) with `variables`, exactly as a send would, and returns the
+        # subject, HTML and text: a preview, nothing is sent or stored. Without `variables` it renders the version's
+        # `sample_variables`.
+        #
+        # @param request_options [Hash]
+        # @param params [Coss::Email::Templates::Types::RenderEmailTemplateRequest]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        # @option params [String] :id
+        #
+        # @example
+        #   client.email.templates.render(
+        #     id: "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        #     locale: "en",
+        #     variables: {
+        #       first_name: "Ada"
+        #     }
+        #   )
+        #
+        # @return [Coss::Types::RenderedEmailTemplate]
+        def render(request_options: {}, **params)
+          params = Coss::Internal::Types::Utils.normalize_keys(params)
+          request_data = Coss::Email::Templates::Types::RenderEmailTemplateRequest.new(params).to_h
+          non_body_param_names = %w[id]
+          body = request_data.except(*non_body_param_names)
+
+          headers = { "Idempotency-Key" => Coss::Internal::IdempotencyKey.generate }
+          request = Coss::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "POST",
+            path: "v1/email_templates/#{URI.encode_uri_component(params[:id].to_s)}/render",
+            headers: headers,
+            body: body,
+            request_options: request_options
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Coss::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            (response.body.to_s.empty? ? nil : Coss::Types::RenderedEmailTemplate.load(response.body))
+          else
+            error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+            raise error_class.new(response.body, code: code)
+          end
+        end
+
         # @return [Coss::Versions::Client]
         def versions
           @versions ||= Coss::Email::Templates::Versions::Client.new(client: @client)

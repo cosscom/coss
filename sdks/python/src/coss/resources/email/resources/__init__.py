@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
         marketing_settings,
         received,
         segments,
+        storage,
         suppressions,
         templates,
         topics,
@@ -37,6 +38,7 @@ if typing.TYPE_CHECKING:
         UpsertContactRequestTopicsItem,
         UpsertContactRequestTopicsItemStatus,
     )
+    from .storage import UpdateStorageSettingsRequestContentStorage
     from .suppressions import (
         CheckSuppressionsRequestStream,
         CreateSuppressionRequestScope,
@@ -75,6 +77,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "UpdateContactRequestTopicsItemStatus": ".contacts",
     "UpdateContactTopicsRequestTopicsItem": ".contacts",
     "UpdateContactTopicsRequestTopicsItemStatus": ".contacts",
+    "UpdateStorageSettingsRequestContentStorage": ".storage",
     "UpdateTopicRequestDefaultSubscription": ".topics",
     "UpdateTopicRequestVisibility": ".topics",
     "UpsertContactRequestPropertiesValue": ".contacts",
@@ -88,6 +91,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "marketing_settings": ".marketing_settings",
     "received": ".received",
     "segments": ".segments",
+    "storage": ".storage",
     "suppressions": ".suppressions",
     "templates": ".templates",
     "topics": ".topics",
@@ -140,6 +144,7 @@ __all__ = [
     "UpdateContactRequestTopicsItemStatus",
     "UpdateContactTopicsRequestTopicsItem",
     "UpdateContactTopicsRequestTopicsItemStatus",
+    "UpdateStorageSettingsRequestContentStorage",
     "UpdateTopicRequestDefaultSubscription",
     "UpdateTopicRequestVisibility",
     "UpsertContactRequestPropertiesValue",
@@ -153,6 +158,7 @@ __all__ = [
     "marketing_settings",
     "received",
     "segments",
+    "storage",
     "suppressions",
     "templates",
     "topics",

@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .environment_api_key_access import EnvironmentApiKeyAccess
 
 
 class EnvironmentApiKey(UniversalBaseModel):
@@ -20,6 +21,16 @@ class EnvironmentApiKey(UniversalBaseModel):
     start: typing.Optional[str] = pydantic.Field(default=None)
     """
     The key's first characters, as shown in the dashboard.
+    """
+
+    access: EnvironmentApiKeyAccess = pydantic.Field()
+    """
+    `full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created.
+    """
+
+    permissions: typing.List[str] = pydantic.Field()
+    """
+    What the key may do now, as `resource:action` (the names `insufficient_permissions` errors use), e.g. `email:send`.
     """
 
     if IS_PYDANTIC_V2:

@@ -6,6 +6,7 @@ use Coss\Email\Templates\TemplatesClient;
 use Coss\Email\DedicatedIps\DedicatedIpsClient;
 use Coss\Email\Suppressions\SuppressionsClient;
 use Coss\Email\Tracking\TrackingClient;
+use Coss\Email\Storage\StorageClient;
 use Coss\Email\Contacts\ContactsClient;
 use Coss\Email\Broadcasts\BroadcastsClient;
 use Coss\Email\Audiences\AudiencesClient;
@@ -55,6 +56,11 @@ class EmailClient
      * @var TrackingClient $tracking
      */
     public TrackingClient $tracking;
+
+    /**
+     * @var StorageClient $storage
+     */
+    public StorageClient $storage;
 
     /**
      * @var ContactsClient $contacts
@@ -127,6 +133,7 @@ class EmailClient
         $this->dedicatedIps = new DedicatedIpsClient($this->client, $this->options);
         $this->suppressions = new SuppressionsClient($this->client, $this->options);
         $this->tracking = new TrackingClient($this->client, $this->options);
+        $this->storage = new StorageClient($this->client, $this->options);
         $this->contacts = new ContactsClient($this->client, $this->options);
         $this->broadcasts = new BroadcastsClient($this->client, $this->options);
         $this->audiences = new AudiencesClient($this->client, $this->options);

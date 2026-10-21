@@ -53,6 +53,8 @@ public partial class CossClient : ICossClient
         Domains = new DomainsClient(_client);
         WebhookEndpoints = new WebhookEndpointsClient(_client);
         WebhookListeners = new WebhookListenersClient(_client);
+        WebhookEvents = new WebhookEventsClient(_client);
+        Sms = new SmsClient(_client);
         Reputation = new ReputationClient(_client);
         Logs = new LogsClient(_client);
         AuditEvents = new AuditEventsClient(_client);
@@ -73,6 +75,10 @@ public partial class CossClient : ICossClient
     public IWebhookEndpointsClient WebhookEndpoints { get; }
 
     public IWebhookListenersClient WebhookListeners { get; }
+
+    public IWebhookEventsClient WebhookEvents { get; }
+
+    public ISmsClient Sms { get; }
 
     public IReputationClient Reputation { get; }
 

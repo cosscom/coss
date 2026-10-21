@@ -723,6 +723,7 @@ const (
 	LogDrainSourceWebhook LogDrainSource = "webhook"
 	LogDrainSourceRisk    LogDrainSource = "risk"
 	LogDrainSourceSMTP    LogDrainSource = "smtp"
+	LogDrainSourceSms     LogDrainSource = "sms"
 	LogDrainSourceAudit   LogDrainSource = "audit"
 )
 
@@ -738,6 +739,8 @@ func NewLogDrainSourceFromString(s string) (LogDrainSource, error) {
 		return LogDrainSourceRisk, nil
 	case "smtp":
 		return LogDrainSourceSMTP, nil
+	case "sms":
+		return LogDrainSourceSms, nil
 	case "audit":
 		return LogDrainSourceAudit, nil
 	}

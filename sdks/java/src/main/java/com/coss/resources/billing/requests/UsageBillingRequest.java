@@ -76,7 +76,7 @@ public final class UsageBillingRequest {
     }
 
     /**
-     * @return Split each bucket per environment.
+     * @return Split each bucket per environment, project, API key or user (the member whose personal key it was).
      */
     @JsonProperty("group_by")
     public Optional<UsageBillingRequestGroupBy> getGroupBy() {
@@ -193,7 +193,7 @@ public final class UsageBillingRequest {
         }
 
         /**
-         * <p>Split each bucket per environment.</p>
+         * <p>Split each bucket per environment, project, API key or user (the member whose personal key it was).</p>
          */
         @JsonSetter(value = "group_by", nulls = Nulls.SKIP)
         public Builder groupBy(Optional<UsageBillingRequestGroupBy> groupBy) {

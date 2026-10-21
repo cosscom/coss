@@ -31,6 +31,7 @@ if typing.TYPE_CHECKING:
     from .resources.marketing_settings.client import AsyncMarketingSettingsClient, MarketingSettingsClient
     from .resources.received.client import AsyncReceivedClient, ReceivedClient
     from .resources.segments.client import AsyncSegmentsClient, SegmentsClient
+    from .resources.storage.client import AsyncStorageClient, StorageClient
     from .resources.suppressions.client import AsyncSuppressionsClient, SuppressionsClient
     from .resources.templates.client import AsyncTemplatesClient, TemplatesClient
     from .resources.topics.client import AsyncTopicsClient, TopicsClient
@@ -47,6 +48,7 @@ class EmailClient:
         self._dedicated_ips: typing.Optional[DedicatedIpsClient] = None
         self._suppressions: typing.Optional[SuppressionsClient] = None
         self._tracking: typing.Optional[TrackingClient] = None
+        self._storage: typing.Optional[StorageClient] = None
         self._contacts: typing.Optional[ContactsClient] = None
         self._broadcasts: typing.Optional[BroadcastsClient] = None
         self._audiences: typing.Optional[AudiencesClient] = None
@@ -585,6 +587,14 @@ class EmailClient:
         return self._tracking
 
     @property
+    def storage(self):
+        if self._storage is None:
+            from .resources.storage.client import StorageClient  # noqa: E402
+
+            self._storage = StorageClient(client_wrapper=self._client_wrapper)
+        return self._storage
+
+    @property
     def contacts(self):
         if self._contacts is None:
             from .resources.contacts.client import ContactsClient  # noqa: E402
@@ -649,6 +659,7 @@ class AsyncEmailClient:
         self._dedicated_ips: typing.Optional[AsyncDedicatedIpsClient] = None
         self._suppressions: typing.Optional[AsyncSuppressionsClient] = None
         self._tracking: typing.Optional[AsyncTrackingClient] = None
+        self._storage: typing.Optional[AsyncStorageClient] = None
         self._contacts: typing.Optional[AsyncContactsClient] = None
         self._broadcasts: typing.Optional[AsyncBroadcastsClient] = None
         self._audiences: typing.Optional[AsyncAudiencesClient] = None
@@ -1256,6 +1267,14 @@ class AsyncEmailClient:
 
             self._tracking = AsyncTrackingClient(client_wrapper=self._client_wrapper)
         return self._tracking
+
+    @property
+    def storage(self):
+        if self._storage is None:
+            from .resources.storage.client import AsyncStorageClient  # noqa: E402
+
+            self._storage = AsyncStorageClient(client_wrapper=self._client_wrapper)
+        return self._storage
 
     @property
     def contacts(self):

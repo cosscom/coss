@@ -28,10 +28,28 @@ class Usage extends JsonSerializableType
     public ?string $dimension;
 
     /**
-     * @var ?string $environmentId Set with `group_by=environment`.
+     * @var ?string $environmentId Set with `group_by=environment`; `null` there for organization-wide usage (SMS numbers and registration fees).
      */
     #[JsonProperty('environment_id')]
     public ?string $environmentId;
+
+    /**
+     * @var ?string $projectId Set with `group_by=project` (`null`: organization-wide usage, or usage recorded before projects were).
+     */
+    #[JsonProperty('project_id')]
+    public ?string $projectId;
+
+    /**
+     * @var ?string $apiKeyId Set with `group_by=api_key` (`null`: the dashboard, or usage recorded before keys were).
+     */
+    #[JsonProperty('api_key_id')]
+    public ?string $apiKeyId;
+
+    /**
+     * @var ?string $userId Set with `group_by=user`: the member whose personal API key caused it (`null`: organization keys and the dashboard).
+     */
+    #[JsonProperty('user_id')]
+    public ?string $userId;
 
     /**
      * @var DateTime $start
@@ -60,6 +78,9 @@ class Usage extends JsonSerializableType
      *   quantity: int,
      *   dimension?: ?string,
      *   environmentId?: ?string,
+     *   projectId?: ?string,
+     *   apiKeyId?: ?string,
+     *   userId?: ?string,
      * } $values
      */
     public function __construct(
@@ -69,6 +90,9 @@ class Usage extends JsonSerializableType
         $this->meter = $values['meter'];
         $this->dimension = $values['dimension'] ?? null;
         $this->environmentId = $values['environmentId'] ?? null;
+        $this->projectId = $values['projectId'] ?? null;
+        $this->apiKeyId = $values['apiKeyId'] ?? null;
+        $this->userId = $values['userId'] ?? null;
         $this->start = $values['start'];
         $this->end = $values['end'];
         $this->quantity = $values['quantity'];

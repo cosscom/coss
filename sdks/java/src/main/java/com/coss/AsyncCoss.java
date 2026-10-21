@@ -16,7 +16,9 @@ import com.coss.resources.logdrains.AsyncLogDrainsClient;
 import com.coss.resources.logs.AsyncLogsClient;
 import com.coss.resources.reputation.AsyncReputationClient;
 import com.coss.resources.risk.AsyncRiskClient;
+import com.coss.resources.sms.AsyncSmsClient;
 import com.coss.resources.webhookendpoints.AsyncWebhookEndpointsClient;
+import com.coss.resources.webhookevents.AsyncWebhookEventsClient;
 import com.coss.resources.webhooklisteners.AsyncWebhookListenersClient;
 import java.util.function.Supplier;
 
@@ -34,6 +36,10 @@ public class AsyncCoss implements AutoCloseable {
     protected final Supplier<AsyncWebhookEndpointsClient> webhookEndpointsClient;
 
     protected final Supplier<AsyncWebhookListenersClient> webhookListenersClient;
+
+    protected final Supplier<AsyncWebhookEventsClient> webhookEventsClient;
+
+    protected final Supplier<AsyncSmsClient> smsClient;
 
     protected final Supplier<AsyncReputationClient> reputationClient;
 
@@ -57,6 +63,8 @@ public class AsyncCoss implements AutoCloseable {
         this.domainsClient = Suppliers.memoize(() -> new AsyncDomainsClient(clientOptions));
         this.webhookEndpointsClient = Suppliers.memoize(() -> new AsyncWebhookEndpointsClient(clientOptions));
         this.webhookListenersClient = Suppliers.memoize(() -> new AsyncWebhookListenersClient(clientOptions));
+        this.webhookEventsClient = Suppliers.memoize(() -> new AsyncWebhookEventsClient(clientOptions));
+        this.smsClient = Suppliers.memoize(() -> new AsyncSmsClient(clientOptions));
         this.reputationClient = Suppliers.memoize(() -> new AsyncReputationClient(clientOptions));
         this.logsClient = Suppliers.memoize(() -> new AsyncLogsClient(clientOptions));
         this.auditEventsClient = Suppliers.memoize(() -> new AsyncAuditEventsClient(clientOptions));
@@ -88,6 +96,14 @@ public class AsyncCoss implements AutoCloseable {
 
     public AsyncWebhookListenersClient webhookListeners() {
         return this.webhookListenersClient.get();
+    }
+
+    public AsyncWebhookEventsClient webhookEvents() {
+        return this.webhookEventsClient.get();
+    }
+
+    public AsyncSmsClient sms() {
+        return this.smsClient.get();
     }
 
     public AsyncReputationClient reputation() {

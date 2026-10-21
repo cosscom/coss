@@ -4,6 +4,7 @@ namespace Coss\Types;
 
 use Coss\Core\Json\JsonSerializableType;
 use Coss\Core\Json\JsonProperty;
+use Coss\Core\Types\ArrayType;
 
 /**
  * The API key making this request.
@@ -29,8 +30,22 @@ class EnvironmentApiKey extends JsonSerializableType
     public ?string $start;
 
     /**
+     * @var value-of<EnvironmentApiKeyAccess> $access `full`: every permission, including ones new products add later. `restricted`: only `permissions`, chosen when the key was created.
+     */
+    #[JsonProperty('access')]
+    public string $access;
+
+    /**
+     * @var array<string> $permissions What the key may do now, as `resource:action` (the names `insufficient_permissions` errors use), e.g. `email:send`.
+     */
+    #[JsonProperty('permissions'), ArrayType(['string'])]
+    public array $permissions;
+
+    /**
      * @param array{
      *   id: string,
+     *   access: value-of<EnvironmentApiKeyAccess>,
+     *   permissions: array<string>,
      *   name?: ?string,
      *   start?: ?string,
      * } $values
@@ -41,6 +56,8 @@ class EnvironmentApiKey extends JsonSerializableType
         $this->id = $values['id'];
         $this->name = $values['name'] ?? null;
         $this->start = $values['start'] ?? null;
+        $this->access = $values['access'];
+        $this->permissions = $values['permissions'];
     }
 
     /**

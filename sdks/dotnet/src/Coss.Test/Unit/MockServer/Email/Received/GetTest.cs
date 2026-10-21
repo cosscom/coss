@@ -1,4 +1,3 @@
-using Coss.Email;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -104,7 +103,9 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Email.Received.GetAsync(new GetReceivedRequest { Id = "id" });
+        var response = await Client.Email.Received.GetAsync(
+            new Coss.Email.GetReceivedRequest { Id = "id" }
+        );
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -192,7 +193,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Received.GetAsync(
-            new GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+            new Coss.Email.GetReceivedRequest { Id = "rcvd_01k7c8m4q2f3e9v6t5r1n0p8yz" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
