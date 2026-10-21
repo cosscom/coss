@@ -41,3 +41,25 @@ def test_accepts_bytes_and_list_headers() -> None:
         now=dt.datetime.fromtimestamp(FIXTURE["now"], dt.timezone.utc),
     )
     assert event == case["expect"]["value"]
+
+
+def test_rejects_bytes_that_arent_utf8() -> None:
+    import base64
+    import hashlib
+    import hmac
+
+    key = base64.b64decode(FIXTURE["secret"].removeprefix("whsec_"))
+    body = b'{"type": "\xff"}'
+    signature = base64.b64encode(hmac.new(key, b"msg_1.%d." % FIXTURE["now"] + body, hashlib.sha256).digest())
+    headers = {
+        "webhook-id": "msg_1",
+        "webhook-timestamp": str(FIXTURE["now"]),
+        "webhook-signature": f"v1,{signature.decode()}",
+    }
+    now = dt.datetime.fromtimestamp(FIXTURE["now"], dt.timezone.utc)
+    with pytest.raises(WebhookVerificationError, match="not valid JSON"):
+        verify_webhook(body, headers, FIXTURE["secret"], now=now)
+    with pytest.raises(WebhookVerificationError, match="not valid NDJSON"):
+        verify_log_drain_batch(body, headers, FIXTURE["secret"], now=now)
+    with pytest.raises(WebhookVerificationError, match="No webhook signature matches"):
+        verify_webhook(body + b"\xfe", headers, FIXTURE["secret"], now=now)

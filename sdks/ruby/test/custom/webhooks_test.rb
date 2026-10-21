@@ -40,4 +40,19 @@ class WebhooksConformanceTest < Minitest::Test
 
     assert_equal c["expect"]["value"], Coss::Webhooks.verify(c["payload"], headers, FIXTURE["secret"], now: now)
   end
+
+  def test_rejects_bytes_that_arent_utf8
+    key = FIXTURE["secret"].delete_prefix("whsec_").unpack1("m0")
+    body = "{\"type\": \"\xFF\"}".b
+    signature = [OpenSSL::HMAC.digest("SHA256", key, "msg_1.#{FIXTURE["now"]}.".b + body)].pack("m0")
+    headers = { "webhook-id" => "msg_1", "webhook-timestamp" => FIXTURE["now"].to_s, "webhook-signature" => "v1,#{signature}" }
+    now = Time.at(FIXTURE["now"])
+
+    error = assert_raises(Coss::WebhookVerificationError) { Coss::Webhooks.verify(body, headers, FIXTURE["secret"], now: now) }
+    assert_equal "The webhook body is not valid JSON.", error.message
+    error = assert_raises(Coss::WebhookVerificationError) do
+      Coss::Webhooks.verify_log_drain_batch(body, headers, FIXTURE["secret"], now: now)
+    end
+    assert_equal "The log drain body is not valid NDJSON.", error.message
+  end
 end

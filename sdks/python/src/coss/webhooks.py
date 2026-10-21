@@ -42,10 +42,10 @@ def verify_webhook(
     request must be rejected. The same check verifies messages your own users receive from
     coss.com Hooks: pass that endpoint's secret.
     """
-    text = _verify_signature(payload, headers, secret, tolerance_seconds, now)
+    body = _verify_signature(payload, headers, secret, tolerance_seconds, now)
     try:
-        return json.loads(text)
-    except ValueError:
+        return json.loads(body)
+    except ValueError:  # Including bytes that aren't UTF-8.
         raise WebhookVerificationError("The webhook body is not valid JSON.") from None
 
 
@@ -63,10 +63,10 @@ def verify_log_drain_batch(
     batch id, the same on every retry of a batch: use it (or each line's ``id``) to skip a batch
     you already stored. Raises ``WebhookVerificationError`` when the request must be rejected.
     """
-    text = _verify_signature(payload, headers, secret, tolerance_seconds, now)
+    body = _verify_signature(payload, headers, secret, tolerance_seconds, now)
     try:
-        return [json.loads(line) for line in text.split("\n") if line]
-    except ValueError:
+        return [json.loads(line) for line in body.decode("utf-8").split("\n") if line]
+    except ValueError:  # Including bytes that aren't UTF-8.
         raise WebhookVerificationError("The log drain body is not valid NDJSON.") from None
 
 
@@ -93,8 +93,9 @@ def _verify_signature(
     secret: str,
     tolerance_seconds: int,
     now: typing.Optional[dt.datetime],
-) -> str:
-    text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+) -> bytes:
+    # The signature covers the raw bytes, so they're only decoded once it matched.
+    body = payload if isinstance(payload, bytes) else payload.encode("utf-8")
     message_id = _header(headers, "webhook-id")
     timestamp = _header(headers, "webhook-timestamp")
     signatures = _header(headers, "webhook-signature")
@@ -109,7 +110,7 @@ def _verify_signature(
     if not key:
         raise WebhookVerificationError("The signing secret is not a valid whsec_… secret.")
 
-    signed = f"{message_id}.{timestamp}.{text}".encode()
+    signed = f"{message_id}.{timestamp}.".encode() + body
     expected = hmac.new(key, signed, hashlib.sha256).digest()
     # Several space-separated signatures are sent while a secret is being rotated.
     for candidate in signatures.split(" "):
@@ -118,5 +119,5 @@ def _verify_signature(
             continue
         signature = _decode_base64(value)
         if signature is not None and hmac.compare_digest(signature, expected):
-            return text
+            return body
     raise WebhookVerificationError("No webhook signature matches.")

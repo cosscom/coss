@@ -24,6 +24,8 @@ module Coss
     # messages your own users receive from coss.com Hooks: pass that endpoint's secret.
     def verify(payload, headers, secret, tolerance: DEFAULT_TOLERANCE_SECONDS, now: Time.now)
       text = verify_signature(payload, headers, secret, tolerance, now)
+      raise WebhookVerificationError, "The webhook body is not valid JSON." unless text.valid_encoding?
+
       JSON.parse(text)
     rescue JSON::ParserError
       raise WebhookVerificationError, "The webhook body is not valid JSON."
@@ -34,6 +36,8 @@ module Coss
     # every retry of a batch: use it (or each line's id) to skip a batch you already stored.
     def verify_log_drain_batch(payload, headers, secret, tolerance: DEFAULT_TOLERANCE_SECONDS, now: Time.now)
       text = verify_signature(payload, headers, secret, tolerance, now)
+      raise WebhookVerificationError, "The log drain body is not valid NDJSON." unless text.valid_encoding?
+
       text.split("\n").reject(&:empty?).map { |line| JSON.parse(line) }
     rescue JSON::ParserError
       raise WebhookVerificationError, "The log drain body is not valid NDJSON."
