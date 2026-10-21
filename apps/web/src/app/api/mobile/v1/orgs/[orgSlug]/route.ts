@@ -48,6 +48,13 @@ export const GET = mobileRoute(
         read_risk_rule: can({ riskRule: ["read"] }),
         read_risk_list: can({ riskList: ["read"] }),
         read_environment: can({ environment: ["read"] }),
+        read_template: can({ emailTemplate: ["read"] }),
+        read_broadcast: can({ broadcast: ["read"] }),
+        read_contact: can({ contact: ["read"] }),
+        read_sms_suppression: can({ smsSuppression: ["read"] }),
+        read_sms_sender: can({ smsSender: ["read"] }),
+        read_sso: can({ sso: ["read"] }),
+        read_scim: can({ scim: ["read"] }),
       },
       projects: projects.map(({ project, environments }) => ({
         id: project.id,

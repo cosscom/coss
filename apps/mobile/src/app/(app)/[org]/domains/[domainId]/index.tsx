@@ -1,15 +1,16 @@
 import type { DnsRecord } from "@coss/companion";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { StyleSheet, View } from "react-native";
-import { Alert } from "../../../../components/alert";
-import { Badge, StatusDot } from "../../../../components/badge";
-import { Panel, Ruled, SpecItem, SpecList } from "../../../../components/panel";
-import { ErrorState, Loading, PageIntro, Screen } from "../../../../components/screen";
-import { Text } from "../../../../components/text";
-import { WebButton } from "../../../../components/web-button";
-import { formatDateTime } from "../../../../lib/format";
-import { useDomain } from "../../../../lib/queries";
-import { DOMAIN_STATUS, RECORD_STATUS, TRACKING_STATUS } from "../../../../lib/status";
+import { Alert } from "../../../../../components/alert";
+import { Badge, StatusDot } from "../../../../../components/badge";
+import { DomainTabs } from "../../../../../components/domain-tabs";
+import { Panel, Ruled, SpecItem, SpecList } from "../../../../../components/panel";
+import { ErrorState, Loading, PageIntro, Screen } from "../../../../../components/screen";
+import { Text } from "../../../../../components/text";
+import { WebButton } from "../../../../../components/web-button";
+import { formatDateTime } from "../../../../../lib/format";
+import { useDomain } from "../../../../../lib/queries";
+import { DOMAIN_STATUS, RECORD_STATUS, TRACKING_STATUS } from "../../../../../lib/status";
 
 // Copied from the dashboard's domain page (apps/web/src/app/[orgSlug]/domains/[domainId]).
 const STATUS_HELP: Record<string, string> = {
@@ -108,6 +109,7 @@ export default function DomainScreen() {
         }
         title={domain.name}
       />
+      <DomainTabs domainId={domain.id} org={org} value="overview" />
       <Panel description="Add these at your DNS provider." title="DNS records">
         <Ruled>
           {domain.records.map((record) => (

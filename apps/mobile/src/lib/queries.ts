@@ -50,6 +50,8 @@ import type {
   WebhookEndpointResponse,
 } from "@coss/companion";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// Each product area added after the first release keeps its hooks in `queries-<area>.ts`, built on
+// the helpers exported here.
 import type { ApiClient, ApiError } from "./api";
 import { useAuth } from "./auth";
 
@@ -59,22 +61,23 @@ export class ApiRequestError extends Error {
   }
 }
 
-async function get<T>(api: ApiClient, path: string): Promise<T> {
+export async function get<T>(api: ApiClient, path: string): Promise<T> {
   const { data, error } = await api<T>(path);
   if (error) throw new ApiRequestError(error);
   return data;
 }
 
-function retry(failures: number, error: Error): boolean {
+export function retry(failures: number, error: Error): boolean {
   const code = error instanceof ApiRequestError ? error.error.code : null;
   return failures < 2 && (code === "network_error" || code === "internal_error");
 }
 
-const segment = encodeURIComponent;
+export const segment = encodeURIComponent;
 
 export type EnvironmentKey = { org: string; project: string; env: string };
 
-function environmentPath({ org, project, env }: EnvironmentKey): string {
+/** The mobile API path of an environment (`lib/web.ts`'s `environmentPath` is the dashboard's). */
+export function apiEnvironmentPath({ org, project, env }: EnvironmentKey): string {
   return `/orgs/${segment(org)}/projects/${segment(project)}/environments/${segment(env)}`;
 }
 
@@ -105,7 +108,7 @@ export function useEnvironment(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["env", key],
-    queryFn: () => get<EnvironmentResponse>(api, environmentPath(key)),
+    queryFn: () => get<EnvironmentResponse>(api, apiEnvironmentPath(key)),
     retry,
   });
 }
@@ -119,7 +122,7 @@ export function useEmails(key: EnvironmentKey, status: EmailStatus | null) {
       const query = new URLSearchParams();
       if (status) query.set("status", status);
       if (pageParam) query.set("before", pageParam);
-      return get<EmailListResponse>(api, `${environmentPath(key)}/emails?${query}`);
+      return get<EmailListResponse>(api, `${apiEnvironmentPath(key)}/emails?${query}`);
     },
     getNextPageParam: (page) => page.next_cursor,
     retry,
@@ -130,14 +133,14 @@ export function useEmail(key: EnvironmentKey, id: string) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["email", key, id],
-    queryFn: () => get<EmailResponse>(api, `${environmentPath(key)}/emails/${segment(id)}`),
+    queryFn: () => get<EmailResponse>(api, `${apiEnvironmentPath(key)}/emails/${segment(id)}`),
     retry,
   });
 }
 
-type Cursor = string | null;
+export type Cursor = string | null;
 
-function paged<T>(api: ApiClient, path: (after: Cursor) => string) {
+export function paged<T>(api: ApiClient, path: (after: Cursor) => string) {
   return {
     initialPageParam: null as Cursor,
     queryFn: ({ pageParam }: { pageParam: Cursor }) => get<Page<T>>(api, path(pageParam)),
@@ -146,7 +149,7 @@ function paged<T>(api: ApiClient, path: (after: Cursor) => string) {
   };
 }
 
-function withQuery(path: string, params: Record<string, string | null | undefined>): string {
+export function withQuery(path: string, params: Record<string, string | null | undefined>): string {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) if (value) query.set(key, value);
   const text = query.toString();
@@ -215,7 +218,7 @@ export function useReceivedEmails(key: EnvironmentKey) {
   return useInfiniteQuery({
     queryKey: ["received", key],
     ...paged<ReceivedEmailSummary>(api, (after) =>
-      withQuery(`${environmentPath(key)}/received`, { after }),
+      withQuery(`${apiEnvironmentPath(key)}/received`, { after }),
     ),
   });
 }
@@ -224,7 +227,7 @@ export function useReceivedEmail(key: EnvironmentKey, id: string) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["received", key, id],
-    queryFn: () => get<ReceivedEmail>(api, `${environmentPath(key)}/received/${segment(id)}`),
+    queryFn: () => get<ReceivedEmail>(api, `${apiEnvironmentPath(key)}/received/${segment(id)}`),
     retry,
   });
 }
@@ -237,7 +240,7 @@ export function useSmsList(key: EnvironmentKey, statuses: readonly SmsStatus[] |
     queryFn: ({ pageParam }) =>
       get<SmsListResponse>(
         api,
-        withQuery(`${environmentPath(key)}/sms`, {
+        withQuery(`${apiEnvironmentPath(key)}/sms`, {
           status: statuses?.join(","),
           after: pageParam,
         }),
@@ -251,7 +254,7 @@ export function useSms(key: EnvironmentKey, id: string) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["sms", key, "message", id],
-    queryFn: () => get<SmsResponse>(api, `${environmentPath(key)}/sms/${segment(id)}`),
+    queryFn: () => get<SmsResponse>(api, `${apiEnvironmentPath(key)}/sms/${segment(id)}`),
     retry,
   });
 }
@@ -261,7 +264,7 @@ export function useReceivedSms(key: EnvironmentKey) {
   return useInfiniteQuery({
     queryKey: ["sms", key, "received"],
     ...paged<MobileReceivedSms>(api, (after) =>
-      withQuery(`${environmentPath(key)}/sms/received`, { after }),
+      withQuery(`${apiEnvironmentPath(key)}/sms/received`, { after }),
     ),
   });
 }
@@ -274,7 +277,7 @@ export function useLogs(
   return useInfiniteQuery({
     queryKey: ["logs", key, filters],
     ...paged<LogEntry>(api, (after) =>
-      withQuery(`${environmentPath(key)}/logs`, {
+      withQuery(`${apiEnvironmentPath(key)}/logs`, {
         range: filters.range,
         source: filters.source,
         q: filters.q,
@@ -288,7 +291,7 @@ export function useLogEntry(key: EnvironmentKey, id: string) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["logs", key, "entry", id],
-    queryFn: () => get<LogEntryResponse>(api, `${environmentPath(key)}/logs/${segment(id)}`),
+    queryFn: () => get<LogEntryResponse>(api, `${apiEnvironmentPath(key)}/logs/${segment(id)}`),
     retry,
   });
 }
@@ -298,7 +301,7 @@ export function useSuppressions(key: EnvironmentKey, address: string) {
   return useInfiniteQuery({
     queryKey: ["suppressions", key, address],
     ...paged<Suppression>(api, (after) =>
-      withQuery(`${environmentPath(key)}/suppressions`, { address, after }),
+      withQuery(`${apiEnvironmentPath(key)}/suppressions`, { address, after }),
     ),
   });
 }
@@ -307,7 +310,7 @@ export function useApiKeys(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["api-keys", key],
-    queryFn: () => get<ApiKeysResponse>(api, `${environmentPath(key)}/api-keys`),
+    queryFn: () => get<ApiKeysResponse>(api, `${apiEnvironmentPath(key)}/api-keys`),
     retry,
   });
 }
@@ -316,7 +319,7 @@ export function useWebhookEndpoints(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["webhooks", key],
-    queryFn: () => get<{ data: WebhookEndpoint[] }>(api, `${environmentPath(key)}/webhooks`),
+    queryFn: () => get<{ data: WebhookEndpoint[] }>(api, `${apiEnvironmentPath(key)}/webhooks`),
     retry,
   });
 }
@@ -329,7 +332,10 @@ export function useWebhookEndpoint(key: EnvironmentKey, id: string, status: stri
     queryFn: ({ pageParam }) =>
       get<WebhookEndpointResponse>(
         api,
-        withQuery(`${environmentPath(key)}/webhooks/${segment(id)}`, { status, after: pageParam }),
+        withQuery(`${apiEnvironmentPath(key)}/webhooks/${segment(id)}`, {
+          status,
+          after: pageParam,
+        }),
       ),
     getNextPageParam: (page) => page.deliveries.next_cursor,
     retry,
@@ -344,7 +350,7 @@ export function useRiskAssessments(key: EnvironmentKey, view: string) {
     queryFn: ({ pageParam }) =>
       get<RiskAssessmentsResponse>(
         api,
-        withQuery(`${environmentPath(key)}/risk`, { view, after: pageParam }),
+        withQuery(`${apiEnvironmentPath(key)}/risk`, { view, after: pageParam }),
       ),
     getNextPageParam: (page) => page.next_cursor,
     retry,
@@ -355,12 +361,12 @@ export function useRiskAssessment(key: EnvironmentKey, id: string) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["risk", key, "assessment", id],
-    queryFn: () => get<RiskAssessment>(api, `${environmentPath(key)}/risk/${segment(id)}`),
+    queryFn: () => get<RiskAssessment>(api, `${apiEnvironmentPath(key)}/risk/${segment(id)}`),
     retry,
   });
 }
 
-async function post<T>(api: ApiClient, path: string, body?: unknown): Promise<T> {
+export async function post<T>(api: ApiClient, path: string, body?: unknown): Promise<T> {
   const { data, error } = await api<T>(path, {
     method: "POST",
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -376,7 +382,7 @@ export function useRetryDelivery(key: EnvironmentKey, endpointId: string) {
     mutationFn: (deliveryId: string) =>
       post<{ retried: true }>(
         api,
-        `${environmentPath(key)}/webhooks/${segment(endpointId)}/deliveries/${segment(deliveryId)}/retry`,
+        `${apiEnvironmentPath(key)}/webhooks/${segment(endpointId)}/deliveries/${segment(deliveryId)}/retry`,
       ),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["webhooks", key, endpointId] }),
   });
@@ -387,7 +393,7 @@ export function useRiskFeedback(key: EnvironmentKey, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: RiskFeedbackRequest) =>
-      post<RiskAssessment>(api, `${environmentPath(key)}/risk/${segment(id)}/feedback`, body),
+      post<RiskAssessment>(api, `${apiEnvironmentPath(key)}/risk/${segment(id)}/feedback`, body),
     onSuccess: (assessment) => {
       queryClient.setQueryData(["risk", key, "assessment", id], assessment);
       void queryClient.invalidateQueries({ queryKey: ["risk", key] });
@@ -400,7 +406,7 @@ export function useHookApplications(key: EnvironmentKey, q: string) {
   return useInfiniteQuery({
     queryKey: ["hooks", key, "applications", q],
     ...paged<HookApplication>(api, (after) =>
-      withQuery(`${environmentPath(key)}/hooks`, { q, after }),
+      withQuery(`${apiEnvironmentPath(key)}/hooks`, { q, after }),
     ),
   });
 }
@@ -410,7 +416,7 @@ export function useHookApplication(key: EnvironmentKey, application: string) {
   return useQuery({
     queryKey: ["hooks", key, "application", application],
     queryFn: () =>
-      get<HookApplicationResponse>(api, `${environmentPath(key)}/hooks/${segment(application)}`),
+      get<HookApplicationResponse>(api, `${apiEnvironmentPath(key)}/hooks/${segment(application)}`),
     retry,
   });
 }
@@ -424,7 +430,7 @@ export function useHookEndpoint(key: EnvironmentKey, application: string, endpoi
       get<HookEndpointResponse>(
         api,
         withQuery(
-          `${environmentPath(key)}/hooks/${segment(application)}/endpoints/${segment(endpoint)}`,
+          `${apiEnvironmentPath(key)}/hooks/${segment(application)}/endpoints/${segment(endpoint)}`,
           { after: pageParam },
         ),
       ),
@@ -440,7 +446,7 @@ export function useHookMessage(key: EnvironmentKey, application: string, message
     queryFn: () =>
       get<HookMessageResponse>(
         api,
-        `${environmentPath(key)}/hooks/${segment(application)}/messages/${segment(message)}`,
+        `${apiEnvironmentPath(key)}/hooks/${segment(application)}/messages/${segment(message)}`,
       ),
     retry,
   });
@@ -450,7 +456,8 @@ export function useHookEventTypes(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["hooks", key, "event-types"],
-    queryFn: () => get<{ data: HookEventType[] }>(api, `${environmentPath(key)}/hooks/event-types`),
+    queryFn: () =>
+      get<{ data: HookEventType[] }>(api, `${apiEnvironmentPath(key)}/hooks/event-types`),
     retry,
   });
 }
@@ -459,7 +466,7 @@ export function useTracking(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["tracking", key],
-    queryFn: () => get<TrackingSettings>(api, `${environmentPath(key)}/tracking`),
+    queryFn: () => get<TrackingSettings>(api, `${apiEnvironmentPath(key)}/tracking`),
     retry,
   });
 }
@@ -468,7 +475,7 @@ export function useLogDrains(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["log-drains", key],
-    queryFn: () => get<LogDrainsResponse>(api, `${environmentPath(key)}/log-drains`),
+    queryFn: () => get<LogDrainsResponse>(api, `${apiEnvironmentPath(key)}/log-drains`),
     retry,
   });
 }
@@ -481,7 +488,7 @@ export function useLogDrain(key: EnvironmentKey, id: string) {
     queryFn: ({ pageParam }) =>
       get<LogDrainResponse>(
         api,
-        withQuery(`${environmentPath(key)}/log-drains/${segment(id)}`, { after: pageParam }),
+        withQuery(`${apiEnvironmentPath(key)}/log-drains/${segment(id)}`, { after: pageParam }),
       ),
     getNextPageParam: (page) => page.batches.next_cursor,
     retry,
@@ -492,7 +499,7 @@ export function useRiskRules(key: EnvironmentKey) {
   const { api } = useAuth();
   return useQuery({
     queryKey: ["risk", key, "rules"],
-    queryFn: () => get<{ data: RiskRule[] }>(api, `${environmentPath(key)}/risk/rules`),
+    queryFn: () => get<{ data: RiskRule[] }>(api, `${apiEnvironmentPath(key)}/risk/rules`),
     retry,
   });
 }
@@ -502,7 +509,7 @@ export function useRiskLists(key: EnvironmentKey, list: string | null) {
   return useInfiniteQuery({
     queryKey: ["risk", key, "lists", list],
     ...paged<RiskListEntry>(api, (after) =>
-      withQuery(`${environmentPath(key)}/risk/lists`, { list, after }),
+      withQuery(`${apiEnvironmentPath(key)}/risk/lists`, { list, after }),
     ),
   });
 }
@@ -512,7 +519,7 @@ export function useCancelEmail(key: EnvironmentKey, id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () =>
-      post<{ canceled: true }>(api, `${environmentPath(key)}/emails/${segment(id)}/cancel`),
+      post<{ canceled: true }>(api, `${apiEnvironmentPath(key)}/emails/${segment(id)}/cancel`),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["email", key, id] });
       void queryClient.invalidateQueries({ queryKey: ["emails", key] });
@@ -527,7 +534,7 @@ export function useRecoverEndpoint(key: EnvironmentKey, endpointId: string) {
     mutationFn: (sinceHours: RecoverRequest["since_hours"]) =>
       post<RecoverResponse>(
         api,
-        `${environmentPath(key)}/webhooks/${segment(endpointId)}/recover`,
+        `${apiEnvironmentPath(key)}/webhooks/${segment(endpointId)}/recover`,
         { since_hours: sinceHours },
       ),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["webhooks", key, endpointId] }),
@@ -540,7 +547,7 @@ export function useResolveReview(key: EnvironmentKey) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, outcome }: { id: string; outcome: RiskFeedbackRequest["outcome"] }) =>
-      post<RiskAssessment>(api, `${environmentPath(key)}/risk/${segment(id)}/feedback`, {
+      post<RiskAssessment>(api, `${apiEnvironmentPath(key)}/risk/${segment(id)}/feedback`, {
         outcome,
       }),
     onSuccess: (assessment) => {
@@ -557,7 +564,7 @@ export function useSetEndpointEnabled(key: EnvironmentKey, endpointId: string) {
     mutationFn: (enabled: WebhookEndpointEnabledRequest["enabled"]) =>
       post<WebhookEndpointEnabledRequest>(
         api,
-        `${environmentPath(key)}/webhooks/${segment(endpointId)}/enabled`,
+        `${apiEnvironmentPath(key)}/webhooks/${segment(endpointId)}/enabled`,
         { enabled },
       ),
     onSuccess: () => {
@@ -573,7 +580,7 @@ export function useRescheduleEmail(key: EnvironmentKey, id: string) {
     mutationFn: (scheduledAt: string) =>
       post<RescheduleEmailResponse>(
         api,
-        `${environmentPath(key)}/emails/${segment(id)}/reschedule`,
+        `${apiEnvironmentPath(key)}/emails/${segment(id)}/reschedule`,
         {
           scheduled_at: scheduledAt,
         } satisfies RescheduleEmailRequest,

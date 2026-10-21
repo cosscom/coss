@@ -1,15 +1,19 @@
 # AGENTS.md — `apps/mobile` (coss.com for iOS)
 
 Expo (SDK 57, React Native 0.86, Expo Router) companion app for the dashboard. Organization:
-projects, reputation, domains (DNS records), members, billing and invoices, the audit log.
-Environment: activity, sent and received emails, sent and received SMS, suppressions, open/click
-tracking, risk assessments, rules and lists, Hooks (applications, endpoints, messages, event
-types), API keys, webhook endpoints and deliveries, logs, log drains. A few changes, each mirroring a dashboard
-action (same checks, same audit event): retrying a webhook delivery, recovering an endpoint's
-failed deliveries, enabling or disabling an endpoint, canceling or rescheduling a scheduled email
-and reporting a risk assessment's outcome (also from the review queue); everything else is
-read-only (with a link to the same page on coss.com). It talks only to the
-dashboard's `/api/mobile/v1/*` (never the public API: it holds no API key).
+projects, reputation, domains (DNS records, DMARC reports), dedicated IPs, SMS senders (numbers,
+carrier registrations, countries), members, settings (general, single sign-on, directory sync),
+billing, plans and invoices, the audit log. Environment: activity, sent and received emails,
+templates and their versions, suppressions, open/click tracking, content storage, sent and
+received SMS, SMS suppressions, broadcasts, contacts (and their properties), audiences, segments,
+topics, marketing settings, risk assessments, rules, lists, rate limits, calibration and settings,
+Hooks (applications, endpoints, messages, event types, portal settings), API keys, webhook
+endpoints and deliveries, logs, log drains. A few changes, each mirroring a dashboard action (same
+checks, same audit event): retrying a webhook delivery, recovering an endpoint's failed
+deliveries, enabling or disabling an endpoint, canceling or rescheduling a scheduled email,
+pausing, resuming or canceling a broadcast, and reporting a risk assessment's outcome (also from
+the review queue); everything else is read-only (with a link to the same page on coss.com). It
+talks only to the dashboard's `/api/mobile/v1/*` (never the public API: it holds no API key).
 
 ## Expo has changed — do not trust your training data
 
@@ -87,7 +91,13 @@ Mac, and `APNS_*` set for the worker (it prints them without).
 ## Conventions
 
 - Wire types come from `@coss/companion`, imported **type-only** (Metro never bundles it). Change
-  the dashboard handlers and the type together.
+  the dashboard handlers and the type together. Newer areas keep their types in a file of their
+  own (`packages/companion/src/<area>.ts`, re-exported by `export type *` — which silently drops a
+  name two files both export, so keep names unique), their mapping in a `wire.ts` next to their
+  routes, their hooks in `src/lib/queries-<area>.ts` (on the helpers `src/lib/queries.ts`
+  exports) and their badge labels in `src/lib/status-<area>.ts`.
+- A page the app shows needs a `read_*` flag in `OrganizationResponse["can"]` (the dashboard
+  page's read permission) for the environment or organization screen's link to it.
 - `src/app/` holds routes only (Expo Router); everything else lives in `src/lib` and
   `src/components`. Relative imports (no path aliases).
 - Routes mirror the dashboard's paths (`/[org]/projects/[project]/[env]/…`, `/[org]/settings/…`),

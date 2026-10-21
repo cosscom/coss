@@ -1,6 +1,17 @@
 import type { BillingAlerts, OrganizationResponse } from "@coss/companion";
 import { type Href, router, useLocalSearchParams } from "expo-router";
-import { CreditCard, Folder, FolderPlus, Gauge, Globe, History, Users } from "lucide-react-native";
+import {
+  CreditCard,
+  Folder,
+  FolderPlus,
+  Gauge,
+  Globe,
+  History,
+  MessageSquare,
+  Network,
+  Settings,
+  Users,
+} from "lucide-react-native";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { Alert } from "../../../components/alert";
@@ -199,7 +210,18 @@ export default function OrganizationScreen() {
             <Ruled>
               {[
                 query.data.can.read_domain && { label: "Domains", path: "domains", icon: Globe },
+                query.data.can.read_domain && {
+                  label: "Dedicated IPs",
+                  path: "dedicated-ips",
+                  icon: Network,
+                },
+                query.data.can.read_sms_sender && {
+                  label: "SMS",
+                  path: "sms",
+                  icon: MessageSquare,
+                },
                 { label: "Members", path: "members", icon: Users },
+                { label: "Settings", path: "settings", icon: Settings },
                 query.data.can.read_billing && {
                   label: "Billing",
                   path: "settings/billing",
