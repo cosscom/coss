@@ -111,9 +111,10 @@ This project uses [coss.com](https://coss.com) (email, SMS, webhooks) through it
 - Docs: https://coss.com/llms.txt lists every page, and every docs page is Markdown at its URL plus
   \`.md\` (e.g. https://coss.com/docs/email/sending.md). API reference pages give each operation's
   parameters, request body, responses and errors. Read the page before writing code against it.
-- \`COSS_API_KEY\` in \`${envFile}\` is a development key (\`coss_test_…\`): every API works and
-  records what it would do, with events and webhooks, but nothing is delivered. Develop and test
-  with it; never switch to a live key (\`coss_live_…\`) to try something.
+- Develop and test with the development key (\`coss_test_…\`) in \`${envFile}\` as \`COSS_API_KEY\`:
+  every API works and records what it would do, with events and webhooks, but nothing is
+  delivered. A \`coss_live_…\` key there delivers for real: don't test with it, and never switch
+  to one to try something (\`npx coss-cli init --force\` replaces it with a development key).
 - SDK methods return \`{ data, error }\` and don't throw for API failures: always check \`error\`.
   Webhook handlers verify each request with \`verifyWebhook\`, which throws on a bad signature.
 - After \`npx coss-cli login\`: \`npx coss-cli listen --forward-to localhost:3000/<path>\` forwards
@@ -204,6 +205,12 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
   let key: { id: string; name: string; environment: string } | null = null;
   if (existingKey && !values.force) {
     out.info(`${shownFile} already has COSS_API_KEY: kept it (--force replaces it).`);
+    if (existingKey.startsWith("coss_live_")) {
+      out.warn(
+        `${shownFile}'s COSS_API_KEY is a live key: what you send with it is delivered. ` +
+          "`coss init --force` replaces it with a development key.",
+      );
+    }
   } else {
     const token = await browserLogin(context, dashboardUrl, {
       pasteCode: values["no-browser"] === true || isRemote(io),

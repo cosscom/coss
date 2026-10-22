@@ -193,7 +193,7 @@ describe("coss init --agents", () => {
     const first = await readFile(file, "utf8");
     expect(first).toBe(`# My app\n\nUse pnpm.\n\n${agentNotes(".env.local")}`);
     expect(first).toContain("https://coss.com/llms.txt");
-    expect(first).toContain("`COSS_API_KEY` in `.env.local`");
+    expect(first).toContain("in `.env.local` as `COSS_API_KEY`");
     expect(io.output()).toContain("Added the coss.com notes for coding agents in AGENTS.md.");
 
     // Kept key, same notes: the section is replaced, not added twice.
@@ -220,6 +220,18 @@ describe("coss init --agents", () => {
     expect(await run(["init", "--no-install", "--no-browser"], io)).toBe(0);
     expect(await readFile(join(io.cwd, "AGENTS.md"), "utf8").catch(() => null)).toBeNull();
     expect(io.output()).toContain("coss init --agents");
+  });
+
+  test("a live key the env file keeps is called out, never called a development key", async () => {
+    const { io } = await project(
+      { ".env.local": "COSS_API_KEY=coss_live_abc\n" },
+      { exec: () => 0 },
+    );
+    expect(await run(["init", "--agents", "--env-file", ".env.local"], io)).toBe(0);
+    expect(io.errors()).toContain(".env.local's COSS_API_KEY is a live key");
+    const notes = await readFile(join(io.cwd, "AGENTS.md"), "utf8");
+    expect(notes).toContain("A `coss_live_…` key there delivers for real: don't test with it");
+    expect(notes).not.toContain("is a development key");
   });
 
   test("the section is replaced wherever it is", () => {

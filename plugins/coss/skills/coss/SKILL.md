@@ -24,7 +24,8 @@ Run `npx coss-cli init` in the project's directory, and tell the user to expect 
 it opens the coss.com dashboard, where they sign in and approve a key for this project (it waits up
 to 5 minutes). The key is written to `.env.local` (Next.js) or `.env` as `COSS_API_KEY`, and the
 `coss` package is installed in JavaScript projects. If the env file already has `COSS_API_KEY`,
-it's kept. Where no browser can open (over SSH, in a container or a cloud sandbox) the command
+it's kept: check it starts with `coss_test_` (a `coss_live_` key delivers for real; `--force`
+replaces it). Where no browser can open (over SSH, in a container or a cloud sandbox) the command
 prints a link and waits for a code typed into the terminal: ask the user to run it themselves.
 `--agents` also adds a short coss.com section to the project's AGENTS.md for later sessions.
 
