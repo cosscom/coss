@@ -6,6 +6,7 @@ export type * from "./contacts.ts";
 export type * from "./organization-settings.ts";
 export type * from "./risk-settings.ts";
 export type * from "./sms-senders.ts";
+export type * from "./spend.ts";
 export type * from "./templates.ts";
 
 export type MobileErrorCode =
@@ -92,6 +93,8 @@ export type OrganizationResponse = {
   standing: ReputationStanding;
   /** `null` when the member may not read billing. */
   billing: BillingAlerts | null;
+  /** The member's own personal keys reached their monthly budget (live sends paused). */
+  budget_paused: boolean;
   can: {
     read_email: boolean;
     read_sms: boolean;
@@ -414,9 +417,24 @@ export type ApiKey = {
   access: "full" | "sending" | "read_only" | "custom";
   /** `resource:action`, e.g. `email:send` (a full-access key: every one there is today). */
   permissions: string[];
+  /** The member it is assigned to (a personal key: their spend); `null`: an organization key. */
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+    /** Their role now; `null` once they left (the key no longer works). */
+    role: string | null;
+  } | null;
+  /** A live key whose budget (its own, its owner's or its project's) is used up. */
+  paused: boolean;
 };
 
-export type ApiKeysResponse = { prefix: string; data: ApiKey[] };
+export type ApiKeysResponse = {
+  prefix: string;
+  /** Members may create personal keys in this environment. */
+  personal_keys: boolean;
+  data: ApiKey[];
+};
 
 export type WebhookEndpoint = {
   id: string;

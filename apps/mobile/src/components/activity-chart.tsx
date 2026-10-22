@@ -8,7 +8,15 @@ import { Text } from "./text";
 
 type Day = EnvironmentResponse["activity"]["days"][number];
 
-const SERIES: { key: string; label: string; color: ColorToken; value: (day: Day) => number }[] = [
+/** One stacked series: its legend label, colour and value on a day. */
+export type BarSeries<D> = {
+  key: string;
+  label: string;
+  color: ColorToken;
+  value: (day: D) => number;
+};
+
+const SERIES: BarSeries<Day>[] = [
   { key: "sent", label: "Sent", color: "chartSent", value: (day) => day.sent },
   { key: "failed", label: "Failed", color: "destructive", value: (day) => day.failed },
   {
@@ -33,8 +41,32 @@ function Dashes() {
   );
 }
 
-/** The dashboard's stacked daily bars: tap a day for its numbers (the web shows them on hover). */
+/** The environment overview's emails per day. */
 export function ActivityChart({ days }: { days: Day[] }) {
+  return (
+    <StackedBars
+      days={days}
+      describe={(total) => `${total} emails`}
+      format={formatCount}
+      series={SERIES}
+    />
+  );
+}
+
+/** The dashboard's stacked daily bars: tap a day for its numbers (the web shows them on hover). */
+export function StackedBars<D extends { date: string }>({
+  days,
+  series: SERIES,
+  format,
+  describe,
+}: {
+  days: D[];
+  series: BarSeries<D>[];
+  /** A value as the legend and the axis show it. */
+  format: (value: number) => string;
+  /** A day's total for VoiceOver ("12 emails"). */
+  describe: (total: number) => string;
+}) {
   const [selected, setSelected] = useState<number | null>(null);
   const totals = days.map((day) => SERIES.reduce((sum, series) => sum + series.value(day), 0));
   const max = Math.max(1, ...totals);
@@ -50,7 +82,7 @@ export function ActivityChart({ days }: { days: Day[] }) {
               <View key={series.key} style={styles.legendItem}>
                 <View style={[styles.swatch, { backgroundColor: colors[series.color] }]} />
                 <Text muted variant="mono">
-                  {formatCount(series.value(focus))}
+                  {format(series.value(focus))}
                 </Text>
               </View>
             ))}
@@ -71,7 +103,7 @@ export function ActivityChart({ days }: { days: Day[] }) {
         <View style={styles.plot}>
           {days.map((day, index) => (
             <Pressable
-              accessibilityLabel={`${formatDay(day.date)}: ${totals[index]} emails`}
+              accessibilityLabel={`${formatDay(day.date)}: ${describe(totals[index] ?? 0)}`}
               key={day.date}
               onPress={() => {
                 void Haptics.selectionAsync();
@@ -112,7 +144,7 @@ export function ActivityChart({ days }: { days: Day[] }) {
           {days[0] ? formatDay(days[0].date) : ""}
         </Text>
         <Text muted style={styles.axisLabel} variant="mono">
-          max {formatCount(max)}
+          max {format(max)}
         </Text>
         <Text muted style={styles.axisLabel} variant="mono">
           {days.at(-1) ? formatDay(days.at(-1)?.date ?? "") : ""}
