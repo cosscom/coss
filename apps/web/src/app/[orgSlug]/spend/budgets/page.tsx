@@ -19,9 +19,12 @@ import { SubNav } from "@/components/sub-nav";
 import { centsInput, formatCents } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 import {
+  budgetPaused,
+  budgetStatusOf,
   environmentLabel,
   keyLabel,
   memberLabel,
+  ownBudget,
   projectLabel,
   type SpendNames,
   spendOverview,
@@ -37,26 +40,15 @@ export default async function BudgetsPage({ params }: PageProps<"/[orgSlug]/spen
   const { organization, can } = await requireOrgMember(orgSlug);
   if (!can({ billing: ["read"] })) notFound();
   const canManage = can({ billing: ["update"] });
-  const { budgets, statuses, holds, names } = await spendOverview(organization.id);
+  const overview = await spendOverview(organization.id);
+  const { budgets, names } = overview;
   const orgSlugValue = organization.slug;
   const memberDefault = budgets.find((budget) => budget.scope === "member_default") ?? null;
-  const paused = (scope: string, targetId: string) =>
-    holds.some((hold) => hold.scope === scope && hold.targetId === targetId);
-  const statusOf = (scope: BudgetStatus["scope"], targetId: string): BudgetStatus =>
-    statuses.find((status) => status.scope === scope && status.targetId === targetId) ?? {
-      scope,
-      targetId,
-      budget: scope === "user" ? memberDefault : null,
-      fromDefault: scope === "user" && memberDefault !== null,
-      amountCents: scope === "user" ? (memberDefault?.amountCents ?? null) : null,
-      spentCents: 0n,
-    };
+  const paused = (scope: string, targetId: string) => budgetPaused(overview, scope, targetId);
+  const statusOf = (scope: BudgetStatus["scope"], targetId: string) =>
+    budgetStatusOf(overview, scope, targetId);
   const budgetOf = (scope: Budget["scope"], targetId: string) =>
-    budgets.find(
-      (budget) =>
-        budget.scope === scope &&
-        (budget.userId ?? budget.projectId ?? budget.apiKeyId) === targetId,
-    ) ?? null;
+    ownBudget(overview, scope, targetId);
   const editable = (budget: Budget | null) => ({
     amount: budget ? centsInput(budget.amountCents) : undefined,
     thresholds: budget?.alertThresholds.join(", "),

@@ -1,4 +1,4 @@
-import { type BudgetStatus, getBillingAccount, type SpendLine, sumSpend } from "@coss/billing";
+import { getBillingAccount, type SpendLine } from "@coss/billing";
 import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import { Button } from "@coss/ui/components/button";
@@ -24,17 +24,20 @@ import { SubNav } from "@/components/sub-nav";
 import { formatCents, formatDate, formatPeriodRange, formatQuantity } from "@/lib/billing-format";
 import { requireOrgMember } from "@/lib/session";
 import {
+  dailySpend,
   environmentLabel,
   keyLabel,
-  memberLabel,
-  projectLabel,
+  ownSpend,
+  pausedStatuses,
+  SPEND_GROUP_SCOPE,
   type SpendNames,
   spendOverview,
+  spendRows,
+  spendShare,
+  targetLabel,
 } from "@/lib/spend";
 
 export const metadata: Metadata = { title: "Spend" };
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const GROUPS = [
   { value: "member", label: "Members", column: "Member" },
@@ -48,28 +51,17 @@ function isGroup(value: unknown): value is Group {
   return GROUPS.some((group) => group.value === value);
 }
 
-/** Each UTC day of the month so far, with `valuesOf` its lines' cents. */
+/** Each UTC day of the month so far, with `seriesOf` its lines' cents. */
 function dailyColumns(
   period: { start: Date; end: Date },
   now: Date,
   lines: readonly SpendLine[],
   seriesOf: (line: SpendLine) => string,
 ) {
-  const end = now < period.end ? now : period.end;
-  const days: { label: string; values: Record<string, number> }[] = [];
-  const index = new Map<number, number>();
-  for (let day = period.start.getTime(); day < end.getTime(); day += DAY_MS) {
-    index.set(day, days.length);
-    days.push({ label: formatDate(new Date(day)), values: {} });
-  }
-  for (const line of lines) {
-    const at = line.day ? index.get(line.day.getTime()) : undefined;
-    const column = at === undefined ? undefined : days[at];
-    if (!column) continue;
-    const key = seriesOf(line);
-    column.values[key] = (column.values[key] ?? 0) + Number(line.cents);
-  }
-  return days;
+  return dailySpend(period, now, lines, seriesOf).map(({ day, values }) => ({
+    label: formatDate(day),
+    values,
+  }));
 }
 
 export default async function SpendPage({ params, searchParams }: PageProps<"/[orgSlug]/spend">) {
@@ -78,7 +70,7 @@ export default async function SpendPage({ params, searchParams }: PageProps<"/[o
   const { session, organization, can } = await requireOrgMember(orgSlug);
   const now = new Date();
   const overview = await spendOverview(organization.id, now);
-  const { spend, statuses, names } = overview;
+  const { spend, names } = overview;
   const base = `/${organization.slug}/spend`;
   const period = formatPeriodRange(spend.period.start, spend.period.end);
 
@@ -93,9 +85,7 @@ export default async function SpendPage({ params, searchParams }: PageProps<"/[o
   const personalCents = spend.lines
     .filter((line) => line.userId !== "")
     .reduce((total, line) => total + line.cents, 0n);
-  const paused = statuses.filter((status) =>
-    overview.holds.some((hold) => hold.scope === status.scope && hold.targetId === status.targetId),
-  );
+  const paused = pausedStatuses(overview);
 
   return (
     <div className="flex flex-col gap-6">
@@ -196,54 +186,14 @@ export default async function SpendPage({ params, searchParams }: PageProps<"/[o
   );
 }
 
-function targetLabel(names: SpendNames, status: Pick<BudgetStatus, "scope" | "targetId">) {
-  if (status.scope === "user") return memberLabel(names, status.targetId);
-  if (status.scope === "project") return projectLabel(names, status.targetId);
-  return keyLabel(names, status.targetId);
-}
-
-type Row = {
-  key: string;
-  label: string;
-  detail?: string;
-  cents: bigint;
-  recipients: number;
-  status?: BudgetStatus;
-  paused: boolean;
-};
-
 function Breakdown(props: {
   by: Group;
   names: SpendNames;
   overview: Awaited<ReturnType<typeof spendOverview>>;
 }) {
-  const { spend, statuses, holds } = props.overview;
-  const { names } = props;
-  const keyOf: Record<Group, (line: SpendLine) => string> = {
-    member: (line) => line.userId,
-    project: (line) => line.projectId,
-    environment: (line) => line.environmentId,
-    key: (line) => line.apiKeyId,
-  };
-  const scope = { member: "user", project: "project", key: "api_key", environment: null }[props.by];
-  const totals = sumSpend(spend.lines, keyOf[props.by]);
-  // Targets with a budget but no spend yet are listed too.
-  for (const status of statuses) {
-    if (status.scope === scope && !totals.has(status.targetId)) {
-      totals.set(status.targetId, { cents: 0n, quantities: {} });
-    }
-  }
-  const rows: Row[] = [...totals].map(([key, total]) => ({
-    key,
-    cents: total.cents,
-    recipients: total.quantities["email.recipients"] ?? 0,
-    status: statuses.find((s) => s.scope === scope && s.targetId === key),
-    paused: holds.some((hold) => hold.scope === scope && hold.targetId === key),
-    ...rowLabel(props.by, key, names),
-  }));
-  rows.sort((a, b) =>
-    a.cents === b.cents ? b.recipients - a.recipients : a.cents > b.cents ? -1 : 1,
-  );
+  const { spend } = props.overview;
+  const scope = SPEND_GROUP_SCOPE[props.by];
+  const rows = spendRows(props.overview, props.by);
 
   if (!rows.length) {
     return (
@@ -301,41 +251,9 @@ function Breakdown(props: {
   );
 }
 
-/** How a breakdown row is named. `key` `""`: spend without that kind of source. */
-function rowLabel(by: Group, key: string, names: SpendNames): { label: string; detail?: string } {
-  if (by === "member") {
-    if (key === "") return { label: "Organization keys and the dashboard" };
-    return { label: memberLabel(names, key), detail: names.members.get(key)?.email };
-  }
-  if (by === "project") {
-    return { label: key === "" ? "Unknown project" : projectLabel(names, key) };
-  }
-  if (by === "environment") {
-    const sandbox = names.environments.get(key)?.mode === "sandbox";
-    return { label: environmentLabel(names, key), detail: sandbox ? "Sandbox" : undefined };
-  }
-  if (key === "") {
-    return {
-      label: "No API key",
-      detail: "The dashboard, and usage from before keys were recorded",
-    };
-  }
-  const found = names.keys.get(key);
-  const owner = found?.ownerUserId ? memberLabel(names, found.ownerUserId) : null;
-  return {
-    label: keyLabel(names, key),
-    detail: [
-      found ? environmentLabel(names, found.environmentId) : null,
-      owner ? `${owner}'s personal key` : null,
-    ]
-      .filter(Boolean)
-      .join(" · "),
-  };
-}
-
 function share(part: bigint, total: bigint): string {
-  if (total === 0n) return "—";
-  return `${(Number((part * 1000n) / total) / 10).toFixed(1)}%`;
+  const percent = spendShare(part, total);
+  return percent === null ? "—" : `${percent.toFixed(1)}%`;
 }
 
 /** A member's own spend: what their personal keys sent this month, against their budget. */
@@ -346,31 +264,9 @@ function MySpend(props: {
   userId: string;
   now: Date;
 }) {
-  const { spend, statuses } = props.overview;
+  const { spend } = props.overview;
   // A pause shows in the organization's banner (layout).
-  const mine = spend.lines.filter((line) => line.userId === props.userId);
-  const total = mine.reduce((sum, line) => sum + line.cents, 0n);
-  // Without spend of their own yet, the member default (if any) still applies.
-  const memberDefault = props.overview.budgets.find((b) => b.scope === "member_default") ?? null;
-  const status: BudgetStatus | undefined =
-    statuses.find((s) => s.scope === "user" && s.targetId === props.userId) ??
-    (memberDefault
-      ? {
-          scope: "user",
-          targetId: props.userId,
-          budget: memberDefault,
-          fromDefault: true,
-          amountCents: memberDefault.amountCents,
-          spentCents: 0n,
-        }
-      : undefined);
-  const byKey = [...sumSpend(mine, (line) => line.apiKeyId)].sort((a, b) =>
-    a[1].cents === b[1].cents ? 0 : a[1].cents > b[1].cents ? -1 : 1,
-  );
-  const remaining =
-    status?.amountCents !== null && status?.amountCents !== undefined
-      ? status.amountCents - total
-      : null;
+  const { lines: mine, total, status, byKey, remaining } = ownSpend(props.overview, props.userId);
 
   return (
     <div className="flex flex-col gap-6">

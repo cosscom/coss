@@ -155,6 +155,12 @@ mock.module("@coss/sms", () => ({
 }));
 const billingBannerState = mock(async () => ({ held: null, pastDue: true, allowance: null }));
 mock.module("@/lib/billing", () => ({ billingBannerState }));
+let budgetHolds: { scope: string; targetId: string }[] = [];
+const billingModule = await import("@coss/billing");
+mock.module("@coss/billing", () => ({
+  ...billingModule,
+  listBudgetHolds: async () => budgetHolds,
+}));
 let allowed = true;
 mock.module("@/lib/rate-limit-runtime", () => ({
   rateLimitRuntime: () => ({
@@ -214,6 +220,7 @@ beforeEach(() => {
   smsCalls.length = 0;
   sessionFields = { ssoProviderId: null, impersonatedBy: null };
   allowed = true;
+  budgetHolds = [];
   seenHeaders.length = 0;
   exchange.mockClear();
 });
@@ -341,6 +348,21 @@ describe("mobile organization access", () => {
       await org.GET(request("/api/mobile/v1/orgs/acme", { bearer: GOOD_TOKEN }), orgContext())
     ).json();
     expect(asOwner.billing).toEqual({ held: null, past_due: true, allowance: null });
+  });
+
+  test("tells a member their own personal keys are over budget", async () => {
+    const pausedFor = async (holds: { scope: string; targetId: string }[]) => {
+      budgetHolds = holds;
+      const response = await org.GET(
+        request("/api/mobile/v1/orgs/acme", { bearer: GOOD_TOKEN }),
+        orgContext(),
+      );
+      return (await response.json()).budget_paused;
+    };
+    expect(await pausedFor([])).toBe(false);
+    expect(await pausedFor([{ scope: "user", targetId: "user_2" }])).toBe(false);
+    expect(await pausedFor([{ scope: "project", targetId: "user_1" }])).toBe(false);
+    expect(await pausedFor([{ scope: "user", targetId: "user_1" }])).toBe(true);
   });
 
   test("reputation history hides policy changes and who acted", async () => {
