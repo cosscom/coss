@@ -94,6 +94,55 @@ export function removeEnvVar(text: string, name: string): string {
   );
 }
 
+const NOTES_BEGIN = "<!-- BEGIN:coss -->";
+const NOTES_END = "<!-- END:coss -->";
+
+/**
+ * What a coding agent working in the project should know about coss.com, for its AGENTS.md
+ * (`--agents`). Keep it in step with the brief that opens https://coss.com/llms.txt
+ * (apps/site/src/lib/llms.ts).
+ */
+export function agentNotes(envFile: string): string {
+  return `${NOTES_BEGIN}
+## coss.com
+
+This project uses [coss.com](https://coss.com) (email, SMS, webhooks) through its SDK.
+
+- Docs: https://coss.com/llms.txt lists every page, and every docs page is Markdown at its URL plus
+  \`.md\` (e.g. https://coss.com/docs/email/sending.md). API reference pages give each operation's
+  parameters, request body, responses and errors. Read the page before writing code against it.
+- \`COSS_API_KEY\` in \`${envFile}\` is a development key (\`coss_test_…\`): every API works and
+  records what it would do, with events and webhooks, but nothing is delivered. Develop and test
+  with it; never switch to a live key (\`coss_live_…\`) to try something.
+- SDK methods return \`{ data, error }\` and don't throw for API failures: always check \`error\`.
+  Webhook handlers verify each request with \`verifyWebhook\`, which throws on a bad signature.
+- After \`npx coss-cli login\`: \`npx coss-cli listen --forward-to localhost:3000/<path>\` forwards
+  webhook events to a local handler, \`npx coss-cli trigger <event type>\` sends a test event, and
+  \`npx coss-cli logs tail\` follows the API requests and events.
+${NOTES_END}
+`;
+}
+
+/** `text` with the coss.com notes: an earlier copy replaced, else appended. */
+export function setAgentNotes(text: string, notes: string): string {
+  const begin = text.indexOf(NOTES_BEGIN);
+  const end = text.indexOf(NOTES_END, begin);
+  if (begin !== -1 && end !== -1) {
+    const after = text.slice(end + NOTES_END.length).replace(/^\r?\n/, "");
+    return `${text.slice(0, begin)}${notes}${after}`;
+  }
+  if (text.trim() === "") return notes;
+  return `${text.replace(/\s*$/, "")}\n\n${notes}`;
+}
+
+/** The project's agent instructions: AGENTS.md, else an existing CLAUDE.md, else a new AGENTS.md. */
+async function agentsFile(dir: string): Promise<string> {
+  const agents = join(dir, "AGENTS.md");
+  if (await exists(agents)) return agents;
+  const claude = join(dir, "CLAUDE.md");
+  return (await exists(claude)) ? claude : agents;
+}
+
 /** The project's name for the key: package.json's (without its scope), else the directory's. */
 function projectName(dir: string, pkg: PackageJson | null): string {
   const name = typeof pkg?.name === "string" ? pkg.name.replace(/^@[^/]+\//, "") : "";
@@ -109,6 +158,11 @@ const FLAGS = {
   },
   "no-install": { type: "boolean", description: "Don't install the coss package" },
   force: { type: "boolean", description: "Replace a COSS_API_KEY the env file already has" },
+  agents: {
+    type: "boolean",
+    description:
+      "Add notes on coss.com for coding agents to the project's AGENTS.md (or CLAUDE.md)",
+  },
   "no-browser": {
     type: "boolean",
     description: "Don't open a browser: open the link yourself, then paste the code it shows",
@@ -124,7 +178,9 @@ export const initCommand: Command = defineCommand({
     "package manager, and writes a new development (sandbox) API key to its env file as " +
     "COSS_API_KEY, created in the dashboard like `coss login`'s and named after the project. It " +
     "is the project's key, not the CLI's: `coss login` signs the CLI in.\n\n" +
-    "An env file that already has a key keeps it, unless --force.",
+    "An env file that already has a key keeps it, unless --force. With --agents it also adds a " +
+    "short section on coss.com (docs, the development key, testing) to the project's AGENTS.md, " +
+    "or its CLAUDE.md when it has no AGENTS.md; running it again updates that section.",
   flags: FLAGS,
   run: init,
 });
@@ -215,8 +271,26 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
     if (!out.json) out.line(`${out.style("green", "✔")} Installed the coss package.`);
   }
 
+  let notesFile: string | null = null;
+  if (values.agents) {
+    notesFile = await agentsFile(dir);
+    const before = await readFile(notesFile, "utf8").catch(() => "");
+    await writeFile(notesFile, setAgentNotes(before, agentNotes(shownFile)));
+    if (!out.json) {
+      out.line(
+        `${out.style("green", "✔")} ${before.includes(NOTES_BEGIN) ? "Updated" : "Added"} the coss.com notes for coding agents in ${relative(dir, notesFile)}.`,
+      );
+    }
+  }
+
   if (out.json) {
-    out.data({ env_file: envFile, key, installed, ignored_by_git: ignored });
+    out.data({
+      env_file: envFile,
+      key,
+      installed,
+      ignored_by_git: ignored,
+      agents_file: notesFile,
+    });
     return 0;
   }
   out.line(`
@@ -239,7 +313,11 @@ Development keys never deliver email, but every send has its events and webhooks
 Next:
   coss listen --forward-to localhost:3000/webhooks   receive webhook events locally
   coss logs tail                                     follow the environment's log
-  https://coss.com/docs                              guides and the API reference`);
+  https://coss.com/docs                              guides and the API reference${
+    values.agents
+      ? ""
+      : "\n  coss init --agents                                 notes for coding agents in AGENTS.md"
+  }`);
   return 0;
 }
 

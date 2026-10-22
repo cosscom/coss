@@ -1,0 +1,68 @@
+---
+name: coss
+description: Build with coss.com (transactional and marketing email, SMS, webhooks, Hooks and Risk) through its SDKs and API. Use when adding coss.com to a project or changing code that uses it, when the user mentions coss.com, the `coss` package or COSS_API_KEY, or asks to send email or SMS, receive webhooks or check sign-ups with coss.com.
+---
+
+# Building with coss.com
+
+coss.com is one API key and one SDK for email, SMS, Hooks (webhooks your app sends to its own
+users) and Risk (sign-up, login and payment risk decisions). Its docs are written for agents too:
+read them instead of guessing field names, error codes or webhook payloads.
+
+## Read the docs first
+
+- https://coss.com/llms.txt opens with a short brief and lists every docs page.
+- Every docs page is Markdown at its URL plus `.md`, e.g. https://coss.com/docs/email/sending.md.
+  API reference pages (`https://coss.com/docs/api-reference/<resource>/<operation>.md`) give the
+  method and URL, every parameter and body field, the responses and errors, and examples in
+  TypeScript, HTTP, Python, Go, Ruby, PHP, Java and .NET.
+- With the coss MCP server connected, `search_docs` finds the page and `read_docs` reads it.
+
+## Get a development key
+
+Run `npx coss-cli init` in the project's directory, and tell the user to expect a browser window:
+it opens the coss.com dashboard, where they sign in and approve a key for this project (it waits up
+to 5 minutes). The key is written to `.env.local` (Next.js) or `.env` as `COSS_API_KEY`, and the
+`coss` package is installed in JavaScript projects. If the env file already has `COSS_API_KEY`,
+it's kept. Where no browser can open (over SSH, in a container or a cloud sandbox) the command
+prints a link and waits for a code typed into the terminal: ask the user to run it themselves.
+`--agents` also adds a short coss.com section to the project's AGENTS.md for later sessions.
+
+Develop and test only with this key. Development keys (`coss_test_…`) work with every API and
+record every email and SMS with their events and webhooks, but deliver nothing; the simulator
+addresses (`bounce@simulator.amazonses.com`, `complaint@simulator.amazonses.com`, …) and numbers
+produce failures to test against (https://coss.com/docs/environments.md). Never ask for a live key
+(`coss_live_…`) to try something: going live (a verified domain, a registered number, a production
+key) is the user's step, in the dashboard.
+
+## Write the code
+
+- TypeScript: `import { Coss } from "coss"`; `new Coss()` reads `COSS_API_KEY`. Create the client
+  in server code only; the key must never reach a browser bundle.
+- Every SDK method returns `{ data, error }` and never throws for API or network failures. Check
+  `error` (`type`, `code`, `message`, `issues` for validation errors) on every call.
+- Retries are automatic, with an `Idempotency-Key` on every POST; pass your own
+  (`{ idempotencyKey }`) when a retry of your own code could send twice.
+- Other languages (Python `cosscom`, Go, Ruby, PHP, Java, .NET):
+  https://coss.com/docs/sdks.md. Nodemailer, Better Auth, Auth.js, Laravel, Rails and Django:
+  https://coss.com/docs/integrations.md. Anything that speaks SMTP:
+  https://coss.com/docs/email/smtp.md.
+
+## Webhooks
+
+- Verify every request with `verifyWebhook(rawBody, headers, secret)` from `coss` before using
+  it: pass the raw body as received; it throws on a bad signature
+  (https://coss.com/docs/sdk/webhooks.md). Event types and payloads:
+  https://coss.com/docs/webhooks.md.
+- Handlers must be idempotent (the `webhook-id` header is the event's id) and not depend on
+  ordering (use `data.occurred_at`).
+- To test locally: `npx coss-cli login` once (the user approves it like `init`), then
+  `npx coss-cli listen --forward-to localhost:3000/<path>` forwards the environment's events to
+  the handler, signed with a secret it prints (put it in the env file as the handler's secret),
+  and `npx coss-cli trigger <event type>` sends a sample event.
+
+## Check what happened
+
+- `npx coss-cli logs tail` follows the environment's API requests and events.
+- `npx coss-cli emails diagnose <email id>` (or `--to <address>`) explains a delivery.
+- The MCP server's `diagnose_email`, `diagnose_sms` and `search_logs` answer the same questions.

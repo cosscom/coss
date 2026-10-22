@@ -1,7 +1,9 @@
-import { docsLlms } from "@/lib/source";
+import { llmsIndex } from "@/lib/llms";
 
 export const revalidate = false;
 
-export function GET() {
-  return new Response(docsLlms.index());
+export async function GET() {
+  return new Response(await llmsIndex(), {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 }

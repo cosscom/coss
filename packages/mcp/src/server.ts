@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import type { Coss } from "coss";
 import { registerAccountTools } from "./tools/account.ts";
+import { type DocsOptions, registerDocsTools } from "./tools/docs.ts";
 import { registerDomainTools } from "./tools/domains.ts";
 import { registerEmailTools } from "./tools/emails.ts";
 import { registerLogTools } from "./tools/logs.ts";
@@ -13,13 +14,33 @@ import { registerWebhookTools } from "./tools/webhooks.ts";
 import { VERSION } from "./version.ts";
 
 export interface CossMcpServerOptions {
-  /** The client every tool calls. */
-  coss: Coss;
+  /**
+   * The client every API tool calls. Without one, the server only offers the docs tools
+   * (`search_docs`, `read_docs`), which need no key.
+   */
+  coss?: Coss;
   /** The client's API key, only to tell live from sandbox keys (never sent anywhere else). */
   apiKey?: string;
+  /** Where the docs tools read coss.com's docs (default: https://coss.com). */
+  docs?: DocsOptions;
   /** Overrides `new Date()` (tests). */
   now?: () => Date;
 }
+
+const DOCS_INSTRUCTIONS =
+  "search_docs and read_docs search and read coss.com's documentation as Markdown (guides, " +
+  "SDKs, and the API reference with every operation's parameters, bodies and responses): " +
+  "read the relevant page before writing code against coss.com.";
+
+/** Without an API key: the docs, and how to get a key. */
+const NO_KEY_INSTRUCTIONS = [
+  "Tools for coss.com, the developer platform for email, SMS, webhooks (Hooks) and risk checks.",
+  DOCS_INSTRUCTIONS,
+  "No COSS_API_KEY is configured, so only the docs tools are available. To get a development " +
+    "key, run `npx coss-cli init` in the project (the user approves it in the browser; it is " +
+    "written to the project's .env.local or .env), then set it as COSS_API_KEY in this " +
+    "server's configuration and restart it.",
+].join("\n");
 
 function instructions(mode: KeyMode): string {
   return [
@@ -35,6 +56,7 @@ function instructions(mode: KeyMode): string {
     'To answer "did my email get delivered?": diagnose_email with the email id, or with the ' +
       "recipient address (and some subject text). find_emails searches; get_email shows content " +
       "and raw events. If no email exists, the API may have refused the send: search_logs.",
+    DOCS_INSTRUCTIONS,
     "For text messages: diagnose_sms with the message id or the recipient number (E.164); " +
       "find_sms searches, get_sms shows the text and events, list_sms_numbers shows which " +
       "numbers can send.",
@@ -50,8 +72,13 @@ export function createCossMcpServer(options: CossMcpServerOptions): McpServer {
   const mode = keyMode(options.apiKey);
   const server = new McpServer(
     { name: "coss", title: "coss.com", version: VERSION, websiteUrl: "https://coss.com/docs/mcp" },
-    { capabilities: { tools: {} }, instructions: instructions(mode) },
+    {
+      capabilities: { tools: {} },
+      instructions: options.coss ? instructions(mode) : NO_KEY_INSTRUCTIONS,
+    },
   );
+  registerDocsTools(server, options.docs);
+  if (!options.coss) return server;
   const ctx: ToolContext = {
     server,
     coss: options.coss,
