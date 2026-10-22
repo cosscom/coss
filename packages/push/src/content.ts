@@ -200,7 +200,7 @@ const RESOLVERS: Record<PushNotificationRow["kind"], Resolver> = {
       content: {
         title: "Budget used up",
         body: `${what} of ${place.org.name} reached a monthly budget, so live sending there is paused.`,
-        path: `/${place.org.slug}/settings/billing`,
+        path: `/${place.org.slug}/spend`,
       },
     };
   },

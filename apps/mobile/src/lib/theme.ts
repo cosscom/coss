@@ -17,6 +17,8 @@ const light = {
   /** `.drafting-grid` dots: the foreground at 16%. */
   grid: "rgba(38,38,38,0.16)",
   chartSent: "rgba(38,38,38,0.72)",
+  /** `bg-foreground/32`: the Spend chart's personal keys. */
+  chartLight: "rgba(38,38,38,0.32)",
   chartPending: "rgba(59,130,246,0.64)",
   chartCanceled: "rgba(104,104,104,0.32)",
   chartEmpty: "rgba(104,104,104,0.16)",
@@ -54,6 +56,7 @@ const dark: Palette = {
   sidebar: "#111111",
   grid: "rgba(245,245,245,0.16)",
   chartSent: "rgba(245,245,245,0.72)",
+  chartLight: "rgba(245,245,245,0.32)",
   chartPending: "rgba(59,130,246,0.64)",
   chartCanceled: "rgba(129,129,129,0.32)",
   chartEmpty: "rgba(129,129,129,0.16)",
