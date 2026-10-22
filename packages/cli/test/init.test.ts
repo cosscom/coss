@@ -2,9 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  agentNotes,
   detectPackageManager,
   installCommand,
   removeEnvVar,
+  setAgentNotes,
   setEnvVar,
 } from "../src/commands/init.ts";
 import { type CliIo, shellFor } from "../src/io.ts";
@@ -154,6 +156,7 @@ describe("coss init", () => {
       },
       installed: null,
       ignored_by_git: true,
+      agents_file: null,
     });
   });
 
@@ -176,6 +179,66 @@ describe("coss init", () => {
     expect(await run(["init"], io)).toBe(0);
     expect(calls.map((call) => call.command)).toEqual(["git"]);
     expect(io.errors()).toContain("coss is already a dependency.");
+  });
+});
+
+describe("coss init --agents", () => {
+  test("adds the notes to AGENTS.md, and updates them on the next run", async () => {
+    const { io } = await project(
+      { "package.json": NEXT_APP, "AGENTS.md": "# My app\n\nUse pnpm.\n" },
+      { exec: () => 0 },
+    );
+    expect(await run(["init", "--agents", "--no-install", "--no-browser"], io)).toBe(0);
+    const file = join(io.cwd, "AGENTS.md");
+    const first = await readFile(file, "utf8");
+    expect(first).toBe(`# My app\n\nUse pnpm.\n\n${agentNotes(".env.local")}`);
+    expect(first).toContain("https://coss.com/llms.txt");
+    expect(first).toContain("in `.env.local` as `COSS_API_KEY`");
+    expect(io.output()).toContain("Added the coss.com notes for coding agents in AGENTS.md.");
+
+    // Kept key, same notes: the section is replaced, not added twice.
+    expect(await run(["init", "--agents", "--no-install"], io)).toBe(0);
+    expect(await readFile(file, "utf8")).toBe(first);
+    expect(io.output()).toContain("Updated the coss.com notes for coding agents in AGENTS.md.");
+  });
+
+  test("a CLAUDE.md without AGENTS.md gets them; otherwise a new AGENTS.md", async () => {
+    const claude = await project({ "CLAUDE.md": "Be terse." }, { exec: () => 0 });
+    expect(await run(["init", "--agents", "--no-browser", "--json"], claude.io)).toBe(0);
+    expect(await readFile(join(claude.io.cwd, "CLAUDE.md"), "utf8")).toBe(
+      `Be terse.\n\n${agentNotes(".env")}`,
+    );
+    expect(JSON.parse(claude.io.output()).agents_file).toBe(join(claude.io.cwd, "CLAUDE.md"));
+
+    const bare = await project({}, { exec: () => 0 });
+    expect(await run(["init", "--agents", "--no-browser"], bare.io)).toBe(0);
+    expect(await readFile(join(bare.io.cwd, "AGENTS.md"), "utf8")).toBe(agentNotes(".env"));
+  });
+
+  test("without --agents, nothing is written and the flag is suggested", async () => {
+    const { io } = await project({ "package.json": NEXT_APP }, { exec: () => 0 });
+    expect(await run(["init", "--no-install", "--no-browser"], io)).toBe(0);
+    expect(await readFile(join(io.cwd, "AGENTS.md"), "utf8").catch(() => null)).toBeNull();
+    expect(io.output()).toContain("coss init --agents");
+  });
+
+  test("a live key the env file keeps is called out, never called a development key", async () => {
+    const { io } = await project(
+      { ".env.local": "COSS_API_KEY=coss_live_abc\n" },
+      { exec: () => 0 },
+    );
+    expect(await run(["init", "--agents", "--env-file", ".env.local"], io)).toBe(0);
+    expect(io.errors()).toContain(".env.local's COSS_API_KEY is a live key");
+    const notes = await readFile(join(io.cwd, "AGENTS.md"), "utf8");
+    expect(notes).toContain("A `coss_live_…` key there delivers for real: don't test with it");
+    expect(notes).not.toContain("is a development key");
+  });
+
+  test("the section is replaced wherever it is", () => {
+    const notes = agentNotes(".env");
+    const text = `# A\n\n${agentNotes(".env.old")}\n## B\n`;
+    expect(setAgentNotes(text, notes)).toBe(`# A\n\n${notes}\n## B\n`);
+    expect(setAgentNotes("", notes)).toBe(notes);
   });
 });
 

@@ -14,4 +14,5 @@ export {
   type SmsVerdict,
 } from "./diagnose-sms.ts";
 export { type CossMcpServerOptions, createCossMcpServer } from "./server.ts";
+export type { DocsOptions } from "./tools/docs.ts";
 export { VERSION } from "./version.ts";

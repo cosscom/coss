@@ -1,0 +1,15 @@
+{
+  "name": "coss",
+  "description": "coss.com's plugins for Claude Code",
+  "owner": {
+    "name": "coss.com",
+    "email": "support@coss.com"
+  },
+  "plugins": [
+    {
+      "name": "coss",
+      "source": "./plugins/coss",
+      "description": "Build with coss.com (email, SMS, webhooks): a skill for adding it to a project and the coss.com MCP server"
+    }
+  ]
+}

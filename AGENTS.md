@@ -19,10 +19,11 @@ signals are also building blocks of their own, next to rate limiting as a servic
 ## License
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
-and `packages/cli` (MIT, published with the SDK), the framework drivers in `integrations/*` (MIT, each with its own
+and `packages/cli` (MIT, published with the SDK), the Claude Code plugin and Agent Skill in `plugins/coss` (MIT, its
+own `LICENSE`: installed into customers' agents), the framework drivers in `integrations/*` (MIT, each with its own
 `LICENSE`), the generated SDKs in `sdks/*` (MIT, each with its own `LICENSE`), `packages/kloq` (MIT, vendored) and
 the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into the SDK, the MCP server,
-the CLI, the drivers or the generated SDKs. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+the CLI, the plugin, the drivers or the generated SDKs. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -58,7 +59,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/diagnose` explains an email's delivery (used by the MCP server and the CLI); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
-| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — search and read the docs (no key needed), find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `plugins/coss` | — | **Public** Claude Code plugin (marketplace: the root `.claude-plugin/marketplace.json`; `/plugin install coss --marketplace cosscom/coss`) with the `coss` Agent Skill (`skills/coss/SKILL.md`, also installed into other agents by `npx skills add cosscom/coss`) and the MCP server (`.mcp.json`, `npx -y coss-mcp`). Plain files, not a workspace; served from main. See "Coding agents" below. |
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
@@ -379,7 +381,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`@modelcontextprotocol/server` v2); `src/cli.ts` serves it over stdio (`serveStdio`). Configuration comes from the
   environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr.
 - Tools (`src/tools/*.ts`) call only the public SDK — never workspace packages (AGPL) or the database — so anything a
-  tool needs must exist in the public API first. Every tool carries annotations (`READ_ONLY`, `WRITE`,
+  tool needs must exist in the public API first. The exception is `search_docs`/`read_docs` (`tools/docs.ts`), which
+  fetch coss.com's public docs (`/docs/search.json`, `<page>.md`, nothing outside `/docs`) and work without a key:
+  with no `COSS_API_KEY` the server registers only them. Every tool carries annotations (`READ_ONLY`, `WRITE`,
   `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); clients rely on them to prompt (full-access keys hold every
   permission; a restricted key's 403 hint points at `get_account_status`, which lists what it holds).
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
@@ -393,6 +397,19 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
 - Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built
   server against the in-process app; turbo builds it first).
+
+## Coding agents
+
+What an agent pointed at coss.com reads, all describing the same facts — change them together:
+- `/llms.txt` and `/llms-full.txt` open with `AGENT_BRIEF` (`apps/site/src/lib/llms.ts`): how to read the docs, get a
+  key with `npx coss-cli init`, the SDK's conventions, testing webhooks. Every docs page is Markdown at `<page>.md`
+  (`apps/site/AGENTS.md`); API reference pages render the OpenAPI document (`operation-markdown.ts`).
+- The landing page's prompt (`AGENT_PROMPT`, `apps/site/src/lib/site.ts`), quoted by `/docs/agents`.
+- The `coss` skill (`plugins/coss/skills/coss/SKILL.md`), the notes `coss init --agents` writes into a project's
+  AGENTS.md (`agentNotes`, `packages/cli/src/commands/init.ts`) and the MCP server's instructions (`src/server.ts`).
+- `claude plugin validate .` and `claude plugin validate plugins/coss` check the marketplace and the plugin. The
+  plugin has no `version` on purpose: installs follow main. Its MCP server takes the key from the plugin's optional
+  `api_key` (`userConfig`); without one `coss-mcp` serves only the docs tools.
 
 ## CLI (`packages/cli`, published as `coss-cli`, command `coss`)
 

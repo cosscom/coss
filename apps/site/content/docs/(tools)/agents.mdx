@@ -1,0 +1,73 @@
+---
+title: Coding agents
+description: Point Claude Code, Cursor, Codex or any coding agent at coss.com, and it adds email, SMS and webhooks to your project.
+---
+
+Give your agent one prompt:
+
+```text
+Add coss.com to this project: read https://coss.com/llms.txt, get a development key with `npx coss-cli init`, and build and test with it.
+```
+
+From there the agent reads what it needs from the docs, asks you to approve a development key
+in your browser, installs the SDK and tests its code with that key. Nothing it sends is
+delivered until you switch to a production key yourself.
+
+## What agents read
+
+- **[/llms.txt](/llms.txt)** starts with a short brief (how to get a key, how the SDK reports
+  errors, how to test webhooks), then lists every docs page.
+- **Every docs page is Markdown** at its URL plus `.md`: [/docs/email/sending.md](/docs/email/sending.md).
+  The HTML pages point to it too (`<link rel="alternate" type="text/markdown">`), and each has a
+  **Copy Markdown** button for pasting it into a chat yourself.
+- **API reference pages** list each operation's method and URL, parameters, request body,
+  responses and errors, with examples for the TypeScript SDK, HTTP and the
+  [other SDKs](/docs/sdks): [/docs/api-reference/emails/send-email.md](/docs/api-reference/emails/send-email.md).
+  The [OpenAPI 3.1 document](https://api.coss.com/openapi.json) describes the same API.
+- **[/llms-full.txt](/llms-full.txt)** is every guide in one file, with a short entry per API
+  operation. It's large: agents usually do better fetching the pages they need.
+
+## Development keys
+
+`npx coss-cli init`, run in the project, gets the agent a key without you copying one around: it
+opens the dashboard, you check the code and approve a key for that project (development
+environments only), and the [CLI](/docs/cli#set-a-project-up) writes it to `.env.local` (Next.js)
+or `.env` as `COSS_API_KEY` and installs the `coss` package. Where no browser can open (over SSH,
+in a container or an agent's cloud sandbox), it prints a link instead and waits for the code that
+page shows, typed into the terminal: run it yourself there.
+
+Development keys work with every API and never deliver anything; emails and SMS get simulated
+outcomes, events and webhooks (see [sandbox behaviour](/docs/environments#sandbox-behaviour)).
+So the agent can run what it writes, and `coss listen` forwards the resulting webhooks to its
+local handler.
+
+`npx coss-cli init --agents` also adds a short coss.com section to the project's `AGENTS.md` (or
+`CLAUDE.md`), so later sessions know where the docs are and how to test without reading this
+again.
+
+## Claude Code plugin
+
+The coss.com plugin gives Claude Code a skill for building with coss.com (loaded when a task
+involves it) and the [MCP server](/docs/mcp):
+
+```text
+/plugin install coss --marketplace cosscom/coss
+```
+
+On Claude Code before 2.1.275, add the marketplace first: `/plugin marketplace add cosscom/coss`,
+then `/plugin install coss@coss`.
+
+It asks for an API key for the MCP server. Use a development key (`coss_test_…`), or leave it
+empty: the server's docs tools work without one.
+
+## Cursor, Codex and other agents
+
+The same skill installs into Cursor, Codex, GitHub Copilot, Windsurf and other agents with the
+[skills CLI](https://github.com/vercel-labs/skills):
+
+```sh
+npx skills add cosscom/coss
+```
+
+Add the [MCP server](/docs/mcp) as well to let the agent search these docs, look up emails and
+SMS, and explain why one wasn't delivered.

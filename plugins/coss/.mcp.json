@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "coss": {
+      "command": "npx",
+      "args": ["-y", "coss-mcp"],
+      "env": {
+        "COSS_API_KEY": "${user_config.api_key}"
+      }
+    }
+  }
+}

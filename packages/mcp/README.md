@@ -19,7 +19,7 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 
 | Variable | |
 | --- | --- |
-| `COSS_API_KEY` | Required. A `coss_test_…` (development) or `coss_live_…` (production) key; the server sees that key's environment. |
+| `COSS_API_KEY` | A `coss_test_…` (development) or `coss_live_…` (production) key; the server sees that key's environment. Without one, only the docs tools are available (`npx coss-cli init` gets a project a development key). |
 | `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001`. Defaults to `https://api.coss.com`. |
 
 Configuration is read from the environment only, never from command-line arguments, which other
@@ -33,6 +33,7 @@ can ask before calling the ones that change something.
 
 | Area | Tools |
 | --- | --- |
+| Docs (no key needed) | `search_docs`, `read_docs` |
 | Email delivery | `diagnose_email`, `find_emails`, `get_email` |
 | Sending | `send_email`, `cancel_email`, `reschedule_email` |
 | Suppressions | `check_suppression`, `list_suppressions`, `add_suppression`, `remove_suppression` |

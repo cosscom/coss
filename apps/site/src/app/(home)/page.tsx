@@ -210,12 +210,12 @@ const STEPS = [
   {
     icon: ClipboardCopyIcon,
     title: "Copy one prompt",
-    body: "One line for Claude Code, Cursor or Codex. It points your agent at the manual and tells it how to test.",
+    body: "One line for Claude Code, Cursor or Codex. It points your agent at the manual and at a key you approve.",
   },
   {
     icon: BookOpenTextIcon,
     title: "Your agent reads the manual",
-    body: "/llms.txt indexes every docs page in plain text. The API reference and the SDK's types come from one OpenAPI document.",
+    body: "/llms.txt indexes every docs page, each one Markdown at its URL plus .md, the API reference with every field.",
   },
   {
     icon: FlaskConicalIcon,
@@ -225,7 +225,7 @@ const STEPS = [
 ];
 
 const INTERFACES: [string, string, string | null][] = [
-  ["/llms.txt", "An index of every docs page, in plain text.", "/llms.txt"],
+  ["/llms.txt", "How to start, and every docs page as Markdown.", "/llms.txt"],
   ["/llms-full.txt", "The whole manual in one file.", "/llms-full.txt"],
   [
     "OpenAPI 3.1",
@@ -252,12 +252,13 @@ const INTERFACES: [string, string, string | null][] = [
 const SESSION: { kind: "you" | "tool" | "out" | "done"; text: string }[] = [
   {
     kind: "you",
-    text: "Add coss.com to this project: read https://coss.com/llms.txt, install the `coss` package…",
+    text: "Add coss.com to this project: read https://coss.com/llms.txt, get a development key…",
   },
   { kind: "tool", text: "Fetch  coss.com/llms.txt" },
-  { kind: "tool", text: "Fetch  coss.com/docs/email/sending" },
-  { kind: "tool", text: "Fetch  coss.com/docs/webhooks" },
-  { kind: "tool", text: "Bash   npm install coss" },
+  { kind: "tool", text: "Bash   npx coss-cli init" },
+  { kind: "out", text: "✔ Saved a development key to .env.local as COSS_API_KEY." },
+  { kind: "tool", text: "Fetch  coss.com/docs/email/sending.md" },
+  { kind: "tool", text: "Fetch  coss.com/docs/sdk/webhooks.md" },
   { kind: "tool", text: "Write  src/lib/coss.ts" },
   { kind: "tool", text: "Write  src/app/api/webhooks/coss/route.ts" },
   { kind: "tool", text: "Bash   npx tsx scripts/send-test.ts" },
