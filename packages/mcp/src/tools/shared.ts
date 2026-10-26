@@ -11,6 +11,11 @@ export interface ToolContext {
   mode: KeyMode;
   /** Overrides `Date.now()` (tests). */
   now: () => Date;
+  /**
+   * Directory walked for the project env file (`create_webhook_endpoint` writes
+   * `COSS_WEBHOOK_SECRET` there). Default: the process working directory.
+   */
+  projectDir: string;
 }
 
 /** Looks things up; changes nothing. */

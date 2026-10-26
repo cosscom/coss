@@ -63,7 +63,7 @@ export function registerTemplateTools(ctx: ToolContext): void {
       title: "Read an email template draft",
       description:
         "The draft of an email template: revision, locales, subject, html and text. Published " +
-        "sends keep using the published version until the draft is published in the dashboard or API.",
+        "sends keep using the published version until publish_email_template.",
       inputSchema: z.object({ template }),
       annotations: READ_ONLY,
     },
@@ -95,7 +95,7 @@ export function registerTemplateTools(ctx: ToolContext): void {
         "Replaces one locale of a template draft (subject, and html and/or text) and returns the " +
         "new revision. Reads the draft first and sends that revision unless you pass one, so a " +
         "concurrent edit is refused instead of overwritten. An unknown alias is created. This " +
-        "does not publish: sends keep the published version.",
+        "does not publish: call publish_email_template with the revision it returns.",
       inputSchema: z.object({
         template,
         subject: z.string(),
@@ -156,6 +156,39 @@ export function registerTemplateTools(ctx: ToolContext): void {
           }),
         );
         return ok({ created: false, draft: draftSummary(updated) });
+      }),
+  );
+
+  server.registerTool(
+    "publish_email_template",
+    {
+      title: "Publish an email template",
+      description:
+        "Publishes the draft as the next version, which sends use from then on. Reads the draft " +
+        "and publishes that revision unless you pass one, so a concurrent save is refused " +
+        "instead of publishing a newer edit. Publishing the same revision again returns the " +
+        "version already published.",
+      inputSchema: z.object({
+        template,
+        revision: z
+          .number()
+          .int()
+          .optional()
+          .describe("The draft revision you reviewed. Default: the current one, read first."),
+      }),
+      annotations: WRITE,
+    },
+    ({ template: id, revision }) =>
+      run(async () => {
+        const reviewed = revision ?? unwrap(await coss.email.templates.getDraft(id)).revision;
+        const published = unwrap(await coss.email.templates.publish(id, { revision: reviewed }));
+        return ok({
+          template_id: published.template_id,
+          version: published.version,
+          revision: published.revision,
+          published_at: published.published_at,
+          problems: published.problems,
+        });
       }),
   );
 }

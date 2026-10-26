@@ -120,8 +120,10 @@ responses.
 found), `add_domain`, `verify_domain`.
 
 **Webhooks**: `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery` (every
-attempt with its status code, error and response excerpt), `retry_webhook_delivery`. Signing secrets
-are never returned.
+attempt with its status code, error and response excerpt), `retry_webhook_delivery`,
+`create_webhook_endpoint`. Creating an endpoint returns its signing secret once and writes it to
+the project env file as `COSS_WEBHOOK_SECRET`. A second call for the same URL does not create
+another endpoint. Listing endpoints never returns secrets.
 
 **Receiving**: `get_inbound_address`, `list_received_emails`, `get_received_email`.
 
@@ -139,7 +141,8 @@ redacted request and response bodies), email events and webhook attempts. See [L
 from address that will succeed, DNS records still missing, webhook endpoints, and one `next` step.
 
 **Templates**: `pull_email_template` reads a draft; `push_email_template` updates one locale of it
-(an unknown alias is created). Neither publishes: sends keep the published version.
+(an unknown alias is created). `publish_email_template` publishes the draft at the revision you
+read, which sends use from then on. A save does not publish by itself.
 
 **Hooks**: `list_hook_applications`, `send_hook_message` (delivers to the application's endpoints),
 `list_hook_deliveries`. See [Hooks](/docs/hooks).

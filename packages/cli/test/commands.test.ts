@@ -103,7 +103,7 @@ describe("shell completion", () => {
       "failed",
     ]);
     expect(await c(["emails", ""])).toEqual(["send", "list", "get", "events", "diagnose"]);
-    expect(await c(["webhooks", ""])).toEqual(["list", "deliveries", "retry"]);
+    expect(await c(["webhooks", ""])).toEqual(["list", "add", "deliveries", "retry"]);
     // A command that has subcommands of its own.
     expect(await c(["inbox", ""])).toEqual(["get"]);
     expect(await c(["inbox", "get", ""])).toEqual([]);

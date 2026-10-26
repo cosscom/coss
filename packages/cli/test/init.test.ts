@@ -228,7 +228,8 @@ describe("coss init --agents", () => {
     expect(await run(["init", "--no-agents", "--no-install", "--no-browser"], io)).toBe(0);
     expect(await readFile(join(io.cwd, "AGENTS.md"), "utf8").catch(() => null)).toBeNull();
     expect(io.output()).toContain('import { Coss } from "coss";');
-    expect(io.output()).toContain("bounce@simulator.amazonses.com");
+    expect(io.output()).toContain('from: "hello@example.com"');
+    expect(io.output()).toContain('to: "bounce@simulator.amazonses.com"');
   });
 
   test("a Nodemailer project is pointed at coss/nodemailer", async () => {
@@ -236,6 +237,7 @@ describe("coss init --agents", () => {
     const { io } = await project({ "package.json": pkg }, { exec: () => 0 });
     expect(await run(["init", "--no-agents", "--no-install", "--no-browser"], io)).toBe(0);
     expect(io.output()).toContain('from "coss/nodemailer"');
+    expect(io.output()).toContain('to: "bounce@simulator.amazonses.com"');
     expect(io.output()).not.toContain('import { Coss } from "coss";');
   });
 

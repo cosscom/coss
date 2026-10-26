@@ -164,12 +164,18 @@ Unknown fields are refused. `--json` prints the event that was sent.
 
 ```sh
 coss webhooks list
+coss webhooks add https://example.com/webhooks --events email.delivered,email.bounced
 coss webhooks deliveries whep_01k7c8m4q2f3e9v6t5r1n0p8yz --status failed
 coss webhooks retry whep_01k7c8m4q2f3e9v6t5r1n0p8yz whdel_01k7c8m4q2f3e9v6t5r1n0p8yz
 ```
 
 `coss webhooks list` shows the environment's endpoints with their URL, state (enabled, failing,
-disabled) and event types. `coss webhooks deliveries <endpoint>` lists an endpoint's deliveries,
+disabled) and event types. `coss webhooks add <url>` creates one. Its signing secret is returned
+once and written to the project env file as `COSS_WEBHOOK_SECRET` (a previous value is replaced,
+so `coss listen` signs with the same secret). `--description` stores a note, `--events` limits
+the types (the default is every event, including ones added later), and `--force` creates another
+endpoint when that URL already has one. Without `--force` the existing endpoint is left as it is.
+Creation is not retried. `coss webhooks deliveries <endpoint>` lists an endpoint's deliveries,
 newest first, with the last status code and error; filter with `--status pending|succeeded|failed`
 or `--event <event id>`, and show up to `--limit 100` (default 20).
 `coss webhooks retry <endpoint> <delivery>` sends a finished delivery once more, within seconds. Each takes `--json`.

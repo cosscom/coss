@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { run } from "../src/run.ts";
 import { apiError, fakeFetch, SANDBOX_KEY, testIo } from "./helpers.ts";
 
@@ -126,5 +128,92 @@ describe("coss webhooks", () => {
     expect(await run(["webhooks", "retry", "whep_1", "whdel_x"], missing)).toBe(1);
     expect(missing.errors()).toContain("Couldn't retry the delivery: No such delivery.");
     expect(await run(["webhooks", "retry", "whep_1"], testIo({ env }))).toBe(2);
+  });
+
+  test("add creates an endpoint and replaces COSS_WEBHOOK_SECRET", async () => {
+    const created = { ...endpoint, secret: "whsec_new" };
+    const routes = {
+      "GET /v1/webhook_endpoints": { object: "list", data: [], has_more: false },
+      "POST /v1/webhook_endpoints": created,
+    };
+    const api = fakeFetch({
+      ...routes,
+      "POST /v1/webhook_endpoints": (request) => {
+        expect(request.body).toEqual({
+          url: "https://example.com/hooks",
+          description: "App",
+          event_types: ["email.delivered"],
+        });
+        return created;
+      },
+    });
+    const io = testIo({ fetch: api.fetch, env });
+    await writeFile(
+      join(io.cwd, ".env"),
+      "COSS_API_KEY=coss_test_x\nCOSS_WEBHOOK_SECRET=whsec_old\n",
+    );
+    expect(
+      await run(
+        [
+          "webhooks",
+          "add",
+          "https://example.com/hooks",
+          "--description",
+          "App",
+          "--events",
+          "email.delivered",
+        ],
+        io,
+      ),
+    ).toBe(0);
+    expect(io.output()).toContain("whep_1  https://example.com/hooks");
+    expect(io.errors()).toContain("COSS_WEBHOOK_SECRET=whsec_new");
+    expect(io.errors()).toContain("replacing the previous value");
+    expect(await readFile(join(io.cwd, ".env"), "utf8")).toBe(
+      "COSS_API_KEY=coss_test_x\nCOSS_WEBHOOK_SECRET=whsec_new\n",
+    );
+
+    const json = testIo({ fetch: fakeFetch(routes).fetch, env });
+    expect(await run(["webhooks", "add", "https://example.com/hooks", "--json"], json)).toBe(0);
+    expect(JSON.parse(json.output())).toMatchObject({
+      created: true,
+      id: "whep_1",
+      secret: "whsec_new",
+      env_file: ".env",
+      replaced_existing_secret: false,
+    });
+  });
+
+  test("add leaves an existing URL unless --force", async () => {
+    let posts = 0;
+    const api = fakeFetch({
+      "GET /v1/webhook_endpoints": { object: "list", data: [endpoint], has_more: false },
+      "POST /v1/webhook_endpoints": () => {
+        posts++;
+        return { ...endpoint, id: "whep_9", secret: "whsec_other" };
+      },
+    });
+    const io = testIo({ fetch: api.fetch, env });
+    expect(await run(["webhooks", "add", "https://example.com/hooks"], io)).toBe(0);
+    expect(posts).toBe(0);
+    expect(io.output()).toContain("already has whep_1");
+    expect(io.errors()).toContain("--force");
+
+    const forced = testIo({ fetch: api.fetch, env });
+    expect(await run(["webhooks", "add", "https://example.com/hooks", "--force"], forced)).toBe(0);
+    expect(posts).toBe(1);
+    expect(await readFile(join(forced.cwd, ".env"), "utf8")).toContain(
+      "COSS_WEBHOOK_SECRET=whsec_other\n",
+    );
+
+    for (const [argv, message] of [
+      [["webhooks", "add"], "webhooks add <url>"],
+      [["webhooks", "add", "not-a-url"], "Pass an http(s) URL"],
+      [["webhooks", "add", "https://example.com/hooks", "--events", "nope.event"], "Unknown event"],
+    ] as const) {
+      const bad = testIo({ env });
+      expect(await run([...argv], bad)).toBe(2);
+      expect(bad.errors()).toContain(message);
+    }
   });
 });

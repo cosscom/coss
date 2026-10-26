@@ -53,6 +53,7 @@ ID and notarized by Apple (since 0.3.0), so one downloaded with a browser runs w
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
 | `coss trigger <event-type>` | A test event of that type, sent to the environment's subscribed endpoints and `coss listen` listeners like a real one (sandbox keys; every type but `domain.*`, `account.*`, `billing.*`). `--data '{…}'` and `-F name=value` (dotted names, JSON values) change its `data`. |
 | `coss webhooks list` | The environment's webhook endpoints: URL, state and event types. |
+| `coss webhooks add <url>` | Creates an endpoint and writes its signing secret to the project env file as `COSS_WEBHOOK_SECRET` (`--events`, `--description`, `--force`). |
 | `coss webhooks deliveries <endpoint>` | An endpoint's deliveries, newest first (`--status failed`, `--event <id>`, `--limit`). |
 | `coss webhooks retry <endpoint> <delivery>` | Sends a finished delivery to its endpoint once more. |
 | `coss hooks apps list`, `coss hooks apps create <name>` | [Hooks](https://coss.com/docs/hooks) applications (`--uid`, `--metadata`). Every `<app>` below is an application's id or uid. |
