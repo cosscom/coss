@@ -8,13 +8,20 @@ name: Release
 # `coss-cli`) show the relationship (README, "Releasing the SDK"). After that, the cli-* jobs
 # attach the CLI's standalone executables to its GitHub release and update its Homebrew formula,
 # once the CLI_BINARIES_PUBLISH variable is `true` (below).
+#
+# Run by hand (Actions → Release → Run workflow, on main: `gh workflow run release.yml`), it is a
+# dry run of the CLI's executables instead: built from main, macOS ones signed and notarized,
+# smoke-tested, and published nowhere (no npm, no GitHub release, no Homebrew). That checks the
+# `apple` environment's certificate and notary key without waiting for a release.
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
-  group: release-${{ github.ref }}
+  # Dry runs apart: a pending one must never take the place of a pending release.
+  group: release-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -22,6 +29,7 @@ permissions:
 
 jobs:
   version:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -138,26 +146,37 @@ jobs:
   # cosscom/tap/coss`). Every job is skipped until the repository variable CLI_BINARIES_PUBLISH is
   # `true` (AGENTS.md, "CLI binaries"). The check looks at the release itself, so a rerun, or the
   # first run after the variable is set, fills in whatever the current version is missing. Builds
-  # come from the version's tag, never from a newer main.
+  # come from the version's tag, never from a newer main (a dry run's from the commit it ran on).
   cli-binaries-check:
     needs: publish
-    if: vars.CLI_BINARIES_PUBLISH == 'true'
+    if: >-
+      !cancelled() && (github.event_name == 'workflow_dispatch' ||
+      (needs.publish.result == 'success' && vars.CLI_BINARIES_PUBLISH == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       version: ${{ steps.check.outputs.version }}
       tag: ${{ steps.check.outputs.tag }}
+      ref: ${{ steps.check.outputs.ref }}
       build: ${{ steps.check.outputs.build }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - id: check
         env:
           GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           version="$(jq -r .version packages/cli/package.json)"
           tag="coss-cli@$version"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ "$DRY_RUN" = true ]; then
+            echo "Dry run: building $GITHUB_SHA, publishing nothing."
+            echo "ref=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "ref=refs/tags/$tag" >> "$GITHUB_OUTPUT"
           if ! git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
             echo "$tag isn't tagged: coss-cli $version isn't on npm yet."
             echo "build=false" >> "$GITHUB_OUTPUT"
@@ -174,13 +193,17 @@ jobs:
 
   cli-binaries-build:
     needs: cli-binaries-check
-    if: needs.cli-binaries-check.outputs.build == 'true'
+    # Explicit: a dry run's skipped version and publish jobs would otherwise skip this one, and
+    # everything after it.
+    if: >-
+      !cancelled() && needs.cli-binaries-check.result == 'success' &&
+      needs.cli-binaries-check.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+          ref: ${{ needs.cli-binaries-check.outputs.ref }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -200,10 +223,12 @@ jobs:
   # notarized by Apple (scripts/notarize.ts), then archived again with a new SHA256SUMS, so a copy
   # downloaded with a browser opens without Gatekeeper's warning. Skipped until the repository
   # variable CLI_MACOS_NOTARIZE is `true` (AGENTS.md, "CLI binaries"): releases then ship the
-  # ad-hoc signed builds.
+  # ad-hoc signed builds. A dry run always notarizes (that's what it is for).
   cli-binaries-notarize:
     needs: [cli-binaries-check, cli-binaries-build]
-    if: vars.CLI_MACOS_NOTARIZE == 'true'
+    if: >-
+      !cancelled() && needs.cli-binaries-build.result == 'success' &&
+      (vars.CLI_MACOS_NOTARIZE == 'true' || github.event_name == 'workflow_dispatch')
     runs-on: macos-latest
     timeout-minutes: 45
     # Holds the Developer ID certificate and the App Store Connect API key notarytool uses.
@@ -211,7 +236,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+          ref: ${{ needs.cli-binaries-check.outputs.ref }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -280,7 +305,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+          ref: ${{ needs.cli-binaries-check.outputs.ref }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -307,12 +332,17 @@ jobs:
         shell: bash
         run: bun packages/cli/scripts/smoke-binary.ts "smoke/coss${{ matrix.target == 'windows-x64' && '.exe' || '' }}"
       # What a browser download is: quarantined. Only a notarized executable passes Gatekeeper then.
+      # The runner's Gatekeeper may be off, so running it proves little on its own: codesign asks
+      # Apple whether this exact signature is notarized (online: a bare executable has no stapled
+      # ticket) and fails the job if not. spctl's verdict is printed for the log only.
       - name: Gatekeeper (macOS, notarized)
         if: matrix.target == 'darwin-arm64' && needs.cli-binaries-notarize.result == 'success'
         env:
           VERSION: ${{ needs.cli-binaries-check.outputs.version }}
         run: |
           xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");Safari;" smoke/coss
+          codesign --verify --strict --verbose=2 --check-notarization -R='=notarized' smoke/coss
+          spctl --status || true
           spctl --assess --type execute --verbose=2 smoke/coss || true
           smoke/coss --version | grep -qx "$VERSION"
       - name: Smoke test (musl, in Alpine)
@@ -331,7 +361,8 @@ jobs:
   cli-binaries-release:
     needs: [cli-binaries-check, cli-binaries-smoke]
     # Explicit: a skipped cli-binaries-notarize upstream would otherwise skip this job too.
-    if: always() && needs.cli-binaries-smoke.result == 'success'
+    if: >-
+      always() && github.event_name == 'push' && needs.cli-binaries-smoke.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -339,7 +370,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+          ref: ${{ needs.cli-binaries-check.outputs.ref }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -368,7 +399,7 @@ jobs:
   cli-homebrew:
     needs: [cli-binaries-check, cli-binaries-release]
     if: >-
-      always() && needs.cli-binaries-check.result == 'success' &&
+      always() && github.event_name == 'push' && needs.cli-binaries-check.result == 'success' &&
       (needs.cli-binaries-release.result == 'success' || needs.cli-binaries-release.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -377,7 +408,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: refs/tags/${{ needs.cli-binaries-check.outputs.tag }}
+          ref: ${{ needs.cli-binaries-check.outputs.ref }}
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: cosscom/homebrew-tap
