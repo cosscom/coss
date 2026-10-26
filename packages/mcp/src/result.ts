@@ -47,7 +47,7 @@ function hintFor(error: CossError): string | undefined {
 
 /** A failed API call as a tool error the agent can act on. */
 export function fail(error: CossError): CallToolResult {
-  const hint = hintFor(error);
+  const hint = error.hint ?? hintFor(error);
   const body = {
     error: {
       type: error.type,

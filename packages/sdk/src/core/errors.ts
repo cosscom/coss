@@ -33,6 +33,11 @@ export interface CossError {
   /** The request parameter the error relates to, when there is one. */
   param?: string;
   issues?: CossErrorIssue[];
+  /**
+   * What to try next, when the API can name a fix. Often includes a docs URL. Older responses
+   * omit it.
+   */
+  hint?: string;
 }
 
 export type CossResult<T> = { data: T; error: null } | { data: null; error: CossError };
@@ -107,6 +112,7 @@ export function errorFromResponse(
   if (typeof envelope.param === "string") error.param = envelope.param;
   const issues = parseIssues(envelope.issues);
   if (issues) error.issues = issues;
+  if (typeof envelope.hint === "string") error.hint = envelope.hint;
   return error;
 }
 

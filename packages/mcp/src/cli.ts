@@ -2,24 +2,40 @@
 /**
  * `npx coss-mcp`: the coss.com MCP server over stdio. Configuration comes from the environment only
  * (never argv, which other local processes can read): COSS_API_KEY, and COSS_BASE_URL to point
- * at another API (e.g. http://localhost:3001). Without a key it serves only the docs tools.
- * stdout carries the protocol; logs go to stderr.
+ * at another API (e.g. http://localhost:3001). With neither, a `coss_test_` key in the project's
+ * `.env.local` or `.env` is used. A `coss_live_` key in that file is never loaded. Without a key
+ * the server offers only the docs tools. stdout carries the protocol; logs go to stderr.
  */
+import { relative } from "node:path";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { Coss } from "coss";
+import { readProjectApiKey } from "./project-env.ts";
 import { createCossMcpServer } from "./server.ts";
 
-const apiKey = process.env.COSS_API_KEY?.trim();
+let apiKey = process.env.COSS_API_KEY?.trim();
+let baseUrl = process.env.COSS_BASE_URL?.trim() || undefined;
 if (!apiKey) {
-  console.error(
-    "coss-mcp: no COSS_API_KEY, so only the docs tools are available. Run `npx coss-cli init` in " +
-      "your project for a development key, or create one in the dashboard (https://coss.com/dashboard).",
-  );
+  const found = await readProjectApiKey(process.cwd());
+  if (found.kind === "test") {
+    apiKey = found.apiKey;
+    if (!baseUrl && found.baseUrl) baseUrl = found.baseUrl;
+    const file = relative(process.cwd(), found.file) || found.file;
+    console.error(`coss-mcp: using the development key in ${file}.`);
+  } else if (found.kind === "live") {
+    const file = relative(process.cwd(), found.file) || found.file;
+    console.error(
+      `coss-mcp: ${file} has COSS_API_KEY, and it is not a development key (coss_test_). ` +
+        "It was not loaded. Set COSS_API_KEY in this process to use it. Only the docs tools are available.",
+    );
+  } else {
+    console.error(
+      "coss-mcp: no COSS_API_KEY, so only the docs tools are available. Run `npx coss-cli init` in " +
+        "your project for a development key, or create one in the dashboard (https://coss.com/dashboard).",
+    );
+  }
 }
 
-const coss = apiKey
-  ? new Coss({ apiKey, baseUrl: process.env.COSS_BASE_URL?.trim() || undefined })
-  : undefined;
+const coss = apiKey ? new Coss({ apiKey, baseUrl }) : undefined;
 
 serveStdio(() => createCossMcpServer({ coss, apiKey }), {
   onerror: (error) => console.error("coss-mcp:", error),

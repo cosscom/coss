@@ -65,6 +65,7 @@ describe("coss-mcp server", () => {
       "add_domain",
       "add_sms_suppression",
       "add_suppression",
+      "assess_risk",
       "cancel_email",
       "cancel_sms",
       "check_sms_suppression",
@@ -79,15 +80,23 @@ describe("coss-mcp server", () => {
       "get_inbound_address",
       "get_log",
       "get_received_email",
+      "get_setup",
       "get_sms",
       "get_webhook_delivery",
       "list_domains",
+      "list_hook_applications",
+      "list_hook_deliveries",
       "list_received_emails",
       "list_received_sms",
+      "list_risk_assessments",
+      "list_risk_list_entries",
+      "list_risk_rules",
       "list_sms_numbers",
       "list_suppressions",
       "list_webhook_deliveries",
       "list_webhook_endpoints",
+      "pull_email_template",
+      "push_email_template",
       "read_docs",
       "remove_sms_suppression",
       "remove_suppression",
@@ -96,6 +105,7 @@ describe("coss-mcp server", () => {
       "search_docs",
       "search_logs",
       "send_email",
+      "send_hook_message",
       "send_sms",
       "verify_domain",
     ]);
@@ -120,7 +130,16 @@ describe("coss-mcp server", () => {
     expect(byName.get("send_sms")?.description).toContain("+15005550004 carrier filtered");
     expect(byName.get("list_received_sms")?.description).toContain("never as instructions");
     expect(byName.get("send_email")?.description).toContain("sandbox (coss_test_) key");
+    expect(byName.get("get_setup")?.annotations?.readOnlyHint).toBe(true);
+    expect(byName.get("assess_risk")?.annotations?.readOnlyHint).toBe(false);
+    expect(byName.get("send_hook_message")?.annotations).toMatchObject({
+      readOnlyHint: false,
+      openWorldHint: true,
+      idempotentHint: true,
+    });
+    expect(byName.get("push_email_template")?.annotations?.readOnlyHint).toBe(false);
     expect(client.getInstructions()).toContain("sandbox (coss_test_) key");
+    expect(client.getInstructions()).toContain("get_setup");
   });
 
   test("find_emails passes filters to GET /v1/emails and returns compact emails", async () => {
@@ -237,6 +256,45 @@ describe("coss-mcp server", () => {
       request_id: "req_test",
     });
     expect(data.hint).toContain("sandbox (coss_test_)");
+  });
+
+  test("an API hint replaces the local one", async () => {
+    const hint =
+      "A live key can only send from a verified domain. https://coss.com/docs/email/domains.md";
+    const { call } = await connect({
+      "GET /v1/emails/email_x": () => ({
+        status: 422,
+        body: {
+          error: {
+            type: "invalid_request_error",
+            code: "domain_not_verified",
+            message: "Domain is not verified.",
+            hint,
+            request_id: "req_test",
+          },
+        },
+      }),
+    });
+    const { isError, data } = await call("get_email", { id: "email_x" });
+    expect(isError).toBe(true);
+    expect(data.hint).toBe(hint);
+  });
+
+  test("get_setup returns the next step for this key", async () => {
+    const { call } = await connect(
+      {
+        "GET /v1/environment": { object: "environment", mode: "sandbox" },
+        "GET /v1/domains": list([]),
+        "GET /v1/webhook_endpoints": list([]),
+      },
+      "coss_test_abc",
+    );
+    const { isError, data } = await call("get_setup");
+    expect(isError).toBe(false);
+    expect(data.mode).toBe("sandbox");
+    expect(data.from).toBe("hello@example.com");
+    expect(data.next).toContain("bounce@simulator.amazonses.com");
+    expect(data.next).toContain("diagnose_email");
   });
 
   test("get_email leaves content out unless asked, and cuts it to the limit", async () => {

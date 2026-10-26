@@ -19,7 +19,7 @@ Published from [cosscom/coss](https://github.com/cosscom/coss) by CI, with
 
 | Variable | |
 | --- | --- |
-| `COSS_API_KEY` | A `coss_test_…` (development) or `coss_live_…` (production) key; the server sees that key's environment. Without one, only the docs tools are available (`npx coss-cli init` gets a project a development key). |
+| `COSS_API_KEY` | A `coss_test_…` (development) or `coss_live_…` (production) key; the server sees that key's environment. Without one, a `coss_test_` key in the project's `.env.local` or `.env` is used (`npx coss-cli init` writes it). A `coss_live_` key in that file is never loaded. With no key at all, only the docs tools are available. |
 | `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001`. Defaults to `https://api.coss.com`. |
 
 Configuration is read from the environment only, never from command-line arguments, which other
@@ -43,6 +43,10 @@ can ask before calling the ones that change something.
 | SMS | `diagnose_sms`, `find_sms`, `get_sms`, `send_sms`, `cancel_sms`, `list_received_sms`, `list_sms_numbers` |
 | SMS suppressions | `check_sms_suppression`, `add_sms_suppression`, `remove_sms_suppression` |
 | Logs | `search_logs`, `get_log` |
+| Setup | `get_setup` |
+| Templates | `pull_email_template`, `push_email_template` |
+| Hooks | `list_hook_applications`, `send_hook_message`, `list_hook_deliveries` |
+| Risk | `assess_risk`, `list_risk_assessments`, `list_risk_rules`, `list_risk_list_entries` |
 | Account | `get_account_status` |
 
 ## As a library

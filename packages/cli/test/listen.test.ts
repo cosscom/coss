@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
 import { createServer, type IncomingHttpHeaders, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
+import { join } from "node:path";
 import { verifyWebhook } from "coss";
 import { readConfig } from "../src/config.ts";
 import { normalizeTarget } from "../src/listen/forward.ts";
@@ -193,7 +195,7 @@ describe("coss listen", () => {
     expect(polls.at(-1)?.acks?.[0]?.error).toBe("connection refused");
   });
 
-  test("with --json and COSS_API_KEY, the (unsaved) secret still goes to stderr", async () => {
+  test("with --json and COSS_API_KEY, the secret is saved to the env file and printed on stderr", async () => {
     const local = await receiver();
     const io = testIo({ env: { COSS_API_KEY: SANDBOX_KEY } });
     const answers = [[delivery()]];
@@ -219,8 +221,10 @@ describe("coss listen", () => {
     io.fetch = (input, init) =>
       String(input).startsWith(local.url) ? fetch(input, init) : api.fetch(input, init);
     expect(await run(["listen", "--json", "--forward-to", local.url], io)).toBe(130);
-    const secret = /Signing secret: (whsec_\S+)/.exec(io.errors())?.[1];
+    const secret = /COSS_WEBHOOK_SECRET=(whsec_\S+)/.exec(io.errors())?.[1];
     expect(secret).toBeTruthy();
+    expect(await readFile(join(io.cwd, ".env"), "utf8")).toContain(`COSS_WEBHOOK_SECRET=${secret}`);
+    expect((await readConfig(io)).profiles.default?.listen_secret).toBeUndefined();
     const [request] = local.received;
     const headers = Object.fromEntries(
       Object.entries(request?.headers ?? {}).map(([name, value]) => [name, String(value)]),

@@ -347,6 +347,16 @@ describe("error mapping", () => {
     });
   });
 
+  test("copies an optional hint from the envelope", async () => {
+    const hint =
+      "A live key can only send from a verified domain. https://coss.com/docs/email/domains.md";
+    const { fetch } = mockFetch(
+      apiError(422, { type: "invalid_request_error", code: "domain_not_verified", hint }),
+    );
+    const { error } = await new Coss({ apiKey: API_KEY, fetch, maxRetries: 0 }).email.send(params);
+    expect(error?.hint).toBe(hint);
+  });
+
   test("keeps param and issues from validation errors", async () => {
     const issues = [{ path: "to", message: "Invalid email address" }];
     const { fetch } = mockFetch(

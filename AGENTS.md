@@ -262,7 +262,7 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`src/routes/tracking.ts`). They are plain Hono routes outside `/v1` and the OpenAPI document, never return the
   error envelope, record nothing for HEAD, and get `Cross-Origin-Resource-Policy: cross-origin` (everything else keeps
   `same-origin`).
-- Errors are always the envelope `{ error: { type, code, message, param?, issues?, request_id } }`, built only by
+- Errors are always the envelope `{ error: { type, code, message, param?, issues?, hint?, request_id } }`, built only by
   `errorResponse` (`src/errors.ts`). Throw `new ApiError(status, { type, code, message, param? })` with `type` from
   `ERROR_TYPES`, or a product error mapped in `toApiError`; anything else is logged and returned as a generic 500. Never
   hand-build error JSON.
@@ -385,7 +385,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 
 - `createCossMcpServer({ coss, apiKey })` (`src/server.ts`) registers every tool on an `McpServer`
   (`@modelcontextprotocol/server` v2); `src/cli.ts` serves it over stdio (`serveStdio`). Configuration comes from the
-  environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr.
+  environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr. With no
+  `COSS_API_KEY`, `cli.ts` reads a `coss_test_` key from the project's `.env.local` or `.env` (`project-env.ts`) and
+  never loads a `coss_live_` key from that file.
 - Tools (`src/tools/*.ts`) call only the public SDK — never workspace packages (AGPL) or the database — so anything a
   tool needs must exist in the public API first. The exception is `search_docs`/`read_docs` (`tools/docs.ts`), which
   fetch coss.com's public docs (`/docs/search.json`, `<page>.md`, nothing outside `/docs`) and work without a key:
@@ -393,7 +395,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); clients rely on them to prompt (full-access keys hold every
   permission; a restricted key's 403 hint points at `get_account_status`, which lists what it holds).
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
-  become `isError` results with a hint (`result.ts`). Third-party text (email content, received mail, bounce and
+  become `isError` results with a hint (`result.ts`; the API's `error.hint` wins over the local one). `get_setup`
+  (`tools/setup.ts`, `describeSetup` in the SDK) is the readiness answer. Risk, Hooks and template drafts have tools
+  that call only the public SDK. Third-party text (email content, received mail, bounce and
   webhook responses) is labelled untrusted, and the server's `instructions` say so.
 - Delivery diagnosis is the SDK's `coss/diagnose` (`packages/sdk/src/diagnose.ts`, shared with `coss emails
   diagnose`): `diagnoseEmail` is pure (email + events + best-effort context → verdict), `diagnose` fetches first;
@@ -411,7 +415,7 @@ What an agent pointed at coss.com reads, all describing the same facts — chang
   key with `npx coss-cli init`, the SDK's conventions, testing webhooks. Every docs page is Markdown at `<page>.md`
   (`apps/site/AGENTS.md`); API reference pages render the OpenAPI document (`operation-markdown.ts`).
 - The landing page's prompt (`AGENT_PROMPT`, `apps/site/src/lib/site.ts`), quoted by `/docs/agents`.
-- The `coss` skill (`plugins/coss/skills/coss/SKILL.md`), the notes `coss init --agents` writes into a project's
+- The `coss` skill (`plugins/coss/skills/coss/SKILL.md`), the notes `coss init` writes into a project's
   AGENTS.md (`agentNotes`, `packages/cli/src/commands/init.ts`) and the MCP server's instructions (`src/server.ts`).
 - `claude plugin validate .` and `claude plugin validate plugins/coss` check the marketplace and the plugin. The
   plugin has no `version` on purpose: installs follow main. Its MCP server takes the key from the plugin's optional
@@ -436,12 +440,17 @@ What an agent pointed at coss.com reads, all describing the same facts — chang
 - `init` reuses login's browser flow with a `project` hint (the approval page then offers sandbox environments
   only and names the key after the project; `apps/web/src/app/app/authorize/cli/params.ts`), checks the key's
   environment again (a live key is revoked, never written) and writes it to the project's env file, never the
-  profile. The update notice (`src/update-check.ts`) asks the npm registry at most once a day, runs alongside the
+  profile. Agent notes are on by default (`--no-agents` skips them). It detects Nodemailer, Better Auth, Auth.js,
+  Laravel, Rails and Django (`project-stack.ts`) and prints that drop-in, then `fetchSetupReport` (`describeSetup`
+  in the SDK) as the one next step (`--json` includes it as `setup`; a failed list is a warning and still returns
+  a next step). The update notice (`src/update-check.ts`) asks the npm registry at most once a day, runs alongside the
   command and is dropped if it hasn't answered when the command ends; never with `--json`, in CI, off a TTY or with
   `COSS_NO_UPDATE_CHECK`.
 - `listen`: opens a webhook listener (`packages/webhooks/AGENTS.md`), long-polls (`wait_ms` 20 s, SDK timeout 35 s,
-  no SDK retries), forwards each body byte for byte to `--forward-to`, signed with the profile's stable `whsec_`
-  `listen_secret` (`src/listen/sign.ts`, Standard Webhooks, written from the spec) and `webhook-id` = the event id,
+  no SDK retries), forwards each body byte for byte to `--forward-to`, signed with `COSS_WEBHOOK_SECRET` from the
+  project env file (an existing valid secret is kept; otherwise the profile's `listen_secret`, otherwise a new
+  `whsec_` from `src/listen/sign.ts`, Standard Webhooks). It writes that secret into the env file, and into the
+  profile when the CLI key came from the profile. `webhook-id` = the event id,
   and acks results in the next poll; Ctrl-C acks what was forwarded and deletes the listener. Live environments
   need `--live`.
 - `trigger <type>`: `POST /v1/webhook_events/test` (`coss.webhookEvents.test`; `sendTestWebhookEvent` in

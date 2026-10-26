@@ -27,7 +27,9 @@ to 5 minutes). The key is written to `.env.local` (Next.js) or `.env` as `COSS_A
 it's kept: check it starts with `coss_test_` (a `coss_live_` key delivers for real; `--force`
 replaces it). Where no browser can open (over SSH, in a container or a cloud sandbox) the command
 prints a link and waits for a code typed into the terminal: ask the user to run it themselves.
-`--agents` also adds a short coss.com section to the project's AGENTS.md for later sessions.
+It adds a short coss.com section to the project's AGENTS.md for later sessions (`--no-agents`
+skips that) and prints the one next step for this key. When the project already uses Nodemailer,
+Better Auth, Auth.js, Laravel, Rails or Django, that message points at the drop-in.
 
 Develop and test only with this key. Development keys (`coss_test_…`) work with every API and
 record every email and SMS with their events and webhooks, but deliver nothing; the simulator
@@ -41,7 +43,8 @@ key) is the user's step, in the dashboard.
 - TypeScript: `import { Coss } from "coss"`; `new Coss()` reads `COSS_API_KEY`. Create the client
   in server code only; the key must never reach a browser bundle.
 - Every SDK method returns `{ data, error }` and never throws for API or network failures. Check
-  `error` (`type`, `code`, `message`, `issues` for validation errors) on every call.
+  `error` (`type`, `code`, `message`, `hint` when it names the fix, `issues` for validation
+  errors) on every call.
 - Retries are automatic, with an `Idempotency-Key` on every POST; pass your own
   (`{ idempotencyKey }`) when a retry of your own code could send twice.
 - Other languages (Python `cosscom`, Go, Ruby, PHP, Java, .NET):
@@ -59,11 +62,13 @@ key) is the user's step, in the dashboard.
   ordering (use `data.occurred_at`).
 - To test locally: `npx coss-cli login` once (the user approves it like `init`), then
   `npx coss-cli listen --forward-to localhost:3000/<path>` forwards the environment's events to
-  the handler, signed with a secret it prints (put it in the env file as the handler's secret),
-  and `npx coss-cli trigger <event type>` sends a sample event.
+  the handler. It writes `COSS_WEBHOOK_SECRET` into the same env file as the key (an existing
+  value is kept) and prints it. `npx coss-cli trigger <event type>` sends a sample event.
 
 ## Check what happened
 
 - `npx coss-cli logs tail` follows the environment's API requests and events.
 - `npx coss-cli emails diagnose <email id>` (or `--to <address>`) explains a delivery.
-- The MCP server's `diagnose_email`, `diagnose_sms` and `search_logs` answer the same questions.
+- The MCP server's `get_setup` says what to do next with this key. `diagnose_email`,
+  `diagnose_sms` and `search_logs` answer what happened. It reads a `coss_test_` key from the
+  project env file when `COSS_API_KEY` is unset, and never loads a `coss_live_` key from that file.

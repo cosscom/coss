@@ -88,8 +88,23 @@ describe("POST /v1/emails", () => {
       type: "invalid_request_error",
       code: "domain_not_verified",
       param: "from",
+      hint: expect.stringContaining("https://coss.com/docs/email/domains.md"),
     });
     expect(liveProvider.sent).toHaveLength(0);
+  });
+
+  test("a reserved header points at the sending docs", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const res = await sendEmail(
+      app,
+      tenant.sandboxKey,
+      emailBody({ headers: { "Message-ID": "<a@b>" } }),
+    );
+    expect(res.status).toBe(422);
+    const error = await errorOf(res);
+    expect(error.code).toBe("validation_error");
+    expect(error.hint).toContain("https://coss.com/docs/email/sending.md");
   });
 
   test("a paused organization can't send with a live key", async () => {
@@ -293,6 +308,7 @@ describe("POST /v1/emails", () => {
       type: "idempotency_error",
       code: "idempotency_key_reused",
       param: "Idempotency-Key",
+      hint: expect.stringContaining("https://coss.com/docs/sdk.md"),
     });
     expect(queue.jobs).toHaveLength(1);
   });
@@ -333,6 +349,7 @@ describe("POST /v1/emails", () => {
     expect(await errorOf(res)).toMatchObject({
       type: "idempotency_error",
       code: "request_in_progress",
+      hint: expect.stringContaining("https://coss.com/docs/sdk.md"),
     });
   });
 

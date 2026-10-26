@@ -69,6 +69,18 @@ export type { WebhookDeliveriesResource } from "./resources/webhook-deliveries.t
 export type { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 export type { WebhookEventsResource } from "./resources/webhook-events.ts";
 export type { WebhookListenersResource } from "./resources/webhook-listeners.ts";
+export {
+  describeSetup,
+  fetchSetupReport,
+  SANDBOX_FROM,
+  type SetupClient,
+  type SetupDnsRecord,
+  type SetupDomain,
+  type SetupInput,
+  type SetupReport,
+  type SetupWebhookEndpoint,
+  SIMULATOR_TO,
+} from "./setup.ts";
 export type { AuditActorType, AuditEvent, ListAuditEventsParams } from "./types/audit-event.ts";
 export type {
   Billing,

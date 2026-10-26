@@ -115,7 +115,11 @@ describe("POST /v1/webhook_events/test", () => {
 
     const live = await trigger(app, tenant.liveKey, { type: "email.bounced" });
     expect(live.status).toBe(403);
-    expect(await errorOf(live)).toMatchObject({ type: "permission_error", code: "sandbox_only" });
+    expect(await errorOf(live)).toMatchObject({
+      type: "permission_error",
+      code: "sandbox_only",
+      hint: expect.stringContaining("https://coss.com/docs/environments.md"),
+    });
 
     const billing = await trigger(app, tenant.sandboxKey, { type: "billing.invoice_paid" });
     expect(billing.status).toBe(422);
