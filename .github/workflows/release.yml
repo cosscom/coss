@@ -334,14 +334,16 @@ jobs:
       # What a browser download is: quarantined. Only a notarized executable passes Gatekeeper then.
       # The runner's Gatekeeper may be off, so running it proves little on its own: codesign asks
       # Apple whether this exact signature is notarized (online: a bare executable has no stapled
-      # ticket) and fails the job if not. spctl's verdict is printed for the log only.
+      # ticket) and fails the job if not. spctl's verdict is printed for the log only. The leading
+      # `=` makes the requirement inline (without it codesign reads a file of that name).
       - name: Gatekeeper (macOS, notarized)
         if: matrix.target == 'darwin-arm64' && needs.cli-binaries-notarize.result == 'success'
         env:
           VERSION: ${{ needs.cli-binaries-check.outputs.version }}
         run: |
           xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");Safari;" smoke/coss
-          codesign --verify --strict --verbose=2 --check-notarization -R notarized smoke/coss
+          codesign --verify --strict --verbose=2 --check-notarization --test-requirement '=notarized' \
+            smoke/coss
           spctl --status || true
           spctl --assess --type execute --verbose=2 smoke/coss || true
           smoke/coss --version | grep -qx "$VERSION"
