@@ -1,4 +1,4 @@
-# packages/tenancy — organization deletion
+# packages/tenancy — organization and account deletion
 
 Read together with the root `AGENTS.md` (conventions, tenancy rule, tests). Paths are from the
 repository root.
@@ -19,3 +19,14 @@ repository root.
   (cascading the rest) and marks the row `completed` in one transaction. A new table with a lot of rows per
   organization belongs in `deleteOrganizationData`; anything held outside Postgres (a new provider resource)
   belongs in `releaseProviderResources`. Admin audit events are kept (no FKs).
+- **Account deletion** (`packages/tenancy/src/account-deletion.ts`; users delete their own account from
+  `/settings` or the iOS app, both through `deleteAccount` in `apps/web/src/lib/account-deletion.ts`, which adds
+  the open-invoice check tenancy can't see and the audit events): `planAccountDeletion` sorts the user's
+  memberships into organizations deleted with the account (they're the only member;
+  `requestOrganizationDeletion`), organizations they leave, and blockers (the only owner of an organization with
+  other members, a suspended organization, a platform admin). `deleteUserAccount` re-plans under row locks (the
+  user, then their organizations in id order) and, in one transaction, deletes their personal API keys (the
+  `environment_api_key.owner_user_id` cascade would leave them unbound), hands SSO providers they registered to
+  another owner (`sso_provider.user_id` cascades) and deletes the `user` row, which cascades sessions, accounts,
+  memberships, passkeys, two-factor, push devices, SCIM records and their invitations. Banned users are refused
+  (a deleted mailbox may sign up again). Org audit events and admin audit events keep the copied email.

@@ -2,7 +2,6 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { History, Lock } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 import { Badge } from "../../../../components/badge";
-import { Button } from "../../../../components/button";
 import { EmptyState } from "../../../../components/empty";
 import { PagedPanel } from "../../../../components/paged";
 import { Panel } from "../../../../components/panel";
@@ -11,23 +10,21 @@ import { Text } from "../../../../components/text";
 import { WebButton } from "../../../../components/web-button";
 import { formatAgo } from "../../../../lib/format";
 import { useAudit } from "../../../../lib/queries";
-import { openOnWeb } from "../../../../lib/web";
 
 export default function AuditScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useAudit(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const allowed = query.data.pages[0]?.plan_allows ?? true;
   const events = query.data.pages.flatMap((page) => page.data);
   const path = `/${org}/settings/audit`;
   return (
-    <Screen
-      onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Audit log"
-    >
-      <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
+    <Screen onRefresh={() => query.refetch()} title="Audit log">
+      {/* Without the plan, coss.com's page is an upgrade prompt: no purchase links here (3.1.1). */}
+      {allowed ? <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} /> : null}
       <PageIntro
         description="Who changed what in this organization: members in the dashboard, API keys, and coss.com support. Newest first; entries can't be edited or deleted."
         title="Audit log"
@@ -74,14 +71,7 @@ export default function AuditScreen() {
       ) : (
         <Panel>
           <EmptyState
-            action={
-              <Button
-                onPress={() => openOnWeb(`/${org}/settings/billing/plans`)}
-                size="sm"
-                title="Compare plans"
-              />
-            }
-            description="See who changed API keys, members, domains, webhooks and settings, from the dashboard or the API. Changes are already being recorded: upgrade to see them."
+            description="See who changed API keys, members, domains, webhooks and settings, from the dashboard or the API. Changes are already being recorded."
             icon={Lock}
             title="The audit log is part of the Pro plan"
           />

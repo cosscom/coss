@@ -17,10 +17,12 @@ export default function RiskSettingsScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useRiskSettings(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const settings = query.data;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Risk settings">
+    <Screen onRefresh={() => query.refetch()} title="Risk settings">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/risk/settings`} />,

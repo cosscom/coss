@@ -19,11 +19,7 @@ export default function SmsSuppressionsScreen() {
   const query = useSmsSuppressions(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="SMS suppressions"
-    >
+    <Screen onRefresh={() => query.refetch()} title="SMS suppressions">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/sms/suppressions`} />,
@@ -65,5 +61,5 @@ export default function SmsSuppressionsScreen() {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "flex-start", gap: 12, padding: 16 },
-  text: { flex: 1, gap: 6 },
+  text: { flex: 1, gap: 6, alignItems: "flex-start" },
 });

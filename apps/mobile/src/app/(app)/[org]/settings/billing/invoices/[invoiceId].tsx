@@ -1,10 +1,9 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { Badge, StatusDot } from "../../../../../../components/badge";
 import { Panel, Ruled, SpecItem, SpecList } from "../../../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../components/screen";
 import { Text } from "../../../../../../components/text";
-import { WebButton } from "../../../../../../components/web-button";
 import {
   formatCount,
   formatDateTime,
@@ -18,17 +17,14 @@ export default function InvoiceScreen() {
   const { org, invoiceId } = useLocalSearchParams<{ org: string; invoiceId: string }>();
   const query = useInvoice(org, invoiceId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const invoice = query.data;
   const [tone, label] = invoiceStatus(invoice);
   const title = invoice.number ?? "Invoice";
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={title}>
-      <Stack.Screen
-        options={{
-          headerRight: () => <WebButton path={`/${org}/settings/billing/invoices/${invoice.id}`} />,
-        }}
-      />
+    <Screen onRefresh={() => query.refetch()} title={title}>
       <PageIntro
         description={invoice.period ? formatPeriod(invoice.period) : undefined}
         meta={

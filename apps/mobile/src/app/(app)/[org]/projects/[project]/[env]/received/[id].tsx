@@ -51,11 +51,13 @@ export default function ReceivedEmailScreen() {
   const query = useReceivedEmail(params, id);
   const [tab, setTab] = useState<Tab>("overview");
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const email = query.data;
   const path = `${environmentPath(params)}/received/${email.id}`;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching}>
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen options={{ title: "Received", headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
         meta={

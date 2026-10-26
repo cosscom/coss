@@ -17,11 +17,7 @@ export default function HookApplicationsScreen() {
   const query = useHookApplications(params, q);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Hooks"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Hooks">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/hooks`} /> }}
       />

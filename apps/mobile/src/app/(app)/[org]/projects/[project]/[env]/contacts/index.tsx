@@ -2,6 +2,7 @@ import type { ContactStatus } from "@coss/companion";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Braces, ContactRound, SearchX } from "lucide-react-native";
 import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { Badge, StatusDot } from "../../../../../../../components/badge";
 import { Button } from "../../../../../../../components/button";
 import { type Filter, FilterChips } from "../../../../../../../components/filters";
@@ -33,11 +34,7 @@ export default function ContactsScreen() {
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const filtered = Boolean(email || status);
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Contacts"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Contacts">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/contacts`} />,
@@ -50,15 +47,17 @@ export default function ContactsScreen() {
         meta={<ModeBadge params={params} />}
         title="Contacts"
       />
-      <Button
-        icon={Braces}
-        onPress={() =>
-          router.push({ pathname: "/[org]/projects/[project]/[env]/contacts/properties", params })
-        }
-        size="sm"
-        title="Properties"
-        variant="outline"
-      />
+      <View style={styles.toolbar}>
+        <Button
+          icon={Braces}
+          onPress={() =>
+            router.push({ pathname: "/[org]/projects/[project]/[env]/contacts/properties", params })
+          }
+          size="sm"
+          title="Properties"
+          variant="outline"
+        />
+      </View>
       <SearchField
         keyboardType="email-address"
         onSubmit={setEmail}
@@ -109,3 +108,7 @@ export default function ContactsScreen() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  toolbar: { flexDirection: "row" },
+});

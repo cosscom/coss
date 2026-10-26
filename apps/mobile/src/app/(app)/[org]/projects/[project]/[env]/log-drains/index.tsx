@@ -9,36 +9,33 @@ import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../../com
 import { WebButton } from "../../../../../../../components/web-button";
 import { useLogDrains } from "../../../../../../../lib/queries";
 import { drainStatus, sourcesSummary } from "../../../../../../../lib/status";
-import { type EnvironmentParams, environmentPath, openOnWeb } from "../../../../../../../lib/web";
+import { type EnvironmentParams, environmentPath } from "../../../../../../../lib/web";
 
 export default function LogDrainsScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useLogDrains(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { plan_allows, data } = query.data;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Log drains">
-      <Stack.Screen
-        options={{
-          headerRight: () => <WebButton path={`${environmentPath(params)}/log-drains`} />,
-        }}
-      />
+    <Screen onRefresh={() => query.refetch()} title="Log drains">
+      {/* Without the plan, coss.com's page is an upgrade prompt: no purchase links here (3.1.1). */}
+      {plan_allows || data.length > 0 ? (
+        <Stack.Screen
+          options={{
+            headerRight: () => <WebButton path={`${environmentPath(params)}/log-drains`} />,
+          }}
+        />
+      ) : null}
       <PageIntro
         description="Stream this environment's API requests, email events, webhook attempts and audit events to your own logging stack."
         meta={<ModeBadge params={params} />}
         title="Log drains"
       />
       {plan_allows ? null : (
-        <Alert
-          action={{
-            label: "Compare plans",
-            onPress: () => openOnWeb(`/${params.org}/settings/billing/plans`),
-          }}
-          description="Log drains are part of the Scale plan and above."
-          title="Upgrade to stream logs"
-          tone="info"
-        />
+        <Alert description="Log drains are part of the Scale plan and above." tone="info" />
       )}
       <Panel>
         {data.length === 0 ? (
@@ -60,7 +57,7 @@ export default function LogDrainsScreen() {
                   key={drain.id}
                   leading={<StatusDot tone={tone} />}
                   subtitle={`${label} · ${sourcesSummary(drain.sources)}`}
-                  title={drain.description ?? drain.url}
+                  title={drain.description || drain.url}
                 />
               );
             })}

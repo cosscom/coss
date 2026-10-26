@@ -50,7 +50,6 @@ export function StatusDot(props: { tone: Tone; label?: string; muted?: boolean }
 
 const styles = StyleSheet.create({
   badge: {
-    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
     gap: 5,

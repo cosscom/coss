@@ -18,18 +18,16 @@ export default function AudienceScreen() {
   const query = useAudience(params, audienceId);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const first = query.data.pages[0];
   if (!first) return <Loading />;
   const { audience } = first;
   const members = query.data.pages.flatMap((page) => page.members.data);
 
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title={audience.name}
-    >
+    <Screen onRefresh={() => query.refetch()} title={audience.name}>
       <Stack.Screen
         options={{
           headerRight: () => (

@@ -35,7 +35,9 @@ export default function SegmentScreen() {
   const query = useSegment(params, segmentId);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { segment, count, sample } = query.data;
 
   return (
@@ -47,11 +49,7 @@ export default function SegmentScreen() {
           ),
         }}
       />
-      <Screen
-        onRefresh={() => void query.refetch()}
-        refreshing={query.isRefetching}
-        title={segment.name}
-      >
+      <Screen onRefresh={() => query.refetch()} title={segment.name}>
         <PageIntro
           description={`Updated ${formatDateTime(segment.updated_at)}.`}
           title={segment.name}

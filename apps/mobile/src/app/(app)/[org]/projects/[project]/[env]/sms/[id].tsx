@@ -22,7 +22,9 @@ export default function SmsDetailScreen() {
   const query = useSms(params, id);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { sms, events } = query.data;
 
   return (
@@ -32,7 +34,7 @@ export default function SmsDetailScreen() {
           headerRight: () => <WebButton path={`${environmentPath(params)}/sms/${sms.id}`} />,
         }}
       />
-      <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={sms.to}>
+      <Screen onRefresh={() => query.refetch()} title={sms.to}>
         <PageIntro
           description={`From ${sms.from}`}
           meta={
@@ -43,7 +45,11 @@ export default function SmsDetailScreen() {
                   tone={SMS_STATUS_TONE[sms.status]}
                 />
               </Badge>
-              {sms.sandbox ? <Badge variant="info">sandbox</Badge> : null}
+              {sms.sandbox ? (
+                <Badge variant="info">sandbox</Badge>
+              ) : (
+                <Badge variant="outline">live</Badge>
+              )}
             </>
           }
           mono
@@ -131,8 +137,10 @@ const styles = StyleSheet.create({
   event: { gap: 6, paddingHorizontal: 16, paddingVertical: 12 },
   eventHead: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    columnGap: 12,
+    rowGap: 4,
   },
 });

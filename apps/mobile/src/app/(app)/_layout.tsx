@@ -20,6 +20,10 @@ export default function AppLayout() {
     >
       <Stack.Screen name="settings" options={{ title: "Account", presentation: "modal" }} />
       <Stack.Screen
+        name="delete-account"
+        options={{ title: "Delete account", presentation: "modal" }}
+      />
+      <Stack.Screen
         name="[org]/projects/[project]/[env]/emails/[id]"
         options={{ title: "Email" }}
       />

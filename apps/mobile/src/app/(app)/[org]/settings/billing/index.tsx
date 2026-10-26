@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Gauge, Receipt } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 import { Alert } from "../../../../../components/alert";
@@ -8,18 +8,16 @@ import { ListRow, Panel, Ruled, SpecItem, SpecList } from "../../../../../compon
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../components/screen";
 import { Stat, StatGrid } from "../../../../../components/stat";
 import { Text } from "../../../../../components/text";
-import { WebButton } from "../../../../../components/web-button";
-import { formatCount, formatMoney, formatPeriod } from "../../../../../lib/format";
+import { formatCount, formatMoney, formatPeriod, plural } from "../../../../../lib/format";
 import { useBilling } from "../../../../../lib/queries";
 import { invoiceStatus } from "../../../../../lib/status";
 import { colors } from "../../../../../lib/theme";
-import { openOnWeb } from "../../../../../lib/web";
 
-// apps/web/src/components/billing/billing-banner.tsx
+// apps/web/src/components/billing/billing-banner.tsx, without its calls to action: the app's billing
+// is read-only, with no way to pay or buy (App Store guideline 3.1.1).
 const HOLDS: Record<string, string> = {
   delinquent: "An invoice is overdue. Sending resumes as soon as it is paid.",
-  spend_limit:
-    "This month's usage reached your spend limit. Raise it, or sending resumes next month.",
+  spend_limit: "This month's usage reached your spend limit. Sending resumes next month.",
   admin: "coss.com paused live sending for billing reasons. Contact support.",
 };
 
@@ -31,51 +29,39 @@ export default function BillingScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useBilling(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const billing = query.data;
-  const path = `/${org}/settings/billing`;
   const held =
     billing.holds.find((hold) => hold.reason === "delinquent") ??
     billing.holds.find((hold) => hold.reason === "spend_limit") ??
     billing.holds[0];
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Billing">
-      <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
+    <Screen onRefresh={() => query.refetch()} title="Billing">
       <PageIntro
         description="Your plan, usage, invoices, payment method and spend controls."
         title="Billing"
       />
       {held ? (
         <Alert
-          action={{ label: "Open billing", onPress: () => openOnWeb(path) }}
           description={`${HOLDS[held.reason] ?? HOLDS.admin} Sandbox keys still work.`}
           title="Live sending is paused"
           tone="error"
         />
       ) : billing.status === "past_due" ? (
-        <Alert
-          action={{ label: "Open billing", onPress: () => openOnWeb(path) }}
-          description="An invoice is past due. Pay it to keep sending."
-          tone="warning"
-        />
+        <Alert description="An invoice is past due." tone="warning" />
       ) : null}
       <StatGrid>
         <Stat label="Plan" value={billing.plan_name} />
         <Stat
-          detail={`${daysLeft(billing.period.end)} days left`}
+          detail={`${plural(daysLeft(billing.period.end), "day")} left`}
           label="Usage this month"
           value={formatMoney(billing.estimate.usage)}
         />
         <Stat label="Paid by credit" value={formatMoney(billing.estimate.credit)} />
         <Stat label="Estimated total" value={formatMoney(billing.estimate.total)} />
       </StatGrid>
-      <Panel>
-        <ListRow
-          detail={billing.plan_name}
-          href={{ pathname: "/[org]/settings/billing/plans", params: { org } }}
-          title="Compare plans"
-        />
-      </Panel>
       <Panel description={formatPeriod(billing.period)} title="Usage this month">
         {billing.usage.length === 0 ? (
           <EmptyState

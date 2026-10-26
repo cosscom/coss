@@ -32,18 +32,18 @@ const VIEWS: Filter<View_>[] = [
 ];
 
 export default function RiskScreen() {
-  const params = useLocalSearchParams<EnvironmentParams>();
-  const [view, setView] = useState<View_ | null>(null);
+  const { view: initialView, ...params } = useLocalSearchParams<
+    EnvironmentParams & { view?: string }
+  >();
+  const [view, setView] = useState<View_ | null>(
+    VIEWS.find((item) => item.value === initialView)?.value ?? null,
+  );
   const query = useRiskAssessments(params, view ?? "all");
   const resolve = useResolveReview(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const resolving = view === "review" && (query.data?.pages[0]?.can_review ?? false);
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Risk"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Risk">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/risk`} /> }}
       />
@@ -111,7 +111,11 @@ export default function RiskScreen() {
                     },
                   )
                 }
-                pending={resolve.isPending && resolve.variables?.id === assessment.id}
+                pending={
+                  resolve.isPending && resolve.variables?.id === assessment.id
+                    ? resolve.variables.outcome
+                    : null
+                }
               />
             </View>
           );
@@ -125,20 +129,23 @@ export default function RiskScreen() {
 // fraud asks first, since it is remembered against the user's identifiers.
 function ResolveButtons(props: {
   assessment: RiskAssessmentSummary;
-  pending: boolean;
+  /** The outcome being reported for this assessment. */
+  pending: RiskOutcome | null;
   onResolve: (outcome: RiskOutcome) => void;
 }) {
   return (
     <View style={styles.resolve}>
       <Button
-        disabled={props.pending}
+        disabled={props.pending !== null}
+        loading={props.pending === "legitimate"}
         onPress={() => props.onResolve("legitimate")}
         size="sm"
         title="Approve"
         variant="outline"
       />
       <Button
-        disabled={props.pending}
+        disabled={props.pending !== null}
+        loading={props.pending === "fraud"}
         onPress={() =>
           NativeAlert.alert("Report as fraud?", undefined, [
             { text: "Cancel", style: "cancel" },

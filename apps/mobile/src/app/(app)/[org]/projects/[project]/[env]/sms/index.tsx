@@ -33,11 +33,7 @@ export default function SmsScreen() {
   const mode = useEnvironment(params).data?.environment.mode;
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="SMS"
-    >
+    <Screen onRefresh={() => query.refetch()} title="SMS">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/sms`} /> }}
       />

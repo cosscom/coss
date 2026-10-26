@@ -5,7 +5,12 @@ import { colors, radius } from "../lib/theme";
 import { StatusDot } from "./badge";
 import { Text } from "./text";
 
-export type TabItem<T extends string> = { value: T; label: string; count?: number; tone?: Tone };
+export type TabItem<T extends string> = {
+  value: T;
+  label: string;
+  count?: number | string;
+  tone?: Tone;
+};
 
 /** The dashboard's underlined tabs (an email's Content / Events / Recipients…). */
 export function Tabs<T extends string>(props: {
@@ -71,7 +76,12 @@ export function Segmented<T extends string>(props: {
             style={[styles.segment, selected && styles.segmentSelected]}
           >
             {item.tone ? <StatusDot tone={item.tone} /> : null}
-            <Text muted={!selected} variant="smallMedium">
+            <Text
+              muted={!selected}
+              numberOfLines={1}
+              style={styles.segmentLabel}
+              variant="smallMedium"
+            >
               {item.label}
             </Text>
           </Pressable>
@@ -113,8 +123,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     height: 32,
+    paddingHorizontal: 8,
     borderRadius: radius.md,
   },
+  segmentLabel: { flexShrink: 1 },
   segmentSelected: {
     backgroundColor: colors.card,
     shadowColor: "#000",

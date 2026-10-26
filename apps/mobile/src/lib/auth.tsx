@@ -110,7 +110,11 @@ export function AuthProvider(props: { queryClient: QueryClient; children: ReactN
   const signOut = async () => {
     const credential = token.current;
     await stopPush();
-    const { error } = await api("/auth/sign-out", { method: "POST" });
+    // Don't hold the user on a slow network: an unreached sign-out is retried on a later start.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8_000);
+    const { error } = await api("/auth/sign-out", { method: "POST", signal: controller.signal });
+    clearTimeout(timeout);
     // 401: the session had already ended. Anything else: try again on a later start.
     if (error && error.status !== 401 && credential) {
       await SecureStore.setItemAsync(PENDING_REVOCATION_KEY, credential, KEYCHAIN).catch(() => {});

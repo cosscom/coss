@@ -1,14 +1,27 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// First: crashes during the other modules' setup are reported too.
+import "../lib/monitoring";
+import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
-import { type Href, router, Stack } from "expo-router";
+import { type ErrorBoundaryProps, type Href, router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { TriangleAlert } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { AppState, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button } from "../components/button";
+import { EmptyState } from "../components/empty";
 import { AuthProvider, useAuth } from "../lib/auth";
+import { reportError, wrapRoot } from "../lib/monitoring";
 import { routeFromNotification } from "../lib/push-route";
 import { colors } from "../lib/theme";
 
-export default function RootLayout() {
+// React Native has no window focus: refetch what's on screen when the app comes back.
+focusManager.setEventListener((onFocus) => {
+  const subscription = AppState.addEventListener("change", (state) => onFocus(state === "active"));
+  return () => subscription.remove();
+});
+
+function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
   return (
     <QueryClientProvider client={queryClient}>
@@ -17,6 +30,25 @@ export default function RootLayout() {
         <RootStack />
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+export default wrapRoot(RootLayout);
+
+/** A render crash anywhere below the root: reported, with a way to try again. */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  useEffect(() => reportError(error), [error]);
+  return (
+    <SafeAreaView style={styles.fallback}>
+      <EmptyState
+        action={
+          <Button onPress={() => void retry()} size="sm" title="Try again" variant="outline" />
+        }
+        description="The app ran into an unexpected problem. Try again, or close and reopen it."
+        icon={TriangleAlert}
+        title="Something went wrong"
+      />
+    </SafeAreaView>
   );
 }
 
@@ -49,3 +81,7 @@ function useNotificationTaps(signedIn: boolean) {
     if (path) router.push(path as Href);
   }, [signedIn, response]);
 }
+
+const styles = StyleSheet.create({
+  fallback: { flex: 1, justifyContent: "center", padding: 16, backgroundColor: colors.background },
+});

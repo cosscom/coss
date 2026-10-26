@@ -29,17 +29,16 @@ export default function LogDrainScreen() {
   const { drainId, ...params } = useLocalSearchParams<EnvironmentParams & { drainId: string }>();
   const query = useLogDrain(params, drainId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const first = query.data.pages[0];
   if (!first) return <Loading />;
   const { drain, queued_lines } = first;
   const batches = query.data.pages.flatMap((page) => page.batches.data);
   const [tone, label] = drainStatus(drain);
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-    >
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen
         options={{
           title: "Log drain",
@@ -49,7 +48,7 @@ export default function LogDrainScreen() {
         }}
       />
       <PageIntro
-        description={drain.description ?? undefined}
+        description={drain.description || undefined}
         meta={
           <Badge variant="outline">
             <StatusDot label={label} tone={tone} />

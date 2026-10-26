@@ -32,9 +32,10 @@ import {
   UsersRound,
   Webhook,
 } from "lucide-react-native";
-import { StyleSheet } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { ActivityChart } from "../../../../../../components/activity-chart";
 import { Badge, StatusDot } from "../../../../../../components/badge";
+import { Button } from "../../../../../../components/button";
 import { EmailRow } from "../../../../../../components/email-row";
 import { EmptyState } from "../../../../../../components/empty";
 import { Icon } from "../../../../../../components/icon";
@@ -136,7 +137,7 @@ export default function EnvironmentScreen() {
     [];
 
   if (environment.isPending) return <Loading />;
-  if (environment.isError) {
+  if (environment.isError && !environment.data) {
     return <ErrorState error={environment.error} onRetry={() => environment.refetch()} />;
   }
 
@@ -149,11 +150,9 @@ export default function EnvironmentScreen() {
 
   return (
     <Screen
-      onRefresh={() => {
-        void environment.refetch();
-        void emails.refetch();
-      }}
-      refreshing={environment.isRefetching}
+      onRefresh={() =>
+        Promise.all([environment.refetch(), emails.refetch(), organization.refetch()])
+      }
       title={env.name}
     >
       <PageIntro
@@ -239,7 +238,25 @@ export default function EnvironmentScreen() {
         description={`Emails are kept for ${formatRetentionDays(RETENTION_DAYS.emails)}.`}
         title="Recent emails"
       >
-        {emails.isPending ? null : recent.length === 0 ? (
+        {emails.isPending ? (
+          <View style={styles.loading}>
+            <ActivityIndicator />
+          </View>
+        ) : emails.isError && !emails.data ? (
+          <EmptyState
+            action={
+              <Button
+                onPress={() => void emails.refetch()}
+                size="sm"
+                title="Try again"
+                variant="outline"
+              />
+            }
+            description={emails.error.message}
+            icon={Mail}
+            title="Couldn't load this"
+          />
+        ) : recent.length === 0 ? (
           <EmptyState
             description="Emails sent with this environment's keys show up here."
             icon={Mail}
@@ -278,4 +295,5 @@ export default function EnvironmentScreen() {
 
 const styles = StyleSheet.create({
   viewAll: { paddingVertical: 4 },
+  loading: { paddingVertical: 32 },
 });

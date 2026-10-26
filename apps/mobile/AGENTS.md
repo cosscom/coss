@@ -3,7 +3,7 @@
 Expo (SDK 57, React Native 0.86, Expo Router) companion app for the dashboard. Organization:
 projects, reputation, domains (DNS records, DMARC reports), dedicated IPs, SMS senders (numbers,
 carrier registrations, countries), members, settings (general, single sign-on, directory sync),
-billing, plans and invoices, the audit log. Environment: activity, sent and received emails,
+billing and invoices (read-only), the audit log. Environment: activity, sent and received emails,
 templates and their versions, suppressions, open/click tracking, content storage, sent and
 received SMS, SMS suppressions, broadcasts, contacts (and their properties), audiences, segments,
 topics, marketing settings, risk assessments, rules, lists, rate limits, calibration and settings,
@@ -11,8 +11,9 @@ Hooks (applications, endpoints, messages, event types, portal settings), API key
 endpoints and deliveries, logs, log drains. A few changes, each mirroring a dashboard action (same
 checks, same audit event): retrying a webhook delivery, recovering an endpoint's failed
 deliveries, enabling or disabling an endpoint, canceling or rescheduling a scheduled email,
-pausing, resuming or canceling a broadcast, and reporting a risk assessment's outcome (also from
-the review queue); everything else is read-only (with a link to the same page on coss.com). It
+pausing, resuming or canceling a broadcast, reporting a risk assessment's outcome (also from
+the review queue), and deleting the account (`delete-account.tsx`, App Store guideline 5.1.1(v));
+everything else is read-only (with a link to the same page on coss.com). It
 talks only to the dashboard's `/api/mobile/v1/*` (never the public API: it holds no API key).
 
 ## Expo has changed — do not trust your training data
@@ -88,7 +89,31 @@ an allow-list of the paths `@coss/push` builds) accepts it: a new kind of notifi
 path added there. Remote notifications need a physical iPhone or a Simulator on an Apple-silicon
 Mac, and `APNS_*` set for the worker (it prints them without).
 
+## Crash reporting
+
+Sentry (`@sentry/react-native`, organization `cosscom`, project `ios`): the config plugin in
+`app.json` (`@sentry/react-native/expo`) and `metro.config.js` (`getSentryExpoConfig`: debug ids for
+source maps), `src/lib/monitoring.ts` (imported first by `_layout.tsx`, which is wrapped in
+`Sentry.wrap` and exports an `ErrorBoundary` that reports render crashes). The DSN is
+`EXPO_PUBLIC_SENTRY_DSN`, inlined by Metro: set in `eas.json`'s production profile (the `ios`
+project's DSN, public by design: it ships in the app), unset locally, and unset means Sentry is
+never initialised. Release builds upload source maps and dSYMs with `SENTRY_AUTH_TOKEN` (an EAS
+secret, never committed); without it the upload step fails the build
+(`SENTRY_DISABLE_AUTO_UPLOAD=true` skips it). `@sentry/cli` is declared (the version
+`@sentry/react-native` pins) only because the Xcode phases `require.resolve` it from the app, which
+the isolated linker allows only for declared packages; bump the two together. Crashes and errors
+only: no tracing, replay, screenshots, view hierarchy, `sendDefaultPii` or user, so the App Store
+privacy label is crash data and diagnostics "not linked to you". `beforeSend`/`beforeBreadcrumb` run
+`@coss/observability/scrub`'s `scrubUrl` (query strings: the sign-in callback's `code`/`state`) and
+mask the `cm1.` credential; the servers' `scrubEvent` is typed for another `@sentry/core` major than
+the React Native SDK's, so the app scrubs its few event fields itself.
+
 ## Conventions
+
+- Billing is read-only (App Store guideline 3.1.1): no buttons, links or copy that send people to pay,
+  upgrade, buy add-ons or numbers, or compare plans, on coss.com or anywhere else. Plan-gated features
+  say which plan includes them as plain text, and their screens hide the header's web button while
+  gated (coss.com's page there is an upgrade prompt).
 
 - Wire types come from `@coss/companion`, imported **type-only** (Metro never bundles it). Change
   the dashboard handlers and the type together. Newer areas keep their types in a file of their

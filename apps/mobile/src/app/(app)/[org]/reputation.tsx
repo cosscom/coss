@@ -86,11 +86,13 @@ export default function ReputationScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useReputation(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { standing, sending_paused, events } = query.data;
 
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Reputation">
+    <Screen onRefresh={() => query.refetch()} title="Reputation">
       <PageIntro
         title="Reputation"
         description="coss.com watches the bounce and complaint rates of your live sending and suspends it automatically when they get too high, to protect deliverability for everyone. Sandbox sending is never affected."

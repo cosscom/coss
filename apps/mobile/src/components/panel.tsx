@@ -98,11 +98,11 @@ export function ListRow(props: {
   onPress?: () => void;
   titleLines?: number;
 }) {
-  // With a subtitle, the detail sits beside the title and the trailing mark beside the subtitle,
-  // so neither line gives up its width to both.
-  const twoLines = Boolean(props.subtitle);
+  // With a subtitle and a detail, the detail sits beside the title and the trailing mark beside
+  // the subtitle, so neither line gives up its width to both.
+  const twoLines = Boolean(props.subtitle && props.detail);
   const detail = props.detail ? (
-    <Text muted numberOfLines={1} variant="mono">
+    <Text muted numberOfLines={1} style={styles.rowDetail} variant="mono">
       {props.detail}
     </Text>
   ) : null;
@@ -121,7 +121,7 @@ export function ListRow(props: {
             <Text muted numberOfLines={1} style={styles.rowFill} variant="small">
               {props.subtitle}
             </Text>
-            {props.trailing}
+            {twoLines ? props.trailing : null}
           </View>
         ) : null}
       </View>
@@ -167,7 +167,7 @@ export function SpecItem(props: {
       <Text
         selectable
         style={!props.stacked && styles.specValueText}
-        variant={props.mono ? "mono" : "small"}
+        variant={props.mono && props.children !== "—" ? "mono" : "small"}
       >
         {props.children}
       </Text>
@@ -257,6 +257,7 @@ const styles = StyleSheet.create({
   rowText: { flex: 1, gap: 2 },
   rowLine: { flexDirection: "row", alignItems: "center", gap: 8 },
   rowFill: { flex: 1 },
+  rowDetail: { flexShrink: 1, maxWidth: "50%" },
   specList: { paddingHorizontal: 16 },
   spec: { flexDirection: "row", alignItems: "baseline", gap: 10, paddingVertical: 12 },
   specValue: { flexShrink: 1, alignItems: "flex-end" },

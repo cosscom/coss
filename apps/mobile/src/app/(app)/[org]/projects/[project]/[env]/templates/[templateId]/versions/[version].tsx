@@ -31,7 +31,9 @@ export default function TemplateVersionScreen() {
   const [selected, setSelected] = useState<string | null>(null);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { template, version } = query.data;
   const path = `${environmentPath(params)}/templates/${template.id}/versions/${version.version}`;
   const locales = version.contents.map((content) => content.locale);
@@ -43,7 +45,7 @@ export default function TemplateVersionScreen() {
   const title = `${template.name}: version ${version.version}`;
 
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={title}>
+    <Screen onRefresh={() => query.refetch()} title={title}>
       <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
         meta={

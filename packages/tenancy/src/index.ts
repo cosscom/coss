@@ -1,3 +1,11 @@
+export {
+  type AccountDeletionBlocker,
+  type AccountDeletionOrganization,
+  type AccountDeletionPlan,
+  type AccountDeletionResult,
+  deleteUserAccount,
+  planAccountDeletion,
+} from "./account-deletion.ts";
 export { promoteToAdmin } from "./admin.ts";
 export {
   type ApiKeyContext,

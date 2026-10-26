@@ -23,11 +23,7 @@ export default function TemplateVersionsScreen() {
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const title = template ? `${template.name}: versions` : "Versions";
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title={title}
-    >
+    <Screen onRefresh={() => query.refetch()} title={title}>
       <Stack.Screen
         options={{
           headerRight: () => (

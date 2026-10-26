@@ -20,17 +20,15 @@ export default function MarketingSettingsScreen() {
   );
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { settings } = query.data;
 
   return (
     <>
       {header}
-      <Screen
-        onRefresh={() => query.refetch()}
-        refreshing={query.isRefetching}
-        title="Marketing settings"
-      >
+      <Screen onRefresh={() => query.refetch()} title="Marketing settings">
         <PageIntro
           description="What this environment's marketing email says about its sender."
           title="Marketing settings"

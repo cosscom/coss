@@ -1,11 +1,13 @@
 import Constants from "expo-constants";
 import { router, Stack } from "expo-router";
-import { LogOut } from "lucide-react-native";
+import { LogOut, Trash2 } from "lucide-react-native";
+import { useState } from "react";
 import { Alert as NativeAlert, Pressable, StyleSheet, View } from "react-native";
 import { UserAvatar } from "../../components/avatar";
 import { Badge } from "../../components/badge";
 import { Button } from "../../components/button";
-import { Panel, SpecItem, SpecList } from "../../components/panel";
+import { Icon } from "../../components/icon";
+import { ListRow, Panel, SpecItem, SpecList } from "../../components/panel";
 import { PushSettingsPanel } from "../../components/push-settings";
 import { ErrorState, Loading, Screen } from "../../components/screen";
 import { Text } from "../../components/text";
@@ -16,14 +18,22 @@ import { useMe } from "../../lib/queries";
 export default function SettingsScreen() {
   const me = useMe();
   const { signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
   if (me.isPending) return <Loading />;
-  if (me.isError) return <ErrorState error={me.error} onRetry={() => me.refetch()} />;
+  if (me.isError && !me.data) return <ErrorState error={me.error} onRetry={() => me.refetch()} />;
   const { user } = me.data;
 
   const confirmSignOut = () =>
     NativeAlert.alert("Sign out of coss.com?", "You can sign in again at any time.", [
       { text: "Cancel", style: "cancel" },
-      { text: "Sign out", style: "destructive", onPress: () => void signOut() },
+      {
+        text: "Sign out",
+        style: "destructive",
+        onPress: () => {
+          setSigningOut(true);
+          void signOut();
+        },
+      },
     ]);
 
   return (
@@ -31,7 +41,7 @@ export default function SettingsScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable hitSlop={8} onPress={() => router.back()}>
+            <Pressable hitSlop={8} onPress={() => router.back()} style={styles.done}>
               <Text variant="label">Done</Text>
             </Pressable>
           ),
@@ -74,10 +84,19 @@ export default function SettingsScreen() {
         </Panel>
         <Button
           icon={LogOut}
+          loading={signingOut}
           onPress={confirmSignOut}
           title="Sign out"
           variant="destructive-outline"
         />
+        <Panel>
+          <ListRow
+            href="/delete-account"
+            leading={<Icon color="destructiveForeground" icon={Trash2} size={18} />}
+            subtitle="Permanently delete your coss.com account"
+            title="Delete account"
+          />
+        </Panel>
       </Screen>
     </>
   );
@@ -85,4 +104,5 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   profile: { alignItems: "center", gap: 6, paddingVertical: 12 },
+  done: { paddingHorizontal: 6 },
 });

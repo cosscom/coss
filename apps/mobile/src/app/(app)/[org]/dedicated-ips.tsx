@@ -3,7 +3,6 @@ import { Network } from "lucide-react-native";
 import { StyleSheet, View } from "react-native";
 import { Alert } from "../../../components/alert";
 import { Badge, StatusDot } from "../../../components/badge";
-import { Button } from "../../../components/button";
 import { EmptyState } from "../../../components/empty";
 import { Panel, Ruled } from "../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../components/screen";
@@ -14,10 +13,9 @@ import { formatCount } from "../../../lib/format";
 import { useDedicatedIps } from "../../../lib/queries-sms-senders";
 import { DEDICATED_IP_STATUS } from "../../../lib/status-sms-senders";
 import { colors } from "../../../lib/theme";
-import { openOnWeb } from "../../../lib/web";
 
-// Copy from apps/web/src/app/[orgSlug]/dedicated-ips/page.tsx. Read-only: the add-on is managed on
-// coss.com's billing page.
+// Copy from apps/web/src/app/[orgSlug]/dedicated-ips/page.tsx. Read-only, without the add-on's price or a
+// way to add it (App Store guideline 3.1.1).
 
 // The dashboard's `formatDate` (apps/web/src/lib/billing-format.ts).
 const DATE = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" });
@@ -27,14 +25,20 @@ export default function DedicatedIpsScreen() {
   const router = useRouter();
   const query = useDedicatedIps(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const pool = query.data;
   const status = DEDICATED_IP_STATUS[pool.status];
-  const billingPath = `/${org}/settings/billing`;
 
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Dedicated IPs">
-      <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/dedicated-ips`} /> }} />
+    <Screen onRefresh={() => query.refetch()} title="Dedicated IPs">
+      {/* Without the add-on, coss.com's page offers to buy it: no purchase links here (3.1.1). */}
+      {pool.status === "not_enabled" ? null : (
+        <Stack.Screen
+          options={{ headerRight: () => <WebButton path={`/${org}/dedicated-ips`} /> }}
+        />
+      )}
       <PageIntro
         description="Your own sending IPs, so no other sender's reputation affects yours. SES leases, scales and warms them up automatically."
         meta={
@@ -50,18 +54,7 @@ export default function DedicatedIpsScreen() {
       {pool.status === "not_enabled" ? (
         <Panel>
           <EmptyState
-            action={
-              pool.can_read_billing ? (
-                <Button
-                  onPress={() => openOnWeb(billingPath)}
-                  size="sm"
-                  title="Add on the billing page"
-                />
-              ) : null
-            }
-            description={`${pool.add_on.monthly_price} per month on the ${pool.add_on.plans.join(
-              " and ",
-            )} plans, plus usage for email sent through them. Best for steady volume: the first IP is assigned once you send a few hundred emails a day.`}
+            description={`An add-on of the ${pool.add_on.plans.join(" and ")} plans. Best for steady volume: the first IP is assigned once you send a few hundred emails a day.`}
             icon={Network}
             title="Dedicated IPs aren't on your plan"
           />
@@ -139,20 +132,6 @@ export default function DedicatedIpsScreen() {
             >
               Reputation page
             </Text>
-            . Manage the add-on on the{" "}
-            {pool.can_read_billing ? (
-              <Text
-                onPress={() =>
-                  router.push({ pathname: "/[org]/settings/billing", params: { org } })
-                }
-                style={styles.link}
-                variant="small"
-              >
-                billing page
-              </Text>
-            ) : (
-              "billing page"
-            )}
             .
           </Text>
         </>

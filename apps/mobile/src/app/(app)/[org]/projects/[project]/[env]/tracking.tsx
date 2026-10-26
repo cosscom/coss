@@ -4,9 +4,9 @@ import { StyleSheet, View } from "react-native";
 import { Badge } from "../../../../../../components/badge";
 import { EmptyState } from "../../../../../../components/empty";
 import { ModeBadge } from "../../../../../../components/mode-badge";
-import { ListRow, Panel, Ruled, SpecItem, SpecList } from "../../../../../../components/panel";
+import { Panel, Ruled, SpecItem, SpecList } from "../../../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../components/screen";
-import { Code } from "../../../../../../components/text";
+import { Code, Text } from "../../../../../../components/text";
 import { WebButton } from "../../../../../../components/web-button";
 import { formatDateTime } from "../../../../../../lib/format";
 import { useTracking } from "../../../../../../lib/queries";
@@ -21,14 +21,12 @@ export default function TrackingScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useTracking(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const settings = query.data;
   return (
-    <Screen
-      onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching}
-      title="Open & click tracking"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Open & click tracking">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/tracking`} /> }}
       />
@@ -84,18 +82,21 @@ export default function TrackingScreen() {
         ) : (
           <Ruled>
             {settings.categories.map((rule) => (
-              <ListRow
-                key={rule.category}
-                subtitle={formatDateTime(rule.updated_at)}
-                title={rule.category}
-                trailing={
-                  <View style={styles.badges}>
-                    <Badge variant={rule.opens ? "success" : "outline"}>Opens</Badge>
-                    <Badge variant={rule.clicks ? "success" : "outline"}>Clicks</Badge>
-                    <Badge variant={rule.unsubscribe ? "success" : "outline"}>Unsubscribe</Badge>
-                  </View>
-                }
-              />
+              <View key={rule.category} style={styles.rule}>
+                <View style={styles.ruleHead}>
+                  <Text numberOfLines={1} style={styles.category} variant="label">
+                    {rule.category}
+                  </Text>
+                  <Text muted variant="mono">
+                    {formatDateTime(rule.updated_at)}
+                  </Text>
+                </View>
+                <View style={styles.badges}>
+                  <Badge variant={rule.opens ? "success" : "outline"}>Opens</Badge>
+                  <Badge variant={rule.clicks ? "success" : "outline"}>Clicks</Badge>
+                  <Badge variant={rule.unsubscribe ? "success" : "outline"}>Unsubscribe</Badge>
+                </View>
+              </View>
             ))}
           </Ruled>
         )}
@@ -105,5 +106,8 @@ export default function TrackingScreen() {
 }
 
 const styles = StyleSheet.create({
+  rule: { gap: 8, paddingHorizontal: 16, paddingVertical: 12 },
+  ruleHead: { flexDirection: "row", alignItems: "baseline", gap: 12 },
+  category: { flex: 1 },
   badges: { flexDirection: "row", gap: 6 },
 });

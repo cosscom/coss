@@ -1,6 +1,7 @@
 // Wire types of the dashboard's iOS app API (`/api/mobile/v1`): snake_case, ISO 8601 dates.
 // Each product area added after the first release has a file of its own, re-exported here.
 
+export type * from "./account.ts";
 export type * from "./broadcasts.ts";
 export type * from "./contacts.ts";
 export type * from "./organization-settings.ts";
@@ -16,6 +17,8 @@ export type MobileErrorCode =
   | "not_found"
   | "sso_required"
   | "two_factor_required"
+  /** The action needs a recent sign-in: sign in again, then retry. */
+  | "reauthentication_required"
   | "rate_limited"
   | "internal_error";
 

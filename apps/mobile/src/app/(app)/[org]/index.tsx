@@ -26,13 +26,12 @@ import { rememberOrganization } from "../../../lib/last-org";
 import { useOrganization } from "../../../lib/queries";
 import { STANDING_LABELS, standingTone } from "../../../lib/status";
 import { colors, radius } from "../../../lib/theme";
-import { openOnWeb } from "../../../lib/web";
 
-// apps/web/src/components/billing/billing-banner.tsx
+// apps/web/src/components/billing/billing-banner.tsx, without its calls to action: the app's billing
+// is read-only, with no way to pay or buy (App Store guideline 3.1.1).
 const HOLD_MESSAGES: Record<NonNullable<BillingAlerts["held"]>, string> = {
   delinquent: "An invoice is overdue. Sending resumes as soon as it is paid.",
-  spend_limit:
-    "This month's usage reached your spend limit. Raise it, or sending resumes next month.",
+  spend_limit: "This month's usage reached your spend limit. Sending resumes next month.",
   admin: "coss.com paused live sending for billing reasons. Contact support.",
 };
 
@@ -40,7 +39,14 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   const { organization, standing, billing } = data;
   const openReputation = () =>
     router.push({ pathname: "/[org]/reputation", params: { org: organization.slug } });
-  const openBilling = () => openOnWeb(`/${organization.slug}/settings/billing`);
+  // The app's billing page is read-only; without it, the alerts have no action.
+  const billingAction = data.can.read_billing
+    ? {
+        label: "View billing",
+        onPress: () =>
+          router.push({ pathname: "/[org]/settings/billing", params: { org: organization.slug } }),
+      }
+    : undefined;
   const alerts = [];
   if (organization.suspended) {
     alerts.push(
@@ -76,7 +82,7 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   if (billing?.held) {
     alerts.push(
       <Alert
-        action={{ label: "Open billing", onPress: openBilling }}
+        action={billingAction}
         description={`${HOLD_MESSAGES[billing.held]} Sandbox keys still work.`}
         key="hold"
         title="Live sending is paused"
@@ -86,8 +92,8 @@ function Alerts({ data }: { data: OrganizationResponse }) {
   } else if (billing?.past_due) {
     alerts.push(
       <Alert
-        action={{ label: "Open billing", onPress: openBilling }}
-        description="An invoice is past due. Pay it to keep sending."
+        action={billingAction}
+        description="An invoice is past due."
         key="past-due"
         tone="warning"
       />,
@@ -97,10 +103,7 @@ function Alerts({ data }: { data: OrganizationResponse }) {
     const full = used >= cap;
     alerts.push(
       <Alert
-        action={{
-          label: "Upgrade",
-          onPress: () => openOnWeb(`/${organization.slug}/settings/billing/plans`),
-        }}
+        action={billingAction}
         description={
           full
             ? `You've used all ${formatCount(cap)} ${label} included this month: live sends are refused until next month.`
@@ -124,14 +127,10 @@ export default function OrganizationScreen() {
     <>
       {query.isPending ? (
         <Loading />
-      ) : query.isError ? (
+      ) : query.isError && !query.data ? (
         <ErrorState error={query.error} onRetry={() => query.refetch()} />
       ) : (
-        <Screen
-          onRefresh={() => query.refetch()}
-          refreshing={query.isRefetching}
-          title={query.data.organization.name}
-        >
+        <Screen onRefresh={() => query.refetch()} title={query.data.organization.name}>
           <PageIntro
             title={query.data.organization.name}
             description="Each project has a production (live) and a development (sandbox) environment, each with its own API keys, emails, logs and webhooks."

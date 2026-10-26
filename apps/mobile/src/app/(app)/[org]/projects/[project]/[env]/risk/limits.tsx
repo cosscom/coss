@@ -20,9 +20,11 @@ export default function RiskLimitsScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useRiskLimitBuckets(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Rate limits">
+    <Screen onRefresh={() => query.refetch()} title="Rate limits">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/risk/limits`} />,

@@ -1,5 +1,5 @@
 import type { ScimSettingsResponse } from "@coss/companion";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { Alert } from "../../../../components/alert";
 import { Badge, StatusDot } from "../../../../components/badge";
@@ -8,7 +8,8 @@ import { Panel, PanelBody, Ruled } from "../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../components/screen";
 import { Text } from "../../../../components/text";
 import { WebButton } from "../../../../components/web-button";
-import { formatDateTime, roleLabel } from "../../../../lib/format";
+import { formatDate, formatDateTime, plural, roleLabel } from "../../../../lib/format";
+import { useOrganization } from "../../../../lib/queries";
 import { useScimSettings } from "../../../../lib/queries-organization-settings";
 import { scimDirectoryStatus } from "../../../../lib/status-organization-settings";
 import { openOnWeb } from "../../../../lib/web";
@@ -19,18 +20,12 @@ import { openOnWeb } from "../../../../lib/web";
 
 type Scim = ScimSettingsResponse;
 
-const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
-
-function formatDate(iso: string): string {
-  return dateFormat.format(new Date(iso));
-}
-
 function directoryDescription(directory: NonNullable<Scim["directory"]>): string {
-  const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? "" : "s"}`;
   return `Connected ${formatDate(directory.connected_at)} · ${plural(directory.active_users, "active user")}, ${directory.inactive_users} deactivated · ${plural(directory.groups, "group")}.`;
 }
 
 function DirectoryPanel({ scim, org }: { scim: Scim; org: string }) {
+  const organization = useOrganization(org);
   const { directory } = scim;
   const needsPlan = !directory && !scim.plan_allows;
   const needsSso = !directory && !scim.sso_active;
@@ -73,13 +68,6 @@ function DirectoryPanel({ scim, org }: { scim: Scim; org: string }) {
           {needsPlan ? (
             <View style={styles.note}>
               <Text variant="small">Directory sync is part of the Enterprise plan.</Text>
-              <Text
-                onPress={() => openOnWeb(`/${org}/settings/billing/plans`)}
-                style={styles.link}
-                variant="smallMedium"
-              >
-                Compare plans
-              </Text>
             </View>
           ) : null}
           {needsSso ? (
@@ -89,7 +77,11 @@ function DirectoryPanel({ scim, org }: { scim: Scim; org: string }) {
                 and only addresses on its domains can be provisioned.
               </Text>
               <Text
-                onPress={() => openOnWeb(`/${org}/settings/sso`)}
+                onPress={() =>
+                  organization.data?.can.read_sso
+                    ? router.push({ pathname: "/[org]/settings/sso", params: { org } })
+                    : openOnWeb(`/${org}/settings/sso`)
+                }
                 style={styles.link}
                 variant="smallMedium"
               >
@@ -107,17 +99,20 @@ export default function DirectorySyncScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useScimSettings(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const scim = query.data;
   const { directory } = scim;
   const owners = directory?.deactivated_owners ?? [];
   return (
-    <Screen
-      onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching}
-      title="Directory sync"
-    >
-      <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/settings/scim`} /> }} />
+    <Screen onRefresh={() => query.refetch()} title="Directory sync">
+      {/* Without the plan, coss.com's page is an upgrade prompt: no purchase links here (3.1.1). */}
+      {directory || scim.plan_allows ? (
+        <Stack.Screen
+          options={{ headerRight: () => <WebButton path={`/${org}/settings/scim`} /> }}
+        />
+      ) : null}
       <PageIntro title="Directory sync" />
       {directory?.status === "decommissioning" ? (
         <Alert

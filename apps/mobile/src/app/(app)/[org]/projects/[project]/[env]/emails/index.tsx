@@ -5,10 +5,11 @@ import { Mail } from "lucide-react-native";
 import { useState } from "react";
 import { EmailRow } from "../../../../../../../components/email-row";
 import { type Filter, FilterChips } from "../../../../../../../components/filters";
+import { ModeBadge } from "../../../../../../../components/mode-badge";
 import { PagedPanel } from "../../../../../../../components/paged";
 import { PageIntro, Screen } from "../../../../../../../components/screen";
 import { WebButton } from "../../../../../../../components/web-button";
-import { useEmails } from "../../../../../../../lib/queries";
+import { useEmails, useEnvironment } from "../../../../../../../lib/queries";
 import { EMAIL_STATUS_LABELS, EMAIL_STATUS_TONE } from "../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../lib/web";
 
@@ -27,27 +28,28 @@ export default function EmailsScreen() {
   const [status, setStatus] = useState<EmailStatus | null>(null);
   const emails = useEmails(params, status);
   const items = emails.data?.pages.flatMap((page) => page.data) ?? [];
+  const environment = useEnvironment(params).data;
+  const keys = environment
+    ? `${environment.project.name} · ${environment.environment.name}'s keys`
+    : "this environment's keys";
   return (
-    <Screen
-      onRefresh={() => void emails.refetch()}
-      refreshing={emails.isRefetching && !emails.isFetchingNextPage}
-      title="Emails"
-    >
+    <Screen onRefresh={() => emails.refetch()} title="Emails">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/emails`} /> }}
       />
       <PageIntro
-        description={`Emails sent with this environment's keys. Emails are kept for ${formatRetentionDays(RETENTION_DAYS.emails)}.`}
+        description={`Every email sent with ${keys}, newest first. Emails are kept for ${formatRetentionDays(RETENTION_DAYS.emails)}.`}
+        meta={<ModeBadge params={params} />}
         title="Emails"
       />
       <FilterChips items={FILTERS} onChange={setStatus} value={status} />
       <PagedPanel
         empty={{
           icon: Mail,
-          title: status ? "Nothing here" : "No emails yet",
+          title: status ? "Nothing found" : "No emails yet",
           description: status
-            ? "No emails with this status."
-            : "Emails sent with this environment's keys show up here.",
+            ? "No email matches these filters."
+            : "Emails sent with this environment's API keys show up here.",
         }}
         items={items}
         olderLabel="Older emails"

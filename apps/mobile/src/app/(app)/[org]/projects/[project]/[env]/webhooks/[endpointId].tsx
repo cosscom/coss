@@ -33,7 +33,7 @@ const FILTERS: Filter<Status>[] = [
   { value: null, label: "All" },
   { value: "failed", label: "Failed", tone: "error" },
   { value: "succeeded", label: "Succeeded", tone: "success" },
-  { value: "pending", label: "Pending", tone: "info" },
+  { value: "pending", label: "Pending", tone: "warning" },
 ];
 
 /** The dashboard's "last result" column. */
@@ -227,17 +227,16 @@ export default function WebhookEndpointScreen() {
   const query = useWebhookEndpoint(params, endpointId, status);
   const retry = useRetryDelivery(params, endpointId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const first = query.data.pages[0];
   if (!first) return <Loading />;
   const { endpoint, can_update } = first;
   const deliveries = query.data.pages.flatMap((page) => page.deliveries.data);
   const [tone, label] = endpointStatus(endpoint);
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-    >
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen
         options={{
           title: "Endpoint",
@@ -272,7 +271,7 @@ export default function WebhookEndpointScreen() {
       ) : null}
       <Panel title="Details">
         <SpecList>
-          <SpecItem label="Events">
+          <SpecItem label="Events" stacked={endpoint.event_types.length > 0}>
             {endpoint.event_types.length === 0 ? "All events" : endpoint.event_types.join(", ")}
           </SpecItem>
           <SpecItem label="API version" mono>
@@ -298,14 +297,23 @@ export default function WebhookEndpointScreen() {
       <FilterChips items={FILTERS} onChange={setStatus} value={status} />
       <PagedPanel
         description="Tap a delivery for its attempts."
-        empty={{
-          icon: Send,
-          title: "No deliveries yet",
-          description: "Deliveries appear here once events of the subscribed types happen.",
-        }}
+        empty={
+          status
+            ? {
+                icon: Send,
+                title: "Nothing found",
+                description: "No delivery matches this filter.",
+              }
+            : {
+                icon: Send,
+                title: "No deliveries yet",
+                description: "Deliveries appear here once events of the subscribed types happen.",
+              }
+        }
         items={deliveries}
         olderLabel="Older deliveries"
-        query={query}
+        // While another filter loads, the previous one's rows stay in `data`: show the spinner.
+        query={query.isPlaceholderData ? { ...query, isPending: true } : query}
         render={(delivery) => (
           <DeliveryRow
             canRetry={can_update}

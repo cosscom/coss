@@ -8,6 +8,7 @@
     "./browser": "./src/browser.ts",
     "./build": "./src/build.ts",
     "./env": "./src/env.ts",
+    "./scrub": "./src/scrub.ts",
     "./tunnel": "./src/tunnel.ts"
   },
   "scripts": {

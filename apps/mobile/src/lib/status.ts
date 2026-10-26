@@ -142,7 +142,7 @@ export function endpointStatus(endpoint: {
 }
 
 export const DELIVERY_STATUS: Record<string, [Tone, string]> = {
-  pending: ["info", "Pending"],
+  pending: ["warning", "Pending"],
   succeeded: ["success", "Succeeded"],
   failed: ["error", "Failed"],
 };

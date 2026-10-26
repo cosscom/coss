@@ -50,11 +50,7 @@ export default function BroadcastsScreen() {
   const query = useBroadcasts(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Broadcasts"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Broadcasts">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/broadcasts`} />,

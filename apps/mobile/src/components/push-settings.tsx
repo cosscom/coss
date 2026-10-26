@@ -6,7 +6,7 @@ import { AppState, Linking, StyleSheet, Switch, View } from "react-native";
 import { useAuth } from "../lib/auth";
 import { enablePush, type PushPermission, pushPermission } from "../lib/push";
 import { usePushSettings, useUpdatePushCategories } from "../lib/queries";
-import { colors } from "../lib/theme";
+import { colors, usePalette } from "../lib/theme";
 import { Alert } from "./alert";
 import { Button } from "./button";
 import { Panel, PanelBody, Ruled } from "./panel";
@@ -47,6 +47,7 @@ function usePushPermission(): [PushPermission | null, () => void] {
 
 export function PushSettingsPanel() {
   const { api } = useAuth();
+  const palette = usePalette();
   const queryClient = useQueryClient();
   const [permission, readPermission] = usePushPermission();
   const settings = usePushSettings();
@@ -128,6 +129,7 @@ export function PushSettingsPanel() {
             <Switch
               accessibilityLabel={category.title}
               onValueChange={(value) => update.mutate({ ...categories, [category.key]: value })}
+              thumbColor={categories[category.key] ? palette.primaryForeground : undefined}
               trackColor={{ true: colors.primary }}
               value={categories[category.key]}
             />

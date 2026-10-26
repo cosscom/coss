@@ -42,7 +42,9 @@ export default function TemplateScreen() {
   const [selected, setSelected] = useState<string | null>(null);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { template, draft } = query.data;
   const path = `${environmentPath(params)}/templates/${template.id}`;
   const locales = draft.contents.map((content) => content.locale);
@@ -53,7 +55,7 @@ export default function TemplateScreen() {
   const content = draft.contents.find((candidate) => candidate.locale === locale) ?? null;
 
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={template.name}>
+    <Screen onRefresh={() => query.refetch()} title={template.name}>
       <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
         description={template.description ?? undefined}

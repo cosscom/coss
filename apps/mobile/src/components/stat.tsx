@@ -50,7 +50,7 @@ export function Stat(props: { label: string; value: string; unit?: string; detai
         ) : null}
       </View>
       {props.detail ? (
-        <Text muted numberOfLines={1} variant="mono">
+        <Text muted numberOfLines={2} variant="mono">
           {props.detail}
         </Text>
       ) : null}
