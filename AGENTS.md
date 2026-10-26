@@ -368,8 +368,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   quarantined on macOS as a browser download is, and `codesign --check-notarization` asks Apple about them. Running
   `release.yml` by hand on main (`gh workflow run release.yml`) is a dry run: it builds the executables from main,
   notarizes and smoke-tests them, and publishes nothing (no npm, release or tap), so the `apple` secrets can be
-  checked between releases. Once a notarized version is released, drop the `xattr` note from the CLI's README and
-  `cli.mdx`. `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
+  checked between releases. Releases are notarized since coss-cli 0.3.0 (the CLI's README and `cli.mdx` say so;
+  turning `CLI_MACOS_NOTARIZE` off means putting back their `xattr -d com.apple.quarantine` note). The certificate
+  is Cal.com, Inc.'s (team `ADWKXDJV75`, G2 Sub-CA) and expires 2027-11-18: replace the two `.p12` secrets before
+  then. The notary key is the App Store Connect team key "coss-cli notarization" (Developer role).
+  `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
   which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
   `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
   `Formula/coss.rb` from that `SHA256SUMS` and pushes it to `cosscom/homebrew-tap` with the deploy key
