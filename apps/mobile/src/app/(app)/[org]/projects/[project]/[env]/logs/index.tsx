@@ -35,11 +35,7 @@ export default function LogsScreen() {
   const query = useLogs(params, { range, source, q });
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Logs"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Logs">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/logs`} /> }}
       />

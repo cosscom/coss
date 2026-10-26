@@ -92,11 +92,13 @@ export default function DomainScreen() {
   const { org, domainId } = useLocalSearchParams<{ org: string; domainId: string }>();
   const query = useDomain(org, domainId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const domain = query.data;
   const [tone, label] = DOMAIN_STATUS[domain.status] ?? ["neutral", domain.status];
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={domain.name}>
+    <Screen onRefresh={() => query.refetch()} title={domain.name}>
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`/${org}/domains/${domain.id}`} /> }}
       />
@@ -107,6 +109,7 @@ export default function DomainScreen() {
             <StatusDot label={label} tone={tone} />
           </Badge>
         }
+        mono
         title={domain.name}
       />
       <DomainTabs domainId={domain.id} org={org} value="overview" />

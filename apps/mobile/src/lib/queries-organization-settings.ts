@@ -3,7 +3,6 @@ import type {
   DmarcReportResponse,
   MobileDmarcReportSummary,
   OrganizationSettingsResponse,
-  PlansResponse,
   ScimSettingsResponse,
   SsoSettingsResponse,
 } from "@coss/companion";
@@ -11,7 +10,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useAuth } from "./auth";
 import { get, paged, retry, segment, withQuery } from "./queries";
 
-// Organization settings (General, Single sign-on, Directory sync), plans and DMARC reports.
+// Organization settings (General, Single sign-on, Directory sync) and DMARC reports.
 
 function orgPath(org: string): string {
   return `/orgs/${segment(org)}`;
@@ -44,15 +43,6 @@ export function useScimSettings(org: string) {
   return useQuery({
     queryKey: ["org", org, "settings", "scim"],
     queryFn: () => get<ScimSettingsResponse>(api, `${orgPath(org)}/settings/scim`),
-    retry,
-  });
-}
-
-export function usePlans(org: string) {
-  const { api } = useAuth();
-  return useQuery({
-    queryKey: ["org", org, "billing", "plans"],
-    queryFn: () => get<PlansResponse>(api, `${orgPath(org)}/billing/plans`),
     retry,
   });
 }

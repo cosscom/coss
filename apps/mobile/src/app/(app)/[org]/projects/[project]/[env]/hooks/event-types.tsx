@@ -13,9 +13,11 @@ export default function HookEventTypesScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useHookEventTypes(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Event types">
+    <Screen onRefresh={() => query.refetch()} title="Event types">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/hooks/event-types`} />,

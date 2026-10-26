@@ -29,11 +29,7 @@ export default function RiskListsScreen() {
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const now = Date.now();
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Allow & block lists"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Allow & block lists">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/risk/lists`} />,

@@ -9,7 +9,8 @@
       "bun": "1.4.2",
       "env": {
         "EXPO_PUBLIC_DASHBOARD_URL": "https://coss.com",
-        "EXPO_NO_TYPESCRIPT_SETUP": "1"
+        "EXPO_NO_TYPESCRIPT_SETUP": "1",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://3452a792db1ec8e88f0517d18f48c1b1@o4512237982711808.ingest.de.sentry.io/4512323850534992"
       }
     }
   },

@@ -20,11 +20,7 @@ export default function TemplatesScreen() {
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const path = `${environmentPath(params)}/templates`;
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Templates"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Templates">
       <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
         description="Subjects and bodies with typed variables, in every language you send. Edit a draft, publish it, then send it by id or alias."

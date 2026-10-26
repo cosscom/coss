@@ -14,11 +14,7 @@ export default function AudiencesScreen() {
   const query = useAudiences(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Audiences"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Audiences">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/audiences`} />,

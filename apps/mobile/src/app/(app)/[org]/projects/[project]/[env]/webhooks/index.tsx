@@ -6,6 +6,7 @@ import { ModeBadge } from "../../../../../../../components/mode-badge";
 import { ListRow, Panel, Ruled } from "../../../../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../../components/screen";
 import { WebButton } from "../../../../../../../components/web-button";
+import { plural } from "../../../../../../../lib/format";
 import { useWebhookEndpoints } from "../../../../../../../lib/queries";
 import { endpointStatus } from "../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../lib/web";
@@ -14,9 +15,11 @@ export default function WebhooksScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useWebhookEndpoints(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Webhooks">
+    <Screen onRefresh={() => query.refetch()} title="Webhooks">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/webhooks`} /> }}
       />
@@ -44,8 +47,16 @@ export default function WebhooksScreen() {
                   }}
                   key={endpoint.id}
                   leading={<StatusDot tone={tone} />}
-                  subtitle={`${label} · ${endpoint.event_types.length === 0 ? "All events" : `${endpoint.event_types.length} events`}`}
-                  title={endpoint.description || endpoint.url}
+                  subtitle={[
+                    endpoint.description,
+                    label,
+                    endpoint.event_types.length === 0
+                      ? "All events"
+                      : plural(endpoint.event_types.length, "event"),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  title={endpoint.url}
                 />
               );
             })}

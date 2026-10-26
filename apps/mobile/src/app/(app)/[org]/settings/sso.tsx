@@ -12,7 +12,6 @@ import { Text } from "../../../../components/text";
 import { WebButton } from "../../../../components/web-button";
 import { useSsoSettings } from "../../../../lib/queries-organization-settings";
 import { ssoProviderStatus } from "../../../../lib/status-organization-settings";
-import { openOnWeb } from "../../../../lib/web";
 
 // Copy from the dashboard's SSO tab (apps/web/src/app/[orgSlug]/settings/sso/page.tsx and
 // sso-forms.tsx). Read-only: saving the provider, requiring SSO and removing it stay on coss.com.
@@ -47,7 +46,7 @@ function Requirement(props: { done: boolean; children: string }) {
   );
 }
 
-function ProviderPanel({ sso, org }: { sso: Sso; org: string }) {
+function ProviderPanel({ sso }: { sso: Sso }) {
   const { provider } = sso;
   if (!provider) {
     return (
@@ -59,13 +58,6 @@ function ProviderPanel({ sso, org }: { sso: Sso; org: string }) {
         {sso.plan_allows ? null : (
           <PanelBody>
             <Text variant="small">Single sign-on is part of the Scale plan.</Text>
-            <Text
-              onPress={() => openOnWeb(`/${org}/settings/billing/plans`)}
-              style={styles.link}
-              variant="smallMedium"
-            >
-              Compare plans
-            </Text>
           </PanelBody>
         )}
       </Panel>
@@ -218,15 +210,18 @@ export default function SingleSignOnScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useSsoSettings(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const sso = query.data;
   return (
-    <Screen
-      onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching}
-      title="Single sign-on"
-    >
-      <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/settings/sso`} /> }} />
+    <Screen onRefresh={() => query.refetch()} title="Single sign-on">
+      {/* Without the plan, coss.com's page is an upgrade prompt: no purchase links here (3.1.1). */}
+      {sso.plan_allows || sso.provider ? (
+        <Stack.Screen
+          options={{ headerRight: () => <WebButton path={`/${org}/settings/sso`} /> }}
+        />
+      ) : null}
       <PageIntro title="Single sign-on" />
       {sso.provider && !sso.provider.active ? (
         <Alert
@@ -235,7 +230,7 @@ export default function SingleSignOnScreen() {
           tone="warning"
         />
       ) : null}
-      <ProviderPanel org={org} sso={sso} />
+      <ProviderPanel sso={sso} />
       {sso.setup ? <SetupPanel setup={sso.setup} /> : null}
       <RequirePanel sso={sso} />
     </Screen>
@@ -244,6 +239,5 @@ export default function SingleSignOnScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  link: { textDecorationLine: "underline" },
   requirement: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
 });

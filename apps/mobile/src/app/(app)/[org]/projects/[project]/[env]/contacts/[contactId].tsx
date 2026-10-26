@@ -27,7 +27,9 @@ export default function ContactScreen() {
   const query = useContact(params, contactId);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { contact, properties, topics, audiences } = query.data;
   const [tone, label] = CONTACT_STATUS[contact.status];
   const base = environmentPath(params);
@@ -39,11 +41,7 @@ export default function ContactScreen() {
           headerRight: () => <WebButton path={`${base}/contacts/${contact.id}`} />,
         }}
       />
-      <Screen
-        onRefresh={() => void query.refetch()}
-        refreshing={query.isRefetching}
-        title={contact.email}
-      >
+      <Screen onRefresh={() => query.refetch()} title={contact.email}>
         <PageIntro
           description={`Added ${formatDateTime(contact.created_at)} (${contact.source}).`}
           meta={

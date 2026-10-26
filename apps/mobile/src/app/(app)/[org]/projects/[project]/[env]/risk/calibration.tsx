@@ -21,13 +21,15 @@ export default function RiskCalibrationScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useRiskCalibration(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const calibration = query.data;
   const changed = calibration.reasons.filter(
     (reason) => reason.suggested_weight !== null && reason.suggested_weight !== reason.weight,
   ).length;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Calibration">
+    <Screen onRefresh={() => query.refetch()} title="Calibration">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/risk/calibration`} />,

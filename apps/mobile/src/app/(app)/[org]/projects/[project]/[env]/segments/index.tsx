@@ -14,11 +14,7 @@ export default function SegmentsScreen() {
   const query = useSegments(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Segments"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Segments">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/segments`} />,

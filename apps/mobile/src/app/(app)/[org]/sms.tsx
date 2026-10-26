@@ -85,12 +85,14 @@ export default function OrganizationSmsScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useSmsSenders(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { notice, can_create, numbers, registrations, countries } = query.data;
   const path = `/${org}/sms`;
 
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="SMS">
+    <Screen onRefresh={() => query.refetch()} title="SMS">
       <Stack.Screen options={{ headerRight: () => <WebButton path={path} /> }} />
       <PageIntro
         description="Your organization's phone numbers, their carrier registrations and the countries live messages may go to. Sandbox environments need none of this: their messages are simulated."
@@ -104,7 +106,6 @@ export default function OrganizationSmsScreen() {
             title="Register a sender"
             variant="outline"
           />
-          <Button onPress={() => openOnWeb(path)} size="sm" title="Buy a number" />
         </View>
       ) : null}
       {notice === "unavailable" ? (
@@ -131,7 +132,7 @@ export default function OrganizationSmsScreen() {
       >
         {numbers.length === 0 ? (
           <EmptyState
-            description="Buy a local number (registered for US A2P 10DLC) or a toll-free one (verified on its own)."
+            description="Local numbers (registered for US A2P 10DLC) and toll-free ones (verified on their own) show up here."
             icon={MessageSquare}
             title="No numbers yet"
           />
@@ -142,7 +143,7 @@ export default function OrganizationSmsScreen() {
               return (
                 <ListRow
                   key={number.id}
-                  subtitle={`${number.kind === "toll_free" ? "Toll-free" : "Local"} · Replies go to ${number.replies_to ?? "Dropped"}`}
+                  subtitle={`${number.kind === "toll_free" ? "Toll-free" : "Local"} · ${number.replies_to ? `Replies go to ${number.replies_to}` : "Replies are dropped"}`}
                   title={number.phone_number}
                   trailing={<StatusDot label={label} tone={tone} />}
                 />

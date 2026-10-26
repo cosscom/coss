@@ -20,7 +20,7 @@ import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../compon
 import { Stat, StatGrid } from "../../../../../../components/stat";
 import { Text } from "../../../../../../components/text";
 import { WebButton } from "../../../../../../components/web-button";
-import { formatAgo, formatCount, formatDateTime } from "../../../../../../lib/format";
+import { formatAgo, formatCount, formatDateTime, formatPeriod } from "../../../../../../lib/format";
 import { useDmarc, useDmarcReports } from "../../../../../../lib/queries-organization-settings";
 import { DOMAIN_STATUS } from "../../../../../../lib/status";
 import {
@@ -139,8 +139,18 @@ function NextStep({ dmarc }: { dmarc: Dmarc }) {
   );
 }
 
-function Reports({ org, domainId }: { org: string; domainId: string }) {
-  const query = useDmarcReports(org, domainId);
+/** A report's period (UTC days, end exclusive): one day, or the range it covers. */
+function reportPeriod(start: string, end: string): string {
+  const [from, to] = formatPeriod({ start, end }).split(" – ");
+  return from === to ? (from ?? "") : `${from} – ${to}`;
+}
+
+function Reports(props: {
+  org: string;
+  domainId: string;
+  query: ReturnType<typeof useDmarcReports>;
+}) {
+  const { org, domainId, query } = props;
   const reports = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
     <PagedPanel
@@ -156,7 +166,7 @@ function Reports({ org, domainId }: { org: string; domainId: string }) {
             params: { org, domainId, reportId: report.id },
           }}
           key={report.id}
-          subtitle={`${formatDateTime(report.period_start)} – ${formatDateTime(report.period_end)}`}
+          subtitle={reportPeriod(report.period_start, report.period_end)}
           title={report.reporter}
           trailing={
             <Text muted variant="mono">
@@ -173,15 +183,18 @@ function Reports({ org, domainId }: { org: string; domainId: string }) {
 export default function DmarcScreen() {
   const { org, domainId } = useLocalSearchParams<{ org: string; domainId: string }>();
   const query = useDmarc(org, domainId);
+  const reports = useDmarcReports(org, domainId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const dmarc = query.data;
   const { summary } = dmarc;
   const [tone, label] = DOMAIN_STATUS[dmarc.domain.status] ?? ["neutral", dmarc.domain.status];
   const unauthenticated =
     summary.messages - summary.passing - (summary.coss_messages - summary.coss_passing);
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="DMARC">
+    <Screen onRefresh={() => Promise.all([query.refetch(), reports.refetch()])} title="DMARC">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`/${org}/domains/${dmarc.domain.id}/dmarc`} />,
@@ -300,7 +313,7 @@ export default function DmarcScreen() {
           </Ruled>
         )}
       </Panel>
-      <Reports domainId={domainId} org={org} />
+      <Reports domainId={domainId} org={org} query={reports} />
     </Screen>
   );
 }

@@ -28,7 +28,7 @@ export function SettingsRow(props: {
           <Text style={styles.label} variant="label">
             {props.label}
           </Text>
-          {props.value}
+          {props.value ? <View style={styles.headValue}>{props.value}</View> : null}
         </View>
         {props.stacked}
         {props.description ? (
@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   text: { flex: 1, gap: 6 },
   head: { flexDirection: "row", alignItems: "center", gap: 10 },
   label: { flex: 1 },
+  headValue: { flexShrink: 1, maxWidth: "60%", alignItems: "flex-end" },
   value: {
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,

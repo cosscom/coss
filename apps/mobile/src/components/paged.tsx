@@ -10,6 +10,8 @@ type PagedQuery = {
   isPending: boolean;
   isError: boolean;
   error: Error | null;
+  data?: unknown;
+  refetch: () => unknown;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   fetchNextPage: () => unknown;
@@ -49,8 +51,16 @@ export function PagedPanel<T>(props: {
         <View style={styles.loading}>
           <ActivityIndicator />
         </View>
-      ) : query.isError ? (
+      ) : query.isError && !query.data ? (
         <EmptyState
+          action={
+            <Button
+              onPress={() => void query.refetch()}
+              size="sm"
+              title="Try again"
+              variant="outline"
+            />
+          }
           description={query.error?.message}
           icon={props.empty.icon}
           title="Couldn't load this"

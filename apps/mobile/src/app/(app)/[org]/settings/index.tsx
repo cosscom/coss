@@ -107,13 +107,15 @@ export default function OrganizationSettingsScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useOrganizationSettings(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const settings = query.data;
   const { organization, api_version: apiVersion } = settings;
   const latest = apiVersion.pinned === null || apiVersion.pinned === apiVersion.latest;
   const otherTabs = tabs(settings);
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Settings">
+    <Screen onRefresh={() => query.refetch()} title="Settings">
       <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/settings`} /> }} />
       <PageIntro title="Settings" />
       {otherTabs.length > 0 ? (

@@ -16,11 +16,7 @@ export default function ReceivedScreen() {
   const query = useReceivedEmails(params);
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      title="Received"
-    >
+    <Screen onRefresh={() => query.refetch()} title="Received">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/received`} /> }}
       />
@@ -32,7 +28,7 @@ export default function ReceivedScreen() {
       <PagedPanel
         empty={{
           icon: Inbox,
-          title: "Nothing received yet",
+          title: "No received emails yet",
           description: "Emails sent to this environment's addresses show up here.",
         }}
         items={items}

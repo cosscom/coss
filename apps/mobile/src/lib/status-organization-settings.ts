@@ -42,7 +42,9 @@ export const DMARC_NEXT_TITLE: Record<DmarcNextStepKind, string> = {
 export function dmarcRate(passing: number, total: number): string {
   if (total === 0) return "—";
   const value = (passing / total) * 100;
-  return `${value === 100 || value === 0 ? value.toFixed(0) : value.toFixed(1)}%`;
+  if (value === 100 || value === 0) return `${value}%`;
+  // Rounded toward the middle, so a rate is never shown as 100% or 0% when it isn't.
+  return `${Math.min(99.9, Math.max(0.1, Math.floor(value * 10) / 10)).toFixed(1)}%`;
 }
 
 /** A source's pass rate: all passed, none passed, or some. */

@@ -1,3 +1,4 @@
+import { Alert, AlertDescription } from "@coss/ui/components/alert";
 import { Badge } from "@coss/ui/components/badge";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -5,9 +6,11 @@ import { CopyValue } from "@/components/copy-value";
 import { PageHeader } from "@/components/page-header";
 import { SettingsPage, SettingsRow, SettingsSection } from "@/components/settings";
 import { UserAvatar } from "@/components/user-avatar";
+import { accountDeletionPlan, blockerMessage } from "@/lib/account-deletion";
 import { avatarSource, avatarUrl } from "@/lib/avatars";
 import { formatDateTime } from "@/lib/format";
 import { requireSession } from "@/lib/session";
+import { DeleteAccountButton } from "./delete-account-button";
 import { ProfileForm, SendVerificationEmailButton } from "./profile-form";
 import { ThemePicker } from "./theme-picker";
 
@@ -25,6 +28,7 @@ export default async function AccountProfilePage() {
   const impersonating = Boolean(session.session.impersonatedBy);
   const { user } = session;
   const source = avatarSource(user);
+  const deletion = await accountDeletionPlan(user.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -109,6 +113,37 @@ export default async function AccountProfilePage() {
               {formatDateTime(user.createdAt)}
             </span>
           </SettingsRow>
+        </SettingsSection>
+
+        <SettingsSection title="Danger zone" tone="danger">
+          <SettingsRow
+            description="Deletes your profile and sign-in methods, signs you out everywhere and removes you from your organizations. Organizations you're the only member of are deleted too."
+            label="Delete account"
+          >
+            <DeleteAccountButton
+              deleteOrganizations={deletion.deleteOrganizations}
+              disabled={impersonating || deletion.blockers.length > 0}
+              email={user.email}
+              leaveOrganizations={deletion.leaveOrganizations}
+            />
+          </SettingsRow>
+          {deletion.blockers.length > 0 ? (
+            <div className="border-t px-5 py-4">
+              <Alert variant="warning">
+                <AlertDescription>
+                  {deletion.blockers.map((blocker) => (
+                    <p
+                      key={
+                        blocker.kind + ("organization" in blocker ? blocker.organization.id : "")
+                      }
+                    >
+                      {blockerMessage(blocker)}
+                    </p>
+                  ))}
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
         </SettingsSection>
       </SettingsPage>
     </div>

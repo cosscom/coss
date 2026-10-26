@@ -2,8 +2,9 @@
 
 import { isSocialProvider, type SocialProvider } from "@coss/auth/constants";
 import { refresh } from "next/cache";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { AccountDeletionBlocked, deleteAccount } from "@/lib/account-deletion";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, ForbiddenError, formString, runAction } from "@/lib/actions";
 import { auth, type Session } from "@/lib/auth";
@@ -213,4 +214,41 @@ export async function setPasswordAction(
     refresh();
     return null;
   });
+}
+
+/**
+ * Deletes the signed-in user's account (`deleteAccount`): typing the email address confirms it,
+ * and it needs a recent sign-in like adding a way to sign in. The session went with the account;
+ * its cookies are expired so this browser doesn't keep sending them.
+ */
+export async function deleteAccountAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const result = await runAction(async () => {
+    const session = await requireFreshAccountOwner();
+    const { user } = session;
+    if (formString(formData, "confirm").toLowerCase() !== user.email.toLowerCase()) {
+      throw new ActionError(`Type ${user.email} to confirm.`);
+    }
+    try {
+      await deleteAccount({ id: user.id, email: user.email });
+    } catch (error) {
+      if (error instanceof AccountDeletionBlocked) throw new ActionError(error.message);
+      throw error;
+    }
+    const cookieStore = await cookies();
+    const { authCookies } = await auth.$context;
+    for (const cookie of [
+      authCookies.sessionToken,
+      authCookies.sessionData,
+      authCookies.dontRememberToken,
+    ]) {
+      const { path, domain, secure } = cookie.attributes;
+      cookieStore.set(cookie.name, "", { path, domain, secure, maxAge: 0 });
+    }
+    return null;
+  });
+  if (result.ok) redirect("/sign-in");
+  return result;
 }

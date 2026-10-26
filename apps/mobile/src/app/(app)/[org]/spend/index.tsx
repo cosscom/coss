@@ -51,12 +51,12 @@ export default function SpendScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useSpend(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data)
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
   const spend = query.data;
   return (
     <Screen
       onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching}
       title={spend.view === "member" ? "Your spend" : "Spend"}
     >
       <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/spend`} /> }} />

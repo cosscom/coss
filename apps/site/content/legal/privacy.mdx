@@ -1,12 +1,12 @@
 ---
 title: Privacy Policy
 description: What personal data Cal.com collects for coss.com, why, who we share it with, and your rights.
-lastUpdated: 2026-10-19
+lastUpdated: 2026-10-26
 ---
 
 This Privacy Policy explains how **Cal.com, Inc.** ("**Cal.com**", "**we**", "**us**") handles personal data in
-connection with coss.com: the website and documentation at coss.com, the dashboard, the API and the SDK (together, the
-"**Services**"). Capitalized terms not defined here have the meaning given in our [Terms of Service](/legal/terms).
+connection with coss.com: the website and documentation at coss.com, the dashboard, the iOS app, the API and the SDK
+(together, the "**Services**"). Capitalized terms not defined here have the meaning given in our [Terms of Service](/legal/terms).
 
 ## The short version
 
@@ -53,6 +53,13 @@ SMS provider, to the carriers and their registries for review.
 **Sessions and security data.** For each sign-in session, we store the IP address and browser user agent, so that you
 can review and revoke your sessions. We use IP addresses and hashed email addresses to rate-limit sign-in attempts and
 API requests. Platform administrators' actions are recorded in an audit log.
+
+**iOS app.** Signing in to the app opens a session like a browser sign-in, recorded with your IP address and the app's
+version as its user agent. If you turn on notifications, we store your device's push notification token and the kinds
+of notifications you chose. When the app crashes or runs into an error, it sends a crash report to our error monitoring
+provider: the error and where in the app's code it happened, the paths of the screens and requests that led up to it
+(with query strings and credentials removed), and the device model and iOS and app versions. The app doesn't attach
+your name, email address or account ID to crash reports, or screenshots or other contents of the screen.
 
 **API keys.** API keys are stored only as hashes, together with their environment, permissions and when they were last
 used.
@@ -153,6 +160,8 @@ We share personal data only as described here:
   - **Twilio Inc.** (United States): SMS delivery and receiving, phone numbers, and carrier registration of the
     business details organizations submit to send SMS.
   - **Cloudflare, Inc.** (United States): DNS for coss.com.
+  - **Functional Software, Inc. (Sentry)** (United States, with data stored in the European Union): error and crash
+    reports from the dashboard, the API and the iOS app.
 
   The complete, current list of Cal.com subprocessors is in our Trust Center at
   [trust.cal.com](https://trust.cal.com). We give customers 30 days' notice of new subprocessors of Customer Data, and
@@ -160,6 +169,9 @@ We share personal data only as described here:
 - **Message delivery.** Sending a message necessarily discloses its content to the recipients' mail servers or, for
   SMS, to the recipients' mobile carriers. To let an organization send SMS in the United States, its registration
   details go to mobile carriers and their registries.
+- **Apple.** If you turn on notifications in the iOS app, Apple's push notification service delivers them. It receives
+  your device's push token, each notification's text (organization, project and environment names and counts, never
+  message content or addresses) and the path of the page it opens.
 - **Your webhook endpoints** receive event data about your messages (never message bodies, headers, cc or bcc).
 - **Your organization.** Organization owners and administrators can see the members of the organization and the data
   in it.
@@ -173,9 +185,13 @@ We share personal data only as described here:
 
 ## 6. How long we keep it
 
-- **Account and organization data:** while your account is active. You can ask us to close your account at
-  [support@cal.com](mailto:support@cal.com). After it is closed, you have at least 30 days to
-  export your data, and we then delete it on our standard schedule, except what we must keep by law.
+- **Account and organization data:** while your account is active. You can delete your account at any time in your
+  account settings, in the dashboard or the iOS app. We delete it right away, with your sessions, sign-in methods and
+  personal API keys. Organizations you are the only member of are deleted with it, and their data follows on our
+  standard schedule; organizations you share with others keep their data, and their audit logs keep the record of what
+  you did in them, with your email address. You can instead ask us to close your account at
+  [support@cal.com](mailto:support@cal.com): you then have at least 30 days to export your data, and we delete it on
+  our standard schedule. Either way, we keep what we must by law.
 - **Messages and delivery events:** while your organization's account is active, so that you can look them up in the
   dashboard and the API. Your organization can ask us to delete them sooner by writing to
   [privacy@cal.com](mailto:privacy@cal.com). Attachment contents are deleted automatically once a message is sent,
@@ -183,6 +199,8 @@ We share personal data only as described here:
 - **Suppression lists, domains and webhook endpoints:** until your organization removes them, or its account is
   closed.
 - **Sessions:** until they expire or are revoked.
+- **Push notification tokens:** until you turn notifications off, sign out of the iOS app or its session ends.
+- **Crash reports:** up to 90 days, at our error monitoring provider.
 - **Risk assessments:** for 1 year; the email address, IP address and user agent are deleted after 90 days. The keyed
   hashes used to recognize them (and cards and browsers) are deleted a year after they were last seen (IP addresses reported as fraud stop
   counting after 30 days). When your organization tells us one of its users is deleted, we delete that person's data

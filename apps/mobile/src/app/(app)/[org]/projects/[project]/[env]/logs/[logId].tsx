@@ -7,17 +7,23 @@ import { EmptyState } from "../../../../../../../components/empty";
 import { ListRow, Panel, Ruled, SpecItem, SpecList } from "../../../../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../../components/screen";
 import { Text } from "../../../../../../../components/text";
-import { formatDateTime } from "../../../../../../../lib/format";
+import { formatDateTime, formatTime } from "../../../../../../../lib/format";
 import { logSummary } from "../../../../../../../lib/logs";
 import { useLogEntry } from "../../../../../../../lib/queries";
 import { LEVEL_TONE } from "../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../lib/web";
 
+function sameDay(a: string, b: string): boolean {
+  return new Date(a).toDateString() === new Date(b).toDateString();
+}
+
 export default function LogEntryScreen() {
   const { logId, ...params } = useLocalSearchParams<EnvironmentParams & { logId: string }>();
   const query = useLogEntry(params, logId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { entry, related } = query.data;
   const summary = logSummary(entry);
   const base = environmentPath(params);
@@ -28,7 +34,7 @@ export default function LogEntryScreen() {
       </SpecItem>
     );
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching}>
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen options={{ title: "Log line" }} />
       <PageIntro
         meta={
@@ -83,7 +89,11 @@ export default function LogEntryScreen() {
               const lineSummary = logSummary(line);
               return (
                 <ListRow
-                  detail={formatDateTime(line.occurred_at).split(", ").at(-1)}
+                  detail={
+                    sameDay(line.occurred_at, entry.occurred_at)
+                      ? formatTime(line.occurred_at)
+                      : formatDateTime(line.occurred_at)
+                  }
                   href={{
                     pathname: "/[org]/projects/[project]/[env]/logs/[logId]",
                     params: { ...params, logId: line.id },

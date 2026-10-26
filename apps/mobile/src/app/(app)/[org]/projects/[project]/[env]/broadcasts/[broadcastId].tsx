@@ -124,7 +124,7 @@ function Controls(props: { params: EnvironmentParams; broadcast: Broadcast }) {
       </View>
     ) : null,
     status === "scheduled" || status === "sending" || status === "paused" ? (
-      <View key="cancel" style={styles.action}>
+      <View key="cancel" style={[styles.action, styles.cancel]}>
         <Button
           icon={Ban}
           loading={pending("cancel")}
@@ -255,7 +255,9 @@ export default function BroadcastScreen() {
   const query = useBroadcast(params, broadcastId);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { broadcast, recent_emails, can_send, can_read_email } = query.data;
   const base = environmentPath(params);
   const webPath = `${base}/broadcasts/${broadcast.id}`;
@@ -264,11 +266,7 @@ export default function BroadcastScreen() {
   return (
     <>
       <Stack.Screen options={{ headerRight: () => <WebButton path={webPath} /> }} />
-      <Screen
-        onRefresh={() => query.refetch()}
-        refreshing={query.isRefetching}
-        title={broadcast.name}
-      >
+      <Screen onRefresh={() => query.refetch()} title={broadcast.name}>
         <PageIntro
           description={
             broadcast.status === "scheduled" && broadcast.scheduled_at
@@ -402,4 +400,6 @@ export default function BroadcastScreen() {
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   action: { flexGrow: 1, flexBasis: "45%" },
+  // "Cancel broadcast" doesn't fit half a row beside Pause or Resume.
+  cancel: { flexBasis: "100%" },
 });

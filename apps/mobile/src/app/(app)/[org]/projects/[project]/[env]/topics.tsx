@@ -16,7 +16,9 @@ export default function TopicsScreen() {
   const query = useTopics(params);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const topics = query.data.data;
 
   return (
@@ -26,7 +28,7 @@ export default function TopicsScreen() {
           headerRight: () => <WebButton path={`${environmentPath(params)}/topics`} />,
         }}
       />
-      <Screen onRefresh={() => void query.refetch()} refreshing={query.isRefetching} title="Topics">
+      <Screen onRefresh={() => query.refetch()} title="Topics">
         <PageIntro
           description="What contacts subscribe to. A topic's key is the category of the emails about it; public topics show in the preference center."
           title="Topics"
@@ -46,7 +48,7 @@ export default function TopicsScreen() {
                     <Text style={styles.name} variant="label">
                       {topic.name}
                     </Text>
-                    <Text muted selectable variant="mono">
+                    <Text muted numberOfLines={1} selectable style={styles.key} variant="mono">
                       {topic.key}
                     </Text>
                   </View>
@@ -77,5 +79,6 @@ const styles = StyleSheet.create({
   row: { gap: 6, padding: 16 },
   head: { flexDirection: "row", alignItems: "baseline", gap: 8 },
   name: { flex: 1 },
+  key: { flexShrink: 1, maxWidth: "50%" },
   badges: { flexDirection: "row", gap: 6 },
 });

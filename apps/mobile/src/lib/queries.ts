@@ -1,7 +1,10 @@
 import type {
+  AccountDeletionResponse,
   ApiKeysResponse,
   AuditResponse,
   BillingResponse,
+  DeleteAccountRequest,
+  DeleteAccountResponse,
   Domain,
   DomainsResponse,
   EmailListResponse,
@@ -49,7 +52,13 @@ import type {
   WebhookEndpointEnabledRequest,
   WebhookEndpointResponse,
 } from "@coss/companion";
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 // Each product area added after the first release keeps its hooks in `queries-<area>.ts`, built on
 // the helpers exported here.
 import type { ApiClient, ApiError } from "./api";
@@ -338,6 +347,8 @@ export function useWebhookEndpoint(key: EnvironmentKey, id: string, status: stri
         }),
       ),
     getNextPageParam: (page) => page.deliveries.next_cursor,
+    // Changing the status filter keeps the endpoint on screen while its deliveries load.
+    placeholderData: keepPreviousData,
     retry,
   });
 }
@@ -396,7 +407,7 @@ export function useRiskFeedback(key: EnvironmentKey, id: string) {
       post<RiskAssessment>(api, `${apiEnvironmentPath(key)}/risk/${segment(id)}/feedback`, body),
     onSuccess: (assessment) => {
       queryClient.setQueryData(["risk", key, "assessment", id], assessment);
-      void queryClient.invalidateQueries({ queryKey: ["risk", key] });
+      return queryClient.invalidateQueries({ queryKey: ["risk", key] });
     },
   });
 }
@@ -435,6 +446,8 @@ export function useHookEndpoint(key: EnvironmentKey, application: string, endpoi
         ),
       ),
     getNextPageParam: (page) => page.deliveries.next_cursor,
+    // Changing the status filter keeps the endpoint on screen while its deliveries load.
+    placeholderData: keepPreviousData,
     retry,
   });
 }
@@ -521,8 +534,10 @@ export function useCancelEmail(key: EnvironmentKey, id: string) {
     mutationFn: () =>
       post<{ canceled: true }>(api, `${apiEnvironmentPath(key)}/emails/${segment(id)}/cancel`),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["email", key, id] });
-      void queryClient.invalidateQueries({ queryKey: ["emails", key] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["email", key, id] }),
+        queryClient.invalidateQueries({ queryKey: ["emails", key] }),
+      ]);
     },
   });
 }
@@ -552,7 +567,7 @@ export function useResolveReview(key: EnvironmentKey) {
       }),
     onSuccess: (assessment) => {
       queryClient.setQueryData(["risk", key, "assessment", assessment.id], assessment);
-      void queryClient.invalidateQueries({ queryKey: ["risk", key] });
+      return queryClient.invalidateQueries({ queryKey: ["risk", key] });
     },
   });
 }
@@ -568,7 +583,7 @@ export function useSetEndpointEnabled(key: EnvironmentKey, endpointId: string) {
         { enabled },
       ),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["webhooks", key] });
+      return queryClient.invalidateQueries({ queryKey: ["webhooks", key] });
     },
   });
 }
@@ -586,9 +601,32 @@ export function useRescheduleEmail(key: EnvironmentKey, id: string) {
         } satisfies RescheduleEmailRequest,
       ),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["email", key, id] });
-      void queryClient.invalidateQueries({ queryKey: ["emails", key] });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["email", key, id] }),
+        queryClient.invalidateQueries({ queryKey: ["emails", key] }),
+      ]);
     },
+  });
+}
+
+/** What deleting the account would do; always fresh (memberships change on coss.com). */
+export function useAccountDeletion() {
+  const { api } = useAuth();
+  return useQuery({
+    queryKey: ["account", "deletion"],
+    queryFn: () => get<AccountDeletionResponse>(api, "/account/deletion"),
+    gcTime: 0,
+    retry,
+  });
+}
+
+export function useDeleteAccount() {
+  const { api } = useAuth();
+  return useMutation({
+    mutationFn: (confirm: string) =>
+      post<DeleteAccountResponse>(api, "/account/deletion", {
+        confirm,
+      } satisfies DeleteAccountRequest),
   });
 }
 

@@ -45,6 +45,32 @@ type IpSignals = {
   privacy: { vpn: boolean; proxy: boolean; relay: boolean; service: string | null } | null;
 } | null;
 
+type CheckoutSignals = {
+  amount: number;
+  currency: string;
+  card_country: string | null;
+  card_funding: string | null;
+  billing_country: string | null;
+  shipping_country: string | null;
+} | null;
+
+type DeviceSignals = {
+  valid: boolean;
+  automation: boolean;
+  timezone: string | null;
+  language: string | null;
+  platform: string | null;
+  screen: string | null;
+} | null;
+
+type CaptchaSignals = { provided: boolean; passed: boolean | null } | null;
+type LoginSignals = { new_country: boolean; new_network: boolean } | null;
+type ContentSignals = Record<(typeof CONTENT_CATEGORIES)[number], number> | null;
+type VelocitySignals = Record<string, number> | null;
+
+// CONTENT_CATEGORIES in @coss/risk/schemas.
+const CONTENT_CATEGORIES = ["spam", "phishing", "malware", "fraud"] as const;
+
 const OUTCOMES: {
   value: RiskOutcome;
   label: string;
@@ -55,7 +81,7 @@ const OUTCOMES: {
   { value: "fraud", label: "Fraud", variant: "destructive-outline" },
 ];
 
-function Feedback(props: { params: EnvironmentParams; id: string }) {
+function Feedback(props: { params: EnvironmentParams; id: string; outcome: RiskOutcome | null }) {
   const [note, setNote] = useState("");
   const feedback = useRiskFeedback(props.params, props.id);
   const palette = usePalette();
@@ -84,8 +110,12 @@ function Feedback(props: { params: EnvironmentParams; id: string }) {
     ]);
   return (
     <Panel
-      description="Fraud and abuse make later assessments flag this mailbox, user, card, browser, IP address and subnet; legitimate takes that back."
-      title="Report an outcome"
+      description={
+        props.outcome
+          ? `Reported as ${props.outcome}. Report again to change it.`
+          : "What did this turn out to be?"
+      }
+      title="Outcome"
     >
       <PanelBody>
         <TextInput
@@ -96,17 +126,21 @@ function Feedback(props: { params: EnvironmentParams; id: string }) {
           style={styles.note}
           value={note}
         />
+        <Text muted variant="small">
+          Fraud and abuse make later assessments flag this mailbox, user, card, browser, IP address
+          and subnet; legitimate takes that back.
+        </Text>
         <View style={styles.outcomes}>
           {OUTCOMES.map((outcome) => (
-            <View key={outcome.value} style={styles.outcome}>
-              <Button
-                disabled={feedback.isPending}
-                onPress={() => send(outcome.value, outcome.label)}
-                size="sm"
-                title={outcome.label}
-                variant={outcome.variant}
-              />
-            </View>
+            <Button
+              disabled={feedback.isPending}
+              key={outcome.value}
+              loading={feedback.isPending && feedback.variables?.outcome === outcome.value}
+              onPress={() => send(outcome.value, outcome.label)}
+              size="sm"
+              title={outcome.label}
+              variant={outcome.variant}
+            />
           ))}
         </View>
       </PanelBody>
@@ -118,14 +152,23 @@ export default function RiskAssessmentScreen() {
   const { id, ...params } = useLocalSearchParams<EnvironmentParams & { id: string }>();
   const query = useRiskAssessment(params, id);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const assessment = query.data;
   const email = assessment.signals.email as EmailSignals;
   const ip = assessment.signals.ip as IpSignals;
+  const checkout = assessment.signals.checkout as CheckoutSignals;
+  const device = assessment.signals.device as DeviceSignals;
+  const captcha = assessment.signals.captcha as CaptchaSignals;
+  const login = assessment.signals.login as LoginSignals;
+  const content = assessment.signals.content as ContentSignals;
+  const velocity = assessment.signals.velocity as VelocitySignals;
+  const feedback = <Feedback id={assessment.id} outcome={assessment.outcome} params={params} />;
   // After 90 days, or when the user was forgotten.
   const removed = (value: string | null, group: unknown) => value ?? (group ? "Removed" : "—");
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching}>
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen
         options={{
           title: "Assessment",
@@ -159,22 +202,25 @@ export default function RiskAssessmentScreen() {
       <StatGrid>
         <Stat label="Score" value={assessment.score.toFixed(2)} />
         <Stat
-          detail={
-            assessment.degraded.length ? `degraded: ${assessment.degraded.join(", ")}` : undefined
-          }
+          label="Decision"
+          value={assessment.decision[0]?.toUpperCase() + assessment.decision.slice(1)}
+        />
+        <Stat
+          detail={assessment.review_status === "open" ? "waiting for an outcome" : undefined}
           label="Review"
-          value={
-            assessment.review_status === "open"
-              ? "Open"
-              : assessment.review_status === "resolved"
-                ? "Resolved"
-                : "—"
+          value={assessment.review_status === "open" ? "Open" : "—"}
+        />
+        <Stat
+          detail={
+            assessment.degraded.length > 0
+              ? `made without: ${assessment.degraded.join(", ")}`
+              : "all signals collected"
           }
+          label="Reasons"
+          value={String(assessment.reasons.length)}
         />
       </StatGrid>
-      {assessment.can_review && assessment.review_status === "open" ? (
-        <Feedback id={assessment.id} params={params} />
-      ) : null}
+      {assessment.can_review && assessment.review_status === "open" ? feedback : null}
       <Panel title="Reasons">
         {assessment.reasons.length === 0 ? (
           <EmptyState
@@ -256,8 +302,81 @@ export default function RiskAssessmentScreen() {
                 : "none"}
             </SpecItem>
           ) : null}
+          {checkout ? (
+            <SpecItem label="Amount" mono>
+              {`${checkout.amount.toLocaleString()} ${checkout.currency} (minor units)`}
+            </SpecItem>
+          ) : null}
+          {checkout ? (
+            <SpecItem label="Card">
+              {[
+                checkout.card_country ? `issued in ${checkout.card_country}` : null,
+                checkout.card_funding,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "—"}
+            </SpecItem>
+          ) : null}
+          {checkout ? (
+            <SpecItem label="Billing, shipping">
+              {`${checkout.billing_country ?? "—"} · ${checkout.shipping_country ?? "—"}`}
+            </SpecItem>
+          ) : null}
+          {device ? (
+            <SpecItem label="Device">
+              {device.valid
+                ? [
+                    device.automation ? "automated" : null,
+                    device.timezone,
+                    device.language,
+                    device.platform,
+                    device.screen,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                : "invalid token"}
+            </SpecItem>
+          ) : null}
+          {captcha ? (
+            <SpecItem label="Captcha">
+              {!captcha.provided
+                ? "no token"
+                : captcha.passed === null
+                  ? "not checked"
+                  : captcha.passed
+                    ? "passed"
+                    : "failed"}
+            </SpecItem>
+          ) : null}
+          {login ? (
+            <SpecItem label="Login">
+              {login.new_country || login.new_network
+                ? [
+                    login.new_country ? "new country" : null,
+                    login.new_network ? "new network" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                : "usual country and network"}
+            </SpecItem>
+          ) : null}
+          {content ? (
+            <SpecItem label="Content scores" mono>
+              {CONTENT_CATEGORIES.map(
+                (category) => `${category} ${content[category].toFixed(2)}`,
+              ).join(" · ")}
+            </SpecItem>
+          ) : null}
+          {velocity && Object.keys(velocity).length > 0 ? (
+            <SpecItem label="Velocity" mono>
+              {Object.entries(velocity)
+                .map(([key, value]) => `${key} ${value}`)
+                .join(" · ")}
+            </SpecItem>
+          ) : null}
         </SpecList>
       </Panel>
+      {assessment.can_review && assessment.review_status !== "open" ? feedback : null}
     </Screen>
   );
 }
@@ -276,7 +395,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 15,
   },
-  outcomes: { flexDirection: "row", gap: 8 },
-  outcome: { flex: 1 },
+  outcomes: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   link: { textDecorationLine: "underline" },
 });

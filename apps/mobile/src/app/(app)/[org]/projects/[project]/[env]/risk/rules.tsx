@@ -16,9 +16,11 @@ export default function RiskRulesScreen() {
   const params = useLocalSearchParams<EnvironmentParams>();
   const query = useRiskRules(params);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Rules">
+    <Screen onRefresh={() => query.refetch()} title="Rules">
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`${environmentPath(params)}/risk/rules`} />,

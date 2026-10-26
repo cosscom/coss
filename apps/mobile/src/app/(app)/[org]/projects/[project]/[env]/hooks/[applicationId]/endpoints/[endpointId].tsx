@@ -12,7 +12,7 @@ import {
   Screen,
 } from "../../../../../../../../../components/screen";
 import { WebButton } from "../../../../../../../../../components/web-button";
-import { formatAgo, formatDateTime } from "../../../../../../../../../lib/format";
+import { formatAgo, formatDateTime, plural } from "../../../../../../../../../lib/format";
 import { useHookEndpoint } from "../../../../../../../../../lib/queries";
 import { endpointStatus, HOOK_DELIVERY_STATUS } from "../../../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../../../lib/web";
@@ -26,17 +26,16 @@ export default function HookEndpointScreen() {
   >();
   const query = useHookEndpoint(params, applicationId, endpointId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const first = query.data.pages[0];
   if (!first) return <Loading />;
   const { application, endpoint, last_recovery } = first;
   const deliveries = query.data.pages.flatMap((page) => page.deliveries.data);
   const [tone, label] = endpointStatus(endpoint);
   return (
-    <Screen
-      onRefresh={() => void query.refetch()}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-    >
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen
         options={{
           title: "Endpoint",
@@ -74,7 +73,7 @@ export default function HookEndpointScreen() {
       <Panel title="Details">
         <SpecList>
           <SpecItem label="Application">{application.name}</SpecItem>
-          <SpecItem label="Event types">
+          <SpecItem label="Event types" stacked={endpoint.filter_types.length > 0}>
             {endpoint.filter_types.length === 0 ? "All" : endpoint.filter_types.join(", ")}
           </SpecItem>
           <SpecItem label="Rate limit" mono>
@@ -119,7 +118,7 @@ export default function HookEndpointScreen() {
               }}
               key={delivery.id}
               leading={<StatusDot tone={deliveryTone} />}
-              subtitle={`${deliveryLabel} · ${delivery.attempt_count} attempts · ${delivery.last_status_code ? `HTTP ${delivery.last_status_code}` : (delivery.last_error ?? "—")}`}
+              subtitle={`${deliveryLabel} · ${plural(delivery.attempt_count, "attempt")} · ${delivery.last_status_code ? `HTTP ${delivery.last_status_code}` : (delivery.last_error ?? "—")}`}
               title={delivery.message_id}
             />
           );

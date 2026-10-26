@@ -15,7 +15,9 @@ export default function ContactPropertiesScreen() {
   const query = useContactProperties(params);
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const properties = query.data.data;
 
   return (
@@ -25,11 +27,7 @@ export default function ContactPropertiesScreen() {
           headerRight: () => <WebButton path={`${environmentPath(params)}/contacts/properties`} />,
         }}
       />
-      <Screen
-        onRefresh={() => void query.refetch()}
-        refreshing={query.isRefetching}
-        title="Contact properties"
-      >
+      <Screen onRefresh={() => query.refetch()} title="Contact properties">
         <PageIntro
           description="Typed custom fields of this environment's contacts (at most 50), usable in segments and as {{{contact.key}}} in broadcasts."
           title="Contact properties"

@@ -1,4 +1,6 @@
 const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+const date = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
+const time = new Intl.DateTimeFormat(undefined, { timeStyle: "medium" });
 const monthDay = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
 const utcMonthDay = new Intl.DateTimeFormat(undefined, {
   month: "short",
@@ -9,6 +11,19 @@ const count = new Intl.NumberFormat();
 
 export function formatDateTime(iso: string | null): string {
   return iso ? dateTime.format(new Date(iso)) : "—";
+}
+
+export function formatDate(iso: string | null): string {
+  return iso ? date.format(new Date(iso)) : "—";
+}
+
+export function formatTime(iso: string | null): string {
+  return iso ? time.format(new Date(iso)) : "—";
+}
+
+/** Singular or plural by count: `plural(1, "event")` → "1 event". */
+export function plural(value: number, singular: string, pluralForm = `${singular}s`): string {
+  return `${formatCount(value)} ${value === 1 ? singular : pluralForm}`;
 }
 
 export function formatDay(isoDay: string): string {

@@ -7,7 +7,7 @@ import { Alert } from "../components/alert";
 import { Button } from "../components/button";
 import { DraftingGrid } from "../components/empty";
 import { Text } from "../components/text";
-import { useAuth } from "../lib/auth";
+import { type SignInResult, useAuth } from "../lib/auth";
 import { colors, fonts, radius } from "../lib/theme";
 
 // The dashboard's sign-in panel (apps/web/src/components/auth-frame.tsx): real SDK methods.
@@ -25,7 +25,9 @@ export default function SignInScreen() {
   const onPress = async () => {
     setPending(true);
     setError(null);
-    const result = await signIn();
+    const result = await signIn().catch(
+      (): SignInResult => ({ ok: false, message: "Something went wrong. Try again." }),
+    );
     if (result.ok) {
       // Start at the organizations, not wherever the last session left off.
       router.replace("/");
@@ -54,7 +56,13 @@ export default function SignInScreen() {
                 </Text>
                 <Text variant="small">{part.label}</Text>
                 <View style={styles.gap} />
-                <Text style={styles.call} variant="mono">
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                  numberOfLines={1}
+                  style={styles.call}
+                  variant="mono"
+                >
                   {part.call}
                 </Text>
               </View>
@@ -122,7 +130,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   gap: { flex: 1 },
-  call: { fontSize: 12 },
+  call: { fontSize: 12, flexShrink: 1, textAlign: "right" },
   form: { gap: 16, paddingHorizontal: 8, paddingBottom: 8 },
   heading: { gap: 6 },
   legal: { textAlign: "center", fontSize: 12 },

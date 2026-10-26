@@ -1,4 +1,4 @@
-import { Link, router, Stack } from "expo-router";
+import { Link, router, Stack, useNavigation } from "expo-router";
 import { Building2 } from "lucide-react-native";
 import { useEffect, useRef } from "react";
 import { Pressable } from "react-native";
@@ -14,19 +14,22 @@ import { useMe } from "../../lib/queries";
 export default function OrganizationsScreen() {
   const me = useMe();
   const organizations = me.data?.organizations;
+  const navigation = useNavigation();
   // Once per sign-in, open the only organization or the last one used; going back keeps this
-  // list reachable.
+  // list reachable. Not over a page a notification or link already opened.
   const autoOpened = useRef(false);
   useEffect(() => {
     if (!organizations || autoOpened.current) return;
     autoOpened.current = true;
+    if (!navigation.isFocused()) return;
     void (async () => {
       const last = organizations.length === 1 ? organizations[0]?.slug : await lastOrganization();
+      if (!navigation.isFocused()) return;
       if (last && organizations.some((org) => org.slug === last)) {
         router.push({ pathname: "/[org]", params: { org: last } });
       }
     })();
-  }, [organizations]);
+  }, [organizations, navigation]);
   return (
     <>
       <Stack.Screen
@@ -43,10 +46,10 @@ export default function OrganizationsScreen() {
       />
       {me.isPending ? (
         <Loading />
-      ) : me.isError ? (
+      ) : me.isError && !me.data ? (
         <ErrorState error={me.error} onRetry={() => me.refetch()} />
       ) : (
-        <Screen onRefresh={() => me.refetch()} refreshing={me.isRefetching} title="Organizations">
+        <Screen onRefresh={() => me.refetch()} title="Organizations">
           <PageIntro
             title="Organizations"
             description="Every organization you're a member of. Pick one to see its projects, email activity and sending reputation."

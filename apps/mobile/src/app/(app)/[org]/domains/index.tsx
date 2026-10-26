@@ -14,9 +14,11 @@ export default function DomainsScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useDomains(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Domains">
+    <Screen onRefresh={() => query.refetch()} title="Domains">
       <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/domains`} /> }} />
       <PageIntro
         description="Live API keys can send from verified domains of this organization, in every project."

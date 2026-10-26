@@ -10,7 +10,7 @@ import { Panel, PanelBody, Ruled } from "../../../../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../components/screen";
 import { Text } from "../../../../../../components/text";
 import { WebButton } from "../../../../../../components/web-button";
-import { formatAgo, formatDateTime } from "../../../../../../lib/format";
+import { formatAgo, formatDate } from "../../../../../../lib/format";
 import { useApiKeys, useEnvironment, useMe } from "../../../../../../lib/queries";
 import { type EnvironmentParams, environmentPath } from "../../../../../../lib/web";
 
@@ -35,12 +35,14 @@ export default function ApiKeysScreen() {
   const userId = useMe().data?.user.id;
   const live = environment?.environment.mode === "live";
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const where = environment
     ? `${environment.project.name} · ${environment.environment.name}`
     : "this environment";
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="API keys">
+    <Screen onRefresh={() => query.refetch()} title="API keys">
       <Stack.Screen
         options={{ headerRight: () => <WebButton path={`${environmentPath(params)}/api-keys`} /> }}
       />
@@ -105,7 +107,7 @@ export default function ApiKeysScreen() {
                     {key.access === "full" ? "" : ` · ${key.permissions.join(", ")}`}
                   </Text>
                   <Text muted variant="small">
-                    Created {formatDateTime(key.created_at).split(",")[0]} · last used{" "}
+                    Created {formatDate(key.created_at)} · last used{" "}
                     {key.last_used_at ? formatAgo(key.last_used_at) : "never"}
                   </Text>
                 </View>

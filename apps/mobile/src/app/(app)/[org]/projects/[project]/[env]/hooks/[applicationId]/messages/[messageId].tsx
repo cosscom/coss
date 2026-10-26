@@ -13,7 +13,7 @@ import {
 } from "../../../../../../../../../components/screen";
 import { Text } from "../../../../../../../../../components/text";
 import { WebButton } from "../../../../../../../../../components/web-button";
-import { formatAgo, formatDateTime } from "../../../../../../../../../lib/format";
+import { formatDateTime } from "../../../../../../../../../lib/format";
 import { useHookMessage } from "../../../../../../../../../lib/queries";
 import { HOOK_DELIVERY_STATUS } from "../../../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../../../lib/web";
@@ -24,10 +24,12 @@ export default function HookMessageScreen() {
   >();
   const query = useHookMessage(params, applicationId, messageId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { application, message, deliveries } = query.data;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching}>
+    <Screen onRefresh={() => query.refetch()}>
       <Stack.Screen
         options={{
           title: "Message",
@@ -39,7 +41,7 @@ export default function HookMessageScreen() {
         }}
       />
       <PageIntro
-        description={`Sent to ${application.name} ${formatAgo(message.created_at)}.`}
+        description={`Sent to ${application.name} ${formatDateTime(message.created_at)}.`}
         meta={
           <Text muted selectable variant="mono">
             {message.id}

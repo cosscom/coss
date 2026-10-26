@@ -286,7 +286,9 @@ export default function EmailScreen() {
   const [tab, setTab] = useState<Tab>("overview");
 
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { email, events, has_more_events, can_send } = query.data;
   const openOnWeb = () =>
     void WebBrowser.openBrowserAsync(
@@ -296,7 +298,7 @@ export default function EmailScreen() {
   return (
     <>
       <Stack.Screen options={{ headerRight: () => <CopyId id={email.id} /> }} />
-      <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching}>
+      <Screen onRefresh={() => query.refetch()}>
         <PageIntro
           meta={
             <>
@@ -332,7 +334,11 @@ export default function EmailScreen() {
         <Tabs
           items={[
             { value: "overview", label: "Overview" },
-            { value: "events", label: "Events", count: events.length },
+            {
+              value: "events",
+              label: "Events",
+              count: has_more_events ? `${events.length}+` : events.length,
+            },
             { value: "recipients", label: "Recipients", count: email.recipients.length },
             { value: "content", label: "Content" },
             ...(email.attachments.length > 0
@@ -487,8 +493,10 @@ const styles = StyleSheet.create({
   event: { gap: 6, paddingHorizontal: 16, paddingVertical: 12 },
   eventHead: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    columnGap: 12,
+    rowGap: 4,
   },
 });

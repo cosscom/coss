@@ -8,17 +8,19 @@ import { ListRow, Panel, Ruled } from "../../../components/panel";
 import { ErrorState, Loading, PageIntro, Screen } from "../../../components/screen";
 import { Text } from "../../../components/text";
 import { WebButton } from "../../../components/web-button";
-import { formatDateTime, roleLabel } from "../../../lib/format";
+import { formatDate, formatDateTime, roleLabel } from "../../../lib/format";
 import { useMembers } from "../../../lib/queries";
 
 export default function MembersScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useMembers(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { members, invitations, require_two_factor } = query.data;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Members">
+    <Screen onRefresh={() => query.refetch()} title="Members">
       <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/members`} /> }} />
       <PageIntro
         description="People with access to this organization. Admins manage projects, domains and API keys; members can read everything but secrets."
@@ -37,7 +39,7 @@ export default function MembersScreen() {
               <UserAvatar name={member.name || member.email} size={36} />
               <View style={styles.memberText}>
                 <Text numberOfLines={1} variant="label">
-                  {member.name}
+                  {member.name || member.email}
                   {member.you ? <Text muted> (you)</Text> : null}
                 </Text>
                 <Text muted numberOfLines={1} variant="small">
@@ -54,7 +56,7 @@ export default function MembersScreen() {
                 </View>
               </View>
               <Text muted variant="mono">
-                {formatDateTime(member.joined_at).split(",")[0]}
+                {formatDate(member.joined_at)}
               </Text>
             </View>
           ))}

@@ -20,10 +20,11 @@ export default function BudgetsScreen() {
   const { org } = useLocalSearchParams<{ org: string }>();
   const query = useBudgets(org);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data)
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
   const budgets = query.data;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title="Spend">
+    <Screen onRefresh={() => query.refetch()} title="Spend">
       <Stack.Screen options={{ headerRight: () => <WebButton path={`/${org}/spend/budgets`} /> }} />
       <PageIntro
         description="Monthly budgets for what members' personal API keys, projects and single API keys spend. Over a budget, its live sending pauses until next month or until the budget is raised; the billing contacts (and the member it concerns) are emailed at its alert thresholds."

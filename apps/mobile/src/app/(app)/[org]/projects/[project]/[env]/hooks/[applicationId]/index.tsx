@@ -17,14 +17,12 @@ export default function HookApplicationScreen() {
   >();
   const query = useHookApplication(params, applicationId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { application, endpoints, messages } = query.data;
   return (
-    <Screen
-      onRefresh={() => query.refetch()}
-      refreshing={query.isRefetching}
-      title={application.name}
-    >
+    <Screen onRefresh={() => query.refetch()} title={application.name}>
       <Stack.Screen
         options={{
           headerRight: () => (

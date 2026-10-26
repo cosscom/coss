@@ -63,11 +63,13 @@ export default function DmarcReportScreen() {
   }>();
   const query = useDmarcReport(org, domainId, reportId);
   if (query.isPending) return <Loading />;
-  if (query.isError) return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  if (query.isError && !query.data) {
+    return <ErrorState error={query.error} onRetry={() => query.refetch()} />;
+  }
   const { domain, report } = query.data;
   const title = `Report from ${report.reporter}`;
   return (
-    <Screen onRefresh={() => query.refetch()} refreshing={query.isRefetching} title={title}>
+    <Screen onRefresh={() => query.refetch()} title={title}>
       <Stack.Screen
         options={{
           headerRight: () => <WebButton path={`/${org}/domains/${domain.id}/dmarc/${report.id}`} />,

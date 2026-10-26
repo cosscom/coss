@@ -18,13 +18,15 @@ export function Screen(props: {
   children: ReactNode;
   /** The page title, shown in the navigation bar once the in-page title scrolls away. */
   title?: string;
-  refreshing?: boolean;
-  onRefresh?: () => void;
+  /** Pull to refresh; the spinner shows until the returned promise settles. */
+  onRefresh?: () => unknown;
 }) {
   const palette = usePalette();
   const navigation = useNavigation();
   const [scrolled, setScrolled] = useState(false);
-  const { title } = props;
+  // Only a pull shows the spinner: background refetches (revisits, invalidations) stay silent.
+  const [refreshing, setRefreshing] = useState(false);
+  const { title, onRefresh } = props;
   useLayoutEffect(() => {
     if (title === undefined) return;
     navigation.setOptions({ title: scrolled ? title : "", headerShadowVisible: scrolled });
@@ -38,10 +40,15 @@ export function Screen(props: {
       onScroll={(event) => setScrolled(event.nativeEvent.contentOffset.y > TITLE_SCROLLED)}
       scrollEventThrottle={32}
       refreshControl={
-        props.onRefresh ? (
+        onRefresh ? (
           <RefreshControl
-            onRefresh={props.onRefresh}
-            refreshing={props.refreshing ?? false}
+            onRefresh={() => {
+              setRefreshing(true);
+              void Promise.resolve(onRefresh())
+                .catch(() => {})
+                .finally(() => setRefreshing(false));
+            }}
+            refreshing={refreshing}
             tintColor={palette.mutedForeground}
           />
         ) : undefined
