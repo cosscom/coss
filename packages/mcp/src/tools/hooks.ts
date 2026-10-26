@@ -104,8 +104,9 @@ export function registerHookTools(ctx: ToolContext): void {
     {
       title: "List Hook deliveries",
       description:
-        "Deliveries of an application's messages. Pass message_id for one message, endpoint_id " +
-        "for one endpoint, or neither to read each endpoint's recent deliveries (capped by limit).",
+        "Deliveries of an application's messages. Pass message_id for one message (every endpoint " +
+        "it went to, in one list) or endpoint_id for one endpoint's page. With neither, each " +
+        "endpoint's recent deliveries are read, capped by limit.",
       inputSchema: z.object({
         application,
         message_id: z.string().optional().describe("Only this message's deliveries."),
@@ -118,10 +119,11 @@ export function registerHookTools(ctx: ToolContext): void {
     ({ application: app, message_id, endpoint_id, limit, cursor }) =>
       run(async () => {
         if (message_id) {
+          // The API returns every endpoint's delivery for the message, with has_more false.
           const page = unwrap(await coss.hooks.messages.listDeliveries(app, message_id));
           return ok({
-            deliveries: page.data.slice(0, limit).map(deliverySummary),
-            next_cursor: page.has_more ? (page.data.at(-1)?.id ?? null) : null,
+            deliveries: page.data.map(deliverySummary),
+            next_cursor: null,
           });
         }
         if (endpoint_id) {
