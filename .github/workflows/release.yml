@@ -341,7 +341,7 @@ jobs:
           VERSION: ${{ needs.cli-binaries-check.outputs.version }}
         run: |
           xattr -w com.apple.quarantine "0081;$(printf '%x' "$(date +%s)");Safari;" smoke/coss
-          codesign --verify --strict --verbose=2 --check-notarization -R='=notarized' smoke/coss
+          codesign --verify --strict --verbose=2 --check-notarization -R notarized smoke/coss
           spctl --status || true
           spctl --assess --type execute --verbose=2 smoke/coss || true
           smoke/coss --version | grep -qx "$VERSION"
