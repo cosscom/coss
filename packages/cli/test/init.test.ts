@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { describeSetup } from "coss";
 import {
   agentNotes,
   detectPackageManager,
@@ -156,7 +157,14 @@ describe("coss init", () => {
       },
       installed: null,
       ignored_by_git: true,
-      agents_file: null,
+      agents_file: join(io.cwd, "AGENTS.md"),
+      setup: describeSetup({
+        mode: "sandbox",
+        domains: [],
+        webhookEndpoints: [],
+        warning:
+          "Couldn't list domains (Not found.). Couldn't list webhook endpoints (Not found.).",
+      }),
     });
   });
 
@@ -215,11 +223,30 @@ describe("coss init --agents", () => {
     expect(await readFile(join(bare.io.cwd, "AGENTS.md"), "utf8")).toBe(agentNotes(".env"));
   });
 
-  test("without --agents, nothing is written and the flag is suggested", async () => {
+  test("--no-agents writes no notes", async () => {
     const { io } = await project({ "package.json": NEXT_APP }, { exec: () => 0 });
-    expect(await run(["init", "--no-install", "--no-browser"], io)).toBe(0);
+    expect(await run(["init", "--no-agents", "--no-install", "--no-browser"], io)).toBe(0);
     expect(await readFile(join(io.cwd, "AGENTS.md"), "utf8").catch(() => null)).toBeNull();
-    expect(io.output()).toContain("coss init --agents");
+    expect(io.output()).toContain('import { Coss } from "coss";');
+    expect(io.output()).toContain("bounce@simulator.amazonses.com");
+  });
+
+  test("a Nodemailer project is pointed at coss/nodemailer", async () => {
+    const pkg = JSON.stringify({ name: "mailer", dependencies: { nodemailer: "7.0.0" } });
+    const { io } = await project({ "package.json": pkg }, { exec: () => 0 });
+    expect(await run(["init", "--no-agents", "--no-install", "--no-browser"], io)).toBe(0);
+    expect(io.output()).toContain('from "coss/nodemailer"');
+    expect(io.output()).not.toContain('import { Coss } from "coss";');
+  });
+
+  test("a Laravel project is told the driver install command", async () => {
+    const { io } = await project(
+      { "composer.json": '{ "require": { "laravel/framework": "^12.0" } }' },
+      { exec: () => 0 },
+    );
+    expect(await run(["init", "--no-agents", "--no-browser"], io)).toBe(0);
+    expect(io.output()).toContain("composer require coss/laravel");
+    expect(io.errors()).toContain("No package.json here");
   });
 
   test("a live key the env file keeps is called out, never called a development key", async () => {

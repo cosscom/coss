@@ -57,6 +57,7 @@ describe("GET /v1/reputation", () => {
     const live = await sendEmail(app, tenant.liveKey, emailBody({ from }));
     expect(live.status).toBe(403);
     expect(await errorOf(live)).toMatchObject({
+      hint: expect.stringContaining("https://coss.com/docs/email/delivery.md"),
       type: "permission_error",
       code: "account_suspended",
     });

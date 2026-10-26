@@ -1,6 +1,8 @@
 /**
  * The public error envelope. Every non-2xx response is
- * `{ "error": { type, code, message, param?, issues?, request_id } }`, built only here.
+ * `{ "error": { type, code, message, param?, issues?, hint?, request_id } }`, built only here.
+ * `hint` is optional and additive: it names a fix (often with a docs URL) for the errors an
+ * agent hits first. Compute it here so every constructor does not have to.
  */
 
 import { BillingError } from "@coss/billing";
@@ -53,6 +55,10 @@ export const ErrorEnvelope = z
             "Every problem: of the request (`validation_error`) or of a template " +
             "(`invalid_template_variables`, `template_invalid`).",
         }),
+      hint: z.string().optional().meta({
+        description:
+          "What to try next. Present when coss.com can name a fix, and often includes a docs URL.",
+      }),
       request_id: z.string().meta({ examples: ["req_01k7c8m4q2f3e9v6t5r1n0p8yz"] }),
     }),
   })
@@ -66,6 +72,8 @@ type ApiErrorDetails = {
   message: string;
   param?: string;
   issues?: ApiErrorIssue[];
+  /** Overrides the hint `errorResponse` would derive from `code`. */
+  hint?: string;
 };
 
 /** An expected failure with a public envelope. Throw it anywhere; `app.onError` renders it. */
@@ -75,6 +83,7 @@ export class ApiError extends Error {
   readonly code: string;
   readonly param?: string;
   readonly issues?: ApiErrorIssue[];
+  readonly hint?: string;
   readonly headers?: Record<string, string>;
 
   constructor(
@@ -89,11 +98,58 @@ export class ApiError extends Error {
     this.code = details.code;
     this.param = details.param;
     this.issues = details.issues;
+    this.hint = details.hint;
     this.headers = headers;
   }
 }
 
+const DOCS = {
+  domains: "https://coss.com/docs/email/domains.md",
+  environments: "https://coss.com/docs/environments.md",
+  delivery: "https://coss.com/docs/email/delivery.md",
+  sdk: "https://coss.com/docs/sdk.md",
+  sending: "https://coss.com/docs/email/sending.md",
+} as const;
+
+/**
+ * The fix for an error an agent can act on, derived from the code (and, for reserved headers,
+ * from the issue text — those share `validation_error` with every other bad field).
+ */
+export function hintFor(error: {
+  code: string;
+  issues?: { message: string }[];
+  hint?: string;
+}): string | undefined {
+  if (error.hint) return error.hint;
+  switch (error.code) {
+    case "domain_not_verified":
+      return (
+        "A live key can only send from a verified domain. A sandbox key accepts any from " +
+        `address. ${DOCS.domains}`
+      );
+    case "sandbox_only":
+      return `This only works with a sandbox key. ${DOCS.environments}`;
+    case "organization_suspended":
+    case "account_suspended":
+      return (
+        "This organization is suspended, so sending and changes are refused until it is " +
+        `reinstated. ${DOCS.delivery}`
+      );
+    case "idempotency_key_reused":
+    case "request_in_progress":
+      return `Reuse an Idempotency-Key only for the same request. ${DOCS.sdk}`;
+    case "validation_error":
+      if (error.issues?.some((issue) => issue.message.includes("set by coss.com"))) {
+        return `Those headers are set by coss.com and cannot be overridden. ${DOCS.sending}`;
+      }
+      return undefined;
+    default:
+      return undefined;
+  }
+}
+
 export function errorResponse(c: Context<AppEnv>, error: ApiError): Response {
+  const hint = hintFor(error);
   const body: ErrorEnvelopeBody = {
     error: {
       type: error.type,
@@ -101,6 +157,7 @@ export function errorResponse(c: Context<AppEnv>, error: ApiError): Response {
       message: error.message,
       ...(error.param !== undefined && { param: error.param }),
       ...(error.issues !== undefined && { issues: error.issues }),
+      ...(hint !== undefined && { hint }),
       request_id: c.var.requestId,
     },
   };

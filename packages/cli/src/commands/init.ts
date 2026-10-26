@@ -1,5 +1,6 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, join, relative, resolve } from "node:path";
+import { fetchSetupReport, type SetupReport } from "coss";
 import type { Flags } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { profileName, readConfig } from "../config.ts";
@@ -10,9 +11,13 @@ import {
   dashboardBaseUrl,
   describeEnvironment,
 } from "../context.ts";
+import { removeEnvVar, setEnvVar } from "../env-file.ts";
 import { apiError, CliError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
+import { type DetectedStack, detectProjectStack } from "../project-stack.ts";
 import { browserLogin, isRemote } from "./login.ts";
+
+export { removeEnvVar, setEnvVar };
 
 type PackageJson = {
   name?: unknown;
@@ -77,30 +82,13 @@ function dependsOn(pkg: PackageJson, name: string): boolean {
 
 const KEY_LINE = /^\s*(?:export\s+)?COSS_API_KEY\s*=\s*["']?([^"'\s#]*)/m;
 
-/** The env file with `name=value` set: an existing line replaced, else one appended. */
-export function setEnvVar(text: string, name: string, value: string): string {
-  const line = new RegExp(`^\\s*(?:export\\s+)?${name}\\s*=.*$`, "m");
-  // A function, so `$` in the value is never a replacement pattern.
-  if (line.test(text)) return text.replace(line, () => `${name}=${value}`);
-  const separator = text === "" || text.endsWith("\n") ? "" : "\n";
-  return `${text}${separator}${name}=${value}\n`;
-}
-
-/** `text` without `name`'s assignments. */
-export function removeEnvVar(text: string, name: string): string {
-  return text.replace(
-    new RegExp(`^[ \\t]*(?:export[ \\t]+)?${name}[ \\t]*=.*(?:\\r?\\n|$)`, "gm"),
-    "",
-  );
-}
-
 const NOTES_BEGIN = "<!-- BEGIN:coss -->";
 const NOTES_END = "<!-- END:coss -->";
 
 /**
  * What a coding agent working in the project should know about coss.com, for its AGENTS.md
- * (`--agents`). Keep it in step with the brief that opens https://coss.com/llms.txt
- * (apps/site/src/lib/llms.ts).
+ * (on by default; `--no-agents` skips them). Keep it in step with the brief that opens
+ * https://coss.com/llms.txt (apps/site/src/lib/llms.ts).
  */
 export function agentNotes(envFile: string): string {
   return `${NOTES_BEGIN}
@@ -115,11 +103,14 @@ This project uses [coss.com](https://coss.com) (email, SMS, webhooks) through it
   every API works and records what it would do, with events and webhooks, but nothing is
   delivered. A \`coss_live_…\` key there delivers for real: don't test with it, and never switch
   to one to try something (\`npx coss-cli init --force\` replaces it with a development key).
-- SDK methods return \`{ data, error }\` and don't throw for API failures: always check \`error\`.
-  Webhook handlers verify each request with \`verifyWebhook\`, which throws on a bad signature.
-- After \`npx coss-cli login\`: \`npx coss-cli listen --forward-to localhost:3000/<path>\` forwards
-  webhook events to a local handler, \`npx coss-cli trigger <event type>\` sends a test event, and
-  \`npx coss-cli logs tail\` follows the API requests and events.
+- SDK methods return \`{ data, error }\` and don't throw for API failures: always check \`error\`
+  (and \`error.hint\`, which names the fix). Webhook handlers verify each request with
+  \`verifyWebhook\`, which throws on a bad signature. \`npx coss-cli listen\` writes
+  \`COSS_WEBHOOK_SECRET\` into \`${envFile}\` for that check.
+- Commands use \`COSS_API_KEY\` from the environment. \`npx coss-cli listen --forward-to
+  localhost:3000/<path>\` forwards webhook events to a local handler, \`npx coss-cli trigger
+  <event type>\` sends a test event, and \`npx coss-cli logs tail\` follows the API requests and
+  events. Send tests to \`bounce@simulator.amazonses.com\` and run \`npx coss-cli emails diagnose <id>\`.
 ${NOTES_END}
 `;
 }
@@ -161,8 +152,11 @@ const FLAGS = {
   force: { type: "boolean", description: "Replace a COSS_API_KEY the env file already has" },
   agents: {
     type: "boolean",
-    description:
-      "Add notes on coss.com for coding agents to the project's AGENTS.md (or CLAUDE.md)",
+    description: "Add notes for coding agents (the default; --no-agents skips them)",
+  },
+  "no-agents": {
+    type: "boolean",
+    description: "Don't add notes for coding agents to AGENTS.md",
   },
   "no-browser": {
     type: "boolean",
@@ -179,9 +173,9 @@ export const initCommand: Command = defineCommand({
     "package manager, and writes a new development (sandbox) API key to its env file as " +
     "COSS_API_KEY, created in the dashboard like `coss login`'s and named after the project. It " +
     "is the project's key, not the CLI's: `coss login` signs the CLI in.\n\n" +
-    "An env file that already has a key keeps it, unless --force. With --agents it also adds a " +
-    "short section on coss.com (docs, the development key, testing) to the project's AGENTS.md, " +
-    "or its CLAUDE.md when it has no AGENTS.md; running it again updates that section.",
+    "An env file that already has a key keeps it, unless --force. It also adds a short section on " +
+    "coss.com (docs, the development key, testing) to the project's AGENTS.md, or its CLAUDE.md " +
+    "when it has no AGENTS.md; running it again updates that section. --no-agents skips the notes.",
   flags: FLAGS,
   run: init,
 });
@@ -195,6 +189,7 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
   const shownFile = relative(dir, envFile) || envFile;
   const existingText = await readFile(envFile, "utf8").catch(() => null);
   const existingKey = existingText ? (KEY_LINE.exec(existingText)?.[1] ?? "") : "";
+  let apiKey = existingKey;
 
   // Where `coss login` pointed the CLI (a local stack, say) is where the project's key comes from.
   const config = await readConfig(io);
@@ -227,6 +222,7 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
           "writes development keys. Pick a sandbox environment.",
       );
     }
+    apiKey = token.api_key;
     const withKey = setEnvVar(existingText ?? "", "COSS_API_KEY", token.api_key);
     // The key only works against the API it came from: COSS_BASE_URL follows it (a key of the
     // default API drops one a local stack left).
@@ -279,7 +275,8 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
   }
 
   let notesFile: string | null = null;
-  if (values.agents) {
+  // --no-agents wins over --agents. Notes are on unless that flag is set.
+  if (values["no-agents"] !== true) {
     notesFile = await agentsFile(dir);
     const before = await readFile(notesFile, "utf8").catch(() => "");
     await writeFile(notesFile, setAgentNotes(before, agentNotes(shownFile)));
@@ -290,6 +287,10 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
     }
   }
 
+  const setup = await fetchSetupReport(clientFor(io, { apiKey, baseUrl }));
+  const stack = await detectProjectStack(dir, pkg);
+  if (setup.warning) out.warn(setup.warning);
+
   if (out.json) {
     out.data({
       env_file: envFile,
@@ -297,13 +298,15 @@ async function init({ values, context }: CommandInput<typeof FLAGS>): Promise<nu
       installed,
       ignored_by_git: ignored,
       agents_file: notesFile,
+      setup,
     });
     return 0;
   }
-  out.line(`
-Send an email from your server code${next ? " (a route handler or server action)" : ""}:
+  out.line(closingMessage({ stack, shownFile, setup }));
+  return 0;
+}
 
-  import { Coss } from "coss";
+const SDK_SNIPPET = `  import { Coss } from "coss";
 
   const coss = new Coss(); // reads COSS_API_KEY
   const { data, error } = await coss.email.send({
@@ -311,21 +314,57 @@ Send an email from your server code${next ? " (a route handler or server action)
     to: "you@example.com",
     subject: "Hello from coss.com",
     text: "It works!",
-  });
+  });`;
+
+const NODEMAILER_SNIPPET = `  import { cossTransport } from "coss/nodemailer";
+  import nodemailer from "nodemailer";
+
+  const transport = nodemailer.createTransport(cossTransport());
+  await transport.sendMail({
+    from: "Acme <hello@example.com>",
+    to: "you@example.com",
+    subject: "Hello from coss.com",
+    text: "It works!",
+  });`;
+
+function sdkSnippet(isNext: boolean, shownFile: string): string {
+  return `Send an email from your server code${isNext ? " (a route handler or server action)" : ""}:
+
+${SDK_SNIPPET}
 
 Development keys never deliver email, but every send has its events and webhooks.${
-    next ? "" : `\nLoad ${shownFile} in your app, e.g. node --env-file=${shownFile} server.js.`
-  }
+    isNext ? "" : `\nLoad ${shownFile} in your app, e.g. node --env-file=${shownFile} server.js.`
+  }`;
+}
 
-Next:
+/** The closing message: the drop-in this project already uses, then the one next step. */
+function closingMessage(options: {
+  stack: DetectedStack;
+  shownFile: string;
+  setup: SetupReport;
+}): string {
+  const { stack, shownFile, setup } = options;
+  const parts: string[] = [];
+  if (stack.driver) {
+    parts.push(`Install the ${stack.driver.kind} driver yourself:\n\n  ${stack.driver.install}`);
+  }
+  if (stack.integration === "nodemailer") {
+    parts.push(`Send with Nodemailer:\n\n${NODEMAILER_SNIPPET}`);
+  } else if (stack.integration === "better-auth") {
+    parts.push(
+      "Send Better Auth's emails with `coss/better-auth` (https://coss.com/docs/integrations.md).",
+    );
+  } else if (stack.integration === "authjs") {
+    parts.push("Send Auth.js emails with `coss/authjs` (https://coss.com/docs/integrations.md).");
+  } else if (stack.javascript || !stack.driver) {
+    parts.push(sdkSnippet(stack.next, shownFile));
+  }
+  parts.push(setup.next);
+  parts.push(`Next:
   coss listen --forward-to localhost:3000/webhooks   receive webhook events locally
   coss logs tail                                     follow the environment's log
-  https://coss.com/docs                              guides and the API reference${
-    values.agents
-      ? ""
-      : "\n  coss init --agents                                 notes for coding agents in AGENTS.md"
-  }`);
-  return 0;
+  https://coss.com/docs                              guides and the API reference`);
+  return `\n${parts.join("\n\n")}`;
 }
 
 /** Whether git ignores the file: `null` outside a repository (or without git). */

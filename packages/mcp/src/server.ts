@@ -4,12 +4,16 @@ import { registerAccountTools } from "./tools/account.ts";
 import { type DocsOptions, registerDocsTools } from "./tools/docs.ts";
 import { registerDomainTools } from "./tools/domains.ts";
 import { registerEmailTools } from "./tools/emails.ts";
+import { registerHookTools } from "./tools/hooks.ts";
 import { registerLogTools } from "./tools/logs.ts";
 import { registerReceivingTools } from "./tools/receiving.ts";
+import { registerRiskTools } from "./tools/risk.ts";
 import { registerSendingTools } from "./tools/sending.ts";
+import { registerSetupTools } from "./tools/setup.ts";
 import { type KeyMode, keyMode, type ToolContext } from "./tools/shared.ts";
 import { registerSmsTools } from "./tools/sms.ts";
 import { registerSuppressionTools } from "./tools/suppressions.ts";
+import { registerTemplateTools } from "./tools/templates.ts";
 import { registerWebhookTools } from "./tools/webhooks.ts";
 import { VERSION } from "./version.ts";
 
@@ -36,10 +40,11 @@ const DOCS_INSTRUCTIONS =
 const NO_KEY_INSTRUCTIONS = [
   "Tools for coss.com, the developer platform for email, SMS, webhooks (Hooks) and risk checks.",
   DOCS_INSTRUCTIONS,
-  "No COSS_API_KEY is configured, so only the docs tools are available. To get a development " +
-    "key, run `npx coss-cli init` in the project (the user approves it in the browser; it is " +
-    "written to the project's .env.local or .env), then set it as COSS_API_KEY in this " +
-    "server's configuration and restart it.",
+  "No COSS_API_KEY is configured, and the project's .env.local or .env has no development " +
+    "(coss_test_) key, so only the docs tools are available. To get one, run `npx coss-cli init` " +
+    "in the project (the user approves it in the browser; it is written to .env.local or .env). " +
+    "Restart this server afterwards: it reads that file when its own environment has no key. A " +
+    "coss_live_ key in the file is never loaded.",
 ].join("\n");
 
 function instructions(mode: KeyMode): string {
@@ -53,9 +58,12 @@ function instructions(mode: KeyMode): string {
       : mode === "live"
         ? "This key is a live (coss_live_) key: emails and SMS are really delivered."
         : "",
+    "Call get_setup before writing send code: it returns a from address that will succeed, DNS " +
+      "still missing, and one `next` step.",
     'To answer "did my email get delivered?": diagnose_email with the email id, or with the ' +
       "recipient address (and some subject text). find_emails searches; get_email shows content " +
-      "and raw events. If no email exists, the API may have refused the send: search_logs.",
+      "and raw events. If no email exists, the API may have refused the send: search_logs. " +
+      "An API error's `hint` names the fix when there is one.",
     DOCS_INSTRUCTIONS,
     "For text messages: diagnose_sms with the message id or the recipient number (E.164); " +
       "find_sms searches, get_sms shows the text and events, list_sms_numbers shows which " +
@@ -85,12 +93,16 @@ export function createCossMcpServer(options: CossMcpServerOptions): McpServer {
     mode,
     now: options.now ?? (() => new Date()),
   };
+  registerSetupTools(ctx);
   registerEmailTools(ctx);
   registerSendingTools(ctx);
   registerSuppressionTools(ctx);
+  registerTemplateTools(ctx);
   registerSmsTools(ctx);
   registerDomainTools(ctx);
   registerWebhookTools(ctx);
+  registerHookTools(ctx);
+  registerRiskTools(ctx);
   registerReceivingTools(ctx);
   registerLogTools(ctx);
   registerAccountTools(ctx);

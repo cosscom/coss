@@ -3259,6 +3259,10 @@
                 },
                 "description": "Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`)."
               },
+              "hint": {
+                "type": "string",
+                "description": "What to try next. Present when coss.com can name a fix, and often includes a docs URL."
+              },
               "request_id": {
                 "type": "string",
                 "examples": [

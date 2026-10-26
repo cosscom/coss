@@ -6,7 +6,7 @@ description: Point Claude Code, Cursor, Codex or any coding agent at coss.com, a
 Give your agent one prompt:
 
 ```text
-Add coss.com to this project: read https://coss.com/llms.txt, get a development key with `npx coss-cli init`, and build and test with it.
+Add coss.com to this project: read https://coss.com/llms.txt, get a development key with `npx coss-cli init --agents`, and build and test with it.
 ```
 
 From there the agent reads what it needs from the docs, asks you to approve a development key
@@ -41,9 +41,10 @@ outcomes, events and webhooks (see [sandbox behaviour](/docs/environments#sandbo
 So the agent can run what it writes, and `coss listen` forwards the resulting webhooks to its
 local handler.
 
-`npx coss-cli init --agents` also adds a short coss.com section to the project's `AGENTS.md` (or
-`CLAUDE.md`), so later sessions know where the docs are and how to test without reading this
-again.
+`npx coss-cli init` adds a short coss.com section to the project's `AGENTS.md` (or
+`CLAUDE.md` when there is no `AGENTS.md`), so later sessions know where the docs are and how
+to test without reading this again. `--no-agents` skips that. It also prints the one next
+step for the key, and the drop-in when the project already uses a mail library.
 
 ## Claude Code plugin
 

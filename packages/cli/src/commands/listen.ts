@@ -1,4 +1,5 @@
 import { hostname as osHostname } from "node:os";
+import { relative } from "node:path";
 import type {
   ApiVersion,
   Coss,
@@ -17,6 +18,7 @@ import {
   describeEnvironment,
   resolveCredentials,
 } from "../context.ts";
+import { projectEnvFile, readEnvValue, writeEnvValue } from "../env-file.ts";
 import { apiError, CliError, isTransient, UsageError } from "../errors.ts";
 import type { CliIo } from "../io.ts";
 import {
@@ -77,12 +79,25 @@ function report(out: Output, forwarded: Forwarded, printJson: boolean): void {
   if (printJson) out.line(toJson(JSON.parse(delivery.body), 2));
 }
 
-/** The profile's signing secret, created (and saved) on first use. */
-async function signingSecret(io: CliIo, credentials: Credentials): Promise<string> {
-  const saved = credentials.profile?.listen_secret;
-  if (isSecret(saved)) return saved;
-  const secret = generateSecret();
-  if (credentials.source === "profile") {
+/**
+ * The signing secret for this project. An existing `COSS_WEBHOOK_SECRET` in the env file wins, so
+ * a handler's secret is not rotated; otherwise the profile's `listen_secret`, otherwise a new one.
+ * It is written to the env file, and to the profile when the CLI key came from the profile.
+ */
+async function signingSecret(
+  io: CliIo,
+  credentials: Credentials,
+): Promise<{ secret: string; file: string; wrote: boolean }> {
+  const file = await projectEnvFile(io.cwd);
+  const existing = file.text ? readEnvValue(file.text, "COSS_WEBHOOK_SECRET") : "";
+  const fromProfile = credentials.profile?.listen_secret;
+  const secret = isSecret(existing)
+    ? existing
+    : isSecret(fromProfile)
+      ? fromProfile
+      : generateSecret();
+  const wrote = await writeEnvValue(file, "COSS_WEBHOOK_SECRET", secret);
+  if (credentials.source === "profile" && credentials.profile?.listen_secret !== secret) {
     const config = await readConfig(io);
     const profile = config.profiles[credentials.profileName];
     if (profile) {
@@ -90,7 +105,7 @@ async function signingSecret(io: CliIo, credentials: Credentials): Promise<strin
       await writeConfig(io, config);
     }
   }
-  return secret;
+  return { secret, file: relative(io.cwd, file.path) || file.path, wrote };
 }
 
 async function openListener(
@@ -133,7 +148,7 @@ async function run(context: Context, values: Record<string, unknown>): Promise<n
       "account.* and billing.* events only reach live environments: you won't see them here.",
     );
   }
-  const secret = await signingSecret(io, credentials);
+  const { secret, file: secretFile, wrote: wroteSecret } = await signingSecret(io, credentials);
   const apiVersion =
     typeof values["api-version"] === "string"
       ? values["api-version"]
@@ -145,8 +160,11 @@ async function run(context: Context, values: Record<string, unknown>): Promise<n
   out.info(
     `${out.style("green", "Ready!")} Listening to ${describeEnvironment(environment)}${target ? `, forwarding to ${target}` : ""}.`,
   );
-  // On stderr, so even with --json: the receiver needs it, and with COSS_API_KEY it isn't saved.
-  out.info(`Signing secret: ${out.style("bold", secret)} (API version ${listener.api_version})`);
+  // On stderr, so --json stdout stays events. The line is the env assignment a handler copies.
+  out.info(`COSS_WEBHOOK_SECRET=${secret}`);
+  out.info(
+    `${wroteSecret ? "Saved" : "Using"} COSS_WEBHOOK_SECRET in ${secretFile} (API version ${listener.api_version}).`,
+  );
   out.info(out.style("dim", "Press Ctrl-C to stop."));
 
   let pending: WebhookListenerAck[] = [];

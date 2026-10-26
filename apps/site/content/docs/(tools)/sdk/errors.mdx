@@ -16,6 +16,7 @@ When a call fails, `error` is a plain `CossError` object (never an exception):
 | `request_id` | `string \| null`                      | The API's `X-Request-Id`                               |
 | `param`      | `string`, optional                    | The request field or header the error relates to       |
 | `issues`     | `{ path: string; message: string }[]`, optional | Per-field validation problems         |
+| `hint`       | `string`, optional                    | What to try next, often with a docs URL |
 
 Include `request_id` when contacting support. `issues` lists per-field problems of a
 `validation_error`.

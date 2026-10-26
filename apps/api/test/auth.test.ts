@@ -148,7 +148,11 @@ describe("authentication", () => {
       const res = await sendEmail(app, key, emailBody());
       expect(res.status).toBe(403);
       const error = await errorOf(res);
-      expect(error).toMatchObject({ type: "permission_error", code: "organization_suspended" });
+      expect(error).toMatchObject({
+        type: "permission_error",
+        code: "organization_suspended",
+        hint: expect.stringContaining("https://coss.com/docs/email/delivery.md"),
+      });
       // The internal reason is never shown to the organization.
       expect(error.message).not.toContain("Abuse");
     }

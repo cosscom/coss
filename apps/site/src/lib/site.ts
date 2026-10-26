@@ -8,7 +8,7 @@ export const DOCS_ROUTE = "/docs";
  * The one line to hand a coding agent (the landing page and /docs/agents, which must quote it
  * exactly): everything else it reads from /llms.txt, whose brief explains `coss init`.
  */
-export const AGENT_PROMPT = `Add coss.com to this project: read ${SITE_URL}/llms.txt, get a development key with \`npx coss-cli init\`, and build and test with it.`;
+export const AGENT_PROMPT = `Add coss.com to this project: read ${SITE_URL}/llms.txt, get a development key with \`npx coss-cli init --agents\`, and build and test with it.`;
 /** Shiki themes of every code block (source.config.ts and the Shipyard docs' collection). */
 export const CODE_THEMES = { light: "github-light", dark: "github-dark" } as const;
 
