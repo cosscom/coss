@@ -1,5 +1,22 @@
 # coss-cli
 
+## 0.4.0
+
+### Minor Changes
+
+- 57397ff: Setup status for agents, error hints, and one project key.
+  
+  `describeSetup` reports a from address that will succeed and one next step. API errors can include `hint` (a fix, often with a docs URL), and the SDK copies it onto `CossError`. `coss init` writes agent notes by default, points at the project's mail library or framework driver, and prints that setup. `coss listen` writes `COSS_WEBHOOK_SECRET` into the project env file. `coss-mcp` loads a development key from that file and adds setup, risk, Hooks and template tools.
+- 2b6c98e: Publish a template and register a webhook endpoint from the tools an agent already uses.
+  
+  `publish_email_template` publishes the draft revision it just read. `create_webhook_endpoint` and `coss webhooks add` create an endpoint once and write its signing secret to the project env file as `COSS_WEBHOOK_SECRET`. A URL that already has an endpoint is left as it is. `coss init` snippets send to the mailbox simulator from the address setup reports.
+
+### Patch Changes
+
+- Updated dependencies [57397ff]
+- Updated dependencies [2b6c98e]
+  - coss@0.9.0
+
 ## 0.3.0
 
 ### Minor Changes
