@@ -844,6 +844,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   add `COSS_FROM=hello@acme.test`; `COSS_TO=bounce@simulator.amazonses.com` simulates a bounce). Webhook endpoints
   may be `http://127.0.0.1:…` locally; the worker (part of `bun run dev`) delivers them.
 
+## Cursor Cloud specific instructions
+
+- Login shells put `~/.local/bin` first (Node.js 24 and Bun 1.4.2). `node` earlier on `PATH` (`/exec-daemon/node`) is Node 22; Next.js and the Better Auth CLI need 24.
+- The environment `start` script already brings up PostgreSQL 18 (`postgres:postgres` on `localhost:5432`, databases `coss` and `coss_test`), Valkey 8 on `localhost:6379`, a root `.env` (created once), migrations, and the demo seed the first time the `demo@coss.local` user is missing. It then runs `bunx turbo run dev --ui=stream` in tmux session `coss-dev` (log `/tmp/coss-dev.log`): dashboard `:3000`, API `:3001`, site `:3002`, portal `:3003`, SMTP `:2465`/`:2587`, and the worker. Re-running start is safe; it does not mint another API key or a second dev session.
+- The first seed appends `COSS_API_KEY` and `COSS_BASE_URL` to `.env`. Sign in as in local dev. Turborepo remote cache is not set up here — do not run `turbo login` (README, "Remote cache").
+- Run `bun run test` from the repo root so Bun loads that `.env` before Turborepo. Dashboard tests that import `apps/web/src/env.ts` need `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `API_PUBLIC_URL`, and `WEBHOOK_SECRETS_KEY` in the process environment. CI sets those in the workflow; a login shell does not, and a bare `turbo run test` then fails those files with `Invalid environment variables`.
+
 ## Known limitations (v0)
 
 - Sends are asynchronous: `POST /v1/emails` stores the email and its `email-dispatch` pg-boss job in one transaction
