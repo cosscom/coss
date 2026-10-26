@@ -1,5 +1,20 @@
 # coss
 
+## 0.8.0
+
+### Minor Changes
+
+- 2f2c982: Budgets: the `billing.budget_threshold_reached`, `billing.budget_hold_placed` and `billing.budget_hold_lifted` webhook events (a member's, project's or API key's monthly budget), and the `BudgetScope` type. Sends over a budget fail with `billing_error` `budget_exceeded`; a broadcast waits with `pause_reason: "budget_exceeded"`.
+- 001c8ed: Content storage: `coss.email.storage` (`get`, `update`) switches an environment to `content_storage: "discard"`, which keeps each email's subject, body, headers, template variables and attachment filenames only until it is sent, fails or is canceled. Emails have `content_storage` (`mode` and `discarded_at`); `EmailContentStorage`, `ContentStorageMode`, `StorageSettings` and `UpdateStorageSettingsParams` are exported.
+- 57cc163: Scoped API keys: `coss.environment.get()` now returns the key's `api_key.access` (`full` or `restricted`) and `api_key.permissions` (`resource:action` strings, e.g. `email:send`). The MCP server's `get_account_status` reports them and its permission errors say the key is restricted; `coss whoami` prints the key's access.
+- 9d872c0: SMS: `coss.sms.send`, `get`, `list`, `listEvents` and `cancel`, with `coss.sms.suppressions` (`add`, `list`, `check`, `get`, `remove`), `coss.sms.received` (`list`, `get`) and `coss.sms.numbers.list`.
+- ce6f1e6: SMS types: `Sms`, `SmsEvent`, `ReceivedSms`, `SmsSuppression`, `SmsNumber` and the `sms.*` webhook events (`SmsWebhookEvent`, `ReceivedSmsWebhookEvent`, part of `WebhookEvent` and `WebhookEventType`); `LogSource` adds `sms`, and `coss.webhookEvents.test()` sends `sms.*` test events.
+- 2f2c982: `coss.billing.usage()` takes `group_by: "project" | "api_key" | "user"` (besides `"environment"`), and each usage row has `project_id`, `api_key_id` and `user_id` (`user_id`: the member whose personal API key caused the usage).
+
+### Patch Changes
+
+- ecaa8cc: Billing: the `Meter` type adds `sms.received_segments`, `sms.numbers` and `sms.registrations`.
+
 ## 0.7.0
 
 ### Minor Changes
