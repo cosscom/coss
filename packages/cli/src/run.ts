@@ -34,6 +34,7 @@ import {
 } from "./commands/templates.ts";
 import { triggerCommand } from "./commands/trigger.ts";
 import {
+  webhooksAddCommand,
   webhooksDeliveriesCommand,
   webhooksListCommand,
   webhooksRetryCommand,
@@ -68,6 +69,7 @@ export const COMMANDS: readonly Command[] = [
   listenCommand,
   triggerCommand,
   webhooksListCommand,
+  webhooksAddCommand,
   webhooksDeliveriesCommand,
   webhooksRetryCommand,
   ...HOOKS_COMMANDS,

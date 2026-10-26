@@ -38,13 +38,13 @@ can ask before calling the ones that change something.
 | Sending | `send_email`, `cancel_email`, `reschedule_email` |
 | Suppressions | `check_suppression`, `list_suppressions`, `add_suppression`, `remove_suppression` |
 | Domains | `list_domains`, `get_domain`, `add_domain`, `verify_domain` |
-| Webhooks | `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery`, `retry_webhook_delivery` |
+| Webhooks | `list_webhook_endpoints`, `list_webhook_deliveries`, `get_webhook_delivery`, `retry_webhook_delivery`, `create_webhook_endpoint` |
 | Receiving | `get_inbound_address`, `list_received_emails`, `get_received_email` |
 | SMS | `diagnose_sms`, `find_sms`, `get_sms`, `send_sms`, `cancel_sms`, `list_received_sms`, `list_sms_numbers` |
 | SMS suppressions | `check_sms_suppression`, `add_sms_suppression`, `remove_sms_suppression` |
 | Logs | `search_logs`, `get_log` |
 | Setup | `get_setup` |
-| Templates | `pull_email_template`, `push_email_template` |
+| Templates | `pull_email_template`, `push_email_template`, `publish_email_template` |
 | Hooks | `list_hook_applications`, `send_hook_message`, `list_hook_deliveries` |
 | Risk | `assess_risk`, `list_risk_assessments`, `list_risk_rules`, `list_risk_list_entries` |
 | Account | `get_account_status` |

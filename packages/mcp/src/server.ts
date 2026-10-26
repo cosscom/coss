@@ -29,6 +29,12 @@ export interface CossMcpServerOptions {
   docs?: DocsOptions;
   /** Overrides `new Date()` (tests). */
   now?: () => Date;
+  /**
+   * Directory walked for the project env file. `create_webhook_endpoint` writes
+   * `COSS_WEBHOOK_SECRET` there. Default: the process working directory, which is the project
+   * when an editor starts this server.
+   */
+  projectDir?: string;
 }
 
 const DOCS_INSTRUCTIONS =
@@ -60,6 +66,10 @@ function instructions(mode: KeyMode): string {
         : "",
     "Call get_setup before writing send code: it returns a from address that will succeed, DNS " +
       "still missing, and one `next` step.",
+    "publish_email_template publishes the draft at the revision you read, which sends use from " +
+      "then on. create_webhook_endpoint registers an https URL once and writes its signing " +
+      "secret to the project env file as COSS_WEBHOOK_SECRET (a repeat for the same URL does " +
+      "not create another endpoint).",
     'To answer "did my email get delivered?": diagnose_email with the email id, or with the ' +
       "recipient address (and some subject text). find_emails searches; get_email shows content " +
       "and raw events. If no email exists, the API may have refused the send: search_logs. " +
@@ -92,6 +102,7 @@ export function createCossMcpServer(options: CossMcpServerOptions): McpServer {
     coss: options.coss,
     mode,
     now: options.now ?? (() => new Date()),
+    projectDir: options.projectDir ?? process.cwd(),
   };
   registerSetupTools(ctx);
   registerEmailTools(ctx);

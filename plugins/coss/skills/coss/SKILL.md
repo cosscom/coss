@@ -63,7 +63,12 @@ key) is the user's step, in the dashboard.
 - To test locally: `npx coss-cli login` once (the user approves it like `init`), then
   `npx coss-cli listen --forward-to localhost:3000/<path>` forwards the environment's events to
   the handler. It writes `COSS_WEBHOOK_SECRET` into the same env file as the key (an existing
-  value is kept) and prints it. `npx coss-cli trigger <event type>` sends a sample event.
+  value is kept) and prints it. `npx coss-cli webhooks add <url>` (or the MCP tool
+  `create_webhook_endpoint`) registers that URL, writes the endpoint's secret into the same
+  variable (replacing a listen secret so both sign the same way) and does not create a second
+  endpoint for a URL that already has one. `npx coss-cli trigger <event type>` sends a sample event.
+- `publish_email_template` publishes the draft at the revision you read. Sends use that version
+  from then on. `push_email_template` only updates the draft.
 
 ## Check what happened
 

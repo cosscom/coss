@@ -65,7 +65,7 @@ describe("describeSetup", () => {
     expect(report.from).toBe("hello@ready.test");
     expect(report.missing_dns.map((entry) => entry.domain)).toEqual(["acme.test"]);
     expect(report.next).toBe(
-      "Ready to send from hello@ready.test. No webhook endpoints yet: `npx coss-cli listen` forwards events to localhost.",
+      "Ready to send from hello@ready.test. No webhook endpoints yet: `npx coss-cli webhooks add <url>` registers one and saves its signing secret, or `npx coss-cli listen` forwards events to localhost.",
     );
   });
 

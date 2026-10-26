@@ -397,7 +397,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
   become `isError` results with a hint (`result.ts`; the API's `error.hint` wins over the local one). `get_setup`
   (`tools/setup.ts`, `describeSetup` in the SDK) is the readiness answer. Risk, Hooks and template drafts have tools
-  that call only the public SDK. Third-party text (email content, received mail, bounce and
+  that call only the public SDK. `publish_email_template` publishes the revision it just read.
+  `create_webhook_endpoint` registers a URL once and writes `COSS_WEBHOOK_SECRET` into the project
+  env file (the same file the CLI uses; a repeat for that URL does not create another endpoint).
+  Third-party text (email content, received mail, bounce and
   webhook responses) is labelled untrusted, and the server's `instructions` say so.
 - Delivery diagnosis is the SDK's `coss/diagnose` (`packages/sdk/src/diagnose.ts`, shared with `coss emails
   diagnose`): `diagnoseEmail` is pure (email + events + best-effort context → verdict), `diagnose` fetches first;
@@ -458,7 +461,8 @@ What an agent pointed at coss.com reads, all describing the same facts — chang
   merged over it and checked against the schema (unknown fields refused), fanned out through the outbox like a
   real one. Sandbox environments only, never the live-only `domain.*`/`account.*`/`billing.*`; nothing in the body
   marks it as a test. The SDK's `WEBHOOK_EVENT_TYPES`/`TEST_WEBHOOK_EVENT_TYPES` (completion) are hand mirrors of
-  `@coss/email`'s, kept equal by `sdk-contract.test.ts`. `webhooks list|deliveries|retry` wrap the endpoint API.
+  `@coss/email`'s, kept equal by `sdk-contract.test.ts`. `webhooks list|add|deliveries|retry` wrap the endpoint API.
+  `webhooks add` writes the new endpoint's signing secret to the project env file as `COSS_WEBHOOK_SECRET`.
 - `logs tail` polls `GET /v1/logs` like the dashboard's live mode (re-reads from a minute before the newest line,
   prints unseen ids oldest first, `src/logs/tail.ts`); `emails send --simulate` uses the mailbox simulator addresses
   (`src/emails/simulate.ts`, must match `packages/email/src/providers/fake.ts`).

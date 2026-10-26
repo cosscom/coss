@@ -1,9 +1,17 @@
-import type { WebhookDelivery, WebhookDeliveryStatus, WebhookEndpoint } from "coss";
-import type { Flags } from "../args.ts";
+import { relative } from "node:path";
+import {
+  WEBHOOK_EVENT_TYPES,
+  type WebhookDelivery,
+  type WebhookDeliveryStatus,
+  type WebhookEndpoint,
+  type WebhookEventType,
+} from "coss";
+import { type Flags, list, requireArgs } from "../args.ts";
 import { type Command, type CommandInput, defineCommand } from "../command.ts";
 import { clientFor, resolveCredentials } from "../context.ts";
 import { printable } from "../emails/format.ts";
-import { apiError, UsageError } from "../errors.ts";
+import { projectEnvFile, readEnvValue, writeEnvValue } from "../env-file.ts";
+import { apiError, CliError, UsageError } from "../errors.ts";
 import type { Output } from "../output.ts";
 
 const DELIVERY_STATUSES: readonly WebhookDeliveryStatus[] = ["pending", "succeeded", "failed"];
@@ -39,7 +47,9 @@ export const webhooksListCommand: Command = defineCommand({
       return 0;
     }
     if (data.data.length === 0) {
-      out.info("No webhook endpoints. Run `coss listen` to receive events on this machine.");
+      out.info(
+        "No webhook endpoints. `coss webhooks add https://…` creates one, or `coss listen` receives events here.",
+      );
       return 0;
     }
     for (const endpoint of data.data) {
@@ -179,3 +189,116 @@ export const webhooksRetryCommand: Command = defineCommand({
     return 0;
   },
 });
+
+const ADD_FLAGS = {
+  description: {
+    type: "string",
+    value: "<text>",
+    description: "A note stored on the endpoint",
+  },
+  events: {
+    type: "string",
+    multiple: true,
+    value: "<types>",
+    description: "Only these event types (default: every event, including later ones)",
+  },
+  force: {
+    type: "boolean",
+    description: "Create another endpoint when this URL already has one",
+  },
+  json: {
+    type: "boolean",
+    description: "Print the endpoint as JSON, including its signing secret",
+  },
+} as const satisfies Flags;
+
+export const webhooksAddCommand: Command = defineCommand({
+  name: "webhooks add",
+  summary: "Create an endpoint and save its signing secret",
+  usage: "<url> [options]",
+  description:
+    "Creates a webhook endpoint at <url>. The signing secret is returned once and written to " +
+    "the project env file as COSS_WEBHOOK_SECRET, which verifyWebhook and `coss listen` both " +
+    "use (a previous value is replaced, so local forwarding and this endpoint sign the same " +
+    "way). Creation is not retried. If this URL already has an endpoint, it is left as it is " +
+    "unless --force.",
+  flags: ADD_FLAGS,
+  positionals: true,
+  run: addEndpoint,
+});
+
+async function addEndpoint({
+  values,
+  positionals,
+  context,
+}: CommandInput<typeof ADD_FLAGS>): Promise<number> {
+  const { io, out } = context;
+  const [url] = requireArgs(positionals, 1, "webhooks add <url>");
+  if (url === undefined || !/^https?:\/\//i.test(url)) {
+    throw new UsageError("Pass an http(s) URL: `coss webhooks add https://example.com/webhooks`.");
+  }
+  const events = list(values.events);
+  const unknown = events.filter(
+    (type) => !(WEBHOOK_EVENT_TYPES as readonly string[]).includes(type),
+  );
+  if (unknown.length > 0) {
+    throw new UsageError(
+      `Unknown event type ${unknown.map((type) => `"${type}"`).join(", ")}. ` +
+        "See https://coss.com/docs/webhooks.",
+    );
+  }
+  const credentials = await resolveCredentials(context);
+  const coss = clientFor(io, credentials);
+  const listed = await coss.webhookEndpoints.list({ signal: io.signal });
+  if (listed.error) throw apiError("Couldn't list the webhook endpoints", listed.error);
+  const existing = listed.data.data.filter((endpoint) => endpoint.url === url);
+  if (existing.length > 0 && values.force !== true) {
+    if (out.json) out.data({ created: false, endpoints: existing });
+    else {
+      const ids = existing.map((endpoint) => endpoint.id).join(", ");
+      out.line(`${url} already has ${ids}.`);
+      out.info(
+        "Its signing secret was shown only when it was created. Pass --force to create another endpoint.",
+      );
+    }
+    return 0;
+  }
+  const { data, error } = await coss.webhookEndpoints.create(
+    {
+      url,
+      ...(values.description ? { description: values.description } : {}),
+      ...(events.length > 0 ? { event_types: events as WebhookEventType[] } : {}),
+    },
+    { signal: io.signal },
+  );
+  if (error) throw apiError("Couldn't create the webhook endpoint", error);
+
+  const file = await projectEnvFile(io.cwd);
+  const previous = file.text ? readEnvValue(file.text, "COSS_WEBHOOK_SECRET") : "";
+  let wrote = false;
+  try {
+    wrote = await writeEnvValue(file, "COSS_WEBHOOK_SECRET", data.secret);
+  } catch (cause) {
+    out.info(`COSS_WEBHOOK_SECRET=${data.secret}`);
+    throw new CliError(
+      `Created ${data.id}, but couldn't save its signing secret ` +
+        `(${cause instanceof Error ? cause.message : "write failed"}). Store the secret above; ` +
+        "the API will not show it again.",
+    );
+  }
+  const shown = relative(io.cwd, file.path) || file.path;
+  const replaced = previous !== "" && previous !== data.secret;
+  if (out.json) {
+    out.data({ ...data, created: true, env_file: shown, replaced_existing_secret: replaced });
+    return 0;
+  }
+  out.line(`${out.style("green", "✔")} ${data.id}  ${data.url}`);
+  out.info(`COSS_WEBHOOK_SECRET=${data.secret}`);
+  const where = replaced
+    ? `Saved COSS_WEBHOOK_SECRET in ${shown}, replacing the previous value.`
+    : wrote
+      ? `Saved COSS_WEBHOOK_SECRET in ${shown}.`
+      : `COSS_WEBHOOK_SECRET in ${shown} already matches.`;
+  out.info(`${where} coss listen signs with it too.`);
+  return 0;
+}

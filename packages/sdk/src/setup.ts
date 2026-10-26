@@ -104,7 +104,10 @@ function chooseFrom(mode: SetupInput["mode"], domains: SetupDomain[]): string | 
 
 function listenNote(endpoints: SetupWebhookEndpoint[]): string {
   if (endpoints.length > 0) return "";
-  return " No webhook endpoints yet: `npx coss-cli listen` forwards events to localhost.";
+  return (
+    " No webhook endpoints yet: `npx coss-cli webhooks add <url>` registers one and saves its " +
+    "signing secret, or `npx coss-cli listen` forwards events to localhost."
+  );
 }
 
 function nextAction(input: SetupInput, from: string | null, missing: SetupDnsRecord[]): string {

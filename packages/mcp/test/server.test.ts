@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { Coss } from "coss";
@@ -35,10 +38,19 @@ function fakeApi(routes: Record<string, Route | unknown>) {
   return { fetch, requests };
 }
 
-async function connect(routes: Record<string, Route | unknown>, apiKey = "coss_live_test") {
+async function connect(
+  routes: Record<string, Route | unknown>,
+  apiKey = "coss_live_test",
+  projectDir?: string,
+) {
   const api = fakeApi(routes);
   const coss = new Coss({ apiKey, baseUrl: "http://api.test", fetch: api.fetch, maxRetries: 0 });
-  const server = createCossMcpServer({ coss, apiKey, now: () => NOW });
+  const server = createCossMcpServer({
+    coss,
+    apiKey,
+    now: () => NOW,
+    ...(projectDir ? { projectDir } : {}),
+  });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await server.connect(serverTransport);
   const client = new Client({ name: "test", version: "0.0.0" });
@@ -70,6 +82,7 @@ describe("coss-mcp server", () => {
       "cancel_sms",
       "check_sms_suppression",
       "check_suppression",
+      "create_webhook_endpoint",
       "diagnose_email",
       "diagnose_sms",
       "find_emails",
@@ -95,6 +108,7 @@ describe("coss-mcp server", () => {
       "list_suppressions",
       "list_webhook_deliveries",
       "list_webhook_endpoints",
+      "publish_email_template",
       "pull_email_template",
       "push_email_template",
       "read_docs",
@@ -138,6 +152,13 @@ describe("coss-mcp server", () => {
       idempotentHint: true,
     });
     expect(byName.get("push_email_template")?.annotations?.readOnlyHint).toBe(false);
+    expect(byName.get("publish_email_template")?.annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    });
+    expect(byName.get("create_webhook_endpoint")?.annotations?.readOnlyHint).toBe(false);
+    expect(byName.get("create_webhook_endpoint")?.description).toContain("COSS_WEBHOOK_SECRET");
     expect(client.getInstructions()).toContain("sandbox (coss_test_) key");
     expect(client.getInstructions()).toContain("get_setup");
   });
@@ -554,5 +575,118 @@ describe("coss-mcp server", () => {
     expect(data.removed).toEqual([{ object: "sms_suppression", id: "smssup_1", deleted: true }]);
     expect(requests[0]?.url.searchParams.get("phone_number")).toBe("+15005550009");
     expect((await call("remove_sms_suppression", {})).isError).toBe(true);
+  });
+
+  test("publish_email_template publishes the revision it just read", async () => {
+    let body: unknown;
+    const draft = {
+      object: "email_template_version",
+      template_id: "etpl_1",
+      version: null,
+      revision: 4,
+      default_locale: "en",
+      variables: [],
+      sample_variables: {},
+      contents: [{ locale: "en", subject: "Hi", html: "<p>Hi</p>", text: "Hi" }],
+      problems: [],
+      published_at: null,
+      created_at: "2026-10-01T00:00:00.000Z",
+      updated_at: "2026-10-01T00:00:00.000Z",
+    };
+    const { call, requests } = await connect({
+      "GET /v1/email_templates/welcome/draft": draft,
+      "POST /v1/email_templates/welcome/publish": (_url: URL, init: RequestInit) => {
+        body = JSON.parse(String(init.body));
+        return { body: { ...draft, version: 2, published_at: "2026-10-15T12:00:00.000Z" } };
+      },
+    });
+    const { isError, data } = await call("publish_email_template", { template: "welcome" });
+    expect(isError).toBe(false);
+    expect(body).toEqual({ revision: 4 });
+    expect(data).toMatchObject({ template_id: "etpl_1", version: 2, revision: 4, problems: [] });
+    expect(requests.map((request) => `${request.method} ${request.url.pathname}`)).toEqual([
+      "GET /v1/email_templates/welcome/draft",
+      "POST /v1/email_templates/welcome/publish",
+    ]);
+
+    const explicit = await connect({
+      "POST /v1/email_templates/welcome/publish": (_url: URL, init: RequestInit) => {
+        body = JSON.parse(String(init.body));
+        return { body: { ...draft, version: 2, revision: 9 } };
+      },
+    });
+    expect(
+      (await explicit.call("publish_email_template", { template: "welcome", revision: 9 })).isError,
+    ).toBe(false);
+    expect(body).toEqual({ revision: 9 });
+    expect(explicit.requests.map((request) => request.method)).toEqual(["POST"]);
+  });
+
+  test("create_webhook_endpoint writes the secret and does not duplicate a URL", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "coss-mcp-hook-"));
+    await writeFile(join(dir, ".env"), "COSS_API_KEY=coss_test_x\nCOSS_WEBHOOK_SECRET=whsec_old\n");
+    const created = {
+      object: "webhook_endpoint",
+      id: "whep_1",
+      url: "https://example.com/hooks",
+      description: "App",
+      event_types: ["email.delivered"],
+      api_version: "2026-10-10",
+      enabled: true,
+      disabled_reason: null,
+      disabled_at: null,
+      failing_since: null,
+      previous_secret_expires_at: null,
+      created_at: "2026-10-15T12:00:00.000Z",
+      updated_at: "2026-10-15T12:00:00.000Z",
+      secret: "whsec_new",
+    };
+    let posts = 0;
+    const routes = {
+      "GET /v1/webhook_endpoints": list([]),
+      "POST /v1/webhook_endpoints": (_url: URL, init: RequestInit) => {
+        posts++;
+        expect(JSON.parse(String(init.body))).toEqual({
+          url: "https://example.com/hooks",
+          description: "App",
+          event_types: ["email.delivered"],
+        });
+        return { body: created };
+      },
+    };
+    const { call } = await connect(routes, "coss_test_abc", dir);
+    const { isError, data } = await call("create_webhook_endpoint", {
+      url: "https://example.com/hooks",
+      description: "App",
+      event_types: ["email.delivered"],
+    });
+    expect(isError).toBe(false);
+    expect(data.created).toBe(true);
+    expect(data.secret).toBe("whsec_new");
+    expect(data.replaced_existing_secret).toBe(true);
+    expect(data.env_file).toBe(".env");
+    expect(await readFile(join(dir, ".env"), "utf8")).toBe(
+      "COSS_API_KEY=coss_test_x\nCOSS_WEBHOOK_SECRET=whsec_new\n",
+    );
+    expect(posts).toBe(1);
+
+    const again = await connect(
+      {
+        "GET /v1/webhook_endpoints": list([{ ...created, secret: undefined }]),
+        "POST /v1/webhook_endpoints": () => {
+          posts++;
+          return { body: created };
+        },
+      },
+      "coss_test_abc",
+      dir,
+    );
+    const second = await again.call("create_webhook_endpoint", {
+      url: "https://example.com/hooks",
+    });
+    expect(second.data.created).toBe(false);
+    expect(second.data.secret).toBeNull();
+    expect(second.data.endpoints[0].id).toBe("whep_1");
+    expect(posts).toBe(1);
   });
 });
