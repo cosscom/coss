@@ -27,8 +27,8 @@ curl -fsSL https://raw.githubusercontent.com/cosscom/coss/main/packages/cli/inst
 
 `install.sh` picks the archive for the machine, checks it against `SHA256SUMS` and installs `coss`
 into `~/.local/bin` (`COSS_INSTALL_DIR`; `COSS_VERSION` for another version). The musl builds need
-`libstdc++` (`apk add libstdc++` on Alpine). macOS executables are ad-hoc signed, not notarized:
-one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
+`libstdc++` (`apk add libstdc++` on Alpine). macOS executables are signed with coss.com's Developer
+ID and notarized by Apple (since 0.3.0), so one downloaded with a browser runs without a warning.
 
 ## Commands
 

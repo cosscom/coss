@@ -24,8 +24,8 @@ not the CLI).
   installs `coss` into `~/.local/bin` (set `COSS_INSTALL_DIR` for another directory, `COSS_VERSION`
   for another version).
 - **Alpine** and other musl systems need `libstdc++` (`apk add libstdc++`).
-- **macOS** executables are signed but not notarized: one you download with a browser needs
-  `xattr -d com.apple.quarantine coss` first (Homebrew and the install script don't).
+- **macOS** executables are signed with coss.com's Developer ID and notarized by Apple (since
+  0.3.0), so one you download with a browser runs without a Gatekeeper warning.
 - **Windows**: download `coss-cli-<version>-windows-x64.zip` from the release, or use npm.
 
 ## Sign in
