@@ -365,7 +365,10 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `.p8`) + `APPLE_NOTARY_KEY_ID` + `APPLE_NOTARY_ISSUER_ID`) re-signs them with the hardened runtime and Bun's JIT
   entitlements, has Apple notarize them (`scripts/notarize.ts`; a bare executable can't be stapled, so Gatekeeper
   checks online) and archives them again with a new `SHA256SUMS`; the smoke tests then run the notarized builds,
-  quarantined on macOS as a browser download is. When turning it on, drop the `xattr` note from the CLI's README and
+  quarantined on macOS as a browser download is, and `codesign --check-notarization` asks Apple about them. Running
+  `release.yml` by hand on main (`gh workflow run release.yml`) is a dry run: it builds the executables from main,
+  notarizes and smoke-tests them, and publishes nothing (no npm, release or tap), so the `apple` secrets can be
+  checked between releases. Once a notarized version is released, drop the `xattr` note from the CLI's README and
   `cli.mdx`. `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
   which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
   `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
