@@ -78,7 +78,8 @@ coss init
   pnpm, yarn or npm); `--no-install` skips that.
 - It adds a short section on coss.com to the project's `AGENTS.md` (its `CLAUDE.md` when it has
   no `AGENTS.md`): where the docs are for agents, what the development key does, and how to test.
-  Running it again updates that section. `--no-agents` skips it. See [Coding agents](/docs/agents).
+  `--agents` is the default. Running it again updates that section. `--no-agents` skips it. See
+  [Coding agents](/docs/agents).
 - It prints the one next step for this key (a from address that will succeed, or the DNS still
   missing) and, when the project already uses one, the Nodemailer, Better Auth, Auth.js, Laravel,
   Rails or Django drop-in. `--json` includes that report as `setup`.

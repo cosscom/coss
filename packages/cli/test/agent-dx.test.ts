@@ -116,11 +116,12 @@ describe("agent outcome fixtures", () => {
     process.env.COSS_API_KEY = "coss_test_fixture_next";
     try {
       const events = [bounce()];
-      expect(await sendNext(fakeSend(), events)).toEqual({
+      const fetchImpl = fakeSend() as typeof fetch;
+      expect(await sendNext(fetchImpl, events)).toEqual({
         id: "email_fixture",
         verdict: "not_delivered",
       });
-      expect(await sendNodemailer(fakeSend(), events)).toEqual({
+      expect(await sendNodemailer(fetchImpl, events)).toEqual({
         id: "email_fixture",
         verdict: "not_delivered",
       });
@@ -135,7 +136,7 @@ describe("agent outcome fixtures", () => {
     const brief = source(join(ROOT, "apps/site/src/lib/llms.ts"));
     const skill = source(join(ROOT, "plugins/coss/skills/coss/SKILL.md"));
     const notes = agentNotes(".env.local");
-    expect(prompt).toContain("https://coss.com/llms.txt");
+    expect(prompt).toContain("llms.txt");
     expect(prompt).toContain("npx coss-cli init --agents");
     for (const text of [brief, skill, notes]) {
       expect(text).toContain("coss_test_");

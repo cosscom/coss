@@ -35,10 +35,7 @@ describe("describeSetup", () => {
     const optional = { ...record("missing"), required: false, type: "TXT" };
     const report = describeSetup({
       mode: "live",
-      domains: [
-        { name: "acme.test", can_send: false, records: [record(), optional] },
-        { name: "ready.test", can_send: true, records: [record("missing")] },
-      ],
+      domains: [{ name: "acme.test", can_send: false, records: [record(), optional] }],
       webhookEndpoints: [],
     });
     expect(report.from).toBeNull();
@@ -54,6 +51,22 @@ describe("describeSetup", () => {
     ]);
     expect(report.next).toContain("acme.test");
     expect(report.next).toContain("production key");
+  });
+
+  test("a domain that can send is ready even when another domain still needs DNS", () => {
+    const report = describeSetup({
+      mode: "live",
+      domains: [
+        { name: "acme.test", can_send: false, records: [record()] },
+        { name: "ready.test", can_send: true, records: [record("missing")] },
+      ],
+      webhookEndpoints: [],
+    });
+    expect(report.from).toBe("hello@ready.test");
+    expect(report.missing_dns.map((entry) => entry.domain)).toEqual(["acme.test"]);
+    expect(report.next).toBe(
+      "Ready to send from hello@ready.test. No webhook endpoints yet: `npx coss-cli listen` forwards events to localhost.",
+    );
   });
 
   test("a live key with no domains says to add one", () => {
