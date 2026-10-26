@@ -235,7 +235,8 @@ export function toMobileLogDetail(
 }
 
 /** Never the key itself: `listEnvironmentApiKeys` doesn't select it. */
-export function toMobileApiKey(key: EnvironmentApiKeySummary): ApiKey {
+/** `paused`: a budget of the key, its owner or its project is used up (`apiKeyPaused`). */
+export function toMobileApiKey(key: EnvironmentApiKeySummary, paused = false): ApiKey {
   return {
     id: key.id,
     name: key.name,
@@ -245,6 +246,13 @@ export function toMobileApiKey(key: EnvironmentApiKeySummary): ApiKey {
     last_used_at: key.lastRequest?.toISOString() ?? null,
     access: summarizeKeyAccess(key.access, key.permissions),
     permissions: permissionStrings(key.permissions),
+    owner: key.owner && {
+      id: key.owner.id,
+      name: key.owner.name,
+      email: key.owner.email,
+      role: key.owner.role,
+    },
+    paused,
   };
 }
 

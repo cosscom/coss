@@ -1,5 +1,24 @@
 # coss-cli
 
+## 0.3.0
+
+### Minor Changes
+
+- 9978333: `coss init --agents`: adds a short section on coss.com for coding agents (where the docs are, what the development key does, how to test) to the project's `AGENTS.md`, or its `CLAUDE.md` when it has no `AGENTS.md`. Running it again updates the section. `--json` reports the file as `agents_file`.
+- 57cc163: Scoped API keys: `coss.environment.get()` now returns the key's `api_key.access` (`full` or `restricted`) and `api_key.permissions` (`resource:action` strings, e.g. `email:send`). The MCP server's `get_account_status` reports them and its permission errors say the key is restricted; `coss whoami` prints the key's access.
+- fb711e1: `coss sms send`: a test text message (`--to`, or `--simulate delivered|invalid|filtered|opted-out|reply` for the SMS simulator; `--wait` follows it to its outcome and shows the simulator's reply).
+
+### Patch Changes
+
+- Updated dependencies [2f2c982]
+- Updated dependencies [001c8ed]
+- Updated dependencies [57cc163]
+- Updated dependencies [ecaa8cc]
+- Updated dependencies [9d872c0]
+- Updated dependencies [ce6f1e6]
+- Updated dependencies [2f2c982]
+  - coss@0.8.0
+
 ## 0.2.0
 
 ### Minor Changes

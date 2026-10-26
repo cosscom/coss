@@ -26,6 +26,7 @@ import { Panel, PanelBody } from "@/components/panel";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import { liveKeyRestriction } from "@/lib/live-keys";
 import { requireOrgMember } from "@/lib/session";
+import { apiKeyPaused } from "@/lib/spend";
 import { ApiKeyAccessBadge } from "./api-key-access";
 import {
   CreateApiKeyDialog,
@@ -55,14 +56,7 @@ export default async function ApiKeysPage({
     canManage ? listOrganizationMembers({ organizationId: organization.id }) : [],
     live ? listBudgetHolds(organization.id) : [],
   ]);
-  // A live key is paused while a budget of it, its owner or its project is used up.
-  const pausedKey = (key: EnvironmentApiKeySummary) =>
-    holds.some(
-      (hold) =>
-        (hold.scope === "api_key" && hold.targetId === key.id) ||
-        (hold.scope === "user" && hold.targetId === key.owner?.id) ||
-        (hold.scope === "project" && hold.targetId === project.id),
-    );
+  const pausedKey = (key: EnvironmentApiKeySummary) => apiKeyPaused(holds, key, project.id);
   const target = {
     orgSlug: organization.slug,
     projectSlug: project.slug,

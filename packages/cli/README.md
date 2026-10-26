@@ -27,8 +27,8 @@ curl -fsSL https://raw.githubusercontent.com/cosscom/coss/main/packages/cli/inst
 
 `install.sh` picks the archive for the machine, checks it against `SHA256SUMS` and installs `coss`
 into `~/.local/bin` (`COSS_INSTALL_DIR`; `COSS_VERSION` for another version). The musl builds need
-`libstdc++` (`apk add libstdc++` on Alpine). macOS executables are ad-hoc signed, not notarized:
-one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
+`libstdc++` (`apk add libstdc++` on Alpine). macOS executables are signed with coss.com's Developer
+ID and notarized by Apple (since 0.3.0), so one downloaded with a browser runs without a warning.
 
 ## Commands
 
@@ -39,7 +39,7 @@ one downloaded with a browser needs `xattr -d com.apple.quarantine coss`.
 | `coss whoami` | The key in use, where it comes from, and its organization, project and environment. |
 | `coss profiles list` | The saved profiles: each one's environment, whether `coss login` created its key or it was pasted, and which is the default. |
 | `coss use <profile>` | Makes a saved profile the default. |
-| `coss init` | Sets the project in the current directory up: installs `coss` with its package manager (`--no-install` doesn't) and writes a new development key, approved in the dashboard and named after the project, to `.env.local` (Next.js) or `.env` (`--env-file` picks another). A key already there is kept unless `--force`. |
+| `coss init` | Sets the project in the current directory up: installs `coss` with its package manager (`--no-install` doesn't) and writes a new development key, approved in the dashboard and named after the project, to `.env.local` (Next.js) or `.env` (`--env-file` picks another). A key already there is kept unless `--force`. `--agents` adds notes on coss.com for coding agents to the project's `AGENTS.md`. |
 | `coss open [page]` | Opens the environment's page in the dashboard: `overview`, `emails`, `logs`, `webhooks`, `api-keys`, `domains`, `billing`, … (`--print` prints the URL). |
 | `coss emails send` | A test email: `--to`, or `--simulate delivered\|bounced\|complained\|suppressed` for the mailbox simulator; `--template` with `--var name=value`; `--wait` follows it to its outcome (up to `--timeout`, 60 s). |
 | `coss emails list` | The environment's emails, newest first, with where each stands. Filter with `--to`, `--status`, `--recipient-status`, `-q`, `--category`, `--batch`, `--since`/`--until`; `--limit` (20). |

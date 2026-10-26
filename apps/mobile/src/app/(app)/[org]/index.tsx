@@ -11,6 +11,7 @@ import {
   Network,
   Settings,
   Users,
+  Wallet,
 } from "lucide-react-native";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
@@ -76,6 +77,21 @@ function Alerts({ data }: { data: OrganizationResponse }) {
         key="standing"
         title="Your sending reputation needs attention"
         tone="warning"
+      />,
+    );
+  }
+  if (data.budget_paused) {
+    // apps/web/src/app/[orgSlug]/layout.tsx
+    alerts.push(
+      <Alert
+        action={{
+          label: "Your spend",
+          onPress: () =>
+            router.push({ pathname: "/[org]/spend", params: { org: organization.slug } }),
+        }}
+        description="Your personal API keys reached your monthly budget: their live sends are paused until next month or until an owner raises it."
+        key="budget"
+        tone="error"
       />,
     );
   }
@@ -220,6 +236,7 @@ export default function OrganizationScreen() {
                   icon: MessageSquare,
                 },
                 { label: "Members", path: "members", icon: Users },
+                { label: "Spend", path: "spend", icon: Wallet },
                 { label: "Settings", path: "settings", icon: Settings },
                 query.data.can.read_billing && {
                   label: "Billing",

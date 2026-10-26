@@ -43,12 +43,22 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders({ dev }) }];
   },
-  // In production the dashboard's zone serves /api/auth and browser monitoring on the same origin.
   async rewrites() {
-    if (!dev) return [];
     return [
-      { source: "/api/auth/:path*", destination: `${DEV_DASHBOARD_ORIGIN}/api/auth/:path*` },
-      { source: SENTRY_TUNNEL_PATH, destination: `${DEV_DASHBOARD_ORIGIN}${SENTRY_TUNNEL_PATH}` },
+      // Every docs page as Markdown, for coding agents (/llms.txt links these): `<page>.md`, and
+      // `/docs/index.md` for the docs home. Checked before the docs' catch-all page.
+      { source: "/docs/index.md", destination: "/docs/md" },
+      { source: "/docs/:path+.md", destination: "/docs/md/:path+" },
+      // In production the dashboard's zone serves /api/auth and browser monitoring on the same origin.
+      ...(dev
+        ? [
+            { source: "/api/auth/:path*", destination: `${DEV_DASHBOARD_ORIGIN}/api/auth/:path*` },
+            {
+              source: SENTRY_TUNNEL_PATH,
+              destination: `${DEV_DASHBOARD_ORIGIN}${SENTRY_TUNNEL_PATH}`,
+            },
+          ]
+        : []),
     ];
   },
 };

@@ -1,5 +1,24 @@
 # coss-mcp
 
+## 0.3.0
+
+### Minor Changes
+
+- 9978333: Docs tools: `search_docs` searches coss.com's guides, SDK pages and API reference, and `read_docs` reads a page as Markdown (an API operation's parameters, bodies, responses and samples included). Both work without an API key: `COSS_API_KEY` is now optional, and without it the server offers only these two tools (and explains how to get a key) instead of exiting. `createCossMcpServer`'s `coss` option is optional for the same reason, and its new `docs` option points the docs tools elsewhere.
+- 57cc163: Scoped API keys: `coss.environment.get()` now returns the key's `api_key.access` (`full` or `restricted`) and `api_key.permissions` (`resource:action` strings, e.g. `email:send`). The MCP server's `get_account_status` reports them and its permission errors say the key is restricted; `coss whoami` prints the key's access.
+- fb711e1: SMS tools: `send_sms`, `cancel_sms`, `find_sms`, `get_sms`, `diagnose_sms` (what a message's status or failure code means and what to do), `list_received_sms`, `list_sms_numbers`, `check_sms_suppression`, `add_sms_suppression` and `remove_sms_suppression`; `diagnoseSms` is exported.
+
+### Patch Changes
+
+- Updated dependencies [2f2c982]
+- Updated dependencies [001c8ed]
+- Updated dependencies [57cc163]
+- Updated dependencies [ecaa8cc]
+- Updated dependencies [9d872c0]
+- Updated dependencies [ce6f1e6]
+- Updated dependencies [2f2c982]
+  - coss@0.8.0
+
 ## 0.2.3
 
 ### Patch Changes

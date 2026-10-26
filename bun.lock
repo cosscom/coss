@@ -356,12 +356,12 @@
     },
     "packages/cli": {
       "name": "coss-cli",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "bin": {
         "coss": "dist/cli.js",
       },
       "dependencies": {
-        "coss": "^0.7.0",
+        "coss": "^0.8.0",
       },
       "devDependencies": {
         "@arethetypeswrong/core": "0.18.5",
@@ -490,13 +490,13 @@
     },
     "packages/mcp": {
       "name": "coss-mcp",
-      "version": "0.2.3",
+      "version": "0.3.0",
       "bin": {
         "coss-mcp": "dist/cli.js",
       },
       "dependencies": {
         "@modelcontextprotocol/server": "2.3.1",
-        "coss": "^0.7.0",
+        "coss": "^0.8.0",
         "zod": "^4.6.5",
       },
       "devDependencies": {
@@ -648,7 +648,7 @@
     },
     "packages/sdk": {
       "name": "coss",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "devDependencies": {
         "@arethetypeswrong/core": "0.18.5",
         "@auth/core": "0.41.3",

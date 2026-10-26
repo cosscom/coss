@@ -15,6 +15,8 @@ to your coding agent (Claude Code, Cursor, VS Code, Codex, or any MCP client), t
 - "Was the verification code to +14155550199 delivered, and if not, why?"
 
 The server runs locally on Node.js 22+ through `npx` and calls the coss.com API with your API key.
+It can also search and read these docs, with or without a key. In Claude Code, the
+[coss.com plugin](/docs/agents#claude-code-plugin) sets it up for you.
 
 ## Set it up
 
@@ -86,7 +88,7 @@ The server reads its configuration from the environment only:
 
 | Variable | |
 | --- | --- |
-| `COSS_API_KEY` | Required. The key every tool calls the API with. |
+| `COSS_API_KEY` | The key every tool calls the API with. Without it, the server offers only the docs tools. |
 | `COSS_BASE_URL` | Another API origin, e.g. `http://localhost:3001` when you run coss.com yourself. Defaults to `https://api.coss.com`. |
 
 <Callout type="warn">
@@ -96,6 +98,10 @@ ask before calling them. Give the server a development key unless you need produ
 </Callout>
 
 ## Tools
+
+**Docs** (no API key needed): `search_docs` searches the guides, SDK pages and API reference;
+`read_docs` reads one page as Markdown, including an API operation's parameters, bodies and
+responses.
 
 **Email delivery**
 

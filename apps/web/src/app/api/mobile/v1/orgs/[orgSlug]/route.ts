@@ -1,3 +1,4 @@
+import { listBudgetHolds } from "@coss/billing";
 import type { OrganizationResponse } from "@coss/companion";
 import { getReputationStanding } from "@coss/reputation";
 import { listProjectsWithEnvironments } from "@coss/tenancy";
@@ -10,12 +11,16 @@ export const dynamic = "force-dynamic";
 export const GET = mobileRoute(
   async (request, ctx: RouteContext<"/api/mobile/v1/orgs/[orgSlug]">) => {
     const { orgSlug } = await ctx.params;
-    const { organization, member, suspended, can } = await requireMobileOrgMember(request, orgSlug);
+    const { session, organization, member, suspended, can } = await requireMobileOrgMember(
+      request,
+      orgSlug,
+    );
     const readBilling = can({ billing: ["read"] });
-    const [standing, projects, billing] = await Promise.all([
+    const [standing, projects, billing, budgetHolds] = await Promise.all([
       getReputationStanding(organization.id),
       listProjectsWithEnvironments({ organizationId: organization.id }),
       readBilling ? billingBannerState(organization.id) : null,
+      listBudgetHolds(organization.id),
     ]);
     return {
       organization: {
@@ -31,6 +36,10 @@ export const GET = mobileRoute(
         past_due: billing.pastDue,
         allowance: billing.allowance,
       },
+      // The dashboard layout's banner: the member's own personal keys over their budget.
+      budget_paused: budgetHolds.some(
+        (hold) => hold.scope === "user" && hold.targetId === session.user.id,
+      ),
       can: {
         read_email: can({ email: ["read"] }),
         read_sms: can({ sms: ["read"] }),

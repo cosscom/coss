@@ -8,6 +8,7 @@ const ROUTES = [
   `/${SEGMENT}/reputation`,
   `/${SEGMENT}/settings/billing`,
   `/${SEGMENT}/settings/billing/invoices/${SEGMENT}`,
+  `/${SEGMENT}/spend`,
   `${ENV}/webhooks/${SEGMENT}`,
   `${ENV}/hooks/${SEGMENT}/endpoints/${SEGMENT}`,
   `${ENV}/log-drains/${SEGMENT}`,

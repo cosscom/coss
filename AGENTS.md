@@ -19,10 +19,11 @@ signals are also building blocks of their own, next to rate limiting as a servic
 ## License
 
 `AGPL-3.0-only` (root `LICENSE`), except `packages/sdk` (MIT, its own `LICENSE`: customers bundle it), `packages/mcp`
-and `packages/cli` (MIT, published with the SDK), the framework drivers in `integrations/*` (MIT, each with its own
+and `packages/cli` (MIT, published with the SDK), the Claude Code plugin and Agent Skill in `plugins/coss` (MIT, its
+own `LICENSE`: installed into customers' agents), the framework drivers in `integrations/*` (MIT, each with its own
 `LICENSE`), the generated SDKs in `sdks/*` (MIT, each with its own `LICENSE`), `packages/kloq` (MIT, vendored) and
 the fonts (OFL). New code is AGPL unless it lives in one of those; never copy AGPL code into the SDK, the MCP server,
-the CLI, the drivers or the generated SDKs. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
+the CLI, the plugin, the drivers or the generated SDKs. Outside contributors sign the CLA (`CLA.md`, enforced by cla-assistant.io on pull requests; the agreement
 text it shows is a gist that must match `CLA.md`: change both together, as a new version).
 
 ## Layout
@@ -33,7 +34,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `apps/api` | `@coss/api` | Hono on Bun public API (:3001): `/v1/*`, `/openapi.json`, `/health`. Commits its OpenAPI document as `openapi.json`. |
 | `apps/site` | `@coss/site` | coss.com (:3002): placeholder landing page, Shipyard's landing page and docs at `/shipyard`, kloq's pages at `/kloq` (landing page, demo, tools, comparisons, docs, shadcn registry) + Fumadocs docs at `/docs` (guides, Twoslash-checked SDK docs, API reference generated from `apps/api/openapi.json`). See `apps/site/AGENTS.md`. |
 | `apps/portal` | `@coss/portal` | The Hooks portal (:3003) on its own domain (production: `portal.cosshooks.com`, Cloudflare → ALB, `PORTAL_HOST` in `infra/aws/routing.ts`): customers' users manage one application's endpoints and see its deliveries, signed in by a session the customer's backend creates (token in the URL fragment, never a cookie). See `apps/portal/AGENTS.md`. |
-| `apps/mobile` | `@coss/mobile` | Expo (SDK 57) iOS companion app mirroring the dashboard's pages (organization: projects, reputation, domains with DMARC, dedicated IPs, SMS senders, members, settings with SSO and SCIM, billing (read-only), audit log; environment: emails, templates, received, suppressions, tracking, content storage, SMS, broadcasts, contacts, audiences, segments, topics, marketing settings, risk with its rules, lists and settings, Hooks, API keys, webhooks, logs, log drains), mostly read-only, signed in through the dashboard (browser hand-off + PKCE) and using its `/api/mobile/v1/*`, with push notifications (APNs) for alerts, crash reporting (Sentry) and account deletion. Not deployed by `infra`. See `apps/mobile/AGENTS.md`. |
+| `apps/mobile` | `@coss/mobile` | Expo (SDK 57) iOS companion app mirroring the dashboard's pages (organization: projects, reputation, domains with DMARC, dedicated IPs, SMS senders, members, spend and budgets, settings with SSO and SCIM, billing (read-only), audit log; environment: emails, templates, received, suppressions, tracking, content storage, SMS, broadcasts, contacts, audiences, segments, topics, marketing settings, risk with its rules, lists and settings, Hooks, API keys, webhooks, logs, log drains), mostly read-only, signed in through the dashboard (browser hand-off + PKCE) and using its `/api/mobile/v1/*`, with push notifications (APNs) for alerts, crash reporting (Sentry) and account deletion. Not deployed by `infra`. See `apps/mobile/AGENTS.md`. |
 | `apps/smtp` | `@coss/smtp` | Bun SMTP relay (`smtp.coss.com`; locally :2465 implicit TLS, :2587 STARTTLS) on `smtp-server`: username `coss`, an API key as the password; each message becomes a `POST /v1/emails` request (`@coss/email/smtp`) stored through the same email service, rate limits and quotas. Behind an NLB; terminates TLS itself (exported ACM certificate). See `apps/smtp/AGENTS.md`. |
 | `apps/worker` | `@coss/worker` | Bun background worker: email dispatch (pg-boss), scheduled sends, broadcast fan-out, webhook deliveries, domain re-checks, dedicated IP pools, stale-claim/unclaimed sweeps, data retention purges, organization deletions, SES events and received emails from SQS (`EMAIL_PROVIDER=ses`). `scripts/ses-bootstrap.ts`. Safe to run several. |
 | `packages/db` | `@coss/db` | Drizzle schema (generated Better Auth tables + domain tables), pg client, TypeIDs, migrations, test guard; `./jobs` (pg-boss); `./idempotency` (`withIdempotencyKey`, request hashes); `./partitions` (daily range partitions: create ahead, drop expired). |
@@ -58,7 +59,8 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
 | `packages/ui` | `@coss/ui` | coss ui components (shadcn `@coss` registry, Base UI) + `theme.css` (tokens), `globals.css` (the dashboard's stylesheet) and `./fonts` (`next/font/local`: Cal Sans as `fontSans`/`fontHeading` and, upright only, `fontCalSans`; Paper Mono as `fontMono`). |
 | `packages/sdk` | `coss` | **Public** SDK. Zero deps, ESM-only, built with tsdown. `coss/device` is its browser-only entry (risk's device tokens); `coss/diagnose` explains an email's delivery (used by the MCP server and the CLI); `coss/nodemailer`, `coss/better-auth` and `coss/authjs` are the integrations (docs: `/docs/integrations`). |
-| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `packages/mcp` | `coss-mcp` | **Public** MCP server (`npx coss-mcp`, stdio, Node): tools for coding agents built only on the published `coss` SDK — search and read the docs (no key needed), find emails and diagnose delivery (the SDK's `coss/diagnose`), send, suppressions, domains, webhook deliveries, received emails, logs, account status. See "MCP server" below. |
+| `plugins/coss` | — | **Public** Claude Code plugin (marketplace: the root `.claude-plugin/marketplace.json`; `/plugin install coss --marketplace cosscom/coss`) with the `coss` Agent Skill (`skills/coss/SKILL.md`, also installed into other agents by `npx skills add cosscom/coss`) and the MCP server (`.mcp.json`, `npx -y coss-mcp`). Plain files, not a workspace; served from main. See "Coding agents" below. |
 | `packages/cli` | `coss-cli` | **Public** CLI (`npm i -g coss-cli`, command `coss`, Node): `login` (browser PKCE or `--manual`), `logout`, `whoami`, `emails send`, `logs tail`, `listen` (forwards webhook events to localhost), built only on the published `coss` SDK. See "CLI" below. |
 | `packages/kloq` | `kloq` | The kloq library (the `cosscom/calendar` repository's `packages/kloq/src`, tests left out): the `<Kloq>` calendar, its themes, settings dialog, design mode and stylesheet. Vendored (excluded from Biome, `noUncheckedIndexedAccess` off); also what `/kloq/r/kloq.json` serves as source. Used only by `apps/site`. |
 | `tooling/typescript` | `@coss/tsconfig` | Shared tsconfig bases. |
@@ -363,8 +365,14 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `.p8`) + `APPLE_NOTARY_KEY_ID` + `APPLE_NOTARY_ISSUER_ID`) re-signs them with the hardened runtime and Bun's JIT
   entitlements, has Apple notarize them (`scripts/notarize.ts`; a bare executable can't be stapled, so Gatekeeper
   checks online) and archives them again with a new `SHA256SUMS`; the smoke tests then run the notarized builds,
-  quarantined on macOS as a browser download is. When turning it on, drop the `xattr` note from the CLI's README and
-  `cli.mdx`. `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
+  quarantined on macOS as a browser download is, and `codesign --check-notarization` asks Apple about them. Running
+  `release.yml` by hand on main (`gh workflow run release.yml`) is a dry run: it builds the executables from main,
+  notarizes and smoke-tests them, and publishes nothing (no npm, release or tap), so the `apple` secrets can be
+  checked between releases. Releases are notarized since coss-cli 0.3.0 (the CLI's README and `cli.mdx` say so;
+  turning `CLI_MACOS_NOTARIZE` off means putting back their `xattr -d com.apple.quarantine` note). The certificate
+  is Cal.com, Inc.'s (team `ADWKXDJV75`, G2 Sub-CA) and expires 2027-11-18: replace the two `.p12` secrets before
+  then. The notary key is the App Store Connect team key "coss-cli notarization" (Developer role).
+  `scripts/smoke-binary.ts` runs them on their own OS (musl in Alpine,
   which needs `libstdc++`), and the release gets the archives + `SHA256SUMS`, marked latest (`install.sh` and
   `releases/latest` rely on the CLI being the only package with GitHub releases). Then `scripts/homebrew.ts` renders
   `Formula/coss.rb` from that `SHA256SUMS` and pushes it to `cosscom/homebrew-tap` with the deploy key
@@ -379,7 +387,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   (`@modelcontextprotocol/server` v2); `src/cli.ts` serves it over stdio (`serveStdio`). Configuration comes from the
   environment only (`COSS_API_KEY`, `COSS_BASE_URL`), never argv; stdout is the protocol, so log to stderr.
 - Tools (`src/tools/*.ts`) call only the public SDK — never workspace packages (AGPL) or the database — so anything a
-  tool needs must exist in the public API first. Every tool carries annotations (`READ_ONLY`, `WRITE`,
+  tool needs must exist in the public API first. The exception is `search_docs`/`read_docs` (`tools/docs.ts`), which
+  fetch coss.com's public docs (`/docs/search.json`, `<page>.md`, nothing outside `/docs`) and work without a key:
+  with no `COSS_API_KEY` the server registers only them. Every tool carries annotations (`READ_ONLY`, `WRITE`,
   `DESTRUCTIVE`, `SENDS` in `tools/shared.ts`); clients rely on them to prompt (full-access keys hold every
   permission; a restricted key's 403 hint points at `get_account_status`, which lists what it holds).
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
@@ -393,6 +403,19 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   range that changesets moves when the SDK's version leaves it. The release job publishes it after `coss`.
 - Tests: `packages/mcp/test` (in-memory client, fake `fetch`) and `apps/api/test/mcp-contract.test.ts` (built
   server against the in-process app; turbo builds it first).
+
+## Coding agents
+
+What an agent pointed at coss.com reads, all describing the same facts — change them together:
+- `/llms.txt` and `/llms-full.txt` open with `AGENT_BRIEF` (`apps/site/src/lib/llms.ts`): how to read the docs, get a
+  key with `npx coss-cli init`, the SDK's conventions, testing webhooks. Every docs page is Markdown at `<page>.md`
+  (`apps/site/AGENTS.md`); API reference pages render the OpenAPI document (`operation-markdown.ts`).
+- The landing page's prompt (`AGENT_PROMPT`, `apps/site/src/lib/site.ts`), quoted by `/docs/agents`.
+- The `coss` skill (`plugins/coss/skills/coss/SKILL.md`), the notes `coss init --agents` writes into a project's
+  AGENTS.md (`agentNotes`, `packages/cli/src/commands/init.ts`) and the MCP server's instructions (`src/server.ts`).
+- `claude plugin validate .` and `claude plugin validate plugins/coss` check the marketplace and the plugin. The
+  plugin has no `version` on purpose: installs follow main. Its MCP server takes the key from the plugin's optional
+  `api_key` (`userConfig`); without one `coss-mcp` serves only the docs tools.
 
 ## CLI (`packages/cli`, published as `coss-cli`, command `coss`)
 
@@ -826,6 +849,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 - Send with `COSS_API_KEY=… COSS_BASE_URL=http://localhost:3001 bun packages/sdk/examples/send-email.ts` (live keys:
   add `COSS_FROM=hello@acme.test`; `COSS_TO=bounce@simulator.amazonses.com` simulates a bounce). Webhook endpoints
   may be `http://127.0.0.1:…` locally; the worker (part of `bun run dev`) delivers them.
+
+## Cursor Cloud specific instructions
+
+- Login shells put `~/.local/bin` first (Node.js 24 and Bun 1.4.2). `node` earlier on `PATH` (`/exec-daemon/node`) is Node 22; Next.js and the Better Auth CLI need 24.
+- The environment `start` script already brings up PostgreSQL 18 (`postgres:postgres` on `localhost:5432`, databases `coss` and `coss_test`), Valkey 8 on `localhost:6379`, a root `.env` (created once), and migrations. It runs `db:seed` when `demo@coss.local` is missing or `.env` has no `COSS_API_KEY` line (a database snapshot can outlive `.env`; seed is idempotent and mints a new development key). It then runs `bunx turbo run dev --ui=stream` in tmux session `coss-dev` (log `/tmp/coss-dev.log`): dashboard `:3000`, API `:3001`, site `:3002`, portal `:3003`, SMTP `:2465`/`:2587`, and the worker. Re-running start when that key line is already present does not mint another key or a second dev session.
+- Seed appends `COSS_API_KEY` and `COSS_BASE_URL` to `.env`. Sign in as in local dev. Turborepo remote cache is not set up here — do not run `turbo login` (README, "Remote cache").
+- Run `bun run test` from the repo root so Bun loads that `.env` before Turborepo. Dashboard tests that import `apps/web/src/env.ts` need `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `API_PUBLIC_URL`, and `WEBHOOK_SECRETS_KEY` in the process environment. CI sets those in the workflow; a login shell does not, and a bare `turbo run test` then fails those files with `Invalid environment variables`.
 
 ## Known limitations (v0)
 

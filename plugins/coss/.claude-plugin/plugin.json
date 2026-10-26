@@ -1,0 +1,22 @@
+{
+  "name": "coss",
+  "displayName": "coss.com",
+  "description": "Build with coss.com (email, SMS, webhooks, Hooks, Risk): a skill for adding it to a project, and the MCP server that searches the docs and explains deliveries",
+  "author": {
+    "name": "coss.com",
+    "url": "https://coss.com"
+  },
+  "homepage": "https://coss.com/docs/agents",
+  "repository": "https://github.com/cosscom/coss",
+  "license": "MIT",
+  "keywords": ["email", "sms", "webhooks", "coss"],
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "coss.com API key",
+      "description": "For the MCP server: a development key (coss_test_…), e.g. from `npx coss-cli init`. Leave empty to use only its docs tools.",
+      "sensitive": true,
+      "default": ""
+    }
+  }
+}

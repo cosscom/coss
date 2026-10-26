@@ -7,6 +7,7 @@ describe("routeFromNotification", () => {
       "/acme/reputation",
       "/acme/settings/billing",
       "/acme/settings/billing/invoices/inv_01k5f9",
+      "/acme/spend",
       "/acme/projects/default/production/webhooks/whep_01k5f9",
       "/acme/projects/default/production/hooks/happ_1/endpoints/hep_1",
       "/acme/projects/default/production/log-drains/drain_1",
@@ -27,6 +28,7 @@ describe("routeFromNotification", () => {
       { path: "/acme/../reputation" },
       { path: "/acme/reputation?x=1" },
       { path: "/acme/settings/members" },
+      { path: "/acme/spend/budgets" },
       { path: "/acme/projects/default/production/risk/rsk_1/feedback" },
     ]) {
       expect(routeFromNotification(data)).toBeNull();

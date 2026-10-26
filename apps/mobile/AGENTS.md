@@ -2,12 +2,14 @@
 
 Expo (SDK 57, React Native 0.86, Expo Router) companion app for the dashboard. Organization:
 projects, reputation, domains (DNS records, DMARC reports), dedicated IPs, SMS senders (numbers,
-carrier registrations, countries), members, settings (general, single sign-on, directory sync),
-billing and invoices (read-only), the audit log. Environment: activity, sent and received emails,
+carrier registrations, countries), members, spend (the organization's, or a member's own
+personal keys') and budgets, settings (general, single sign-on, directory sync), billing and
+invoices (read-only), the audit log. Environment: activity, sent and received emails,
 templates and their versions, suppressions, open/click tracking, content storage, sent and
 received SMS, SMS suppressions, broadcasts, contacts (and their properties), audiences, segments,
 topics, marketing settings, risk assessments, rules, lists, rate limits, calibration and settings,
-Hooks (applications, endpoints, messages, event types, portal settings), API keys, webhook
+Hooks (applications, endpoints, messages, event types, portal settings), API keys (owners and
+budget pauses), webhook
 endpoints and deliveries, logs, log drains. A few changes, each mirroring a dashboard action (same
 checks, same audit event): retrying a webhook delivery, recovering an endpoint's failed
 deliveries, enabling or disabling an endpoint, canceling or rescheduling a scheduled email,

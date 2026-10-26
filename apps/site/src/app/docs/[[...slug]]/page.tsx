@@ -5,7 +5,7 @@ import { DocsPageFrame } from "@/components/docs-frame";
 import { DocsSections } from "@/components/docs-sections";
 import { getMDXComponents } from "@/components/mdx";
 import { neighbours, sectionsOf } from "@/lib/docs-tree";
-import { pageMarkdown, source } from "@/lib/source";
+import { markdownUrl, pageMarkdown, source } from "@/lib/source";
 
 export default async function Page({ params }: PageProps<"/docs/[[...slug]]">) {
   const { slug } = await params;
@@ -64,5 +64,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = source.getPage(slug);
   if (!page) notFound();
-  return { title: page.data.title, description: page.data.description };
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    // The page as Markdown, for agents that land on the HTML.
+    alternates: { types: { "text/markdown": markdownUrl(page.url) } },
+  };
 }
