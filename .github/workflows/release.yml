@@ -193,7 +193,11 @@ jobs:
 
   cli-binaries-build:
     needs: cli-binaries-check
-    if: needs.cli-binaries-check.outputs.build == 'true'
+    # Explicit: a dry run's skipped version and publish jobs would otherwise skip this one, and
+    # everything after it.
+    if: >-
+      !cancelled() && needs.cli-binaries-check.result == 'success' &&
+      needs.cli-binaries-check.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -222,7 +226,9 @@ jobs:
   # ad-hoc signed builds. A dry run always notarizes (that's what it is for).
   cli-binaries-notarize:
     needs: [cli-binaries-check, cli-binaries-build]
-    if: vars.CLI_MACOS_NOTARIZE == 'true' || github.event_name == 'workflow_dispatch'
+    if: >-
+      !cancelled() && needs.cli-binaries-build.result == 'success' &&
+      (vars.CLI_MACOS_NOTARIZE == 'true' || github.event_name == 'workflow_dispatch')
     runs-on: macos-latest
     timeout-minutes: 45
     # Holds the Developer ID certificate and the App Store Connect API key notarytool uses.
