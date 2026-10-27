@@ -13,7 +13,7 @@ import { type BuilderApiDeps, handleBuilderRequest } from "../src/lib/builder-ap
 
 const store = new FakeDocumentStore();
 
-async function setup() {
+async function setup(overrides: Partial<BuilderApiDeps> = {}) {
   const tenant = await createTestTenant();
   const environment = {
     organizationId: tenant.organization.id,
@@ -31,11 +31,16 @@ async function setup() {
     templateId: template.id,
     signUrl: "https://sign.test",
   });
-  const deps: BuilderApiDeps = { store, limiter: memoryLimiter(), clientIp: null };
+  const deps: BuilderApiDeps = {
+    store,
+    limiter: memoryLimiter(),
+    clientIp: "198.51.100.7",
+    ...overrides,
+  };
   const call = (
     method: string,
     path: string[] = [],
-    init: { body?: unknown; token?: string } = {},
+    init: { body?: unknown; token?: string; sessionId?: string } = {},
   ) =>
     handleBuilderRequest(
       new Request(`https://sign.test/api/builder/${session.id}/${path.join("/")}`, {
@@ -46,7 +51,7 @@ async function setup() {
         },
         body: init.body === undefined ? undefined : JSON.stringify(init.body),
       }),
-      session.id,
+      init.sessionId ?? session.id,
       path,
       deps,
     );
@@ -139,5 +144,14 @@ describe("builder API", () => {
     });
     expect(badRole.status).toBe(422);
     expect((await call("GET", ["documents", other.id])).status).toBe(404);
+  });
+
+  test("without a client IP, guesses across session ids still share one limit", async () => {
+    const { call } = await setup({ clientIp: null });
+    const statuses = new Set<number>();
+    for (let attempt = 0; attempt < 200; attempt++) {
+      statuses.add((await call("GET", [], { sessionId: `sbs_guess${attempt}` })).status);
+    }
+    expect(statuses.has(429)).toBe(true);
   });
 });

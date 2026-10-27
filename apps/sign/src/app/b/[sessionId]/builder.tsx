@@ -176,15 +176,18 @@ export function Builder({ sessionId }: { sessionId: string }) {
       });
   }, [call, load]);
 
-  // Fetch the bytes of documents not loaded yet.
+  // Fetch the bytes of documents not loaded yet, each once (a download in flight isn't restarted).
+  const fetching = useRef(new Set<string>());
   useEffect(() => {
     if (!overview) return;
     for (const document of overview.template.documents) {
-      if (files[document.id]) continue;
+      if (files[document.id] || fetching.current.has(document.id)) continue;
+      fetching.current.add(document.id);
       call(`/documents/${document.id}`)
         .then((response) => response.arrayBuffer())
         .then((bytes) => setFiles((current) => ({ ...current, [document.id]: bytes })))
-        .catch(() => setError(`Couldn't load ${document.filename}.`));
+        .catch(() => setError(`Couldn't load ${document.filename}.`))
+        .finally(() => fetching.current.delete(document.id));
     }
   }, [overview, files, call]);
 

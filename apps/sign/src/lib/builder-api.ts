@@ -23,6 +23,7 @@ import {
 } from "@coss/sign";
 import { SignTemplateRoleInput, UploadSignDocumentRequest } from "@coss/sign/schemas";
 import { z } from "zod";
+import { readBodyText } from "./sign-api.ts";
 
 export type BuilderApiDeps = {
   store: DocumentStore | null;
@@ -77,14 +78,16 @@ const SaveInput = z.strictObject({
 });
 
 async function body<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
-  const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_BODY_BYTES) {
-    throw new BuilderApiError(413, "payload_too_large", "That file is too large (at most 25 MB).");
-  }
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) {
-    throw new BuilderApiError(413, "payload_too_large", "That file is too large (at most 25 MB).");
-  }
+  const text = await readBodyText(request, MAX_BODY_BYTES).catch((error: unknown) => {
+    if ((error as { status?: number }).status === 413) {
+      throw new BuilderApiError(
+        413,
+        "payload_too_large",
+        "That file is too large (at most 25 MB).",
+      );
+    }
+    throw error;
+  });
   let raw: unknown;
   try {
     raw = JSON.parse(text);
@@ -170,7 +173,8 @@ async function route(
 ): Promise<Response> {
   await charge(deps, [
     { buckets: ["sign.session"], subject: sessionId },
-    ...(deps.clientIp ? [{ buckets: ["sign.ip"], subject: deps.clientIp } as const] : []),
+    // Without a client IP, one aggregate subject still bounds guessing across session ids.
+    { buckets: ["sign.ip"], subject: deps.clientIp ?? "unattributed" },
   ]);
   const store = deps.store;
   if (!store) throw new BuilderApiError(503, "sign_unavailable", "Sign isn't available yet.");
