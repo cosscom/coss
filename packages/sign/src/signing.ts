@@ -414,14 +414,19 @@ function sha256(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-/** `orgs/<org>/<env>/signatures/<signer id>-<kind>.png`: an adopted signature or initials. */
+/**
+ * `orgs/<org>/<env>/signatures/<signer id>-<kind>-<sha256>.png`: an adopted signature or initials,
+ * by content, so an attempt that loses (rejected, or racing another tab) never overwrites the image
+ * the committed signature names.
+ */
 export function signatureImageKey(input: {
   organizationId: string;
   environmentId: string;
   signerId: string;
   kind: "signature" | "initials";
+  sha256: string;
 }): string {
-  return `${organizationPrefix(input.organizationId)}${input.environmentId}/signatures/${input.signerId}-${input.kind}.png`;
+  return `${organizationPrefix(input.organizationId)}${input.environmentId}/signatures/${input.signerId}-${input.kind}-${input.sha256}.png`;
 }
 
 export type SignInput = {
@@ -455,7 +460,11 @@ function fieldValues(
         values.set(field.id, images.signature);
         break;
       case "initials":
-        if (!images.initials) throw invalid("Adopt your initials first.", "initials");
+        if (!images.initials) {
+          if (field.required) throw invalid("Adopt your initials first.", "initials");
+          values.set(field.id, null);
+          break;
+        }
         values.set(field.id, images.initials);
         break;
       case "date_signed":
@@ -526,11 +535,13 @@ export async function signAsSigner(
     signerId: session.signerId,
   };
   const keys = {
-    signature: signatureImageKey({ ...scope, kind: "signature" }),
-    initials: initials ? signatureImageKey({ ...scope, kind: "initials" }) : null,
+    signature: signatureImageKey({ ...scope, kind: "signature", sha256: imageHashes.signature }),
+    initials: imageHashes.initials
+      ? signatureImageKey({ ...scope, kind: "initials", sha256: imageHashes.initials })
+      : null,
   };
-  // Written before the transaction (a failed one leaves them for the signer's next attempt, which
-  // overwrites them: the keys are the signer's own).
+  // Written before the transaction, under keys of their own content; an attempt that fails removes
+  // what it wrote unless the committed signature names the same image.
   await input.store.put({
     key: keys.signature,
     organizationId: session.organizationId,
@@ -546,6 +557,51 @@ export async function signAsSigner(
     });
   }
 
+  try {
+    await commitSignature(access, input, { keys, imageHashes, now });
+  } catch (error) {
+    await discardImages(input.store, access, keys);
+    throw error;
+  }
+}
+
+/** Removes images an attempt wrote that the signer's committed signature doesn't name. */
+async function discardImages(
+  store: DocumentStore,
+  access: SignSessionAccess,
+  keys: { signature: string; initials: string | null },
+): Promise<void> {
+  const { session } = access;
+  const [committed] = await db
+    .select({ signatureKey: signSigner.signatureKey, initialsKey: signSigner.initialsKey })
+    .from(signSigner)
+    .where(
+      and(
+        eq(signSigner.id, session.signerId),
+        eq(signSigner.organizationId, session.organizationId),
+      ),
+    )
+    .limit(1);
+  const kept = new Set([committed?.signatureKey, committed?.initialsKey]);
+  const orphans = [keys.signature, keys.initials].filter(
+    (key): key is string => key !== null && !kept.has(key),
+  );
+  await store.delete(orphans).catch((error) => {
+    console.error("[sign] could not delete an unused signature image:", error);
+  });
+}
+
+async function commitSignature(
+  access: SignSessionAccess,
+  input: SignInput & { actor: SignActor },
+  attempt: {
+    keys: { signature: string; initials: string | null };
+    imageHashes: { signature: string; initials: string | null };
+    now: Date;
+  },
+): Promise<void> {
+  const { session } = access;
+  const { keys, imageHashes, now } = attempt;
   await db.transaction(async (tx) => {
     const loaded = await lockForAction(tx, access, now);
     if (!loaded.signer.consentedAt) {

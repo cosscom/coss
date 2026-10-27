@@ -454,3 +454,55 @@ describe("settings", () => {
     expect(() => checkedSignOrigin("https://app.example.com/path", "live")).toThrow(SignError);
   });
 });
+
+describe("signature images", () => {
+  test("a rejected second attempt leaves the committed image alone; optional initials can stay empty", async () => {
+    const request = await createRequest(sandbox, {
+      signers: [
+        signer("Ada Lovelace", "ada@example.com", {
+          fields: [
+            { type: "signature", page: 1, x: 72, y: 600, width: 160, height: 30 },
+            { type: "initials", page: 1, x: 300, y: 600, width: 40, height: 20, required: false },
+          ],
+        }),
+      ],
+    });
+    const { access } = await session(sandbox, request.id, request.signers[0]?.id ?? "");
+    const view = await openSigning(access, { actor: signerActor });
+    await consentToSign(access, { disclosureSha256: view.disclosure.sha256, actor: signerActor });
+    await signAsSigner(access, {
+      values: {},
+      signature: TEST_SIGNATURE_PNG,
+      actor: signerActor,
+      store,
+    });
+    const [row] = await db
+      .select({ key: schema.signSigner.signatureKey, sha: schema.signSigner.signatureSha256 })
+      .from(schema.signSigner)
+      .where(eq(schema.signSigner.id, request.signers[0]?.id ?? ""));
+    const before = await store.get(row?.key ?? "");
+    expect(before).not.toBeNull();
+
+    // Another image, after signing: refused, and nothing it wrote stays.
+    const other = Buffer.from(TEST_SIGNATURE_PNG, "base64");
+    other[other.length - 5] = (other[other.length - 5] ?? 0) ^ 1;
+    await expectSignError(
+      signAsSigner(access, {
+        values: {},
+        signature: other.toString("base64"),
+        actor: signerActor,
+        store,
+      }),
+      "request_not_signable",
+    );
+    expect(await store.get(row?.key ?? "")).toEqual(before);
+    const objects = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, sandbox.organizationId));
+    const images = objects.filter((object) =>
+      object.key.includes(`/signatures/${request.signers[0]?.id}`),
+    );
+    expect(images.map((object) => object.key)).toEqual([row?.key ?? ""]);
+  });
+});
