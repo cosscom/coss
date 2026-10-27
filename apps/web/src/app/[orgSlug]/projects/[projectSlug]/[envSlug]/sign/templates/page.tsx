@@ -10,6 +10,7 @@ import {
 } from "@coss/ui/components/table";
 import { LayoutTemplateIcon } from "lucide-react";
 import type { Metadata } from "next";
+import { CursorPager } from "@/components/cursor-pager";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
@@ -19,15 +20,23 @@ import { DeleteTemplateButton, NewTemplateButton, OpenBuilderButton } from "../s
 
 export const metadata: Metadata = { title: "Sign templates" };
 
+const PAGE_SIZE = 50;
+
 export default async function SignTemplatesPage({
   params,
+  searchParams,
 }: PageProps<"/[orgSlug]/projects/[projectSlug]/[envSlug]/sign/templates">) {
-  const { organization, environment, can, target } = await signPageContext(await params);
-  const { data } = await listSignTemplates({
+  const { organization, environment, can, target, signPath } = await signPageContext(await params);
+  const search = await searchParams;
+  const after = typeof search.after === "string" ? search.after : undefined;
+  const { data, hasMore } = await listSignTemplates({
     organizationId: organization.id,
     environmentId: environment.id,
-    limit: 100,
+    limit: PAGE_SIZE,
+    after,
   });
+  const listPath = `${signPath}/templates`;
+  const last = data.at(-1);
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,14 +45,23 @@ export default async function SignTemplatesPage({
         description="Documents with fields for roles, made into requests with coss.sign.templates.createRequest(). Edit them in the builder, or let your own users do it (createBuilderSession)."
         title="Templates"
       />
-      <Panel>
+      <Panel
+        footer={
+          after || hasMore ? (
+            <CursorPager
+              newestHref={after ? listPath : undefined}
+              olderHref={hasMore && last ? `${listPath}?after=${last.id}` : undefined}
+            />
+          ) : null
+        }
+      >
         {data.length === 0 ? (
           <PanelBody flush>
             <EmptyState
               compact
               description="Create one here, or with coss.sign.templates.create()."
               icon={LayoutTemplateIcon}
-              title="No templates yet"
+              title={after ? "No more templates" : "No templates yet"}
             />
           </PanelBody>
         ) : (

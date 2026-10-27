@@ -12,6 +12,7 @@ import {
 import { SIGN_THEMES, type SignTheme } from "@coss/sign/schemas";
 import { getEnvironment } from "@coss/tenancy";
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
@@ -127,8 +128,10 @@ export async function deleteSignRequestAction(
       type: "sign_request",
       id: requestId,
     });
-    refresh();
-    return null;
+    // Its page is gone: back to the list.
+    redirect(
+      `/${context.organization.slug}/projects/${formString(formData, "projectSlug")}/${environment.slug}/sign`,
+    );
   });
 }
 

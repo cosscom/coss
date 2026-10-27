@@ -107,6 +107,16 @@ resource "aws_iam_role_policy" "task_sign_api" {
   })
 }
 
+# The dashboard downloads signed PDFs and deletes requests' objects.
+resource "aws_iam_role_policy" "task_sign_web" {
+  name = "sign-documents"
+  role = aws_iam_role.task["web"].id
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [local.sign_bucket_statement, local.sign_key_statement]
+  })
+}
+
 # The worker seals completed documents, emails copies, and deletes an organization's prefix.
 resource "aws_iam_role_policy" "task_sign_worker" {
   name = "sign-documents"
@@ -131,7 +141,7 @@ resource "aws_iam_role_policy" "task_sign_worker" {
 }
 
 output "sign_documents_bucket" {
-  description = "SIGN_DOCUMENTS_BUCKET (api, worker, and the signing app once deployed)."
+  description = "SIGN_DOCUMENTS_BUCKET (web, api, worker, and the signing app once deployed)."
   value       = aws_s3_bucket.sign_documents.bucket
 }
 

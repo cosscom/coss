@@ -27,7 +27,6 @@ import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
 import { Radio, RadioGroup } from "@coss/ui/components/radio-group";
 import { Textarea } from "@coss/ui/components/textarea";
-import { useEffect } from "react";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import {
@@ -52,11 +51,22 @@ function Hidden(props: EnvTarget & { requestId?: string; templateId?: string }) 
   );
 }
 
-/** Opens a builder link in a new tab (its token is in the fragment, never in a request). */
-function useOpenInNewTab(url: string | undefined) {
-  useEffect(() => {
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
-  }, [url]);
+/**
+ * A builder link to click (its token is in the fragment, never in a request). Not opened for
+ * the member: a popup after an awaited action is blocked by most browsers.
+ */
+function BuilderLink({ url }: { url: string }) {
+  return (
+    <Button
+      render={
+        // biome-ignore lint/a11y/useAnchorContent: the button renders the text.
+        <a href={url} rel="noopener noreferrer" target="_blank" />
+      }
+      size="sm"
+    >
+      Open the builder
+    </Button>
+  );
 }
 
 export function RemindButton(props: EnvTarget & { requestId: string }) {
@@ -143,7 +153,7 @@ export function NewTemplateButton(props: EnvTarget) {
   const [state, formAction, pending] = useActionToast(createSignTemplateAction, {
     success: "Template created",
   });
-  useOpenInNewTab(state?.ok ? state.data?.url : undefined);
+  const url = state?.ok ? state.data?.url : undefined;
   return (
     <Dialog>
       <DialogTrigger render={<Button size="sm" />}>New template</DialogTrigger>
@@ -153,7 +163,7 @@ export function NewTemplateButton(props: EnvTarget) {
           <DialogHeader>
             <DialogTitle>New template</DialogTitle>
             <DialogDescription>
-              It opens in the builder in a new tab: add PDFs, signers and fields there.
+              Then open it in the builder (a new tab) to add PDFs, signers and fields.
             </DialogDescription>
           </DialogHeader>
           <DialogPanel>
@@ -164,10 +174,16 @@ export function NewTemplateButton(props: EnvTarget) {
             {state && !state.ok ? <FormError message={state.error} /> : null}
           </DialogPanel>
           <DialogFooter>
-            <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
-            <Button loading={pending} type="submit">
-              Create and open
-            </Button>
+            <DialogClose render={<Button variant="ghost" />}>
+              {url ? "Close" : "Cancel"}
+            </DialogClose>
+            {url ? (
+              <BuilderLink url={url} />
+            ) : (
+              <Button loading={pending} type="submit">
+                Create
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogPopup>
@@ -179,7 +195,8 @@ export function OpenBuilderButton(props: EnvTarget & { templateId: string }) {
   const [state, formAction, pending] = useActionToast(openSignBuilderAction, {
     errors: "toast",
   });
-  useOpenInNewTab(state?.ok ? state.data?.url : undefined);
+  // Each link is good for an hour: get one, then open it.
+  if (state?.ok) return <BuilderLink url={state.data.url} />;
   return (
     <form action={formAction}>
       <Hidden {...props} />
