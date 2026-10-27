@@ -221,24 +221,26 @@ function SignedCopy({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Ask again for a minute while it is being sealed.
+  // Ask again until it is sealed: every 3 seconds at first, backing off to every 30 (a seal that
+  // failed once is retried a minute or more later).
   useEffect(() => {
     if (ready) return;
-    let tries = 0;
-    const timer = setInterval(() => {
-      tries++;
-      if (tries > 20) {
-        clearInterval(timer);
-        return;
-      }
-      call("")
-        .then((response) => response.json() as Promise<SigningView>)
-        .then((next) => {
-          if (next.request.signed_document_ready) onView(next);
-        })
-        .catch(() => {});
-    }, 3000);
-    return () => clearInterval(timer);
+    let delay = 3000;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = () => {
+      timer = setTimeout(() => {
+        call("")
+          .then((response) => response.json() as Promise<SigningView>)
+          .then((next) => {
+            if (next.request.signed_document_ready) onView(next);
+            else poll();
+          })
+          .catch(() => poll());
+        delay = Math.min(delay * 1.5, 30_000);
+      }, delay);
+    };
+    poll();
+    return () => clearTimeout(timer);
   }, [ready, call, onView]);
 
   const download = async () => {

@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import type { SignEventDetails } from "@coss/db/schema";
 import fontkit from "@pdf-lib/fontkit";
 import { degrees, PDFDocument, type PDFFont, type PDFImage, type PDFPage, rgb } from "pdf-lib";
+import { flattenForm } from "./pdf.ts";
 
 const INK = rgb(0.07, 0.09, 0.15);
 const MUTED = rgb(0.4, 0.42, 0.47);
@@ -224,14 +225,14 @@ function drawCheck(page: PDFPage, field: CompletedField): void {
   }
 }
 
-/** Interactive form fields would stay editable on top of what was signed: flatten them first. */
+/**
+ * Interactive form fields would stay editable on top of what was signed: flatten them first.
+ * Uploads are refused when they can't be, so a failure here fails the seal (it is retried) rather
+ * than sealing live fields.
+ */
 async function loadFlat(bytes: Uint8Array): Promise<PDFDocument> {
   const document = await PDFDocument.load(bytes, { updateMetadata: false });
-  try {
-    document.getForm().flatten();
-  } catch (error) {
-    console.error("[sign] couldn't flatten a document's form fields:", error);
-  }
+  flattenForm(document);
   return document;
 }
 
