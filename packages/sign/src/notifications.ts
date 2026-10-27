@@ -361,7 +361,10 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
     await isolated(item, now, async () => {
       const { from, requester } = await sender(item.request);
       const link = await emailLink(item, deps, now);
-      const count = item.signer.reminderCount + 1;
+      // One that was asked for (`requestSignReminders`) doesn't count towards the automatic ones:
+      // its key is the time it was asked, the automatic ones' their number.
+      const asked = item.signer.remindRequestedAt;
+      const count = asked ? item.signer.reminderCount : item.signer.reminderCount + 1;
       const sent = await deps.mailer.send({
         environment: environmentOf(item.request, item.sandbox),
         from,
@@ -373,7 +376,9 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
           url: link.url,
           expiresAt: item.request.expiresAt,
         }),
-        idempotencyKey: `sign-remind:${item.signer.id}:${count}`,
+        idempotencyKey: asked
+          ? `sign-remind:${item.signer.id}:asked:${asked.getTime()}`
+          : `sign-remind:${item.signer.id}:${count}`,
       });
       const sessionId = await emailedSession(link, sent);
       await db.transaction(async (tx) => {
@@ -387,8 +392,11 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
             remindRequestedAt: null,
             emailFailures: 0,
             emailRetryAt: null,
+            // An asked-for one moves the next automatic one out by an interval, if one is coming.
             nextReminderAt:
-              interval && count < MAX_SIGN_REMINDERS
+              interval &&
+              count < MAX_SIGN_REMINDERS &&
+              (!asked || item.signer.nextReminderAt !== null)
                 ? new Date(now.getTime() + interval * DAY_MS)
                 : null,
           })
@@ -397,6 +405,7 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
               eq(signSigner.id, item.signer.id),
               eq(signSigner.organizationId, item.signer.organizationId),
               eq(signSigner.reminderCount, item.signer.reminderCount),
+              asked ? eq(signSigner.remindRequestedAt, asked) : undefined,
             ),
           )
           .returning();

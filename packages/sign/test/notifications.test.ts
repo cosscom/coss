@@ -360,6 +360,44 @@ describe("reminders and expiry", () => {
     expect(events.filter((event) => event.type === "reminded")).toHaveLength(4);
   });
 
+  test("asked-for reminders don't use up the automatic ones", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await create(env, { reminder_interval_days: 10 });
+    const mailer = recordingMailer();
+    const opts = (now: Date) => ({
+      limit: 50,
+      now,
+      scope: { organizationIds: [own.organization.id] },
+    });
+    const start = new Date();
+    await runDueSignNotifications(opts(start), deps(mailer));
+    // Three asked for, a few hours apart, before any automatic one is due.
+    for (let hour = 2; hour <= 6; hour += 2) {
+      const at = new Date(start.getTime() + hour * 3_600_000);
+      expect(await requestSignReminders({ ...env, requestId: request.id, now: at })).toBe(1);
+      await runDueSignNotifications(opts(at), deps(mailer));
+    }
+    // Then the automatic ones still come, three of them.
+    for (let day = 1; day <= 40; day++) {
+      await runDueSignNotifications(opts(new Date(start.getTime() + day * DAY)), deps(mailer));
+    }
+    const keys = mailer.sent
+      .filter((email) => email.idempotencyKey.startsWith("sign-remind:"))
+      .map((email) => email.idempotencyKey);
+    expect(keys.filter((key) => key.includes(":asked:"))).toHaveLength(3);
+    expect(keys.filter((key) => !key.includes(":asked:"))).toEqual([
+      expect.stringMatching(/:1$/),
+      expect.stringMatching(/:2$/),
+      expect.stringMatching(/:3$/),
+    ]);
+  });
+
   test("a request past its expiry expires and invites nobody", async () => {
     const own = await createTestTenant();
     const env: SignEnvironment = {
