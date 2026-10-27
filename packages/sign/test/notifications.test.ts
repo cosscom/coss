@@ -251,6 +251,29 @@ describe("invitations", () => {
       deps(quiet),
     );
     expect(quiet.sent).toEqual([]);
+
+    // Nor an organization its reputation has suspended.
+    const suspended = await createTestTenant();
+    await create(
+      {
+        ...env,
+        organizationId: suspended.organization.id,
+        projectId: suspended.project.id,
+        environmentId: suspended.development.id,
+      },
+      {},
+    );
+    await db.insert(schema.reputationStanding).values({
+      organizationId: suspended.organization.id,
+      status: "suspended",
+      reason: "complaint_rate",
+      statusChangedAt: new Date(),
+    });
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [suspended.organization.id] } },
+      deps(quiet),
+    );
+    expect(quiet.sent).toEqual([]);
   });
 
   test("a replayed invitation records no session: the signer has the earlier email's link", async () => {

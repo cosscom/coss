@@ -78,7 +78,7 @@ describe("signMailer", () => {
     expect(recorder.sent).toHaveLength(1);
     expect(recorder.sent[0]).toMatchObject({
       environment: coss,
-      idempotencyKey: "sign-invite:ssgn_1:coss",
+      idempotencyKey: "sign-invite:ssgn_1",
     });
 
     const ok = service();
@@ -99,22 +99,22 @@ describe("signMailer", () => {
     });
   });
 
-  test("no fallback once the customer's environment already sent it", async () => {
-    // The first attempt went out from acme.com; the retry's body differs (a new link), and the
-    // domain has since lost its verification.
-    const recorder = service((input) =>
-      input.environment.environmentId === "env_live"
-        ? new EmailError("domain_not_verified", "acme.com isn't verified.")
-        : null,
-    );
-    const mailer = signMailer({
-      service: recorder,
-      fallback: { environment: coss, address: "sign@coss.com" },
-      sentBefore: async (environment, key) =>
-        environment.environmentId === "env_live" && key === "sign-invite:ssgn_1",
-    });
-    expect(await mailer.send(email({ from: "contracts@acme.com" }))).toEqual({ replayed: true });
-    expect(recorder.sent).toEqual([]);
+  test("a retry sends nothing once any route sent it", async () => {
+    // An earlier attempt went out one way; the retry's body differs (a new link), and the route
+    // changed in between (the domain lost or regained verification, email_from changed).
+    for (const sentIn of ["env_live", "env_coss"]) {
+      const recorder = service();
+      const mailer = signMailer({
+        service: recorder,
+        fallback: { environment: coss, address: "sign@coss.com" },
+        sentBefore: async (environments, key) =>
+          key === "sign-invite:ssgn_1" &&
+          environments.some((environment) => environment.environmentId === sentIn),
+      });
+      expect(await mailer.send(email({ from: "contracts@acme.com" }))).toEqual({ replayed: true });
+      expect(await mailer.send(email())).toEqual({ replayed: true });
+      expect(recorder.sent).toEqual([]);
+    }
   });
 
   test("sandbox emails stay in their environment; live ones wait without any sender", async () => {

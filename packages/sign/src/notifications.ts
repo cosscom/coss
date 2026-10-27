@@ -135,6 +135,9 @@ async function dueSigners(
         // Held while the organization is suspended: coss.com's own sender must never carry a
         // suspended organization's mail.
         sql`not exists (select 1 from ${schema.organizationSuspension} where ${schema.organizationSuspension.organizationId} = ${signRequest.organizationId})`,
+        // Nor while its reputation has it suspended (sends are refused in its own environment,
+        // and coss.com's sender must not carry them instead).
+        sql`not exists (select 1 from ${schema.reputationStanding} where ${schema.reputationStanding.organizationId} = ${signRequest.organizationId} and ${schema.reputationStanding.status} = 'suspended')`,
         // Nor while it is being deleted: its links already don't open.
         sql`not exists (select 1 from ${schema.organizationDeletion} where ${schema.organizationDeletion.organizationId} = ${signRequest.organizationId} and ${schema.organizationDeletion.status} = 'pending')`,
         condition,

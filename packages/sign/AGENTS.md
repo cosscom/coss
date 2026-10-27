@@ -91,7 +91,7 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   compare-and-set after the send (request row locked first, as signing does), so a crash in between replays the same email (the replay's own, never-emailed session is deleted, and its event names no session) (an invitation
   only moves `pending` to `notified`, never back from `viewed`/`signed`). A failed email puts that
   signer in backoff (`email_failures`, `email_retry_at`: 1, 2, 4… minutes, at most 6 hours), so it
-  never holds up anyone else's. A suspended organization's signers get nothing until it is
+  never holds up anyone else's. A suspended organization's signers (an admin suspension or its reputation's) get nothing until it is
   reinstated (coss.com's sender must never carry its mail). Emails go
   through an injected `SignMailer` (never `@coss/email`): the worker's
   `apps/worker/src/sign-mailer.ts` sends from the settings' `email_from` in the request's
@@ -101,7 +101,8 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   `NOTIFICATIONS_ENVIRONMENT_ID`) as "<requester> via coss.com"; sandbox environments always send
   in their own (fake) environment. coss.com's sender never carries the requester's `message`
   (abuse): `SignEmail.cossContent` is the copy without it, used whenever the mailer falls back.
-  Subjects are one line. Bodies are discarded after sending (they hold links); tracking is off.
+  Subjects are one line. The mailer sends nothing when the key already exists in either environment (a retry
+  whose route changed). Bodies are discarded after sending (they hold links); tracking is off.
 - **Settings** (`settings.ts`): `allowed_origins` (≤ 10, `checkedSignOrigin`: https, plus
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —
