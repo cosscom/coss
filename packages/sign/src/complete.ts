@@ -208,7 +208,46 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
     contentType: "application/pdf",
     content: bytes,
   });
-  const published = await db.transaction(async (tx) => {
+  let published: boolean;
+  try {
+    published = await publish(request, completed, { key, sha256, now });
+  } catch (error) {
+    // Rolled back (or its commit's answer was lost): keep the copy only if the request names it.
+    await discardUnpublished(request, key, deps.store);
+    throw error;
+  }
+  // Another worker sealed it first, or the request is gone: this copy is nobody's.
+  if (!published) await discardUnpublished(request, key, deps.store);
+}
+
+/** Deletes a sealed copy unless the request publishes it. */
+async function discardUnpublished(
+  request: RequestRow,
+  key: string,
+  store: DocumentStore,
+): Promise<void> {
+  try {
+    const [row] = await db
+      .select({ key: signRequest.signedDocumentKey })
+      .from(signRequest)
+      .where(
+        and(eq(signRequest.id, request.id), eq(signRequest.organizationId, request.organizationId)),
+      )
+      .limit(1);
+    if (row?.key === key) return;
+    await store.delete([key]);
+  } catch (error) {
+    console.error(`[sign] could not delete an unpublished seal of ${request.id}:`, error);
+  }
+}
+
+/** Publishes the sealed copy and records `sealed`, fenced on the lease; false if it lost. */
+async function publish(
+  request: RequestRow,
+  completed: Awaited<ReturnType<typeof completedRequest>>,
+  { key, sha256, now }: { key: string; sha256: string; now: Date },
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
     // Fenced on the lease: a worker that lost it writes nothing.
     const [updated] = await tx
       .update(signRequest)
@@ -244,12 +283,6 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
     );
     return true;
   });
-  // Another worker sealed it first, or the request is gone: this copy is nobody's.
-  if (!published) {
-    await deps.store.delete([key]).catch((error) => {
-      console.error(`[sign] could not delete an unpublished seal of ${request.id}:`, error);
-    });
-  }
 }
 
 /** Seals due completed requests; returns how many it tried. */

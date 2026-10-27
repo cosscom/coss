@@ -271,6 +271,47 @@ describe("completion", () => {
     }
   });
 
+  test("values land in their boxes when the crop box reaches past the page", async () => {
+    // Shown (by pdf.js, and so to the signer) is the crop box within the media box.
+    const request = await signedRequest(
+      {
+        documents: [
+          {
+            filename: "cropped.pdf",
+            content: await buildTestPdfBase64([
+              {
+                lines: ["Signature: {{signature:signer_1}}"],
+                cropBox: [-100, -100, 812, 992],
+              },
+            ]),
+          },
+        ],
+        signers: [
+          {
+            name: "Ada Lovelace",
+            email: "ada@example.com",
+            delivery: "embedded",
+            fields: [
+              { type: "signature", anchor: "{{signature:signer_1}}" },
+              { type: "text", page: 1, x: 100, y: 150, width: 300, height: 24, label: "c" },
+            ],
+          },
+        ],
+      },
+      (fields) =>
+        Object.fromEntries(
+          fields.filter((field) => field.type === "text").map((field) => [field.id, "{{text:c}}"]),
+        ),
+    );
+    await runDueSignCompletions({ limit: 10, scope: scope() }, { store, sealer, tsa: null });
+    const { content } = await readSignedDocument({ ...sandbox, requestId: request.id, store });
+    const anchor = (await inspectPdf(content)).anchors.find((a) => a.text === "{{text:c}}");
+    expect(anchor?.x ?? 0).toBeGreaterThanOrEqual(100);
+    expect(anchor?.x ?? 0).toBeLessThan(110);
+    expect(anchor?.y ?? 0).toBeGreaterThanOrEqual(149);
+    expect((anchor?.y ?? 0) + (anchor?.height ?? 0)).toBeLessThanOrEqual(175);
+  });
+
   test("a failed seal is retried later, not at once", async () => {
     const request = await signedRequest({});
     const broken: Sealer = {

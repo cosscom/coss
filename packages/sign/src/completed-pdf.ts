@@ -98,6 +98,19 @@ function drawable(font: PDFFont, text: string): string {
     .join("");
 }
 
+/** The part of the page shown: its crop box within its media box, as pdf.js shows it. */
+function displayedBox(page: PDFPage): { x: number; y: number; width: number; height: number } {
+  const crop = page.getCropBox();
+  const media = page.getMediaBox();
+  const x = Math.max(crop.x, media.x);
+  const y = Math.max(crop.y, media.y);
+  const right = Math.min(crop.x + crop.width, media.x + media.width);
+  const top = Math.min(crop.y + crop.height, media.y + media.height);
+  // pdf.js falls back to the media box when they don't overlap.
+  if (right <= x || top <= y) return media;
+  return { x, y, width: right - x, height: top - y };
+}
+
 /**
  * Where a box given in points from the top left of the page **as displayed** (crop box, `/Rotate`)
  * starts in the page's own coordinates, and the rotation that draws upright in it. `(left,
@@ -108,7 +121,7 @@ function placement(
   left: number,
   bottom: number,
 ): { x: number; y: number; rotate: number } {
-  const crop = page.getCropBox();
+  const crop = displayedBox(page);
   const rotation = ((page.getRotation().angle % 360) + 360) % 360;
   switch (rotation) {
     case 90:
