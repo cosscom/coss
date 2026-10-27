@@ -6,6 +6,7 @@
  * organization (`scope` narrows it in tests).
  */
 import { createHash } from "node:crypto";
+import { recordUsage } from "@coss/billing/metering";
 import { db, schema } from "@coss/db";
 import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
@@ -17,6 +18,7 @@ import type { Sealer } from "./seal/sealer.ts";
 import type { TimestampAuthority } from "./seal/tsa.ts";
 import { getSignSettings, requesterName } from "./settings.ts";
 import { type DocumentStore, organizationPrefix } from "./store.ts";
+import { discardStoreObjects } from "./store-cleanup.ts";
 
 const {
   environment,
@@ -239,7 +241,7 @@ async function discardUnpublished(
       )
       .limit(1);
     if (row?.key === key) return;
-    await store.delete([key]);
+    await discardStoreObjects(store, request.organizationId, [key]);
   } catch (error) {
     console.error(`[sign] could not delete an unpublished seal of ${request.id}:`, error);
   }
@@ -278,6 +280,17 @@ async function publish(
       )
       .returning();
     if (!updated) return false;
+    // Billable once, here: the compare-and-set above lets only one worker through. Never sandbox.
+    if (!completed.sandbox) {
+      await recordUsage(tx, {
+        organizationId: updated.organizationId,
+        environmentId: updated.environmentId,
+        projectId: updated.projectId,
+        apiKeyId: updated.apiKeyId,
+        meter: "sign.completed_requests",
+        quantity: 1,
+      });
+    }
     await recordSignEvent(
       tx,
       { request: updated, sandbox: completed.sandbox },

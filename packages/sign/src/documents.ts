@@ -14,6 +14,7 @@ import {
   type SignDocumentObjectOutput,
 } from "./schemas.ts";
 import { type DocumentStore, documentKey } from "./store.ts";
+import { discardStoreObjects, removeStoreObjects, scheduleStoreCleanup } from "./store-cleanup.ts";
 
 const { environment, signDocument, signRequestDocument, signTemplateDocument } = schema;
 
@@ -71,7 +72,14 @@ export async function discardUnstoredDocuments(
       );
     const kept = new Set(stored.map((row) => row.id));
     const unused = documents.filter((document) => !kept.has(document.id));
-    if (unused.length > 0) await store.delete(unused.map((document) => document.storeKey));
+    const organizationId = unused[0]?.organizationId;
+    if (organizationId) {
+      await discardStoreObjects(
+        store,
+        organizationId,
+        unused.map((document) => document.storeKey),
+      );
+    }
   } catch (error) {
     console.error("[sign] could not delete unused document bytes:", error);
   }
@@ -272,7 +280,8 @@ export async function deleteSignDocument(
       .where(
         and(eq(signDocument.id, row.id), eq(signDocument.organizationId, input.organizationId)),
       );
+    await scheduleStoreCleanup(tx, input.organizationId, [row.storeKey]);
     return row;
   });
-  await store.delete([deleted.storeKey]);
+  await removeStoreObjects(store, [deleted.storeKey]);
 }

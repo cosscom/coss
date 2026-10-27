@@ -39,6 +39,7 @@ import {
   purgeExpiredRiskPersonalData,
 } from "@coss/risk";
 import { purgeExpiredScreenings } from "@coss/screening";
+import { purgeExpiredSignSessions } from "@coss/sign";
 import { purgeExpiredReceivedSms, purgeExpiredSmsMessages } from "@coss/sms";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
 import {
@@ -77,6 +78,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   // Hooks messages, deliveries and attempts leave with their partitions (the `partitions` loop).
   { name: "hook idempotency keys", purge: purgeExpiredHookIdempotencyKeys },
   { name: "hook portal sessions", purge: purgeExpiredHookPortalSessions },
+  { name: "sign sessions", purge: purgeExpiredSignSessions },
   { name: "hook recoveries", purge: purgeFinishedHookRecoveries },
   { name: "hook delivery rollups", purge: purgeExpiredHookDeliveryRollups },
   { name: "content screenings", purge: purgeExpiredScreenings },

@@ -1386,6 +1386,7 @@
                       "sms.received_segments",
                       "sms.numbers",
                       "sms.registrations",
+                      "sign.completed_requests",
                       "video.participant_minutes",
                       "scheduling.bookings",
                       null
@@ -2014,6 +2015,7 @@
               "sms.received_segments",
               "sms.numbers",
               "sms.registrations",
+              "sign.completed_requests",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -2034,6 +2036,7 @@
                 "sms.received_segments",
                 "sms.numbers",
                 "sms.registrations",
+                "sign.completed_requests",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],
@@ -12149,6 +12152,38 @@
           }
         ]
       },
+      "DeletedSignRequest": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "sign_request"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "deleted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "deleted"
+        ],
+        "examples": [
+          {
+            "object": "sign_request",
+            "id": "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "deleted": true
+          }
+        ]
+      },
       "SignSession": {
         "type": "object",
         "properties": {
@@ -17429,6 +17464,7 @@
                     "sms.received_segments",
                     "sms.numbers",
                     "sms.registrations",
+                    "sign.completed_requests",
                     "video.participant_minutes",
                     "scheduling.bookings"
                   ],
@@ -17771,6 +17807,7 @@
               "sms.received_segments",
               "sms.numbers",
               "sms.registrations",
+              "sign.completed_requests",
               "video.participant_minutes",
               "scheduling.bookings"
             ],
@@ -18165,6 +18202,7 @@
               "sms.received_segments",
               "sms.numbers",
               "sms.registrations",
+              "sign.completed_requests",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -43675,6 +43713,243 @@
             }
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteSignRequest",
+        "tags": [
+          "Signature requests"
+        ],
+        "summary": "Delete a signature request",
+        "description": "Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit trail, signatures and signed document, for good. Its documents stay (delete them on their own). Keep the signed document first if you need it: it is your record.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The signature request's id.",
+              "examples": [
+                "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The signature request's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted request.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedSignRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No signature request with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is `sent`: cancel it first (`request_not_deletable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sign isn't available in this deployment yet (`sign_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/v1/sign/requests/{id}/send": {
@@ -62363,6 +62638,7 @@
                 "sms.received_segments",
                 "sms.numbers",
                 "sms.registrations",
+                "sign.completed_requests",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],

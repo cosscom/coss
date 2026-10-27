@@ -722,6 +722,12 @@
           "description": "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed."
         },
         {
+          "name": "SIGN_DOCUMENTS_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production."
+        },
+        {
           "name": "SIGN_PUBLIC_URL",
           "kind": "plain",
           "required": false,
@@ -912,6 +918,12 @@
           "required": false,
           "value": "https://track.cosslinks.com",
           "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
+        },
+        {
+          "name": "SIGN_DOCUMENTS_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production."
         },
         {
           "name": "SIGN_SEALER",

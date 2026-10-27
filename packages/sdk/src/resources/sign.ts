@@ -8,6 +8,7 @@ import type {
   CreateSignSessionParams,
   CreateSignTemplateParams,
   DeletedSignDocument,
+  DeletedSignRequest,
   DeletedSignTemplate,
   ListSignDocumentsParams,
   ListSignRequestsParams,
@@ -140,6 +141,18 @@ export class SignRequestsResource {
     return this.#http.request<SignRequest>({
       method: "POST",
       path: `/v1/sign/requests/${encodeURIComponent(id)}/send`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Deletes a request that isn't `sent` (cancel it first), with its audit trail, signatures and
+   * signed document, for good. Its documents stay.
+   */
+  remove(id: string, options?: ReadOptions): Promise<CossResult<DeletedSignRequest>> {
+    return this.#http.request<DeletedSignRequest>({
+      method: "DELETE",
+      path: `/v1/sign/requests/${encodeURIComponent(id)}`,
       signal: options?.signal,
     });
   }

@@ -23,6 +23,7 @@ import {
 } from "./sessions.ts";
 import { getSignSettings, requesterName, signDisclosure } from "./settings.ts";
 import { type DocumentStore, organizationPrefix } from "./store.ts";
+import { discardStoreObjects } from "./store-cleanup.ts";
 
 const { signDocument, signField, signRequest, signRequestDocument, signSigner } = schema;
 
@@ -630,9 +631,7 @@ async function discardImages(
   const orphans = [keys.signature, keys.initials].filter(
     (key): key is string => key !== null && !kept.has(key),
   );
-  await store.delete(orphans).catch((error) => {
-    console.error("[sign] could not delete an unused signature image:", error);
-  });
+  await discardStoreObjects(store, session.organizationId, orphans);
 }
 
 async function commitSignature(

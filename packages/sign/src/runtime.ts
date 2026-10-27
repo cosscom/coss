@@ -1,3 +1,4 @@
+import { S3DocumentStore, signS3Api } from "./s3-store.ts";
 /**
  * Completion's sealer and TSA from the environment (`signSealEnvShape`): `null` when this
  * deployment can't seal yet (production without a KMS key and certificate), and the worker's
@@ -6,6 +7,7 @@
 import { certificatesFromPem } from "./seal/crypto.ts";
 import { KmsSealer, LocalSealer, type Sealer } from "./seal/sealer.ts";
 import { HttpTsa, type TimestampAuthority } from "./seal/tsa.ts";
+import { type DocumentStore, FakeDocumentStore } from "./store.ts";
 
 /** `signSealEnvShape`, parsed. */
 type SignSealEnv = {
@@ -35,4 +37,21 @@ export async function sealerFromEnv(
     };
   }
   return null;
+}
+
+/**
+ * The document store: S3 with `SIGN_DOCUMENTS_BUCKET`, else the fake store outside production;
+ * `null` in production without a bucket (Sign stays off there).
+ */
+export function signStoreFromEnv(env: {
+  SIGN_DOCUMENTS_BUCKET?: string;
+  AWS_REGION?: string;
+}): DocumentStore | null {
+  if (env.SIGN_DOCUMENTS_BUCKET) {
+    if (!env.AWS_REGION) throw new Error("SIGN_DOCUMENTS_BUCKET needs AWS_REGION.");
+    return new S3DocumentStore(
+      signS3Api({ region: env.AWS_REGION, bucket: env.SIGN_DOCUMENTS_BUCKET }),
+    );
+  }
+  return process.env.NODE_ENV === "production" ? null : new FakeDocumentStore();
 }

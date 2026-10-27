@@ -9,6 +9,7 @@ import type {
   CreateSignSessionRequest,
   CreateSignTemplateRequest,
   DeletedSignDocument,
+  DeletedSignRequest,
   DeletedSignTemplate,
   ListSignDocumentsQuery,
   ListSignRequestsQuery,
@@ -41,6 +42,7 @@ import type {
   ListSignRequestsParams,
   ListSignTemplatesParams,
   DeletedSignDocument as SdkDeletedSignDocument,
+  DeletedSignRequest as SdkDeletedSignRequest,
   DeletedSignTemplate as SdkDeletedSignTemplate,
   SignFieldInput as SdkSignFieldInput,
   SignRequestWebhookEvent as SdkSignRequestWebhookEvent,
@@ -93,6 +95,7 @@ export type SignContract = [
   Assert<MutuallyAssignable<z.output<typeof SignTemplateObject>, SignTemplate>>,
   Assert<MutuallyAssignable<z.output<typeof SignTemplateList>, List<SignTemplate>>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedSignTemplate>, SdkDeletedSignTemplate>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedSignRequest>, SdkDeletedSignRequest>>,
   Assert<
     MutuallyAssignable<
       z.input<typeof CreateSignRequestFromTemplateRequest>,

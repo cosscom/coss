@@ -1,6 +1,6 @@
 /** What coss.com meters: one meter per billable unit of a product. */
 
-export const PRODUCTS = ["email", "sms", "video", "scheduling"] as const;
+export const PRODUCTS = ["email", "sms", "sign", "video", "scheduling"] as const;
 export type Product = (typeof PRODUCTS)[number];
 
 export type MeterDefinition = {
@@ -76,6 +76,17 @@ export const METERS = {
     units: "fees",
     displayPer: 1,
     dimensions: ["fee"],
+    requires: "plan",
+  },
+  // Sign: a signature request every signer signed, once its sealed document exists. Not priced yet:
+  // until a rate card prices it, invoices show the usage as an uncharged line.
+  "sign.completed_requests": {
+    product: "sign",
+    label: "Signature requests",
+    unit: "completed request",
+    units: "completed requests",
+    displayPer: 1,
+    dimensions: [],
     requires: "plan",
   },
   "video.participant_minutes": {

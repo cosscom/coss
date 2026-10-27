@@ -66,6 +66,8 @@ export const RETENTION_DAYS = {
   hookMessages: 30,
   /** Hooks portal sessions, counted from their expiry. */
   hookPortalSessions: 1,
+  /** Sign's signing and builder sessions, counted from their expiry. */
+  signSessions: 7,
   /** Finished Hooks endpoint recoveries. */
   hookRecoveries: 7,
   /** Contacts that never confirmed a double opt-in, counted from when it was requested. */
@@ -312,6 +314,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Broadcasts with their content and their counters (recipients, deliveries, bounces, complaints, opens, clicks, unsubscribes). Kept until you delete them; each email they made is kept like any other email once the broadcast is finished.",
     period: { until: "deleted" },
+  },
+  {
+    id: "signing_sessions",
+    label: "Signing and builder sessions",
+    description:
+      "Links to the signing page and the template builder you create (never the token itself), and the ones emailed to signers.",
+    period: { days: RETENTION_DAYS.signSessions, after: "expiry" },
   },
   {
     id: "signature_requests",

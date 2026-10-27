@@ -119,6 +119,7 @@ describe("terms", () => {
       "sms.received_segments": 0,
       "sms.numbers": 0,
       "sms.registrations": 0,
+      "sign.completed_requests": 0,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
     });

@@ -54,6 +54,8 @@ import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import {
+  type DocumentStore,
+  runDueSignCleanup,
   runDueSignCompletions,
   runDueSignNotifications,
   type SignCompletionDeps,
@@ -107,6 +109,7 @@ const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
 const SIGN_COMPLETION_BATCH = 5;
 const SIGN_NOTIFICATION_BATCH = 50;
+const SIGN_CLEANUP_BATCH = 500;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 // Hooks delivery failures warn by default (their policy has no suspension threshold).
 const REPUTATION_CHECKS = [
@@ -150,6 +153,8 @@ export type WorkerDeps = {
   notifications: ReputationNotificationDeps | null;
   /** Seals Sign's completed requests; `null`: held (no document store or sealer yet). */
   signCompletion?: SignCompletionDeps | null;
+  /** Sign's document store: an organization's objects go when it is deleted. */
+  signStore?: DocumentStore | null;
   /** Sign's emails, reminders and expiry; `null`: off (no document store or signing app yet). */
   signNotifications?: SignNotificationDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
@@ -182,7 +187,7 @@ export type WorkerDeps = {
 /**
  * Every loop (and pg-boss's email dispatch, one queue per stream), by name, for `WORKER_LOOPS`. The
  * conditional ones (`billing-notifications`, `auth-emails`, `reputation-notifications`,
- * `dmarc-notifications`, `push-notifications`, `sign-completions`, `sign-notifications`, `ses-events`,
+ * `dmarc-notifications`, `push-notifications`, `sign-completions`, `sign-notifications`, `sign-cleanup`, `ses-events`,
  * `ses-inbound`) also need their
  * configuration.
  */
@@ -223,6 +228,7 @@ export const WORKER_LOOP_NAMES = [
   "push-notifications",
   "sign-completions",
   "sign-notifications",
+  "sign-cleanup",
   "ses-events",
   "ses-inbound",
 ] as const;
@@ -390,6 +396,11 @@ export function startJobs(deps: WorkerDeps): Loop[] {
                 { ...deps.domains, inboundStore: deps.inbound?.store ?? null },
                 assertLease,
               );
+              // Sign's documents, signatures and signed PDFs (the fake store's rows go with the data).
+              if (deps.signStore) {
+                await assertLease();
+                await deps.signStore.deleteOrganization(organizationId);
+              }
               // Numbers stop sending and the Twilio subaccount is closed.
               await releaseOrganizationSmsResources(organizationId, deps.sms.senders, assertLease);
               // The running month is invoiced (once); the invoice outlives the organization.
@@ -584,6 +595,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         run: async () =>
           (await runDueSignCompletions({ limit: SIGN_COMPLETION_BATCH }, signCompletion)) ===
           SIGN_COMPLETION_BATCH,
+      }),
+    );
+  }
+  const signStore = deps.signStore;
+  if (signStore) {
+    loops.push(
+      start({
+        // Retries store deletions that failed when a request was deleted.
+        name: "sign-cleanup",
+        intervalMs: 60_000,
+        run: async () =>
+          (await runDueSignCleanup({ limit: SIGN_CLEANUP_BATCH }, signStore)) ===
+          SIGN_CLEANUP_BATCH,
       }),
     );
   }

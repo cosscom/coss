@@ -242,6 +242,12 @@ export interface SignRequest {
   created_at: string;
 }
 
+export interface DeletedSignRequest {
+  object: "sign_request";
+  id: string;
+  deleted: true;
+}
+
 export interface ListSignRequestsParams {
   /** One status or several (sent comma-separated). */
   status?: SignRequestStatus | SignRequestStatus[];

@@ -24,6 +24,7 @@ const {
   emailSuppression,
   signFakeObject,
   signRequest,
+  signStoreCleanup,
   signTemplate,
   smsInboundReceipt,
   smsMessage,
@@ -643,6 +644,18 @@ async function deleteOrganizationData(
       signFakeObject,
       signFakeObject.key,
       eq(signFakeObject.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
+  // Sign's pending store deletions: the organization's whole prefix goes anyway.
+  if (
+    !(await deleteInBatches(
+      deletion,
+      signStoreCleanup,
+      signStoreCleanup.key,
+      eq(signStoreCleanup.organizationId, organizationId),
       batchSize,
       signal,
     ))

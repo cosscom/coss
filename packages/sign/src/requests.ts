@@ -44,6 +44,7 @@ import {
 } from "./schemas.ts";
 import { getSignSettings } from "./settings.ts";
 import type { DocumentStore } from "./store.ts";
+import { removeStoreObjects, scheduleStoreCleanup } from "./store-cleanup.ts";
 import { createSignTemplate, updateSignTemplate } from "./templates.ts";
 
 const {
@@ -106,6 +107,7 @@ export type SignService = {
     input: Parameters<typeof uploadSignDocument>[1],
   ): Promise<SignDocumentObjectOutput>;
   deleteDocument(input: Parameters<typeof deleteSignDocument>[1]): Promise<void>;
+  deleteRequest(input: Parameters<typeof deleteSignRequest>[1]): Promise<void>;
   createTemplate(
     input: Parameters<typeof createSignTemplate>[1],
   ): Promise<SignTemplateObjectOutput>;
@@ -704,7 +706,44 @@ export function createSignService(opts: SignServiceOptions): SignService {
     replay,
     uploadDocument: (input) => uploadSignDocument(opts.store, input),
     deleteDocument: (input) => deleteSignDocument(opts.store, input),
+    deleteRequest: (input) => deleteSignRequest(opts.store, input),
     createTemplate: (input) => createSignTemplate(opts.store, input),
     updateTemplate: (input) => updateSignTemplate(opts.store, input),
   };
+}
+
+/**
+ * Deletes a request that isn't `sent` (cancel that first): its signers, fields, audit trail and
+ * sessions, and from the store its signature images and signed document. Its documents stay (they
+ * may be used elsewhere; delete them on their own).
+ */
+export async function deleteSignRequest(
+  store: DocumentStore,
+  input: { organizationId: string; environmentId: string; requestId: string },
+): Promise<void> {
+  if (!isId(ID_PREFIXES.signRequest, input.requestId)) throw notFound();
+  const keys = await db.transaction(async (tx) => {
+    const [row] = await tx.select().from(signRequest).where(requestScope(input)).for("update");
+    if (!row) throw notFound();
+    if (row.status === "sent") {
+      throw new SignError(
+        "request_not_deletable",
+        "Signers may still be signing it: cancel the request first.",
+      );
+    }
+    const signers = await tx
+      .select({ signatureKey: signSigner.signatureKey, initialsKey: signSigner.initialsKey })
+      .from(signSigner)
+      .where(
+        and(eq(signSigner.requestId, row.id), eq(signSigner.organizationId, row.organizationId)),
+      );
+    await tx.delete(signRequest).where(requestScope(input));
+    const keys = [
+      ...signers.flatMap((signer) => [signer.signatureKey, signer.initialsKey]),
+      row.signedDocumentKey,
+    ].filter((key): key is string => key !== null);
+    await scheduleStoreCleanup(tx, row.organizationId, keys);
+    return keys;
+  });
+  await removeStoreObjects(store, keys);
 }

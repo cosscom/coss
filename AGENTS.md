@@ -75,8 +75,8 @@ Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `
 `db ← logs ← webhooks ← risk` (`risk` also `→ signals, ratelimit, retention, screening` — only screening's DB-free `./classifier`, `./text`, `./runtime`, `./testing`; `email` imports only `@coss/risk/schemas`, for `WEBHOOK_EVENT_TYPES`), `db ← logs ← webhooks ← reputation ← screening ← email`, `webhooks ← sms → billing, reputation, retention, versioning` (`email` imports only `@coss/sms/schemas`, for `WEBHOOK_EVENT_TYPES`; screening is injected), `reputation ← hooks`, `db ← ratelimit`, `db ← push ← webhooks, hooks, reputation, billing, risk, worker, web` (`push` also `→ retention` and only `@coss/auth/{permissions,org-access}`), `email, webhooks, logs, retention ← migrate` (`billing` only `./gate` types), `webhooks ← billing ← email` (packages take
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
-`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
-`db ← logs ← webhooks ← sign` (`sign` also `→ versioning`; `email` imports only `@coss/sign/schemas`, for `WEBHOOK_EVENT_TYPES`); `api → tenancy, email, sms, sign, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
+`retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `sign`, `worker`, `web`, `site`, `mobile`;
+`db ← logs ← webhooks ← sign` (`sign` also `→ versioning, retention` and only `@coss/billing/metering`; `email` imports only `@coss/sign/schemas`, for `WEBHOOK_EVENT_TYPES`); `api → tenancy, email, sms, sign, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
 `web → auth, tenancy, email, sms, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, migrate, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention`, `observability` (both bundled by Metro: keep them dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `sign-app → sign, ratelimit, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk, sdkgen` (only the client-safe `@coss/auth/{slugs,constants,api-key-permissions}`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}`, `@coss/risk/schemas` and `@coss/sdkgen`'s `snippets.json` + `./methods`) +
 `@coss/api/openapi.json` (data only, never api code); `sdkgen → @coss/api/openapi.json` (data only); `infra → auth, email, sms, sign, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
@@ -195,6 +195,7 @@ variables (`infra/test` enforces the list): a hash that differs between laptops 
 | `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` | `packages/auth/src/options.ts` (base URL, trusted origin, invitation links); `BETTER_AUTH_URL` also `apps/worker` (dashboard links in notification emails) |
 | `PORTAL_PUBLIC_URL` | api, web ("Open portal"): origin of the Hooks portal (`apps/portal`, its own registrable domain); portal session links point there. Default `http://localhost:3003` outside production |
 | `SIGN_PUBLIC_URL` | api: origin of Sign's signing app (`apps/sign`, its own registrable domain); signing session links point there. Default `http://localhost:3004` outside production; unset in production → creating a session answers 503 |
+| `SIGN_DOCUMENTS_BUCKET` | api, worker, sign: Sign's documents bucket (S3, with `AWS_REGION`; Terraform output `sign_documents_bucket`). Unset: the fake store (Postgres) outside production, Sign off in production |
 | `SIGN_NOTIFICATIONS_FROM` | worker: coss.com's sender of Sign emails ("<requester> via coss.com") for environments without their own `email_from`, on a verified domain of `NOTIFICATIONS_ENVIRONMENT_ID`'s organization; default `NOTIFICATIONS_FROM`'s address. The worker also reads `SIGN_PUBLIC_URL` (emailed links) |
 | `SIGN_SEALER`, `SIGN_SEAL_KMS_KEY_ID`, `SIGN_SEAL_CERTIFICATE_CHAIN`, `SIGN_TSA_URL` | worker: what seals Sign's completed documents (`local`, the default outside production: a self-signed key made at start; `kms`: the KMS key and its certificate chain, PEM leaf first, `\n` accepted) and an optional RFC 3161 TSA (B-T timestamps). Unset in production: completions wait. Shape in `@coss/sign/env` |
 | `API_PORT`, `API_PUBLIC_URL` | `apps/api` (port; OpenAPI `servers` and email tracking URLs, falls back to the request origin outside production); `API_PUBLIC_URL` also `apps/worker` (email tracking) and `apps/web` (quick-start snippets, read at runtime) |
@@ -944,9 +945,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
 Sign's long-term validation data in seals (PAdES B-LT: DSS with OCSP/CRLs) and a standalone certificate download,
-purging expired signing and builder sessions, the S3 document store, billing, dashboard
-pages (settings included: API only for now) and the signing app's deployment (Sign is off in production until the
-store lands),
+a price for `sign.completed_requests`, dashboard pages (settings included: API only for now) and docs, and the
+signing app's deployment (Sign is off in production until "Going live" in `packages/sign/AGENTS.md` is done),
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 in the generated SDKs (`sdks/*`): auto-pagination, a `COSS_BASE_URL` default and typed events from webhook
