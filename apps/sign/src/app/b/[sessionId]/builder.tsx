@@ -210,7 +210,7 @@ export function Builder({ sessionId }: { sessionId: string }) {
 
   if (failure) {
     return (
-      <main className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center gap-2 p-6 text-center">
+      <main className="mx-auto flex min-h-[min(60vh,28rem)] max-w-md flex-col justify-center gap-2 p-6 text-center">
         <h1 className="font-semibold text-xl">This link can't be used</h1>
         <p className="text-muted-foreground text-sm">{failure}</p>
       </main>
@@ -218,7 +218,7 @@ export function Builder({ sessionId }: { sessionId: string }) {
   }
   if (!overview || !draft) {
     return (
-      <main className="flex min-h-[60vh] items-center justify-center">
+      <main className="flex min-h-[min(60vh,28rem)] items-center justify-center">
         <Spinner />
       </main>
     );

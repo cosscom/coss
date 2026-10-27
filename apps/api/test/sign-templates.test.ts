@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { pool } from "@coss/db";
 import { memoryLogWriter } from "@coss/logs/testing";
 import { buildTestPdfBase64 } from "@coss/sign/testing";
+import { createEnvironmentApiKey } from "@coss/tenancy";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { apiRequest, createTestApp, errorOf } from "./helpers.ts";
 
@@ -152,5 +153,40 @@ describe("Sign templates", () => {
     ).json();
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(JSON.stringify(writer.entries)).not.toContain(session.token);
+  });
+
+  test("a request from a template that is sent at once needs sign:send", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await apiRequest(app, "POST", "/v1/sign/templates", {
+      key: tenant.sandboxKey,
+      body: {
+        name: "NDA",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        roles: [{ key: "client", name: "Client" }],
+        fields: [
+          { role: "client", type: "signature", page: 1, x: 72, y: 600, width: 160, height: 30 },
+        ],
+      },
+    });
+    const template = await created.json();
+    const creator = await createEnvironmentApiKey({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      name: "Sign creator",
+      userId: tenant.owner.id,
+      permissions: { sign: ["create", "read"] },
+    });
+    const signers = [{ role: "client", name: "Ada", email: "ada@example.com" }];
+    const path = `/v1/sign/templates/${template.id}/requests`;
+    const sent = await apiRequest(app, "POST", path, { key: creator.key, body: { signers } });
+    expect(sent.status).toBe(403);
+    expect((await errorOf(sent)).code).toBe("insufficient_permissions");
+    const draft = await apiRequest(app, "POST", path, {
+      key: creator.key,
+      body: { signers, send: false },
+    });
+    expect(draft.status).toBe(201);
+    expect((await draft.json()).status).toBe("draft");
   });
 });

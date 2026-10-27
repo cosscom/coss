@@ -31,6 +31,7 @@ import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import { idempotencyHeaders, idempotencyHook, idempotentReplayedHeader } from "./idempotency.ts";
+import { requireSendPermission } from "./sign.ts";
 
 const TAG = "Sign templates";
 
@@ -340,6 +341,7 @@ export function createSignTemplateRoutes(deps: {
     async (c) => {
       const env = environment(c);
       const { id } = c.req.valid("param");
+      await requireSendPermission(c, c.req.valid("json").send);
       const result = await createRequestFromTemplate(service(), {
         organizationId: env.organizationId,
         environmentId: env.environmentId,
