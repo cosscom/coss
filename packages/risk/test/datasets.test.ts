@@ -108,6 +108,35 @@ describe("refreshDueDatasets and createIpIntelligenceSource", () => {
     expect((await createIpIntelligenceSource().current()).lookup("185.220.0.140")?.tor).toBe(true);
   });
 
+  test("a dropped connection is retried; a feed that keeps failing is reported", async () => {
+    await clear();
+    let drops = 2;
+    const flaky = fakeFetch({
+      [FEED_URLS.tor]: () => {
+        if (drops-- > 0) throw new Error("The socket connection was closed unexpectedly.");
+        return new Response(torList);
+      },
+      [FEED_URLS.aws]: () => {
+        throw new Error("The socket connection was closed unexpectedly.");
+      },
+    });
+    const results = await refreshDueDatasets({ fetch: flaky, retryDelayMs: 0 });
+    expect(results.map((r) => [r.name, r.status])).toEqual([
+      ["tor", "updated"],
+      ["cloud", "failed"],
+      ["ipinfo_lite", "skipped"],
+    ]);
+    expect(flaky.calls.filter((url) => url === FEED_URLS.tor)).toHaveLength(3);
+    expect(flaky.calls.filter((url) => url === FEED_URLS.aws)).toHaveLength(3);
+    // A status is the feed's answer: asked once.
+    const limited = fakeFetch({
+      [FEED_URLS.tor]: () => new Response("rate limited", { status: 429 }),
+    });
+    await refreshDueDatasets({ fetch: limited, retryDelayMs: 0, force: true });
+    expect(limited.calls.filter((url) => url === FEED_URLS.tor)).toHaveLength(1);
+    await clear();
+  });
+
   test("without a token IPinfo is skipped; a fresh source with nothing stored is empty", async () => {
     await clear();
     const empty = await createIpIntelligenceSource().current();

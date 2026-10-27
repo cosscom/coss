@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
+  // Pages that set their own `openGraph` replace this one, so they set `type` too: in-app browsers
+  // read `og:type` and throw when it's missing.
+  openGraph: { type: "website", siteName: SITE_NAME },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

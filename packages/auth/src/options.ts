@@ -295,7 +295,10 @@ export const authOptions = {
   trustedOrigins: process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : [],
   database: drizzleAdapter(db, { provider: "pg", schema, transaction: true }),
   advanced: {
-    database: { generateId: generateAuthId },
+    // Native joins (the drizzle relations in `@coss/db/schema/auth.ts`): without them Better Auth
+    // loads each joined row with a query of its own, all at once — an N+1, and concurrent queries
+    // on one connection inside its transactions (deprecated by pg).
+    database: { generateId: generateAuthId, joins: true },
   },
   // Off: it counts per process and trusts any x-forwarded-for. The dashboard limits the credential
   // endpoints itself, in Valkey (apps/web/src/lib/auth-rate-limit.ts).

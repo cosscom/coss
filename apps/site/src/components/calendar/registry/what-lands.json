@@ -1,6 +1,6 @@
 {
   "files": 195,
-  "lines": 40601,
+  "lines": 40605,
   "dirs": [
     {
       "path": "calendar/",
@@ -10,7 +10,7 @@
     {
       "path": "lib/",
       "files": 70,
-      "lines": 11956
+      "lines": 11960
     },
     {
       "path": "timeline/",
