@@ -11,7 +11,6 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
-import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -31,6 +30,7 @@ import { Textarea } from "@coss/ui/components/textarea";
 import Link from "next/link";
 import { type ReactNode, useActionState, useEffect, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
+import { EventTypePicker } from "@/components/event-type-picker";
 import { FormError } from "@/components/form-error";
 import type { ActionResult } from "@/lib/action-result";
 import { useActionToast } from "@/lib/toast";
@@ -297,18 +297,12 @@ function CreateEndpointForm(props: AppTarget & { eventTypes: readonly string[] }
           <Input maxLength={256} name="description" placeholder="Optional" />
         </Field>
         {eventTypes.length > 0 ? (
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-medium text-sm">Event types</legend>
-            <p className="text-muted-foreground text-xs">
-              Leave all unchecked to receive every type, including ones added later.
-            </p>
-            {eventTypes.map((type) => (
-              <Label className="font-mono text-xs" key={type}>
-                <Checkbox name="filterTypes" value={type} />
-                {type}
-              </Label>
-            ))}
-          </fieldset>
+          <EventTypePicker
+            description="Leave all unchecked to receive every type, including ones added later."
+            eventTypes={eventTypes}
+            legend="Event types"
+            name="filterTypes"
+          />
         ) : null}
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>

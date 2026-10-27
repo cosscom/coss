@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@coss/ui/components/button";
-import { Checkbox } from "@coss/ui/components/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -15,14 +14,27 @@ import {
 } from "@coss/ui/components/dialog";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
-import { Label } from "@coss/ui/components/label";
 import Link from "next/link";
 import { CopyButton } from "@/components/copy-button";
+import { EventTypePicker } from "@/components/event-type-picker";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import { createWebhookEndpointAction } from "./actions";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
+
+/** Section names of the event type prefixes (`email.sent` → Email). */
+const EVENT_CATEGORY_LABELS: Record<string, string> = {
+  email: "Email",
+  domain: "Domains",
+  account: "Account",
+  hook_endpoint: "Hooks",
+  billing: "Billing",
+  risk: "Risk",
+  contact: "Contacts",
+  broadcast: "Broadcasts",
+  sms: "SMS",
+};
 
 export function CreateEndpointDialog(props: Target & { eventTypes: readonly string[] }) {
   return (
@@ -102,15 +114,13 @@ function CreateEndpointForm(props: Target & { eventTypes: readonly string[] }) {
           <FieldLabel>Description</FieldLabel>
           <Input maxLength={256} name="description" placeholder="Optional" />
         </Field>
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 font-medium text-sm">Events</legend>
-          {props.eventTypes.map((type) => (
-            <Label className="font-mono text-xs" key={type}>
-              <Checkbox defaultChecked name="eventTypes" value={type} />
-              {type}
-            </Label>
-          ))}
-        </fieldset>
+        <EventTypePicker
+          categoryLabels={EVENT_CATEGORY_LABELS}
+          defaultSelected={props.eventTypes}
+          eventTypes={props.eventTypes}
+          legend="Events"
+          name="eventTypes"
+        />
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>
       <DialogFooter>
