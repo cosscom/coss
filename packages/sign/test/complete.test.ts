@@ -13,6 +13,7 @@ import {
   createSignSession,
   FakeDocumentStore,
   getSignRequest,
+  HttpTsa,
   inspectPdf,
   LocalSealer,
   LocalTsa,
@@ -29,9 +30,10 @@ import {
   sealPdf,
   signAsSigner,
   verifySignEventChain,
+  verifyTimestampToken,
 } from "../src/index.ts";
 import type { CreateSignRequestRequestOutput } from "../src/schemas.ts";
-import { type asn1js, OID, pkijs, sha256, toArrayBuffer } from "../src/seal/crypto.ts";
+import { asn1js, OID, pkijs, sha256, toArrayBuffer } from "../src/seal/crypto.ts";
 import { buildTestPdfBase64, TEST_SIGNATURE_PNG } from "../src/testing.ts";
 
 const store = new FakeDocumentStore();
@@ -351,6 +353,33 @@ describe("completion", () => {
     expect(reloaded.getPage(0).node.lookup(PDFName.of("Decoy"), PDFHexString).asString()).toBe(
       decoy,
     );
+  });
+
+  test("a TSA over HTTP: only tokens that verify; nonces compared as numbers", async () => {
+    const digest = new Uint8Array(await sha256(new TextEncoder().encode("seal")));
+    const http = new HttpTsa("https://tsa.test", tsa.fetch);
+    const token = await http.timestamp(digest);
+    await verifyTimestampToken(token);
+
+    // An answer altered on the way (one byte of the token's signature, at its end).
+    const altered = (async (input: unknown, init?: RequestInit) => {
+      const response = await tsa.fetch(input as string, init);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      bytes[bytes.length - 3] = (bytes[bytes.length - 3] ?? 0) ^ 1;
+      return new Response(bytes);
+    }) as typeof fetch;
+    await expect(new HttpTsa("https://tsa.test", altered).timestamp(digest)).rejects.toThrow(
+      "doesn't verify",
+    );
+
+    // A nonce sent with a leading zero byte, answered in minimal DER.
+    const minimal = await tsa.timestamp(
+      digest,
+      new asn1js.Integer({ valueHex: new Uint8Array([0x12, 0x34]).buffer }),
+    );
+    expect(() =>
+      readTimestampToken(minimal, digest, new Uint8Array([0, 0x12, 0x34])),
+    ).not.toThrow();
   });
 
   test("a failed seal is retried later, not at once", async () => {

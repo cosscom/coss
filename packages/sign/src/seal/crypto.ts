@@ -27,6 +27,8 @@ export const OID = {
   sha256WithRsa: "1.2.840.113549.1.1.11",
   ecPublicKey: "1.2.840.10045.2.1",
   ecdsaWithSha256: "1.2.840.10045.4.3.2",
+  extKeyUsage: "2.5.29.37",
+  timeStamping: "1.3.6.1.5.5.7.3.8",
 } as const;
 
 export function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {

@@ -7,6 +7,7 @@ import { webcrypto } from "node:crypto";
 import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
 import {
   asn1js,
+  OID,
   parseCertificate,
   pkijs,
   sha256,
@@ -70,10 +71,10 @@ export async function selfSignedCertificate(
     ...(opts.timeStamping
       ? [
           new pkijs.Extension({
-            extnID: "2.5.29.37",
+            extnID: OID.extKeyUsage,
             critical: true,
             extnValue: new pkijs.ExtKeyUsage({
-              keyPurposes: ["1.3.6.1.5.5.7.3.8"],
+              keyPurposes: [OID.timeStamping],
             })
               .toSchema()
               .toBER(false),

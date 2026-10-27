@@ -74,7 +74,7 @@ next (see "Not built yet" in the root `AGENTS.md`).
   `/ByteRange` over everything but the 32 KB `/Contents` placeholder, saved without object streams.
   The CMS (`cms.ts`, pkijs + asn1js — keep them the same copies, `seal/crypto.ts`) signs content
   type, message digest and `signingCertificateV2`, and with a TSA (`tsa.ts`, RFC 3161) carries a
-  `signatureTimeStampToken` over the signature value (B-T). Sealers: `KmsSealer` (KMS `Sign` with
+  `signatureTimeStampToken` over the signature value (B-T); the token must be over that value, carry the nonce (compared as a number) and verify with its time-stamping certificate. Sealers: `KmsSealer` (KMS `Sign` with
   `MessageType: DIGEST`, RSA PKCS #1 v1.5 or ECDSA, chain from `SIGN_SEAL_CERTIFICATE_CHAIN`) and
   `LocalSealer` (a self-signed key per process). `sealerFromEnv` (`./runtime`) reads
   `signSealEnvShape` (`./env`). No DSS/LTV yet. Verify with `readPdfSeal` + pkijs (tests) or

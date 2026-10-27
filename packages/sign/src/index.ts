@@ -17,7 +17,13 @@ export {
   type Sealer,
   selfSignedCertificate,
 } from "./seal/sealer.ts";
-export { HttpTsa, LocalTsa, readTimestampToken, type TimestampAuthority } from "./seal/tsa.ts";
+export {
+  HttpTsa,
+  LocalTsa,
+  readTimestampToken,
+  type TimestampAuthority,
+  verifyTimestampToken,
+} from "./seal/tsa.ts";
 export * from "./sessions.ts";
 export * from "./settings.ts";
 export * from "./signing.ts";

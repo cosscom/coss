@@ -39,11 +39,63 @@ export function readTimestampToken(
   }
   if (nonce) {
     const got = tstInfo.nonce ? new Uint8Array(tstInfo.nonce.valueBlock.valueHexView) : null;
-    if (!got || Buffer.compare(Buffer.from(got), Buffer.from(nonce)) !== 0) {
+    if (!got || !sameInteger(got, nonce)) {
       throw new Error("The TSA's answer has the wrong nonce.");
     }
   }
   return tstInfo;
+}
+
+/** Two big-endian integers' bytes, equal as numbers (a DER encoding drops leading zero bytes). */
+function sameInteger(a: Uint8Array, b: Uint8Array): boolean {
+  const strip = (bytes: Uint8Array) => {
+    let start = 0;
+    while (start < bytes.length - 1 && bytes[start] === 0) start++;
+    return Buffer.from(bytes.subarray(start));
+  };
+  return strip(a).equals(strip(b));
+}
+
+/**
+ * Checks the token's signature with the certificate it carries, and that the certificate is for
+ * time-stamping: a corrupted or altered answer is refused (and the seal retried) instead of being
+ * published for good. Whether that certificate is one to trust is the validator's question, as
+ * for the seal's own chain.
+ */
+export async function verifyTimestampToken(token: Uint8Array): Promise<void> {
+  const contentInfo = pkijs.ContentInfo.fromBER(toArrayBuffer(token));
+  const signedData = new pkijs.SignedData({ schema: contentInfo.content });
+  // Verified as plain signed content: pkijs's own timestamp path wants the timestamped data itself
+  // (only its digest is here; `readTimestampToken` checks the TSTInfo), and asn1js leaves the raw
+  // bytes of a parsed octet string empty, so it gets a fresh one with the same bytes.
+  const eContent = signedData.encapContentInfo.eContent;
+  if (!eContent) throw new Error("The TSA's answer is not a timestamp token.");
+  signedData.encapContentInfo.eContentType = OID.data;
+  signedData.encapContentInfo.eContent = new asn1js.OctetString({
+    valueHex: eContent.getValue(),
+  });
+  let valid = false;
+  try {
+    valid =
+      (await signedData.verify({ signer: 0, checkChain: false, extendedMode: true }))
+        .signatureVerified === true;
+  } catch {
+    valid = false;
+  }
+  if (!valid) throw new Error("The TSA's token doesn't verify.");
+  const signer = signedData.signerInfos[0];
+  const certificate = signedData.certificates?.find(
+    (candidate): candidate is pkijs.Certificate =>
+      candidate instanceof pkijs.Certificate &&
+      signer?.sid instanceof pkijs.IssuerAndSerialNumber &&
+      candidate.issuer.isEqual(signer.sid.issuer) &&
+      candidate.serialNumber.isEqual(signer.sid.serialNumber),
+  );
+  const usage = certificate?.extensions?.find((extension) => extension.extnID === OID.extKeyUsage);
+  const purposes = (usage?.parsedValue as pkijs.ExtKeyUsage | undefined)?.keyPurposes ?? [];
+  if (!purposes.includes(OID.timeStamping)) {
+    throw new Error("The TSA's certificate isn't for time-stamping.");
+  }
 }
 
 /** A TSA over HTTP (`application/timestamp-query`). */
@@ -77,6 +129,7 @@ export class HttpTsa implements TimestampAuthority {
     }
     const token = new Uint8Array(answer.timeStampToken.toSchema().toBER(false));
     readTimestampToken(token, digest, nonce);
+    await verifyTimestampToken(token);
     return token;
   }
 }
@@ -98,13 +151,31 @@ export class LocalTsa implements TimestampAuthority {
     return new LocalTsa(certificate, privateKey, opts.now ?? (() => new Date()));
   }
 
-  async timestamp(digest: Uint8Array): Promise<Uint8Array> {
+  /** Answers RFC 3161 requests as a TSA over HTTP would: `new HttpTsa(url, tsa.fetch)`. */
+  readonly fetch = (async (_input: unknown, init?: RequestInit): Promise<Response> => {
+    const body = new Uint8Array(await new Response(init?.body).arrayBuffer());
+    const request = pkijs.TimeStampReq.fromBER(toArrayBuffer(body));
+    const token = await this.timestamp(
+      new Uint8Array(request.messageImprint.hashedMessage.getValue()),
+      request.nonce,
+    );
+    const answer = new pkijs.TimeStampResp({
+      status: new pkijs.PKIStatusInfo({ status: 0 }),
+      timeStampToken: pkijs.ContentInfo.fromBER(toArrayBuffer(token)),
+    });
+    return new Response(new Uint8Array(answer.toSchema().toBER(false)), {
+      headers: { "Content-Type": "application/timestamp-reply" },
+    });
+  }) as typeof fetch;
+
+  async timestamp(digest: Uint8Array, nonce?: asn1js.Integer): Promise<Uint8Array> {
     const tstInfo = new pkijs.TSTInfo({
       version: 1,
       policy: "1.3.6.1.4.1.65535.1",
       messageImprint: messageImprint(digest),
       serialNumber: new asn1js.Integer({ value: this.serial++ }),
       genTime: this.now(),
+      ...(nonce ? { nonce } : {}),
     });
     const content = new Uint8Array(tstInfo.toSchema().toBER(false));
     const certificate = parseCertificate(this.certificate);
