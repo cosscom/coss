@@ -1,0 +1,42 @@
+---
+title: Fields and anchors
+description: Place each signer's fields by position or by a text anchor in the PDF.
+---
+
+Every signer needs at least one `signature` field. Fields go on a document's page, in **PDF points
+from the top left of the page as displayed** (rotation and crop box applied); uploaded documents
+list each page's size in `pages`.
+
+```ts twoslash
+import type { SignFieldInput } from "coss";
+// ---cut---
+const fields: SignFieldInput[] = [
+  // By position: page 2 of the first document.
+  { type: "signature", document: 0, page: 2, x: 72, y: 640, width: 180, height: 40 },
+  // By anchor: over every occurrence of this text in the documents.
+  { type: "date_signed", anchor: "{{date:signer_1}}" },
+  { type: "text", anchor: "{{text:title}}", width: 160, label: "Your title" },
+];
+```
+
+## Anchors
+
+Write anchors into your documents as text, like `{{signature:signer_1}}`: `{{<type>:<key>}}` with
+letters, digits, `_` and `-` in the key. White text is fine: coss.com finds anchors in the PDF's
+text, not its colors. A field given by `anchor` covers each occurrence (`width`, `height`,
+`offset_x` and `offset_y` adjust it); an anchor no document has is refused (`invalid_fields`).
+Uploading a document returns the anchors found in it.
+
+## Field types
+
+| Type | Filled with |
+| --- | --- |
+| `signature` | The signer's adopted signature (typed or drawn). |
+| `initials` | Their adopted initials. |
+| `date_signed` | The date they signed (UTC). |
+| `name`, `email` | The signer's name and email. |
+| `text` | What they type (at most 1,000 characters), or a template's merge field. |
+| `checkbox` | Checked or not; a `required` checkbox must be checked. |
+
+Fields are `required` unless you say otherwise; a signer can't finish with a required field
+empty.

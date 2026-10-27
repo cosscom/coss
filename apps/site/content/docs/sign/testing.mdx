@@ -1,0 +1,18 @@
+---
+title: Testing
+description: Try Sign in a sandbox environment before anyone signs for real.
+---
+
+Requests made with a sandbox (`coss_test_…`) key work end to end: sessions open the real signing
+page, signers sign, and the request is sealed and completed. What's different:
+
+- **No emails reach anyone.** Invitations, reminders and copies go through the sandbox's fake
+  provider: read them in the dashboard's emails page instead.
+- **The signing page says it's a test** ("signing it has no legal effect"), and so does the
+  certificate.
+- **Nothing is billed.**
+- **`allowed_origins` can include `http://localhost`** for embedding while you develop.
+
+Test PDFs need nothing special; put anchors like `{{signature:signer_1}}` in them to place fields
+without coordinates. Webhooks (`sign_request.*`) are delivered as in live environments, and
+`coss trigger sign_request.completed` sends a sample one.

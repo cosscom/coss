@@ -1,0 +1,44 @@
+---
+title: Completion and the audit trail
+description: The sealed PDF, its certificate of completion, and the hash-chained audit trail.
+---
+
+When the last signer signs, the request is `completed`. Within seconds coss.com builds the
+**signed document** — every document with the signatures and values drawn in, then a certificate
+of completion — and seals it; `sign_request.completed` says it's ready:
+
+```ts twoslash
+import { Coss } from "coss";
+import { writeFile } from "node:fs/promises";
+const coss = new Coss();
+declare const requestId: string;
+// ---cut---
+const { data: pdf } = await coss.sign.requests.signedDocument(requestId);
+if (pdf) await writeFile("signed.pdf", pdf);
+```
+
+## The certificate
+
+The certificate pages list each signer, how they were identified (the emailed link, or your app
+and its `client_ref`), when they opened the request, agreed to sign electronically (with the
+SHA-256 of the consent text they saw) and signed, the address and browser they signed from, each
+document's SHA-256 as sent, and the whole audit trail.
+
+## The seal
+
+The PDF carries a PAdES signature by coss.com with a trusted timestamp, so PDF viewers show that it
+hasn't changed since it was sealed. `signed_document.sha256` on the request is the sealed file's
+hash.
+
+## The audit trail
+
+`coss.sign.requests.auditTrail(id)` returns every event, oldest first: who did it (your API key, a
+signer, a member, or coss.com), from which address and browser, and when. Each event's `hash`
+covers the event and the previous event's hash, so the last hash vouches for the whole trail:
+recompute it to show nothing was changed or removed.
+
+## Keeping and deleting
+
+Requests, documents and their audit trails are kept until you delete them (they're your records;
+see [data retention](/docs/data-retention)). `coss.sign.requests.remove(id)` deletes a request that
+isn't waiting for signatures, with its audit trail, signatures and signed document.

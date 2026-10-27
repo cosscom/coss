@@ -1,0 +1,68 @@
+---
+title: Sign
+description: Legally binding e-signatures in your product, embedded or by email.
+icon: Signature
+---
+
+`coss.sign` asks people to sign PDFs. They sign inside your app (an embedded signing page) or from
+a link coss.com emails them, and once everyone has signed you get a sealed PDF with a certificate
+of completion and a hash-chained audit trail. It uses the same API key, [webhooks](/docs/webhooks),
+[logs](/docs/logs) and sandbox environments as everything else.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const pdfBase64: string;
+// ---cut---
+const { data: request } = await coss.sign.requests.create({
+  title: "Services agreement",
+  documents: [{ filename: "agreement.pdf", content: pdfBase64 }],
+  signers: [
+    {
+      name: "Ada Lovelace",
+      email: "ada@example.com",
+      fields: [{ type: "signature", anchor: "{{signature:signer_1}}" }],
+    },
+  ],
+});
+```
+
+Signatures are simple electronic signatures under the US ESIGN Act and UETA and the EU's eIDAS:
+each signer agrees to sign electronically, signs with a deliberate act, and is identified by the
+link they opened or by your app; the audit trail records each step, and the completed PDF is
+sealed, so any later change shows.
+
+## How a request goes
+
+1. **Create it** with documents (uploaded or inline PDFs) and signers, each with their fields
+   placed by position or by a text anchor in the PDF. It is `sent` at once, or a `draft` with
+   `send: false`.
+2. **Signers sign.** `delivery: "email"` (the default) signers get an email with their link;
+   `"embedded"` signers sign in your app, in an iframe you open for them
+   ([embedded signing](/docs/sign/embedded-signing)). Before they see a document, each one agrees
+   to sign electronically.
+3. **It completes.** When the last signer signs, coss.com seals the completed document and sends
+   `sign_request.completed`. Download it with `coss.sign.requests.signedDocument(id)`.
+
+## What's in it
+
+<Cards>
+  <Card title="Embedded signing" href="/docs/sign/embedded-signing">
+    Signing sessions, `mountSigning` and the events your page gets.
+  </Card>
+  <Card title="Email signing" href="/docs/sign/email-signing">
+    Invitations, reminders, expiry and signed copies, from your own address.
+  </Card>
+  <Card title="Fields and anchors" href="/docs/sign/fields-and-anchors">
+    Placing fields by position or text anchor, and what each type does.
+  </Card>
+  <Card title="Templates" href="/docs/sign/templates">
+    Reusable documents with roles and merge fields, and the embedded builder.
+  </Card>
+  <Card title="Completion and the audit trail" href="/docs/sign/completion-and-audit-trail">
+    The sealed PDF, the certificate and the hash chain.
+  </Card>
+  <Card title="Testing" href="/docs/sign/testing">
+    Sandbox requests and what they don't do.
+  </Card>
+</Cards>

@@ -1,0 +1,15 @@
+{
+  "title": "Sign",
+  "description": "E-signatures in your product: embedded or by email, with an audit trail and a sealed copy.",
+  "root": true,
+  "icon": "Signature",
+  "pages": [
+    "index",
+    "embedded-signing",
+    "email-signing",
+    "fields-and-anchors",
+    "templates",
+    "completion-and-audit-trail",
+    "testing"
+  ]
+}

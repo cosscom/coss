@@ -1,3 +1,13 @@
 {
-  "pages": ["(start)", "email", "sms", "hooks", "risk", "(platform)", "(tools)", "api-reference"]
+  "pages": [
+    "(start)",
+    "email",
+    "sms",
+    "sign",
+    "hooks",
+    "risk",
+    "(platform)",
+    "(tools)",
+    "api-reference"
+  ]
 }
