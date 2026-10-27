@@ -11,7 +11,9 @@ export function groupEventTypes(
     const key = dot > 0 ? type.slice(0, dot) : "";
     let category = categories.get(key);
     if (!category) {
-      category = { key, label: labels[key] ?? (key || "Other"), types: [] };
+      // Own keys only: customers name Hooks event types (`constructor.created` is valid).
+      const label = Object.hasOwn(labels, key) ? labels[key] : undefined;
+      category = { key, label: label ?? (key || "Other"), types: [] };
       categories.set(key, category);
     }
     category.types.push(type);

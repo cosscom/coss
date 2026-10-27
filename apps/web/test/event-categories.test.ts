@@ -20,6 +20,14 @@ describe("groupEventTypes", () => {
       { key: "", label: "Other", types: ["ping"] },
     ]);
   });
+
+  test("prefixes named like Object properties keep their own names", () => {
+    const categories = groupEventTypes(["constructor.created", "toString.sent"], {
+      email: "Email",
+    });
+    expect(categories.map((category) => category.label)).toEqual(["constructor", "toString"]);
+    expect(filterCategories(categories, "created")[0]?.types).toEqual(["constructor.created"]);
+  });
 });
 
 describe("filterCategories", () => {
