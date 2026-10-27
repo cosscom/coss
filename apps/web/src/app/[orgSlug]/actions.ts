@@ -26,6 +26,9 @@ export async function createProjectAction(
       target: { type: "project", id: project.id, label: project.name },
       projectId: project.id,
     });
+    // The organization layout lists the projects (sidebar, breadcrumbs, ⌘K): without a refresh
+    // the redirect keeps its old render, which doesn't know the new project.
+    refresh();
     return `/${organization.slug}/projects/${project.slug}/development`;
   });
   if (result.ok) redirect(result.data);
