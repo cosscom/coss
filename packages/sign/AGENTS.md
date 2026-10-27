@@ -16,9 +16,11 @@ templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   (`sfld_`), `sign_event` (`sevt_`, the audit trail) and `sign_fake_object` (document bytes without
   a bucket). Everything cascades from the environment.
 - **Documents** (`documents.ts`, `pdf.ts`): base64 in the request (at most 25 MB decoded, 500
-  pages), refused unless pdf-lib loads it unencrypted (it fills and seals it later) and pdf.js
-  reads every page (none with a `/UserUnit`: pdf.js would scale it and pdf-lib wouldn't). Coordinates are PDF points from the top left of the page **as displayed** (crop box,
-  `/Rotate` applied: pdf.js's viewport), for page sizes, anchors and fields alike. Anchors are
+  pages), refused unless pdf-lib loads it unencrypted and can flatten its form (it fills, flattens
+  and seals it later) and pdf.js reads every page (none with a `/UserUnit`: pdf.js would scale it
+  and pdf-lib wouldn't). Coordinates are PDF points from the top left of the page **as displayed**
+  (crop box within the media box, `/Rotate` applied: pdf.js's viewport), for page sizes, anchors
+  and fields alike. Anchors are
   `{{<type>:<key>}}` texts (`SIGN_ANCHOR_PATTERN`); one inside a longer text run is placed by its
   share of the run's characters (exact when it is a run of its own). Bytes go to the store before
   the row; a failed insert deletes them.

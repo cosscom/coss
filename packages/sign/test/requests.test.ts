@@ -106,6 +106,12 @@ describe("inspectPdf", () => {
     broken.addPage([200, 200]);
     broken.catalog.Pages().set(PDFName.of("Kids"), broken.context.obj([PDFNumber.of(5)]));
     await expectSignError(inspectPdf(await broken.save()), "invalid_document");
+    // A form field whose widget has no /Rect can't be flattened.
+    const form = await PDFDocument.create();
+    const field = form.getForm().createTextField("name");
+    field.addToPage(form.addPage([300, 300]), { x: 10, y: 10, width: 100, height: 20 });
+    for (const widget of field.acroField.getWidgets()) widget.dict.delete(PDFName.of("Rect"));
+    await expect(inspectPdf(await form.save())).rejects.toThrow("can't be flattened");
     // pdf.js would scale this page; pdf-lib wouldn't.
     const scaled = await PDFDocument.create();
     scaled.addPage([200, 200]).node.set(PDFName.of("UserUnit"), PDFNumber.of(2));

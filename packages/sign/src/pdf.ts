@@ -24,9 +24,10 @@ export async function inspectPdf(bytes: Uint8Array): Promise<InspectedPdf> {
   if (!new TextDecoder("latin1").decode(bytes.subarray(0, 1024)).includes(PDF_HEADER)) {
     throw new SignError("invalid_document", "The file is not a PDF.");
   }
+  let loaded: PDFDocument;
   try {
     // pdf-lib is what fills and seals the document later: it must be able to load it unchanged.
-    await PDFDocument.load(bytes, { ignoreEncryption: false, updateMetadata: false });
+    loaded = await PDFDocument.load(bytes, { ignoreEncryption: false, updateMetadata: false });
   } catch (error) {
     if (error instanceof EncryptedPDFError) {
       throw new SignError(
@@ -35,6 +36,16 @@ export async function inspectPdf(bytes: Uint8Array): Promise<InspectedPdf> {
       );
     }
     throw new SignError("invalid_document", "The PDF could not be read. Is it damaged?");
+  }
+  // Completion flattens form fields (else they'd stay editable over what was signed): it must be
+  // able to.
+  try {
+    loaded.getForm().flatten();
+  } catch {
+    throw new SignError(
+      "invalid_document",
+      "The PDF's form fields can't be flattened. Print it to a new PDF and upload that.",
+    );
   }
 
   const task = getDocument({
