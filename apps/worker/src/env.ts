@@ -30,6 +30,14 @@ export const env = createEnv({
     // Sign: what seals completed documents (a KMS key and its certificate chain, or a local key in
     // development) and the time-stamping authority. Unset in production: completions wait.
     ...signSealEnvShape,
+    // Where Sign's emailed signing links point (apps/sign); unset in production until it is deployed.
+    SIGN_PUBLIC_URL:
+      process.env.NODE_ENV === "production"
+        ? z.url().optional()
+        : z.url().default("http://localhost:3004"),
+    // coss.com's own sender of Sign emails ("<requester> via coss.com"), an address on a verified
+    // domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default: NOTIFICATIONS_FROM's address.
+    SIGN_NOTIFICATIONS_FROM: z.email().optional(),
     // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
     // tasks dedicated to Hooks deliveries; unset runs every loop.
     WORKER_LOOPS: z

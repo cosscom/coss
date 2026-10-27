@@ -59,6 +59,7 @@ const secret = endpoint?.secret;
 | `sign_request.declined`  | A signer declined, which declines the request (`data.reason`) |
 | `sign_request.completed` | Everyone signed and the sealed, signed document is ready to download |
 | `sign_request.canceled`  | You canceled it                                         |
+| `sign_request.expired`   | It passed its `expires_at` before everyone signed       |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 

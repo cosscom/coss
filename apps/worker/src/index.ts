@@ -54,6 +54,7 @@ import { dmarcReportQuota, inboundQuota, type SesInboundDeps } from "./inbound.t
 import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
 import { monitoredDispatch } from "./monitoring.ts";
 import { createShutdown } from "./shutdown.ts";
+import { addressOf, signMailer } from "./sign-mailer.ts";
 import { createSqsApi } from "./sqs.ts";
 
 const unknownLoops = [...(env.WORKER_LOOPS ?? [])].filter(
@@ -231,9 +232,25 @@ const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !=
 // Sign: completed requests are sealed here. Production has no document store (nor a certificate)
 // yet, so nothing waits there to be sealed.
 const signSeal = await sealerFromEnv(env);
-const signCompletion =
-  signSeal && process.env.NODE_ENV !== "production"
-    ? { store: new FakeDocumentStore(), ...signSeal }
+const signStore = process.env.NODE_ENV === "production" ? null : new FakeDocumentStore();
+const signCompletion = signSeal && signStore ? { store: signStore, ...signSeal } : null;
+// Sign's emails go out through the email product (sign-mailer.ts).
+const signFallbackAddress =
+  env.SIGN_NOTIFICATIONS_FROM ??
+  (env.NOTIFICATIONS_FROM ? addressOf(env.NOTIFICATIONS_FROM) : null);
+const signNotifications =
+  signStore && env.SIGN_PUBLIC_URL
+    ? {
+        store: signStore,
+        signUrl: env.SIGN_PUBLIC_URL,
+        mailer: signMailer({
+          service: emailService,
+          fallback:
+            systemEnvironment && signFallbackAddress
+              ? { environment: systemEnvironment, address: signFallbackAddress }
+              : null,
+        }),
+      }
     : null;
 
 const loops = startJobs({
@@ -274,6 +291,7 @@ const loops = startJobs({
   },
   push: pushSender && { sender: pushSender },
   signCompletion,
+  signNotifications,
   webhooks: { secretsKeys, send },
   migrations: {
     secretsKeys,

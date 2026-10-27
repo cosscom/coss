@@ -41,6 +41,7 @@ import {
   type SignRequestObjectOutput,
   type SignRequestStatus,
 } from "./schemas.ts";
+import { getSignSettings } from "./settings.ts";
 import type { DocumentStore } from "./store.ts";
 
 const {
@@ -161,7 +162,9 @@ export function toSignRequestObject(
     })),
     metadata: row.metadata,
     sandbox,
+    reminder_interval_days: row.reminderIntervalDays,
     expires_at: row.expiresAt?.toISOString() ?? null,
+    expired_at: row.expiredAt?.toISOString() ?? null,
     sent_at: row.sentAt?.toISOString() ?? null,
     completed_at: row.completedAt?.toISOString() ?? null,
     canceled_at: row.canceledAt?.toISOString() ?? null,
@@ -517,6 +520,10 @@ export function createSignService(opts: SignServiceOptions): SignService {
       checkFieldCount(signers.reduce((total, signer) => total + signer.fields.length, 0));
 
       const send = params.send ?? true;
+      const reminderIntervalDays =
+        params.reminder_interval_days === undefined
+          ? (await getSignSettings(env)).reminderIntervalDays
+          : params.reminder_interval_days;
       const idempotencyKey = input.idempotencyKey ?? null;
       const requestHash = idempotencyKey ? hashRequest(params) : null;
 
@@ -536,6 +543,7 @@ export function createSignService(opts: SignServiceOptions): SignService {
             idempotencyKey,
             requestHash,
             expiresAt,
+            reminderIntervalDays,
             sentAt: send ? now : null,
             createdAt: now,
           })

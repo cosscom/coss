@@ -720,6 +720,14 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       trackingPublicUrl,
       ...signSeal,
+      signPublicUrl,
+      {
+        name: "SIGN_NOTIFICATIONS_FROM",
+        kind: "plain",
+        required: false,
+        description:
+          "coss.com's sender of Sign emails (\"<requester> via coss.com\"), on a verified domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default NOTIFICATIONS_FROM's address.",
+      },
       {
         name: "API_PORT",
         kind: "plain",

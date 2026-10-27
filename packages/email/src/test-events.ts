@@ -173,6 +173,7 @@ const SIGN_SAMPLE_BY_TYPE: Record<string, { status: string; signer: string | nul
   "sign_request.declined": { status: "declined", signer: "declined" },
   "sign_request.completed": { status: "completed", signer: null },
   "sign_request.canceled": { status: "canceled", signer: null },
+  "sign_request.expired": { status: "expired", signer: null },
 };
 
 /** A realistic sample of `type` at `now`, with fresh ids. */

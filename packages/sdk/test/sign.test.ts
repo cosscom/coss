@@ -39,7 +39,9 @@ const request: SignRequest = {
   fields: [],
   metadata: {},
   sandbox: true,
+  reminder_interval_days: null,
   expires_at: null,
+  expired_at: null,
   sent_at: "2026-11-10T12:00:00.000Z",
   completed_at: null,
   canceled_at: null,
@@ -137,6 +139,8 @@ describe("coss.sign.sessions and coss.sign.settings", () => {
       accent_color: null,
       theme: "system",
       disclosure: null,
+      email_from: null,
+      reminder_interval_days: null,
     };
     const { coss, calls } = client(json(201, session), json(200, settings), json(200, settings));
     const created = await coss.sign.sessions.create(request.id, session.signer_id, {

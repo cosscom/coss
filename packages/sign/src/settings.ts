@@ -22,6 +22,8 @@ export type SignSettings = {
   accentColor: string | null;
   theme: SignTheme;
   disclosure: string | null;
+  emailFrom: string | null;
+  reminderIntervalDays: number | null;
 };
 
 const DEFAULT_SETTINGS: SignSettings = {
@@ -30,6 +32,8 @@ const DEFAULT_SETTINGS: SignSettings = {
   accentColor: null,
   theme: "system",
   disclosure: null,
+  emailFrom: null,
+  reminderIntervalDays: null,
 };
 
 /** The environment's settings (defaults when never saved). */
@@ -54,6 +58,8 @@ export async function getSignSettings(input: {
     accentColor: row.accentColor,
     theme: row.theme as SignTheme,
     disclosure: row.disclosure,
+    emailFrom: row.emailFrom,
+    reminderIntervalDays: row.reminderIntervalDays,
   };
 }
 
@@ -65,6 +71,8 @@ export function toSignSettingsObject(settings: SignSettings): SignSettingsObject
     accent_color: settings.accentColor,
     theme: settings.theme,
     disclosure: settings.disclosure,
+    email_from: settings.emailFrom,
+    reminder_interval_days: settings.reminderIntervalDays,
   };
 }
 
@@ -140,6 +148,12 @@ export async function updateSignSettings(input: {
     theme: update.theme ?? current.theme,
     disclosure:
       update.disclosure === undefined ? current.disclosure : update.disclosure?.trim() || null,
+    emailFrom:
+      update.email_from === undefined ? current.emailFrom : update.email_from?.trim() || null,
+    reminderIntervalDays:
+      update.reminder_interval_days === undefined
+        ? current.reminderIntervalDays
+        : update.reminder_interval_days,
   };
   const changed: Partial<SignSettings> = {
     ...(update.allowed_origins !== undefined ? { allowedOrigins: next.allowedOrigins } : {}),

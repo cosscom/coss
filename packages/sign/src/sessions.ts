@@ -97,18 +97,44 @@ export async function createSignSession(input: {
   const now = input.now ?? new Date();
   checkSignable(row.request, now);
   checkSignerOpen(row.signer);
+  return mintSignSession({
+    organizationId: input.organizationId,
+    environmentId: input.environmentId,
+    requestId: row.request.id,
+    signerId: row.signer.id,
+    signUrl: input.signUrl,
+    expiresAt: new Date(now.getTime() + expiresIn * 1000),
+    apiKeyId: input.apiKeyId,
+    now,
+  });
+}
+
+/**
+ * Stores a new session for a signer and returns it with its link (the token only here). Callers
+ * check who may get one: `createSignSession` for embedded signers, email delivery for the rest.
+ */
+export async function mintSignSession(input: {
+  organizationId: string;
+  environmentId: string;
+  requestId: string;
+  signerId: string;
+  signUrl: string;
+  expiresAt: Date;
+  apiKeyId: string | null;
+  now?: Date;
+}): Promise<SignSessionObjectOutput> {
   const token = `${TOKEN_PREFIX}${randomBytes(32).toString("base64url")}`;
   const [session] = await db
     .insert(signSession)
     .values({
       organizationId: input.organizationId,
       environmentId: input.environmentId,
-      requestId: row.request.id,
-      signerId: row.signer.id,
+      requestId: input.requestId,
+      signerId: input.signerId,
       tokenHash: hashToken(token),
-      expiresAt: new Date(now.getTime() + expiresIn * 1000),
+      expiresAt: input.expiresAt,
       apiKeyId: input.apiKeyId,
-      createdAt: now,
+      createdAt: input.now ?? new Date(),
     })
     .returning();
   if (!session) throw new Error("sign_session insert returned no row.");

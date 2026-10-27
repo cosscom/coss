@@ -103,6 +103,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "POST /v1/sign/requests/{id}/send": "sign.requests.send",
   "POST /v1/sign/requests/{id}/cancel": "sign.requests.cancel",
   "GET /v1/sign/requests/{id}/audit_trail": "sign.requests.auditTrail",
+  "POST /v1/sign/requests/{id}/remind": "sign.requests.remind",
   "GET /v1/sign/requests/{id}/signed_document": "sign.requests.signedDocument",
   "POST /v1/sign/requests/{id}/signers/{signer_id}/sessions": "sign.sessions.create",
   "GET /v1/sign/settings": "sign.settings.get",

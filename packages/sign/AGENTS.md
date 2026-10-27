@@ -7,8 +7,8 @@ Embeddable, compliant e-signatures (ESIGN/UETA, eIDAS simple electronic signatur
 upload PDFs, ask signers to sign them in their own app (embedded) or by email, and get a sealed
 copy with an audit trail. Built so far: documents, signature requests with signers and fields, the
 audit trail, signing sessions and the signer's actions (the signing app is `apps/sign`), settings,
-webhooks and log lines, and completion's sealed PDF. Email delivery, templates and the builder come
-next (see "Not built yet" in the root `AGENTS.md`).
+webhooks and log lines, completion's sealed PDF, and email delivery with reminders and expiry.
+Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`).
 
 - **Tables** (`packages/db/src/schema/sign.ts`): `sign_document` (`sdoc_`, an uploaded PDF: page
   sizes and text anchors, bytes in the document store), `sign_request` (`sreq_`), its ordered
@@ -79,6 +79,24 @@ next (see "Not built yet" in the root `AGENTS.md`).
   `LocalSealer` (a self-signed key per process). `sealerFromEnv` (`./runtime`) reads
   `signSealEnvShape` (`./env`). No DSS/LTV yet. Verify with `readPdfSeal` + pkijs (tests) or
   `openssl cms -verify -binary -inform DER -content <signed bytes>`.
+- **Email delivery** (`notifications.ts`, `emails.ts`; the worker's `sign-notifications` loop,
+  `runDueSignNotifications`): expires `sent` requests past `expires_at` (`expired`, webhook
+  `sign_request.expired`); invites `delivery: email` signers whose turn it is (`notified`);
+  reminds them every `reminder_interval_days` (request, defaulting to the settings') up to
+  `MAX_SIGN_REMINDERS`, or when asked (`requestSignReminders`, `POST …/remind`: once an hour per
+  signer, `reminder_not_due` otherwise); emails each email signer their copy once sealed (PDF
+  attached up to 10 MB, always a link). Every email has a fresh 30-day session link
+  (`mintSignSession`; never past `expires_at`) and a stable idempotency key
+  (`sign-invite:`/`sign-remind:<n>`/`sign-copy:` + signer id), and the signer row moves by
+  compare-and-set after the send, so a crash in between replays the same email. Emails go
+  through an injected `SignMailer` (never `@coss/email`): the worker's
+  `apps/worker/src/sign-mailer.ts` sends from the settings' `email_from` in the request's
+  environment (checked against the live provider's verified domains when set over the API), else
+  — or when that domain stops being verified — from coss.com's sender
+  (`SIGN_NOTIFICATIONS_FROM`, default `NOTIFICATIONS_FROM`'s address, in
+  `NOTIFICATIONS_ENVIRONMENT_ID`) as "<requester> via coss.com"; sandbox environments always send
+  in their own (fake) environment. coss.com's sender never carries the requester's `message`
+  (abuse). Bodies are discarded after sending (they hold links); tracking is off.
 - **Settings** (`settings.ts`): `allowed_origins` (≤ 10, `checkedSignOrigin`: https, plus
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —

@@ -79,7 +79,14 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createSmsRoutes(deps.smsService));
-  v1.route("/", createSignRoutes({ signService: deps.signService, signUrl: deps.signUrl }));
+  v1.route(
+    "/",
+    createSignRoutes({
+      signService: deps.signService,
+      signUrl: deps.signUrl,
+      liveProvider: deps.domainDeps.identity.name,
+    }),
+  );
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(

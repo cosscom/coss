@@ -453,6 +453,8 @@ describe("settings", () => {
       accentColor: null,
       theme: "system",
       disclosure: null,
+      emailFrom: null,
+      reminderIntervalDays: null,
     });
     await updateSignSettings({
       ...env,
@@ -469,6 +471,8 @@ describe("settings", () => {
       accentColor: "#2563eb",
       theme: "dark",
       disclosure: null,
+      emailFrom: null,
+      reminderIntervalDays: null,
     });
     await expectSignError(
       updateSignSettings({ ...env, update: { allowed_origins: ["http://localhost:3000"] } }),

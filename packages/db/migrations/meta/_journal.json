@@ -638,6 +638,13 @@
       "when": 1793122375838,
       "tag": "0090_windy_thunderbolt_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 91,
+      "version": "7",
+      "when": 1793123106292,
+      "tag": "0091_furry_catseye",
+      "breakpoints": true
     }
   ]
 }
