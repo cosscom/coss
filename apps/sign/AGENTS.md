@@ -26,7 +26,9 @@ in `packages/sign/AGENTS.md`.
 - The page shows the consent text first (`sign_settings.disclosure` or `DEFAULT_SIGN_DISCLOSURE`,
   with the requester's name); the signer's agreement records its SHA-256. Documents are served
   only after it (`consent_required`).
-- Documents are drawn with pdf.js (legacy build, a module worker of this origin) on canvases, with
+- Documents are drawn with pdf.js (legacy build, a module worker of this origin; its CMaps, fonts,
+  ICC profiles and wasm decoders from `/pdfjs/<folder>/<file>`, traced into the standalone server
+  by `outputFileTracingIncludes`) on canvases, with
   the signer's fields on top, placed by the same top-left, as-displayed PDF points as the API.
   Signers adopt a signature (and initials, when they have initials fields) by typing or drawing;
   it is sent as a PNG with the field values, and nothing changes after "Finish".

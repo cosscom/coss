@@ -26,6 +26,13 @@ const nextConfig: NextConfig = {
   // root so Bun's isolated node_modules (node_modules/.bun) are copied in.
   output: "standalone",
   outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
+  // pdf.js's data files, served by /pdfjs/<folder>/<file> (nothing imports them, so tracing
+  // wouldn't copy them).
+  outputFileTracingIncludes: {
+    "/pdfjs/**": ["cmaps", "standard_fonts", "iccs", "wasm"].map(
+      (folder) => `../../node_modules/.bun/pdfjs-dist@*/node_modules/pdfjs-dist/${folder}/**`,
+    ),
+  },
   // Same build → same id on every instance (the image build passes the commit).
   generateBuildId: async () => process.env.NEXT_DEPLOYMENT_ID || null,
   poweredByHeader: false,

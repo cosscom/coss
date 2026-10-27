@@ -45,7 +45,16 @@ export function PdfPages({
       .then((module) => {
         if (canceled) return null;
         // pdf.js takes ownership of the buffer it's given: hand it a copy.
-        task = module.getDocument({ data: new Uint8Array(bytes.slice(0)) });
+        task = module.getDocument({
+          data: new Uint8Array(bytes.slice(0)),
+          // Data files some documents need (CJK text, standard fonts, JPEG 2000 and JBIG2 images,
+          // color profiles), from this origin.
+          cMapUrl: "/pdfjs/cmaps/",
+          cMapPacked: true,
+          standardFontDataUrl: "/pdfjs/standard_fonts/",
+          iccUrl: "/pdfjs/iccs/",
+          wasmUrl: "/pdfjs/wasm/",
+        });
         return task.promise;
       })
       .then((pdf) => {
