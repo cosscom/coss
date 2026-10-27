@@ -77,6 +77,20 @@ describe("coss.sign.documents", () => {
 });
 
 describe("coss.sign.requests", () => {
+  test("remind is never retried (a retry would answer reminder_not_due)", async () => {
+    const { coss, calls } = client(
+      json(503, { error: { type: "api_error", code: "x", message: "x", request_id: "req_1" } }),
+      json(200, request),
+    );
+    const failed = await coss.sign.requests.remind(request.id);
+    expect(failed.error?.status).toBe(503);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({
+      method: "POST",
+      url: `${BASE}/requests/${request.id}/remind`,
+    });
+  });
+
   test("create POSTs with an idempotency key", async () => {
     const { coss, calls } = client(json(201, request));
     const result = await coss.sign.requests.create({

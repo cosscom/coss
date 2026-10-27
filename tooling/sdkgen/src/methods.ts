@@ -244,6 +244,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
  */
 export const NO_RETRY: ReadonlySet<string> = new Set([
   "POST /v1/sign/documents",
+  "POST /v1/sign/requests/{id}/remind",
   "POST /v1/hooks/event_types",
   "POST /v1/hooks/applications",
   "POST /v1/hooks/applications/{application}/endpoints",
