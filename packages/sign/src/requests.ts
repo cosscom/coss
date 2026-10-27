@@ -166,6 +166,10 @@ export function toSignRequestObject(
     completed_at: row.completedAt?.toISOString() ?? null,
     canceled_at: row.canceledAt?.toISOString() ?? null,
     declined_at: row.declinedAt?.toISOString() ?? null,
+    signed_document:
+      row.signedDocumentSha256 && row.sealedAt
+        ? { sha256: row.signedDocumentSha256, sealed_at: row.sealedAt.toISOString() }
+        : null,
     created_at: row.createdAt.toISOString(),
   };
 }

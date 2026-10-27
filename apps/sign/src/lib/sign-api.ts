@@ -6,6 +6,7 @@
  *
  *   GET  /                  the request as the signer sees it (records `viewed` the first time)
  *   GET  /documents/<id>    a document's PDF, once the signer consented
+ *   GET  /signed_document   the sealed, completed document, once it is ready
  *   POST /consent           { disclosure_sha256 }
  *   POST /sign              { values, signature, initials? }
  *   POST /decline           { reason? }
@@ -20,6 +21,7 @@ import {
   MAX_DECLINE_REASON_LENGTH,
   openSigning,
   readSigningDocument,
+  readSigningSignedDocument,
   type SignActor,
   SignError,
   signAsSigner,
@@ -123,6 +125,17 @@ async function charge(deps: SignApiDeps, requests: RateLimitRequest[]): Promise<
   }
 }
 
+function pdf(document: { filename: string; content: Uint8Array }): Response {
+  return new Response(Buffer.from(document.content), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="${document.filename.replace(/[^\w.() -]/g, "_")}"`,
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
 /** Answers one signing API request. `path` is what follows `/api/sessions/<id>/`. */
 export async function handleSignRequest(
   request: Request,
@@ -180,15 +193,11 @@ async function route(
     return json(await openSigning(access, { actor, now }));
   }
   if (head === "documents" && id !== undefined && method === "GET") {
-    const document = await readSigningDocument(access, { documentId: id, store });
-    return new Response(Buffer.from(document.content), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${document.filename.replace(/[^\w.-]/g, "_")}"`,
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-      },
-    });
+    return pdf(await readSigningDocument(access, { documentId: id, store }));
+  }
+  if (head === "signed_document" && id === undefined && method === "GET") {
+    const document = await readSigningSignedDocument(access, store);
+    return pdf(document);
   }
   if (head === "consent" && id === undefined && method === "POST") {
     const input = await body(request, ConsentInput);

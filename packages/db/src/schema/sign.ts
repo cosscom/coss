@@ -115,6 +115,15 @@ export const signRequest = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
     canceledAt: timestamp("canceled_at", { withTimezone: true }),
     declinedAt: timestamp("declined_at", { withTimezone: true }),
+    // The sealed, completed document (document store) and its hex SHA-256, once the worker made it.
+    signedDocumentKey: text("signed_document_key"),
+    signedDocumentSha256: text("signed_document_sha256"),
+    sealedAt: timestamp("sealed_at", { withTimezone: true }),
+    // The worker's lease while sealing, and its retries.
+    sealLeaseUntil: timestamp("seal_lease_until", { withTimezone: true }),
+    sealAttempts: integer("seal_attempts").notNull().default(0),
+    sealNextAttemptAt: timestamp("seal_next_attempt_at", { withTimezone: true }),
+    sealError: text("seal_error"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -130,6 +139,10 @@ export const signRequest = pgTable(
     index("sign_request_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
     index("sign_request_expires_at_idx").on(t.expiresAt).where(sql`${t.status} = 'sent'`),
     index("sign_request_created_at_idx").on(t.createdAt),
+    // Completed requests waiting for their sealed document.
+    index("sign_request_unsealed_idx")
+      .on(t.completedAt)
+      .where(sql`${t.status} = 'completed' and ${t.sealedAt} is null`),
   ],
 );
 
@@ -283,6 +296,7 @@ export const signEventType = pgEnum("sign_event_type", [
   "canceled",
   "expired",
   "completed",
+  "sealed",
 ]);
 
 /** Wire-format (snake_case) event details, stored as-is and returned by the API. */
@@ -294,6 +308,7 @@ export type SignEventDetails = {
   signature_sha256?: string;
   initials_sha256?: string;
   session_id?: string;
+  signed_document_sha256?: string;
 };
 
 /**

@@ -10,6 +10,7 @@ import { db, schema, type Transaction } from "@coss/db";
 import type { SignAnchor, SignPageSize } from "@coss/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { PDFDocument } from "pdf-lib";
+import { readSignedDocument } from "./complete.ts";
 import { SignError } from "./errors.ts";
 import type { SignActor } from "./events.ts";
 import { recordSignEvent } from "./record.ts";
@@ -43,6 +44,8 @@ export type SigningView = {
     status: SignRequestStatus;
     signing_order: "parallel" | "sequential";
     expires_at: string | null;
+    /** The sealed, completed document can be downloaded (`readSigningSignedDocument`). */
+    signed_document_ready: boolean;
   };
   signer: {
     id: string;
@@ -277,6 +280,7 @@ export async function openSigning(
       status: request.status,
       signing_order: request.signingOrder,
       expires_at: request.expiresAt?.toISOString() ?? null,
+      signed_document_ready: request.sealedAt !== null,
     },
     signer: {
       id: signer.id,
@@ -757,5 +761,19 @@ export async function declineAsSigner(
         occurredAt: now,
       },
     );
+  });
+}
+
+/** The sealed, completed document, for a signer of the request (once it is ready). */
+export async function readSigningSignedDocument(
+  access: SignSessionAccess,
+  store: DocumentStore,
+): Promise<{ filename: string; content: Uint8Array }> {
+  const { session } = access;
+  return readSignedDocument({
+    organizationId: session.organizationId,
+    environmentId: session.environmentId,
+    requestId: session.requestId,
+    store,
   });
 }

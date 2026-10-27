@@ -32,6 +32,8 @@ import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { type ScreenInput, screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
+import { FakeDocumentStore } from "@coss/sign";
+import { sealerFromEnv } from "@coss/sign/runtime";
 import { createSmsService } from "@coss/sms";
 import {
   ensureSmsDispatchQueue,
@@ -226,6 +228,14 @@ const secretsKeys = parseSecretsKeys(env.WEBHOOK_SECRETS_KEY);
 // The dashboard accepts local endpoints outside production; let them be reached there too.
 const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !== "production" });
 
+// Sign: completed requests are sealed here. Production has no document store (nor a certificate)
+// yet, so nothing waits there to be sealed.
+const signSeal = await sealerFromEnv(env);
+const signCompletion =
+  signSeal && process.env.NODE_ENV !== "production"
+    ? { store: new FakeDocumentStore(), ...signSeal }
+    : null;
+
 const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
@@ -263,6 +273,7 @@ const loops = startJobs({
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
   },
   push: pushSender && { sender: pushSender },
+  signCompletion,
   webhooks: { secretsKeys, send },
   migrations: {
     secretsKeys,

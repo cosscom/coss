@@ -52,7 +52,8 @@ export type SignEventType =
   | "reminded"
   | "canceled"
   | "expired"
-  | "completed";
+  | "completed"
+  | "sealed";
 
 export type SignEventActor = "api_key" | "signer" | "dashboard" | "system";
 
@@ -225,6 +226,11 @@ export interface SignRequest {
   completed_at: string | null;
   canceled_at: string | null;
   declined_at: string | null;
+  /**
+   * The completed document, sealed by coss.com; `null` until it is ready (announced by the
+   * `sign_request.completed` webhook). Download it with `coss.sign.requests.signedDocument(id)`.
+   */
+  signed_document: { sha256: string; sealed_at: string } | null;
   created_at: string;
 }
 
@@ -249,6 +255,8 @@ export interface SignEventDetails {
   initials_sha256?: string;
   /** The signing session the signer used. */
   session_id?: string;
+  /** `sealed`: the SHA-256 of the sealed, completed document. */
+  signed_document_sha256?: string;
 }
 
 /** One entry of a request's audit trail. */

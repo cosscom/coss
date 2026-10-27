@@ -4,6 +4,7 @@ import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskDatasetEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { signSealEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -26,6 +27,9 @@ export const env = createEnv({
     RATE_LIMIT_KEY_PREFIX: rateLimitEnvShape.RATE_LIMIT_KEY_PREFIX,
     // AI content screening of sampled live emails before they are sent (@coss/screening).
     ...screeningEnvShape,
+    // Sign: what seals completed documents (a KMS key and its certificate chain, or a local key in
+    // development) and the time-stamping authority. Unset in production: completions wait.
+    ...signSealEnvShape,
     // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
     // tasks dedicated to Hooks deliveries; unset runs every loop.
     WORKER_LOOPS: z

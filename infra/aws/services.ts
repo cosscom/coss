@@ -149,6 +149,36 @@ const signPublicUrl: EnvVar = {
     "Origin of Sign's signing app (apps/sign, on a registrable domain of its own); signing session links point there. Unset: creating a signing session fails (503) until it is deployed.",
 };
 
+// Sign's seal (worker): a KMS key with a document-signing certificate, and a time-stamping authority.
+const signSeal: EnvVar[] = [
+  {
+    name: "SIGN_SEALER",
+    kind: "plain",
+    required: false,
+    description:
+      "What seals Sign's completed documents: `kms` (SIGN_SEAL_KMS_KEY_ID + SIGN_SEAL_CERTIFICATE_CHAIN). Unset: completions wait (Sign is off in production until then).",
+  },
+  {
+    name: "SIGN_SEAL_KMS_KEY_ID",
+    kind: "plain",
+    required: false,
+    description: "The asymmetric KMS signing key (RSA or ECC) behind the seal's certificate.",
+  },
+  {
+    name: "SIGN_SEAL_CERTIFICATE_CHAIN",
+    kind: "plain",
+    required: false,
+    description:
+      "The seal's document-signing certificate (on Adobe's trust list) and its intermediates, PEM, leaf first (`\\n` line breaks accepted).",
+  },
+  {
+    name: "SIGN_TSA_URL",
+    kind: "plain",
+    required: false,
+    description: "An RFC 3161 time-stamping authority: seals carry its timestamp (PAdES B-T).",
+  },
+];
+
 const rateLimits: EnvVar[] = [
   {
     name: "VALKEY_URL",
@@ -689,6 +719,7 @@ export const SERVICES: Service[] = [
       ...email,
       apiPublicUrl,
       trackingPublicUrl,
+      ...signSeal,
       {
         name: "API_PORT",
         kind: "plain",

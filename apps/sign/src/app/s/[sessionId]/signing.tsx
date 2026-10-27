@@ -166,9 +166,10 @@ function Request({
         <h1 className="font-semibold text-xl">You signed {request.title}</h1>
         <p className="text-muted-foreground text-sm">
           {request.status === "completed"
-            ? "Everyone has signed. You'll get a copy of the signed documents."
-            : "We'll let the others know. You'll get a copy once everyone has signed."}
+            ? "Everyone has signed."
+            : "We'll let the others know. You can download a copy once everyone has signed."}
         </p>
+        {request.status === "completed" && <SignedCopy call={call} onView={onView} view={view} />}
       </Centered>
     );
   }
@@ -204,6 +205,75 @@ function Request({
   }
   if (!signer.consented) return <Consent call={call} onView={onView} view={view} />;
   return <Documents call={call} onView={onView} view={view} />;
+}
+
+/** The sealed copy: downloadable once the worker sealed it (seconds after the last signature). */
+function SignedCopy({
+  view,
+  onView,
+  call,
+}: {
+  view: SigningView;
+  onView: (view: SigningView) => void;
+  call: ReturnType<typeof useSigningApi>;
+}) {
+  const ready = view.request.signed_document_ready;
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Ask again for a minute while it is being sealed.
+  useEffect(() => {
+    if (ready) return;
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries++;
+      if (tries > 20) {
+        clearInterval(timer);
+        return;
+      }
+      call("")
+        .then((response) => response.json() as Promise<SigningView>)
+        .then((next) => {
+          if (next.request.signed_document_ready) onView(next);
+        })
+        .catch(() => {});
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [ready, call, onView]);
+
+  const download = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const response = await call("/signed_document");
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${view.request.title} (signed).pdf`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Couldn't download it.");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  if (!ready) {
+    return (
+      <p className="flex items-center gap-2 text-muted-foreground text-sm">
+        <Spinner /> Preparing your signed copy…
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center gap-2 pt-2">
+      <Button loading={pending} onClick={download}>
+        Download signed copy
+      </Button>
+      {error && <p className="text-destructive-foreground text-sm">{error}</p>}
+    </div>
+  );
 }
 
 function Consent({

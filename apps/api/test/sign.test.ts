@@ -1,7 +1,17 @@
 import { describe, expect, test } from "bun:test";
 import { memoryLogWriter } from "@coss/logs/testing";
 import { clientIpResolver } from "@coss/ratelimit";
-import { buildTestPdfBase64 } from "@coss/sign/testing";
+import {
+  authenticateSignSession,
+  consentToSign,
+  createSignSession,
+  FakeDocumentStore,
+  LocalSealer,
+  openSigning,
+  runDueSignCompletions,
+  signAsSigner,
+} from "@coss/sign";
+import { buildTestPdfBase64, TEST_SIGNATURE_PNG } from "@coss/sign/testing";
 import { createEnvironmentApiKey } from "@coss/tenancy";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { apiRequest, createTestApp, errorOf } from "./helpers.ts";
@@ -398,5 +408,79 @@ describe("Signing sessions and settings", () => {
       allowed_origins: ["https://app.example.com"],
       accent_color: "#2563eb",
     });
+  });
+});
+
+describe("Signed documents", () => {
+  test("downloadable once the completed request is sealed", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const create = await apiRequest(app, "POST", "/v1/sign/requests", {
+      key: tenant.sandboxKey,
+      body: {
+        title: "NDA",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        signers: [{ ...signer(), delivery: "embedded" }],
+      },
+    });
+    const request = await create.json();
+    const notReady = await apiRequest(
+      app,
+      "GET",
+      `/v1/sign/requests/${request.id}/signed_document`,
+      {
+        key: tenant.sandboxKey,
+      },
+    );
+    expect(notReady.status).toBe(422);
+    expect((await errorOf(notReady)).code).toBe("signed_document_not_ready");
+
+    // Sign through a session, then let the worker seal it.
+    const store = new FakeDocumentStore();
+    const session = await createSignSession({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      requestId: request.id,
+      signerId: request.signers[0].id,
+      signUrl: "https://sign.test",
+      apiKeyId: null,
+    });
+    const access = await authenticateSignSession({ id: session.id, token: session.token });
+    if (!access) throw new Error("no session");
+    const view = await openSigning(access, { actor: { kind: "signer" } });
+    await consentToSign(access, {
+      disclosureSha256: view.disclosure.sha256,
+      actor: { kind: "signer" },
+    });
+    await signAsSigner(access, {
+      values: {},
+      signature: TEST_SIGNATURE_PNG,
+      actor: { kind: "signer" },
+      store,
+    });
+    await runDueSignCompletions(
+      { limit: 5, scope: { organizationIds: [tenant.organization.id] } },
+      { store, sealer: await LocalSealer.create() },
+    );
+
+    const read = await apiRequest(app, "GET", `/v1/sign/requests/${request.id}`, {
+      key: tenant.sandboxKey,
+    });
+    expect((await read.json()).signed_document.sha256).toMatch(/^[0-9a-f]{64}$/);
+    const download = await apiRequest(
+      app,
+      "GET",
+      `/v1/sign/requests/${request.id}/signed_document`,
+      {
+        key: tenant.sandboxKey,
+      },
+    );
+    expect(download.status).toBe(200);
+    expect(download.headers.get("content-type")).toBe("application/pdf");
+    expect(
+      Buffer.from(await download.arrayBuffer())
+        .subarray(0, 5)
+        .toString(),
+    ).toBe("%PDF-");
   });
 });

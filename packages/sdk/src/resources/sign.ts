@@ -145,6 +145,19 @@ export class SignRequestsResource {
     });
   }
 
+  /**
+   * The completed request's sealed PDF (the documents as signed, then a certificate of
+   * completion). Ready once `signed_document` is set: the `sign_request.completed` webhook says so.
+   */
+  signedDocument(id: string, options?: ReadOptions): Promise<CossResult<Uint8Array>> {
+    return this.#http.request<Uint8Array>({
+      method: "GET",
+      path: `/v1/sign/requests/${encodeURIComponent(id)}/signed_document`,
+      responseType: "bytes",
+      signal: options?.signal,
+    });
+  }
+
   /** The request's audit trail, oldest first, hash-chained. */
   auditTrail(id: string, options?: ReadOptions): Promise<CossResult<List<SignEvent>>> {
     return this.#http.request<List<SignEvent>>({

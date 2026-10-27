@@ -53,6 +53,7 @@ import {
 import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
+import { runDueSignCompletions, type SignCompletionDeps } from "@coss/sign";
 import {
   advanceDueSmsRegistrations,
   attachPendingSmsNumbers,
@@ -99,6 +100,7 @@ const MIGRATION_BATCH = 2;
 const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
+const SIGN_COMPLETION_BATCH = 5;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 // Hooks delivery failures warn by default (their policy has no suspension threshold).
 const REPUTATION_CHECKS = [
@@ -140,6 +142,8 @@ export type WorkerDeps = {
    * (ready for a stricter policy, failing mail); `null`: held until configured.
    */
   notifications: ReputationNotificationDeps | null;
+  /** Seals Sign's completed requests; `null`: held (no document store or sealer yet). */
+  signCompletion?: SignCompletionDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
   push?: PushDeps | null;
   /** coss.com's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
@@ -170,7 +174,7 @@ export type WorkerDeps = {
 /**
  * Every loop (and pg-boss's email dispatch, one queue per stream), by name, for `WORKER_LOOPS`. The
  * conditional ones (`billing-notifications`, `auth-emails`, `reputation-notifications`,
- * `dmarc-notifications`, `push-notifications`, `ses-events`, `ses-inbound`) also need their
+ * `dmarc-notifications`, `push-notifications`, `sign-completions`, `ses-events`, `ses-inbound`) also need their
  * configuration.
  */
 export const WORKER_LOOP_NAMES = [
@@ -208,6 +212,7 @@ export const WORKER_LOOP_NAMES = [
   "reputation-notifications",
   "dmarc-notifications",
   "push-notifications",
+  "sign-completions",
   "ses-events",
   "ses-inbound",
 ] as const;
@@ -556,6 +561,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
             { limit: NOTIFICATION_BATCH },
             { ...notifications, dmarcReportDomain: deps.domains.dmarcReportDomain ?? null },
           )) === NOTIFICATION_BATCH,
+      }),
+    );
+  }
+  const signCompletion = deps.signCompletion;
+  if (signCompletion) {
+    loops.push(
+      start({
+        // Signers wait for their copy: seal soon after the last signature.
+        name: "sign-completions",
+        intervalMs: 2000,
+        run: async () =>
+          (await runDueSignCompletions({ limit: SIGN_COMPLETION_BATCH }, signCompletion)) ===
+          SIGN_COMPLETION_BATCH,
       }),
     );
   }

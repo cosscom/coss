@@ -44,6 +44,7 @@ const request: SignRequest = {
   completed_at: null,
   canceled_at: null,
   declined_at: null,
+  signed_document: null,
   created_at: "2026-11-10T12:00:00.000Z",
 };
 
