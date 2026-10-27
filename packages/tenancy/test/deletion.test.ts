@@ -42,6 +42,26 @@ async function seedOrganizationData(tenant: TestTenant) {
   const organizationId = tenant.organization.id;
   const environment = tenant.production;
   const scope = { organizationId, projectId: tenant.project.id, environmentId: environment.id };
+  // A signature request keeps its document from deletion (restrict): its rows go first.
+  const [document] = await db
+    .insert(schema.signDocument)
+    .values({
+      ...scope,
+      filename: "nda.pdf",
+      storeKey: `orgs/${organizationId}/nda.pdf`,
+      sha256: "0".repeat(64),
+      size: 1,
+      pages: [{ width: 612, height: 792 }],
+    })
+    .returning();
+  const [request] = await db
+    .insert(schema.signRequest)
+    .values({ ...scope, title: "NDA", status: "sent" })
+    .returning();
+  if (!document || !request) throw new Error("sign seed failed");
+  await db
+    .insert(schema.signRequestDocument)
+    .values({ requestId: request.id, documentId: document.id, organizationId, position: 0 });
   const emails = await db
     .insert(schema.email)
     .values(
@@ -305,6 +325,8 @@ describe("runDueOrganizationDeletions", () => {
     expect(await count(schema.email, organizationId)).toBe(0);
     expect(await count(schema.webhookMessage, organizationId)).toBe(0);
     for (const table of [
+      schema.signRequest,
+      schema.signDocument,
       schema.emailRecipient,
       schema.emailEvent,
       schema.emailSuppression,

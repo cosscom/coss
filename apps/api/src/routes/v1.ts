@@ -2,6 +2,7 @@ import type { UsageGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
+import type { SignService } from "@coss/sign";
 import type { SmsService } from "@coss/sms";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -26,6 +27,7 @@ import { createRiskConfigRoutes } from "./risk-config.ts";
 import { createRiskLimitRoutes } from "./risk-limits.ts";
 import { createRiskLookupRoutes } from "./risk-lookups.ts";
 import { createSegmentRoutes } from "./segments.ts";
+import { createSignRoutes } from "./sign.ts";
 import { createSmsRoutes } from "./sms.ts";
 import { createStorageSettingsRoutes } from "./storage-settings.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
@@ -38,6 +40,8 @@ import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
 export type V1Dependencies = {
   emailService: EmailService;
   smsService: SmsService;
+  /** Sign's writes (documents' bytes); `null`: Sign isn't available in this deployment. */
+  signService: SignService | null;
   domainDeps: DomainDeps;
   webhookDeps: WebhookManagementDeps;
   /** Where portal session links point (`PORTAL_PUBLIC_URL`); `null`: the portal isn't deployed. */
@@ -73,6 +77,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createSmsRoutes(deps.smsService));
+  v1.route("/", createSignRoutes(deps.signService));
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(

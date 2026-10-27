@@ -18,7 +18,14 @@ export function isApiKeyAccess(value: unknown): value is ApiKeyAccess {
   return (API_KEY_ACCESS as readonly unknown[]).includes(value);
 }
 
-export type ApiKeyPermissionGroup = "Email" | "SMS" | "Platform" | "Risk" | "Hooks" | "Account";
+export type ApiKeyPermissionGroup =
+  | "Email"
+  | "SMS"
+  | "Sign"
+  | "Platform"
+  | "Risk"
+  | "Hooks"
+  | "Account";
 
 export type ApiKeyResourceInfo = {
   resource: string;
@@ -93,6 +100,13 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
     description: "Manage the SMS suppression list.",
   },
   {
+    resource: "sign",
+    label: "Signature requests",
+    group: "Sign",
+    description:
+      "Upload documents, create, send and cancel signature requests; read them, their signers and audit trails.",
+  },
+  {
     resource: "webhook",
     label: "Webhooks",
     group: "Platform",
@@ -152,6 +166,7 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
 export const API_KEY_PERMISSION_GROUPS: readonly ApiKeyPermissionGroup[] = [
   "Email",
   "SMS",
+  "Sign",
   "Platform",
   "Risk",
   "Hooks",

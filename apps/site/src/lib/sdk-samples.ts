@@ -280,6 +280,28 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "GET /v1/sms/received": { method: "sms.received.list", args: (r) => [queryParams(r)] },
   "GET /v1/sms/received/{id}": { method: "sms.received.get", args: (r) => [pathId(r)] },
   "GET /v1/sms/numbers": { method: "sms.numbers.list", args: () => [] },
+  "POST /v1/sign/documents": {
+    method: "sign.documents.upload",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/sign/documents": { method: "sign.documents.list", args: (r) => [queryParams(r)] },
+  "GET /v1/sign/documents/{id}": { method: "sign.documents.get", args: (r) => [pathId(r)] },
+  "DELETE /v1/sign/documents/{id}": { method: "sign.documents.remove", args: (r) => [pathId(r)] },
+  "POST /v1/sign/requests": {
+    method: "sign.requests.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/sign/requests": { method: "sign.requests.list", args: (r) => [queryParams(r)] },
+  "GET /v1/sign/requests/{id}": { method: "sign.requests.get", args: (r) => [pathId(r)] },
+  "POST /v1/sign/requests/{id}/send": { method: "sign.requests.send", args: (r) => [pathId(r)] },
+  "POST /v1/sign/requests/{id}/cancel": {
+    method: "sign.requests.cancel",
+    args: (r) => [pathId(r)],
+  },
+  "GET /v1/sign/requests/{id}/audit_trail": {
+    method: "sign.requests.auditTrail",
+    args: (r) => [pathId(r)],
+  },
   "GET /v1/sms/{id}": { method: "sms.get", args: (r) => [pathId(r)] },
   "GET /v1/sms/{id}/events": { method: "sms.listEvents", args: (r) => [pathId(r)] },
   "POST /v1/sms/{id}/cancel": { method: "sms.cancel", args: (r) => [pathId(r)] },

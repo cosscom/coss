@@ -56,6 +56,11 @@ export type {
   RiskUsersResource,
 } from "./resources/risk.ts";
 export type {
+  SignDocumentsResource,
+  SignRequestsResource,
+  SignResource,
+} from "./resources/sign.ts";
+export type {
   ReceivedSmsResource,
   SmsNumbersResource,
   SmsResource,
@@ -361,6 +366,35 @@ export type {
   UpdateRiskRuleParams,
   UpdateRiskSettingsParams,
 } from "./types/risk.ts";
+export type {
+  AnchoredSignFieldInput,
+  CreateSignRequestParams,
+  DeletedSignDocument,
+  ListSignDocumentsParams,
+  ListSignRequestsParams,
+  PlacedSignFieldInput,
+  SignAnchor,
+  SignAuthentication,
+  SignDelivery,
+  SignDocument,
+  SignDocumentInput,
+  SignEvent,
+  SignEventActor,
+  SignEventDetails,
+  SignEventType,
+  SignField,
+  SignFieldInput,
+  SignFieldType,
+  SignPageSize,
+  SignRequest,
+  SignRequestDocument,
+  SignRequestStatus,
+  SignSigner,
+  SignSignerInput,
+  SignSignerStatus,
+  SignSigningOrder,
+  UploadSignDocumentParams,
+} from "./types/sign.ts";
 export type {
   DeletedSmsSuppression,
   ListReceivedSmsParams,

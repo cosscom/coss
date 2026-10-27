@@ -1,0 +1,28 @@
+{
+  "name": "@coss/sign",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas": "./src/schemas.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test"
+  },
+  "dependencies": {
+    "@coss/db": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.4.299",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tenancy": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}

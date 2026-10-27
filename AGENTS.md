@@ -54,6 +54,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/logs` | `@coss/logs` | Environment logs and the org audit log: the day-partitioned `log_entry` table (API requests, email events, webhook attempts), the buffered fail-open request writer, queries (keyset pages, histogram, facets, related lines, CSV/NDJSON export), partition retention, `org_audit_event`, the log drain outbox (`log_drain_record`, written by `appendLogEntries`/`recordOrgAuditEvent`); `./schemas` + `./query` (search syntax; zod only), `./testing`. See `packages/logs/AGENTS.md`. |
 | `packages/versioning` | `@coss/versioning` | Dated public API versions (`Coss-Version`): `API_VERSIONS`, the `VERSION_CHANGES` registry and the engine that renders latest-shape responses/webhook payloads in older versions and upgrades older request bodies. Zero deps, client-safe; `./testing` (`testVersioning()`). |
 | `packages/sms` | `@coss/sms` | SMS: wire schemas (`./schemas`, zod only; also `SMS_WEBHOOK_EVENT_TYPES`, the simulator's numbers, registration forms), segment counting (`./segments`, client-safe), sending (`createSmsService`: E.164 + country, live sender authorization, suppressions, scheduled sends, the `UsageGate` reservation by country), dispatch (`./dispatch`, pg-boss `sms-dispatch`), delivery events and metering, suppressions, receiving (STOP/START across live environments), Twilio (`./twilio`: REST client, provider, signature checks, callbacks, `FakeTwilioApi`), senders (subaccounts, the 10DLC and toll-free registration state machine, numbers, monthly fees, teardown), reputation checks, purges, `./admin`, `./env` (zod only), `./runtime`, `./testing`. See `packages/sms/AGENTS.md`. |
+| `packages/sign` | `@coss/sign` | Sign (e-signatures): uploaded PDFs (`pdf.ts`: pdf-lib + pdf.js, page sizes and text anchors), signature requests with signers and fields placed by position or anchor, the hash-chained audit trail (`events.ts`), the document store (`store.ts`: `DocumentStore`, `FakeDocumentStore`); `./schemas` (zod only), `./testing` (`buildTestPdf`). See `packages/sign/AGENTS.md`. |
 | `packages/push` | `@coss/push` | Push notifications to the iOS app: devices (one per app session), the outbox products enqueue into (`enqueuePush`, in the deciding transaction), recipients (role + `orgAccess`) and content resolved at send time, the worker's send loop; `./apns` (APNs over `node:http2`, ES256 provider tokens), `./schemas` (zod only: categories, kinds, registration), `./testing` (`FakePushSender`, `createTestPushDevice`). See `packages/push/AGENTS.md`. |
 | `packages/companion` | `@coss/companion` | Wire types of the dashboard's iOS app API (`/api/mobile/v1/*`): plain TypeScript types, zero deps, client-safe. |
 | `packages/retention` | `@coss/retention` | The data retention policy: `RETENTION_POLICY` (published by the docs and the dashboard) and `RETENTION_DAYS` (enforced by each package's purge, run by the worker). Zero deps, client-safe. |
@@ -74,7 +75,7 @@ Runtime dependencies: `observability` (no workspace deps) ← `api`, `worker`, `
 `billing`'s plan checks injected — `PlanGate`, `UsageGate`, and in webhooks the structural `WebhookPlanLimits`, since
 billing enqueues `billing.*` events through it — and email imports only `./metering`, `./gate` and `./wire`); `versioning` (no deps) ← `tenancy`, `webhooks`, `email`, `billing` (`schemas`/`wire` examples);
 `retention` (no deps) ← `tenancy`, `webhooks`, `reputation`, `screening`, `email`, `hooks`, `billing`, `push`, `worker`, `web`, `site`, `mobile`;
-`api → tenancy, email, sms, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
+`db ← sign` (no other workspace deps); `api → tenancy, email, sms, sign, hooks, reputation, webhooks, ratelimit, versioning, logs, billing, risk, screening (`./env` only), db`;
 `smtp → tenancy, email, ratelimit, logs, billing, observability, db`;
 `web → auth, tenancy, email, sms, hooks, reputation, screening, webhooks, ratelimit, versioning, retention, logs, billing, risk, push, migrate, companion, db, ui`; `mobile → companion` (types only; a dev dependency), `retention`, `observability` (both bundled by Metro: keep them dependency-free); `portal → hooks, webhooks, ratelimit, logs, observability, db, ui`; `site → ui, auth, versioning, retention, billing, risk, sdkgen` (only the client-safe `@coss/auth/{slugs,constants,api-key-permissions}`, the changelog, the retention policy, `@coss/billing/{catalog,money,engine}`, `@coss/risk/schemas` and `@coss/sdkgen`'s `snippets.json` + `./methods`) +
 `@coss/api/openapi.json` (data only, never api code); `sdkgen → @coss/api/openapi.json` (data only); `infra → auth, email, sms, hooks, ratelimit, screening, billing` (`slugs`, `env` only);
@@ -849,6 +850,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
     and counts only — never free-form text, addresses, URLs, scores or notes.
   - **Risk** (`packages/risk/AGENTS.md`): memory is HMAC-only (`RISK_HASH_KEY`); raw email, IP and user agent live
     only on `risk_assessment`; signals fail open.
+  - **Sign** (`packages/sign/AGENTS.md`): the audit trail is append-only and hash-chained (`appendSignEvent`
+    only); coordinates are PDF points from the top left of the page as displayed; documents' bytes live only in
+    the `DocumentStore`, never in API responses or webhooks.
   - **Organization deletion** (`packages/tenancy/AGENTS.md`): a table with many rows per organization belongs in
     `deleteOrganizationData`, anything held outside Postgres in `releaseProviderResources`.
 
@@ -933,6 +937,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of coss.com's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
+Sign's signing sessions and signing app (`apps/sign`), completion and the sealed PDF (PAdES), its email delivery,
+reminders and expiry, webhooks, logs, templates, the builder, the S3 document store, billing and dashboard pages
+(Sign is off in production until the store lands),
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 in the generated SDKs (`sdks/*`): auto-pagination, a `COSS_BASE_URL` default and typed events from webhook

@@ -22,6 +22,8 @@ const {
   email,
   emailBatch,
   emailSuppression,
+  signFakeObject,
+  signRequest,
   smsInboundReceipt,
   smsMessage,
   smsReceived,
@@ -602,6 +604,32 @@ async function deleteOrganizationData(
       inboundFakeObject,
       inboundFakeObject.key,
       eq(inboundFakeObject.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
+  // Sign's requests before the environments cascade into their documents: a request keeps its
+  // documents from deletion (`sign_request_document` restricts), and the cascade can't order it.
+  // Each request's signers, fields, events and sessions go with it.
+  if (
+    !(await deleteInBatches(
+      deletion,
+      signRequest,
+      signRequest.id,
+      eq(signRequest.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
+  // Sign's documents without a bucket (development): their bytes. Rows cascade with the environments.
+  if (
+    !(await deleteInBatches(
+      deletion,
+      signFakeObject,
+      signFakeObject.key,
+      eq(signFakeObject.organizationId, organizationId),
       batchSize,
       signal,
     ))

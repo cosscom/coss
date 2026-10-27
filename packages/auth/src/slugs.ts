@@ -131,6 +131,11 @@ const FUTURE_SITE_SEGMENTS = [
   "agents",
   "hooks",
   "webhooks",
+  "sign",
+  "esign",
+  "signatures",
+  "documents",
+  "contracts",
   // Marketing and company pages
   "home",
   "pricing",
