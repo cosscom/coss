@@ -144,6 +144,16 @@ templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` 
   `signing_sessions` — signing and builder sessions `RETENTION_DAYS.signSessions` after expiry
   (`purgeExpiredSignSessions`, the worker's `retention` loop).
 
+- **Dashboard** (`apps/web/src/app/[orgSlug]/projects/[projectSlug]/[envSlug]/sign/`): requests
+  (list by status, detail with signers, documents and the audit trail; download the signed PDF
+  through `sign/[requestId]/signed-document`, remind, cancel, delete), templates (new ones and
+  edits open the builder in a new tab: a builder session made for the member,
+  `created_by_user_id`) and settings; gated by the `sign` permissions, audited like the API.
+  `apps/web/src/lib/sign.ts` builds the store and links from the dashboard's env
+  (`SIGN_DOCUMENTS_BUCKET`, `SIGN_PUBLIC_URL`).
+- **Docs**: `apps/site/content/docs/sign/` (overview, embedded and email signing, fields and
+  anchors, templates and the builder, completion and the audit trail, testing).
+
 ## Going live (production)
 
 Sign is off in production until all of this is done, in this order:

@@ -29,6 +29,7 @@
     "@coss/retention": "workspace:*",
     "@coss/risk": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",

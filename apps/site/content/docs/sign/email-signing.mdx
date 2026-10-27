@@ -1,0 +1,37 @@
+---
+title: Email signing
+description: Invitations, reminders, expiry and signed copies sent by coss.com.
+---
+
+Signers with `delivery: "email"` (the default) get an email with a signing link when it's their
+turn. Possession of that link identifies them (`authentication: "email_link"` in the audit trail).
+
+- **Invitations** go out within seconds of the request being sent. With
+  `signing_order: "sequential"`, each signer is invited once everyone before them has signed.
+- **Reminders** go out every `reminder_interval_days` (on the request, defaulting to your Sign
+  settings'), up to three, to signers who haven't signed. Ask for one now with
+  `coss.sign.requests.remind(id)` (at most once an hour per signer).
+- **Expiry:** a request past its `expires_at` becomes `expired` (`sign_request.expired`), and its
+  links stop working.
+- **Signed copies:** once the request is completed and sealed, each email signer gets the signed PDF
+  (attached up to 10 MB, always with a download link).
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.sign.settings.update({
+  email_from: "contracts@acme.com",
+  reminder_interval_days: 3,
+});
+```
+
+## Who it comes from
+
+With `email_from` set to an address on one of your [verified domains](/docs/email/domains), signing
+emails come from it, through your environment like any email you send (your suppression list and
+history apply). Without it they come from coss.com as "Acme via coss.com", and leave out the
+request's `message`.
+
+Every email has a fresh link that works for 30 days (or until the request expires); open and click
+tracking is off and coss.com doesn't keep the email's body.

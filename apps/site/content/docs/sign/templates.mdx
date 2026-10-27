@@ -1,0 +1,55 @@
+---
+title: Templates
+description: Reusable documents with roles and merge fields, and the embedded builder.
+---
+
+A template holds documents and fields for **roles** (`client`, `company`) instead of named signers.
+Make a request from it by naming a signer for each role; `text` fields with a `merge_key` are
+filled from `merge_fields` and shown to the signer, who can't change them.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const templateId: string;
+// ---cut---
+const { data: request } = await coss.sign.templates.createRequest(templateId, {
+  signers: [
+    { role: "client", name: "Ada Lovelace", email: "ada@example.com" },
+    { role: "company", name: "Grace Hopper", email: "grace@acme.com", delivery: "embedded" },
+  ],
+  merge_fields: { client_company: "Analytical Engines Ltd" },
+});
+```
+
+A template is `ready` once it has documents and a `signature` field for every role. Requests made
+from it keep their own copy of its fields: editing the template later doesn't change them.
+
+## The builder
+
+Edit templates visually in the dashboard (**Sign → Templates**), or let your own users do it in
+your app: create a builder session and mount it.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const templateId: string;
+// ---cut---
+const { data: session } = await coss.sign.templates.createBuilderSession(templateId);
+```
+
+```ts twoslash
+import { mountBuilder } from "coss/sign";
+declare const builderUrl: string;
+declare const container: HTMLElement;
+// ---cut---
+mountBuilder({
+  url: builderUrl,
+  container,
+  onEvent: (event) => {
+    if (event.type === "saved" && event.ready) console.log("Template ready");
+  },
+});
+```
+
+In the builder, people upload PDFs, add signer roles, pick a field type and click a page to place
+it, then move and resize it. A builder session only reaches its own template.

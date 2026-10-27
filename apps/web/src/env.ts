@@ -4,6 +4,7 @@ import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
+import { signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-nextjs";
@@ -42,6 +43,12 @@ export const env = createEnv({
     ...webhookEnvShape,
     // Where the Hooks portal is served ("Open portal" links).
     ...hookEnvShape,
+    // Sign: where signing and builder links point, and its documents (S3, with AWS_REGION).
+    SIGN_PUBLIC_URL:
+      process.env.NODE_ENV === "production"
+        ? z.url().optional()
+        : z.url().default("http://localhost:3004"),
+    SIGN_DOCUMENTS_BUCKET: signStoreEnvShape.SIGN_DOCUMENTS_BUCKET,
     // Keys risk's memory; the dashboard hashes identifiers when it records feedback. Required in
     // production (src/instrumentation.ts).
     ...riskEnvShape,

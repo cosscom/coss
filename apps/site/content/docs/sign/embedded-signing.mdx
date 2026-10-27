@@ -1,0 +1,65 @@
+---
+title: Embedded signing
+description: Let your users sign inside your app with signing sessions and mountSigning.
+---
+
+Signers with `delivery: "embedded"` sign in your app. Your app vouches for who they are (the audit
+trail records `customer_asserted`, with their `client_ref`), so only create a session for that
+signed-in user, when they open the page that shows it.
+
+## On your server
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const requestId: string;
+declare const signerId: string;
+// ---cut---
+const { data: session } = await coss.sign.sessions.create(requestId, signerId, {
+  expires_in: 3600,
+});
+// Hand session.url to the browser. Its token is in the URL fragment: never log it.
+```
+
+Each call makes a new session; it works until `expires_at` (at most 24 hours) or until the signer
+has signed. Sessions are refused for email signers (`signer_not_embedded`), for requests that
+aren't `sent` and for signers who already signed or declined.
+
+## In the browser
+
+Add your page's origin to your Sign settings' `allowed_origins` (dashboard, or
+`coss.sign.settings.update`), then mount the signing page:
+
+```ts twoslash
+import { mountSigning } from "coss/sign";
+declare const sessionUrl: string;
+declare const container: HTMLElement;
+// ---cut---
+const signing = mountSigning({
+  url: sessionUrl,
+  container,
+  onEvent: (event) => {
+    if (event.type === "signed") console.log("Signed; request is", event.request_status);
+    if (event.type === "declined") console.log("Declined:", event.reason);
+  },
+});
+// Later: signing.destroy();
+```
+
+The iframe grows with its content. Events: `ready`, `viewed` (they opened the documents), `signed`
+(`request_status` is `completed` when they were the last), `declined` and `error`. They come only
+from the signing page's origin and your iframe; treat them as UI hints and rely on
+[webhooks](/docs/webhooks) for your records.
+
+Without `allowed_origins`, the signing page can't be framed: open `session.url` in its own tab or
+redirect to it instead.
+
+## Settings
+
+| Setting | What it does |
+| --- | --- |
+| `allowed_origins` | Sites that may embed the signing page and the template builder (https only; sandboxes also accept `http://localhost`). |
+| `display_name` | Who signers are told is asking (default: your organization's name). |
+| `accent_color`, `theme` | The page's look. |
+| `disclosure` | Your own consent text (default: coss.com's ESIGN consumer disclosure). |
+| `email_from`, `reminder_interval_days` | See [email signing](/docs/sign/email-signing). |

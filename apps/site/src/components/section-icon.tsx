@@ -5,6 +5,7 @@ import {
   Message01Icon,
   RocketIcon,
   Shield01Icon,
+  SignatureIcon,
   SourceCodeIcon,
   WebhookIcon,
 } from "@hugeicons/core-free-icons";
@@ -19,6 +20,7 @@ const SECTION_ICONS = {
   Message: Message01Icon,
   Rocket: RocketIcon,
   Shield: Shield01Icon,
+  Signature: SignatureIcon,
   Webhook: WebhookIcon,
 } as const;
 

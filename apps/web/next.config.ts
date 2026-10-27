@@ -43,7 +43,10 @@ const nextConfig: NextConfig = {
     "@coss/push",
     "@coss/sms",
     "@coss/migrate",
+    "@coss/sign",
   ],
+  // pdf.js and pdf-lib (through @coss/sign) are plain npm packages: Node loads them as they are.
+  serverExternalPackages: ["pdfjs-dist", "pdf-lib"],
   // A self-contained server (.next/standalone) for the container image. Tracing starts at the
   // monorepo root so workspace packages and Bun's isolated node_modules (node_modules/.bun) are
   // copied in; Next runs from cwd = apps/web, which next.config compiles relative to.

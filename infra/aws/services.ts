@@ -488,6 +488,8 @@ export const SERVICES: Service[] = [
       ...email,
       webhookKey,
       portalPublicUrl,
+      signPublicUrl,
+      signDocumentsBucket,
       riskHashKey,
       notificationsEnvironment,
       {

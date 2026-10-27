@@ -7,6 +7,7 @@ import {
   ContactRoundIcon,
   CreditCardIcon,
   DatabaseIcon,
+  FilePenLineIcon,
   FilterIcon,
   FoldersIcon,
   GaugeIcon,
@@ -29,6 +30,7 @@ import {
   MousePointerClickIcon,
   NetworkIcon,
   PanelsTopLeftIcon,
+  PenLineIcon,
   RocketIcon,
   ScaleIcon,
   ScanSearchIcon,
@@ -37,6 +39,7 @@ import {
   SettingsIcon,
   ShieldAlertIcon,
   ShieldIcon,
+  SignatureIcon,
   SlidersHorizontalIcon,
   TagsIcon,
   UserIcon,
@@ -82,6 +85,14 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Messages", path: "/sms", icon: MessageSquareIcon },
       { label: "Received", path: "/sms/received", icon: MessageSquareReplyIcon },
       { label: "Suppressions", path: "/sms/suppressions", icon: MessageSquareXIcon },
+    ],
+  },
+  {
+    label: "Sign",
+    items: [
+      { label: "Requests", path: "/sign", icon: SignatureIcon },
+      { label: "Templates", path: "/sign/templates", icon: FilePenLineIcon },
+      { label: "Settings", path: "/sign/settings", icon: PenLineIcon },
     ],
   },
   {
@@ -221,6 +232,7 @@ export function segmentLabel(segment: string): string | undefined {
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
   sms: "SMS",
+  sign: "Sign",
   register: "Register",
   templates: "Templates",
   versions: "Versions",
