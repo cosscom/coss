@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { pool } from "@coss/db";
+import { memoryLogWriter } from "@coss/logs/testing";
 import { buildTestPdfBase64 } from "@coss/sign/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { apiRequest, createTestApp, errorOf } from "./helpers.ts";
@@ -101,5 +103,54 @@ describe("Sign templates", () => {
     // The request made from it stays.
     const read = await apiRequest(app, "GET", `/v1/sign/requests/${request.id}`, { key });
     expect(read.status).toBe(200);
+  });
+
+  test("a merge key named like an Object property isn't filled unless given; logs keep no builder links", async () => {
+    const tenant = await createTestTenant();
+    const writer = memoryLogWriter();
+    const { app } = createTestApp({ signUrl: "https://sign.test", logWriter: writer });
+    const key = tenant.sandboxKey;
+    const created = await apiRequest(app, "POST", "/v1/sign/templates", {
+      key,
+      body: {
+        name: "Prototype",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        roles: [{ key: "client", name: "Client" }],
+        fields: [
+          { role: "client", type: "signature", page: 1, x: 72, y: 600, width: 160, height: 30 },
+          {
+            role: "client",
+            type: "text",
+            page: 1,
+            x: 72,
+            y: 200,
+            width: 200,
+            height: 18,
+            merge_key: "constructor",
+          },
+        ],
+      },
+    });
+    const template = await created.json();
+    const made = await apiRequest(app, "POST", `/v1/sign/templates/${template.id}/requests`, {
+      key,
+      body: {
+        signers: [{ role: "client", name: "Ada", email: "ada@example.com" }],
+        merge_fields: {},
+      },
+    });
+    expect(made.status).toBe(201);
+    const request = await made.json();
+    const text = request.fields.find((field: { type: string }) => field.type === "text");
+    const { rows } = await pool.query("select value, prefilled from sign_field where id = $1", [
+      text.id,
+    ]);
+    expect(rows).toEqual([{ value: null, prefilled: false }]);
+
+    const session = await (
+      await apiRequest(app, "POST", `/v1/sign/templates/${template.id}/builder_sessions`, { key })
+    ).json();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(JSON.stringify(writer.entries)).not.toContain(session.token);
   });
 });

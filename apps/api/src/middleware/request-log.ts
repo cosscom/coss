@@ -49,11 +49,12 @@ const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/sms/received"];
 /**
  * Responses that are capabilities: preference links change a contact's consent and need
  * `contact:update`, and Sign's session links (the token is in the URL's fragment too) sign as a
- * signer, needing `sign:create`; reading the log (every member, every drain) needs neither.
+ * signer or edit a template; reading the log (every member, every drain) needs none of that.
  */
 const CAPABILITY_RESPONSES = [
   /^\/v1\/contacts\/[^/]+\/preference_links$/,
   /^\/v1\/sign\/requests\/[^/]+\/signers\/[^/]+\/sessions$/,
+  /^\/v1\/sign\/templates\/[^/]+\/builder_sessions$/,
 ];
 
 /**
