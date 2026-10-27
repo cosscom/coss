@@ -15,7 +15,7 @@
  * ```
  *
  * The page's origin must be in your Sign settings' `allowed_origins`. The iframe grows with its
- * content unless you give it a `height`. Events are only accepted from the iframe itself, from the
+ * content, up to the window's height, unless you give it a `height`. Events are only accepted from the iframe itself, from the
  * signing app's origin. Browser-only; never throws for what the page reports (it calls `onEvent`).
  */
 
@@ -47,7 +47,10 @@ export interface MountSigningOptions {
   container: HTMLElement;
   /** Called for each event of the signing page. */
   onEvent?: (event: SigningEvent) => void;
-  /** A fixed CSS height (e.g. `"80vh"`); default: the page's own height, updated as it changes. */
+  /**
+   * A fixed CSS height (e.g. `"80vh"`); default: the page's own height as it changes, up to the
+   * window's (longer documents scroll inside the frame, so its dialogs stay on screen).
+   */
   height?: string;
   /** The iframe's accessible title. Default "Sign documents". */
   title?: string;
@@ -82,6 +85,9 @@ export function mountSigning(options: MountSigningOptions): SigningEmbed {
   iframe.style.border = "0";
   iframe.style.display = "block";
   iframe.style.height = options.height ?? "640px";
+  // The page centers its dialogs in the frame: a frame taller than the window could put them off
+  // screen.
+  if (!options.height) iframe.style.maxHeight = "100vh";
   options.container.appendChild(iframe);
 
   const view = options.container.ownerDocument.defaultView;

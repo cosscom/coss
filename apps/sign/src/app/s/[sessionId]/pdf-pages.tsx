@@ -92,6 +92,7 @@ export function PdfPages({
           // biome-ignore lint/suspicious/noArrayIndexKey: pages are fixed and in order.
           key={index}
           number={index + 1}
+          onFailed={() => reportStatus.current?.("failed")}
           overlay={overlay}
           size={size}
         />
@@ -105,10 +106,13 @@ function Page({
   number,
   size,
   overlay,
+  onFailed,
 }: {
   document: PdfDocument | null;
   number: number;
   size: PageSize;
+  /** The page couldn't be drawn: its document isn't shown after all. */
+  onFailed: () => void;
   overlay: (page: number, scale: number) => ReactNode;
 }) {
   const wrapper = useRef<HTMLDivElement>(null);
@@ -142,6 +146,8 @@ function Page({
     return () => observer.disconnect();
   }, []);
 
+  const failed = useRef(onFailed);
+  failed.current = onFailed;
   useEffect(() => {
     if (!document || !visible || width === 0 || !canvas.current) return;
     let task: { cancel(): void; promise: Promise<void> } | null = null;
@@ -164,6 +170,7 @@ function Page({
       .catch((error: unknown) => {
         if ((error as { name?: string }).name !== "RenderingCancelledException") {
           console.error(`Could not draw page ${number}:`, error);
+          if (!canceled) failed.current();
         }
       });
     return () => {

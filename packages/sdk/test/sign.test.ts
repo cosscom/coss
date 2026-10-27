@@ -214,6 +214,8 @@ describe("mountSigning", () => {
     dom.post(signed, "https://sign.example", {});
     dom.post({ type: "signed" });
     expect(dom.iframe.style.height).toBe("901px");
+    // Never taller than the window: the page's dialogs are centered in the frame.
+    expect(dom.iframe.style.maxHeight).toBe("100vh");
     expect(events).toEqual([
       { type: "signed", request_id: "sreq_1", signer_id: "ssgn_1", request_status: "completed" },
     ]);
