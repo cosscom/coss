@@ -6,7 +6,7 @@
  * idempotency key, and its signer row moves by compare-and-set, so a rerun after a crash never
  * sends twice. System-level: scans every organization (`scope` narrows it in tests).
  */
-import { db, schema } from "@coss/db";
+import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { readSignedDocument } from "./complete.ts";
 import { invitationEmail, reminderEmail, type SignMailer, signedCopyEmail } from "./emails.ts";
@@ -246,6 +246,7 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
         idempotencyKey: `sign-invite:${item.signer.id}`,
       });
       await db.transaction(async (tx) => {
+        await lockRequest(tx, item.request);
         const interval = item.request.reminderIntervalDays;
         const [signer] = await tx
           .update(signSigner)
@@ -276,6 +277,23 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
     });
   }
   return due.length;
+}
+
+/**
+ * Locks the request row first, as signing actions do (request, then signer), so recording an
+ * email never deadlocks with a signer opening or signing at the same moment.
+ */
+async function lockRequest(
+  tx: Transaction,
+  request: { id: string; organizationId: string },
+): Promise<void> {
+  await tx
+    .select({ id: signRequest.id })
+    .from(signRequest)
+    .where(
+      and(eq(signRequest.id, request.id), eq(signRequest.organizationId, request.organizationId)),
+    )
+    .for("update");
 }
 
 /** Reminders: automatic ones when due (up to the limit), and asked-for ones. */
@@ -316,6 +334,7 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
         idempotencyKey: `sign-remind:${item.signer.id}:${count}`,
       });
       await db.transaction(async (tx) => {
+        await lockRequest(tx, item.request);
         const interval = item.request.reminderIntervalDays;
         const [signer] = await tx
           .update(signSigner)
