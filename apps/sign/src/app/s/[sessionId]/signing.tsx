@@ -771,10 +771,18 @@ function FieldBox({
       );
     case "text":
       if (field.prefilled) {
+        // Read-only, but all of it can be read before signing: a longer value scrolls in its box
+        // (it is signed whole), and the whole value is its accessible name.
         return (
-          <div className={`${box} truncate px-1`} style={{ ...style, fontSize }}>
-            {field.value}
-          </div>
+          <input
+            aria-label={`${field.label ?? "Text"}: ${field.value ?? ""}`}
+            className={`${box} cursor-text px-1 outline-none focus:ring-2 focus:ring-primary`}
+            readOnly
+            style={{ ...style, fontSize }}
+            title={typeof field.value === "string" ? field.value : undefined}
+            type="text"
+            value={typeof field.value === "string" ? field.value : ""}
+          />
         );
       }
       return (
