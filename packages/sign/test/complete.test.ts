@@ -23,6 +23,7 @@ import {
   readTimestampToken,
   runDueSignCompletions,
   type Sealer,
+  SIGNATURE_PLACEHOLDER_BYTES,
   type SignEnvironment,
   SignError,
   sealPdf,
@@ -331,6 +332,25 @@ describe("completion", () => {
     expect(value?.lookup(PDFName.of("Reason"), PDFHexString).decodeText()).toBe(reason);
     const seal = readPdfSeal(bytes);
     expect(await verifyCms(seal.cms, seal.signedBytes)).toBe(true);
+  });
+
+  test("a document holding a string like the seal's placeholder keeps it, and the seal verifies", async () => {
+    const document = await PDFDocument.create();
+    const page = document.addPage([200, 200]);
+    const decoy = "0".repeat(SIGNATURE_PLACEHOLDER_BYTES * 2);
+    page.node.set(PDFName.of("Decoy"), PDFHexString.of(decoy));
+    const bytes = await sealPdf(document, {
+      sealer,
+      name: "coss.com",
+      reason: "Test",
+      signedAt: new Date(),
+    });
+    const seal = readPdfSeal(bytes);
+    expect(await verifyCms(seal.cms, seal.signedBytes)).toBe(true);
+    const reloaded = await PDFDocument.load(bytes);
+    expect(reloaded.getPage(0).node.lookup(PDFName.of("Decoy"), PDFHexString).asString()).toBe(
+      decoy,
+    );
   });
 
   test("a failed seal is retried later, not at once", async () => {

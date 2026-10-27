@@ -5,6 +5,7 @@
  * but the placeholder is hashed, and the CMS goes into the placeholder, so a viewer can tell the
  * whole file is unchanged since.
  */
+import { randomBytes } from "node:crypto";
 import { PDFArray, type PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import { cadesSignature } from "./cms.ts";
 import { asn1js, sha256, toArrayBuffer } from "./crypto.ts";
@@ -13,7 +14,6 @@ import type { TimestampAuthority } from "./tsa.ts";
 
 /** Bytes reserved for the CMS: the chain, a timestamp token with its own chain, and room to spare. */
 export const SIGNATURE_PLACEHOLDER_BYTES = 32 * 1024;
-const BYTE_RANGE_PLACEHOLDER = "**********";
 
 export type SealOptions = {
   sealer: Sealer;
@@ -29,7 +29,9 @@ export type SealOptions = {
 /** Seals `document` (which this saves): returns the sealed file's bytes. */
 export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise<Uint8Array> {
   const { context } = document;
-  const placeholder = PDFName.of(BYTE_RANGE_PLACEHOLDER);
+  // A name of this seal's own, so finding it can't land on anything in the uploaded documents.
+  const rangeName = `ByteRange${randomBytes(8).toString("hex")}`;
+  const placeholder = PDFName.of(rangeName);
   const signature = context.obj({
     Type: "Sig",
     Filter: "Adobe.PPKLite",
@@ -73,11 +75,19 @@ export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise
 
   const bytes = await document.save({ useObjectStreams: false });
   const text = Buffer.from(bytes).toString("latin1");
-  const rangeText = `[ 0 /${BYTE_RANGE_PLACEHOLDER} /${BYTE_RANGE_PLACEHOLDER} /${BYTE_RANGE_PLACEHOLDER} ]`;
+  const rangeText = `[ 0 /${rangeName} /${rangeName} /${rangeName} ]`;
   const rangeAt = text.indexOf(rangeText);
+  // `/Contents` follows `/ByteRange` in the seal's own dictionary: searched only there, since an
+  // uploaded document may hold another zero-filled hex string of the same size.
+  const objectEnd = rangeAt < 0 ? -1 : text.indexOf("endobj", rangeAt);
   const contentsText = `<${"0".repeat(SIGNATURE_PLACEHOLDER_BYTES * 2)}>`;
-  const contentsAt = text.indexOf(contentsText);
-  if (rangeAt < 0 || contentsAt < 0 || text.indexOf(rangeText, rangeAt + 1) >= 0) {
+  const contentsAt = rangeAt < 0 ? -1 : text.indexOf(contentsText, rangeAt);
+  if (
+    rangeAt < 0 ||
+    contentsAt < 0 ||
+    contentsAt > objectEnd ||
+    text.indexOf(rangeText, rangeAt + 1) >= 0
+  ) {
     throw new Error("The signature placeholder wasn't found exactly once.");
   }
   const contentsEnd = contentsAt + contentsText.length;

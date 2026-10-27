@@ -8,7 +8,7 @@ export * from "./pdf.ts";
 export * from "./record.ts";
 export * from "./requests.ts";
 export { cadesSignature } from "./seal/cms.ts";
-export { readPdfSeal, sealPdf } from "./seal/pdf-signature.ts";
+export { readPdfSeal, SIGNATURE_PLACEHOLDER_BYTES, sealPdf } from "./seal/pdf-signature.ts";
 export {
   awsKmsSign,
   KmsSealer,
