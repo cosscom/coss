@@ -70,8 +70,9 @@ export function signMailer(opts: {
           "(NOTIFICATIONS_ENVIRONMENT_ID with SIGN_NOTIFICATIONS_FROM or NOTIFICATIONS_FROM) isn't set.",
       );
     }
+    // Never the requester's own words from coss.com's address.
     await send(
-      email,
+      { ...email, ...email.cossContent },
       opts.fallback.environment,
       named(`${email.requester} via coss.com`, opts.fallback.address),
     );

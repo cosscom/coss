@@ -1,5 +1,5 @@
 {
-  "id": "b5d8739d-2678-4398-bcf5-60c93d35fd70",
+  "id": "a25d7cb8-bb95-4929-834c-95f329e54a70",
   "prevId": "829d2a13-22a1-4c49-b581-496298141f0f",
   "version": "7",
   "dialect": "postgresql",
@@ -19654,6 +19654,19 @@
         },
         "copy_sent_at": {
           "name": "copy_sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email_failures": {
+          "name": "email_failures",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "email_retry_at": {
+          "name": "email_retry_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false

@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { and, eq } from "drizzle-orm";
 import {
   authenticateSignSession,
   consentToSign,
@@ -201,8 +203,10 @@ describe("invitations", () => {
     const opts = { limit: 50, scope: { organizationIds: [own.organization.id] } };
     await runDueSignNotifications(opts, deps(flaky));
     fail = false;
-    await runDueSignNotifications(opts, deps(flaky));
-    await runDueSignNotifications(opts, deps(flaky));
+    // After its backoff.
+    const later = { ...opts, now: new Date(Date.now() + 2 * 60_000) };
+    await runDueSignNotifications(later, deps(flaky));
+    await runDueSignNotifications(later, deps(flaky));
     expect(keys).toHaveLength(2);
     expect(keys[0]).toBe(keys[1]);
   });
@@ -323,5 +327,105 @@ describe("signed copies", () => {
         .toString(),
     ).toBe("%PDF-");
     expect((await getSignRequest({ ...env, requestId: request.id })).status).toBe("completed");
+  });
+});
+
+describe("delivery robustness", () => {
+  test("a signer whose email keeps failing waits, and the others still get theirs", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await create(env, {
+      title: "Line one\nline two",
+      signers: [emailSigner("Bad", "bad@example.com"), emailSigner("Good", "good@example.com")],
+    });
+    const sent: SignEmail[] = [];
+    const picky: SignMailer = {
+      async send(email) {
+        if (email.to === "bad@example.com") throw new Error("refused");
+        sent.push(email);
+      },
+    };
+    const opts = (now: Date) => ({
+      limit: 50,
+      now,
+      scope: { organizationIds: [own.organization.id] },
+    });
+    const start = new Date();
+    await runDueSignNotifications(opts(start), deps(picky));
+    expect(sent.map((email) => email.to)).toEqual(["good@example.com"]);
+    // Subjects are one line.
+    expect(sent[0]?.subject).toBe(`${own.organization.name} sent you "Line one line two" to sign`);
+    const [bad] = await db
+      .select()
+      .from(schema.signSigner)
+      .where(
+        and(
+          eq(schema.signSigner.requestId, request.id),
+          eq(schema.signSigner.email, "bad@example.com"),
+        ),
+      );
+    expect(bad?.emailFailures).toBe(1);
+    expect(bad?.emailRetryAt?.getTime()).toBeGreaterThan(start.getTime());
+    // Not retried before its time.
+    const calls: string[] = [];
+    const counting: SignMailer = {
+      async send(email) {
+        calls.push(email.to);
+      },
+    };
+    await runDueSignNotifications(opts(start), deps(counting));
+    expect(calls).toEqual([]);
+    await runDueSignNotifications(opts(new Date(start.getTime() + 2 * 60_000)), deps(counting));
+    expect(calls).toEqual(["bad@example.com"]);
+  });
+
+  test("coss.com's sender gets the copy without the requester's message", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    await updateSignSettings({ ...env, update: { email_from: "contracts@acme.test" } });
+    await create(env, {});
+    const mailer = recordingMailer();
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [own.organization.id] } },
+      deps(mailer),
+    );
+    expect(mailer.sent[0]?.text).toContain("Please sign by Friday.");
+    expect(mailer.sent[0]?.cossContent?.text).not.toContain("Please sign by Friday.");
+  });
+
+  test("recording the invitation never moves a signer back to notified", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await create(env, {});
+    // The signer opens a link before the invitation is recorded (e.g. a resend in between).
+    const viewing: SignMailer = {
+      async send() {
+        await db
+          .update(schema.signSigner)
+          .set({ status: "viewed" })
+          .where(eq(schema.signSigner.requestId, request.id));
+      },
+    };
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [own.organization.id] } },
+      deps(viewing),
+    );
+    const read = await getSignRequest({ ...env, requestId: request.id });
+    expect(read.signers[0]?.status).toBe("viewed");
   });
 });

@@ -227,6 +227,10 @@ export const signSigner = pgTable(
     nextReminderAt: timestamp("next_reminder_at", { withTimezone: true }),
     remindRequestedAt: timestamp("remind_requested_at", { withTimezone: true }),
     copySentAt: timestamp("copy_sent_at", { withTimezone: true }),
+    // A failed email to this signer: tried again after `email_retry_at` (backoff), so one signer
+    // whose emails keep failing never holds up anyone else's.
+    emailFailures: integer("email_failures").notNull().default(0),
+    emailRetryAt: timestamp("email_retry_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

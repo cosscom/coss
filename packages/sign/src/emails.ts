@@ -23,6 +23,11 @@ export type SignEmail = {
   /** Stable per message: retries never send twice. */
   idempotencyKey: string;
   attachment?: { filename: string; content: Uint8Array } | null;
+  /**
+   * What to send instead when it goes from coss.com's sender (no `from`, or `from` no longer
+   * verified): without the requester's own words.
+   */
+  cossContent?: { subject: string; text: string; html: string };
 };
 
 /**
@@ -32,6 +37,11 @@ export type SignEmail = {
  */
 export interface SignMailer {
   send(email: SignEmail): Promise<void>;
+}
+
+/** A title as one line (subjects can't hold line breaks). */
+function oneLine(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
 
 export function escapeHtml(value: string): string {
@@ -74,7 +84,7 @@ export function invitationEmail(input: {
   url: string;
   expiresAt: Date | null;
 }): Content {
-  const subject = `${input.requester} sent you "${input.title}" to sign`;
+  const subject = `${oneLine(input.requester)} sent you "${oneLine(input.title)}" to sign`;
   const expiry = input.expiresAt
     ? `Please sign before ${input.expiresAt.toUTCString().replace(/ GMT$/, " UTC")}.`
     : null;
@@ -112,7 +122,7 @@ export function reminderEmail(input: {
     paragraphs.push(`It expires on ${input.expiresAt.toUTCString().replace(/ GMT$/, " UTC")}.`);
   }
   return {
-    subject: `Reminder: "${input.title}" is waiting for your signature`,
+    subject: `Reminder: "${oneLine(input.title)}" is waiting for your signature`,
     text: [...paragraphs, "", `Review and sign: ${input.url}`, "", FOOTER].join("\n"),
     html: layout({
       heading: "A reminder to sign",
@@ -137,7 +147,7 @@ export function signedCopyEmail(input: {
   ];
   const footer = `${input.requester} used coss.com Sign. The PDF is sealed: any change to it shows in PDF viewers.`;
   return {
-    subject: `Signed: "${input.title}"`,
+    subject: `Signed: "${oneLine(input.title)}"`,
     text: [...paragraphs, "", `Download: ${input.url}`, "", footer].join("\n"),
     html: layout({
       heading: "Your signed copy",

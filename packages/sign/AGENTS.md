@@ -88,7 +88,10 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   attached up to 10 MB, always a link). Every email has a fresh 30-day session link
   (`mintSignSession`; never past `expires_at`) and a stable idempotency key
   (`sign-invite:`/`sign-remind:<n>`/`sign-copy:` + signer id), and the signer row moves by
-  compare-and-set after the send, so a crash in between replays the same email. Emails go
+  compare-and-set after the send, so a crash in between replays the same email (an invitation
+  only moves `pending` to `notified`, never back from `viewed`/`signed`). A failed email puts that
+  signer in backoff (`email_failures`, `email_retry_at`: 1, 2, 4… minutes, at most 6 hours), so it
+  never holds up anyone else's. Emails go
   through an injected `SignMailer` (never `@coss/email`): the worker's
   `apps/worker/src/sign-mailer.ts` sends from the settings' `email_from` in the request's
   environment (checked against the live provider's verified domains when set over the API), else
@@ -96,7 +99,8 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   (`SIGN_NOTIFICATIONS_FROM`, default `NOTIFICATIONS_FROM`'s address, in
   `NOTIFICATIONS_ENVIRONMENT_ID`) as "<requester> via coss.com"; sandbox environments always send
   in their own (fake) environment. coss.com's sender never carries the requester's `message`
-  (abuse). Bodies are discarded after sending (they hold links); tracking is off.
+  (abuse): `SignEmail.cossContent` is the copy without it, used whenever the mailer falls back.
+  Subjects are one line. Bodies are discarded after sending (they hold links); tracking is off.
 - **Settings** (`settings.ts`): `allowed_origins` (≤ 10, `checkedSignOrigin`: https, plus
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —

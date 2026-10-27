@@ -100,7 +100,11 @@ async function expireDue(now: Date, limit: number, scope: Scope): Promise<number
 
 type Due = { request: RequestRow; signer: SignerRow; sandbox: boolean };
 
-async function dueSigners(condition: ReturnType<typeof and>, limit: number): Promise<Due[]> {
+async function dueSigners(
+  condition: ReturnType<typeof and>,
+  limit: number,
+  now: Date,
+): Promise<Due[]> {
   const rows = await db
     .select({ request: signRequest, signer: signSigner, mode: environment.mode })
     .from(signSigner)
@@ -118,7 +122,13 @@ async function dueSigners(condition: ReturnType<typeof and>, limit: number): Pro
         eq(environment.organizationId, signRequest.organizationId),
       ),
     )
-    .where(and(eq(signSigner.delivery, "email"), condition))
+    .where(
+      and(
+        eq(signSigner.delivery, "email"),
+        or(isNull(signSigner.emailRetryAt), lte(signSigner.emailRetryAt, now)),
+        condition,
+      ),
+    )
     .orderBy(asc(signSigner.createdAt))
     .limit(limit);
   return rows.map((row) => ({
@@ -168,6 +178,33 @@ const OPEN_REQUEST = (now: Date) =>
     or(isNull(signRequest.expiresAt), sql`${signRequest.expiresAt} > ${now}`),
   );
 
+const MAX_EMAIL_BACKOFF_MS = 6 * 60 * 60_000;
+
+/**
+ * Runs one signer's email; a failure is logged and the signer waits (1, 2, 4… minutes, at most six
+ * hours) before the next try, so the rest of the batch and the next passes go on.
+ */
+async function isolated(item: Due, now: Date, work: () => Promise<void>): Promise<void> {
+  try {
+    await work();
+  } catch (error) {
+    console.error(`[sign] emailing signer ${item.signer.id} failed:`, error);
+    const backoff = Math.min(60_000 * 2 ** item.signer.emailFailures, MAX_EMAIL_BACKOFF_MS);
+    await db
+      .update(signSigner)
+      .set({
+        emailFailures: sql`${signSigner.emailFailures} + 1`,
+        emailRetryAt: new Date(now.getTime() + backoff),
+      })
+      .where(
+        and(
+          eq(signSigner.id, item.signer.id),
+          eq(signSigner.organizationId, item.signer.organizationId),
+        ),
+      );
+  }
+}
+
 /** Invitations: email signers not yet notified, whose turn it is. */
 async function invite(now: Date, limit: number, scope: Scope, deps: SignNotificationDeps) {
   const due = await dueSigners(
@@ -179,49 +216,60 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
       scoped(scope),
     ),
     limit,
+    now,
   );
   for (const item of due) {
-    const { from, requester } = await sender(item.request);
-    const link = await emailLink(item, deps, now);
-    const content = invitationEmail({
-      requester,
-      title: item.request.title,
-      // The requester's own words only go out under their own address (or nowhere: a sandbox).
-      message: from || item.sandbox ? item.request.message : null,
-      url: link.url,
-      expiresAt: item.request.expiresAt,
-    });
-    await deps.mailer.send({
-      environment: environmentOf(item.request, item.sandbox),
-      from,
-      requester,
-      to: item.signer.email,
-      ...content,
-      idempotencyKey: `sign-invite:${item.signer.id}`,
-    });
-    await db.transaction(async (tx) => {
-      const interval = item.request.reminderIntervalDays;
-      const [signer] = await tx
-        .update(signSigner)
-        .set({
-          status: "notified",
-          notifiedAt: now,
-          nextReminderAt: interval ? new Date(now.getTime() + interval * DAY_MS) : null,
-        })
-        .where(
-          and(
-            eq(signSigner.id, item.signer.id),
-            eq(signSigner.organizationId, item.signer.organizationId),
-            isNull(signSigner.notifiedAt),
-          ),
-        )
-        .returning();
-      if (!signer) return;
-      await recordSignEvent(
-        tx,
-        { request: item.request, signer, sandbox: item.sandbox },
-        { type: "notified", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
-      );
+    await isolated(item, now, async () => {
+      const { from, requester } = await sender(item.request);
+      const link = await emailLink(item, deps, now);
+      const invitation = (message: string | null) =>
+        invitationEmail({
+          requester,
+          title: item.request.title,
+          message,
+          url: link.url,
+          expiresAt: item.request.expiresAt,
+        });
+      // The requester's own words only go out under their own address (or nowhere: a sandbox);
+      // coss.com's sender, which the mailer falls back to, always gets the copy without them.
+      const content = invitation(from || item.sandbox ? item.request.message : null);
+      await deps.mailer.send({
+        environment: environmentOf(item.request, item.sandbox),
+        from,
+        requester,
+        to: item.signer.email,
+        ...content,
+        cossContent: invitation(null),
+        idempotencyKey: `sign-invite:${item.signer.id}`,
+      });
+      await db.transaction(async (tx) => {
+        const interval = item.request.reminderIntervalDays;
+        const [signer] = await tx
+          .update(signSigner)
+          .set({
+            // Only `pending` becomes `notified`: a signer may have opened (or signed) through the
+            // link before this commits.
+            status: sql`case when ${signSigner.status} = 'pending' then 'notified'::sign_signer_status else ${signSigner.status} end`,
+            notifiedAt: now,
+            nextReminderAt: interval ? new Date(now.getTime() + interval * DAY_MS) : null,
+            emailFailures: 0,
+            emailRetryAt: null,
+          })
+          .where(
+            and(
+              eq(signSigner.id, item.signer.id),
+              eq(signSigner.organizationId, item.signer.organizationId),
+              isNull(signSigner.notifiedAt),
+            ),
+          )
+          .returning();
+        if (!signer) return;
+        await recordSignEvent(
+          tx,
+          { request: item.request, signer, sandbox: item.sandbox },
+          { type: "notified", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
+        );
+      });
     });
   }
   return due.length;
@@ -244,51 +292,56 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
       scoped(scope),
     ),
     limit,
+    now,
   );
   for (const item of due) {
-    const { from, requester } = await sender(item.request);
-    const link = await emailLink(item, deps, now);
-    const count = item.signer.reminderCount + 1;
-    await deps.mailer.send({
-      environment: environmentOf(item.request, item.sandbox),
-      from,
-      requester,
-      to: item.signer.email,
-      ...reminderEmail({
+    await isolated(item, now, async () => {
+      const { from, requester } = await sender(item.request);
+      const link = await emailLink(item, deps, now);
+      const count = item.signer.reminderCount + 1;
+      await deps.mailer.send({
+        environment: environmentOf(item.request, item.sandbox),
+        from,
         requester,
-        title: item.request.title,
-        url: link.url,
-        expiresAt: item.request.expiresAt,
-      }),
-      idempotencyKey: `sign-remind:${item.signer.id}:${count}`,
-    });
-    await db.transaction(async (tx) => {
-      const interval = item.request.reminderIntervalDays;
-      const [signer] = await tx
-        .update(signSigner)
-        .set({
-          reminderCount: count,
-          lastRemindedAt: now,
-          remindRequestedAt: null,
-          nextReminderAt:
-            interval && count < MAX_SIGN_REMINDERS
-              ? new Date(now.getTime() + interval * DAY_MS)
-              : null,
-        })
-        .where(
-          and(
-            eq(signSigner.id, item.signer.id),
-            eq(signSigner.organizationId, item.signer.organizationId),
-            eq(signSigner.reminderCount, item.signer.reminderCount),
-          ),
-        )
-        .returning();
-      if (!signer) return;
-      await recordSignEvent(
-        tx,
-        { request: item.request, signer, sandbox: item.sandbox },
-        { type: "reminded", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
-      );
+        to: item.signer.email,
+        ...reminderEmail({
+          requester,
+          title: item.request.title,
+          url: link.url,
+          expiresAt: item.request.expiresAt,
+        }),
+        idempotencyKey: `sign-remind:${item.signer.id}:${count}`,
+      });
+      await db.transaction(async (tx) => {
+        const interval = item.request.reminderIntervalDays;
+        const [signer] = await tx
+          .update(signSigner)
+          .set({
+            reminderCount: count,
+            lastRemindedAt: now,
+            remindRequestedAt: null,
+            emailFailures: 0,
+            emailRetryAt: null,
+            nextReminderAt:
+              interval && count < MAX_SIGN_REMINDERS
+                ? new Date(now.getTime() + interval * DAY_MS)
+                : null,
+          })
+          .where(
+            and(
+              eq(signSigner.id, item.signer.id),
+              eq(signSigner.organizationId, item.signer.organizationId),
+              eq(signSigner.reminderCount, item.signer.reminderCount),
+            ),
+          )
+          .returning();
+        if (!signer) return;
+        await recordSignEvent(
+          tx,
+          { request: item.request, signer, sandbox: item.sandbox },
+          { type: "reminded", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
+        );
+      });
     });
   }
   return due.length;
@@ -305,47 +358,50 @@ async function sendCopies(now: Date, limit: number, scope: Scope, deps: SignNoti
       scoped(scope),
     ),
     limit,
+    now,
   );
   for (const item of due) {
-    const { from, requester } = await sender(item.request);
-    const document = await readSignedDocument({
-      organizationId: item.request.organizationId,
-      environmentId: item.request.environmentId,
-      requestId: item.request.id,
-      store: deps.store,
+    await isolated(item, now, async () => {
+      const { from, requester } = await sender(item.request);
+      const document = await readSignedDocument({
+        organizationId: item.request.organizationId,
+        environmentId: item.request.environmentId,
+        requestId: item.request.id,
+        store: deps.store,
+      });
+      const attached = document.content.length <= MAX_ATTACHED_COPY_BYTES;
+      // The link opens the signing page's "signed" screen, which downloads the copy.
+      const days = new Date(now.getTime() + EMAIL_LINK_DAYS * DAY_MS);
+      const link = await mintSignSession({
+        organizationId: item.request.organizationId,
+        environmentId: item.request.environmentId,
+        requestId: item.request.id,
+        signerId: item.signer.id,
+        signUrl: deps.signUrl,
+        expiresAt: days,
+        apiKeyId: null,
+        now,
+      });
+      await deps.mailer.send({
+        environment: environmentOf(item.request, item.sandbox),
+        from,
+        requester,
+        to: item.signer.email,
+        ...signedCopyEmail({ requester, title: item.request.title, url: link.url, attached }),
+        idempotencyKey: `sign-copy:${item.signer.id}`,
+        attachment: attached ? { filename: document.filename, content: document.content } : null,
+      });
+      await db
+        .update(signSigner)
+        .set({ copySentAt: now, emailFailures: 0, emailRetryAt: null })
+        .where(
+          and(
+            eq(signSigner.id, item.signer.id),
+            eq(signSigner.organizationId, item.signer.organizationId),
+            isNull(signSigner.copySentAt),
+          ),
+        );
     });
-    const attached = document.content.length <= MAX_ATTACHED_COPY_BYTES;
-    // The link opens the signing page's "signed" screen, which downloads the copy.
-    const days = new Date(now.getTime() + EMAIL_LINK_DAYS * DAY_MS);
-    const link = await mintSignSession({
-      organizationId: item.request.organizationId,
-      environmentId: item.request.environmentId,
-      requestId: item.request.id,
-      signerId: item.signer.id,
-      signUrl: deps.signUrl,
-      expiresAt: days,
-      apiKeyId: null,
-      now,
-    });
-    await deps.mailer.send({
-      environment: environmentOf(item.request, item.sandbox),
-      from,
-      requester,
-      to: item.signer.email,
-      ...signedCopyEmail({ requester, title: item.request.title, url: link.url, attached }),
-      idempotencyKey: `sign-copy:${item.signer.id}`,
-      attachment: attached ? { filename: document.filename, content: document.content } : null,
-    });
-    await db
-      .update(signSigner)
-      .set({ copySentAt: now })
-      .where(
-        and(
-          eq(signSigner.id, item.signer.id),
-          eq(signSigner.organizationId, item.signer.organizationId),
-          isNull(signSigner.copySentAt),
-        ),
-      );
   }
   return due.length;
 }
