@@ -335,19 +335,22 @@ async function transition(
     set: (now: Date) => Partial<SignRequestRow>;
     event: "sent" | "canceled";
     refused: (status: SignRequestStatus) => SignError;
+    /** Throws when the locked row can't make this change after all. */
+    check?: (row: { expiresAt: Date | null }) => void;
   },
   now: Date,
 ): Promise<SignRequestObjectOutput> {
   if (!isId(ID_PREFIXES.signRequest, input.requestId)) throw notFound();
   await db.transaction(async (tx) => {
     const [row] = await tx
-      .select({ id: signRequest.id, status: signRequest.status })
+      .select({ id: signRequest.id, status: signRequest.status, expiresAt: signRequest.expiresAt })
       .from(signRequest)
       .where(requestScope(input))
       .for("update");
     if (!row) throw notFound();
     if (row.status === change.done) return;
     if (!change.from.includes(row.status)) throw change.refused(row.status);
+    change.check?.(row);
     await tx.update(signRequest).set(change.set(now)).where(requestScope(input));
     await appendSignEvent(tx, {
       organizationId: input.organizationId,
@@ -373,6 +376,16 @@ export async function sendSignRequest(
       event: "sent",
       refused: (status) =>
         new SignError("request_not_draft", `Only drafts can be sent; this request is ${status}.`),
+      // Sent past its expiry, it would be expired on arrival.
+      check: (row) => {
+        if (row.expiresAt && row.expiresAt <= now) {
+          throw new SignError(
+            "invalid_expiry",
+            "This draft's expires_at has passed: create the request again with a later one.",
+            { param: "expires_at" },
+          );
+        }
+      },
     },
     now,
   );

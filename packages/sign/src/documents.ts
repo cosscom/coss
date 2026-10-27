@@ -122,7 +122,8 @@ export async function uploadSignDocument(
     if (!row) throw new Error("sign_document insert returned nothing");
     return toSignDocumentObject(row, input.environment.mode === "sandbox");
   } catch (error) {
-    await store.delete([prepared.storeKey]).catch(() => {});
+    // The row may exist after all (a commit whose answer was lost): then its bytes stay.
+    await discardUnstoredDocuments(store, [prepared]);
     throw error;
   }
 }

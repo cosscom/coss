@@ -298,6 +298,24 @@ describe("signature requests", () => {
     expect(verifySignEventChain(tampered)).toBe(1);
   });
 
+  test("a draft past its expires_at can't be sent", async () => {
+    const { request: draft } = await service.create({
+      environment: sandbox,
+      apiKeyId: null,
+      actor,
+      params: request({
+        documents: [{ filename: "a.pdf", content: await buildTestPdfBase64() }],
+        send: false,
+        expires_at: new Date(Date.now() + 60_000).toISOString(),
+      }),
+    });
+    await expectSignError(
+      sendSignRequest({ ...sandbox, requestId: draft.id, actor }, new Date(Date.now() + 120_000)),
+      "invalid_expiry",
+    );
+    expect((await getSignRequest({ ...sandbox, requestId: draft.id })).status).toBe("draft");
+  });
+
   test("drafts are sent later, and both can be canceled once", async () => {
     const { request: draft } = await service.create({
       environment: sandbox,
