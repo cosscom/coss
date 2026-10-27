@@ -25,7 +25,11 @@ export function signMailer(opts: {
   /** coss.com's sender; `null`: live emails without `email_from` wait until it is configured. */
   fallback: { environment: SendEnvironment; address: string } | null;
 }): SignMailer {
-  async function send(email: SignEmail, environment: SendEnvironment, from: string) {
+  async function send(
+    email: SignEmail,
+    environment: SendEnvironment,
+    from: string,
+  ): Promise<{ replayed: boolean }> {
     const params = SendEmailRequest.parse({
       from,
       to: [email.to],
@@ -48,7 +52,7 @@ export function signMailer(opts: {
         : {}),
     });
     try {
-      await opts.service.send({
+      const { replayed } = await opts.service.send({
         environment,
         apiKeyId: null,
         params,
@@ -56,14 +60,17 @@ export function signMailer(opts: {
         idempotencyRetentionMs: Number.POSITIVE_INFINITY,
         discardBody: true,
       });
+      return { replayed };
     } catch (error) {
-      // Already sent (the same key with a fresh link in it).
-      if (error instanceof EmailError && error.code === "idempotency_key_reused") return;
+      // Already sent (the same key, with another link in it).
+      if (error instanceof EmailError && error.code === "idempotency_key_reused") {
+        return { replayed: true };
+      }
       throw error;
     }
   }
 
-  async function viaCoss(email: SignEmail): Promise<void> {
+  async function viaCoss(email: SignEmail): Promise<{ replayed: boolean }> {
     if (!opts.fallback) {
       throw new Error(
         "Sign can't email live signers without the environment's email_from: coss.com's sender " +
@@ -71,7 +78,7 @@ export function signMailer(opts: {
       );
     }
     // Never the requester's own words from coss.com's address.
-    await send(
+    return send(
       { ...email, ...email.cossContent },
       opts.fallback.environment,
       named(`${email.requester} via coss.com`, opts.fallback.address),
@@ -83,12 +90,11 @@ export function signMailer(opts: {
       if (email.environment.mode === "sandbox") {
         const address = email.from ?? opts.fallback?.address ?? SANDBOX_FALLBACK_ADDRESS;
         const name = email.from ? email.requester : `${email.requester} via coss.com`;
-        await send(email, email.environment, named(name, address));
-        return;
+        return send(email, email.environment, named(name, address));
       }
       if (!email.from) return viaCoss(email);
       try {
-        await send(email, email.environment, named(email.requester, email.from));
+        return await send(email, email.environment, named(email.requester, email.from));
       } catch (error) {
         // The address stopped being verified: the signer still gets the email, from coss.com.
         if (error instanceof EmailError && error.code === "domain_not_verified") {

@@ -49,6 +49,7 @@ function recordingMailer(): SignMailer & { sent: SignEmail[] } {
     sent,
     async send(email) {
       sent.push(email);
+      return { replayed: false };
     },
   };
 }
@@ -198,6 +199,7 @@ describe("invitations", () => {
       async send(email) {
         keys.push(email.idempotencyKey);
         if (fail) throw new Error("SES is down");
+        return { replayed: false };
       },
     };
     const opts = { limit: 50, scope: { organizationIds: [own.organization.id] } };
@@ -249,6 +251,33 @@ describe("invitations", () => {
       deps(quiet),
     );
     expect(quiet.sent).toEqual([]);
+  });
+
+  test("a replayed invitation records no session: the signer has the earlier email's link", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await create(env, {});
+    const replaying: SignMailer = { send: async () => ({ replayed: true }) };
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [own.organization.id] } },
+      deps(replaying),
+    );
+    const events = await db
+      .select()
+      .from(schema.signEvent)
+      .where(eq(schema.signEvent.requestId, request.id));
+    const notified = events.find((event) => event.type === "notified");
+    expect(notified?.details).toEqual({});
+    const sessions = await db
+      .select()
+      .from(schema.signSession)
+      .where(eq(schema.signSession.requestId, request.id));
+    expect(sessions).toEqual([]);
   });
 
   test("a signer who opened the invitation before it was recorded gets the bookkeeping only", async () => {
@@ -418,6 +447,7 @@ describe("delivery robustness", () => {
       async send(email) {
         if (email.to === "bad@example.com") throw new Error("refused");
         sent.push(email);
+        return { replayed: false };
       },
     };
     const opts = (now: Date) => ({
@@ -446,6 +476,7 @@ describe("delivery robustness", () => {
     const counting: SignMailer = {
       async send(email) {
         calls.push(email.to);
+        return { replayed: false };
       },
     };
     await runDueSignNotifications(opts(start), deps(counting));
@@ -489,6 +520,7 @@ describe("delivery robustness", () => {
           .update(schema.signSigner)
           .set({ status: "viewed" })
           .where(eq(schema.signSigner.requestId, request.id));
+        return { replayed: false };
       },
     };
     await runDueSignNotifications(

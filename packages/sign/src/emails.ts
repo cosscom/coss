@@ -36,10 +36,13 @@ export type SignEmail = {
  * "<requester> via coss.com". Throws when it can't send yet (retried later).
  */
 export interface SignMailer {
-  send(email: SignEmail): Promise<void>;
+  /**
+   * Sends the email, or not when its idempotency key already sent one: `replayed` then, and the
+   * signer has that earlier email (with its own link), not this one.
+   */
+  send(email: SignEmail): Promise<{ replayed: boolean }>;
 }
 
-/** A title as one line (subjects can't hold line breaks). */
 /**
  * One line of plain text, as subjects and sender names must be: the email product refuses
  * control and invisible formatting characters (a zero-width joiner in an emoji sequence, say),

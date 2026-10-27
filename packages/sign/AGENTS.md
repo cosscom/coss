@@ -88,7 +88,7 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   attached up to 10 MB, always a link). Every email has a fresh 30-day session link
   (`mintSignSession`; never past `expires_at`) and a stable idempotency key
   (`sign-invite:`/`sign-remind:<n>`/`sign-copy:` + signer id), and the signer row moves by
-  compare-and-set after the send (request row locked first, as signing does), so a crash in between replays the same email (an invitation
+  compare-and-set after the send (request row locked first, as signing does), so a crash in between replays the same email (the replay's own, never-emailed session is deleted, and its event names no session) (an invitation
   only moves `pending` to `notified`, never back from `viewed`/`signed`). A failed email puts that
   signer in backoff (`email_failures`, `email_retry_at`: 1, 2, 4… minutes, at most 6 hours), so it
   never holds up anyone else's. A suspended organization's signers get nothing until it is

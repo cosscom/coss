@@ -24,7 +24,7 @@ import { mintSignSession } from "./sessions.ts";
 import { getSignSettings, requesterName } from "./settings.ts";
 import type { DocumentStore } from "./store.ts";
 
-const { environment, signRequest, signSigner } = schema;
+const { environment, signRequest, signSession, signSigner } = schema;
 
 type RequestRow = typeof signRequest.$inferSelect;
 type SignerRow = typeof signSigner.$inferSelect;
@@ -277,7 +277,11 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
 }
 
 /** Emails the invitation; returns the session its link opens. */
-async function sendInvitation(item: Due, deps: SignNotificationDeps, now: Date): Promise<string> {
+async function sendInvitation(
+  item: Due,
+  deps: SignNotificationDeps,
+  now: Date,
+): Promise<string | null> {
   const { from, requester } = await sender(item.request);
   const link = await emailLink(item, deps, now);
   const invitation = (message: string | null) =>
@@ -291,7 +295,7 @@ async function sendInvitation(item: Due, deps: SignNotificationDeps, now: Date):
   // The requester's own words only go out under their own address (or nowhere: a sandbox);
   // coss.com's sender, which the mailer falls back to, always gets the copy without them.
   const content = invitation(from || item.sandbox ? item.request.message : null);
-  await deps.mailer.send({
+  const sent = await deps.mailer.send({
     environment: environmentOf(item.request, item.sandbox),
     from,
     requester,
@@ -300,7 +304,21 @@ async function sendInvitation(item: Due, deps: SignNotificationDeps, now: Date):
     cossContent: invitation(null),
     idempotencyKey: `sign-invite:${item.signer.id}`,
   });
-  return link.id;
+  return emailedSession(link, sent);
+}
+
+/**
+ * The session whose link the signer got: this one, unless the send was a replay (an earlier
+ * attempt sent it, with a link of its own, before the worker stopped). Then the new session was
+ * never emailed: it is deleted, and the audit trail names no session rather than the wrong one.
+ */
+async function emailedSession(
+  link: { id: string },
+  sent: { replayed: boolean },
+): Promise<string | null> {
+  if (!sent.replayed) return link.id;
+  await db.delete(signSession).where(eq(signSession.id, link.id));
+  return null;
 }
 
 /**
@@ -344,7 +362,7 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
       const { from, requester } = await sender(item.request);
       const link = await emailLink(item, deps, now);
       const count = item.signer.reminderCount + 1;
-      await deps.mailer.send({
+      const sent = await deps.mailer.send({
         environment: environmentOf(item.request, item.sandbox),
         from,
         requester,
@@ -357,6 +375,7 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
         }),
         idempotencyKey: `sign-remind:${item.signer.id}:${count}`,
       });
+      const sessionId = await emailedSession(link, sent);
       await db.transaction(async (tx) => {
         await lockRequest(tx, item.request);
         const interval = item.request.reminderIntervalDays;
@@ -385,7 +404,12 @@ async function remind(now: Date, limit: number, scope: Scope, deps: SignNotifica
         await recordSignEvent(
           tx,
           { request: item.request, signer, sandbox: item.sandbox },
-          { type: "reminded", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
+          {
+            type: "reminded",
+            actor: SYSTEM,
+            details: sessionId ? { session_id: sessionId } : {},
+            occurredAt: now,
+          },
         );
       });
     });
@@ -428,7 +452,7 @@ async function sendCopies(now: Date, limit: number, scope: Scope, deps: SignNoti
         apiKeyId: null,
         now,
       });
-      await deps.mailer.send({
+      const sent = await deps.mailer.send({
         environment: environmentOf(item.request, item.sandbox),
         from,
         requester,
@@ -437,6 +461,7 @@ async function sendCopies(now: Date, limit: number, scope: Scope, deps: SignNoti
         idempotencyKey: `sign-copy:${item.signer.id}`,
         attachment: attached ? { filename: document.filename, content: document.content } : null,
       });
+      await emailedSession(link, sent);
       await db
         .update(signSigner)
         .set({ copySentAt: now, emailFailures: 0, emailRetryAt: null })
