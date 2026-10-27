@@ -30,8 +30,9 @@ templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   `signature` field; signer emails are unique per request (case-insensitive). `delivery: email` →
   `authentication: email_link`, `embedded` → `customer_asserted`. `Idempotency-Key` through
   `withIdempotencyKey`; a replay (or any failure before commit) deletes the bytes of the inline
-  documents it stored. Send (draft → sent) and cancel (draft/sent → canceled) return the request
-  as is when it is already there.
+  documents it stored (only those without a row: a commit whose answer was lost keeps them). Send
+  (draft → sent) and cancel (draft/sent → canceled) return the request as is when it is already
+  there; a draft past its `expires_at` can't be sent (`invalid_expiry`).
 - **Audit trail** (`events.ts`): `appendSignEvent(tx, …)` locks the request row, numbers events
   gaplessly and hashes each (`signEventHash`: SHA-256 of the canonical JSON of the event and the
   previous hash). Never update or delete `sign_event` rows; `verifySignEventChain` must stay
