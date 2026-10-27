@@ -52,6 +52,12 @@ export const env = createEnv({
         : emailLinkEnvShape.EMAIL_LINK_KEYS,
     // Where Hooks portal session links point.
     ...hookEnvShape,
+    // Where Sign's signing session links point (apps/sign, on a registrable domain of its own).
+    // Unset in production until it is deployed: creating a session fails until then.
+    SIGN_PUBLIC_URL:
+      process.env.NODE_ENV === "production"
+        ? z.url().optional()
+        : z.url().default("http://localhost:3004"),
     ...rateLimitEnvShape,
     // Keys what risk assessments remember (velocity, duplicates, fraud reports).
     RISK_HASH_KEY:

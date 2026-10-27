@@ -84,6 +84,7 @@ const app = createApp({
   plans,
   publicUrl: env.API_PUBLIC_URL,
   portalUrl: env.PORTAL_PUBLIC_URL ?? null,
+  signUrl: env.SIGN_PUBLIC_URL ?? null,
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,
 

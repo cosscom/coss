@@ -548,6 +548,24 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // Sign's signing page JSON routes (apps/sign): per session (checked before its token) and per
+  // client IP. A signer loads a few documents and signs once; nothing needs more.
+  "sign.session": {
+    scope: "key",
+    limit: 10,
+    periodMs: SECOND,
+    burst: 60,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "sign.ip": {
+    scope: "ip",
+    limit: 30,
+    periodMs: SECOND,
+    burst: 120,
+    overridable: false,
+    failureMode: "deny",
+  },
 } as const satisfies Record<string, BucketDefinition>;
 
 export type BucketName = keyof typeof BUCKETS;

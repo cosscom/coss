@@ -3,6 +3,7 @@
  * API, its OpenAPI document and the contract tests. Must not import the database (or
  * `@coss/email`): `@coss/sign/schemas` is safe to load anywhere.
  */
+import { LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 
 export const SIGN_REQUEST_STATUSES = [
@@ -548,8 +549,17 @@ export const SignEventObject = z
       document_sha256: z.record(z.string(), z.string()).optional().meta({
         description: "Each document's SHA-256 at that moment, by document id.",
       }),
-      disclosure_sha256: z.string().optional(),
+      disclosure_sha256: z.string().optional().meta({
+        description: "SHA-256 of the consent text the signer accepted.",
+      }),
       field_ids: z.array(z.string()).optional(),
+      signature_sha256: z.string().optional().meta({
+        description: "SHA-256 of the signature image the signer adopted.",
+      }),
+      initials_sha256: z.string().optional(),
+      session_id: z.string().optional().meta({
+        description: "The signing session the signer used.",
+      }),
     }),
     occurred_at: z.iso.datetime(),
     previous_hash: z.string().nullable(),
@@ -583,3 +593,224 @@ export type SignEventObjectOutput = z.output<typeof SignEventObject>;
 export const SignEventList = z
   .object({ object: z.literal("list"), data: z.array(SignEventObject), has_more: z.boolean() })
   .meta({ id: "SignEventList", examples: [{ object: "list", data: [], has_more: false }] });
+
+// Signing sessions.
+
+export const DEFAULT_SIGN_SESSION_EXPIRES_IN = 60 * 60;
+export const MAX_SIGN_SESSION_EXPIRES_IN = 24 * 60 * 60;
+export const MAX_SIGN_ORIGINS = 10;
+export const SIGN_THEMES = ["system", "light", "dark"] as const;
+export type SignTheme = (typeof SIGN_THEMES)[number];
+
+const SESSION_ID_EXAMPLE = "sgs_01k7c8m4q2f3e9v6t5r1n0p8yz";
+
+export const CreateSignSessionRequest = z
+  .strictObject({
+    expires_in: z
+      .number()
+      .int()
+      .min(60)
+      .max(MAX_SIGN_SESSION_EXPIRES_IN)
+      .optional()
+      .meta({
+        description: `Seconds until the link expires: default ${DEFAULT_SIGN_SESSION_EXPIRES_IN}, at most ${MAX_SIGN_SESSION_EXPIRES_IN}. Mint one when your user opens the page that shows it.`,
+      }),
+  })
+  .meta({ id: "CreateSignSessionRequest", examples: [{ expires_in: 3600 }] });
+export type CreateSignSessionRequestOutput = z.output<typeof CreateSignSessionRequest>;
+
+export const SignSessionObject = z
+  .object({
+    object: z.literal("sign_session"),
+    id: z.string().meta({ examples: [SESSION_ID_EXAMPLE] }),
+    request_id: z.string(),
+    signer_id: z.string(),
+    url: z.string().meta({
+      description:
+        "The signing page: embed it in an iframe (from an allowed origin, with `coss/sign`'s `mountSigning`) or redirect to it. The token is in the URL fragment, so it never reaches a server log: show it only to that signer.",
+    }),
+    token: z.string().meta({ description: "The secret part of `url`, shown only here." }),
+    expires_at: z.iso.datetime(),
+  })
+  .meta({
+    id: "SignSession",
+    examples: [
+      {
+        object: "sign_session",
+        id: SESSION_ID_EXAMPLE,
+        request_id: REQUEST_ID_EXAMPLE,
+        signer_id: SIGNER_ID_EXAMPLE,
+        url: `https://sign.example/s/${SESSION_ID_EXAMPLE}#cosss_…`,
+        token: "cosss_…",
+        expires_at: CREATED_AT_EXAMPLE,
+      },
+    ],
+  });
+export type SignSessionObjectOutput = z.output<typeof SignSessionObject>;
+
+// Settings.
+
+/**
+ * What signers agree to before they see a document: the consumer disclosure ESIGN asks for
+ * (electronic records, a paper copy, withdrawing consent, what they need to open the records).
+ * `{name}` is the requester's display name. An environment may replace it with its own text.
+ */
+export const DEFAULT_SIGN_DISCLOSURE = `{name} asks you to review and sign documents electronically.
+
+Before you continue, please read the following:
+
+1. Electronic records and signatures. By agreeing, you consent to receive the documents, notices and disclosures of this transaction electronically, and to sign them with an electronic signature, which has the same legal effect as your handwritten signature.
+
+2. Paper copies. You may ask {name} for a paper copy of any document. After everyone has signed, you can download a copy of the signed documents.
+
+3. Withdrawing consent. You may withdraw this consent at any time before you sign by declining to sign. Withdrawing doesn't affect anything you signed before.
+
+4. What you need. A device with a current web browser and an internet connection, and a way to save or print PDF files.
+
+5. Scope. This consent applies to this signature request only.`;
+
+const Origins = z.array(z.string().max(255)).max(MAX_SIGN_ORIGINS);
+const DisplayName = z.string().max(64);
+const AccentColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, "A color like #2563eb.");
+const Disclosure = z.string().min(1).max(10_000);
+
+export const SignSettingsObject = z
+  .object({
+    object: z.literal("sign_settings"),
+    allowed_origins: z.array(z.string()).meta({
+      description:
+        "Origins that may embed the signing page in an iframe, like `https://app.example.com` (sandbox environments also `http://localhost:<port>`). Empty: it can only be opened on its own.",
+    }),
+    display_name: z.string().nullable().meta({
+      description: "The requester's name signers see. `null`: the organization's name.",
+    }),
+    accent_color: z.string().nullable(),
+    theme: z.enum(SIGN_THEMES),
+    disclosure: z.string().nullable().meta({
+      description:
+        "Your own consent text signers accept before they see a document. `null`: coss.com's default, which covers ESIGN's consumer disclosure. Have your counsel review a replacement.",
+    }),
+  })
+  .meta({
+    id: "SignSettings",
+    examples: [
+      {
+        object: "sign_settings",
+        allowed_origins: ["https://app.example.com"],
+        display_name: "Acme",
+        accent_color: "#2563eb",
+        theme: "system",
+        disclosure: null,
+      },
+    ],
+  });
+export type SignSettingsObjectOutput = z.output<typeof SignSettingsObject>;
+
+export const UpdateSignSettingsRequest = z
+  .strictObject({
+    allowed_origins: Origins.optional(),
+    display_name: DisplayName.nullable().optional(),
+    accent_color: AccentColor.nullable().optional(),
+    theme: z.enum(SIGN_THEMES).optional(),
+    disclosure: Disclosure.nullable().optional(),
+  })
+  .meta({
+    id: "UpdateSignSettingsRequest",
+    description: "Only the fields given change.",
+    examples: [{ allowed_origins: ["https://app.example.com"], display_name: "Acme" }],
+  });
+export type UpdateSignSettingsRequestOutput = z.output<typeof UpdateSignSettingsRequest>;
+
+// Webhook events.
+
+/** `sign_request.*` webhook events, one per audit trail event of these types. */
+export const SIGN_WEBHOOK_EVENT_TYPES = [
+  "sign_request.sent",
+  "sign_request.viewed",
+  "sign_request.signer_signed",
+  "sign_request.declined",
+  "sign_request.completed",
+  "sign_request.canceled",
+] as const;
+export type SignWebhookEventType = (typeof SIGN_WEBHOOK_EVENT_TYPES)[number];
+
+/** The webhook event of each audit trail event that has one. */
+export const SIGN_WEBHOOK_EVENT_OF: Partial<Record<SignEventType, SignWebhookEventType>> = {
+  sent: "sign_request.sent",
+  viewed: "sign_request.viewed",
+  signed: "sign_request.signer_signed",
+  declined: "sign_request.declined",
+  completed: "sign_request.completed",
+  canceled: "sign_request.canceled",
+};
+
+const ApiVersion = z.string().meta({
+  description: "The API version the payload is rendered in (your endpoint's version).",
+  examples: [LATEST_API_VERSION],
+});
+
+export const SignRequestWebhookEvent = z
+  .object({
+    id: z
+      .string()
+      .meta({ description: "The event id: the same as the audit trail's `SignEvent.id`." }),
+    object: z.literal("event"),
+    type: z.enum(SIGN_WEBHOOK_EVENT_TYPES),
+    api_version: ApiVersion,
+    created_at: z.iso.datetime(),
+    data: z.object({
+      sign_request_id: z.string(),
+      status: z
+        .enum(SIGN_REQUEST_STATUSES)
+        .meta({ description: "The request's status after the event." }),
+      title: z.string(),
+      metadata: z.record(z.string(), z.string()),
+      signer: z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          email: z.string(),
+          client_ref: z.string().nullable(),
+          status: z.enum(SIGN_SIGNER_STATUSES),
+        })
+        .nullable()
+        .meta({ description: "The signer who viewed, signed or declined; `null` otherwise." }),
+      reason: z
+        .string()
+        .nullable()
+        .meta({ description: "A decline's reason, if the signer gave one." }),
+      sandbox: z.boolean(),
+      occurred_at: z.iso.datetime(),
+    }),
+  })
+  .meta({
+    id: "SignRequestWebhookEvent",
+    examples: [
+      {
+        id: EVENT_ID_EXAMPLE,
+        object: "event",
+        type: "sign_request.signer_signed",
+        api_version: LATEST_API_VERSION,
+        created_at: "2026-10-26T15:10:00.100Z",
+        data: {
+          sign_request_id: REQUEST_ID_EXAMPLE,
+          status: "sent",
+          title: "Services agreement",
+          metadata: { deal: "D-1042" },
+          signer: {
+            id: SIGNER_ID_EXAMPLE,
+            name: "Ada Lovelace",
+            email: "ada@example.com",
+            client_ref: "user_42",
+            status: "signed",
+          },
+          reason: null,
+          sandbox: false,
+          occurred_at: "2026-10-26T15:10:00.000Z",
+        },
+      },
+    ],
+  });
+export type SignRequestWebhookEventOutput = z.output<typeof SignRequestWebhookEvent>;
+/** What the outbox stores: the latest shape, without `api_version` (added per endpoint). */
+export type StoredSignRequestWebhookEvent = Omit<SignRequestWebhookEventOutput, "api_version">;

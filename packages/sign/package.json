@@ -14,6 +14,9 @@
   },
   "dependencies": {
     "@coss/db": "workspace:*",
+    "@coss/logs": "workspace:*",
+    "@coss/versioning": "workspace:*",
+    "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "6.4.299",

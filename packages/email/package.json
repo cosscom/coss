@@ -34,6 +34,7 @@
     "@coss/retention": "workspace:*",
     "@coss/risk": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",

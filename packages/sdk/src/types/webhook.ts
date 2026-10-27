@@ -11,6 +11,7 @@ import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
 import type { RiskDecision, RiskEvent, RiskOutcome, RiskReason } from "./risk.ts";
+import type { SignRequestWebhookEvent } from "./sign.ts";
 import type {
   ReceivedSmsEventType,
   SmsEventData,
@@ -428,4 +429,5 @@ export type WebhookEvent =
   | ContactWebhookEvent
   | BroadcastWebhookEvent
   | SmsWebhookEvent
-  | ReceivedSmsWebhookEvent;
+  | ReceivedSmsWebhookEvent
+  | SignRequestWebhookEvent;

@@ -199,6 +199,11 @@ export const signSigner = pgTable(
     signedAt: timestamp("signed_at", { withTimezone: true }),
     declinedAt: timestamp("declined_at", { withTimezone: true }),
     declineReason: text("decline_reason"),
+    // The adopted signature and initials (PNG, in the document store) and their hex SHA-256.
+    signatureKey: text("signature_key"),
+    signatureSha256: text("signature_sha256"),
+    initialsKey: text("initials_key"),
+    initialsSha256: text("initials_sha256"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -286,6 +291,9 @@ export type SignEventDetails = {
   document_sha256?: Record<string, string>;
   disclosure_sha256?: string;
   field_ids?: string[];
+  signature_sha256?: string;
+  initials_sha256?: string;
+  session_id?: string;
 };
 
 /**
@@ -321,6 +329,70 @@ export const signEvent = pgTable(
       foreignColumns: [signRequest.id, signRequest.organizationId],
     }).onDelete("cascade"),
     unique("sign_event_request_sequence_unique").on(t.requestId, t.sequence),
+  ],
+);
+
+/**
+ * A signing session: a short-lived link for one signer of one request, minted by the customer's
+ * backend (embedded signing) or by coss.com (email links). Only the token's sha256 is stored.
+ */
+export const signSession = pgTable(
+  "sign_session",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.signSession)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    requestId: text("request_id").notNull(),
+    signerId: text("signer_id").notNull(),
+    tokenHash: text("token_hash").notNull().unique("sign_session_token_hash_unique"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    // Who minted it (no FK: Better Auth hard-deletes keys); `null` for coss.com's own links.
+    apiKeyId: text("api_key_id"),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "sign_session_signer_fk",
+      columns: [t.signerId, t.organizationId],
+      foreignColumns: [signSigner.id, signSigner.organizationId],
+    }).onDelete("cascade"),
+    index("sign_session_expires_at_idx").on(t.expiresAt),
+    index("sign_session_signer_idx").on(t.signerId),
+  ],
+);
+
+/** How an environment's signing page looks, what signers consent to and who may embed it. */
+export const signSettings = pgTable(
+  "sign_settings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.signSettings)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull().unique("sign_settings_environment_unique"),
+    // Origins allowed to frame the signing page (`frame-ancestors`); empty: it can't be embedded.
+    allowedOrigins: text("allowed_origins").array().notNull().default(sql`'{}'::text[]`),
+    // Shown to signers as the requester ("Acme asks you to sign…").
+    displayName: text("display_name"),
+    // `#rrggbb`.
+    accentColor: text("accent_color"),
+    // `light`, `dark` or `system`.
+    theme: text("theme").notNull().default("system"),
+    // The consent to electronic records and signatures; `null`: coss.com's default text.
+    disclosure: text("disclosure"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "sign_settings_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
   ],
 );
 

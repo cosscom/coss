@@ -47,6 +47,7 @@ export function createTestApp(
     smsService?: SmsService;
     /** Defaults to the fake document store; `null`: Sign unavailable. */
     signService?: SignService | null;
+    signUrl?: string | null;
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
@@ -103,6 +104,7 @@ export function createTestApp(
     emailService,
     smsService,
     signService: opts.signService,
+    signUrl: opts.signUrl,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },

@@ -55,6 +55,11 @@ test("coss.sign uploads documents and creates, sends and cancels requests", asyn
   const id = created.data?.id ?? "";
   expect(created.data).toMatchObject({ status: "draft", sandbox: true });
   expect((await coss.sign.requests.send(id)).data?.status).toBe("sent");
+  const session = await coss.sign.sessions.create(id, created.data?.signers[0]?.id ?? "", {
+    expires_in: 600,
+  });
+  expect(session.error).toBeNull();
+  expect(session.data?.url).toStartWith("http://localhost:3004/s/sgs_");
   expect((await coss.sign.requests.list({ status: ["sent"] })).data?.data.map((r) => r.id)).toEqual(
     [id],
   );
@@ -67,4 +72,28 @@ test("coss.sign uploads documents and creates, sends and cancels requests", asyn
 
   const inUse = await coss.sign.documents.remove(documentId);
   expect(inUse.error).toMatchObject({ code: "document_in_use" });
+});
+
+test("coss.sign.settings reads and updates the environment's settings", async () => {
+  const tenant = await createTestTenant();
+  const { app } = createTestApp();
+  const coss = clientFor(app, tenant.sandboxKey);
+  expect((await coss.sign.settings.get()).data).toEqual({
+    object: "sign_settings",
+    allowed_origins: [],
+    display_name: null,
+    accent_color: null,
+    theme: "system",
+    disclosure: null,
+  });
+  const updated = await coss.sign.settings.update({
+    allowed_origins: ["http://localhost:5173"],
+    display_name: "Acme",
+  });
+  expect(updated.data).toMatchObject({
+    allowed_origins: ["http://localhost:5173"],
+    display_name: "Acme",
+  });
+  const refused = await coss.sign.settings.update({ allowed_origins: ["ftp://acme.test"] });
+  expect(refused.error).toMatchObject({ code: "invalid_origin", param: "allowed_origins" });
 });

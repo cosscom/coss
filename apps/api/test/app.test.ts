@@ -265,6 +265,8 @@ describe("GET /openapi.json", () => {
       "/v1/sign/requests/{id}/audit_trail",
       "/v1/sign/requests/{id}/cancel",
       "/v1/sign/requests/{id}/send",
+      "/v1/sign/requests/{id}/signers/{signer_id}/sessions",
+      "/v1/sign/settings",
       "/v1/sms",
       "/v1/sms/numbers",
       "/v1/sms/received",

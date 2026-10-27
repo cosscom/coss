@@ -165,6 +165,16 @@ const SMS_KEYWORD_BY_TYPE: Record<string, string> = {
   "sms.opted_in": "start",
 };
 
+/** Each `sign_request.*` sample's request status and, when the event is a signer's, theirs. */
+const SIGN_SAMPLE_BY_TYPE: Record<string, { status: string; signer: string | null }> = {
+  "sign_request.sent": { status: "sent", signer: null },
+  "sign_request.viewed": { status: "sent", signer: "viewed" },
+  "sign_request.signer_signed": { status: "sent", signer: "signed" },
+  "sign_request.declined": { status: "declined", signer: "declined" },
+  "sign_request.completed": { status: "completed", signer: null },
+  "sign_request.canceled": { status: "canceled", signer: null },
+};
+
 /** A realistic sample of `type` at `now`, with fresh ids. */
 export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): StoredTestWebhookEvent {
   const at = now.toISOString();
@@ -230,6 +240,20 @@ export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): Store
       ...base,
       received_sms_id: newId(ID_PREFIXES.smsReceived),
       keyword: SMS_KEYWORD_BY_TYPE[type] ?? null,
+      sandbox: true,
+      occurred_at: at,
+    };
+  } else if (type.startsWith("sign_request.")) {
+    const signer = isPlainObject(base.signer) ? base.signer : {};
+    const byType = SIGN_SAMPLE_BY_TYPE[type] ?? { status: "sent", signer: null };
+    data = {
+      ...base,
+      sign_request_id: newId(ID_PREFIXES.signRequest),
+      status: byType.status,
+      signer: byType.signer
+        ? { ...signer, id: newId(ID_PREFIXES.signSigner), status: byType.signer }
+        : null,
+      reason: type === "sign_request.declined" ? "The amount is wrong." : null,
       sandbox: true,
       occurred_at: at,
     };

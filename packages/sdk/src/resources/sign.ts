@@ -3,12 +3,16 @@ import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { List } from "../types/email.ts";
 import type {
   CreateSignRequestParams,
+  CreateSignSessionParams,
   DeletedSignDocument,
   ListSignDocumentsParams,
   ListSignRequestsParams,
   SignDocument,
   SignEvent,
   SignRequest,
+  SignSession,
+  SignSettings,
+  UpdateSignSettingsParams,
   UploadSignDocumentParams,
 } from "../types/sign.ts";
 import { listQuery } from "./list-query.ts";
@@ -151,14 +155,79 @@ export class SignRequestsResource {
   }
 }
 
-/** `coss.sign`: e-signatures: documents and signature requests. */
+/** `coss.sign.sessions`: signing links for signers who sign in your app. */
+export class SignSessionsResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().sign.sessions`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  /**
+   * A short-lived signing link for one `embedded` signer of a sent request. Create it when that
+   * signed-in user opens the page that shows it: your app vouches for who they are.
+   */
+  create(
+    requestId: string,
+    signerId: string,
+    params: CreateSignSessionParams = {},
+    options?: RequestOptions,
+  ): Promise<CossResult<SignSession>> {
+    return this.#http.request<SignSession>({
+      method: "POST",
+      path: `/v1/sign/requests/${encodeURIComponent(requestId)}/signers/${encodeURIComponent(signerId)}/sessions`,
+      body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+}
+
+/** `coss.sign.settings`: the environment's signing page settings. */
+export class SignSettingsResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().sign.settings`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  /** Which sites may embed the signing page, how it looks, and what signers consent to. */
+  get(options?: ReadOptions): Promise<CossResult<SignSettings>> {
+    return this.#http.request<SignSettings>({
+      method: "GET",
+      path: "/v1/sign/settings",
+      signal: options?.signal,
+    });
+  }
+
+  /** Changes the fields given; the others keep their values. */
+  update(
+    params: UpdateSignSettingsParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<SignSettings>> {
+    return this.#http.request<SignSettings>({
+      method: "PATCH",
+      path: "/v1/sign/settings",
+      body: params,
+      signal: options?.signal,
+    });
+  }
+}
+
+/** `coss.sign`: e-signatures: documents, signature requests, signing sessions and settings. */
 export class SignResource {
   readonly documents: SignDocumentsResource;
   readonly requests: SignRequestsResource;
+  readonly sessions: SignSessionsResource;
+  readonly settings: SignSettingsResource;
 
   /** @internal Use `new Coss().sign`. */
   constructor(http: HttpClient) {
     this.documents = new SignDocumentsResource(http);
     this.requests = new SignRequestsResource(http);
+    this.sessions = new SignSessionsResource(http);
+    this.settings = new SignSettingsResource(http);
   }
 }

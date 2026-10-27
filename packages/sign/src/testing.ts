@@ -30,3 +30,7 @@ export async function buildTestPdf(
 export async function buildTestPdfBase64(pages?: TestPdfPage[]): Promise<string> {
   return Buffer.from(await buildTestPdf(pages)).toString("base64");
 }
+
+/** A 1×1 PNG, base64: an adopted signature or initials for tests. */
+export const TEST_SIGNATURE_PNG =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";

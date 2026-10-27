@@ -58,6 +58,12 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "sms.received",
   "sms.opted_out",
   "sms.opted_in",
+  "sign_request.sent",
+  "sign_request.viewed",
+  "sign_request.signer_signed",
+  "sign_request.declined",
+  "sign_request.completed",
+  "sign_request.canceled",
 ];
 
 /** Types only live environments receive: `domain.*`, `account.*` and `billing.*`. */

@@ -295,3 +295,88 @@ describe("Signature requests", () => {
     expect((await draft.json()).status).toBe("draft");
   });
 });
+
+describe("Signing sessions and settings", () => {
+  async function sentRequest(key: string, app: ReturnType<typeof createTestApp>["app"]) {
+    const create = await apiRequest(app, "POST", "/v1/sign/requests", {
+      key,
+      body: {
+        title: "NDA",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        signers: [{ ...signer(), delivery: "embedded" }],
+      },
+    });
+    return create.json();
+  }
+
+  test("a session links to the signing app with the token in the fragment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp({ signUrl: "https://sign.example" });
+    const request = await sentRequest(tenant.sandboxKey, app);
+    const response = await apiRequest(
+      app,
+      "POST",
+      `/v1/sign/requests/${request.id}/signers/${request.signers[0].id}/sessions`,
+      { key: tenant.sandboxKey, body: {} },
+    );
+    expect(response.status).toBe(201);
+    const session = await response.json();
+    expect(session).toMatchObject({
+      object: "sign_session",
+      request_id: request.id,
+      signer_id: request.signers[0].id,
+    });
+    expect(session.url).toBe(`https://sign.example/s/${session.id}#${session.token}`);
+
+    // No body at all is fine too.
+    const bare = await apiRequest(
+      app,
+      "POST",
+      `/v1/sign/requests/${request.id}/signers/${request.signers[0].id}/sessions`,
+      { key: tenant.sandboxKey },
+    );
+    expect(bare.status).toBe(201);
+
+    const unknown = await apiRequest(
+      app,
+      "POST",
+      `/v1/sign/requests/${request.id}/signers/ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz/sessions`,
+      { key: tenant.sandboxKey, body: {} },
+    );
+    expect(unknown.status).toBe(404);
+  });
+
+  test("sessions answer 503 while the signing app isn't deployed", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp({ signUrl: null });
+    const request = await sentRequest(tenant.sandboxKey, app);
+    const response = await apiRequest(
+      app,
+      "POST",
+      `/v1/sign/requests/${request.id}/signers/${request.signers[0].id}/sessions`,
+      { key: tenant.sandboxKey, body: {} },
+    );
+    expect(response.status).toBe(503);
+  });
+
+  test("settings: read, update, and origins checked per environment mode", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const read = await apiRequest(app, "GET", "/v1/sign/settings", { key: tenant.liveKey });
+    expect((await read.json()).allowed_origins).toEqual([]);
+    const local = await apiRequest(app, "PATCH", "/v1/sign/settings", {
+      key: tenant.liveKey,
+      body: { allowed_origins: ["http://localhost:3000"] },
+    });
+    expect(local.status).toBe(422);
+    expect((await errorOf(local)).code).toBe("invalid_origin");
+    const updated = await apiRequest(app, "PATCH", "/v1/sign/settings", {
+      key: tenant.liveKey,
+      body: { allowed_origins: ["https://app.example.com"], accent_color: "#2563EB" },
+    });
+    expect(await updated.json()).toMatchObject({
+      allowed_origins: ["https://app.example.com"],
+      accent_color: "#2563eb",
+    });
+  });
+});

@@ -23,13 +23,14 @@ import {
   uploadSignDocument,
 } from "./documents.ts";
 import { SignError } from "./errors.ts";
-import { appendSignEvent, type SignActor, toSignEventObject } from "./events.ts";
+import { type SignActor, toSignEventObject } from "./events.ts";
 import {
   checkFieldCount,
   type FieldDocument,
   type PlacedField,
   placeSignerFields,
 } from "./fields.ts";
+import { recordSignEvent } from "./record.ts";
 import {
   type CreateSignRequestRequestOutput,
   DEFAULT_SIGN_LIST_LIMIT,
@@ -341,24 +342,23 @@ async function transition(
   now: Date,
 ): Promise<SignRequestObjectOutput> {
   if (!isId(ID_PREFIXES.signRequest, input.requestId)) throw notFound();
+  const sandbox = await environmentIsSandbox(input);
   await db.transaction(async (tx) => {
-    const [row] = await tx
-      .select({ id: signRequest.id, status: signRequest.status, expiresAt: signRequest.expiresAt })
-      .from(signRequest)
-      .where(requestScope(input))
-      .for("update");
+    const [row] = await tx.select().from(signRequest).where(requestScope(input)).for("update");
     if (!row) throw notFound();
     if (row.status === change.done) return;
     if (!change.from.includes(row.status)) throw change.refused(row.status);
     change.check?.(row);
-    await tx.update(signRequest).set(change.set(now)).where(requestScope(input));
-    await appendSignEvent(tx, {
-      organizationId: input.organizationId,
-      requestId: row.id,
-      type: change.event,
-      actor: input.actor,
-      occurredAt: now,
-    });
+    const [updated] = await tx
+      .update(signRequest)
+      .set(change.set(now))
+      .where(requestScope(input))
+      .returning();
+    await recordSignEvent(
+      tx,
+      { request: updated ?? row, sandbox },
+      { type: change.event, actor: input.actor, occurredAt: now },
+    );
   });
   return getSignRequest(input);
 }
@@ -574,23 +574,15 @@ export function createSignService(opts: SignServiceOptions): SignService {
           })),
         );
         if (fields.length > 0) await tx.insert(signField).values(fields);
-        const details = { document_sha256: documentHashes(ordered) };
-        await appendSignEvent(tx, {
-          organizationId: env.organizationId,
-          requestId: row.id,
+        const context = { request: row, sandbox: env.mode === "sandbox" };
+        await recordSignEvent(tx, context, {
           type: "created",
           actor: input.actor,
-          details,
+          details: { document_sha256: documentHashes(ordered) },
           occurredAt: now,
         });
         if (send) {
-          await appendSignEvent(tx, {
-            organizationId: env.organizationId,
-            requestId: row.id,
-            type: "sent",
-            actor: input.actor,
-            occurredAt: now,
-          });
+          await recordSignEvent(tx, context, { type: "sent", actor: input.actor, occurredAt: now });
         }
         return row;
       };

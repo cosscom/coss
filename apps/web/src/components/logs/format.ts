@@ -60,6 +60,7 @@ export const SOURCE_LABEL: Record<LogSource, string> = {
   risk: "Risk",
   smtp: "SMTP message",
   sms: "SMS event",
+  sign: "Signature event",
 };
 
 /** Text color for a status code (2xx green, 3xx blue, 4xx amber, 5xx red). */

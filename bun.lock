@@ -122,6 +122,37 @@
         "typescript": "catalog:",
       },
     },
+    "apps/sign": {
+      "name": "@coss/sign-app",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "@coss/observability": "workspace:*",
+        "@coss/ratelimit": "workspace:*",
+        "@coss/sign": "workspace:*",
+        "@coss/ui": "workspace:*",
+        "@sentry/nextjs": "catalog:",
+        "@t3-oss/env-nextjs": "catalog:",
+        "next": "catalog:",
+        "pdfjs-dist": "6.4.299",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "server-only": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@tailwindcss/postcss": "catalog:",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "postcss": "catalog:",
+        "tailwindcss": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "apps/site": {
       "name": "@coss/site",
       "version": "0.0.0",
@@ -410,6 +441,7 @@
         "@coss/retention": "workspace:*",
         "@coss/risk": "workspace:*",
         "@coss/screening": "workspace:*",
+        "@coss/sign": "workspace:*",
         "@coss/sms": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -682,6 +714,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
         "pdf-lib": "1.17.1",
         "pdfjs-dist": "6.4.299",
@@ -1240,6 +1275,8 @@
     "@coss/sdkgen": ["@coss/sdkgen@workspace:tooling/sdkgen"],
 
     "@coss/sign": ["@coss/sign@workspace:packages/sign"],
+
+    "@coss/sign-app": ["@coss/sign-app@workspace:apps/sign"],
 
     "@coss/signals": ["@coss/signals@workspace:packages/signals"],
 
@@ -3560,6 +3597,10 @@
     "@coss/portal/@types/react": ["@types/react@19.3.0", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg=="],
 
     "@coss/portal/react": ["react@19.3.0", "", {}, "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog=="],
+
+    "@coss/sign-app/@types/react": ["@types/react@19.3.0", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg=="],
+
+    "@coss/sign-app/react": ["react@19.3.0", "", {}, "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog=="],
 
     "@coss/site/@types/react": ["@types/react@19.3.0", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg=="],
 

@@ -8,6 +8,7 @@ import {
 } from "@coss/email/schemas";
 import { AccountWebhookEvent } from "@coss/reputation/schemas";
 import { RiskWebhookEvent } from "@coss/risk/schemas";
+import { SignRequestWebhookEvent } from "@coss/sign/schemas";
 import { ReceivedSmsWebhookEvent, SmsWebhookEvent } from "@coss/sms/schemas";
 import { HookEndpointWebhookEvent } from "@coss/webhooks/schemas";
 import type { OpenAPIHono } from "@hono/zod-openapi";
@@ -29,6 +30,7 @@ const WEBHOOK_EVENTS = {
   BroadcastWebhookEvent,
   SmsWebhookEvent,
   ReceivedSmsWebhookEvent,
+  SignRequestWebhookEvent,
 };
 
 export function registerWebhookEvents(app: OpenAPIHono<AppEnv>): void {

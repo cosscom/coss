@@ -4,6 +4,7 @@
  */
 import type {
   CreateSignRequestRequest,
+  CreateSignSessionRequest,
   DeletedSignDocument,
   ListSignDocumentsQuery,
   ListSignRequestsQuery,
@@ -14,18 +15,27 @@ import type {
   SignFieldInput,
   SignRequestList,
   SignRequestObject,
+  SignRequestWebhookEvent,
+  SignSessionObject,
+  SignSettingsObject,
+  UpdateSignSettingsRequest,
   UploadSignDocumentRequest,
 } from "@coss/sign/schemas";
 import type {
   CreateSignRequestParams,
+  CreateSignSessionParams,
   List,
   ListSignDocumentsParams,
   ListSignRequestsParams,
   DeletedSignDocument as SdkDeletedSignDocument,
   SignFieldInput as SdkSignFieldInput,
+  SignRequestWebhookEvent as SdkSignRequestWebhookEvent,
   SignDocument,
   SignEvent,
   SignRequest,
+  SignSession,
+  SignSettings,
+  UpdateSignSettingsParams,
   UploadSignDocumentParams,
 } from "coss";
 import type { z } from "zod";
@@ -50,6 +60,17 @@ export type SignContract = [
   Assert<MutuallyAssignable<z.output<typeof SignRequestList>, List<SignRequest>>>,
   Assert<MutuallyAssignable<z.output<typeof SignEventObject>, SignEvent>>,
   Assert<MutuallyAssignable<z.output<typeof SignEventList>, List<SignEvent>>>,
+  Assert<MutuallyAssignable<z.input<typeof CreateSignSessionRequest>, CreateSignSessionParams>>,
+  Assert<MutuallyAssignable<z.output<typeof SignSessionObject>, SignSession>>,
+  Assert<MutuallyAssignable<z.output<typeof SignSettingsObject>, SignSettings>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateSignSettingsRequest>, UpdateSignSettingsParams>>,
+  Assert<MutuallyAssignable<z.output<typeof SignRequestWebhookEvent>, SdkSignRequestWebhookEvent>>,
+  Assert<
+    MutuallyAssignable<
+      z.output<typeof SignRequestWebhookEvent>["data"],
+      SdkSignRequestWebhookEvent["data"]
+    >
+  >,
   // List queries arrive as strings (the SDK sends numbers and arrays): only their keys must match.
   Assert<Equals<keyof z.input<typeof ListSignDocumentsQuery>, keyof ListSignDocumentsParams>>,
   Assert<Equals<keyof z.input<typeof ListSignRequestsQuery>, keyof ListSignRequestsParams>>,

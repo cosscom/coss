@@ -46,6 +46,8 @@ export type V1Dependencies = {
   webhookDeps: WebhookManagementDeps;
   /** Where portal session links point (`PORTAL_PUBLIC_URL`); `null`: the portal isn't deployed. */
   portalUrl: string | null;
+  /** Where signing session links point (`SIGN_PUBLIC_URL`); `null`: the signing app isn't deployed. */
+  signUrl: string | null;
   /** Receiving (`EmailRuntime.inbound`); `null` when the deployment doesn't receive email. */
   inbound: InboundRuntime | null;
   riskDeps: RiskDeps;
@@ -77,7 +79,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
   v1.route("/", createSmsRoutes(deps.smsService));
-  v1.route("/", createSignRoutes(deps.signService));
+  v1.route("/", createSignRoutes({ signService: deps.signService, signUrl: deps.signUrl }));
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(
