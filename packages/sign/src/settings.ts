@@ -161,6 +161,10 @@ export async function updateSignSettings(input: {
     ...(update.accent_color !== undefined ? { accentColor: next.accentColor } : {}),
     ...(update.theme !== undefined ? { theme: next.theme } : {}),
     ...(update.disclosure !== undefined ? { disclosure: next.disclosure } : {}),
+    ...(update.email_from !== undefined ? { emailFrom: next.emailFrom } : {}),
+    ...(update.reminder_interval_days !== undefined
+      ? { reminderIntervalDays: next.reminderIntervalDays }
+      : {}),
   };
   if (Object.keys(changed).length === 0) return current;
   await db
