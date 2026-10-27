@@ -300,6 +300,11 @@ export function openApiDocumentConfig(serverUrl: string) {
         description: "PDFs uploaded for signature requests, with their pages and text anchors.",
       },
       {
+        name: "Sign templates",
+        description:
+          "Reusable documents with fields for roles, made into requests, edited in the embedded builder.",
+      },
+      {
         name: "Sign settings",
         description:
           "Which sites may embed the signing page, how it looks, and what signers consent to.",

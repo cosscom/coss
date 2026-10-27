@@ -106,6 +106,13 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "POST /v1/sign/requests/{id}/remind": "sign.requests.remind",
   "GET /v1/sign/requests/{id}/signed_document": "sign.requests.signedDocument",
   "POST /v1/sign/requests/{id}/signers/{signer_id}/sessions": "sign.sessions.create",
+  "POST /v1/sign/templates": "sign.templates.create",
+  "GET /v1/sign/templates": "sign.templates.list",
+  "GET /v1/sign/templates/{id}": "sign.templates.get",
+  "PATCH /v1/sign/templates/{id}": "sign.templates.update",
+  "DELETE /v1/sign/templates/{id}": "sign.templates.remove",
+  "POST /v1/sign/templates/{id}/requests": "sign.templates.createRequest",
+  "POST /v1/sign/templates/{id}/builder_sessions": "sign.templates.createBuilderSession",
   "GET /v1/sign/settings": "sign.settings.get",
   "PATCH /v1/sign/settings": "sign.settings.update",
   "POST /v1/email_templates": "email.templates.create",
@@ -245,6 +252,9 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
 export const NO_RETRY: ReadonlySet<string> = new Set([
   "POST /v1/sign/documents",
   "POST /v1/sign/requests/{id}/remind",
+  "POST /v1/sign/templates",
+  // Uploads inline documents again on a retry (the TypeScript SDK skips retries only then).
+  "PATCH /v1/sign/templates/{id}",
   "POST /v1/hooks/event_types",
   "POST /v1/hooks/applications",
   "POST /v1/hooks/applications/{application}/endpoints",

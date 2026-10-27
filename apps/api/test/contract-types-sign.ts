@@ -3,11 +3,17 @@
  * exactly the API's zod schemas.
  */
 import type {
+  CreateSignBuilderSessionRequest,
+  CreateSignRequestFromTemplateRequest,
   CreateSignRequestRequest,
   CreateSignSessionRequest,
+  CreateSignTemplateRequest,
   DeletedSignDocument,
+  DeletedSignTemplate,
   ListSignDocumentsQuery,
   ListSignRequestsQuery,
+  ListSignTemplatesQuery,
+  SignBuilderSessionObject,
   SignDocumentList,
   SignDocumentObject,
   SignEventList,
@@ -18,24 +24,35 @@ import type {
   SignRequestWebhookEvent,
   SignSessionObject,
   SignSettingsObject,
+  SignTemplateList,
+  SignTemplateObject,
   UpdateSignSettingsRequest,
+  UpdateSignTemplateRequest,
   UploadSignDocumentRequest,
 } from "@coss/sign/schemas";
 import type {
+  CreateSignBuilderSessionParams,
+  CreateSignRequestFromTemplateParams,
   CreateSignRequestParams,
   CreateSignSessionParams,
+  CreateSignTemplateParams,
   List,
   ListSignDocumentsParams,
   ListSignRequestsParams,
+  ListSignTemplatesParams,
   DeletedSignDocument as SdkDeletedSignDocument,
+  DeletedSignTemplate as SdkDeletedSignTemplate,
   SignFieldInput as SdkSignFieldInput,
   SignRequestWebhookEvent as SdkSignRequestWebhookEvent,
+  SignBuilderSession,
   SignDocument,
   SignEvent,
   SignRequest,
   SignSession,
   SignSettings,
+  SignTemplate,
   UpdateSignSettingsParams,
+  UpdateSignTemplateParams,
   UploadSignDocumentParams,
 } from "coss";
 import type { z } from "zod";
@@ -71,6 +88,25 @@ export type SignContract = [
       SdkSignRequestWebhookEvent["data"]
     >
   >,
+  Assert<MutuallyAssignable<z.input<typeof CreateSignTemplateRequest>, CreateSignTemplateParams>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateSignTemplateRequest>, UpdateSignTemplateParams>>,
+  Assert<MutuallyAssignable<z.output<typeof SignTemplateObject>, SignTemplate>>,
+  Assert<MutuallyAssignable<z.output<typeof SignTemplateList>, List<SignTemplate>>>,
+  Assert<MutuallyAssignable<z.output<typeof DeletedSignTemplate>, SdkDeletedSignTemplate>>,
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof CreateSignRequestFromTemplateRequest>,
+      CreateSignRequestFromTemplateParams
+    >
+  >,
+  Assert<
+    MutuallyAssignable<
+      z.input<typeof CreateSignBuilderSessionRequest>,
+      CreateSignBuilderSessionParams
+    >
+  >,
+  Assert<MutuallyAssignable<z.output<typeof SignBuilderSessionObject>, SignBuilderSession>>,
+  Assert<Equals<keyof z.input<typeof ListSignTemplatesQuery>, keyof ListSignTemplatesParams>>,
   // List queries arrive as strings (the SDK sends numbers and arrays): only their keys must match.
   Assert<Equals<keyof z.input<typeof ListSignDocumentsQuery>, keyof ListSignDocumentsParams>>,
   Assert<Equals<keyof z.input<typeof ListSignRequestsQuery>, keyof ListSignRequestsParams>>,

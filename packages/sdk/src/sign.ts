@@ -73,21 +73,44 @@ function isMessage(data: unknown): data is Message {
   );
 }
 
-/** Mounts the signing page of a session in `container`. */
-export function mountSigning(options: MountSigningOptions): SigningEmbed {
+/** What the builder tells your app. */
+export type BuilderEvent =
+  /** The builder loaded the template. */
+  | { type: "ready"; template_id: string }
+  /** The template was saved; `ready` when requests can be made from it. */
+  | { type: "saved"; template_id: string; ready: boolean }
+  /** The link is invalid or expired (`code` says why). */
+  | { type: "error"; code: string; message: string };
+
+export interface MountBuilderOptions {
+  /** A builder session's `url`. */
+  url: string;
+  container: HTMLElement;
+  onEvent?: (event: BuilderEvent) => void;
+  /** A fixed CSS height; default `80vh` (the builder scrolls inside). */
+  height?: string;
+  /** The iframe's accessible title. Default "Edit template". */
+  title?: string;
+}
+
+function mount<Event>(
+  options: { url: string; container: HTMLElement; height?: string; title: string },
+  onEvent: ((event: Event) => void) | undefined,
+  autoHeight: boolean,
+): SigningEmbed {
   const origin = new URL(options.url).origin;
   const iframe = options.container.ownerDocument.createElement("iframe");
   iframe.src = options.url;
-  iframe.title = options.title ?? "Sign documents";
+  iframe.title = options.title;
   // The URL's fragment holds the session token: never send the page's address anywhere.
   iframe.referrerPolicy = "no-referrer";
   iframe.style.width = "100%";
   iframe.style.border = "0";
   iframe.style.display = "block";
-  iframe.style.height = options.height ?? "640px";
+  iframe.style.height = options.height ?? (autoHeight ? "640px" : "80vh");
   // The page centers its dialogs in the frame: a frame taller than the window could put them off
   // screen.
-  if (!options.height) iframe.style.maxHeight = "100vh";
+  if (!options.height && autoHeight) iframe.style.maxHeight = "100vh";
   options.container.appendChild(iframe);
 
   const view = options.container.ownerDocument.defaultView;
@@ -96,12 +119,12 @@ export function mountSigning(options: MountSigningOptions): SigningEmbed {
     if (!isMessage(event.data)) return;
     const { source: _source, version: _version, ...rest } = event.data;
     if (rest.type === "resize") {
-      if (!options.height && typeof rest.height === "number" && rest.height > 0) {
+      if (autoHeight && !options.height && typeof rest.height === "number" && rest.height > 0) {
         iframe.style.height = `${Math.ceil(rest.height)}px`;
       }
       return;
     }
-    options.onEvent?.(rest as SigningEvent);
+    onEvent?.(rest as Event);
   };
   view?.addEventListener("message", listener);
   return {
@@ -111,4 +134,22 @@ export function mountSigning(options: MountSigningOptions): SigningEmbed {
       iframe.remove();
     },
   };
+}
+
+/** Mounts the signing page of a session in `container`. */
+export function mountSigning(options: MountSigningOptions): SigningEmbed {
+  return mount<SigningEvent>(
+    { ...options, title: options.title ?? "Sign documents" },
+    options.onEvent,
+    true,
+  );
+}
+
+/** Mounts the template builder of a builder session in `container`. */
+export function mountBuilder(options: MountBuilderOptions): SigningEmbed {
+  return mount<BuilderEvent>(
+    { ...options, title: options.title ?? "Edit template" },
+    options.onEvent,
+    false,
+  );
 }

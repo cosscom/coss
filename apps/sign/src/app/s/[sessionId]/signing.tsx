@@ -17,8 +17,8 @@ import { Label } from "@coss/ui/components/label";
 import { Spinner } from "@coss/ui/components/spinner";
 import { Textarea } from "@coss/ui/components/textarea";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PdfPages } from "@/components/pdf-pages";
 import { postToHost, reportHeight } from "@/lib/embed";
-import { PdfPages } from "./pdf-pages";
 import { SignatureDialog, type SignatureKind } from "./signature-dialog";
 
 type Field = SigningView["fields"][number];
@@ -424,6 +424,7 @@ function Header({ view }: { view: SigningView }) {
 type Values = Record<string, string | boolean>;
 
 function isFilled(field: Field, values: Values, images: Partial<Record<SignatureKind, string>>) {
+  if (field.prefilled) return true;
   switch (field.type) {
     case "signature":
       return Boolean(images.signature);
@@ -769,6 +770,21 @@ function FieldBox({
         />
       );
     case "text":
+      if (field.prefilled) {
+        // Read-only, but all of it can be read before signing: a longer value scrolls in its box
+        // (it is signed whole), and the whole value is its accessible name.
+        return (
+          <input
+            aria-label={`${field.label ?? "Text"}: ${field.value ?? ""}`}
+            className={`${box} cursor-text px-1 outline-none focus:ring-2 focus:ring-primary`}
+            readOnly
+            style={{ ...style, fontSize }}
+            title={typeof field.value === "string" ? field.value : undefined}
+            type="text"
+            value={typeof field.value === "string" ? field.value : ""}
+          />
+        );
+      }
       return (
         <input
           aria-label={field.label ?? "Text"}

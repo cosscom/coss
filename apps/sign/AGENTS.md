@@ -36,12 +36,24 @@ in `packages/sign/AGENTS.md`.
   `declined`, `error`, `resize`; ids and statuses only) to any origin: only allowed origins can
   frame the page. Keep them in step with `SigningEvent` in `packages/sdk/src/sign.ts`.
 
+## Builder
+
+`/b/<builder session id>#cossb_…` (`src/app/b/`, API `src/lib/builder-api.ts` at
+`/api/builder/<id>/…`): the same auth rules as signing. Uploads are added to the template at once
+(`POST documents`, 36 MB body); `PUT /` saves name, roles and fields and may only keep, drop or
+reorder the template's own documents; documents are served only when they are the template's
+(`readSignTemplateDocument`). Fields are placed by clicking a page with a field type picked,
+moved by dragging and resized from their corner, in the same as-displayed PDF points. The host gets
+`ready` (with `template_id`), `saved` (`template_id`, `ready`), `error` and `resize`
+(`mountBuilder` in `coss/sign`).
+
 ## Headers
 
 `src/proxy.ts` sets every response's headers (`src/lib/security-headers.ts`): a strict CSP with no
 third-party origins (plus `'wasm-unsafe-eval'` and `blob:` workers for pdf.js),
 `Referrer-Policy: no-referrer`, `no-store`. `frame-ancestors` is `'none'` except on a live
-session's page, where it lists the environment's `allowed_origins` (`checkedSignOrigin`).
+session's page (signing or builder), where it lists the environment's `allowed_origins`
+(`checkedSignOrigin`).
 
 ## Everything else
 

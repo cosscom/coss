@@ -486,6 +486,24 @@ export type SignRouteDeps = {
   liveProvider: string;
 };
 
+/**
+ * Sending is its own permission (`POST …/send` needs it too): a create-only key makes drafts
+ * (`send: false`), from scratch or from a template.
+ */
+export async function requireSendPermission(
+  c: Context<AppEnv>,
+  send: boolean | undefined,
+): Promise<void> {
+  if (send === false) return;
+  if (await apiKeyHasPermissions(c.var.auth.apiKeyId, { sign: ["send"] })) return;
+  throw new ApiError(403, {
+    type: "permission_error",
+    code: "insufficient_permissions",
+    message:
+      "Creating a request that is sent at once needs the sign:send permission; pass `send: false` for a draft.",
+  });
+}
+
 export function createSignRoutes({
   signService,
   signUrl,
@@ -547,18 +565,7 @@ export function createSignRoutes({
     async (c) => {
       const service = available();
       const params = c.req.valid("json");
-      // Sending is its own permission (`POST …/send` needs it too): create-only keys make drafts.
-      if (
-        params.send !== false &&
-        !(await apiKeyHasPermissions(c.var.auth.apiKeyId, { sign: ["send"] }))
-      ) {
-        throw new ApiError(403, {
-          type: "permission_error",
-          code: "insufficient_permissions",
-          message:
-            "Creating a request that is sent at once needs the sign:send permission; pass `send: false` for a draft.",
-        });
-      }
+      await requireSendPermission(c, params.send);
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
       const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
       const result = await service.create({

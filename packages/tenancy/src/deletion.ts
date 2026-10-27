@@ -24,6 +24,7 @@ const {
   emailSuppression,
   signFakeObject,
   signRequest,
+  signTemplate,
   smsInboundReceipt,
   smsMessage,
   smsReceived,
@@ -618,6 +619,18 @@ async function deleteOrganizationData(
       signRequest,
       signRequest.id,
       eq(signRequest.organizationId, organizationId),
+      batchSize,
+      signal,
+    ))
+  )
+    return false;
+  // Templates keep their documents the same way (`sign_template_document` restricts).
+  if (
+    !(await deleteInBatches(
+      deletion,
+      signTemplate,
+      signTemplate.id,
+      eq(signTemplate.organizationId, organizationId),
       batchSize,
       signal,
     ))

@@ -71,6 +71,9 @@ export type SigningView = {
     height: number;
     required: boolean;
     label: string | null;
+    /** Filled when the request was made (merge fields): shown, not editable. */
+    prefilled: boolean;
+    value: string | null;
   }[];
   /** Sequential order: the signers who have to sign first. */
   waiting_for: { name: string }[];
@@ -310,6 +313,8 @@ export async function openSigning(
       height: field.height,
       required: field.required,
       label: field.label,
+      prefilled: field.prefilled,
+      value: field.prefilled ? field.value : null,
     })),
     waiting_for: waitingFor(loaded).map((other) => ({ name: other.name })),
     can_sign: canSign(loaded, access, now),
@@ -485,6 +490,13 @@ function fieldValues(
   for (const field of loaded.fields) {
     const given = input.values[field.id];
     const param = `values.${field.id}`;
+    if (field.prefilled) {
+      if (given !== undefined && given !== field.value) {
+        throw invalid("This field was filled in for you and can't change.", param);
+      }
+      values.set(field.id, field.value);
+      continue;
+    }
     switch (field.type) {
       case "signature":
         values.set(field.id, images.signature);

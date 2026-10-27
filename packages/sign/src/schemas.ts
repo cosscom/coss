@@ -871,3 +871,304 @@ export const SignRequestWebhookEvent = z
 export type SignRequestWebhookEventOutput = z.output<typeof SignRequestWebhookEvent>;
 /** What the outbox stores: the latest shape, without `api_version` (added per endpoint). */
 export type StoredSignRequestWebhookEvent = Omit<SignRequestWebhookEventOutput, "api_version">;
+
+// Templates.
+
+export const MAX_SIGN_TEMPLATE_ROLES = MAX_SIGN_SIGNERS;
+export const MAX_SIGN_MERGE_FIELD_LENGTH = 1000;
+const TEMPLATE_ID_EXAMPLE = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz";
+const BUILDER_SESSION_ID_EXAMPLE = "sbs_01k7c8m4q2f3e9v6t5r1n0p8yz";
+
+const RoleKey = z
+  .string()
+  .regex(/^[a-z0-9_]{1,32}$/, "Lowercase letters, digits and _, at most 32.")
+  .meta({ description: "The role's key, e.g. `client`.", examples: ["client"] });
+const MergeKey = z
+  .string()
+  .regex(/^[A-Za-z0-9_]{1,64}$/, "Letters, digits and _, at most 64.")
+  .meta({
+    description:
+      "`text` fields only: filled from the request's `merge_fields[merge_key]` (shown to the signer, not editable). Without a value, the signer fills it.",
+  });
+/** A template role as the API takes it (the builder checks its saves with it too). */
+export const SignTemplateRoleInput = z.strictObject({
+  key: RoleKey,
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .meta({ description: "Shown in the builder, e.g. `Client`." }),
+});
+
+const TemplateField = z.union([
+  PlacedField.extend({ role: RoleKey, merge_key: MergeKey.optional() }),
+  AnchoredField.extend({ role: RoleKey, merge_key: MergeKey.optional() }),
+]);
+
+const TemplateBody = {
+  name: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1).max(200).nullable().optional().meta({
+    description: "Requests' title (a request may set its own). Default: `name`.",
+  }),
+  message: z.string().max(5000).nullable().optional().meta({
+    description: "Requests' message to signers (a request may set its own).",
+  }),
+  signing_order: z.enum(SIGN_SIGNING_ORDERS).optional(),
+  documents: z.array(DocumentInput).max(MAX_SIGN_REQUEST_DOCUMENTS),
+  roles: z.array(SignTemplateRoleInput).max(MAX_SIGN_TEMPLATE_ROLES).meta({
+    description: "Who signs: each request names one signer per role.",
+  }),
+  fields: z.array(TemplateField).max(MAX_SIGN_FIELDS).meta({
+    description:
+      "Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.",
+  }),
+};
+
+const TEMPLATE_INPUT_EXAMPLE = {
+  name: "Mutual NDA",
+  documents: [{ document_id: DOCUMENT_ID_EXAMPLE }],
+  roles: [
+    { key: "client", name: "Client" },
+    { key: "company", name: "Company" },
+  ],
+  fields: [
+    { role: "client", type: "signature", anchor: "{{signature:client}}" },
+    {
+      role: "client",
+      type: "text",
+      page: 1,
+      x: 72,
+      y: 140,
+      width: 200,
+      height: 18,
+      merge_key: "client_company",
+    },
+    { role: "company", type: "signature", anchor: "{{signature:company}}" },
+  ],
+};
+
+export const CreateSignTemplateRequest = z
+  .strictObject({
+    ...TemplateBody,
+    documents: TemplateBody.documents.optional(),
+    roles: TemplateBody.roles.optional(),
+    fields: TemplateBody.fields.optional(),
+  })
+  .meta({ id: "CreateSignTemplateRequest", examples: [TEMPLATE_INPUT_EXAMPLE] });
+export type CreateSignTemplateRequestOutput = z.output<typeof CreateSignTemplateRequest>;
+
+export const UpdateSignTemplateRequest = z
+  .strictObject({
+    name: TemplateBody.name.optional(),
+    title: TemplateBody.title,
+    message: TemplateBody.message,
+    signing_order: TemplateBody.signing_order,
+    documents: TemplateBody.documents.optional(),
+    roles: TemplateBody.roles.optional(),
+    fields: TemplateBody.fields.optional(),
+  })
+  .meta({
+    id: "UpdateSignTemplateRequest",
+    description:
+      "Only the fields given change; `documents`, `roles` and `fields` replace the whole list (fields refer to documents by their new positions).",
+    examples: [{ name: "Mutual NDA (2026)" }],
+  });
+export type UpdateSignTemplateRequestOutput = z.output<typeof UpdateSignTemplateRequest>;
+
+export const SignTemplateObject = z
+  .object({
+    object: z.literal("sign_template"),
+    id: z.string().meta({ examples: [TEMPLATE_ID_EXAMPLE] }),
+    name: z.string(),
+    title: z.string().nullable(),
+    message: z.string().nullable(),
+    signing_order: z.enum(SIGN_SIGNING_ORDERS),
+    documents: z.array(
+      z.object({
+        id: z.string(),
+        filename: z.string(),
+        sha256: z.string(),
+        page_count: z.number().int(),
+        pages: z.array(PageSize),
+      }),
+    ),
+    roles: z.array(z.object({ key: z.string(), name: z.string() })),
+    fields: z.array(
+      z.object({
+        id: z.string(),
+        role: z.string(),
+        document_id: z.string(),
+        type: z.enum(SIGN_FIELD_TYPES),
+        page: z.number().int(),
+        x: z.number(),
+        y: z.number(),
+        width: z.number(),
+        height: z.number(),
+        required: z.boolean(),
+        label: z.string().nullable(),
+        merge_key: z.string().nullable(),
+      }),
+    ),
+    ready: z.boolean().meta({
+      description:
+        "It has documents and every role has a `signature` field, so requests can be made from it.",
+    }),
+    sandbox: z.boolean(),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime(),
+  })
+  .meta({
+    id: "SignTemplate",
+    examples: [
+      {
+        object: "sign_template",
+        id: TEMPLATE_ID_EXAMPLE,
+        name: "Mutual NDA",
+        title: null,
+        message: null,
+        signing_order: "parallel",
+        documents: [
+          {
+            id: DOCUMENT_ID_EXAMPLE,
+            filename: "nda.pdf",
+            sha256: SHA256_EXAMPLE,
+            page_count: 1,
+            pages: [{ width: 612, height: 792 }],
+          },
+        ],
+        roles: [{ key: "client", name: "Client" }],
+        fields: [
+          {
+            id: "stfld_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            role: "client",
+            document_id: DOCUMENT_ID_EXAMPLE,
+            type: "signature",
+            page: 1,
+            x: 72,
+            y: 640,
+            width: 160,
+            height: 30,
+            required: true,
+            label: null,
+            merge_key: null,
+          },
+        ],
+        ready: true,
+        sandbox: false,
+        created_at: CREATED_AT_EXAMPLE,
+        updated_at: CREATED_AT_EXAMPLE,
+      },
+    ],
+  });
+export type SignTemplateObjectOutput = z.output<typeof SignTemplateObject>;
+
+export const SignTemplateList = z
+  .object({ object: z.literal("list"), data: z.array(SignTemplateObject), has_more: z.boolean() })
+  .meta({ id: "SignTemplateList", examples: [{ object: "list", data: [], has_more: false }] });
+
+export const DeletedSignTemplate = z
+  .object({ object: z.literal("sign_template"), id: z.string(), deleted: z.literal(true) })
+  .meta({
+    id: "DeletedSignTemplate",
+    examples: [{ object: "sign_template", id: TEMPLATE_ID_EXAMPLE, deleted: true }],
+  });
+
+export const ListSignTemplatesQuery = z
+  .object({ limit: ListLimit, after: After })
+  .meta({ description: "Templates are returned newest first." });
+
+export const CreateSignRequestFromTemplateRequest = z
+  .strictObject({
+    title: z.string().trim().min(1).max(200).optional().meta({
+      description: "Default: the template's title (else its name).",
+    }),
+    message: z.string().max(5000).optional(),
+    signers: z
+      .array(
+        z.strictObject({
+          role: RoleKey,
+          name: z.string().trim().min(1).max(200),
+          email: z.email().max(254),
+          delivery: z.enum(SIGN_DELIVERIES).optional(),
+          order: z.number().int().min(1).max(MAX_SIGN_SIGNERS).optional(),
+          client_ref: z.string().min(1).max(255).optional(),
+        }),
+      )
+      .min(1)
+      .max(MAX_SIGN_SIGNERS)
+      .meta({ description: "One signer for each of the template's roles." }),
+    merge_fields: z
+      .record(z.string(), z.string().max(MAX_SIGN_MERGE_FIELD_LENGTH))
+      .optional()
+      .meta({ description: "Values of the template's merge fields, by `merge_key`." }),
+    signing_order: z.enum(SIGN_SIGNING_ORDERS).optional().meta({
+      description: "Default: the template's.",
+    }),
+    expires_at: z.iso.datetime({ offset: true }).optional(),
+    metadata: Metadata.optional(),
+    reminder_interval_days: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_SIGN_REMINDER_INTERVAL_DAYS)
+      .nullable()
+      .optional(),
+    send: z.boolean().optional().meta({ description: "Default `true`." }),
+  })
+  .meta({
+    id: "CreateSignRequestFromTemplateRequest",
+    examples: [
+      {
+        signers: [
+          { role: "client", name: "Ada Lovelace", email: "ada@example.com" },
+          { role: "company", name: "Grace Hopper", email: "grace@acme.com", delivery: "embedded" },
+        ],
+        merge_fields: { client_company: "Analytical Engines Ltd" },
+      },
+    ],
+  });
+export type CreateSignRequestFromTemplateRequestOutput = z.output<
+  typeof CreateSignRequestFromTemplateRequest
+>;
+
+export const CreateSignBuilderSessionRequest = z
+  .strictObject({
+    expires_in: z
+      .number()
+      .int()
+      .min(60)
+      .max(MAX_SIGN_SESSION_EXPIRES_IN)
+      .optional()
+      .meta({
+        description: `Seconds until the link expires: default ${DEFAULT_SIGN_SESSION_EXPIRES_IN}, at most ${MAX_SIGN_SESSION_EXPIRES_IN}.`,
+      }),
+  })
+  .meta({ id: "CreateSignBuilderSessionRequest", examples: [{ expires_in: 3600 }] });
+
+export const SignBuilderSessionObject = z
+  .object({
+    object: z.literal("sign_builder_session"),
+    id: z.string().meta({ examples: [BUILDER_SESSION_ID_EXAMPLE] }),
+    template_id: z.string(),
+    url: z.string().meta({
+      description:
+        "The builder: embed it (from an allowed origin, `mountBuilder` from `coss/sign`) for whoever edits the template: they can upload documents, add roles and place fields. Show it only to them.",
+    }),
+    token: z.string().meta({ description: "The secret part of `url`, shown only here." }),
+    expires_at: z.iso.datetime(),
+  })
+  .meta({
+    id: "SignBuilderSession",
+    examples: [
+      {
+        object: "sign_builder_session",
+        id: BUILDER_SESSION_ID_EXAMPLE,
+        template_id: TEMPLATE_ID_EXAMPLE,
+        url: `https://sign.example/b/${BUILDER_SESSION_ID_EXAMPLE}#cossb_…`,
+        token: "cossb_…",
+        expires_at: CREATED_AT_EXAMPLE,
+      },
+    ],
+  });
+export type SignBuilderSessionObjectOutput = z.output<typeof SignBuilderSessionObject>;

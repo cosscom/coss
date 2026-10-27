@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
   // Same build → same id on every instance (the image build passes the commit).
   generateBuildId: async () => process.env.NEXT_DEPLOYMENT_ID || null,
   poweredByHeader: false,
+  experimental: {
+    // `src/proxy.ts` runs on every request, and Next buffers bodies for it only up to this (10 MB
+    // by default, then truncates): the builder's uploads take up to 36 MB (builder-api.ts).
+    proxyClientMaxBodySize: "37mb",
+  },
   // CI's typecheck job already runs `tsc` over this app; its build job sets SKIP_BUILD_TYPECHECK.
   typescript: { ignoreBuildErrors: process.env.SKIP_BUILD_TYPECHECK === "1" },
 };

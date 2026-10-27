@@ -62,6 +62,14 @@ async function seedOrganizationData(tenant: TestTenant) {
   await db
     .insert(schema.signRequestDocument)
     .values({ requestId: request.id, documentId: document.id, organizationId, position: 0 });
+  const [template] = await db
+    .insert(schema.signTemplate)
+    .values({ ...scope, name: "NDA" })
+    .returning();
+  if (!template) throw new Error("sign seed failed");
+  await db
+    .insert(schema.signTemplateDocument)
+    .values({ templateId: template.id, documentId: document.id, organizationId, position: 0 });
   const emails = await db
     .insert(schema.email)
     .values(
@@ -326,6 +334,7 @@ describe("runDueOrganizationDeletions", () => {
     expect(await count(schema.webhookMessage, organizationId)).toBe(0);
     for (const table of [
       schema.signRequest,
+      schema.signTemplate,
       schema.signDocument,
       schema.emailRecipient,
       schema.emailEvent,

@@ -28,6 +28,7 @@ import { createRiskLimitRoutes } from "./risk-limits.ts";
 import { createRiskLookupRoutes } from "./risk-lookups.ts";
 import { createSegmentRoutes } from "./segments.ts";
 import { createSignRoutes } from "./sign.ts";
+import { createSignTemplateRoutes } from "./sign-templates.ts";
 import { createSmsRoutes } from "./sms.ts";
 import { createStorageSettingsRoutes } from "./storage-settings.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
@@ -87,6 +88,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
       liveProvider: deps.domainDeps.identity.name,
     }),
   );
+  v1.route("/", createSignTemplateRoutes({ signService: deps.signService, signUrl: deps.signUrl }));
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(

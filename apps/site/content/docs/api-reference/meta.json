@@ -30,6 +30,7 @@
     "---Sign---",
     "signature-requests",
     "sign-documents",
+    "sign-templates",
     "sign-settings",
     "---Hooks---",
     "hooks-applications",

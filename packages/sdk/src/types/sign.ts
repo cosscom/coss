@@ -380,3 +380,130 @@ export interface SignRequestWebhookEvent {
   created_at: string;
   data: SignRequestWebhookEventData;
 }
+
+/** A role of a template, filled by a real signer when a request is made from it. */
+export interface SignTemplateRole {
+  /** Lowercase letters, digits and `_`, e.g. `client`. */
+  key: string;
+  /** Shown in the builder, e.g. `Client`. */
+  name: string;
+}
+
+interface TemplateFieldExtras {
+  role: string;
+  /** `text` fields only: filled from the request's `merge_fields[merge_key]`. */
+  merge_key?: string;
+}
+
+export type SignTemplateFieldInput =
+  | (PlacedSignFieldInput & TemplateFieldExtras)
+  | (AnchoredSignFieldInput & TemplateFieldExtras);
+
+export interface CreateSignTemplateParams {
+  name: string;
+  /** Requests' title; default `name`. */
+  title?: string | null;
+  message?: string | null;
+  signing_order?: SignSigningOrder;
+  documents?: SignDocumentInput[];
+  roles?: SignTemplateRole[];
+  fields?: SignTemplateFieldInput[];
+}
+
+/** Only the fields given change; `documents`, `roles` and `fields` replace the whole list. */
+export interface UpdateSignTemplateParams {
+  name?: string;
+  title?: string | null;
+  message?: string | null;
+  signing_order?: SignSigningOrder;
+  documents?: SignDocumentInput[];
+  roles?: SignTemplateRole[];
+  fields?: SignTemplateFieldInput[];
+}
+
+export interface SignTemplateField {
+  id: string;
+  role: string;
+  document_id: string;
+  type: SignFieldType;
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  required: boolean;
+  label: string | null;
+  merge_key: string | null;
+}
+
+export interface SignTemplate {
+  object: "sign_template";
+  id: string;
+  name: string;
+  title: string | null;
+  message: string | null;
+  signing_order: SignSigningOrder;
+  documents: {
+    id: string;
+    filename: string;
+    sha256: string;
+    page_count: number;
+    pages: SignPageSize[];
+  }[];
+  roles: SignTemplateRole[];
+  fields: SignTemplateField[];
+  /** Requests can be made from it: documents, and a `signature` field for every role. */
+  ready: boolean;
+  sandbox: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeletedSignTemplate {
+  object: "sign_template";
+  id: string;
+  deleted: true;
+}
+
+export interface ListSignTemplatesParams {
+  limit?: number;
+  after?: string;
+}
+
+export interface CreateSignRequestFromTemplateParams {
+  /** Default: the template's title, else its name. */
+  title?: string;
+  message?: string;
+  /** One signer for each of the template's roles. */
+  signers: {
+    role: string;
+    name: string;
+    email: string;
+    delivery?: SignDelivery;
+    order?: number;
+    client_ref?: string;
+  }[];
+  /** Values of the template's merge fields, by `merge_key`. */
+  merge_fields?: Record<string, string>;
+  signing_order?: SignSigningOrder;
+  expires_at?: string;
+  metadata?: Record<string, string>;
+  reminder_interval_days?: number | null;
+  send?: boolean;
+}
+
+export interface CreateSignBuilderSessionParams {
+  /** Seconds until the link expires: default 3600, at most 86400. */
+  expires_in?: number;
+}
+
+/** A link to the embedded builder for one template. */
+export interface SignBuilderSession {
+  object: "sign_builder_session";
+  id: string;
+  template_id: string;
+  /** Embed it with `mountBuilder` from `coss/sign`. Show it only to whoever edits the template. */
+  url: string;
+  token: string;
+  expires_at: string;
+}
