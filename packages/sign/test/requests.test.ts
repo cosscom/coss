@@ -7,6 +7,7 @@ import {
   cancelSignRequest,
   createSignService,
   deleteSignDocument,
+  discardUnstoredDocuments,
   FakeDocumentStore,
   getSignDocument,
   getSignRequest,
@@ -14,6 +15,7 @@ import {
   listSignDocuments,
   listSignRequestEvents,
   listSignRequests,
+  prepareDocument,
   type SignEnvironment,
   SignError,
   sendSignRequest,
@@ -133,6 +135,47 @@ describe("inspectPdf", () => {
 });
 
 describe("documents", () => {
+  test("pages through documents created at the same microsecond", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const content = await buildTestPdfBase64();
+    const prepared = await Promise.all(
+      [0, 1, 2].map((index) =>
+        prepareDocument(store, env, { filename: `${index}.pdf`, content, apiKeyId: null }),
+      ),
+    );
+    // One insert: the rows share the database's microsecond timestamp.
+    await db.insert(schema.signDocument).values(prepared);
+    const seen: string[] = [];
+    let after: string | undefined;
+    for (let page = 0; page < 5; page++) {
+      const result = await listSignDocuments({ ...env, limit: 1, after });
+      seen.push(...result.data.map((document) => document.id));
+      if (!result.hasMore) break;
+      after = result.data.at(-1)?.id;
+    }
+    expect(seen.sort()).toEqual(prepared.map((document) => document.id).sort());
+  });
+
+  test("cleanup keeps the bytes of documents whose rows exist", async () => {
+    const content = await buildTestPdfBase64();
+    const [stored, unused] = await Promise.all(
+      [0, 1].map((index) =>
+        prepareDocument(store, sandbox, { filename: `${index}.pdf`, content, apiKeyId: null }),
+      ),
+    );
+    if (!stored || !unused) throw new Error("not prepared");
+    await db.insert(schema.signDocument).values(stored);
+    await discardUnstoredDocuments(store, [stored, unused]);
+    expect(await store.get(stored.storeKey)).not.toBeNull();
+    expect(await store.get(unused.storeKey)).toBeNull();
+  });
+
   test("upload, read, list and delete", async () => {
     const uploaded = await uploadSignDocument(store, {
       environment: sandbox,

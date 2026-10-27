@@ -11,9 +11,10 @@ import {
   type IdempotencyErrors,
   withIdempotencyKey,
 } from "@coss/db/idempotency";
-import { and, asc, desc, eq, inArray, lt, or, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import {
   deleteSignDocument,
+  discardUnstoredDocuments,
   environmentDocuments,
   type PreparedDocument,
   prepareDocument,
@@ -288,10 +289,8 @@ export async function listSignRequests(input: {
       )
       .limit(1);
     if (!anchor) return { data: [], hasMore: false };
-    cursor = or(
-      lt(signRequest.createdAt, anchor.createdAt),
-      and(eq(signRequest.createdAt, anchor.createdAt), lt(signRequest.id, anchor.id)),
-    );
+    // Compared in SQL: a JavaScript Date would cut the anchor's microseconds off.
+    cursor = sql`(${signRequest.createdAt}, ${signRequest.id}) < (select ${signRequest.createdAt}, ${signRequest.id} from ${signRequest} where ${signRequest.id} = ${anchor.id})`;
   }
   const rows = await db
     .select()
@@ -616,12 +615,12 @@ export function createSignService(opts: SignServiceOptions): SignService {
         }));
       }
       committed = !replayed;
-      if (replayed) await discard(opts.store, inline);
+      if (replayed) await discardUnstoredDocuments(opts.store, inline);
       const [object] = await toObjects([row], env.mode === "sandbox");
       if (!object) throw notFound();
       return { request: object, replayed };
     } catch (error) {
-      if (!committed) await discard(opts.store, inline);
+      if (!committed) await discardUnstoredDocuments(opts.store, inline);
       throw error;
     }
   }
@@ -632,15 +631,4 @@ export function createSignService(opts: SignServiceOptions): SignService {
     uploadDocument: (input) => uploadSignDocument(opts.store, input),
     deleteDocument: (input) => deleteSignDocument(opts.store, input),
   };
-}
-
-/** Removes the bytes of inline documents whose rows were never inserted. */
-async function discard(
-  store: DocumentStore,
-  documents: readonly PreparedDocument[],
-): Promise<void> {
-  if (documents.length === 0) return;
-  await store.delete(documents.map((document) => document.storeKey)).catch((error) => {
-    console.error("[sign] could not delete unused document bytes:", error);
-  });
 }

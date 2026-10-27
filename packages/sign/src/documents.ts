@@ -5,7 +5,7 @@
 import { createHash } from "node:crypto";
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
-import { and, desc, eq, inArray, lt, or, type SQL } from "drizzle-orm";
+import { and, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { SignError } from "./errors.ts";
 import { inspectPdf } from "./pdf.ts";
 import {
@@ -49,6 +49,34 @@ export function toSignDocumentObject(
 export type PreparedDocument = Omit<typeof signDocument.$inferInsert, "createdAt"> & { id: string };
 
 /** Checks the PDF and writes its bytes; the caller inserts the returned row (or deletes the key). */
+/**
+ * Deletes the bytes of prepared documents whose rows don't exist: a write that failed, or was a
+ * replay. A row that does exist (a commit whose answer was lost) keeps its bytes, and so does
+ * everything when the check itself fails.
+ */
+export async function discardUnstoredDocuments(
+  store: DocumentStore,
+  documents: readonly PreparedDocument[],
+): Promise<void> {
+  if (documents.length === 0) return;
+  try {
+    const stored = await db
+      .select({ id: signDocument.id })
+      .from(signDocument)
+      .where(
+        inArray(
+          signDocument.id,
+          documents.map((document) => document.id),
+        ),
+      );
+    const kept = new Set(stored.map((row) => row.id));
+    const unused = documents.filter((document) => !kept.has(document.id));
+    if (unused.length > 0) await store.delete(unused.map((document) => document.storeKey));
+  } catch (error) {
+    console.error("[sign] could not delete unused document bytes:", error);
+  }
+}
+
 export async function prepareDocument(
   store: DocumentStore,
   env: SignEnvironment,
@@ -171,10 +199,8 @@ export async function listSignDocuments(input: {
       .where(and(scope, eq(signDocument.id, input.after)))
       .limit(1);
     if (!anchor) return { data: [], hasMore: false };
-    cursor = or(
-      lt(signDocument.createdAt, anchor.createdAt),
-      and(eq(signDocument.createdAt, anchor.createdAt), lt(signDocument.id, anchor.id)),
-    );
+    // Compared in SQL: a JavaScript Date would cut the anchor's microseconds off.
+    cursor = sql`(${signDocument.createdAt}, ${signDocument.id}) < (select ${signDocument.createdAt}, ${signDocument.id} from ${signDocument} where ${signDocument.id} = ${anchor.id})`;
   }
   const rows = await db
     .select()
