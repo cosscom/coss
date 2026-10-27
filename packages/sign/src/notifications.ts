@@ -208,13 +208,17 @@ async function isolated(item: Due, now: Date, work: () => Promise<void>): Promis
   }
 }
 
-/** Invitations: email signers not yet notified, whose turn it is. */
+/**
+ * Invitations: email signers not yet notified, whose turn it is. A `viewed` one without
+ * `notified_at` got the invitation (its link is how they opened it) but the worker stopped before
+ * recording it: only the bookkeeping is done, so reminders start.
+ */
 async function invite(now: Date, limit: number, scope: Scope, deps: SignNotificationDeps) {
   const due = await dueSigners(
     and(
       OPEN_REQUEST(now),
       isNull(signSigner.notifiedAt),
-      eq(signSigner.status, "pending"),
+      inArray(signSigner.status, ["pending", "viewed"]),
       signersTurn,
       scoped(scope),
     ),
@@ -223,28 +227,8 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
   );
   for (const item of due) {
     await isolated(item, now, async () => {
-      const { from, requester } = await sender(item.request);
-      const link = await emailLink(item, deps, now);
-      const invitation = (message: string | null) =>
-        invitationEmail({
-          requester,
-          title: item.request.title,
-          message,
-          url: link.url,
-          expiresAt: item.request.expiresAt,
-        });
-      // The requester's own words only go out under their own address (or nowhere: a sandbox);
-      // coss.com's sender, which the mailer falls back to, always gets the copy without them.
-      const content = invitation(from || item.sandbox ? item.request.message : null);
-      await deps.mailer.send({
-        environment: environmentOf(item.request, item.sandbox),
-        from,
-        requester,
-        to: item.signer.email,
-        ...content,
-        cossContent: invitation(null),
-        idempotencyKey: `sign-invite:${item.signer.id}`,
-      });
+      const sessionId =
+        item.signer.status === "pending" ? await sendInvitation(item, deps, now) : null;
       await db.transaction(async (tx) => {
         await lockRequest(tx, item.request);
         const interval = item.request.reminderIntervalDays;
@@ -271,12 +255,44 @@ async function invite(now: Date, limit: number, scope: Scope, deps: SignNotifica
         await recordSignEvent(
           tx,
           { request: item.request, signer, sandbox: item.sandbox },
-          { type: "notified", actor: SYSTEM, details: { session_id: link.id }, occurredAt: now },
+          {
+            type: "notified",
+            actor: SYSTEM,
+            details: sessionId ? { session_id: sessionId } : {},
+            occurredAt: now,
+          },
         );
       });
     });
   }
   return due.length;
+}
+
+/** Emails the invitation; returns the session its link opens. */
+async function sendInvitation(item: Due, deps: SignNotificationDeps, now: Date): Promise<string> {
+  const { from, requester } = await sender(item.request);
+  const link = await emailLink(item, deps, now);
+  const invitation = (message: string | null) =>
+    invitationEmail({
+      requester,
+      title: item.request.title,
+      message,
+      url: link.url,
+      expiresAt: item.request.expiresAt,
+    });
+  // The requester's own words only go out under their own address (or nowhere: a sandbox);
+  // coss.com's sender, which the mailer falls back to, always gets the copy without them.
+  const content = invitation(from || item.sandbox ? item.request.message : null);
+  await deps.mailer.send({
+    environment: environmentOf(item.request, item.sandbox),
+    from,
+    requester,
+    to: item.signer.email,
+    ...content,
+    cossContent: invitation(null),
+    idempotencyKey: `sign-invite:${item.signer.id}`,
+  });
+  return link.id;
 }
 
 /**

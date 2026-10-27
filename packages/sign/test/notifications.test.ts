@@ -210,6 +210,36 @@ describe("invitations", () => {
     expect(keys).toHaveLength(2);
     expect(keys[0]).toBe(keys[1]);
   });
+
+  test("a signer who opened the invitation before it was recorded gets the bookkeeping only", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await create(env, { reminder_interval_days: 2 });
+    const signerId = request.signers[0]?.id ?? "";
+    // The worker sent the email and stopped; the signer then opened its link.
+    await db
+      .update(schema.signSigner)
+      .set({ status: "viewed" })
+      .where(eq(schema.signSigner.id, signerId));
+    const mailer = recordingMailer();
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [own.organization.id] } },
+      deps(mailer),
+    );
+    expect(mailer.sent).toEqual([]);
+    const [signer] = await db
+      .select()
+      .from(schema.signSigner)
+      .where(eq(schema.signSigner.id, signerId));
+    expect(signer?.status).toBe("viewed");
+    expect(signer?.notifiedAt).not.toBeNull();
+    expect(signer?.nextReminderAt).not.toBeNull();
+  });
 });
 
 describe("reminders and expiry", () => {
