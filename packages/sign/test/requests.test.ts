@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { asc, eq } from "drizzle-orm";
+import { PDFDocument, PDFName, PDFNumber } from "pdf-lib";
 import {
   cancelSignRequest,
   createSignService,
@@ -100,6 +101,15 @@ describe("inspectPdf", () => {
       inspectPdf(new TextEncoder().encode("%PDF-1.7\nnot really")),
       "invalid_document",
     );
+    // Loads, but its page tree is broken.
+    const broken = await PDFDocument.create();
+    broken.addPage([200, 200]);
+    broken.catalog.Pages().set(PDFName.of("Kids"), broken.context.obj([PDFNumber.of(5)]));
+    await expectSignError(inspectPdf(await broken.save()), "invalid_document");
+    // pdf.js would scale this page; pdf-lib wouldn't.
+    const scaled = await PDFDocument.create();
+    scaled.addPage([200, 200]).node.set(PDFName.of("UserUnit"), PDFNumber.of(2));
+    await expectSignError(inspectPdf(await scaled.save()), "invalid_document");
   });
 });
 

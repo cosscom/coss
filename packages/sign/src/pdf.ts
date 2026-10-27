@@ -44,12 +44,15 @@ export async function inspectPdf(bytes: Uint8Array): Promise<InspectedPdf> {
     disableFontFace: true,
     verbosity: VerbosityLevel.ERRORS,
   });
+  const unreadable = (): never => {
+    throw new SignError("invalid_document", "The PDF could not be read. Is it damaged?");
+  };
   let pdf: Awaited<typeof task.promise>;
   try {
     pdf = await task.promise;
   } catch {
     await task.destroy();
-    throw new SignError("invalid_document", "The PDF could not be read. Is it damaged?");
+    return unreadable();
   }
   try {
     if (pdf.numPages > MAX_SIGN_DOCUMENT_PAGES) {
@@ -61,10 +64,17 @@ export async function inspectPdf(bytes: Uint8Array): Promise<InspectedPdf> {
     const pages: SignPageSize[] = [];
     const anchors: SignAnchor[] = [];
     for (let number = 1; number <= pdf.numPages; number++) {
-      const page = await pdf.getPage(number);
+      const page = await pdf.getPage(number).catch(unreadable);
+      // pdf.js scales a page by its `/UserUnit`; pdf-lib (filling and sealing) doesn't.
+      if (page.userUnit !== 1) {
+        throw new SignError(
+          "invalid_document",
+          `Page ${number} uses a custom unit size (/UserUnit), which isn't supported.`,
+        );
+      }
       const viewport = page.getViewport({ scale: 1 });
       pages.push({ width: round(viewport.width), height: round(viewport.height) });
-      const content = await page.getTextContent();
+      const content = await page.getTextContent().catch(unreadable);
       for (const item of content.items) {
         if (!("str" in item) || !item.str.includes("{{")) continue;
         const [a = 1, b = 0, c = 0, d = 0, e = 0, f = 0] = item.transform as number[];
