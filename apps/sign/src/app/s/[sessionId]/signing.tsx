@@ -143,7 +143,8 @@ export function Signing({ sessionId }: { sessionId: string }) {
 
 function Centered({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-2 p-6 text-center">
+    // Capped: in an iframe sized to its content, 60vh would keep the height it had before.
+    <main className="mx-auto flex min-h-[min(60vh,28rem)] max-w-md flex-col items-center justify-center gap-2 p-6 text-center">
       {children}
     </main>
   );

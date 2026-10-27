@@ -17,7 +17,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-dvh bg-background font-sans text-foreground antialiased">
-        {children}
+        {/* What an embedding page's iframe fits (`reportHeight`): the content, not the viewport. */}
+        <div data-embed-content="">{children}</div>
       </body>
     </html>
   );

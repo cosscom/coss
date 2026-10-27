@@ -22,16 +22,21 @@ export function postToHost(message: EmbedMessage): void {
   );
 }
 
-/** Tells the host the page's height whenever it changes, so the iframe can fit it. */
+/**
+ * Tells the host the content's height whenever it changes, so the iframe can fit it. The content
+ * wrapper's own height, not the document's: that is at least the iframe's current height, so an
+ * iframe grown for a long document could never shrink back.
+ */
 export function reportHeight(): () => void {
   if (typeof window === "undefined" || window.parent === window) return () => {};
+  const content = document.querySelector("[data-embed-content]") ?? document.body;
   let last = 0;
   const observer = new ResizeObserver(() => {
-    const height = document.documentElement.scrollHeight;
+    const height = Math.ceil(content.getBoundingClientRect().height);
     if (Math.abs(height - last) < 2) return;
     last = height;
     postToHost({ type: "resize", height });
   });
-  observer.observe(document.body);
+  observer.observe(content);
   return () => observer.disconnect();
 }
