@@ -99,6 +99,24 @@ describe("signMailer", () => {
     });
   });
 
+  test("no fallback once the customer's environment already sent it", async () => {
+    // The first attempt went out from acme.com; the retry's body differs (a new link), and the
+    // domain has since lost its verification.
+    const recorder = service((input) =>
+      input.environment.environmentId === "env_live"
+        ? new EmailError("domain_not_verified", "acme.com isn't verified.")
+        : null,
+    );
+    const mailer = signMailer({
+      service: recorder,
+      fallback: { environment: coss, address: "sign@coss.com" },
+      sentBefore: async (environment, key) =>
+        environment.environmentId === "env_live" && key === "sign-invite:ssgn_1",
+    });
+    expect(await mailer.send(email({ from: "contracts@acme.com" }))).toEqual({ replayed: true });
+    expect(recorder.sent).toEqual([]);
+  });
+
   test("sandbox emails stay in their environment; live ones wait without any sender", async () => {
     const recorder = service();
     const mailer = signMailer({ service: recorder, fallback: null });

@@ -5,9 +5,11 @@
  * coss.com's notification environment as "<requester> via coss.com". Sandbox environments always
  * send in their own environment (the fake provider: nothing is delivered).
  */
+import { db, schema } from "@coss/db";
 import { EmailError, type EmailService, type SendEnvironment } from "@coss/email";
 import { SendEmailRequest } from "@coss/email/schemas";
 import type { SignEmail, SignMailer } from "@coss/sign";
+import { and, eq } from "drizzle-orm";
 
 const SANDBOX_FALLBACK_ADDRESS = "sign@coss.com";
 
@@ -20,11 +22,30 @@ function named(name: string, address: string): string {
   return `"${name.replace(/["\\\r\n]/g, "").slice(0, 120)}" <${address}>`;
 }
 
+/** Whether an email with this idempotency key exists in the environment. */
+async function alreadySent(environment: SendEnvironment, idempotencyKey: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: schema.email.id })
+    .from(schema.email)
+    .where(
+      and(
+        eq(schema.email.organizationId, environment.organizationId),
+        eq(schema.email.environmentId, environment.environmentId),
+        eq(schema.email.idempotencyKey, idempotencyKey),
+      ),
+    )
+    .limit(1);
+  return row !== undefined;
+}
+
 export function signMailer(opts: {
   service: Pick<EmailService, "send">;
   /** coss.com's sender; `null`: live emails without `email_from` wait until it is configured. */
   fallback: { environment: SendEnvironment; address: string } | null;
+  /** Whether an email with this key exists in the environment (tests replace it). */
+  sentBefore?: (environment: SendEnvironment, idempotencyKey: string) => Promise<boolean>;
 }): SignMailer {
+  const sentBefore = opts.sentBefore ?? alreadySent;
   async function send(
     email: SignEmail,
     environment: SendEnvironment,
@@ -60,7 +81,7 @@ export function signMailer(opts: {
         idempotencyRetentionMs: Number.POSITIVE_INFINITY,
         discardBody: true,
       });
-      return { replayed };
+      return { replayed: replayed === true };
     } catch (error) {
       // Already sent (the same key, with another link in it).
       if (error instanceof EmailError && error.code === "idempotency_key_reused") {
@@ -96,8 +117,11 @@ export function signMailer(opts: {
       try {
         return await send(email, email.environment, named(email.requester, email.from));
       } catch (error) {
-        // The address stopped being verified: the signer still gets the email, from coss.com.
+        // The address stopped being verified: the signer still gets the email, from coss.com —
+        // unless an earlier attempt already sent it from there (its body had another link, so
+        // the email service couldn't replay it).
         if (error instanceof EmailError && error.code === "domain_not_verified") {
+          if (await sentBefore(email.environment, email.idempotencyKey)) return { replayed: true };
           return viaCoss({ ...email, idempotencyKey: `${email.idempotencyKey}:coss` });
         }
         throw error;
