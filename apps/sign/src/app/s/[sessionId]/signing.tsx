@@ -226,11 +226,15 @@ function AwaitOthers({
   useEffect(() => {
     let delay = 5000;
     let timer: ReturnType<typeof setTimeout>;
+    // Gone (unmounted, or the effect rerun): an answer still in flight schedules nothing more.
+    let stopped = false;
     const poll = () => {
+      if (stopped) return;
       timer = setTimeout(() => {
         call("")
           .then((response) => response.json() as Promise<SigningView>)
           .then((next) => {
+            if (stopped) return;
             if (next.request.status !== "sent") onView(next);
             else poll();
           })
@@ -239,7 +243,10 @@ function AwaitOthers({
       }, delay);
     };
     poll();
-    return () => clearTimeout(timer);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
   }, [call, onView]);
   return null;
 }
@@ -263,11 +270,15 @@ function SignedCopy({
     if (ready) return;
     let delay = 3000;
     let timer: ReturnType<typeof setTimeout>;
+    // Gone (unmounted, or the effect rerun): an answer still in flight schedules nothing more.
+    let stopped = false;
     const poll = () => {
+      if (stopped) return;
       timer = setTimeout(() => {
         call("")
           .then((response) => response.json() as Promise<SigningView>)
           .then((next) => {
+            if (stopped) return;
             if (next.request.signed_document_ready) onView(next);
             else poll();
           })
@@ -276,7 +287,10 @@ function SignedCopy({
       }, delay);
     };
     poll();
-    return () => clearTimeout(timer);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
   }, [ready, call, onView]);
 
   const download = async () => {
