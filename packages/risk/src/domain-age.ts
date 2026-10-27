@@ -6,6 +6,7 @@
 import { db, type Executor, schema } from "@coss/db";
 import type { DomainRegistration } from "@coss/signals/rdap";
 import { eq } from "drizzle-orm";
+import { noTurns, type Turns } from "./turns.ts";
 
 const { riskDomainAge } = schema;
 
@@ -64,14 +65,12 @@ export async function domainAge(
   executor: Executor,
   lookup: DomainAgeLookup,
   domain: string,
-  opts: { timeoutMs: number; now?: Date },
+  opts: { timeoutMs: number; now?: Date; turns?: Turns },
 ): Promise<DomainAge> {
   const now = opts.now ?? new Date();
-  const [cached] = await executor
-    .select()
-    .from(riskDomainAge)
-    .where(eq(riskDomainAge.domain, domain))
-    .limit(1);
+  const [cached] = await (opts.turns ?? noTurns)(() =>
+    executor.select().from(riskDomainAge).where(eq(riskDomainAge.domain, domain)).limit(1),
+  );
   if (cached) {
     const ttl = cached.status === "found" ? FOUND_TTL_MS : MISS_TTL_MS;
     if (now.getTime() - cached.checkedAt.getTime() < ttl) {

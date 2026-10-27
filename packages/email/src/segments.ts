@@ -60,16 +60,16 @@ async function filterContext(
   const audienceIds = conditionsOf(filter)
     .flatMap(({ condition }) => (condition.field === "audience" ? [condition.audience_id] : []))
     .filter((id) => isId("aud", id));
-  const [properties, topics, audiences] = await Promise.all([
-    propertyDefinitions(env, executor),
-    topicsByKey(env, undefined, executor),
-    audienceIds.length
-      ? executor
-          .select({ id: audience.id })
-          .from(audience)
-          .where(and(inContactEnvironment(audience, env), inArray(audience.id, audienceIds)))
-      : Promise.resolve([]),
-  ]);
+  // One after another: the executor may be a transaction, whose connection runs one query at a
+  // time (pg's queue for concurrent ones is deprecated).
+  const properties = await propertyDefinitions(env, executor);
+  const topics = await topicsByKey(env, undefined, executor);
+  const audiences = audienceIds.length
+    ? await executor
+        .select({ id: audience.id })
+        .from(audience)
+        .where(and(inContactEnvironment(audience, env), inArray(audience.id, audienceIds)))
+    : [];
   return { env, properties, topics, audiences: new Set(audiences.map((row) => row.id)) };
 }
 

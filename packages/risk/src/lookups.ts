@@ -33,6 +33,7 @@ import {
   type RiskEmailCheckOutput,
   type RiskIpCheckOutput,
 } from "./schemas.ts";
+import type { Turns } from "./turns.ts";
 
 const DEFAULT_DNS_TIMEOUT_MS = 800;
 const DEFAULT_DOMAIN_AGE_TIMEOUT_MS = 1000;
@@ -84,6 +85,7 @@ export async function emailDomainAge(
   deps: RiskDeps,
   email: EmailAnalysis | null,
   sandbox: boolean,
+  turns?: Turns,
 ): Promise<{ days: number | null; degraded: boolean }> {
   if (!email?.valid || email.free || isDisposable(email, sandbox)) {
     return { days: null, degraded: false };
@@ -94,6 +96,7 @@ export async function emailDomainAge(
   if (!deps.domainAge) return { days: null, degraded: true };
   return domainAge(executor, deps.domainAge, email.domain, {
     timeoutMs: deps.domainAgeTimeoutMs ?? DEFAULT_DOMAIN_AGE_TIMEOUT_MS,
+    turns,
   });
 }
 

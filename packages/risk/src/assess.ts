@@ -55,6 +55,7 @@ import {
 } from "./schemas.ts";
 import { decide, type StoredReason, scoreReasons, sortReasons, toReasonObject } from "./score.ts";
 import { captchaSecret, type ResolvedRiskSettings, resolveRiskSettings } from "./settings.ts";
+import { takeTurns } from "./turns.ts";
 import { type VelocityStore, velocityKey } from "./velocity.ts";
 
 const { riskAssessment, riskIdentity, riskReport } = schema;
@@ -186,11 +187,10 @@ export async function assessRisk(
           .where(eq(riskAssessment.id, existing.id));
       }
     }
-    // Use this connection for reads too: waiting retries may occupy the rest of the pool.
-    const [settings, rules] = await Promise.all([
-      resolveRiskSettings(tx, environment),
-      listRiskRuleRows(tx, environment),
-    ]);
+    // Use this connection for reads too: waiting retries may occupy the rest of the pool. It
+    // runs one query at a time, so they go one after another (`./turns.ts`).
+    const settings = await resolveRiskSettings(tx, environment);
+    const rules = await listRiskRuleRows(tx, environment);
     const collected = await collectSignals(tx, deps, environment, params, settings, {
       ip: ipSignals,
       privacy,
@@ -315,25 +315,31 @@ async function collectSignals(
   const cardFingerprint = params.checkout?.card?.fingerprint;
   if (cardFingerprint) hashes.card = deps.hash(env, "card", cardFingerprint);
 
+  // The executor is the assessment's transaction: its reads take turns, the lookups outside the
+  // database (DNS, RDAP, captcha, Valkey) run alongside them.
+  const turns = takeTurns();
+  const userHash = hashes.user;
   const [deliverability, age, captcha, ipSignals, velocity, listMatches, reports, networks] =
     await Promise.all([
       emailDeliverability(deps, email, sandbox),
-      emailDomainAge(executor, deps, email, sandbox),
+      emailDomainAge(executor, deps, email, sandbox, turns),
       captchaVerdict(deps, settings, params, ip, sandbox),
       resolved.ip,
       countVelocity(deps, environment, params, email, ip, hashes),
-      matchListEntries(executor, environment, {
-        mailbox: email?.valid ? email.canonical : null,
-        domain: email?.valid ? email.domain : null,
-        ip,
-        asn: null,
-        country: null,
-        userId,
-      }),
-      reportedHashes(executor, environment, hashes),
+      turns(() =>
+        matchListEntries(executor, environment, {
+          mailbox: email?.valid ? email.canonical : null,
+          domain: email?.valid ? email.domain : null,
+          ip,
+          asn: null,
+          country: null,
+          userId,
+        }),
+      ),
+      turns(() => reportedHashes(executor, environment, hashes)),
       // Logins compare the network with the user's earlier ones.
-      params.event === "login" && hashes.user
-        ? userNetworks(executor, environment, hashes.user)
+      params.event === "login" && userHash
+        ? turns(() => userNetworks(executor, environment, userHash))
         : null,
     ]);
 
