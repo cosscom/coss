@@ -14,6 +14,7 @@ import {
   LocalSealer,
   openSigning,
   purgeExpiredSignSessions,
+  runDueSignCleanup,
   runDueSignCompletions,
   S3DocumentStore,
   type SignEnvironment,
@@ -212,5 +213,60 @@ describe("S3 store", () => {
       signStoreFromEnv({ SIGN_DOCUMENTS_BUCKET: "bucket", AWS_REGION: "us-east-2" }),
     ).toBeInstanceOf(S3DocumentStore);
     expect(() => signStoreFromEnv({ SIGN_DOCUMENTS_BUCKET: "bucket" })).toThrow("AWS_REGION");
+  });
+});
+
+describe("deletion cleanup", () => {
+  test("store objects a failed deletion left behind are deleted by the retry", async () => {
+    const { tenant, env } = await environment("sandbox");
+    const request = await signed(env);
+    await runDueSignCompletions(
+      { limit: 5, scope: { organizationIds: [tenant.organization.id] } },
+      { store, sealer: await LocalSealer.create() },
+    );
+    const broken = Object.assign(Object.create(store), {
+      delete: async () => {
+        throw new Error("S3 is down");
+      },
+    }) as FakeDocumentStore;
+    await deleteSignRequest(broken, { ...env, requestId: request.id });
+    const pending = await db
+      .select()
+      .from(schema.signStoreCleanup)
+      .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id));
+    expect(pending.length).toBe(2);
+    for (const row of pending) expect(await store.get(row.key)).not.toBeNull();
+    const scope = { organizationIds: [tenant.organization.id] };
+    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(2);
+    for (const row of pending) expect(await store.get(row.key)).toBeNull();
+    expect(
+      await db
+        .select()
+        .from(schema.signStoreCleanup)
+        .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id)),
+    ).toEqual([]);
+  });
+
+  test("a request deleted while it is being sealed leaves no signed PDF behind", async () => {
+    const { tenant, env } = await environment("sandbox");
+    const request = await signed(env);
+    const sealer = await LocalSealer.create();
+    const deleting = {
+      name: "deleting",
+      certificateChain: sealer.certificateChain,
+      sign: async (data: Uint8Array) => {
+        await deleteSignRequest(store, { ...env, requestId: request.id });
+        return sealer.sign(data);
+      },
+    };
+    await runDueSignCompletions(
+      { limit: 5, scope: { organizationIds: [tenant.organization.id] } },
+      { store, sealer: deleting },
+    );
+    const objects = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, tenant.organization.id));
+    expect(objects.filter((object) => object.key.includes("/requests/"))).toEqual([]);
   });
 });

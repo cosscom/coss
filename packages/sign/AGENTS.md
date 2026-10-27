@@ -131,7 +131,10 @@ templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` 
   store's prefix; `deleteOrganizationData` removes `sign_fake_object` rows.
 - **Deleting requests** (`deleteSignRequest`, `DELETE /v1/sign/requests/{id}`): anything but `sent`
   (cancel first, `request_not_deletable`); the row cascades (signers, fields, events, sessions)
-  and the signature images and signed PDF leave the store. Documents stay.
+  and the signature images and signed PDF leave the store. Documents stay. The keys go into
+  `sign_store_cleanup` in the deleting transaction and leave it once the store confirms; the
+  worker's `sign-cleanup` loop (`runDueSignCleanup`) retries what failed, with backoff. A seal
+  racing the deletion loses its fenced update and deletes its own copy.
 - **Billing**: meter `sign.completed_requests` (`@coss/billing/metering`), recorded once in the
   sealing transaction (behind its compare-and-set), live environments only. It has no rate yet:
   invoices show the usage as an uncharged line until a rate card prices it (pricing is a product

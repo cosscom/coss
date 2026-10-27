@@ -579,3 +579,23 @@ export const signBuilderSession = pgTable(
     index("sign_builder_session_expires_at_idx").on(t.expiresAt),
   ],
 );
+
+/**
+ * Store objects to delete (a deleted request's signatures and signed PDF), written in the
+ * transaction that drops their rows and removed once the store confirms, so a failure is retried
+ * (`runDueSignCleanup`) instead of leaving them behind.
+ */
+export const signStoreCleanup = pgTable(
+  "sign_store_cleanup",
+  {
+    key: text("key").primaryKey(),
+    organizationId: text("organization_id").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    index("sign_store_cleanup_next_attempt_at_idx").on(t.nextAttemptAt),
+    index("sign_store_cleanup_organization_idx").on(t.organizationId),
+  ],
+);
