@@ -301,3 +301,92 @@ describe("completion", () => {
     ).not.toBeNull();
   });
 });
+
+describe("completion races and long values", () => {
+  test("a long value wraps inside its box", async () => {
+    const words = Array.from({ length: 24 }, () => "{{text:w}}").join(" ");
+    const request = await signedRequest(
+      {
+        signers: [
+          {
+            name: "Ada Lovelace",
+            email: "ada@example.com",
+            delivery: "embedded",
+            fields: [
+              { type: "signature", anchor: "{{signature:signer_1}}" },
+              { type: "text", page: 1, x: 100, y: 300, width: 200, height: 60 },
+            ],
+          },
+        ],
+      },
+      (fields) =>
+        Object.fromEntries(
+          fields.filter((field) => field.type === "text").map((field) => [field.id, words]),
+        ),
+    );
+    await runDueSignCompletions({ limit: 10, scope: scope() }, { store, sealer, tsa: null });
+    const { content } = await readSignedDocument({ ...sandbox, requestId: request.id, store });
+    const inspected = await inspectPdf(content);
+    const drawn = inspected.anchors.filter(
+      (anchor) => anchor.text === "{{text:w}}" && anchor.page === 1,
+    );
+    expect(drawn.length).toBeGreaterThan(1);
+    for (const anchor of drawn) {
+      expect(anchor.x).toBeGreaterThanOrEqual(99);
+      expect(anchor.x + anchor.width).toBeLessThanOrEqual(301);
+      expect(anchor.y).toBeGreaterThanOrEqual(299);
+      expect(anchor.y + anchor.height).toBeLessThanOrEqual(361);
+    }
+  });
+
+  test("a worker that lost its lease leaves the new holder's lease and no copy of its own", async () => {
+    const request = await signedRequest({});
+    const takeOver = (async () => {
+      await db
+        .update(schema.signRequest)
+        .set({ sealLeaseUntil: new Date(Date.now() + 3_600_000) })
+        .where(eq(schema.signRequest.id, request.id));
+    }) as () => Promise<void>;
+    const racing: Sealer = {
+      name: "racing",
+      certificateChain: sealer.certificateChain,
+      sign: async (data) => {
+        await takeOver();
+        return sealer.sign(data);
+      },
+    };
+    await runDueSignCompletions({ limit: 10, scope: scope() }, { store, sealer: racing });
+    const [row] = await db
+      .select()
+      .from(schema.signRequest)
+      .where(eq(schema.signRequest.id, request.id));
+    expect(row?.sealedAt).toBeNull();
+    expect(row?.sealLeaseUntil).not.toBeNull();
+    const copies = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, sandbox.organizationId));
+    expect(copies.filter((object) => object.key.includes(`/requests/${request.id}/`))).toEqual([]);
+
+    // A failing worker whose lease was taken over doesn't clear the new one either.
+    await db
+      .update(schema.signRequest)
+      .set({ sealLeaseUntil: null })
+      .where(eq(schema.signRequest.id, request.id));
+    const failing: Sealer = {
+      name: "failing",
+      certificateChain: sealer.certificateChain,
+      sign: async () => {
+        await takeOver();
+        throw new Error("KMS is down");
+      },
+    };
+    await runDueSignCompletions({ limit: 10, scope: scope() }, { store, sealer: failing });
+    const [after] = await db
+      .select()
+      .from(schema.signRequest)
+      .where(eq(schema.signRequest.id, request.id));
+    expect(after?.sealLeaseUntil).not.toBeNull();
+    expect(after?.sealError).toBeNull();
+  });
+});

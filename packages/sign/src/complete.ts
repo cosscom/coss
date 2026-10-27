@@ -40,13 +40,15 @@ export type SignCompletionDeps = {
 const LEASE_MS = 10 * 60_000;
 const MAX_BACKOFF_MS = 60 * 60_000;
 
-/** `orgs/<org>/<env>/requests/<request id>/signed.pdf`: the sealed, completed document. */
-export function signedDocumentKey(request: {
-  organizationId: string;
-  environmentId: string;
-  id: string;
-}): string {
-  return `${organizationPrefix(request.organizationId)}${request.environmentId}/requests/${request.id}/signed.pdf`;
+/**
+ * `orgs/<org>/<env>/requests/<request id>/signed-<sha256>.pdf`: one sealed, completed document,
+ * by content. Each attempt writes its own; only the one the fenced update publishes stays.
+ */
+export function signedDocumentKey(
+  request: { organizationId: string; environmentId: string; id: string },
+  sha256: string,
+): string {
+  return `${organizationPrefix(request.organizationId)}${request.environmentId}/requests/${request.id}/signed-${sha256}.pdf`;
 }
 
 /** Leases up to `limit` completed requests waiting for their seal. */
@@ -145,6 +147,7 @@ async function completedRequest(
     fields: fields.map((field) => ({
       documentIndex: documents.findIndex((document) => document.id === field.documentId),
       type: field.type,
+      label: field.label,
       page: field.page,
       x: field.x,
       y: field.y,
@@ -198,14 +201,14 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
     signedAt: now,
   });
   const sha256 = createHash("sha256").update(bytes).digest("hex");
-  const key = signedDocumentKey(request);
+  const key = signedDocumentKey(request, sha256);
   await deps.store.put({
     key,
     organizationId: request.organizationId,
     contentType: "application/pdf",
     content: bytes,
   });
-  await db.transaction(async (tx) => {
+  const published = await db.transaction(async (tx) => {
     // Fenced on the lease: a worker that lost it writes nothing.
     const [updated] = await tx
       .update(signRequest)
@@ -228,7 +231,7 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
         ),
       )
       .returning();
-    if (!updated) return;
+    if (!updated) return false;
     await recordSignEvent(
       tx,
       { request: updated, sandbox: completed.sandbox },
@@ -239,7 +242,14 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
         occurredAt: now,
       },
     );
+    return true;
   });
+  // Another worker sealed it first, or the request is gone: this copy is nobody's.
+  if (!published) {
+    await deps.store.delete([key]).catch((error) => {
+      console.error(`[sign] could not delete an unpublished seal of ${request.id}:`, error);
+    });
+  }
 }
 
 /** Seals due completed requests; returns how many it tried. */
@@ -255,6 +265,7 @@ export async function runDueSignCompletions(
     } catch (error) {
       console.error(`[sign] sealing ${request.id} failed:`, error);
       const backoff = Math.min(60_000 * 2 ** Math.max(0, request.sealAttempts - 1), MAX_BACKOFF_MS);
+      // Fenced like success: a worker whose lease was taken over leaves the new holder alone.
       await db
         .update(signRequest)
         .set({
@@ -266,6 +277,10 @@ export async function runDueSignCompletions(
           and(
             eq(signRequest.id, request.id),
             eq(signRequest.organizationId, request.organizationId),
+            isNull(signRequest.sealedAt),
+            request.sealLeaseUntil
+              ? eq(signRequest.sealLeaseUntil, request.sealLeaseUntil)
+              : undefined,
           ),
         );
     }

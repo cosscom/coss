@@ -15,6 +15,7 @@ const RULE = rgb(0.85, 0.86, 0.88);
 
 export type CompletedField = {
   documentIndex: number;
+  label?: string | null;
   type: "signature" | "initials" | "date_signed" | "name" | "email" | "text" | "checkbox";
   page: number;
   x: number;
@@ -132,15 +133,60 @@ function drawImageInBox(page: PDFPage, image: PDFImage, field: CompletedField): 
   page.drawImage(image, { x: at.x, y: at.y, width, height, rotate: degrees(at.rotate) });
 }
 
+/** `value` broken into lines no wider than `width` at `size` (words longer than a line are cut). */
+function wrap(font: PDFFont, value: string, size: number, width: number): string[] {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of value.split(/(?<=\s)/)) {
+    if (font.widthOfTextAtSize(line + word, size) <= width) {
+      line += word;
+      continue;
+    }
+    if (line) lines.push(line.trimEnd());
+    line = word;
+    while (font.widthOfTextAtSize(line, size) > width && line.length > 1) {
+      let cut = line.length - 1;
+      while (cut > 1 && font.widthOfTextAtSize(line.slice(0, cut), size) > width) cut--;
+      lines.push(line.slice(0, cut));
+      line = line.slice(cut);
+    }
+  }
+  if (line.trim()) lines.push(line.trimEnd());
+  return lines;
+}
+
+/**
+ * A value inside its box: one line, shrunk to fit; else wrapped onto as many lines as the box
+ * holds, the last one cut with "…". Nothing is drawn outside the box (the certificate has the
+ * whole value).
+ */
 function drawTextInBox(page: PDFPage, font: PDFFont, text: string, field: CompletedField): void {
   const value = drawable(font, text);
+  const width = field.width - 2;
   let size = Math.min(field.height * 0.7, 12);
-  while (size > 5 && font.widthOfTextAtSize(value, size) > field.width - 2) size -= 0.5;
-  const left = field.x + 1;
-  // The baseline sits a little above the box's bottom.
-  const bottom = field.y + field.height - (field.height - size) / 2 - size * 0.2;
-  const at = placement(page, left, bottom);
-  page.drawText(value, { x: at.x, y: at.y, size, font, color: INK, rotate: degrees(at.rotate) });
+  while (size > 5 && font.widthOfTextAtSize(value, size) > width) size -= 0.5;
+  let lines = [value];
+  if (font.widthOfTextAtSize(value, size) > width) {
+    size = Math.max(4, Math.min(size, field.height * 0.7));
+    const fit = Math.max(1, Math.floor(field.height / (size * 1.15)));
+    lines = wrap(font, value, size, width);
+    if (lines.length > fit) {
+      lines = lines.slice(0, fit);
+      let last = `${lines[fit - 1] ?? ""}…`;
+      while (last.length > 1 && font.widthOfTextAtSize(last, size) > width) {
+        last = `${last.slice(0, -2)}…`;
+      }
+      lines[fit - 1] = last;
+    }
+  }
+  const lineHeight = size * 1.15;
+  const top = field.y + (field.height - lineHeight * lines.length) / 2;
+  for (const [index, line] of lines.entries()) {
+    // Each baseline a little above its line's bottom.
+    const bottom = top + lineHeight * (index + 1) - size * 0.25;
+    const at = placement(page, field.x + 1, bottom);
+    page.drawText(line, { x: at.x, y: at.y, size, font, color: INK, rotate: degrees(at.rotate) });
+  }
 }
 
 function drawCheck(page: PDFPage, field: CompletedField): void {
@@ -407,6 +453,11 @@ export async function buildCompletedPdf(request: CompletedRequest): Promise<PDFD
     if (signature) {
       writer.row("Signature", "");
       writer.image(signature, 180, 50);
+    }
+    // What they typed, in full (a long value may be cut to fit its box on the page).
+    for (const field of request.fields) {
+      if (field.signerId !== signer.id || field.type !== "text" || !field.value) continue;
+      writer.row(field.label ?? "Text entered", field.value);
     }
   }
 
