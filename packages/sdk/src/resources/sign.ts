@@ -136,6 +136,20 @@ export class SignRequestsResource {
     });
   }
 
+  /**
+   * Emails a reminder (with a fresh link) to the email signers who haven't signed and whose turn
+   * it is, unless they were emailed in the last hour (`reminder_not_due` when nobody is left).
+   * Not retried automatically: a retry after a lost answer would be `reminder_not_due`.
+   */
+  remind(id: string, options?: ReadOptions): Promise<CossResult<SignRequest>> {
+    return this.#http.request<SignRequest>({
+      method: "POST",
+      path: `/v1/sign/requests/${encodeURIComponent(id)}/remind`,
+      retry: false,
+      signal: options?.signal,
+    });
+  }
+
   /** Cancels a draft or sent request; signers can no longer sign it. */
   cancel(id: string, options?: ReadOptions): Promise<CossResult<SignRequest>> {
     return this.#http.request<SignRequest>({

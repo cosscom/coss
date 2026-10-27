@@ -938,6 +938,18 @@
           "description": "An RFC 3161 time-stamping authority: seals carry its timestamp (PAdES B-T)."
         },
         {
+          "name": "SIGN_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin of Sign's signing app (apps/sign, on a registrable domain of its own); signing session links point there. Unset: creating a signing session fails (503) until it is deployed."
+        },
+        {
+          "name": "SIGN_NOTIFICATIONS_FROM",
+          "kind": "plain",
+          "required": false,
+          "description": "coss.com's sender of Sign emails (\"<requester> via coss.com\"), on a verified domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default NOTIFICATIONS_FROM's address."
+        },
+        {
           "name": "API_PORT",
           "kind": "plain",
           "required": false,

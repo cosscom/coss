@@ -166,6 +166,11 @@ export interface CreateSignRequestParams {
   /** At most 365 days ahead (ISO 8601). */
   expires_at?: string;
   metadata?: Record<string, string>;
+  /**
+   * Email signers who haven't signed get a reminder every this many days (1-30, up to 3).
+   * Default: your settings' `reminder_interval_days`; `null`: none.
+   */
+  reminder_interval_days?: number | null;
   /** Default `true`; `false` keeps a `draft`. */
   send?: boolean;
 }
@@ -221,7 +226,10 @@ export interface SignRequest {
   fields: SignField[];
   metadata: Record<string, string>;
   sandbox: boolean;
+  /** Days between automatic reminders to email signers; `null`: none. */
+  reminder_interval_days: number | null;
   expires_at: string | null;
+  expired_at: string | null;
   sent_at: string | null;
   completed_at: string | null;
   canceled_at: string | null;
@@ -311,6 +319,13 @@ export interface SignSettings {
   theme: SignTheme;
   /** Your own consent text; `null`: coss.com's default. */
   disclosure: string | null;
+  /**
+   * Signing emails come from this address (a verified domain in live environments); `null`: from
+   * coss.com as "<display name> via coss.com".
+   */
+  email_from: string | null;
+  /** The default days between reminders for new requests; `null`: none. */
+  reminder_interval_days: number | null;
 }
 
 /** Only the fields given change. */
@@ -322,6 +337,9 @@ export interface UpdateSignSettingsParams {
   accent_color?: string | null;
   theme?: SignTheme;
   disclosure?: string | null;
+  email_from?: string | null;
+  /** 1-30. */
+  reminder_interval_days?: number | null;
 }
 
 export type SignWebhookEventType =
@@ -330,7 +348,8 @@ export type SignWebhookEventType =
   | "sign_request.signer_signed"
   | "sign_request.declined"
   | "sign_request.completed"
-  | "sign_request.canceled";
+  | "sign_request.canceled"
+  | "sign_request.expired";
 
 export interface SignRequestWebhookEventData {
   sign_request_id: string;

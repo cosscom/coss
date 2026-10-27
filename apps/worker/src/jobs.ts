@@ -53,7 +53,12 @@ import {
 import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
-import { runDueSignCompletions, type SignCompletionDeps } from "@coss/sign";
+import {
+  runDueSignCompletions,
+  runDueSignNotifications,
+  type SignCompletionDeps,
+  type SignNotificationDeps,
+} from "@coss/sign";
 import {
   advanceDueSmsRegistrations,
   attachPendingSmsNumbers,
@@ -101,6 +106,7 @@ const DELETION_BATCH = 5;
 const RETENTION_BATCH = 1000;
 const BILLING_BATCH = 20;
 const SIGN_COMPLETION_BATCH = 5;
+const SIGN_NOTIFICATION_BATCH = 50;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 // Hooks delivery failures warn by default (their policy has no suspension threshold).
 const REPUTATION_CHECKS = [
@@ -144,6 +150,8 @@ export type WorkerDeps = {
   notifications: ReputationNotificationDeps | null;
   /** Seals Sign's completed requests; `null`: held (no document store or sealer yet). */
   signCompletion?: SignCompletionDeps | null;
+  /** Sign's emails, reminders and expiry; `null`: off (no document store or signing app yet). */
+  signNotifications?: SignNotificationDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
   push?: PushDeps | null;
   /** coss.com's own organization (`NOTIFICATIONS_ENVIRONMENT_ID`'s): the guard never suspends it. */
@@ -174,7 +182,8 @@ export type WorkerDeps = {
 /**
  * Every loop (and pg-boss's email dispatch, one queue per stream), by name, for `WORKER_LOOPS`. The
  * conditional ones (`billing-notifications`, `auth-emails`, `reputation-notifications`,
- * `dmarc-notifications`, `push-notifications`, `sign-completions`, `ses-events`, `ses-inbound`) also need their
+ * `dmarc-notifications`, `push-notifications`, `sign-completions`, `sign-notifications`, `ses-events`,
+ * `ses-inbound`) also need their
  * configuration.
  */
 export const WORKER_LOOP_NAMES = [
@@ -213,6 +222,7 @@ export const WORKER_LOOP_NAMES = [
   "dmarc-notifications",
   "push-notifications",
   "sign-completions",
+  "sign-notifications",
   "ses-events",
   "ses-inbound",
 ] as const;
@@ -574,6 +584,19 @@ export function startJobs(deps: WorkerDeps): Loop[] {
         run: async () =>
           (await runDueSignCompletions({ limit: SIGN_COMPLETION_BATCH }, signCompletion)) ===
           SIGN_COMPLETION_BATCH,
+      }),
+    );
+  }
+  const signNotifications = deps.signNotifications;
+  if (signNotifications) {
+    loops.push(
+      start({
+        // Invitations should arrive within seconds of sending; reminders and expiry are by the day.
+        name: "sign-notifications",
+        intervalMs: 5000,
+        run: async () =>
+          (await runDueSignNotifications({ limit: SIGN_NOTIFICATION_BATCH }, signNotifications)) >=
+          SIGN_NOTIFICATION_BATCH,
       }),
     );
   }

@@ -85,6 +85,8 @@ test("coss.sign.settings reads and updates the environment's settings", async ()
     accent_color: null,
     theme: "system",
     disclosure: null,
+    email_from: null,
+    reminder_interval_days: null,
   });
   const updated = await coss.sign.settings.update({
     allowed_origins: ["http://localhost:5173"],

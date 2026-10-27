@@ -124,6 +124,9 @@ export const signRequest = pgTable(
     sealAttempts: integer("seal_attempts").notNull().default(0),
     sealNextAttemptAt: timestamp("seal_next_attempt_at", { withTimezone: true }),
     sealError: text("seal_error"),
+    // Days between reminders to email signers; `null`: no automatic reminders.
+    reminderIntervalDays: integer("reminder_interval_days"),
+    expiredAt: timestamp("expired_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -217,6 +220,17 @@ export const signSigner = pgTable(
     signatureSha256: text("signature_sha256"),
     initialsKey: text("initials_key"),
     initialsSha256: text("initials_sha256"),
+    // Email delivery: invited, reminded (automatically up to a limit, or when asked), sent a copy.
+    notifiedAt: timestamp("notified_at", { withTimezone: true }),
+    reminderCount: integer("reminder_count").notNull().default(0),
+    lastRemindedAt: timestamp("last_reminded_at", { withTimezone: true }),
+    nextReminderAt: timestamp("next_reminder_at", { withTimezone: true }),
+    remindRequestedAt: timestamp("remind_requested_at", { withTimezone: true }),
+    copySentAt: timestamp("copy_sent_at", { withTimezone: true }),
+    // A failed email to this signer: tried again after `email_retry_at` (backoff), so one signer
+    // whose emails keep failing never holds up anyone else's.
+    emailFailures: integer("email_failures").notNull().default(0),
+    emailRetryAt: timestamp("email_retry_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -229,6 +243,12 @@ export const signSigner = pgTable(
     unique("sign_signer_id_organization_unique").on(t.id, t.organizationId),
     unique("sign_signer_request_email_unique").on(t.requestId, t.email),
     index("sign_signer_request_idx").on(t.requestId, t.position),
+    // Email signers waiting for their invitation, a reminder or their copy.
+    index("sign_signer_email_due_idx")
+      .on(t.requestId)
+      .where(
+        sql`${t.delivery} = 'email' and (${t.notifiedAt} is null or ${t.nextReminderAt} is not null or ${t.remindRequestedAt} is not null or (${t.status} = 'signed' and ${t.copySentAt} is null))`,
+      ),
   ],
 );
 
@@ -399,6 +419,11 @@ export const signSettings = pgTable(
     theme: text("theme").notNull().default("system"),
     // The consent to electronic records and signatures; `null`: coss.com's default text.
     disclosure: text("disclosure"),
+    // Signing emails come from this address (a verified domain in live environments); `null`:
+    // coss.com's own sender ("<display name> via coss.com").
+    emailFrom: text("email_from"),
+    // Default days between reminders for new requests; `null`: none.
+    reminderIntervalDays: integer("reminder_interval_days"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

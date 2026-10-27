@@ -1,3 +1,4 @@
+import { authorizeLiveSender } from "@coss/email";
 import {
   cancelSignRequest,
   createSignSession,
@@ -8,6 +9,7 @@ import {
   listSignRequestEvents,
   listSignRequests,
   readSignedDocument,
+  requestSignReminders,
   type SignActor,
   type SignService,
   sendSignRequest,
@@ -329,6 +331,27 @@ export const listSignRequestEventsRoute = createRoute({
   },
 });
 
+export const remindSignRequestRoute = createRoute({
+  method: "post",
+  path: "/sign/requests/{id}/remind",
+  operationId: "remindSignRequest",
+  tags: [TAG_REQUESTS],
+  summary: "Remind signers",
+  description:
+    "Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't " +
+    "signed and whose turn it is, unless they were emailed in the last hour. Embedded signers " +
+    "are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ sign: ["send"] }), rateLimit("api.write")],
+  request: { params: RequestIdParams },
+  responses: {
+    200: jsonDoc("The request.", SignRequestObject),
+    ...commonErrors,
+    404: requestNotFound,
+    422: errorDoc("The request isn't `sent`, or nobody can be reminded now (`reminder_not_due`)."),
+  },
+});
+
 export const getSignedDocumentRoute = createRoute({
   method: "get",
   path: "/sign/requests/{id}/signed_document",
@@ -459,9 +482,15 @@ export type SignRouteDeps = {
   signService: SignService | null;
   /** Where signing session links point (`SIGN_PUBLIC_URL`); `null`: the signing app isn't deployed. */
   signUrl: string | null;
+  /** The live email provider: `email_from` must be on a domain it verified. */
+  liveProvider: string;
 };
 
-export function createSignRoutes({ signService, signUrl }: SignRouteDeps): OpenAPIHono<AppEnv> {
+export function createSignRoutes({
+  signService,
+  signUrl,
+  liveProvider,
+}: SignRouteDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
   function available(): SignService {
@@ -596,6 +625,13 @@ export function createSignRoutes({ signService, signUrl }: SignRouteDeps): OpenA
     return c.json({ object: "list" as const, data, has_more: false }, 200);
   });
 
+  router.openapi(remindSignRequestRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    await requestSignReminders({ organizationId, environmentId, requestId: id });
+    return c.json(await getSignRequest({ organizationId, environmentId, requestId: id }), 200);
+  });
+
   router.openapi(getSignedDocumentRoute, async (c) => {
     const service = available();
     const { id } = c.req.valid("param");
@@ -648,7 +684,15 @@ export function createSignRoutes({ signService, signUrl }: SignRouteDeps): OpenA
 
   router.openapi(updateSignSettingsRoute, async (c) => {
     const update = c.req.valid("json");
-    const { organizationId, environmentId } = c.var.auth;
+    const { organizationId, environmentId, mode } = c.var.auth;
+    // Live signing emails go out from it: it must be an address the organization may send from.
+    if (update.email_from && mode === "live") {
+      await authorizeLiveSender({
+        organizationId,
+        from: update.email_from,
+        provider: liveProvider,
+      });
+    }
     const settings = await updateSignSettings({ organizationId, environmentId, update });
     await recordApiAudit(c, {
       action: "sign_settings.updated",

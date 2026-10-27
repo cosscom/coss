@@ -64,6 +64,7 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "sign_request.declined",
   "sign_request.completed",
   "sign_request.canceled",
+  "sign_request.expired",
 ];
 
 /** Types only live environments receive: `domain.*`, `account.*` and `billing.*`. */

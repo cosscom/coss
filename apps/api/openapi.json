@@ -3073,7 +3073,8 @@
               "sign_request.signer_signed",
               "sign_request.declined",
               "sign_request.completed",
-              "sign_request.canceled"
+              "sign_request.canceled",
+              "sign_request.expired"
             ]
           },
           "api_version": {
@@ -8475,10 +8476,11 @@
                 "sign_request.signer_signed",
                 "sign_request.declined",
                 "sign_request.completed",
-                "sign_request.canceled"
+                "sign_request.canceled",
+                "sign_request.expired"
               ]
             },
-            "maxItems": 62,
+            "maxItems": 63,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -8766,10 +8768,11 @@
                 "sign_request.signer_signed",
                 "sign_request.declined",
                 "sign_request.completed",
-                "sign_request.canceled"
+                "sign_request.canceled",
+                "sign_request.expired"
               ]
             },
-            "maxItems": 62,
+            "maxItems": 63,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -9306,10 +9309,11 @@
                 "sign_request.signer_signed",
                 "sign_request.declined",
                 "sign_request.completed",
-                "sign_request.canceled"
+                "sign_request.canceled",
+                "sign_request.expired"
               ]
             },
-            "maxItems": 62,
+            "maxItems": 63,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -9744,7 +9748,8 @@
               "sign_request.signer_signed",
               "sign_request.declined",
               "sign_request.completed",
-              "sign_request.canceled"
+              "sign_request.canceled",
+              "sign_request.expired"
             ],
             "description": "The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },
@@ -11263,7 +11268,21 @@
           "sandbox": {
             "type": "boolean"
           },
+          "reminder_interval_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Days between automatic reminders to email signers; `null`: none."
+          },
           "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "expired_at": {
             "type": [
               "string",
               "null"
@@ -11340,7 +11359,9 @@
           "fields",
           "metadata",
           "sandbox",
+          "reminder_interval_days",
           "expires_at",
+          "expired_at",
           "sent_at",
           "completed_at",
           "canceled_at",
@@ -11400,7 +11421,9 @@
             ],
             "metadata": {},
             "sandbox": false,
+            "reminder_interval_days": 3,
             "expires_at": null,
+            "expired_at": null,
             "sent_at": "2026-10-26T15:04:05.000Z",
             "completed_at": null,
             "canceled_at": null,
@@ -11727,6 +11750,15 @@
               "maxLength": 500
             },
             "description": "Your own key-value pairs, returned with the request and its webhooks."
+          },
+          "reminder_interval_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 30,
+            "description": "Email signers who haven't signed get a reminder every this many days (up to 3). Default: your Sign settings' `reminder_interval_days`; `null`: none."
           },
           "send": {
             "type": "boolean",
@@ -12228,6 +12260,20 @@
               "null"
             ],
             "description": "Your own consent text signers accept before they see a document. `null`: coss.com's default, which covers ESIGN's consumer disclosure. Have your counsel review a replacement."
+          },
+          "email_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Signing emails (invitations, reminders, signed copies) come from this address, on a verified domain in live environments. `null`: from coss.com, as \"<display name> via coss.com\"."
+          },
+          "reminder_interval_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "The default days between reminders for new requests; `null`: none."
           }
         },
         "required": [
@@ -12236,7 +12282,9 @@
           "display_name",
           "accent_color",
           "theme",
-          "disclosure"
+          "disclosure",
+          "email_from",
+          "reminder_interval_days"
         ],
         "examples": [
           {
@@ -12247,7 +12295,9 @@
             "display_name": "Acme",
             "accent_color": "#2563eb",
             "theme": "system",
-            "disclosure": null
+            "disclosure": null,
+            "email_from": "contracts@acme.com",
+            "reminder_interval_days": 3
           }
         ]
       },
@@ -12291,6 +12341,22 @@
             ],
             "minLength": 1,
             "maxLength": 10000
+          },
+          "email_from": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 254,
+            "format": "email"
+          },
+          "reminder_interval_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 30
           }
         },
         "additionalProperties": false,
@@ -43103,6 +43169,245 @@
           },
           "404": {
             "description": "No signature request with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sign/requests/{id}/remind": {
+      "post": {
+        "operationId": "remindSignRequest",
+        "tags": [
+          "Signature requests"
+        ],
+        "summary": "Remind signers",
+        "description": "Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't signed and whose turn it is, unless they were emailed in the last hour. Embedded signers are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The signature request's id.",
+              "examples": [
+                "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The signature request's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignRequest"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No signature request with this id exists in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request isn't `sent`, or nobody can be reminded now (`reminder_not_due`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

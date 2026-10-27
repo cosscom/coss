@@ -484,3 +484,46 @@ describe("Signed documents", () => {
     ).toBe("%PDF-");
   });
 });
+
+describe("Reminders and the sender", () => {
+  test("remind refuses when nobody can be reminded yet", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const create = await apiRequest(app, "POST", "/v1/sign/requests", {
+      key: tenant.sandboxKey,
+      body: {
+        title: "NDA",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        signers: [signer()],
+        reminder_interval_days: 3,
+      },
+    });
+    const request = await create.json();
+    expect(request.reminder_interval_days).toBe(3);
+    // Not invited yet (the worker sends invitations).
+    const remind = await apiRequest(app, "POST", `/v1/sign/requests/${request.id}/remind`, {
+      key: tenant.sandboxKey,
+    });
+    expect(remind.status).toBe(422);
+    expect((await errorOf(remind)).code).toBe("reminder_not_due");
+  });
+
+  test("a live environment's email_from must be on a verified domain", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const live = await apiRequest(app, "PATCH", "/v1/sign/settings", {
+      key: tenant.liveKey,
+      body: { email_from: "contracts@unverified.example" },
+    });
+    expect(live.status).toBe(422);
+    expect((await errorOf(live)).code).toBe("domain_not_verified");
+    const sandbox = await apiRequest(app, "PATCH", "/v1/sign/settings", {
+      key: tenant.sandboxKey,
+      body: { email_from: "contracts@unverified.example", reminder_interval_days: 2 },
+    });
+    expect(await sandbox.json()).toMatchObject({
+      email_from: "contracts@unverified.example",
+      reminder_interval_days: 2,
+    });
+  });
+});

@@ -17,7 +17,9 @@ export type SignErrorCode =
   | "not_signers_turn"
   | "consent_required"
   | "invalid_signing"
-  | "signed_document_not_ready";
+  | "signed_document_not_ready"
+  | "reminder_not_due"
+  | "invalid_sender";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -51,6 +53,10 @@ const STATUS_BY_CODE = {
   invalid_signing: 422,
   // Not completed, or still being sealed (not 409: the SDK retries those).
   signed_document_not_ready: 422,
+  // Not sent, or nobody to remind (embedded signers, or reminded within the hour).
+  reminder_not_due: 422,
+  // `email_from` isn't on a verified domain of the organization.
+  invalid_sender: 422,
 } as const satisfies Record<SignErrorCode, number>;
 
 /** Expected failures of the Sign product; `status` is the HTTP status the API should use. */

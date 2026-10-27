@@ -71,6 +71,9 @@ export const MAX_SIGN_FIELDS = 500;
 export const MAX_SIGN_METADATA_KEYS = 20;
 export const MAX_SIGN_EXPIRY_DAYS = 365;
 export const DEFAULT_SIGN_LIST_LIMIT = 20;
+/** Automatic reminders per email signer (asked-for ones aren't counted). */
+export const MAX_SIGN_REMINDERS = 3;
+export const MAX_SIGN_REMINDER_INTERVAL_DAYS = 30;
 export const MAX_SIGN_LIST_LIMIT = 100;
 
 /**
@@ -324,6 +327,16 @@ export const CreateSignRequestRequest = z
         description: `When unsigned requests expire (at most ${MAX_SIGN_EXPIRY_DAYS} days ahead).`,
       }),
     metadata: Metadata.optional(),
+    reminder_interval_days: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_SIGN_REMINDER_INTERVAL_DAYS)
+      .nullable()
+      .optional()
+      .meta({
+        description: `Email signers who haven't signed get a reminder every this many days (up to ${MAX_SIGN_REMINDERS}). Default: your Sign settings' \`reminder_interval_days\`; \`null\`: none.`,
+      }),
     send: z.boolean().optional().meta({
       description: "Default `true`: send at once. `false` keeps a `draft` to send later.",
     }),
@@ -412,7 +425,11 @@ export const SignRequestObject = z
     fields: z.array(SignFieldObject),
     metadata: z.record(z.string(), z.string()),
     sandbox: z.boolean(),
+    reminder_interval_days: z.number().int().nullable().meta({
+      description: "Days between automatic reminders to email signers; `null`: none.",
+    }),
     expires_at: z.iso.datetime().nullable(),
+    expired_at: z.iso.datetime().nullable(),
     sent_at: z.iso.datetime().nullable(),
     completed_at: z.iso.datetime().nullable(),
     canceled_at: z.iso.datetime().nullable(),
@@ -486,7 +503,9 @@ export const SignRequestObject = z
         ],
         metadata: {},
         sandbox: false,
+        reminder_interval_days: 3,
         expires_at: null,
+        expired_at: null,
         sent_at: CREATED_AT_EXAMPLE,
         completed_at: null,
         canceled_at: null,
@@ -708,6 +727,13 @@ export const SignSettingsObject = z
       description:
         "Your own consent text signers accept before they see a document. `null`: coss.com's default, which covers ESIGN's consumer disclosure. Have your counsel review a replacement.",
     }),
+    email_from: z.string().nullable().meta({
+      description:
+        'Signing emails (invitations, reminders, signed copies) come from this address, on a verified domain in live environments. `null`: from coss.com, as "<display name> via coss.com".',
+    }),
+    reminder_interval_days: z.number().int().nullable().meta({
+      description: "The default days between reminders for new requests; `null`: none.",
+    }),
   })
   .meta({
     id: "SignSettings",
@@ -719,6 +745,8 @@ export const SignSettingsObject = z
         accent_color: "#2563eb",
         theme: "system",
         disclosure: null,
+        email_from: "contracts@acme.com",
+        reminder_interval_days: 3,
       },
     ],
   });
@@ -731,6 +759,14 @@ export const UpdateSignSettingsRequest = z
     accent_color: AccentColor.nullable().optional(),
     theme: z.enum(SIGN_THEMES).optional(),
     disclosure: Disclosure.nullable().optional(),
+    email_from: z.email().max(254).nullable().optional(),
+    reminder_interval_days: z
+      .number()
+      .int()
+      .min(1)
+      .max(MAX_SIGN_REMINDER_INTERVAL_DAYS)
+      .nullable()
+      .optional(),
   })
   .meta({
     id: "UpdateSignSettingsRequest",
@@ -749,6 +785,7 @@ export const SIGN_WEBHOOK_EVENT_TYPES = [
   "sign_request.declined",
   "sign_request.completed",
   "sign_request.canceled",
+  "sign_request.expired",
 ] as const;
 export type SignWebhookEventType = (typeof SIGN_WEBHOOK_EVENT_TYPES)[number];
 
@@ -761,6 +798,7 @@ export const SIGN_WEBHOOK_EVENT_OF: Partial<Record<SignEventType, SignWebhookEve
   // When the sealed document is ready, not at the last signature: then it can be downloaded.
   sealed: "sign_request.completed",
   canceled: "sign_request.canceled",
+  expired: "sign_request.expired",
 };
 
 const ApiVersion = z.string().meta({
