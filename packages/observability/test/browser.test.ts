@@ -64,7 +64,10 @@ describe("browser monitoring", () => {
       if (location) Object.defineProperty(globalThis, "location", location);
       else Reflect.deleteProperty(globalThis, "location");
     }
-    expect(calls.inits[0]).toMatchObject({ allowUrls: ["https://coss.com/"] });
+    expect(calls.inits[0]).toMatchObject({
+      allowUrls: ["https://coss.com/"],
+      ignoreErrors: expect.arrayContaining(["Object Not Found Matching Id"]),
+    });
   });
 
   test("never loads the SDK while monitoring is off or unreachable", async () => {

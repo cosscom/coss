@@ -20,6 +20,16 @@ export type BrowserSdk = {
 /** Next's `onRouterTransitionStart` hook (`instrumentation-client.ts`). */
 export type RouterTransitionHook = (href: string, navigationType: string) => void;
 
+/**
+ * Errors of code that runs as the page itself, so `allowUrls` can't tell it from ours: Outlook's
+ * link scanner (Safe Links), extensions' messaging and Telegram's in-app browser.
+ */
+const FOREIGN_ERRORS = [
+  "Object Not Found Matching Id",
+  "Invalid call to runtime.sendMessage()",
+  "Error invoking postEvent",
+];
+
 function isConfig(value: unknown): value is SentryConfig {
   if (!value || typeof value !== "object") return false;
   const config = value as Record<string, unknown>;
@@ -75,6 +85,7 @@ export async function initBrowserMonitoring(
     // Only errors thrown by our own scripts: extensions and other injected code also run in the
     // page (`app:///…`, `chrome-extension://…` frames) and would otherwise be reported as ours.
     ...(origin ? { allowUrls: [`${origin}/`] } : {}),
+    ignoreErrors: FOREIGN_ERRORS,
   });
   return sdk;
 }
