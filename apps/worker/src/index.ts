@@ -32,8 +32,7 @@ import { createRateLimitRuntime } from "@coss/ratelimit";
 import { logReputationNotifier, type ReputationNotifier } from "@coss/reputation";
 import { type ScreenInput, screenMessage } from "@coss/screening";
 import { createClassifier } from "@coss/screening/runtime";
-import { FakeDocumentStore } from "@coss/sign";
-import { sealerFromEnv } from "@coss/sign/runtime";
+import { sealerFromEnv, signStoreFromEnv } from "@coss/sign/runtime";
 import { createSmsService } from "@coss/sms";
 import {
   ensureSmsDispatchQueue,
@@ -232,7 +231,7 @@ const send = createWebhookSender({ allowPrivateNetworks: process.env.NODE_ENV !=
 // Sign: completed requests are sealed here. Production has no document store (nor a certificate)
 // yet, so nothing waits there to be sealed.
 const signSeal = await sealerFromEnv(env);
-const signStore = process.env.NODE_ENV === "production" ? null : new FakeDocumentStore();
+const signStore = signStoreFromEnv(env);
 const signCompletion = signSeal && signStore ? { store: signStore, ...signSeal } : null;
 // Sign's emails go out through the email product (sign-mailer.ts).
 const signFallbackAddress =
@@ -292,6 +291,7 @@ const loops = startJobs({
   push: pushSender && { sender: pushSender },
   signCompletion,
   signNotifications,
+  signStore,
   webhooks: { secretsKeys, send },
   migrations: {
     secretsKeys,

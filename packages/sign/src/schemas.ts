@@ -518,6 +518,13 @@ export const SignRequestObject = z
 
 export type SignRequestObjectOutput = z.output<typeof SignRequestObject>;
 
+export const DeletedSignRequest = z
+  .object({ object: z.literal("sign_request"), id: z.string(), deleted: z.literal(true) })
+  .meta({
+    id: "DeletedSignRequest",
+    examples: [{ object: "sign_request", id: REQUEST_ID_EXAMPLE, deleted: true }],
+  });
+
 export const SignRequestList = z
   .object({ object: z.literal("list"), data: z.array(SignRequestObject), has_more: z.boolean() })
   .meta({ id: "SignRequestList", examples: [{ object: "list", data: [], has_more: false }] });

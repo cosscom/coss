@@ -1,6 +1,7 @@
 import "server-only";
 import { createRateLimitRuntime, type RateLimitRuntime } from "@coss/ratelimit";
-import { FakeDocumentStore } from "@coss/sign";
+import type { DocumentStore } from "@coss/sign";
+import { signStoreFromEnv } from "@coss/sign/runtime";
 import { env } from "@/env";
 import type { SignApiDeps } from "./sign-api";
 
@@ -18,13 +19,13 @@ export function rateLimitRuntime(): RateLimitRuntime {
   return globalForRateLimit.__cossSignRateLimit;
 }
 
-// Documents' bytes: `sign_fake_object` outside production. Production has no store until the S3
-// store lands, and the API doesn't create requests there either.
-const store = process.env.NODE_ENV === "production" ? null : new FakeDocumentStore();
+// Documents' bytes: S3 (`SIGN_DOCUMENTS_BUCKET`), else `sign_fake_object` outside production.
+let store: DocumentStore | null | undefined;
 
 /** The signing API's dependencies for one request. */
 export function signDeps(headers: Headers): SignApiDeps {
   const rateLimits = rateLimitRuntime();
+  if (store === undefined) store = signStoreFromEnv(env);
   return {
     store,
     limiter: rateLimits.limiter,

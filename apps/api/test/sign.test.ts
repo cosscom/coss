@@ -527,3 +527,34 @@ describe("Reminders and the sender", () => {
     });
   });
 });
+
+describe("Deleting requests", () => {
+  test("cancel first, then delete", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const create = await apiRequest(app, "POST", "/v1/sign/requests", {
+      key: tenant.sandboxKey,
+      body: {
+        title: "NDA",
+        documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+        signers: [signer()],
+      },
+    });
+    const request = await create.json();
+    const refused = await apiRequest(app, "DELETE", `/v1/sign/requests/${request.id}`, {
+      key: tenant.sandboxKey,
+    });
+    expect((await errorOf(refused)).code).toBe("request_not_deletable");
+    await apiRequest(app, "POST", `/v1/sign/requests/${request.id}/cancel`, {
+      key: tenant.sandboxKey,
+    });
+    const removed = await apiRequest(app, "DELETE", `/v1/sign/requests/${request.id}`, {
+      key: tenant.sandboxKey,
+    });
+    expect(await removed.json()).toEqual({ object: "sign_request", id: request.id, deleted: true });
+    const gone = await apiRequest(app, "GET", `/v1/sign/requests/${request.id}`, {
+      key: tenant.sandboxKey,
+    });
+    expect(gone.status).toBe(404);
+  });
+});

@@ -122,8 +122,37 @@ templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` 
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —
   have counsel review changes to it).
-- **Store** (`store.ts`): `DocumentStore` (`put/get/delete/deleteOrganization`), keys
-  `orgs/<org>/<env>/documents/<id>.pdf`. Only `FakeDocumentStore` exists: the API turns Sign off
-  in production (`signService: null` → 503 `sign_unavailable`) until the S3 store lands.
-  Organization deletion removes `sign_fake_object` rows in batches.
-- **Retention**: `RETENTION_POLICY` `signature_requests` — kept until the customer deletes them.
+- **Store** (`store.ts`, `s3-store.ts`): `DocumentStore` (`put/get/delete/deleteOrganization`),
+  keys `orgs/<org>/<env>/…` (documents, `signatures/`, `requests/<id>/signed.pdf`).
+  `signStoreFromEnv` (`./runtime`): `S3DocumentStore` with `SIGN_DOCUMENTS_BUCKET` (+ `AWS_REGION`;
+  versioned, SSE-KMS, `infra/terraform/sign.tf`), else `FakeDocumentStore` (`sign_fake_object`)
+  outside production, else `null`: the API answers 503 `sign_unavailable` and the worker's Sign
+  loops don't run. Organization deletion: the worker's `releaseProviderResources` deletes the
+  store's prefix; `deleteOrganizationData` removes `sign_fake_object` rows.
+- **Deleting requests** (`deleteSignRequest`, `DELETE /v1/sign/requests/{id}`): anything but `sent`
+  (cancel first, `request_not_deletable`); the row cascades (signers, fields, events, sessions)
+  and the signature images and signed PDF leave the store. Documents stay.
+- **Billing**: meter `sign.completed_requests` (`@coss/billing/metering`), recorded once in the
+  sealing transaction (behind its compare-and-set), live environments only. It has no rate yet:
+  invoices show the usage as an uncharged line until a rate card prices it (pricing is a product
+  decision).
+- **Retention**: `RETENTION_POLICY` `signature_requests` — kept until the customer deletes them;
+  `signing_sessions` — signing and builder sessions `RETENTION_DAYS.signSessions` after expiry
+  (`purgeExpiredSignSessions`, the worker's `retention` loop).
+
+## Going live (production)
+
+Sign is off in production until all of this is done, in this order:
+
+1. **Domain:** buy the signing app's domain (placeholder `cosssign.com`) on Cloudflare. Then add
+   the `sign` service to `infra/aws/services.ts` and the deploy matrix, add `SIGN_HOST` routing
+   with an origin-verify header like `PORTAL_HOST`, and add its certificate. Run
+   `terraform apply` **before** merging that PR: a new ECS service must exist first.
+2. **Bucket:** `terraform apply` creates the bucket and both KMS keys (`sign.tf`).
+3. **Seal:** make a CSR from the `sign_seal_kms_key_id` key, buy a document-signing certificate
+   from a CA on Adobe's trust list (AATL), and set `SIGN_SEALER=kms`, `SIGN_SEAL_KMS_KEY_ID`,
+   `SIGN_SEAL_CERTIFICATE_CHAIN` (worker). Add a TSA contract's `SIGN_TSA_URL`.
+4. **Settings:** set `SIGN_DOCUMENTS_BUCKET` (api, worker, sign) and `SIGN_PUBLIC_URL` (api,
+   worker), plus `SIGN_NOTIFICATIONS_FROM` on a verified coss.com domain. Deploy.
+5. **Before announcing:** get legal review of `DEFAULT_SIGN_DISCLOSURE` and the certificate
+   wording, and price `sign.completed_requests` with a new rate card.

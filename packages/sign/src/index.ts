@@ -10,6 +10,8 @@ export * from "./notifications.ts";
 export * from "./pdf.ts";
 export * from "./record.ts";
 export * from "./requests.ts";
+export * from "./retention.ts";
+export { S3DocumentStore, type SignS3Api, signS3Api } from "./s3-store.ts";
 export { cadesSignature } from "./seal/cms.ts";
 export { readPdfSeal, SIGNATURE_PLACEHOLDER_BYTES, sealPdf } from "./seal/pdf-signature.ts";
 export {

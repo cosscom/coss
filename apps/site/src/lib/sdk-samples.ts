@@ -302,6 +302,7 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "sign.requests.auditTrail",
     args: (r) => [pathId(r)],
   },
+  "DELETE /v1/sign/requests/{id}": { method: "sign.requests.remove", args: (r) => [pathId(r)] },
   "POST /v1/sign/requests/{id}/remind": {
     method: "sign.requests.remind",
     args: (r) => [pathId(r)],

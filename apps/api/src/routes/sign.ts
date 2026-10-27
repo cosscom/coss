@@ -20,6 +20,7 @@ import {
   CreateSignRequestRequest,
   CreateSignSessionRequest,
   DeletedSignDocument,
+  DeletedSignRequest,
   ListSignDocumentsQuery,
   ListSignRequestsQuery,
   SignDocumentList,
@@ -331,6 +332,28 @@ export const listSignRequestEventsRoute = createRoute({
   },
 });
 
+export const deleteSignRequestRoute = createRoute({
+  method: "delete",
+  path: "/sign/requests/{id}",
+  operationId: "deleteSignRequest",
+  tags: [TAG_REQUESTS],
+  summary: "Delete a signature request",
+  description:
+    "Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit " +
+    "trail, signatures and signed document, for good. Its documents stay (delete them on " +
+    "their own). Keep the signed document first if you need it: it is your record.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ sign: ["delete"] }), rateLimit("api.write")],
+  request: { params: RequestIdParams },
+  responses: {
+    200: jsonDoc("The deleted request.", DeletedSignRequest),
+    ...commonErrors,
+    404: requestNotFound,
+    422: errorDoc("The request is `sent`: cancel it first (`request_not_deletable`)."),
+    503: unavailable,
+  },
+});
+
 export const remindSignRequestRoute = createRoute({
   method: "post",
   path: "/sign/requests/{id}/remind",
@@ -630,6 +653,18 @@ export function createSignRoutes({
     const { organizationId, environmentId } = c.var.auth;
     const data = await listSignRequestEvents({ organizationId, environmentId, requestId: id });
     return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(deleteSignRequestRoute, async (c) => {
+    const service = available();
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    await service.deleteRequest({ organizationId, environmentId, requestId: id });
+    await recordApiAudit(c, {
+      action: "sign_request.deleted",
+      target: { type: "sign_request", id },
+    });
+    return c.json({ object: "sign_request" as const, id, deleted: true as const }, 200);
   });
 
   router.openapi(remindSignRequestRoute, async (c) => {

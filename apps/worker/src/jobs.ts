@@ -54,6 +54,7 @@ import { RETENTION_DAYS } from "@coss/retention";
 import { refreshDueDatasets } from "@coss/risk";
 import { contentScreeningCheck } from "@coss/screening";
 import {
+  type DocumentStore,
   runDueSignCompletions,
   runDueSignNotifications,
   type SignCompletionDeps,
@@ -150,6 +151,8 @@ export type WorkerDeps = {
   notifications: ReputationNotificationDeps | null;
   /** Seals Sign's completed requests; `null`: held (no document store or sealer yet). */
   signCompletion?: SignCompletionDeps | null;
+  /** Sign's document store: an organization's objects go when it is deleted. */
+  signStore?: DocumentStore | null;
   /** Sign's emails, reminders and expiry; `null`: off (no document store or signing app yet). */
   signNotifications?: SignNotificationDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
@@ -390,6 +393,11 @@ export function startJobs(deps: WorkerDeps): Loop[] {
                 { ...deps.domains, inboundStore: deps.inbound?.store ?? null },
                 assertLease,
               );
+              // Sign's documents, signatures and signed PDFs (the fake store's rows go with the data).
+              if (deps.signStore) {
+                await assertLease();
+                await deps.signStore.deleteOrganization(organizationId);
+              }
               // Numbers stop sending and the Twilio subaccount is closed.
               await releaseOrganizationSmsResources(organizationId, deps.sms.senders, assertLease);
               // The running month is invoiced (once); the invoice outlives the organization.

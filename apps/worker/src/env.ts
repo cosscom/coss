@@ -4,7 +4,7 @@ import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskDatasetEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
-import { signSealEnvShape } from "@coss/sign/env";
+import { signSealEnvShape, signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -30,6 +30,8 @@ export const env = createEnv({
     // Sign: what seals completed documents (a KMS key and its certificate chain, or a local key in
     // development) and the time-stamping authority. Unset in production: completions wait.
     ...signSealEnvShape,
+    // Sign's documents (with AWS_REGION); unset in production: Sign is off.
+    SIGN_DOCUMENTS_BUCKET: signStoreEnvShape.SIGN_DOCUMENTS_BUCKET,
     // Where Sign's emailed signing links point (apps/sign); unset in production until it is deployed.
     SIGN_PUBLIC_URL:
       process.env.NODE_ENV === "production"

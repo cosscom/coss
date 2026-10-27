@@ -18,3 +18,13 @@ export const signSealEnvShape = {
   /** An RFC 3161 time-stamping authority's URL; unset: seals carry no trusted timestamp. */
   SIGN_TSA_URL: z.url().optional(),
 };
+
+/** Where documents' bytes live (api, signing app, worker). */
+export const signStoreEnvShape = {
+  /**
+   * The S3 bucket of documents, signatures and signed PDFs (with `AWS_REGION`). Unset: the fake
+   * store (Postgres) outside production, and Sign off in production.
+   */
+  SIGN_DOCUMENTS_BUCKET: z.string().min(3).optional(),
+  AWS_REGION: z.string().min(1).optional(),
+};

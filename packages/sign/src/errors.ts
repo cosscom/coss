@@ -20,7 +20,8 @@ export type SignErrorCode =
   | "signed_document_not_ready"
   | "reminder_not_due"
   | "invalid_sender"
-  | "template_incomplete";
+  | "template_incomplete"
+  | "request_not_deletable";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -60,6 +61,8 @@ const STATUS_BY_CODE = {
   invalid_sender: 422,
   // No documents, no roles, or a role without a signature field.
   template_incomplete: 422,
+  // A `sent` request: cancel it first.
+  request_not_deletable: 422,
 } as const satisfies Record<SignErrorCode, number>;
 
 /** Expected failures of the Sign product; `status` is the HTTP status the API should use. */

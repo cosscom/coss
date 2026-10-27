@@ -11,7 +11,8 @@ import { linkKeysFromEnv } from "@coss/email/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { createRiskDeps } from "@coss/risk/runtime";
-import { createSignService, FakeDocumentStore } from "@coss/sign";
+import { createSignService } from "@coss/sign";
+import { signStoreFromEnv } from "@coss/sign/runtime";
 import { createSmsService } from "@coss/sms";
 import { ensureSmsDispatchQueue, pgBossSmsDispatchQueue } from "@coss/sms/dispatch";
 import { parseSecretsKeys } from "@coss/webhooks";
@@ -42,6 +43,7 @@ const linkKeys = linkKeysFromEnv(env);
 const trackingUrl = env.TRACKING_PUBLIC_URL ?? publicUrl;
 
 const usage = createUsageGate();
+const signStore = signStoreFromEnv(env);
 const app = createApp({
   emailService: createEmailService({
     liveProvider: email.liveProvider,
@@ -59,11 +61,8 @@ const app = createApp({
     queue: pgBossSmsDispatchQueue(jobs),
     billing: usage,
   }),
-  // Production has no document bucket yet: documents' bytes would land in Postgres.
-  signService:
-    process.env.NODE_ENV === "production"
-      ? null
-      : createSignService({ store: new FakeDocumentStore() }),
+  // Documents live in SIGN_DOCUMENTS_BUCKET; production without it has no Sign (never Postgres).
+  signService: signStore ? createSignService({ store: signStore }) : null,
   billing: usage,
   links: { keys: linkKeys, baseUrl: trackingUrl },
   domainDeps: email.domainDeps,

@@ -141,6 +141,14 @@ const portalPublicUrl: EnvVar = {
     "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
 };
 
+const signDocumentsBucket: EnvVar = {
+  name: "SIGN_DOCUMENTS_BUCKET",
+  kind: "plain",
+  required: false,
+  description:
+    "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production.",
+};
+
 const signPublicUrl: EnvVar = {
   name: "SIGN_PUBLIC_URL",
   kind: "plain",
@@ -694,6 +702,7 @@ export const SERVICES: Service[] = [
       webhookKey,
       emailLinkKeys,
       portalPublicUrl,
+      signDocumentsBucket,
       signPublicUrl,
       riskHashKey,
       ...riskClassifier,
@@ -719,6 +728,7 @@ export const SERVICES: Service[] = [
       ...email,
       apiPublicUrl,
       trackingPublicUrl,
+      signDocumentsBucket,
       ...signSeal,
       signPublicUrl,
       {

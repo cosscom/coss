@@ -4,6 +4,7 @@ import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
@@ -54,6 +55,8 @@ export const env = createEnv({
     ...hookEnvShape,
     // Where Sign's signing session links point (apps/sign, on a registrable domain of its own).
     // Unset in production until it is deployed: creating a session fails until then.
+    // Sign's documents (with AWS_REGION); unset in production: Sign is off.
+    SIGN_DOCUMENTS_BUCKET: signStoreEnvShape.SIGN_DOCUMENTS_BUCKET,
     SIGN_PUBLIC_URL:
       process.env.NODE_ENV === "production"
         ? z.url().optional()

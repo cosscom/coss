@@ -377,6 +377,7 @@ export type {
   CreateSignSessionParams,
   CreateSignTemplateParams,
   DeletedSignDocument,
+  DeletedSignRequest,
   DeletedSignTemplate,
   ListSignDocumentsParams,
   ListSignRequestsParams,
