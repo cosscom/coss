@@ -198,11 +198,8 @@ function writable(access: SignSessionAccess): void {
  * Locks the request and the signer, re-reads them and checks the signer may act now. Everything
  * that changes a signer or its request goes through here, so two tabs can't both sign.
  */
-async function lockForAction(
-  tx: Transaction,
-  access: SignSessionAccess,
-  now: Date,
-): Promise<Loaded> {
+/** Locks the request row (every action takes it first) and loads the request as it is now. */
+async function lockAndLoad(tx: Transaction, access: SignSessionAccess): Promise<Loaded> {
   const { session } = access;
   await tx
     .select({ id: signRequest.id })
@@ -214,7 +211,15 @@ async function lockForAction(
       ),
     )
     .for("update");
-  const loaded = await load(tx, access);
+  return load(tx, access);
+}
+
+async function lockForAction(
+  tx: Transaction,
+  access: SignSessionAccess,
+  now: Date,
+): Promise<Loaded> {
+  const loaded = await lockAndLoad(tx, access);
   checkSignable(loaded.request, now);
   checkSignerOpen(loaded.signer);
   return loaded;
@@ -233,8 +238,11 @@ export async function openSigning(
     isOpen(loaded, now);
   if (firstView) {
     await db.transaction(async (tx) => {
-      const locked = await lockForAction(tx, access, now);
+      // As it is now: another tab may have signed or declined, or the request ended, since the
+      // read above. Then there is nothing to record, and the page shows what happened.
+      const locked = await lockAndLoad(tx, access);
       if (locked.signer.status !== "pending" && locked.signer.status !== "notified") return;
+      if (!isOpen(locked, now)) return;
       const [signer] = await tx
         .update(signSigner)
         .set({ status: "viewed", viewedAt: now })
