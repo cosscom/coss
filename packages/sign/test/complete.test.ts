@@ -5,6 +5,7 @@ import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { createWebhookEndpoint } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
 import { asc, eq } from "drizzle-orm";
+import { PDFDict, PDFDocument, PDFHexString, PDFName } from "pdf-lib";
 import {
   authenticateSignSession,
   consentToSign,
@@ -24,6 +25,7 @@ import {
   type Sealer,
   type SignEnvironment,
   SignError,
+  sealPdf,
   signAsSigner,
   verifySignEventChain,
 } from "../src/index.ts";
@@ -310,6 +312,25 @@ describe("completion", () => {
     expect(anchor?.x ?? 0).toBeLessThan(110);
     expect(anchor?.y ?? 0).toBeGreaterThanOrEqual(149);
     expect((anchor?.y ?? 0) + (anchor?.height ?? 0)).toBeLessThanOrEqual(175);
+  });
+
+  test("seal text with parentheses and backslashes stays a valid dictionary", async () => {
+    const document = await PDFDocument.create();
+    document.addPage([200, 200]);
+    const reason = "Agreement (draft \\ v2";
+    const bytes = await sealPdf(document, {
+      sealer,
+      name: "coss.com",
+      reason,
+      location: "Room (1",
+      signedAt: new Date(),
+    });
+    const reloaded = await PDFDocument.load(bytes);
+    const field = reloaded.getForm().getFields()[0];
+    const value = field?.acroField.dict.lookup(PDFName.of("V"), PDFDict);
+    expect(value?.lookup(PDFName.of("Reason"), PDFHexString).decodeText()).toBe(reason);
+    const seal = readPdfSeal(bytes);
+    expect(await verifyCms(seal.cms, seal.signedBytes)).toBe(true);
   });
 
   test("a failed seal is retried later, not at once", async () => {

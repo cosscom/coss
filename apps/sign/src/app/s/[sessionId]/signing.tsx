@@ -161,15 +161,22 @@ function Request({
 }) {
   const { request, signer } = view;
   if (signer.status === "signed") {
+    const ended: Record<string, string> = {
+      declined: "Someone else declined to sign it, so it won't be completed.",
+      canceled: `${view.requester.name} canceled it.`,
+      expired: "It expired before everyone signed.",
+    };
     return (
       <Centered>
         <h1 className="font-semibold text-xl">You signed {request.title}</h1>
         <p className="text-muted-foreground text-sm">
           {request.status === "completed"
             ? "Everyone has signed."
-            : "We'll let the others know. You can download a copy once everyone has signed."}
+            : (ended[request.status] ??
+              "We'll let the others know. You can download a copy here once everyone has signed.")}
         </p>
         {request.status === "completed" && <SignedCopy call={call} onView={onView} view={view} />}
+        {request.status === "sent" && <AwaitOthers call={call} onView={onView} />}
       </Centered>
     );
   }
@@ -208,6 +215,35 @@ function Request({
 }
 
 /** The sealed copy: downloadable once the worker sealed it (seconds after the last signature). */
+/** Asks again until the request leaves `sent` (everyone signed, or it ended), backing off. */
+function AwaitOthers({
+  onView,
+  call,
+}: {
+  onView: (view: SigningView) => void;
+  call: ReturnType<typeof useSigningApi>;
+}) {
+  useEffect(() => {
+    let delay = 5000;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = () => {
+      timer = setTimeout(() => {
+        call("")
+          .then((response) => response.json() as Promise<SigningView>)
+          .then((next) => {
+            if (next.request.status !== "sent") onView(next);
+            else poll();
+          })
+          .catch(() => poll());
+        delay = Math.min(delay * 1.5, 60_000);
+      }, delay);
+    };
+    poll();
+    return () => clearTimeout(timer);
+  }, [call, onView]);
+  return null;
+}
+
 function SignedCopy({
   view,
   onView,

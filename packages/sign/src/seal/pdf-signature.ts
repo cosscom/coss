@@ -36,11 +36,13 @@ export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise
     SubFilter: "ETSI.CAdES.detached",
     ByteRange: PDFArray.withContext(context),
     Contents: PDFHexString.of("0".repeat(SIGNATURE_PLACEHOLDER_BYTES * 2)),
-    Name: PDFString.of(opts.name),
-    Reason: PDFString.of(opts.reason),
+    // Text as hex strings: PDFString writes its value as is, so a "(" or "\\" in it would break
+    // the dictionary.
+    Name: PDFHexString.fromText(opts.name),
+    Reason: PDFHexString.fromText(opts.reason),
     M: PDFString.fromDate(opts.signedAt),
-    ...(opts.location ? { Location: PDFString.of(opts.location) } : {}),
-    ...(opts.contactInfo ? { ContactInfo: PDFString.of(opts.contactInfo) } : {}),
+    ...(opts.location ? { Location: PDFHexString.fromText(opts.location) } : {}),
+    ...(opts.contactInfo ? { ContactInfo: PDFHexString.fromText(opts.contactInfo) } : {}),
   });
   const byteRange = signature.get(PDFName.of("ByteRange")) as PDFArray;
   byteRange.push(PDFNumber.of(0));
