@@ -202,6 +202,8 @@ export function Builder({ sessionId }: { sessionId: string }) {
   }, [overview]);
 
   const change = (update: (current: Draft) => Draft) => {
+    // A save or upload replaces the draft with what it gets back: no edits while one is out.
+    if (saving || uploading) return;
     setDraft((current) => (current ? update(current) : current));
     setDirty(true);
   };
@@ -222,7 +224,8 @@ export function Builder({ sessionId }: { sessionId: string }) {
     );
   }
 
-  const readOnly = overview.read_only;
+  // Read-only sessions, and every session while a save or upload is out (see `change`).
+  const readOnly = overview.read_only || saving || uploading;
   const color = (key: string) =>
     ROLE_COLORS[
       Math.max(
@@ -406,13 +409,20 @@ export function Builder({ sessionId }: { sessionId: string }) {
                 <Button
                   aria-label={`Remove ${item.name}`}
                   disabled={readOnly}
-                  onClick={() =>
+                  onClick={() => {
                     change((current) => ({
                       ...current,
                       roles: current.roles.filter((candidate) => candidate.key !== item.key),
                       fields: current.fields.filter((field) => field.role !== item.key),
-                    }))
-                  }
+                    }));
+                    // New fields go to a signer that still exists.
+                    if (role === item.key) {
+                      setRole(
+                        draft.roles.find((candidate) => candidate.key !== item.key)?.key ?? null,
+                      );
+                      setPlacing(null);
+                    }
+                  }}
                   size="icon-sm"
                   variant="ghost"
                 >

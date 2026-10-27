@@ -7,8 +7,9 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, isId } from "@coss/db/id";
 import type { SignTemplateRole } from "@coss/db/schema";
-import { and, asc, desc, eq, lt, or, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, type SQL, sql } from "drizzle-orm";
 import {
+  discardUnstoredDocuments,
   environmentDocuments,
   type PreparedDocument,
   prepareDocument,
@@ -229,10 +230,8 @@ export async function listSignTemplates(input: {
       .where(and(base, eq(signTemplate.id, input.after)))
       .limit(1);
     if (!anchor) return { data: [], hasMore: false };
-    cursor = or(
-      lt(signTemplate.createdAt, anchor.createdAt),
-      and(eq(signTemplate.createdAt, anchor.createdAt), lt(signTemplate.id, anchor.id)),
-    );
+    // Compared in SQL: a JavaScript Date would cut the anchor's microseconds off.
+    cursor = sql`(${signTemplate.createdAt}, ${signTemplate.id}) < (select ${signTemplate.createdAt}, ${signTemplate.id} from ${signTemplate} where ${signTemplate.id} = ${anchor.id})`;
   }
   const rows = await db
     .select()
@@ -273,7 +272,7 @@ async function prepareInline(
       }
     }
   } catch (error) {
-    await discard(store, inline);
+    await discardUnstoredDocuments(store, inline);
     throw error;
   }
   return inline;
@@ -367,13 +366,6 @@ async function resolve(
   return { ordered, inline, placed };
 }
 
-async function discard(store: DocumentStore, documents: readonly PreparedDocument[]) {
-  if (documents.length === 0) return;
-  await store.delete(documents.map((document) => document.storeKey)).catch((error) => {
-    console.error("[sign] could not delete unused document bytes:", error);
-  });
-}
-
 async function replaceChildren(
   tx: Transaction,
   template: Pick<SignTemplateRow, "id" | "organizationId">,
@@ -457,7 +449,7 @@ export async function createSignTemplate(
       return template;
     });
   } catch (error) {
-    await discard(store, inline);
+    await discardUnstoredDocuments(store, inline);
     throw error;
   }
   // After the commit: a failure reading it back must not discard the committed documents' bytes.
@@ -558,7 +550,7 @@ export async function updateSignTemplate(
       return template;
     });
   } catch (error) {
-    await discard(store, inline);
+    await discardUnstoredDocuments(store, inline);
     throw error;
   }
   return toObject(row);
