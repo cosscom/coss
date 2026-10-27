@@ -182,7 +182,12 @@ function Request({
       </Centered>
     );
   }
-  if (request.status !== "sent") {
+  // Past its deadline, a request is expired even before the worker marks it so.
+  const status =
+    request.status === "sent" && request.expires_at && new Date(request.expires_at) <= new Date()
+      ? "expired"
+      : request.status;
+  if (status !== "sent") {
     const why: Record<string, string> = {
       completed: "Everyone has already signed it.",
       declined: "Someone declined to sign it.",
@@ -193,7 +198,7 @@ function Request({
     return (
       <Centered>
         <h1 className="font-semibold text-xl">{request.title} can't be signed</h1>
-        <p className="text-muted-foreground text-sm">{why[request.status] ?? ""}</p>
+        <p className="text-muted-foreground text-sm">{why[status] ?? ""}</p>
       </Centered>
     );
   }

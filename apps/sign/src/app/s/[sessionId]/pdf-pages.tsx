@@ -6,17 +6,23 @@ import { type ReactNode, useEffect, useRef, useState } from "react";
 type PdfJs = typeof import("pdfjs-dist/legacy/build/pdf.mjs");
 type PdfDocument = Awaited<ReturnType<PdfJs["getDocument"]>["promise"]>;
 
-let pdfjs: Promise<PdfJs> | undefined;
+type Loaded = { module: PdfJs; worker: InstanceType<PdfJs["PDFWorker"]> };
+let pdfjs: Promise<Loaded> | undefined;
 
-/** pdf.js, loaded once, parsing in a worker of this origin. */
-function loadPdfJs(): Promise<PdfJs> {
-  pdfjs ??= import("pdfjs-dist/legacy/build/pdf.mjs").then((module) => {
-    module.GlobalWorkerOptions.workerPort = new Worker(
-      new URL("pdfjs-dist/legacy/build/pdf.worker.min.mjs", import.meta.url),
-      { type: "module" },
-    );
-    return module;
-  });
+/**
+ * pdf.js, loaded once, parsing in one worker of this origin that every document shares. It is
+ * handed to each `getDocument`, so destroying one document's task never takes it down: pdf.js
+ * destroys only workers it created itself.
+ */
+function loadPdfJs(): Promise<Loaded> {
+  pdfjs ??= import("pdfjs-dist/legacy/build/pdf.mjs").then((module) => ({
+    module,
+    worker: module.PDFWorker.create({
+      port: new Worker(new URL("pdfjs-dist/legacy/build/pdf.worker.min.mjs", import.meta.url), {
+        type: "module",
+      }),
+    }),
+  }));
   return pdfjs;
 }
 
@@ -48,10 +54,11 @@ export function PdfPages({
     let canceled = false;
     let task: ReturnType<PdfJs["getDocument"]> | null = null;
     loadPdfJs()
-      .then((module) => {
+      .then(({ module, worker }) => {
         if (canceled) return null;
         // pdf.js takes ownership of the buffer it's given: hand it a copy.
         task = module.getDocument({
+          worker,
           data: new Uint8Array(bytes.slice(0)),
           // Data files some documents need (CJK text, standard fonts, JPEG 2000 and JBIG2 images,
           // color profiles), from this origin.
