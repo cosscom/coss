@@ -39,6 +39,7 @@ const LEVEL: Record<SignEventType, LogLevel> = {
   canceled: "info",
   expired: "warning",
   completed: "info",
+  sealed: "info",
 };
 
 function describe(type: SignEventType, signer: SignEventContext["signer"]): string {
@@ -66,6 +67,8 @@ function describe(type: SignEventType, signer: SignEventContext["signer"]): stri
       return "Expired";
     case "completed":
       return "Completed: everyone signed";
+    case "sealed":
+      return "Signed document sealed";
   }
 }
 

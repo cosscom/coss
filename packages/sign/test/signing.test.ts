@@ -307,8 +307,8 @@ describe("signing", () => {
       "sign_request.sent",
       "sign_request.viewed",
       "sign_request.signer_signed",
-      "sign_request.completed",
     ]);
+    // `sign_request.completed` waits for the sealed document (complete.test.ts).
     expect(messages[2]?.payload).toMatchObject({
       object: "event",
       type: "sign_request.signer_signed",

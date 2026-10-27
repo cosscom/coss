@@ -57,7 +57,7 @@ const secret = endpoint?.secret;
 | `sign_request.viewed`    | A signer opened it for the first time (`data.signer`)   |
 | `sign_request.signer_signed` | A signer signed (`data.signer`); `data.status` is `completed` when they were the last |
 | `sign_request.declined`  | A signer declined, which declines the request (`data.reason`) |
-| `sign_request.completed` | Everyone signed                                         |
+| `sign_request.completed` | Everyone signed and the sealed, signed document is ready to download |
 | `sign_request.canceled`  | You canceled it                                         |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |

@@ -302,6 +302,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "sign.requests.auditTrail",
     args: (r) => [pathId(r)],
   },
+  "GET /v1/sign/requests/{id}/signed_document": {
+    method: "sign.requests.signedDocument",
+    args: (r) => [pathId(r)],
+  },
   "POST /v1/sign/requests/{id}/signers/{signer_id}/sessions": {
     method: "sign.sessions.create",
     args: (r) => [pathId(r), pathParam(r, "signer_id"), tsValue(r.body ?? {})],

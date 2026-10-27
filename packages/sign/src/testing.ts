@@ -1,5 +1,5 @@
 /** Test helpers: PDFs to upload (with text anchors) and a store that keeps bytes in Postgres. */
-import { PDFDocument, StandardFonts } from "pdf-lib";
+import { degrees, PDFDocument, StandardFonts } from "pdf-lib";
 
 export { FakeDocumentStore } from "./store.ts";
 
@@ -8,6 +8,10 @@ export type TestPdfPage = {
   size?: [number, number];
   /** Text lines drawn from the top left, one per entry (anchors like `{{signature:signer_1}}`). */
   lines?: string[];
+  /** `/Rotate`: the page is shown turned clockwise by this much. */
+  rotate?: 0 | 90 | 180 | 270;
+  /** `/CropBox` as `[x, y, width, height]` (default: the whole page). */
+  cropBox?: [number, number, number, number];
 };
 
 /** A PDF with these pages (default: one Letter page reading "Signature: {{signature:signer_1}}"). */
@@ -19,6 +23,8 @@ export async function buildTestPdf(
   for (const spec of pages) {
     const [width, height] = spec.size ?? [612, 792];
     const page = document.addPage([width, height]);
+    if (spec.rotate) page.setRotation(degrees(spec.rotate));
+    if (spec.cropBox) page.setCropBox(...spec.cropBox);
     for (const [index, line] of (spec.lines ?? []).entries()) {
       page.drawText(line, { x: 72, y: height - 72 - index * 24, size: 12, font });
     }

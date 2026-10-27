@@ -7,7 +7,7 @@ Embeddable, compliant e-signatures (ESIGN/UETA, eIDAS simple electronic signatur
 upload PDFs, ask signers to sign them in their own app (embedded) or by email, and get a sealed
 copy with an audit trail. Built so far: documents, signature requests with signers and fields, the
 audit trail, signing sessions and the signer's actions (the signing app is `apps/sign`), settings,
-webhooks and log lines. Completion's sealed PDF, email delivery, templates and the builder come
+webhooks and log lines, and completion's sealed PDF. Email delivery, templates and the builder come
 next (see "Not built yet" in the root `AGENTS.md`).
 
 - **Tables** (`packages/db/src/schema/sign.ts`): `sign_document` (`sdoc_`, an uploaded PDF: page
@@ -61,6 +61,24 @@ next (see "Not built yet" in the root `AGENTS.md`).
   Every action locks the request row, re-reads the signer and re-checks
   `checkSignable`/`checkSignerOpen` (two tabs can't both sign). Reads inside a transaction run one
   after another (a transaction's client runs one query at a time).
+- **Completion** (`complete.ts`, `completed-pdf.ts`, `seal/`): the last signature makes the request
+  `completed` (event by `system`); the worker's `sign-completions` loop (`runDueSignCompletions`,
+  leased with `seal_lease_until`, fenced on it, retried with backoff in `seal_next_attempt_at`)
+  builds the completed document — the PDFs (forms flattened) with each field's value drawn in its
+  box (`placement` maps as-displayed points to the page's own space for every `/Rotate`), then
+  certificate pages (signers, identification, consent hashes, document hashes, the audit trail up
+  to `completed`) in Cal Sans/Paper Mono (`assets/`, OFL; glyphs a font lacks become "?") — seals
+  it, stores it at `orgs/<org>/<env>/requests/<id>/signed.pdf` and records `sealed` (with its
+  SHA-256), whose webhook is `sign_request.completed`: that webhook means "ready to download".
+- **Seal** (`seal/`): PAdES (`/SubFilter /ETSI.CAdES.detached`) in an invisible signature field,
+  `/ByteRange` over everything but the 32 KB `/Contents` placeholder, saved without object streams.
+  The CMS (`cms.ts`, pkijs + asn1js — keep them the same copies, `seal/crypto.ts`) signs content
+  type, message digest and `signingCertificateV2`, and with a TSA (`tsa.ts`, RFC 3161) carries a
+  `signatureTimeStampToken` over the signature value (B-T); the token must be over that value, carry the nonce (compared as a number) and verify with its time-stamping certificate. Sealers: `KmsSealer` (KMS `Sign` with
+  `MessageType: DIGEST`, RSA PKCS #1 v1.5 or ECDSA, chain from `SIGN_SEAL_CERTIFICATE_CHAIN`) and
+  `LocalSealer` (a self-signed key per process). `sealerFromEnv` (`./runtime`) reads
+  `signSealEnvShape` (`./env`). No DSS/LTV yet. Verify with `readPdfSeal` + pkijs (tests) or
+  `openssl cms -verify -binary -inform DER -content <signed bytes>`.
 - **Settings** (`settings.ts`): `allowed_origins` (≤ 10, `checkedSignOrigin`: https, plus
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —

@@ -7,6 +7,7 @@ import {
   listSignDocuments,
   listSignRequestEvents,
   listSignRequests,
+  readSignedDocument,
   type SignActor,
   type SignService,
   sendSignRequest,
@@ -42,6 +43,7 @@ import { rateLimit } from "../middleware/rate-limit.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import { idempotencyHeaders, idempotencyHook, idempotentReplayedHeader } from "./idempotency.ts";
+import { attachmentDisposition } from "./received-emails.ts";
 
 const TAG_DOCUMENTS = "Sign documents";
 const TAG_REQUESTS = "Signature requests";
@@ -327,6 +329,37 @@ export const listSignRequestEventsRoute = createRoute({
   },
 });
 
+export const getSignedDocumentRoute = createRoute({
+  method: "get",
+  path: "/sign/requests/{id}/signed_document",
+  operationId: "getSignedDocument",
+  tags: [TAG_REQUESTS],
+  summary: "Download the signed document",
+  description:
+    "The completed request's sealed PDF: every document with the signatures and values filled " +
+    "in, then a certificate of completion (signers, how they were identified, what they agreed " +
+    "to, the documents' SHA-256 and the audit trail). coss.com's seal makes any later change " +
+    "visible in PDF viewers. Ready once `signed_document` is set, which the " +
+    "`sign_request.completed` webhook announces.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ sign: ["read"] }), rateLimit("api.read")],
+  request: { params: RequestIdParams },
+  responses: {
+    200: {
+      description: "The sealed PDF.",
+      headers: { "X-Request-Id": requestIdHeader },
+      content: { "application/pdf": { schema: z.string().meta({ format: "binary" }) } },
+    },
+    ...commonErrors,
+    404: requestNotFound,
+    422: errorDoc(
+      "The request isn't completed, or its document is still being sealed " +
+        "(`signed_document_not_ready`).",
+    ),
+    503: unavailable,
+  },
+});
+
 export const createSignSessionRoute = createRoute({
   method: "post",
   path: "/sign/requests/{id}/signers/{signer_id}/sessions",
@@ -561,6 +594,24 @@ export function createSignRoutes({ signService, signUrl }: SignRouteDeps): OpenA
     const { organizationId, environmentId } = c.var.auth;
     const data = await listSignRequestEvents({ organizationId, environmentId, requestId: id });
     return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(getSignedDocumentRoute, async (c) => {
+    const service = available();
+    const { id } = c.req.valid("param");
+    const { organizationId, environmentId } = c.var.auth;
+    const document = await readSignedDocument({
+      organizationId,
+      environmentId,
+      requestId: id,
+      store: service.store,
+    });
+    return c.body(document.content as Uint8Array<ArrayBuffer>, 200, {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": attachmentDisposition(document.filename),
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "no-store",
+    });
   });
 
   router.openapi(createSignSessionRoute, async (c) => {

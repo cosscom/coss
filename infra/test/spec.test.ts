@@ -13,6 +13,7 @@ import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { screeningEnvShape } from "@coss/screening/env";
+import { signSealEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import {
@@ -45,6 +46,7 @@ function schemaKeys(envFile: string, spread: Record<string, unknown>): string[] 
     ...(source.includes("...webhookEnvShape") ? Object.keys(webhookEnvShape) : []),
     ...(source.includes("...billingEnvShape") ? billingKeys(envFile) : []),
     ...(source.includes("...smsEnvShape") ? Object.keys(smsEnvShape) : []),
+    ...(source.includes("...signSealEnvShape") ? Object.keys(signSealEnvShape) : []),
   ];
 }
 

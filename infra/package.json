@@ -17,6 +17,7 @@
     "@coss/observability": "workspace:*",
     "@coss/ratelimit": "workspace:*",
     "@coss/screening": "workspace:*",
+    "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
     "@coss/webhooks": "workspace:*"
   },

@@ -5,6 +5,8 @@ import {
   createSignSession,
   FakeDocumentStore,
   getSignRequest,
+  LocalSealer,
+  runDueSignCompletions,
   type SigningView,
 } from "@coss/sign";
 import { buildTestPdfBase64, TEST_SIGNATURE_PNG } from "@coss/sign/testing";
@@ -127,6 +129,24 @@ describe("signing API", () => {
     expect(((await signed.json()) as SigningView).signer.status).toBe("signed");
     const done = await getSignRequest({ ...environment, requestId: request.id });
     expect(done.status).toBe("completed");
+
+    // The signed copy, once the worker sealed it.
+    const early2 = await call("GET", ["signed_document"]);
+    expect((await early2.json()).error.code).toBe("signed_document_not_ready");
+    await runDueSignCompletions(
+      { limit: 5, scope: { organizationIds: [environment.organizationId] } },
+      { store, sealer: await LocalSealer.create() },
+    );
+    expect(((await (await call("GET")).json()) as SigningView).request.signed_document_ready).toBe(
+      true,
+    );
+    const copy = await call("GET", ["signed_document"]);
+    expect(copy.headers.get("content-disposition")).toBe('attachment; filename="NDA (signed).pdf"');
+    expect(
+      Buffer.from(await copy.arrayBuffer())
+        .subarray(0, 5)
+        .toString(),
+    ).toBe("%PDF-");
   });
 
   test("decline", async () => {

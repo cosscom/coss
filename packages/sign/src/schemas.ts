@@ -56,6 +56,7 @@ export const SIGN_EVENT_TYPES = [
   "canceled",
   "expired",
   "completed",
+  "sealed",
 ] as const;
 export type SignEventType = (typeof SIGN_EVENT_TYPES)[number];
 
@@ -416,6 +417,19 @@ export const SignRequestObject = z
     completed_at: z.iso.datetime().nullable(),
     canceled_at: z.iso.datetime().nullable(),
     declined_at: z.iso.datetime().nullable(),
+    // A union, not `.nullable()`: that loses the `null` in the OpenAPI document.
+    signed_document: z
+      .union([
+        z.object({
+          sha256: z.string().meta({ description: "Hex SHA-256 of the sealed PDF." }),
+          sealed_at: z.iso.datetime(),
+        }),
+        z.null(),
+      ])
+      .meta({
+        description:
+          "The completed document, sealed by coss.com: every document with the signatures and values filled in, and a certificate of completion. `null` until it is ready (shortly after `completed`, announced by the `sign_request.completed` webhook); download it from `GET /v1/sign/requests/{id}/signed_document`.",
+      }),
     created_at: z.iso.datetime(),
   })
   .meta({
@@ -477,6 +491,7 @@ export const SignRequestObject = z
         completed_at: null,
         canceled_at: null,
         declined_at: null,
+        signed_document: null,
         created_at: CREATED_AT_EXAMPLE,
       },
     ],
@@ -559,6 +574,9 @@ export const SignEventObject = z
       initials_sha256: z.string().optional(),
       session_id: z.string().optional().meta({
         description: "The signing session the signer used.",
+      }),
+      signed_document_sha256: z.string().optional().meta({
+        description: "`sealed`: the SHA-256 of the sealed, completed document.",
       }),
     }),
     occurred_at: z.iso.datetime(),
@@ -740,7 +758,8 @@ export const SIGN_WEBHOOK_EVENT_OF: Partial<Record<SignEventType, SignWebhookEve
   viewed: "sign_request.viewed",
   signed: "sign_request.signer_signed",
   declined: "sign_request.declined",
-  completed: "sign_request.completed",
+  // When the sealed document is ready, not at the last signature: then it can be downloaded.
+  sealed: "sign_request.completed",
   canceled: "sign_request.canceled",
 };
 

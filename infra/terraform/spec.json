@@ -914,6 +914,30 @@
           "description": "Origin of the open/click tracking links in emails (defaults to API_PUBLIC_URL): its own domain, so abuse flagged by URL blocklists never lands on coss.com (infra/aws/routing.ts)."
         },
         {
+          "name": "SIGN_SEALER",
+          "kind": "plain",
+          "required": false,
+          "description": "What seals Sign's completed documents: `kms` (SIGN_SEAL_KMS_KEY_ID + SIGN_SEAL_CERTIFICATE_CHAIN). Unset: completions wait (Sign is off in production until then)."
+        },
+        {
+          "name": "SIGN_SEAL_KMS_KEY_ID",
+          "kind": "plain",
+          "required": false,
+          "description": "The asymmetric KMS signing key (RSA or ECC) behind the seal's certificate."
+        },
+        {
+          "name": "SIGN_SEAL_CERTIFICATE_CHAIN",
+          "kind": "plain",
+          "required": false,
+          "description": "The seal's document-signing certificate (on Adobe's trust list) and its intermediates, PEM, leaf first (`\\n` line breaks accepted)."
+        },
+        {
+          "name": "SIGN_TSA_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "An RFC 3161 time-stamping authority: seals carry its timestamp (PAdES B-T)."
+        },
+        {
           "name": "API_PORT",
           "kind": "plain",
           "required": false,

@@ -161,14 +161,22 @@ function Request({
 }) {
   const { request, signer } = view;
   if (signer.status === "signed") {
+    const ended: Record<string, string> = {
+      declined: "Someone else declined to sign it, so it won't be completed.",
+      canceled: `${view.requester.name} canceled it.`,
+      expired: "It expired before everyone signed.",
+    };
     return (
       <Centered>
         <h1 className="font-semibold text-xl">You signed {request.title}</h1>
         <p className="text-muted-foreground text-sm">
           {request.status === "completed"
-            ? "Everyone has signed. You'll get a copy of the signed documents."
-            : "We'll let the others know. You'll get a copy once everyone has signed."}
+            ? "Everyone has signed."
+            : (ended[request.status] ??
+              "We'll let the others know. You can download a copy here once everyone has signed.")}
         </p>
+        {request.status === "completed" && <SignedCopy call={call} onView={onView} view={view} />}
+        {request.status === "sent" && <AwaitOthers call={call} onView={onView} />}
       </Centered>
     );
   }
@@ -204,6 +212,120 @@ function Request({
   }
   if (!signer.consented) return <Consent call={call} onView={onView} view={view} />;
   return <Documents call={call} onView={onView} view={view} />;
+}
+
+/** The sealed copy: downloadable once the worker sealed it (seconds after the last signature). */
+/** Asks again until the request leaves `sent` (everyone signed, or it ended), backing off. */
+function AwaitOthers({
+  onView,
+  call,
+}: {
+  onView: (view: SigningView) => void;
+  call: ReturnType<typeof useSigningApi>;
+}) {
+  useEffect(() => {
+    let delay = 5000;
+    let timer: ReturnType<typeof setTimeout>;
+    // Gone (unmounted, or the effect rerun): an answer still in flight schedules nothing more.
+    let stopped = false;
+    const poll = () => {
+      if (stopped) return;
+      timer = setTimeout(() => {
+        call("")
+          .then((response) => response.json() as Promise<SigningView>)
+          .then((next) => {
+            if (stopped) return;
+            if (next.request.status !== "sent") onView(next);
+            else poll();
+          })
+          .catch(() => poll());
+        delay = Math.min(delay * 1.5, 60_000);
+      }, delay);
+    };
+    poll();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [call, onView]);
+  return null;
+}
+
+function SignedCopy({
+  view,
+  onView,
+  call,
+}: {
+  view: SigningView;
+  onView: (view: SigningView) => void;
+  call: ReturnType<typeof useSigningApi>;
+}) {
+  const ready = view.request.signed_document_ready;
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Ask again until it is sealed: every 3 seconds at first, backing off to every 30 (a seal that
+  // failed once is retried a minute or more later).
+  useEffect(() => {
+    if (ready) return;
+    let delay = 3000;
+    let timer: ReturnType<typeof setTimeout>;
+    // Gone (unmounted, or the effect rerun): an answer still in flight schedules nothing more.
+    let stopped = false;
+    const poll = () => {
+      if (stopped) return;
+      timer = setTimeout(() => {
+        call("")
+          .then((response) => response.json() as Promise<SigningView>)
+          .then((next) => {
+            if (stopped) return;
+            if (next.request.signed_document_ready) onView(next);
+            else poll();
+          })
+          .catch(() => poll());
+        delay = Math.min(delay * 1.5, 30_000);
+      }, delay);
+    };
+    poll();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [ready, call, onView]);
+
+  const download = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const response = await call("/signed_document");
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${view.request.title} (signed).pdf`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Couldn't download it.");
+    } finally {
+      setPending(false);
+    }
+  };
+
+  if (!ready) {
+    return (
+      <p className="flex items-center gap-2 text-muted-foreground text-sm">
+        <Spinner /> Preparing your signed copy…
+      </p>
+    );
+  }
+  return (
+    <div className="flex flex-col items-center gap-2 pt-2">
+      <Button loading={pending} onClick={download}>
+        Download signed copy
+      </Button>
+      {error && <p className="text-destructive-foreground text-sm">{error}</p>}
+    </div>
+  );
 }
 
 function Consent({
