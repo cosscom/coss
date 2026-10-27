@@ -296,4 +296,37 @@ describe("deletion cleanup", () => {
       .where(eq(schema.signFakeObject.organizationId, tenant.organization.id));
     expect(objects.filter((object) => object.key.includes("/requests/"))).toEqual([]);
   });
+
+  test("an unpublished seal the store wouldn't delete is left to the cleanup loop", async () => {
+    const { tenant, env } = await environment("sandbox");
+    const request = await signed(env);
+    const sealer = await LocalSealer.create();
+    // Deletes refused: the request's deletion and the seal's own cleanup both wait for the loop.
+    const stubborn = Object.assign(Object.create(store), {
+      delete: async () => {
+        throw new Error("S3 is down");
+      },
+    }) as FakeDocumentStore;
+    const deleting = {
+      name: "deleting",
+      certificateChain: sealer.certificateChain,
+      sign: async (data: Uint8Array) => {
+        await deleteSignRequest(stubborn, { ...env, requestId: request.id });
+        return sealer.sign(data);
+      },
+    };
+    const scope = { organizationIds: [tenant.organization.id] };
+    await runDueSignCompletions({ limit: 5, scope }, { store: stubborn, sealer: deleting });
+    const pending = await db
+      .select({ key: schema.signStoreCleanup.key })
+      .from(schema.signStoreCleanup)
+      .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id));
+    expect(pending.some((row) => row.key.includes("/requests/"))).toBe(true);
+    await runDueSignCleanup({ limit: 10, scope }, store);
+    const objects = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, tenant.organization.id));
+    expect(objects.filter((object) => object.key.includes("/requests/"))).toEqual([]);
+  });
 });
