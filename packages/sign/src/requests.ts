@@ -11,7 +11,7 @@ import {
   type IdempotencyErrors,
   withIdempotencyKey,
 } from "@coss/db/idempotency";
-import { and, asc, desc, eq, inArray, lte, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import {
   deleteSignDocument,
   discardUnstoredDocuments,
@@ -44,6 +44,7 @@ import {
 } from "./schemas.ts";
 import { getSignSettings } from "./settings.ts";
 import type { DocumentStore } from "./store.ts";
+import { removeStoreObjects, scheduleStoreCleanup } from "./store-cleanup.ts";
 import { createSignTemplate, updateSignTemplate } from "./templates.ts";
 
 const {
@@ -741,77 +742,8 @@ export async function deleteSignRequest(
       ...signers.flatMap((signer) => [signer.signatureKey, signer.initialsKey]),
       row.signedDocumentKey,
     ].filter((key): key is string => key !== null);
-    // Recorded with the deletion: if the store fails now, the worker tries again.
-    if (keys.length > 0) {
-      await tx
-        .insert(schema.signStoreCleanup)
-        .values(keys.map((key) => ({ key, organizationId: row.organizationId })))
-        .onConflictDoNothing();
-    }
+    await scheduleStoreCleanup(tx, row.organizationId, keys);
     return keys;
   });
   await removeStoreObjects(store, keys);
-}
-
-/** Deletes objects from the store, then their cleanup rows; a failure leaves the rows for the worker. */
-async function removeStoreObjects(store: DocumentStore, keys: readonly string[]): Promise<void> {
-  if (keys.length === 0) return;
-  try {
-    await store.delete(keys);
-  } catch (error) {
-    console.error("[sign] could not delete store objects; the worker will retry:", error);
-    return;
-  }
-  await db.delete(schema.signStoreCleanup).where(inArray(schema.signStoreCleanup.key, [...keys]));
-}
-
-const MAX_CLEANUP_BACKOFF_MS = 6 * 60 * 60_000;
-
-/**
- * Retries store deletions that didn't go through (`sign_store_cleanup`), oldest due first, with
- * backoff. System-level (`scope` narrows it in tests). Returns how many objects it tried.
- */
-export async function runDueSignCleanup(
-  opts: { limit: number; now?: Date; scope?: { organizationIds: string[] } },
-  store: DocumentStore,
-): Promise<number> {
-  const now = opts.now ?? new Date();
-  const { signStoreCleanup } = schema;
-  const due = await db
-    .select()
-    .from(signStoreCleanup)
-    .where(
-      and(
-        lte(signStoreCleanup.nextAttemptAt, now),
-        opts.scope
-          ? inArray(signStoreCleanup.organizationId, opts.scope.organizationIds)
-          : undefined,
-      ),
-    )
-    .orderBy(asc(signStoreCleanup.nextAttemptAt))
-    .limit(opts.limit);
-  if (due.length === 0) return 0;
-  try {
-    await store.delete(due.map((row) => row.key));
-    await db.delete(signStoreCleanup).where(
-      inArray(
-        signStoreCleanup.key,
-        due.map((row) => row.key),
-      ),
-    );
-  } catch (error) {
-    console.error("[sign] store cleanup failed:", error);
-    for (const row of due) {
-      await db
-        .update(signStoreCleanup)
-        .set({
-          attempts: row.attempts + 1,
-          nextAttemptAt: new Date(
-            now.getTime() + Math.min(60_000 * 2 ** row.attempts, MAX_CLEANUP_BACKOFF_MS),
-          ),
-        })
-        .where(eq(signStoreCleanup.key, row.key));
-    }
-  }
-  return due.length;
 }

@@ -14,6 +14,7 @@ import {
   type SignDocumentObjectOutput,
 } from "./schemas.ts";
 import { type DocumentStore, documentKey } from "./store.ts";
+import { removeStoreObjects, scheduleStoreCleanup } from "./store-cleanup.ts";
 
 const { environment, signDocument, signRequestDocument, signTemplateDocument } = schema;
 
@@ -272,7 +273,8 @@ export async function deleteSignDocument(
       .where(
         and(eq(signDocument.id, row.id), eq(signDocument.organizationId, input.organizationId)),
       );
+    await scheduleStoreCleanup(tx, input.organizationId, [row.storeKey]);
     return row;
   });
-  await store.delete([deleted.storeKey]);
+  await removeStoreObjects(store, [deleted.storeKey]);
 }

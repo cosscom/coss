@@ -8,6 +8,7 @@ import {
   consentToSign,
   createSignService,
   createSignSession,
+  deleteSignDocument,
   deleteSignRequest,
   FakeDocumentStore,
   getSignRequest,
@@ -245,6 +246,32 @@ describe("deletion cleanup", () => {
         .from(schema.signStoreCleanup)
         .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id)),
     ).toEqual([]);
+  });
+
+  test("a document deleted while the store is down is deleted by the retry", async () => {
+    const { tenant, env } = await environment("sandbox");
+    const document = await service.uploadDocument({
+      environment: env,
+      apiKeyId: null,
+      filename: "nda.pdf",
+      content: await buildTestPdfBase64(),
+    });
+    const broken = Object.assign(Object.create(store), {
+      delete: async () => {
+        throw new Error("S3 is down");
+      },
+    }) as FakeDocumentStore;
+    await deleteSignDocument(broken, { ...env, documentId: document.id });
+    const pending = await db
+      .select()
+      .from(schema.signStoreCleanup)
+      .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id));
+    expect(pending.length).toBe(1);
+    const key = pending[0]?.key ?? "";
+    expect(await store.get(key)).not.toBeNull();
+    const scope = { organizationIds: [tenant.organization.id] };
+    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(1);
+    expect(await store.get(key)).toBeNull();
   });
 
   test("a request deleted while it is being sealed leaves no signed PDF behind", async () => {

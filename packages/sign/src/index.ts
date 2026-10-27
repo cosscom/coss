@@ -33,4 +33,5 @@ export * from "./sessions.ts";
 export * from "./settings.ts";
 export * from "./signing.ts";
 export * from "./store.ts";
+export { runDueSignCleanup } from "./store-cleanup.ts";
 export * from "./templates.ts";
