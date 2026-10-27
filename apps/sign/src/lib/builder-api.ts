@@ -212,17 +212,12 @@ async function route(
   if (head === "documents" && id === undefined && method === "POST") {
     writable();
     const upload = await body(request, UploadSignDocumentRequest);
-    const current = await getSignTemplate(scope);
     await updateSignTemplate(store, {
       ...scope,
       environment: environmentOf(access),
       apiKeyId: null,
-      params: {
-        documents: [
-          ...current.documents.map((document) => ({ document_id: document.id })),
-          { filename: upload.filename, content: upload.content },
-        ],
-      },
+      params: { documents: [{ filename: upload.filename, content: upload.content }] },
+      append: true,
     });
     return json(await overview(access));
   }

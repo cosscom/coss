@@ -23,6 +23,7 @@ import {
   type CreateSignTemplateRequestOutput,
   DEFAULT_SIGN_LIST_LIMIT,
   MAX_SIGN_LIST_LIMIT,
+  MAX_SIGN_REQUEST_DOCUMENTS,
   type SignFieldInputOutput,
   type SignRequestObjectOutput,
   type SignTemplateObjectOutput,
@@ -170,14 +171,33 @@ async function isSandbox(input: { organizationId: string; environmentId: string 
   return row?.mode === "sandbox";
 }
 
+/**
+ * The template as of one revision: the row's share lock waits out an update in progress (which
+ * holds it for update while it replaces documents and fields), so they match. A template deleted
+ * in between is `not_found`.
+ */
 async function toObject(
   row: SignTemplateRow,
   sandbox?: boolean,
 ): Promise<SignTemplateObjectOutput> {
+  const snapshot = await db.transaction(async (tx) => {
+    const [current] = await tx
+      .select()
+      .from(signTemplate)
+      .where(and(eq(signTemplate.id, row.id), eq(signTemplate.organizationId, row.organizationId)))
+      .for("share");
+    if (!current) return null;
+    return {
+      row: current,
+      documents: await templateDocuments(tx, current),
+      fields: await templateFields(tx, current),
+    };
+  });
+  if (!snapshot) throw notFound();
   return toSignTemplateObject(
-    row,
-    await templateDocuments(db, row),
-    await templateFields(db, row),
+    snapshot.row,
+    snapshot.documents,
+    snapshot.fields,
     sandbox ?? (await isSandbox(row)),
   );
 }
@@ -409,8 +429,9 @@ export async function createSignTemplate(
   const roles = params.roles ?? [];
   const documents = params.documents ?? [];
   const inline = await prepareInline(store, env, input.apiKeyId, documents);
+  let row: SignTemplateRow;
   try {
-    const row = await db.transaction(async (tx) => {
+    row = await db.transaction(async (tx) => {
       const resolved = await resolve(
         tx,
         env,
@@ -435,11 +456,12 @@ export async function createSignTemplate(
       await replaceChildren(tx, template, resolved);
       return template;
     });
-    return toObject(row, env.mode === "sandbox");
   } catch (error) {
     await discard(store, inline);
     throw error;
   }
+  // After the commit: a failure reading it back must not discard the committed documents' bytes.
+  return toObject(row, env.mode === "sandbox");
 }
 
 export async function updateSignTemplate(
@@ -448,6 +470,11 @@ export async function updateSignTemplate(
     environment: SignEnvironment;
     apiKeyId: string | null;
     params: UpdateSignTemplateRequestOutput;
+    /**
+     * Adds `params.documents` after the template's current ones (read under the lock, so
+     * concurrent additions all stay) instead of replacing them. The builder's uploads.
+     */
+    append?: boolean;
   },
 ): Promise<SignTemplateObjectOutput> {
   if (!isId(ID_PREFIXES.signTemplate, input.templateId)) throw notFound();
@@ -458,8 +485,9 @@ export async function updateSignTemplate(
     input.apiKeyId,
     params.documents ?? [],
   );
+  let row: SignTemplateRow;
   try {
-    const row = await db.transaction(async (tx) => {
+    row = await db.transaction(async (tx) => {
       // Read-modify-write under the row's lock: concurrent updates of one template take turns, and
       // what this one keeps (documents, roles or fields it doesn't replace) is what's there now.
       const [current] = await tx.select().from(signTemplate).where(scope(input)).for("update");
@@ -469,11 +497,17 @@ export async function updateSignTemplate(
       let resolved: Awaited<ReturnType<typeof resolve>> | null = null;
       if (replaces) {
         const currentDocuments = await templateDocuments(tx, current);
-        const documents =
-          params.documents ??
-          currentDocuments.map((document) => ({
-            document_id: document.id,
-          }));
+        const kept = currentDocuments.map((document) => ({ document_id: document.id }));
+        const documents = input.append
+          ? [...kept, ...(params.documents ?? [])]
+          : (params.documents ?? kept);
+        if (documents.length > MAX_SIGN_REQUEST_DOCUMENTS) {
+          throw new SignError(
+            "invalid_document",
+            `A template has at most ${MAX_SIGN_REQUEST_DOCUMENTS} documents.`,
+            { param: "documents" },
+          );
+        }
         // Kept fields follow their document to its new position; a removed document's go with it.
         const position = (index: number): number => {
           const id = currentDocuments[index]?.id;
@@ -523,11 +557,11 @@ export async function updateSignTemplate(
       if (resolved) await replaceChildren(tx, template, resolved);
       return template;
     });
-    return toObject(row);
   } catch (error) {
     await discard(store, inline);
     throw error;
   }
+  return toObject(row);
 }
 
 /** Deletes the template (requests made from it stay; its documents stay too). */

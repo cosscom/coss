@@ -154,4 +154,19 @@ describe("builder API", () => {
     }
     expect(statuses.has(429)).toBe(true);
   });
+
+  test("concurrent uploads all stay; an eleventh document is refused", async () => {
+    const { call } = await setup();
+    const content = await buildTestPdfBase64();
+    const upload = (index: number) =>
+      call("POST", ["documents"], { body: { filename: `part-${index}.pdf`, content } });
+    const statuses = await Promise.all([0, 1, 2, 3, 4].map((index) => upload(index)));
+    expect(statuses.map((response) => response.status)).toEqual([200, 200, 200, 200, 200]);
+    const after = (await (await call("GET")).json()) as Overview;
+    expect(after.template.documents).toHaveLength(5);
+    for (let index = 5; index < 10; index++) expect((await upload(index)).status).toBe(200);
+    expect((await upload(10)).status).toBe(422);
+    const full = (await (await call("GET")).json()) as Overview;
+    expect(full.template.documents).toHaveLength(10);
+  });
 });
