@@ -468,26 +468,38 @@ export async function updateSignTemplate(
         params.documents !== undefined || params.roles !== undefined || params.fields !== undefined;
       let resolved: Awaited<ReturnType<typeof resolve>> | null = null;
       if (replaces) {
+        const currentDocuments = await templateDocuments(tx, current);
         const documents =
           params.documents ??
-          (await templateDocuments(tx, current)).map((document) => ({
+          currentDocuments.map((document) => ({
             document_id: document.id,
           }));
+        // Kept fields follow their document to its new position; a removed document's go with it.
+        const position = (index: number): number => {
+          const id = currentDocuments[index]?.id;
+          return documents.findIndex((item) => "document_id" in item && item.document_id === id);
+        };
         const fields =
           params.fields ??
-          (await templateFields(tx, current)).map((field) => ({
-            role: field.role,
-            type: field.type,
-            document: field.document,
-            page: field.page,
-            x: field.x,
-            y: field.y,
-            width: field.width,
-            height: field.height,
-            required: field.required,
-            ...(field.label ? { label: field.label } : {}),
-            ...(field.mergeKey ? { merge_key: field.mergeKey } : {}),
-          }));
+          (await templateFields(tx, current)).flatMap((field) => {
+            const document = position(field.document);
+            if (document < 0) return [];
+            return [
+              {
+                role: field.role,
+                type: field.type,
+                document,
+                page: field.page,
+                x: field.x,
+                y: field.y,
+                width: field.width,
+                height: field.height,
+                required: field.required,
+                ...(field.label ? { label: field.label } : {}),
+                ...(field.mergeKey ? { merge_key: field.mergeKey } : {}),
+              },
+            ];
+          });
         resolved = await resolve(
           tx,
           input.environment,
@@ -530,7 +542,7 @@ export async function deleteSignTemplate(input: TemplateScope): Promise<void> {
 
 /** A request from the template: one signer per role, merge fields filled in. */
 export async function createRequestFromTemplate(
-  service: Pick<SignService, "create">,
+  service: Pick<SignService, "create" | "replay">,
   input: TemplateScope & {
     environment: SignEnvironment;
     apiKeyId: string | null;
@@ -540,6 +552,15 @@ export async function createRequestFromTemplate(
   },
 ): Promise<{ request: SignRequestObjectOutput; replayed: boolean }> {
   if (!isId(ID_PREFIXES.signTemplate, input.templateId)) throw notFound();
+  const hashSource = { template_id: input.templateId, ...input.params };
+  // A retry of a request already made replays it, even if the template changed (or was deleted)
+  // since.
+  const replay = await service.replay({
+    environment: input.environment,
+    idempotencyKey: input.idempotencyKey,
+    hashSource,
+  });
+  if (replay) return replay;
   // One snapshot: the row's share lock waits out an update in progress (which holds it for update
   // while it replaces documents and fields), so documents and fields are of the same revision.
   const snapshot = await db.transaction(async (tx) => {
@@ -604,7 +625,7 @@ export async function createRequestFromTemplate(
     actor: input.actor,
     idempotencyKey: input.idempotencyKey,
     templateId: template.id,
-    hashSource: { template_id: template.id, ...params },
+    hashSource,
     prefill,
     params: {
       title: params.title ?? template.title ?? template.name,

@@ -92,6 +92,16 @@ export type SignService = {
   create(
     input: CreateSignRequestInput,
   ): Promise<{ request: SignRequestObjectOutput; replayed: boolean }>;
+  /**
+   * The request an earlier call with this idempotency key and the same `hashSource` created, if
+   * it is still replayable: lets callers replay before validating what may have changed since
+   * (a template edited after its request was made).
+   */
+  replay(input: {
+    environment: SignEnvironment;
+    idempotencyKey?: string | null;
+    hashSource: unknown;
+  }): Promise<{ request: SignRequestObjectOutput; replayed: true } | null>;
   uploadDocument(
     input: Parameters<typeof uploadSignDocument>[1],
   ): Promise<SignDocumentObjectOutput>;
@@ -658,9 +668,40 @@ export function createSignService(opts: SignServiceOptions): SignService {
     }
   }
 
+  async function replay(input: {
+    environment: SignEnvironment;
+    idempotencyKey?: string | null;
+    hashSource: unknown;
+  }): Promise<{ request: SignRequestObjectOutput; replayed: true } | null> {
+    const env = input.environment;
+    if (!input.idempotencyKey) return null;
+    const [found] = await db
+      .select()
+      .from(signRequest)
+      .where(
+        and(
+          eq(signRequest.organizationId, env.organizationId),
+          eq(signRequest.environmentId, env.environmentId),
+          eq(signRequest.idempotencyKey, input.idempotencyKey),
+        ),
+      )
+      .limit(1);
+    // Anything else (no row, another body, an expired key) goes through `create`'s own handling.
+    if (
+      !found ||
+      found.requestHash !== hashRequest(input.hashSource) ||
+      clock().getTime() - found.createdAt.getTime() > IDEMPOTENCY_KEY_TTL_MS
+    ) {
+      return null;
+    }
+    const [object] = await toObjects([found], env.mode === "sandbox");
+    return object ? { request: object, replayed: true } : null;
+  }
+
   return {
     store: opts.store,
     create,
+    replay,
     uploadDocument: (input) => uploadSignDocument(opts.store, input),
     deleteDocument: (input) => deleteSignDocument(opts.store, input),
     createTemplate: (input) => createSignTemplate(opts.store, input),

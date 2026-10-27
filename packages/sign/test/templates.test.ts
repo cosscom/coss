@@ -301,4 +301,68 @@ describe("template writes", () => {
     const renamed = await update({ name: "Renamed" });
     expect(renamed.roles).toEqual([{ key: "buyer", name: "Buyer" }]);
   });
+
+  test("reordering documents moves their fields; a removed document's fields go", async () => {
+    const template = await ndaTemplate();
+    const first = template.documents[0]?.id ?? "";
+    const second = await service.uploadDocument({
+      environment: env,
+      apiKeyId: null,
+      filename: "annex.pdf",
+      content: await buildTestPdfBase64(),
+    });
+    const update = (params: Parameters<typeof service.updateTemplate>[0]["params"]) =>
+      service.updateTemplate({
+        ...env,
+        templateId: template.id,
+        environment: env,
+        apiKeyId: null,
+        params,
+      });
+    const reordered = await update({
+      documents: [{ document_id: second.id }, { document_id: first }],
+    });
+    expect(reordered.documents.map((document) => document.id)).toEqual([second.id, first]);
+    expect(reordered.fields).toHaveLength(3);
+    expect(reordered.fields.every((field) => field.document_id === first)).toBe(true);
+    expect(reordered.ready).toBe(true);
+
+    const removed = await update({ documents: [{ document_id: second.id }] });
+    expect(removed.fields).toEqual([]);
+    expect(removed.ready).toBe(false);
+  });
+
+  test("a retry replays its request even after the template changed", async () => {
+    const template = await ndaTemplate();
+    const input = {
+      ...env,
+      templateId: template.id,
+      environment: env,
+      apiKeyId: null,
+      actor,
+      idempotencyKey: `tpl-${template.id}`,
+      params: {
+        signers: [
+          { role: "client" as const, name: "Ada", email: "ada@example.com" },
+          { role: "company" as const, name: "Grace", email: "grace@example.com" },
+        ],
+      },
+    };
+    const first = await createRequestFromTemplate(service, input);
+    expect(first.replayed).toBe(false);
+    // The template no longer has these roles: a new request would be refused, a retry isn't.
+    await service.updateTemplate({
+      ...env,
+      templateId: template.id,
+      environment: env,
+      apiKeyId: null,
+      params: { roles: [{ key: "buyer", name: "Buyer" }], fields: [] },
+    });
+    const again = await createRequestFromTemplate(service, input);
+    expect(again).toMatchObject({ replayed: true, request: { id: first.request.id } });
+    await expectSignError(
+      createRequestFromTemplate(service, { ...input, idempotencyKey: `${input.idempotencyKey}-2` }),
+      "template_incomplete",
+    );
+  });
 });
