@@ -76,6 +76,11 @@ export type CreateAppOptions = {
    * `null` (not deployed) makes creating a portal session fail with 503.
    */
   portalUrl?: string | null;
+  /**
+   * Where Sign's signing session links point (`SIGN_PUBLIC_URL`). Defaults to the local signing
+   * app; `null` (not deployed) makes creating a signing session fail with 503.
+   */
+  signUrl?: string | null;
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
@@ -209,6 +214,7 @@ export function createApp(opts: CreateAppOptions) {
       domainDeps,
       webhookDeps: opts.webhookDeps,
       portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
+      signUrl: opts.signUrl === undefined ? "http://localhost:3004" : opts.signUrl,
       riskDeps: opts.riskDeps,
       inbound,
       shutdownSignal: opts.shutdownSignal ?? new AbortController().signal,
@@ -292,6 +298,11 @@ export function openApiDocumentConfig(serverUrl: string) {
       {
         name: "Sign documents",
         description: "PDFs uploaded for signature requests, with their pages and text anchors.",
+      },
+      {
+        name: "Sign settings",
+        description:
+          "Which sites may embed the signing page, how it looks, and what signers consent to.",
       },
       {
         name: "Receiving",

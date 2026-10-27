@@ -5,7 +5,10 @@ import {
   type SignDocument,
   type SignEvent,
   type SignRequest,
+  type SignSession,
+  type SignSettings,
 } from "../src/index.ts";
+import { mountSigning, type SigningEvent } from "../src/sign.ts";
 import { json, mockFetch } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -112,5 +115,113 @@ describe("coss.sign.requests", () => {
     });
     await coss.sign.requests.auditTrail(request.id);
     expect(calls[4]?.url).toBe(`${BASE}/requests/${request.id}/audit_trail`);
+  });
+});
+
+describe("coss.sign.sessions and coss.sign.settings", () => {
+  test("create a session for a signer; read and update the settings", async () => {
+    const session: SignSession = {
+      object: "sign_session",
+      id: "sgs_01k5f9yq8re8vb6q2wmz0tb2xd",
+      request_id: request.id,
+      signer_id: "ssgn_01k5f9yq8re8vb6q2wmz0tb2xd",
+      url: "https://sign.example/s/sgs_01k5f9yq8re8vb6q2wmz0tb2xd#cosss_x",
+      token: "cosss_x",
+      expires_at: "2026-11-10T13:00:00.000Z",
+    };
+    const settings: SignSettings = {
+      object: "sign_settings",
+      allowed_origins: ["https://app.example.com"],
+      display_name: "Acme",
+      accent_color: null,
+      theme: "system",
+      disclosure: null,
+    };
+    const { coss, calls } = client(json(201, session), json(200, settings), json(200, settings));
+    const created = await coss.sign.sessions.create(request.id, session.signer_id, {
+      expires_in: 600,
+    });
+    expect(created.data).toEqual(session);
+    expect(calls[0]).toMatchObject({
+      method: "POST",
+      url: `${BASE}/requests/${request.id}/signers/${session.signer_id}/sessions`,
+    });
+    await coss.sign.settings.get();
+    expect(calls[1]).toMatchObject({ method: "GET", url: `${BASE}/settings` });
+    await coss.sign.settings.update({ allowed_origins: ["https://app.example.com"] });
+    expect(calls[2]).toMatchObject({ method: "PATCH", url: `${BASE}/settings` });
+  });
+});
+
+describe("mountSigning", () => {
+  /** A minimal DOM: one container, one window that dispatches messages. */
+  function fakeDom() {
+    const listeners = new Set<(event: MessageEvent) => void>();
+    const frameWindow = {};
+    const iframe = {
+      src: "",
+      title: "",
+      referrerPolicy: "",
+      style: {} as Record<string, string>,
+      contentWindow: frameWindow,
+      removed: false,
+      remove() {
+        this.removed = true;
+      },
+    };
+    const view = {
+      addEventListener: (_: string, listener: (event: MessageEvent) => void) =>
+        listeners.add(listener),
+      removeEventListener: (_: string, listener: (event: MessageEvent) => void) =>
+        listeners.delete(listener),
+    };
+    const container = {
+      ownerDocument: { createElement: () => iframe, defaultView: view },
+      appendChild: () => iframe,
+    } as unknown as HTMLElement;
+    const post = (
+      data: unknown,
+      origin = "https://sign.example",
+      source: unknown = frameWindow,
+    ) => {
+      for (const listener of listeners) listener({ data, origin, source } as MessageEvent);
+    };
+    return { iframe, container, post, listeners };
+  }
+
+  test("forwards the page's events, resizes, and ignores other windows and origins", () => {
+    const dom = fakeDom();
+    const events: SigningEvent[] = [];
+    const embed = mountSigning({
+      url: "https://sign.example/s/sgs_1#cosss_x",
+      container: dom.container,
+      onEvent: (event) => events.push(event),
+    });
+    expect(dom.iframe.src).toBe("https://sign.example/s/sgs_1#cosss_x");
+    expect(dom.iframe.referrerPolicy).toBe("no-referrer");
+
+    const signed = {
+      source: "coss-sign",
+      version: 1,
+      type: "signed",
+      request_id: "sreq_1",
+      signer_id: "ssgn_1",
+      request_status: "completed",
+    };
+    dom.post({ source: "coss-sign", version: 1, type: "resize", height: 900.2 });
+    dom.post(signed);
+    dom.post(signed, "https://evil.example");
+    dom.post(signed, "https://sign.example", {});
+    dom.post({ type: "signed" });
+    expect(dom.iframe.style.height).toBe("901px");
+    // Never taller than the window: the page's dialogs are centered in the frame.
+    expect(dom.iframe.style.maxHeight).toBe("100vh");
+    expect(events).toEqual([
+      { type: "signed", request_id: "sreq_1", signer_id: "ssgn_1", request_status: "completed" },
+    ]);
+
+    embed.destroy();
+    expect(dom.iframe.removed).toBe(true);
+    expect(dom.listeners.size).toBe(0);
   });
 });

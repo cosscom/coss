@@ -241,8 +241,14 @@ export interface SignEventDetails {
   reason?: string;
   /** Each document's SHA-256 at that moment, by document id. */
   document_sha256?: Record<string, string>;
+  /** SHA-256 of the consent text the signer accepted. */
   disclosure_sha256?: string;
   field_ids?: string[];
+  /** SHA-256 of the signature image the signer adopted. */
+  signature_sha256?: string;
+  initials_sha256?: string;
+  /** The signing session the signer used. */
+  session_id?: string;
 }
 
 /** One entry of a request's audit trail. */
@@ -262,4 +268,88 @@ export interface SignEvent {
   previous_hash: string | null;
   /** SHA-256 over this event and `previous_hash`. */
   hash: string;
+}
+
+export interface CreateSignSessionParams {
+  /** Seconds until the link expires: default 3600, at most 86400. */
+  expires_in?: number;
+}
+
+/** A signing link for one `embedded` signer. */
+export interface SignSession {
+  object: "sign_session";
+  id: string;
+  request_id: string;
+  signer_id: string;
+  /**
+   * The signing page: embed it with `mountSigning` from `coss/sign` (from an origin in your
+   * settings' `allowed_origins`) or redirect to it. Show it only to that signer.
+   */
+  url: string;
+  /** The secret part of `url` (its fragment), shown only here. */
+  token: string;
+  expires_at: string;
+}
+
+export type SignTheme = "system" | "light" | "dark";
+
+export interface SignSettings {
+  object: "sign_settings";
+  /** Origins that may embed the signing page, like `https://app.example.com`. */
+  allowed_origins: string[];
+  /** The requester's name signers see; `null`: the organization's name. */
+  display_name: string | null;
+  accent_color: string | null;
+  theme: SignTheme;
+  /** Your own consent text; `null`: coss.com's default. */
+  disclosure: string | null;
+}
+
+/** Only the fields given change. */
+export interface UpdateSignSettingsParams {
+  /** At most 10. */
+  allowed_origins?: string[];
+  display_name?: string | null;
+  /** `#rrggbb`. */
+  accent_color?: string | null;
+  theme?: SignTheme;
+  disclosure?: string | null;
+}
+
+export type SignWebhookEventType =
+  | "sign_request.sent"
+  | "sign_request.viewed"
+  | "sign_request.signer_signed"
+  | "sign_request.declined"
+  | "sign_request.completed"
+  | "sign_request.canceled";
+
+export interface SignRequestWebhookEventData {
+  sign_request_id: string;
+  /** The request's status after the event. */
+  status: SignRequestStatus;
+  title: string;
+  metadata: Record<string, string>;
+  /** The signer who viewed, signed or declined; `null` otherwise. */
+  signer: {
+    id: string;
+    name: string;
+    email: string;
+    client_ref: string | null;
+    status: SignSignerStatus;
+  } | null;
+  /** A decline's reason, if the signer gave one. */
+  reason: string | null;
+  sandbox: boolean;
+  occurred_at: string;
+}
+
+/** A `sign_request.*` webhook; `id` is the audit trail event's id. */
+export interface SignRequestWebhookEvent {
+  id: string;
+  object: "event";
+  type: SignWebhookEventType;
+  api_version: string;
+  created_at: string;
+  data: SignRequestWebhookEventData;
 }

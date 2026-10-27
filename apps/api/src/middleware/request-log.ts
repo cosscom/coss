@@ -48,9 +48,13 @@ function skipped(method: string, path: string): boolean {
 const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/sms/received"];
 /**
  * Responses that are capabilities: preference links change a contact's consent and need
- * `contact:update`, which reading the log (every member, every drain) doesn't.
+ * `contact:update`, and Sign's session links (the token is in the URL's fragment too) sign as a
+ * signer, needing `sign:create`; reading the log (every member, every drain) needs neither.
  */
-const CAPABILITY_RESPONSES = [/^\/v1\/contacts\/[^/]+\/preference_links$/];
+const CAPABILITY_RESPONSES = [
+  /^\/v1\/contacts\/[^/]+\/preference_links$/,
+  /^\/v1\/sign\/requests\/[^/]+\/signers\/[^/]+\/sessions$/,
+];
 
 /**
  * Stateless lookup identifiers and classification text must not enter request logs. Lookup

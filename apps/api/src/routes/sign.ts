@@ -1,16 +1,21 @@
 import {
   cancelSignRequest,
+  createSignSession,
   getSignDocument,
   getSignRequest,
+  getSignSettings,
   listSignDocuments,
   listSignRequestEvents,
   listSignRequests,
   type SignActor,
   type SignService,
   sendSignRequest,
+  toSignSettingsObject,
+  updateSignSettings,
 } from "@coss/sign";
 import {
   CreateSignRequestRequest,
+  CreateSignSessionRequest,
   DeletedSignDocument,
   ListSignDocumentsQuery,
   ListSignRequestsQuery,
@@ -19,6 +24,9 @@ import {
   SignEventList,
   SignRequestList,
   SignRequestObject,
+  SignSessionObject,
+  SignSettingsObject,
+  UpdateSignSettingsRequest,
   UploadSignDocumentRequest,
 } from "@coss/sign/schemas";
 import { apiKeyHasPermissions } from "@coss/tenancy";
@@ -37,6 +45,7 @@ import { idempotencyHeaders, idempotencyHook, idempotentReplayedHeader } from ".
 
 const TAG_DOCUMENTS = "Sign documents";
 const TAG_REQUESTS = "Signature requests";
+const TAG_SETTINGS = "Sign settings";
 
 const DocumentIdParams = z.object({
   id: z.string().meta({
@@ -49,6 +58,13 @@ const RequestIdParams = z.object({
   id: z.string().meta({
     description: "The signature request's id.",
     examples: ["sreq_01k7c8m4q2f3e9v6t5r1n0p8yz"],
+  }),
+});
+
+const SignerParams = RequestIdParams.extend({
+  signer_id: z.string().meta({
+    description: "The signer's id (`signers[].id` of the request).",
+    examples: ["ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz"],
   }),
 });
 
@@ -311,6 +327,91 @@ export const listSignRequestEventsRoute = createRoute({
   },
 });
 
+export const createSignSessionRoute = createRoute({
+  method: "post",
+  path: "/sign/requests/{id}/signers/{signer_id}/sessions",
+  operationId: "createSignSession",
+  tags: [TAG_REQUESTS],
+  summary: "Create a signing session",
+  description:
+    "A short-lived link to the signing page for one `embedded` signer of a sent request. Your " +
+    "app vouches for who the signer is (the audit trail records `customer_asserted`), so create " +
+    "it only for that signed-in user, when they open the page that shows it. Embed the `url` " +
+    "in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from " +
+    "`coss/sign` does it), or redirect to it. Each call creates a new session.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ sign: ["send"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("POST /v1/sign/requests/{id}/signers/{signer_id}/sessions"),
+  ],
+  request: {
+    params: SignerParams,
+    body: {
+      content: { "application/json": { schema: CreateSignSessionRequest } },
+      required: false,
+    },
+  },
+  responses: {
+    201: jsonDoc("The session, with its link.", SignSessionObject),
+    ...commonErrors,
+    404: errorDoc(
+      "No such signer on a signature request in the API key's environment (`not_found`).",
+    ),
+    422: errorDoc(
+      "The signer signs by email (`signer_not_embedded`), already signed or declined " +
+        "(`signer_finished`), or the request isn't `sent` or has expired (`request_not_signable`).",
+    ),
+    503: unavailable,
+  },
+});
+
+export const getSignSettingsRoute = createRoute({
+  method: "get",
+  path: "/sign/settings",
+  operationId: "getSignSettings",
+  tags: [TAG_SETTINGS],
+  summary: "Get the Sign settings",
+  description:
+    "The API key's environment's settings: which sites may embed the signing page, how it " +
+    "looks, and the consent text signers accept.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ sign: ["read"] }), rateLimit("api.read")],
+  responses: {
+    200: jsonDoc("The settings.", SignSettingsObject),
+    ...commonErrors,
+  },
+});
+
+export const updateSignSettingsRoute = createRoute({
+  method: "patch",
+  path: "/sign/settings",
+  operationId: "updateSignSettings",
+  tags: [TAG_SETTINGS],
+  summary: "Update the Sign settings",
+  description: "Changes the fields given; the others keep their values.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ sign: ["update"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/sign/settings"),
+  ],
+  request: {
+    body: {
+      content: { "application/json": { schema: UpdateSignSettingsRequest } },
+      required: true,
+    },
+  },
+  responses: {
+    200: jsonDoc("The settings.", SignSettingsObject),
+    ...commonErrors,
+    422: errorDoc(
+      "The body failed validation (`validation_error`), or an origin isn't `https://host[:port]` " +
+        "(`invalid_origin`).",
+    ),
+  },
+});
+
 /** The API caller, as the audit trail records it. */
 function apiActor(c: Context<AppEnv>): SignActor {
   return {
@@ -320,8 +421,14 @@ function apiActor(c: Context<AppEnv>): SignActor {
   };
 }
 
-/** `signService` is `null` when Sign isn't available in this deployment: writes answer 503. */
-export function createSignRoutes(signService: SignService | null): OpenAPIHono<AppEnv> {
+export type SignRouteDeps = {
+  /** `null` when Sign isn't available in this deployment: writes answer 503. */
+  signService: SignService | null;
+  /** Where signing session links point (`SIGN_PUBLIC_URL`); `null`: the signing app isn't deployed. */
+  signUrl: string | null;
+};
+
+export function createSignRoutes({ signService, signUrl }: SignRouteDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
   function available(): SignService {
@@ -454,6 +561,50 @@ export function createSignRoutes(signService: SignService | null): OpenAPIHono<A
     const { organizationId, environmentId } = c.var.auth;
     const data = await listSignRequestEvents({ organizationId, environmentId, requestId: id });
     return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(createSignSessionRoute, async (c) => {
+    available();
+    if (!signUrl) {
+      throw new ApiError(503, {
+        type: "api_error",
+        code: "sign_unavailable",
+        message: "Sign isn't available in this deployment yet.",
+      });
+    }
+    const { id, signer_id } = c.req.valid("param");
+    const body = c.req.valid("json") ?? {};
+    const { apiKeyId, organizationId, environmentId } = c.var.auth;
+    const session = await createSignSession({
+      organizationId,
+      environmentId,
+      requestId: id,
+      signerId: signer_id,
+      signUrl,
+      expiresIn: body.expires_in,
+      apiKeyId,
+    });
+    return c.json(session, 201);
+  });
+
+  router.openapi(getSignSettingsRoute, async (c) => {
+    const { organizationId, environmentId } = c.var.auth;
+    return c.json(
+      toSignSettingsObject(await getSignSettings({ organizationId, environmentId })),
+      200,
+    );
+  });
+
+  router.openapi(updateSignSettingsRoute, async (c) => {
+    const update = c.req.valid("json");
+    const { organizationId, environmentId } = c.var.auth;
+    const settings = await updateSignSettings({ organizationId, environmentId, update });
+    await recordApiAudit(c, {
+      action: "sign_settings.updated",
+      target: { type: "sign_settings", id: environmentId },
+      metadata: { fields: Object.keys(update) },
+    });
+    return c.json(toSignSettingsObject(settings), 200);
   });
 
   return router;

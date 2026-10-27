@@ -209,6 +209,7 @@ export const DRAIN_SOURCE_LABELS: Record<string, string> = {
   risk: "Risk assessments",
   smtp: "SMTP messages",
   sms: "SMS events",
+  sign: "Signature events",
   audit: "Audit events",
 };
 

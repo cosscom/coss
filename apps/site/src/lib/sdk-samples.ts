@@ -302,6 +302,15 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "sign.requests.auditTrail",
     args: (r) => [pathId(r)],
   },
+  "POST /v1/sign/requests/{id}/signers/{signer_id}/sessions": {
+    method: "sign.sessions.create",
+    args: (r) => [pathId(r), pathParam(r, "signer_id"), tsValue(r.body ?? {})],
+  },
+  "GET /v1/sign/settings": { method: "sign.settings.get", args: () => [] },
+  "PATCH /v1/sign/settings": {
+    method: "sign.settings.update",
+    args: (r) => [tsValue(r.body ?? {})],
+  },
   "GET /v1/sms/{id}": { method: "sms.get", args: (r) => [pathId(r)] },
   "GET /v1/sms/{id}/events": { method: "sms.listEvents", args: (r) => [pathId(r)] },
   "POST /v1/sms/{id}/cancel": { method: "sms.cancel", args: (r) => [pathId(r)] },

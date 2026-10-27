@@ -141,6 +141,14 @@ const portalPublicUrl: EnvVar = {
     "Origin of the Hooks portal (apps/portal, on a registrable domain of its own); portal session links point there. Unset: creating a portal session fails (503) until the portal is deployed.",
 };
 
+const signPublicUrl: EnvVar = {
+  name: "SIGN_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  description:
+    "Origin of Sign's signing app (apps/sign, on a registrable domain of its own); signing session links point there. Unset: creating a signing session fails (503) until it is deployed.",
+};
+
 const rateLimits: EnvVar[] = [
   {
     name: "VALKEY_URL",
@@ -656,6 +664,7 @@ export const SERVICES: Service[] = [
       webhookKey,
       emailLinkKeys,
       portalPublicUrl,
+      signPublicUrl,
       riskHashKey,
       ...riskClassifier,
       ...riskIpPrivacy,

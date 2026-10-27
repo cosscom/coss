@@ -28,6 +28,7 @@
     "./device": "./dist/device.js",
     "./diagnose": "./dist/diagnose.js",
     "./nodemailer": "./dist/nodemailer.js",
+    "./sign": "./dist/sign.js",
     "./package.json": "./package.json"
   },
   "scripts": {

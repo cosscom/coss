@@ -44,6 +44,10 @@
       "description": "PDFs uploaded for signature requests, with their pages and text anchors."
     },
     {
+      "name": "Sign settings",
+      "description": "Which sites may embed the signing page, how it looks, and what signers consent to."
+    },
+    {
       "name": "Receiving",
       "description": "Email received at the environment's inbound address and receiving domains."
     },
@@ -3044,6 +3048,172 @@
               "keyword": null,
               "sandbox": false,
               "occurred_at": "2026-11-10T12:05:00.000Z"
+            }
+          }
+        ]
+      },
+      "SignRequestWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id: the same as the audit trail's `SignEvent.id`."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "sign_request.sent",
+              "sign_request.viewed",
+              "sign_request.signer_signed",
+              "sign_request.declined",
+              "sign_request.completed",
+              "sign_request.canceled"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version the payload is rendered in (your endpoint's version).",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "sign_request_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "sent",
+                  "completed",
+                  "declined",
+                  "canceled",
+                  "expired"
+                ],
+                "description": "The request's status after the event."
+              },
+              "title": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "signer": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "client_ref": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "notified",
+                      "viewed",
+                      "signed",
+                      "declined"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "email",
+                  "client_ref",
+                  "status"
+                ],
+                "description": "The signer who viewed, signed or declined; `null` otherwise."
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "A decline's reason, if the signer gave one."
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "sign_request_id",
+              "status",
+              "title",
+              "metadata",
+              "signer",
+              "reason",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "sevt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "sign_request.signer_signed",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-26T15:10:00.100Z",
+            "data": {
+              "sign_request_id": "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "status": "sent",
+              "title": "Services agreement",
+              "metadata": {
+                "deal": "D-1042"
+              },
+              "signer": {
+                "id": "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                "name": "Ada Lovelace",
+                "email": "ada@example.com",
+                "client_ref": "user_42",
+                "status": "signed"
+              },
+              "reason": null,
+              "sandbox": false,
+              "occurred_at": "2026-10-26T15:10:00.000Z"
             }
           }
         ]
@@ -8299,10 +8469,16 @@
                 "sms.canceled",
                 "sms.received",
                 "sms.opted_out",
-                "sms.opted_in"
+                "sms.opted_in",
+                "sign_request.sent",
+                "sign_request.viewed",
+                "sign_request.signer_signed",
+                "sign_request.declined",
+                "sign_request.completed",
+                "sign_request.canceled"
               ]
             },
-            "maxItems": 56,
+            "maxItems": 62,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -8584,10 +8760,16 @@
                 "sms.canceled",
                 "sms.received",
                 "sms.opted_out",
-                "sms.opted_in"
+                "sms.opted_in",
+                "sign_request.sent",
+                "sign_request.viewed",
+                "sign_request.signer_signed",
+                "sign_request.declined",
+                "sign_request.completed",
+                "sign_request.canceled"
               ]
             },
-            "maxItems": 56,
+            "maxItems": 62,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -9118,10 +9300,16 @@
                 "sms.canceled",
                 "sms.received",
                 "sms.opted_out",
-                "sms.opted_in"
+                "sms.opted_in",
+                "sign_request.sent",
+                "sign_request.viewed",
+                "sign_request.signer_signed",
+                "sign_request.declined",
+                "sign_request.completed",
+                "sign_request.canceled"
               ]
             },
-            "maxItems": 56,
+            "maxItems": 62,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -9429,6 +9617,9 @@
               },
               {
                 "$ref": "#/components/schemas/ReceivedSmsWebhookEvent"
+              },
+              {
+                "$ref": "#/components/schemas/SignRequestWebhookEvent"
               }
             ],
             "description": "The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`."
@@ -9547,7 +9738,13 @@
               "sms.canceled",
               "sms.received",
               "sms.opted_out",
-              "sms.opted_in"
+              "sms.opted_in",
+              "sign_request.sent",
+              "sign_request.viewed",
+              "sign_request.signer_signed",
+              "sign_request.declined",
+              "sign_request.completed",
+              "sign_request.canceled"
             ],
             "description": "The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },
@@ -11812,13 +12009,25 @@
                 "description": "Each document's SHA-256 at that moment, by document id."
               },
               "disclosure_sha256": {
-                "type": "string"
+                "type": "string",
+                "description": "SHA-256 of the consent text the signer accepted."
               },
               "field_ids": {
                 "type": "array",
                 "items": {
                   "type": "string"
                 }
+              },
+              "signature_sha256": {
+                "type": "string",
+                "description": "SHA-256 of the signature image the signer adopted."
+              },
+              "initials_sha256": {
+                "type": "string"
+              },
+              "session_id": {
+                "type": "string",
+                "description": "The signing session the signer used."
               }
             }
           },
@@ -11869,6 +12078,197 @@
             "occurred_at": "2026-10-26T15:04:05.000Z",
             "previous_hash": null,
             "hash": "9f2c6c0f0e1d4b7a8c5e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c"
+          }
+        ]
+      },
+      "SignSession": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "sign_session"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "examples": [
+              "sgs_01k7c8m4q2f3e9v6t5r1n0p8yz"
+            ]
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "signer_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "description": "The signing page: embed it in an iframe (from an allowed origin, with `coss/sign`'s `mountSigning`) or redirect to it. The token is in the URL fragment, so it never reaches a server log: show it only to that signer."
+          },
+          "token": {
+            "type": "string",
+            "description": "The secret part of `url`, shown only here."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "request_id",
+          "signer_id",
+          "url",
+          "token",
+          "expires_at"
+        ],
+        "examples": [
+          {
+            "object": "sign_session",
+            "id": "sgs_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "request_id": "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "signer_id": "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "url": "https://sign.example/s/sgs_01k7c8m4q2f3e9v6t5r1n0p8yz#cosss_…",
+            "token": "cosss_…",
+            "expires_at": "2026-10-26T15:04:05.000Z"
+          }
+        ]
+      },
+      "CreateSignSessionRequest": {
+        "type": "object",
+        "properties": {
+          "expires_in": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 86400,
+            "description": "Seconds until the link expires: default 3600, at most 86400. Mint one when your user opens the page that shows it."
+          }
+        },
+        "additionalProperties": false,
+        "examples": [
+          {
+            "expires_in": 3600
+          }
+        ]
+      },
+      "SignSettings": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "sign_settings"
+            ]
+          },
+          "allowed_origins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Origins that may embed the signing page in an iframe, like `https://app.example.com` (sandbox environments also `http://localhost:<port>`). Empty: it can only be opened on its own."
+          },
+          "display_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The requester's name signers see. `null`: the organization's name."
+          },
+          "accent_color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "system",
+              "light",
+              "dark"
+            ]
+          },
+          "disclosure": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Your own consent text signers accept before they see a document. `null`: coss.com's default, which covers ESIGN's consumer disclosure. Have your counsel review a replacement."
+          }
+        },
+        "required": [
+          "object",
+          "allowed_origins",
+          "display_name",
+          "accent_color",
+          "theme",
+          "disclosure"
+        ],
+        "examples": [
+          {
+            "object": "sign_settings",
+            "allowed_origins": [
+              "https://app.example.com"
+            ],
+            "display_name": "Acme",
+            "accent_color": "#2563eb",
+            "theme": "system",
+            "disclosure": null
+          }
+        ]
+      },
+      "UpdateSignSettingsRequest": {
+        "type": "object",
+        "properties": {
+          "allowed_origins": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "maxItems": 10
+          },
+          "display_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 64
+          },
+          "accent_color": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "theme": {
+            "type": "string",
+            "enum": [
+              "system",
+              "light",
+              "dark"
+            ]
+          },
+          "disclosure": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 10000
+          }
+        },
+        "additionalProperties": false,
+        "description": "Only the fields given change.",
+        "examples": [
+          {
+            "allowed_origins": [
+              "https://app.example.com"
+            ],
+            "display_name": "Acme"
           }
         ]
       },
@@ -15443,7 +15843,8 @@
           "webhook",
           "risk",
           "smtp",
-          "sms"
+          "sms",
+          "sign"
         ],
         "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay. `sms`: an SMS event."
       },
@@ -16802,6 +17203,7 @@
           "risk",
           "smtp",
           "sms",
+          "sign",
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
@@ -16831,7 +17233,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 7,
+            "maxItems": 8,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
           }
         },
@@ -17019,7 +17421,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 7,
+            "maxItems": 8,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
           "enabled": {
@@ -42758,6 +43160,665 @@
             }
           }
         }
+      }
+    },
+    "/v1/sign/requests/{id}/signers/{signer_id}/sessions": {
+      "post": {
+        "operationId": "createSignSession",
+        "tags": [
+          "Signature requests"
+        ],
+        "summary": "Create a signing session",
+        "description": "A short-lived link to the signing page for one `embedded` signer of a sent request. Your app vouches for who the signer is (the audit trail records `customer_asserted`), so create it only for that signed-in user, when they open the page that shows it. Embed the `url` in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from `coss/sign` does it), or redirect to it. Each call creates a new session.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The signature request's id.",
+              "examples": [
+                "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The signature request's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "The signer's id (`signers[].id` of the request).",
+              "examples": [
+                "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The signer's id (`signers[].id` of the request).",
+            "name": "signer_id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSignSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The session, with its link.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such signer on a signature request in the API key's environment (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The signer signs by email (`signer_not_embedded`), already signed or declined (`signer_finished`), or the request isn't `sent` or has expired (`request_not_signable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sign isn't available in this deployment yet (`sign_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sign/settings": {
+      "get": {
+        "operationId": "getSignSettings",
+        "tags": [
+          "Sign settings"
+        ],
+        "summary": "Get the Sign settings",
+        "description": "The API key's environment's settings: which sites may embed the signing page, how it looks, and the consent text signers accept.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The settings.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "updateSignSettings",
+        "tags": [
+          "Sign settings"
+        ],
+        "summary": "Update the Sign settings",
+        "description": "Changes the fields given; the others keep their values.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSignSettingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The settings.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`), or an origin isn't `https://host[:port]` (`invalid_origin`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ]
       }
     },
     "/v1/tracking_settings": {

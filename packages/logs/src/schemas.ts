@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 
-export const LOG_SOURCES = ["api", "email", "webhook", "risk", "smtp", "sms"] as const;
+export const LOG_SOURCES = ["api", "email", "webhook", "risk", "smtp", "sms", "sign"] as const;
 export type LogSource = (typeof LOG_SOURCES)[number];
 
 /** What a log drain can forward: every log source, plus the environment's audit events. */

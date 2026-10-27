@@ -367,7 +367,7 @@ export type MobileReceivedSms = {
 
 export type ReceivedSmsListResponse = Page<MobileReceivedSms>;
 
-export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms";
+export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "sign";
 export type LogLevel = "info" | "warning" | "error";
 export type LogRange = "1h" | "24h" | "7d";
 
@@ -711,7 +711,15 @@ export type TrackingSettings = {
   categories: (TrackingRule & { category: string })[];
 };
 
-export type LogDrainSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "audit";
+export type LogDrainSource =
+  | "api"
+  | "email"
+  | "webhook"
+  | "risk"
+  | "smtp"
+  | "sms"
+  | "sign"
+  | "audit";
 
 export type LogDrain = {
   id: string;
