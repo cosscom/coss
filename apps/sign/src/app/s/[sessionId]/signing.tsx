@@ -322,6 +322,9 @@ function Documents({
 }) {
   const [files, setFiles] = useState<Record<string, ArrayBuffer>>({});
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Whether pdf.js could open each document, and the download attempt ("Try again" bumps it).
+  const [rendered, setRendered] = useState<Record<string, "ready" | "failed">>({});
+  const [attempt, setAttempt] = useState(0);
   const [values, setValues] = useState<Values>({});
   const [images, setImages] = useState<Partial<Record<SignatureKind, string>>>({});
   const [adopting, setAdopting] = useState<SignatureKind | null>(null);
@@ -335,6 +338,7 @@ function Documents({
   const documentIds = view.documents.map((document) => document.id).join(",");
   useEffect(() => {
     let canceled = false;
+    void attempt;
     Promise.all(
       documentIds.split(",").map(async (id) => {
         const response = await call(`/documents/${id}`);
@@ -357,7 +361,16 @@ function Documents({
     return () => {
       canceled = true;
     };
-  }, [call, documentIds, view.request.id, view.signer.id]);
+  }, [call, documentIds, view.request.id, view.signer.id, attempt]);
+  const retryDocuments = () => {
+    setLoadError(null);
+    setFiles({});
+    setRendered({});
+    setAttempt((current) => current + 1);
+  };
+  // Nothing is signed unseen: every document must have loaded and opened.
+  const shown = documentIds.split(",").every((id) => rendered[id] === "ready");
+  const unshowable = loadError !== null || Object.values(rendered).includes("failed");
 
   // Sequential order: ask again until it's this signer's turn (what they filled in stays).
   const waiting = view.waiting_for.length > 0;
@@ -376,7 +389,7 @@ function Documents({
 
   const required = useMemo(() => view.fields.filter((field) => field.required), [view.fields]);
   const missing = required.filter((field) => !isFilled(field, values, images));
-  const canSign = view.can_sign;
+  const canSign = view.can_sign && shown;
   // Declining doesn't wait for anyone: a signer waiting their turn can still decline.
   const canDecline = !view.read_only;
 
@@ -451,14 +464,30 @@ function Documents({
           </AlertDescription>
         </Alert>
       )}
-      {loadError && <p className="text-destructive-foreground text-sm">{loadError}</p>}
+      {unshowable && (
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-destructive-foreground text-sm">
+            {loadError ?? "A document couldn't be shown."} You can sign once every document shows.
+          </p>
+          <Button onClick={retryDocuments} size="sm" variant="outline">
+            Try again
+          </Button>
+        </div>
+      )}
       {view.documents.map((document) => {
         const bytes = files[document.id];
         return (
           <section className="flex flex-col gap-3" key={document.id}>
             {view.documents.length > 1 && <h2 className="font-medium">{document.filename}</h2>}
             {bytes ? (
-              <PdfPages bytes={bytes} overlay={overlay(document.id)} pages={document.pages} />
+              <PdfPages
+                bytes={bytes}
+                onStatus={(status) =>
+                  setRendered((current) => ({ ...current, [document.id]: status }))
+                }
+                overlay={overlay(document.id)}
+                pages={document.pages}
+              />
             ) : (
               !loadError && (
                 <div className="flex h-64 items-center justify-center rounded-md border">

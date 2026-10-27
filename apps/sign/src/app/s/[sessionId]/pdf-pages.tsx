@@ -30,13 +30,19 @@ export function PdfPages({
   bytes,
   pages,
   overlay,
+  onStatus,
 }: {
   bytes: ArrayBuffer;
   pages: PageSize[];
   overlay: (page: number, scale: number) => ReactNode;
+  /** Whether pdf.js could open the document (its pages then draw). */
+  onStatus?: (status: "ready" | "failed") => void;
 }) {
   const [document, setDocument] = useState<PdfDocument | null>(null);
   const [failed, setFailed] = useState(false);
+  // The latest callback, without reopening the document when it changes.
+  const reportStatus = useRef(onStatus);
+  reportStatus.current = onStatus;
 
   useEffect(() => {
     let canceled = false;
@@ -58,12 +64,16 @@ export function PdfPages({
         return task.promise;
       })
       .then((pdf) => {
-        if (pdf && !canceled) setDocument(pdf);
+        if (pdf && !canceled) {
+          setDocument(pdf);
+          reportStatus.current?.("ready");
+        }
       })
       .catch((error: unknown) => {
         if (canceled) return;
         console.error("Could not open the document:", error);
         setFailed(true);
+        reportStatus.current?.("failed");
       });
     return () => {
       canceled = true;
