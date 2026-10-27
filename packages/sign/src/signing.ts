@@ -395,7 +395,11 @@ export function decodeSignatureImage(value: string, param: string): Buffer {
     throw invalid(`The image must be a PNG of at most ${MAX_SIGNATURE_IMAGE_BYTES / 1024} KB.`);
   }
   // The signature, then the IHDR chunk (length 13): width and height, big-endian.
-  if (!bytes.subarray(0, 8).equals(PNG_SIGNATURE) || bytes.toString("latin1", 12, 16) !== "IHDR") {
+  if (
+    bytes.length < 24 ||
+    !bytes.subarray(0, 8).equals(PNG_SIGNATURE) ||
+    bytes.toString("latin1", 12, 16) !== "IHDR"
+  ) {
     throw invalid("The image must be a PNG.");
   }
   const width = bytes.readUInt32BE(16);
@@ -559,22 +563,21 @@ export async function signAsSigner(
   };
   // Written before the transaction, under keys only this attempt uses; an attempt that fails removes
   // them (unless its commit went through after all and the signer names them).
-  await input.store.put({
-    key: keys.signature,
-    organizationId: session.organizationId,
-    contentType: "image/png",
-    content: signature,
-  });
-  if (initials && keys.initials) {
+  try {
     await input.store.put({
-      key: keys.initials,
+      key: keys.signature,
       organizationId: session.organizationId,
       contentType: "image/png",
-      content: initials,
+      content: signature,
     });
-  }
-
-  try {
+    if (initials && keys.initials) {
+      await input.store.put({
+        key: keys.initials,
+        organizationId: session.organizationId,
+        contentType: "image/png",
+        content: initials,
+      });
+    }
     await commitSignature(access, input, { keys, imageHashes, now });
   } catch (error) {
     await discardImages(input.store, access, keys);

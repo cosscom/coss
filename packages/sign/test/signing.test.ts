@@ -434,6 +434,9 @@ describe("signing", () => {
   test("signature images must be small PNGs", () => {
     expect(decodeSignatureImage(TEST_SIGNATURE_PNG, "signature").length).toBeGreaterThan(0);
     expect(() => decodeSignatureImage("", "signature")).toThrow(SignError);
+    // A PNG cut off inside its IHDR chunk.
+    const truncated = Buffer.from(TEST_SIGNATURE_PNG, "base64").subarray(0, 20).toString("base64");
+    expect(() => decodeSignatureImage(truncated, "signature")).toThrow(SignError);
     expect(() =>
       decodeSignatureImage(Buffer.alloc(600 * 1024).toString("base64"), "signature"),
     ).toThrow(SignError);
@@ -487,6 +490,43 @@ describe("settings", () => {
 });
 
 describe("signature images", () => {
+  test("a failed initials upload removes the signature image the attempt wrote", async () => {
+    const request = await createRequest(sandbox, {
+      signers: [
+        signer("Ada Lovelace", "ada@example.com", {
+          fields: [
+            { type: "signature", page: 1, x: 72, y: 600, width: 160, height: 30 },
+            { type: "initials", page: 1, x: 300, y: 600, width: 40, height: 20 },
+          ],
+        }),
+      ],
+    });
+    const signerId = request.signers[0]?.id ?? "";
+    const { access } = await session(sandbox, request.id, signerId);
+    const view = await openSigning(access, { actor: signerActor });
+    await consentToSign(access, { disclosureSha256: view.disclosure.sha256, actor: signerActor });
+    const failing = Object.assign(Object.create(store), {
+      put: async (object: { key: string }) => {
+        if (object.key.includes("-initials-")) throw new Error("S3 is down");
+        return store.put(object as Parameters<typeof store.put>[0]);
+      },
+    }) as FakeDocumentStore;
+    await expect(
+      signAsSigner(access, {
+        values: {},
+        signature: TEST_SIGNATURE_PNG,
+        initials: TEST_SIGNATURE_PNG,
+        actor: signerActor,
+        store: failing,
+      }),
+    ).rejects.toThrow("S3 is down");
+    const objects = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, sandbox.organizationId));
+    expect(objects.filter((object) => object.key.includes(`/signatures/${signerId}`))).toEqual([]);
+  });
+
   test("a rejected second attempt leaves the committed image alone; optional initials can stay empty", async () => {
     const request = await createRequest(sandbox, {
       signers: [
