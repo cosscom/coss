@@ -10,7 +10,7 @@ import {
 import { buildTestPdfBase64, TEST_SIGNATURE_PNG } from "@coss/sign/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { contentSecurityPolicy } from "../src/lib/security-headers.ts";
-import { handleSignRequest, type SignApiDeps } from "../src/lib/sign-api.ts";
+import { handleSignRequest, readBodyText, type SignApiDeps } from "../src/lib/sign-api.ts";
 
 const store = new FakeDocumentStore();
 
@@ -157,5 +157,41 @@ describe("headers", () => {
     expect(
       contentSecurityPolicy({ dev: false, frameAncestors: ["https://app.example.com"] }),
     ).toContain("frame-ancestors https://app.example.com");
+  });
+
+  test("a streamed body is refused once it passes the limit, without a Content-Length", async () => {
+    let pulled = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled++;
+        controller.enqueue(new Uint8Array(64 * 1024));
+      },
+    });
+    const request = new Request("https://sign.test/api/sessions/x", {
+      method: "POST",
+      body: stream,
+      // @ts-expect-error: Bun and Node need it for a stream body.
+      duplex: "half",
+    });
+    try {
+      await readBodyText(request, 1024 * 1024);
+      throw new Error("expected 413");
+    } catch (error) {
+      expect((error as { status?: number }).status).toBe(413);
+    }
+    expect(pulled).toBeLessThan(40);
+    expect(
+      await readBodyText(new Request("https://sign.test", { method: "POST", body: "{}" }), 10),
+    ).toBe("{}");
+  });
+
+  test("without a client IP, guesses across session ids still share one limit", async () => {
+    const { call } = await setup({ clientIp: null });
+    const statuses = new Set<number>();
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const response = await call("GET", [], { sessionId: `sgs_guess${attempt}` });
+      statuses.add(response.status);
+    }
+    expect(statuses.has(429)).toBe(true);
   });
 });

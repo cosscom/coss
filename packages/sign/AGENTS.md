@@ -55,7 +55,7 @@ next (see "Not built yet" in the root `AGENTS.md`).
   `viewed` once), `consentToSign` (the exact consent text's SHA-256 must match what the page
   showed), `readSigningDocument` (only after consent), `signAsSigner` (field values — `date_signed`,
   `name` and `email` filled by coss.com, `text`/`checkbox` by the signer — plus a PNG signature and
-  initials of at most 512 KB, stored at `orgs/<org>/<env>/signatures/<signer>-<kind>.png` with
+  initials of at most 512 KB, stored at `orgs/<org>/<env>/signatures/<signer>-<kind>-<attempt>.png` with
   their SHA-256; sequential order: `not_signers_turn`; the last signature completes the request
   with a `completed` event by `system`) and `declineAsSigner` (declines the whole request).
   Every action locks the request row, re-reads the signer and re-checks

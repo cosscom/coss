@@ -527,6 +527,17 @@ describe("signature images", () => {
       "request_not_signable",
     );
     expect(await store.get(row?.key ?? "")).toEqual(before);
+    // The same image again: its own attempt's key, so its cleanup leaves the committed one.
+    await expectSignError(
+      signAsSigner(access, {
+        values: {},
+        signature: TEST_SIGNATURE_PNG,
+        actor: signerActor,
+        store,
+      }),
+      "request_not_signable",
+    );
+    expect(await store.get(row?.key ?? "")).toEqual(before);
     const objects = await db
       .select({ key: schema.signFakeObject.key })
       .from(schema.signFakeObject)

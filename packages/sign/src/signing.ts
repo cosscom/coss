@@ -5,7 +5,7 @@
  * one transaction with its audit trail event, webhook and log line. The last signature completes
  * the request.
  */
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import type { SignAnchor, SignPageSize } from "@coss/db/schema";
 import { and, asc, eq } from "drizzle-orm";
@@ -429,18 +429,18 @@ function sha256(bytes: Uint8Array): string {
 }
 
 /**
- * `orgs/<org>/<env>/signatures/<signer id>-<kind>-<sha256>.png`: an adopted signature or initials,
- * by content, so an attempt that loses (rejected, or racing another tab) never overwrites the image
- * the committed signature names.
+ * `orgs/<org>/<env>/signatures/<signer id>-<kind>-<attempt>.png`: an adopted signature or
+ * initials, under a key of its own attempt, so an attempt that loses (rejected, or racing another
+ * tab with the same image) never overwrites or deletes the image another attempt commits.
  */
 export function signatureImageKey(input: {
   organizationId: string;
   environmentId: string;
   signerId: string;
   kind: "signature" | "initials";
-  sha256: string;
+  attempt: string;
 }): string {
-  return `${organizationPrefix(input.organizationId)}${input.environmentId}/signatures/${input.signerId}-${input.kind}-${input.sha256}.png`;
+  return `${organizationPrefix(input.organizationId)}${input.environmentId}/signatures/${input.signerId}-${input.kind}-${input.attempt}.png`;
 }
 
 export type SignInput = {
@@ -550,14 +550,15 @@ export async function signAsSigner(
     environmentId: session.environmentId,
     signerId: session.signerId,
   };
+  const attempt = randomUUID();
   const keys = {
-    signature: signatureImageKey({ ...scope, kind: "signature", sha256: imageHashes.signature }),
+    signature: signatureImageKey({ ...scope, kind: "signature", attempt }),
     initials: imageHashes.initials
-      ? signatureImageKey({ ...scope, kind: "initials", sha256: imageHashes.initials })
+      ? signatureImageKey({ ...scope, kind: "initials", attempt })
       : null,
   };
-  // Written before the transaction, under keys of their own content; an attempt that fails removes
-  // what it wrote unless the committed signature names the same image.
+  // Written before the transaction, under keys only this attempt uses; an attempt that fails removes
+  // them (unless its commit went through after all and the signer names them).
   await input.store.put({
     key: keys.signature,
     organizationId: session.organizationId,
@@ -581,7 +582,7 @@ export async function signAsSigner(
   }
 }
 
-/** Removes images an attempt wrote that the signer's committed signature doesn't name. */
+/** Removes a failed attempt's images, unless the signer's committed signature names them. */
 async function discardImages(
   store: DocumentStore,
   access: SignSessionAccess,

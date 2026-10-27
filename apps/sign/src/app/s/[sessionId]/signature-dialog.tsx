@@ -153,7 +153,7 @@ export function SignatureDialog({
                 {typed}
               </div>
             </TabsPanel>
-            <TabsPanel className="flex flex-col gap-2 pt-3" value="draw">
+            <TabsPanel className="flex flex-col gap-2 pt-3" keepMounted value="draw">
               <canvas
                 aria-label={`Draw your ${label}`}
                 className="aspect-[3/1] w-full touch-none rounded-md border bg-white"

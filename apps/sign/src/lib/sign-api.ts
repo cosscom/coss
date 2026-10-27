@@ -68,15 +68,32 @@ const DeclineInput = z.strictObject({
   reason: z.string().max(MAX_DECLINE_REASON_LENGTH).nullable().optional(),
 });
 
+/**
+ * The body as text, refused (413) once it passes `maxBytes`: counted while it streams in, so a
+ * chunked body without a `Content-Length` is never held whole.
+ */
+export async function readBodyText(request: Request, maxBytes: number): Promise<string> {
+  const tooLarge = () => new SigningApiError(413, "payload_too_large", "The request is too large.");
+  if (Number(request.headers.get("content-length") ?? 0) > maxBytes) throw tooLarge();
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBytes) {
+      await reader.cancel().catch(() => {});
+      throw tooLarge();
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 async function body<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
-  const length = Number(request.headers.get("content-length") ?? 0);
-  if (length > MAX_BODY_BYTES) {
-    throw new SigningApiError(413, "payload_too_large", "The request is too large.");
-  }
-  const text = await request.text();
-  if (text.length > MAX_BODY_BYTES) {
-    throw new SigningApiError(413, "payload_too_large", "The request is too large.");
-  }
+  const text = await readBodyText(request, MAX_BODY_BYTES);
   let raw: unknown;
   try {
     raw = JSON.parse(text);
@@ -139,7 +156,8 @@ async function route(
   // Limits first, so a guessed session id or token costs the guesser, not the database.
   await charge(deps, [
     { buckets: ["sign.session"], subject: sessionId },
-    ...(deps.clientIp ? [{ buckets: ["sign.ip"], subject: deps.clientIp } as const] : []),
+    // Without a client IP, one aggregate subject still bounds guessing across session ids.
+    { buckets: ["sign.ip"], subject: deps.clientIp ?? "unattributed" },
   ]);
   const store = deps.store;
   if (!store) {
