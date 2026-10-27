@@ -124,6 +124,8 @@ export const signRequest = pgTable(
     sealAttempts: integer("seal_attempts").notNull().default(0),
     sealNextAttemptAt: timestamp("seal_next_attempt_at", { withTimezone: true }),
     sealError: text("seal_error"),
+    // The template it was made from, if any (no FK: templates may be deleted, requests stay).
+    templateId: text("template_id"),
     // Days between reminders to email signers; `null`: no automatic reminders.
     reminderIntervalDays: integer("reminder_interval_days"),
     expiredAt: timestamp("expired_at", { withTimezone: true }),
@@ -286,6 +288,8 @@ export const signField = pgTable(
     anchor: text("anchor"),
     // What the signer entered; immutable once the signer has signed.
     value: text("value"),
+    // Filled when the request was created (a template's merge field): shown, not editable.
+    prefilled: boolean("prefilled").notNull().default(false),
     createdAt: createdAt(),
   },
   (t) => [
@@ -447,4 +451,131 @@ export const signFakeObject = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("sign_fake_object_organization_idx").on(t.organizationId)],
+);
+
+/** A role a template's fields belong to, filled by a real signer when a request is made. */
+export type SignTemplateRole = { key: string; name: string };
+
+/** Reusable documents with fields for roles (`client`, `company`), made into requests. */
+export const signTemplate = pgTable(
+  "sign_template",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.signTemplate)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // No FK, like `sign_document.api_key_id`.
+    apiKeyId: text("api_key_id"),
+    name: text("name").notNull(),
+    // The requests' title and message (a request may override them); `title` `null`: `name`.
+    title: text("title"),
+    message: text("message"),
+    signingOrder: signSigningOrder("signing_order").notNull().default("parallel"),
+    roles: jsonb("roles").$type<SignTemplateRole[]>().notNull().default([]),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "sign_template_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("sign_template_id_organization_unique").on(t.id, t.organizationId),
+    index("sign_template_environment_created_at_idx").on(t.environmentId, t.createdAt.desc()),
+  ],
+);
+
+/** A template's documents, in order. */
+export const signTemplateDocument = pgTable(
+  "sign_template_document",
+  {
+    templateId: text("template_id").notNull(),
+    documentId: text("document_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    position: integer("position").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.templateId, t.position] }),
+    foreignKey({
+      name: "sign_template_document_template_fk",
+      columns: [t.templateId, t.organizationId],
+      foreignColumns: [signTemplate.id, signTemplate.organizationId],
+    }).onDelete("cascade"),
+    // Like requests, a template keeps its documents from being deleted.
+    foreignKey({
+      name: "sign_template_document_document_fk",
+      columns: [t.documentId, t.organizationId],
+      foreignColumns: [signDocument.id, signDocument.organizationId],
+    }).onDelete("restrict"),
+    unique("sign_template_document_unique").on(t.templateId, t.documentId),
+    index("sign_template_document_document_idx").on(t.documentId),
+  ],
+);
+
+/** A field of a template, for one role, on one of its documents (by position). */
+export const signTemplateField = pgTable(
+  "sign_template_field",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.signTemplateField)),
+    organizationId: text("organization_id").notNull(),
+    templateId: text("template_id").notNull(),
+    role: text("role").notNull(),
+    // 0-based position in the template's documents.
+    document: integer("document").notNull(),
+    type: signFieldType("type").notNull(),
+    page: integer("page").notNull(),
+    x: doublePrecision("x").notNull(),
+    y: doublePrecision("y").notNull(),
+    width: doublePrecision("width").notNull(),
+    height: doublePrecision("height").notNull(),
+    required: boolean("required").notNull().default(true),
+    label: text("label"),
+    // `text` fields: filled from the request's `merge_fields[merge_key]`, when given.
+    mergeKey: text("merge_key"),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "sign_template_field_template_fk",
+      columns: [t.templateId, t.organizationId],
+      foreignColumns: [signTemplate.id, signTemplate.organizationId],
+    }).onDelete("cascade"),
+    index("sign_template_field_template_idx").on(t.templateId),
+  ],
+);
+
+/**
+ * A builder session: a short-lived link to the embedded builder (apps/sign `/b/<id>#<token>`) for
+ * one template. Only the token's sha256 is stored.
+ */
+export const signBuilderSession = pgTable(
+  "sign_builder_session",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.signBuilderSession)),
+    organizationId: text("organization_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    templateId: text("template_id").notNull(),
+    tokenHash: text("token_hash").notNull().unique("sign_builder_session_token_hash_unique"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    apiKeyId: text("api_key_id"),
+    // A dashboard member (the template editor).
+    createdByUserId: text("created_by_user_id"),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "sign_builder_session_template_fk",
+      columns: [t.templateId, t.organizationId],
+      foreignColumns: [signTemplate.id, signTemplate.organizationId],
+    }).onDelete("cascade"),
+    index("sign_builder_session_expires_at_idx").on(t.expiresAt),
+  ],
 );

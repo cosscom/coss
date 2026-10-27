@@ -7,8 +7,8 @@ Embeddable, compliant e-signatures (ESIGN/UETA, eIDAS simple electronic signatur
 upload PDFs, ask signers to sign them in their own app (embedded) or by email, and get a sealed
 copy with an audit trail. Built so far: documents, signature requests with signers and fields, the
 audit trail, signing sessions and the signer's actions (the signing app is `apps/sign`), settings,
-webhooks and log lines, completion's sealed PDF, and email delivery with reminders and expiry.
-Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`).
+webhooks and log lines, completion's sealed PDF, email delivery with reminders and expiry,
+templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` for what's left.
 
 - **Tables** (`packages/db/src/schema/sign.ts`): `sign_document` (`sdoc_`, an uploaded PDF: page
   sizes and text anchors, bytes in the document store), `sign_request` (`sreq_`), its ordered
@@ -101,8 +101,23 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   `NOTIFICATIONS_ENVIRONMENT_ID`) as "<requester> via coss.com"; sandbox environments always send
   in their own (fake) environment. coss.com's sender never carries the requester's `message`
   (abuse): `SignEmail.cossContent` is the copy without it, used whenever the mailer falls back.
-  Subjects are one line. The mailer sends nothing when the key already exists in either environment (a retry
-  whose route changed). Bodies are discarded after sending (they hold links); tracking is off.
+  Subjects are one line. The mailer sends nothing when the key already exists in either
+  environment (a retry whose route changed). Bodies are discarded after sending (they hold
+  links); tracking is off.
+- **Templates** (`templates.ts`; tables `sign_template` (`stpl_`), `sign_template_document`,
+  `sign_template_field` (`stfld_`)): documents, `roles` (`{ key, name }`) and fields per role
+  (positions; anchors resolved when saved, by `placeSignerFields` with `requireSignature: false`,
+  so a template can be saved incomplete; `ready` says when every role has a signature field).
+  `documents`/`roles`/`fields` in an update replace the whole list. Templates keep their
+  documents from deletion like requests (`document_in_use`). `createRequestFromTemplate` names one
+  signer per role (in the template's role order), fills `merge_fields` into `text` fields with a
+  `merge_key` (`sign_field.prefilled`: shown, not editable; `signAsSigner` refuses another value),
+  records `template_id`, and goes through `SignService.create` with the template request as the
+  idempotency hash (`hashSource`).
+- **Builder sessions** (`builder.ts`, `sign_builder_session` (`sbs_`), tokens `cossb_`): like
+  signing sessions, for one template; the builder (`apps/sign` `/b/<id>`) uploads documents into
+  the template at once and saves only the template's own documents, so a session never reaches
+  another document of the environment.
 - **Settings** (`settings.ts`): `allowed_origins` (≤ 10, `checkedSignOrigin`: https, plus
   `http://localhost` in sandbox), display name, accent color, theme, and the consent text
   (`null`: `DEFAULT_SIGN_DISCLOSURE`, `{name}` = display name, else the organization's name —

@@ -40,9 +40,11 @@ import {
   type SignEventObjectOutput,
   type SignRequestObjectOutput,
   type SignRequestStatus,
+  type SignTemplateObjectOutput,
 } from "./schemas.ts";
 import { getSignSettings } from "./settings.ts";
 import type { DocumentStore } from "./store.ts";
+import { createSignTemplate, updateSignTemplate } from "./templates.ts";
 
 const {
   environment,
@@ -77,6 +79,11 @@ export type CreateSignRequestInput = {
   actor: SignActor;
   params: CreateSignRequestRequestOutput;
   idempotencyKey?: string | null;
+  /** Internal (templates): prefilled values by signer and field input index, and the template. */
+  prefill?: readonly (readonly (string | null)[])[];
+  templateId?: string | null;
+  /** What the idempotency hash covers when not `params` (the template request as sent). */
+  hashSource?: unknown;
 };
 
 /** The operations that write documents' bytes, bound to the deployment's document store. */
@@ -89,6 +96,12 @@ export type SignService = {
     input: Parameters<typeof uploadSignDocument>[1],
   ): Promise<SignDocumentObjectOutput>;
   deleteDocument(input: Parameters<typeof deleteSignDocument>[1]): Promise<void>;
+  createTemplate(
+    input: Parameters<typeof createSignTemplate>[1],
+  ): Promise<SignTemplateObjectOutput>;
+  updateTemplate(
+    input: Parameters<typeof updateSignTemplate>[1],
+  ): Promise<SignTemplateObjectOutput>;
 };
 
 export type SignServiceOptions = {
@@ -515,7 +528,9 @@ export function createSignService(opts: SignServiceOptions): SignService {
       const signers = params.signers.map((signer, index) => ({
         id: newId(ID_PREFIXES.signSigner),
         input: signer,
-        fields: placeSignerFields(signer.fields, ordered, `signers[${index}]`),
+        fields: placeSignerFields(signer.fields, ordered, `signers[${index}]`, {
+          values: input.prefill?.[index],
+        }),
       }));
       checkFieldCount(signers.reduce((total, signer) => total + signer.fields.length, 0));
 
@@ -525,7 +540,7 @@ export function createSignService(opts: SignServiceOptions): SignService {
           ? (await getSignSettings(env)).reminderIntervalDays
           : params.reminder_interval_days;
       const idempotencyKey = input.idempotencyKey ?? null;
-      const requestHash = idempotencyKey ? hashRequest(params) : null;
+      const requestHash = idempotencyKey ? hashRequest(input.hashSource ?? params) : null;
 
       const insert = async (tx: Transaction): Promise<SignRequestRow | undefined> => {
         const [row] = await tx
@@ -544,6 +559,7 @@ export function createSignService(opts: SignServiceOptions): SignService {
             requestHash,
             expiresAt,
             reminderIntervalDays,
+            templateId: input.templateId ?? null,
             sentAt: send ? now : null,
             createdAt: now,
           })
@@ -647,5 +663,7 @@ export function createSignService(opts: SignServiceOptions): SignService {
     create,
     uploadDocument: (input) => uploadSignDocument(opts.store, input),
     deleteDocument: (input) => deleteSignDocument(opts.store, input),
+    createTemplate: (input) => createSignTemplate(opts.store, input),
+    updateTemplate: (input) => updateSignTemplate(opts.store, input),
   };
 }

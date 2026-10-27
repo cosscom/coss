@@ -15,7 +15,7 @@ import {
 } from "./schemas.ts";
 import { type DocumentStore, documentKey } from "./store.ts";
 
-const { environment, signDocument, signRequestDocument } = schema;
+const { environment, signDocument, signRequestDocument, signTemplateDocument } = schema;
 
 export type SignDocumentRow = typeof signDocument.$inferSelect;
 
@@ -249,6 +249,22 @@ export async function deleteSignDocument(
       throw new SignError(
         "document_in_use",
         `Signature request ${used.requestId} uses this document; delete the request first.`,
+      );
+    }
+    const [template] = await tx
+      .select({ templateId: signTemplateDocument.templateId })
+      .from(signTemplateDocument)
+      .where(
+        and(
+          eq(signTemplateDocument.documentId, row.id),
+          eq(signTemplateDocument.organizationId, input.organizationId),
+        ),
+      )
+      .limit(1);
+    if (template) {
+      throw new SignError(
+        "document_in_use",
+        `Template ${template.templateId} uses this document; remove it from the template first.`,
       );
     }
     await tx

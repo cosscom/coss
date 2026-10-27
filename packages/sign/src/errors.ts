@@ -19,7 +19,8 @@ export type SignErrorCode =
   | "invalid_signing"
   | "signed_document_not_ready"
   | "reminder_not_due"
-  | "invalid_sender";
+  | "invalid_sender"
+  | "template_incomplete";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -57,6 +58,8 @@ const STATUS_BY_CODE = {
   reminder_not_due: 422,
   // `email_from` isn't on a verified domain of the organization.
   invalid_sender: 422,
+  // No documents, no roles, or a role without a signature field.
+  template_incomplete: 422,
 } as const satisfies Record<SignErrorCode, number>;
 
 /** Expected failures of the Sign product; `status` is the HTTP status the API should use. */

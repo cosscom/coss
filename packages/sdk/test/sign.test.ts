@@ -8,7 +8,7 @@ import {
   type SignSession,
   type SignSettings,
 } from "../src/index.ts";
-import { mountSigning, type SigningEvent } from "../src/sign.ts";
+import { mountBuilder, mountSigning, type SigningEvent } from "../src/sign.ts";
 import { json, mockFetch } from "./helpers.ts";
 
 const API_KEY = "coss_test_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl";
@@ -242,5 +242,78 @@ describe("mountSigning", () => {
     embed.destroy();
     expect(dom.iframe.removed).toBe(true);
     expect(dom.listeners.size).toBe(0);
+  });
+});
+
+describe("coss.sign.templates", () => {
+  test("CRUD paths, requests from a template, builder sessions", async () => {
+    const { coss, calls } = client(
+      json(201, {}),
+      json(200, {}),
+      json(200, {}),
+      json(200, {}),
+      json(200, {}),
+      json(201, {}),
+      json(201, {}),
+    );
+    const id = "stpl_01k5f9yq8re8vb6q2wmz0tb2xd";
+    await coss.sign.templates.create({ name: "NDA" });
+    await coss.sign.templates.list({ limit: 2 });
+    await coss.sign.templates.get(id);
+    await coss.sign.templates.update(id, { name: "NDA v2" });
+    await coss.sign.templates.remove(id);
+    await coss.sign.templates.createRequest(id, {
+      signers: [{ role: "client", name: "Ada", email: "ada@example.com" }],
+      merge_fields: { client_company: "Engines Ltd" },
+    });
+    await coss.sign.templates.createBuilderSession(id);
+    expect(calls.map((call) => `${call.method} ${call.url.replace(BASE, "")}`)).toEqual([
+      "POST /templates",
+      "GET /templates?limit=2",
+      `GET /templates/${id}`,
+      `PATCH /templates/${id}`,
+      `DELETE /templates/${id}`,
+      `POST /templates/${id}/requests`,
+      `POST /templates/${id}/builder_sessions`,
+    ]);
+    expect(calls[5]?.headers.get("idempotency-key")).toBeTruthy();
+  });
+});
+
+describe("mountBuilder", () => {
+  test("forwards saved events and keeps its own height", () => {
+    const listeners = new Set<(event: MessageEvent) => void>();
+    const frameWindow = {};
+    const iframe = {
+      style: {} as Record<string, string>,
+      contentWindow: frameWindow,
+      remove() {},
+    } as Record<string, unknown>;
+    const container = {
+      ownerDocument: {
+        createElement: () => iframe,
+        defaultView: {
+          addEventListener: (_: string, listener: (event: MessageEvent) => void) =>
+            listeners.add(listener),
+          removeEventListener: (_: string, listener: (event: MessageEvent) => void) =>
+            listeners.delete(listener),
+        },
+      },
+      appendChild: () => iframe,
+    } as unknown as HTMLElement;
+    const events: unknown[] = [];
+    mountBuilder({
+      url: "https://sign.example/b/sbs_1#cossb_x",
+      container,
+      onEvent: (e) => events.push(e),
+    });
+    for (const listener of listeners) {
+      const post = (data: unknown) =>
+        listener({ data, origin: "https://sign.example", source: frameWindow } as MessageEvent);
+      post({ source: "coss-sign", version: 1, type: "resize", height: 2000 });
+      post({ source: "coss-sign", version: 1, type: "saved", template_id: "stpl_1", ready: true });
+    }
+    expect((iframe.style as Record<string, string>).height).toBe("80vh");
+    expect(events).toEqual([{ type: "saved", template_id: "stpl_1", ready: true }]);
   });
 });

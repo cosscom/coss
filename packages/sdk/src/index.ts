@@ -61,6 +61,7 @@ export type {
   SignResource,
   SignSessionsResource,
   SignSettingsResource,
+  SignTemplatesResource,
 } from "./resources/sign.ts";
 export type {
   ReceivedSmsResource,
@@ -370,14 +371,20 @@ export type {
 } from "./types/risk.ts";
 export type {
   AnchoredSignFieldInput,
+  CreateSignBuilderSessionParams,
+  CreateSignRequestFromTemplateParams,
   CreateSignRequestParams,
   CreateSignSessionParams,
+  CreateSignTemplateParams,
   DeletedSignDocument,
+  DeletedSignTemplate,
   ListSignDocumentsParams,
   ListSignRequestsParams,
+  ListSignTemplatesParams,
   PlacedSignFieldInput,
   SignAnchor,
   SignAuthentication,
+  SignBuilderSession,
   SignDelivery,
   SignDocument,
   SignDocumentInput,
@@ -400,9 +407,14 @@ export type {
   SignSignerInput,
   SignSignerStatus,
   SignSigningOrder,
+  SignTemplate,
+  SignTemplateField,
+  SignTemplateFieldInput,
+  SignTemplateRole,
   SignTheme,
   SignWebhookEventType,
   UpdateSignSettingsParams,
+  UpdateSignTemplateParams,
   UploadSignDocumentParams,
 } from "./types/sign.ts";
 export type {

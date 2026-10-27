@@ -130,6 +130,9 @@ export const ID_PREFIXES = {
   signEvent: "sevt",
   signSession: "sgs",
   signSettings: "sset",
+  signTemplate: "stpl",
+  signTemplateField: "stfld",
+  signBuilderSession: "sbs",
   // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
   migration: "mig",
   migrationItem: "migitem",

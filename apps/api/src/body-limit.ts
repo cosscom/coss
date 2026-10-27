@@ -21,9 +21,16 @@ const OWN_LIMIT_PATHS: ReadonlySet<string> = new Set([
   // Sign: a document upload, and a signature request with inline documents.
   "/v1/sign/documents",
   "/v1/sign/requests",
+  "/v1/sign/templates",
 ]);
+
+/** Template updates take inline documents too. */
+const OWN_LIMIT_PATCH = /^\/v1\/sign\/templates\/[^/]+$/;
 
 /** The send and upload routes enforce their own, larger limit after authenticating the caller. */
 export function hasOwnBodyLimit(c: Context): boolean {
-  return c.req.method === "POST" && OWN_LIMIT_PATHS.has(c.req.path);
+  return (
+    (c.req.method === "POST" && OWN_LIMIT_PATHS.has(c.req.path)) ||
+    (c.req.method === "PATCH" && OWN_LIMIT_PATCH.test(c.req.path))
+  );
 }

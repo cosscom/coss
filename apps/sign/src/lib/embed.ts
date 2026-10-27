@@ -12,14 +12,15 @@ export type EmbedMessage =
   | { type: "signed"; request_id: string; signer_id: string; request_status: "sent" | "completed" }
   | { type: "declined"; request_id: string; signer_id: string; reason: string | null }
   | { type: "error"; code: string; message: string }
+  | { type: "builder_ready"; template_id: string }
+  | { type: "saved"; template_id: string; ready: boolean }
   | { type: "resize"; height: number };
 
 export function postToHost(message: EmbedMessage): void {
   if (typeof window === "undefined" || window.parent === window) return;
-  window.parent.postMessage(
-    { source: "coss-sign", version: SIGN_MESSAGE_VERSION, ...message },
-    "*",
-  );
+  // The builder's "ready" is a `ready` with its template, as `mountBuilder` expects.
+  const wire = message.type === "builder_ready" ? { ...message, type: "ready" } : message;
+  window.parent.postMessage({ source: "coss-sign", version: SIGN_MESSAGE_VERSION, ...wire }, "*");
 }
 
 /**

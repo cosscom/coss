@@ -1,3 +1,4 @@
+export * from "./builder.ts";
 export * from "./complete.ts";
 export * from "./completed-pdf.ts";
 export * from "./documents.ts";
@@ -30,3 +31,4 @@ export * from "./sessions.ts";
 export * from "./settings.ts";
 export * from "./signing.ts";
 export * from "./store.ts";
+export * from "./templates.ts";

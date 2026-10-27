@@ -2,17 +2,25 @@ import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
 import type { List } from "../types/email.ts";
 import type {
+  CreateSignBuilderSessionParams,
+  CreateSignRequestFromTemplateParams,
   CreateSignRequestParams,
   CreateSignSessionParams,
+  CreateSignTemplateParams,
   DeletedSignDocument,
+  DeletedSignTemplate,
   ListSignDocumentsParams,
   ListSignRequestsParams,
+  ListSignTemplatesParams,
+  SignBuilderSession,
   SignDocument,
   SignEvent,
   SignRequest,
   SignSession,
   SignSettings,
+  SignTemplate,
   UpdateSignSettingsParams,
+  UpdateSignTemplateParams,
   UploadSignDocumentParams,
 } from "../types/sign.ts";
 import { listQuery } from "./list-query.ts";
@@ -243,10 +251,118 @@ export class SignSettingsResource {
   }
 }
 
-/** `coss.sign`: e-signatures: documents, signature requests, signing sessions and settings. */
+/** `coss.sign.templates`: reusable documents with fields for roles. */
+export class SignTemplatesResource {
+  readonly #http: HttpClient;
+
+  /** @internal Use `new Coss().sign.templates`. */
+  constructor(http: HttpClient) {
+    this.#http = http;
+  }
+
+  /**
+   * Creates a template (it may start empty and be built in the embedded builder). Not retried
+   * automatically: a retry would create a second one.
+   */
+  create(
+    params: CreateSignTemplateParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<SignTemplate>> {
+    return this.#http.request<SignTemplate>({
+      method: "POST",
+      path: "/v1/sign/templates",
+      body: params,
+      retry: false,
+      signal: options?.signal,
+    });
+  }
+
+  /** Lists templates, newest first. Pass the last `id` as `after` while `has_more` is true. */
+  list(
+    params: ListSignTemplatesParams = {},
+    options?: ReadOptions,
+  ): Promise<CossResult<List<SignTemplate>>> {
+    return this.#http.request<List<SignTemplate>>({
+      method: "GET",
+      path: "/v1/sign/templates",
+      query: listQuery(params),
+      signal: options?.signal,
+    });
+  }
+
+  get(id: string, options?: ReadOptions): Promise<CossResult<SignTemplate>> {
+    return this.#http.request<SignTemplate>({
+      method: "GET",
+      path: `/v1/sign/templates/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /** Changes the fields given; `documents`, `roles` and `fields` replace the whole list. */
+  update(
+    id: string,
+    params: UpdateSignTemplateParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<SignTemplate>> {
+    return this.#http.request<SignTemplate>({
+      method: "PATCH",
+      path: `/v1/sign/templates/${encodeURIComponent(id)}`,
+      body: params,
+      signal: options?.signal,
+    });
+  }
+
+  /** Deletes a template; requests made from it and its documents stay. */
+  remove(id: string, options?: ReadOptions): Promise<CossResult<DeletedSignTemplate>> {
+    return this.#http.request<DeletedSignTemplate>({
+      method: "DELETE",
+      path: `/v1/sign/templates/${encodeURIComponent(id)}`,
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * A signature request from the template: one signer per role, merge fields filled in. Safe to
+   * retry: every request carries an `Idempotency-Key`.
+   */
+  createRequest(
+    id: string,
+    params: CreateSignRequestFromTemplateParams,
+    options?: RequestOptions,
+  ): Promise<CossResult<SignRequest>> {
+    return this.#http.request<SignRequest>({
+      method: "POST",
+      path: `/v1/sign/templates/${encodeURIComponent(id)}/requests`,
+      body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+
+  /** A short-lived link to the embedded builder for this template (`mountBuilder`). */
+  createBuilderSession(
+    id: string,
+    params: CreateSignBuilderSessionParams = {},
+    options?: RequestOptions,
+  ): Promise<CossResult<SignBuilderSession>> {
+    return this.#http.request<SignBuilderSession>({
+      method: "POST",
+      path: `/v1/sign/templates/${encodeURIComponent(id)}/builder_sessions`,
+      body: params,
+      idempotencyKey: options?.idempotencyKey,
+      signal: options?.signal,
+    });
+  }
+}
+
+/**
+ * `coss.sign`: e-signatures: documents, signature requests, templates, signing sessions and
+ * settings.
+ */
 export class SignResource {
   readonly documents: SignDocumentsResource;
   readonly requests: SignRequestsResource;
+  readonly templates: SignTemplatesResource;
   readonly sessions: SignSessionsResource;
   readonly settings: SignSettingsResource;
 
@@ -254,6 +370,7 @@ export class SignResource {
   constructor(http: HttpClient) {
     this.documents = new SignDocumentsResource(http);
     this.requests = new SignRequestsResource(http);
+    this.templates = new SignTemplatesResource(http);
     this.sessions = new SignSessionsResource(http);
     this.settings = new SignSettingsResource(http);
   }

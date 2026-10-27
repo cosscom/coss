@@ -21,6 +21,9 @@ export type PlacedField = {
   required: boolean;
   label: string | null;
   anchor: string | null;
+  /** Filled at creation (a template's merge field): shown to the signer, not editable. */
+  value: string | null;
+  prefilled: boolean;
 };
 
 // Rounding in viewers and our own anchor boxes: a field may touch the edge.
@@ -45,19 +48,31 @@ function checkOnPage(field: PlacedField, page: SignPageSize | undefined, param: 
   }
 }
 
-/** One signer's fields, placed. `param` names the signer in errors, e.g. `signers[0]`. */
+/**
+ * One signer's fields, placed. `param` names the signer in errors, e.g. `signers[0]`; `values`
+ * prefills fields by input index (a template's merge fields).
+ */
 export function placeSignerFields(
   inputs: readonly SignFieldInputOutput[],
   documents: readonly FieldDocument[],
   param: string,
+  opts: {
+    values?: readonly (string | null | undefined)[];
+    /** Templates in progress may not have one yet. Default `true`. */
+    requireSignature?: boolean;
+  } = {},
 ): PlacedField[] {
+  const values = opts.values ?? [];
   const placed: PlacedField[] = [];
   for (const [index, input] of inputs.entries()) {
     const fieldParam = `${param}.fields[${index}]`;
+    const value = values[index] ?? null;
     const common = {
       type: input.type,
       required: input.required ?? true,
       label: input.label ?? null,
+      value,
+      prefilled: value !== null,
     };
     if ("anchor" in input) {
       let found = 0;
@@ -108,7 +123,7 @@ export function placeSignerFields(
     checkOnPage(field, document.pages[input.page - 1], fieldParam);
     placed.push(field);
   }
-  if (!placed.some((field) => field.type === "signature")) {
+  if (opts.requireSignature !== false && !placed.some((field) => field.type === "signature")) {
     throw invalid("Every signer needs at least one `signature` field.", `${param}.fields`);
   }
   return placed;

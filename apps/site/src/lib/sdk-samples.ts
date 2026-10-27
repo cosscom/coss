@@ -314,6 +314,25 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "sign.sessions.create",
     args: (r) => [pathId(r), pathParam(r, "signer_id"), tsValue(r.body ?? {})],
   },
+  "POST /v1/sign/templates": {
+    method: "sign.templates.create",
+    args: (r) => [tsValue(r.body ?? {})],
+  },
+  "GET /v1/sign/templates": { method: "sign.templates.list", args: () => [] },
+  "GET /v1/sign/templates/{id}": { method: "sign.templates.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/sign/templates/{id}": {
+    method: "sign.templates.update",
+    args: (r) => [pathId(r), tsValue(r.body ?? {})],
+  },
+  "DELETE /v1/sign/templates/{id}": { method: "sign.templates.remove", args: (r) => [pathId(r)] },
+  "POST /v1/sign/templates/{id}/requests": {
+    method: "sign.templates.createRequest",
+    args: (r) => [pathId(r), tsValue(r.body ?? {}), requestOptions(r)],
+  },
+  "POST /v1/sign/templates/{id}/builder_sessions": {
+    method: "sign.templates.createBuilderSession",
+    args: (r) => [pathId(r), tsValue(r.body ?? {})],
+  },
   "GET /v1/sign/settings": { method: "sign.settings.get", args: () => [] },
   "PATCH /v1/sign/settings": {
     method: "sign.settings.update",
