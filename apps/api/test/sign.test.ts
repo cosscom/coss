@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { memoryLogWriter } from "@coss/logs/testing";
 import { clientIpResolver } from "@coss/ratelimit";
 import { buildTestPdfBase64 } from "@coss/sign/testing";
 import { createEnvironmentApiKey } from "@coss/tenancy";
@@ -344,6 +345,25 @@ describe("Signing sessions and settings", () => {
       { key: tenant.sandboxKey, body: {} },
     );
     expect(unknown.status).toBe(404);
+  });
+
+  test("request logs never keep a session's link or token", async () => {
+    const tenant = await createTestTenant();
+    const writer = memoryLogWriter();
+    const { app } = createTestApp({ signUrl: "https://sign.example", logWriter: writer });
+    const request = await sentRequest(tenant.sandboxKey, app);
+    const response = await apiRequest(
+      app,
+      "POST",
+      `/v1/sign/requests/${request.id}/signers/${request.signers[0].id}/sessions`,
+      { key: tenant.sandboxKey, body: {} },
+    );
+    const session = await response.json();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(writer.entries.length).toBeGreaterThanOrEqual(2);
+    const logged = JSON.stringify(writer.entries);
+    expect(logged).not.toContain(session.token);
+    expect(logged).not.toContain(session.id);
   });
 
   test("sessions answer 503 while the signing app isn't deployed", async () => {

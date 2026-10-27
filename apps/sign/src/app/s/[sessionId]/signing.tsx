@@ -376,6 +376,8 @@ function Documents({
   const required = useMemo(() => view.fields.filter((field) => field.required), [view.fields]);
   const missing = required.filter((field) => !isFilled(field, values, images));
   const canSign = view.can_sign;
+  // Declining doesn't wait for anyone: a signer waiting their turn can still decline.
+  const canDecline = !view.read_only;
 
   const goToNext = () => {
     const next = missing[0];
@@ -466,23 +468,26 @@ function Documents({
           </section>
         );
       })}
-      {canSign && (
+      {(canSign || canDecline) && (
         <footer className="sticky bottom-0 flex flex-col gap-3 border-t bg-background/95 py-4 backdrop-blur">
-          <p className="text-muted-foreground text-xs">
-            By selecting Finish, you agree that your electronic signature is the legal equivalent of
-            your handwritten signature on these documents.
-          </p>
+          {canSign && (
+            <p className="text-muted-foreground text-xs">
+              By selecting Finish, you agree that your electronic signature is the legal equivalent
+              of your handwritten signature on these documents.
+            </p>
+          )}
           {error && <p className="text-destructive-foreground text-sm">{error}</p>}
           <div className="flex flex-wrap items-center gap-2">
-            {missing.length > 0 ? (
-              <Button onClick={goToNext}>
-                Next: {missing.length} field{missing.length === 1 ? "" : "s"} left
-              </Button>
-            ) : (
-              <Button loading={pending} onClick={finish}>
-                Finish
-              </Button>
-            )}
+            {canSign &&
+              (missing.length > 0 ? (
+                <Button onClick={goToNext}>
+                  Next: {missing.length} field{missing.length === 1 ? "" : "s"} left
+                </Button>
+              ) : (
+                <Button loading={pending} onClick={finish}>
+                  Finish
+                </Button>
+              ))}
             <Button onClick={() => setDeclining(true)} variant="ghost">
               Decline to sign
             </Button>
