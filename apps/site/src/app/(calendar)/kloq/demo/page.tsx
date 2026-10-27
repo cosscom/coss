@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: canonical("/kloq/demo"),
-  openGraph: { title: TITLE, description: DESCRIPTION, url: abs("/kloq/demo") },
+  openGraph: { type: "website", title: TITLE, description: DESCRIPTION, url: abs("/kloq/demo") },
 };
 
 /** Static: `?events=` (the stress store) is read on the client, in `DemoCalendar`. */

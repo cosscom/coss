@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: tool.description,
   alternates: canonical(`/kloq/tools/${tool.slug}`),
   openGraph: {
+    type: "website",
     title: tool.title,
     description: tool.description,
     url: abs(`/kloq/tools/${tool.slug}`),

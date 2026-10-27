@@ -120,7 +120,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { absolute: TITLE },
     description,
     alternates: canonical("/kloq"),
-    openGraph: { url: abs("/kloq"), title: TITLE, description },
+    openGraph: { type: "website", url: abs("/kloq"), title: TITLE, description },
     twitter: { card: "summary_large_image", title: TITLE, description },
   };
 }

@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: canonical("/kloq/tools"),
-  openGraph: { title: TITLE, description: DESCRIPTION, url: abs("/kloq/tools") },
+  openGraph: { type: "website", title: TITLE, description: DESCRIPTION, url: abs("/kloq/tools") },
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
