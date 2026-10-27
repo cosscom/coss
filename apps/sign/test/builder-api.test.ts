@@ -126,6 +126,18 @@ describe("builder API", () => {
       },
     });
     expect(refused.status).toBe(422);
+    const badRole = await call("PUT", [], {
+      body: {
+        name: "Mutual NDA",
+        title: null,
+        message: null,
+        signing_order: "parallel",
+        documents: [documentId],
+        roles: [{ key: "Client Name", name: "Client" }],
+        fields: [],
+      },
+    });
+    expect(badRole.status).toBe(422);
     expect((await call("GET", ["documents", other.id])).status).toBe(404);
   });
 });

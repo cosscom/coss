@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { eq } from "drizzle-orm";
 import {
   authenticateSignBuilderSession,
   authenticateSignSession,
@@ -249,5 +251,54 @@ describe("templates", () => {
       }),
       "not_found",
     );
+  });
+});
+
+describe("template writes", () => {
+  test("a refused template leaves no uploaded bytes; a name-only update keeps roles", async () => {
+    const own = await createTestTenant();
+    const ownEnv: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    await expectSignError(
+      service.createTemplate({
+        environment: ownEnv,
+        apiKeyId: null,
+        params: {
+          name: "Bad",
+          documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+          roles: [{ key: "client", name: "Client" }],
+          fields: [
+            { role: "client", type: "signature", page: 9, x: 1, y: 1, width: 10, height: 10 },
+          ],
+        },
+      }),
+      "invalid_fields",
+    );
+    const leftovers = await db
+      .select()
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, own.organization.id));
+    expect(leftovers).toEqual([]);
+
+    const template = await service.createTemplate({
+      environment: ownEnv,
+      apiKeyId: null,
+      params: { name: "Roles", roles: [{ key: "client", name: "Client" }] },
+    });
+    const update = (params: Parameters<typeof service.updateTemplate>[0]["params"]) =>
+      service.updateTemplate({
+        ...ownEnv,
+        templateId: template.id,
+        environment: ownEnv,
+        apiKeyId: null,
+        params,
+      });
+    await update({ roles: [{ key: "buyer", name: "Buyer" }] });
+    const renamed = await update({ name: "Renamed" });
+    expect(renamed.roles).toEqual([{ key: "buyer", name: "Buyer" }]);
   });
 });

@@ -230,14 +230,44 @@ type DocumentsInput = NonNullable<CreateSignTemplateRequestOutput["documents"]>;
 type FieldsInput = NonNullable<CreateSignTemplateRequestOutput["fields"]>;
 
 /**
- * The template's documents (uploaded ones checked, inline ones stored first) and fields placed on
- * them, by role. Inline documents' rows are returned for the caller's transaction to insert.
+ * Stores the inline PDFs of `documents` (bytes first, rows by the caller's transaction). If one
+ * fails, those already stored are deleted again.
  */
-async function resolve(
+async function prepareInline(
   store: DocumentStore,
   env: SignEnvironment,
   apiKeyId: string | null,
+  documents: DocumentsInput,
+): Promise<PreparedDocument[]> {
+  const inline: PreparedDocument[] = [];
+  try {
+    for (const document of documents) {
+      if ("content" in document) {
+        inline.push(
+          await prepareDocument(store, env, {
+            filename: document.filename,
+            content: document.content,
+            apiKeyId,
+          }),
+        );
+      }
+    }
+  } catch (error) {
+    await discard(store, inline);
+    throw error;
+  }
+  return inline;
+}
+
+/**
+ * The template's documents (uploaded ones checked, the inline ones from `prepareInline`) and its
+ * fields placed on them, by role. Runs in the transaction that writes them.
+ */
+async function resolve(
+  executor: Transaction,
+  env: SignEnvironment,
   input: { documents: DocumentsInput; roles: readonly SignTemplateRole[]; fields: FieldsInput },
+  inline: PreparedDocument[],
 ) {
   const referenced = input.documents.flatMap((document) =>
     "document_id" in document ? [document.document_id] : [],
@@ -245,7 +275,7 @@ async function resolve(
   if (new Set(referenced).size !== referenced.length) {
     throw new SignError("invalid_document", "A document is listed twice.", { param: "documents" });
   }
-  const existing = await environmentDocuments(db, env, referenced);
+  const existing = await environmentDocuments(executor, env, referenced);
   for (const [index, document] of input.documents.entries()) {
     if ("document_id" in document && !existing.some((row) => row.id === document.document_id)) {
       throw new SignError(
@@ -263,18 +293,6 @@ async function resolve(
       });
     }
     keys.add(role.key);
-  }
-  const inline: PreparedDocument[] = [];
-  for (const document of input.documents) {
-    if ("content" in document) {
-      inline.push(
-        await prepareDocument(store, env, {
-          filename: document.filename,
-          content: document.content,
-          apiKeyId,
-        }),
-      );
-    }
   }
   let nextInline = 0;
   const ordered: TemplateDocument[] = input.documents.map((document) => {
@@ -308,9 +326,7 @@ async function resolve(
       [rest as SignFieldInputOutput],
       ordered,
       `fields[${index}]`,
-      {
-        requireSignature: false,
-      },
+      { requireSignature: false },
     )) {
       placed.push({
         role,
@@ -391,13 +407,16 @@ export async function createSignTemplate(
 ): Promise<SignTemplateObjectOutput> {
   const { environment: env, params } = input;
   const roles = params.roles ?? [];
-  const resolved = await resolve(store, env, input.apiKeyId, {
-    documents: params.documents ?? [],
-    roles,
-    fields: params.fields ?? [],
-  });
+  const documents = params.documents ?? [];
+  const inline = await prepareInline(store, env, input.apiKeyId, documents);
   try {
     const row = await db.transaction(async (tx) => {
+      const resolved = await resolve(
+        tx,
+        env,
+        { documents, roles, fields: params.fields ?? [] },
+        inline,
+      );
       const [template] = await tx
         .insert(signTemplate)
         .values({
@@ -418,7 +437,7 @@ export async function createSignTemplate(
     });
     return toObject(row, env.mode === "sandbox");
   } catch (error) {
-    await discard(store, resolved.inline);
+    await discard(store, inline);
     throw error;
   }
 }
@@ -432,40 +451,50 @@ export async function updateSignTemplate(
   },
 ): Promise<SignTemplateObjectOutput> {
   if (!isId(ID_PREFIXES.signTemplate, input.templateId)) throw notFound();
-  const [current] = await db.select().from(signTemplate).where(scope(input)).limit(1);
-  if (!current) throw notFound();
   const { params } = input;
-  const replaces =
-    params.documents !== undefined || params.roles !== undefined || params.fields !== undefined;
-  const roles = params.roles ?? current.roles;
-  let resolved: Awaited<ReturnType<typeof resolve>> | null = null;
-  if (replaces) {
-    const documents =
-      params.documents ??
-      (await templateDocuments(db, current)).map((document) => ({ document_id: document.id }));
-    const fields =
-      params.fields ??
-      (await templateFields(db, current)).map((field) => ({
-        role: field.role,
-        type: field.type,
-        document: field.document,
-        page: field.page,
-        x: field.x,
-        y: field.y,
-        width: field.width,
-        height: field.height,
-        required: field.required,
-        ...(field.label ? { label: field.label } : {}),
-        ...(field.mergeKey ? { merge_key: field.mergeKey } : {}),
-      }));
-    resolved = await resolve(store, input.environment, input.apiKeyId, {
-      documents,
-      roles,
-      fields,
-    });
-  }
+  const inline = await prepareInline(
+    store,
+    input.environment,
+    input.apiKeyId,
+    params.documents ?? [],
+  );
   try {
     const row = await db.transaction(async (tx) => {
+      // Read-modify-write under the row's lock: concurrent updates of one template take turns, and
+      // what this one keeps (documents, roles or fields it doesn't replace) is what's there now.
+      const [current] = await tx.select().from(signTemplate).where(scope(input)).for("update");
+      if (!current) throw notFound();
+      const replaces =
+        params.documents !== undefined || params.roles !== undefined || params.fields !== undefined;
+      let resolved: Awaited<ReturnType<typeof resolve>> | null = null;
+      if (replaces) {
+        const documents =
+          params.documents ??
+          (await templateDocuments(tx, current)).map((document) => ({
+            document_id: document.id,
+          }));
+        const fields =
+          params.fields ??
+          (await templateFields(tx, current)).map((field) => ({
+            role: field.role,
+            type: field.type,
+            document: field.document,
+            page: field.page,
+            x: field.x,
+            y: field.y,
+            width: field.width,
+            height: field.height,
+            required: field.required,
+            ...(field.label ? { label: field.label } : {}),
+            ...(field.mergeKey ? { merge_key: field.mergeKey } : {}),
+          }));
+        resolved = await resolve(
+          tx,
+          input.environment,
+          { documents, roles: params.roles ?? current.roles, fields },
+          inline,
+        );
+      }
       const [template] = await tx
         .update(signTemplate)
         .set({
@@ -473,7 +502,7 @@ export async function updateSignTemplate(
           ...(params.title !== undefined ? { title: params.title } : {}),
           ...(params.message !== undefined ? { message: params.message } : {}),
           ...(params.signing_order !== undefined ? { signingOrder: params.signing_order } : {}),
-          roles,
+          ...(params.roles !== undefined ? { roles: params.roles } : {}),
           updatedAt: new Date(),
         })
         .where(scope(input))
@@ -484,7 +513,7 @@ export async function updateSignTemplate(
     });
     return toObject(row);
   } catch (error) {
-    if (resolved) await discard(store, resolved.inline);
+    await discard(store, inline);
     throw error;
   }
 }
@@ -511,10 +540,19 @@ export async function createRequestFromTemplate(
   },
 ): Promise<{ request: SignRequestObjectOutput; replayed: boolean }> {
   if (!isId(ID_PREFIXES.signTemplate, input.templateId)) throw notFound();
-  const [template] = await db.select().from(signTemplate).where(scope(input)).limit(1);
-  if (!template) throw notFound();
-  const documents = await templateDocuments(db, template);
-  const fields = await templateFields(db, template);
+  // One snapshot: the row's share lock waits out an update in progress (which holds it for update
+  // while it replaces documents and fields), so documents and fields are of the same revision.
+  const snapshot = await db.transaction(async (tx) => {
+    const [row] = await tx.select().from(signTemplate).where(scope(input)).for("share");
+    if (!row) return null;
+    return {
+      template: row,
+      documents: await templateDocuments(tx, row),
+      fields: await templateFields(tx, row),
+    };
+  });
+  if (!snapshot) throw notFound();
+  const { template, documents, fields } = snapshot;
   if (!isReady(template.roles, documents, fields)) {
     throw new SignError(
       "template_incomplete",

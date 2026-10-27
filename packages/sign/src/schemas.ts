@@ -890,7 +890,8 @@ const MergeKey = z
     description:
       "`text` fields only: filled from the request's `merge_fields[merge_key]` (shown to the signer, not editable). Without a value, the signer fills it.",
   });
-const Role = z.strictObject({
+/** A template role as the API takes it (the builder checks its saves with it too). */
+export const SignTemplateRoleInput = z.strictObject({
   key: RoleKey,
   name: z
     .string()
@@ -915,7 +916,7 @@ const TemplateBody = {
   }),
   signing_order: z.enum(SIGN_SIGNING_ORDERS).optional(),
   documents: z.array(DocumentInput).max(MAX_SIGN_REQUEST_DOCUMENTS),
-  roles: z.array(Role).max(MAX_SIGN_TEMPLATE_ROLES).meta({
+  roles: z.array(SignTemplateRoleInput).max(MAX_SIGN_TEMPLATE_ROLES).meta({
     description: "Who signs: each request names one signer per role.",
   }),
   fields: z.array(TemplateField).max(MAX_SIGN_FIELDS).meta({

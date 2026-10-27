@@ -21,7 +21,7 @@ import {
   SignError,
   updateSignTemplate,
 } from "@coss/sign";
-import { UploadSignDocumentRequest } from "@coss/sign/schemas";
+import { SignTemplateRoleInput, UploadSignDocumentRequest } from "@coss/sign/schemas";
 import { z } from "zod";
 
 export type BuilderApiDeps = {
@@ -72,7 +72,7 @@ const SaveInput = z.strictObject({
   message: z.string().max(5000).nullable(),
   signing_order: z.enum(["parallel", "sequential"]),
   documents: z.array(z.string()).max(10),
-  roles: z.array(z.strictObject({ key: z.string(), name: z.string() })).max(20),
+  roles: z.array(SignTemplateRoleInput).max(20),
   fields: z.array(Field).max(500),
 });
 
