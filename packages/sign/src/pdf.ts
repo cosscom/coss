@@ -5,7 +5,7 @@
  * customer placing fields see.
  */
 import type { SignAnchor, SignPageSize } from "@coss/db/schema";
-import { EncryptedPDFError, PDFDocument } from "pdf-lib";
+import { EncryptedPDFError, PDFDocument, type PDFRef, PDFSignature } from "pdf-lib";
 import { getDocument, VerbosityLevel } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { SignError } from "./errors.ts";
 import { MAX_SIGN_DOCUMENT_PAGES, SIGN_ANCHOR_PATTERN } from "./schemas.ts";
@@ -16,6 +16,25 @@ const PDF_HEADER = "%PDF-";
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/**
+ * Draws form fields into their pages and removes them, so nothing stays editable over what was
+ * signed. Signature fields without an appearance (invisible or empty ones) have nothing to draw:
+ * they get an empty one first, which pdf-lib needs to flatten (and remove) them.
+ */
+export function flattenForm(document: PDFDocument): void {
+  const form = document.getForm();
+  let empty: PDFRef | undefined;
+  for (const field of form.getFields()) {
+    if (!(field instanceof PDFSignature)) continue;
+    for (const widget of field.acroField.getWidgets()) {
+      if (widget.getAppearances()?.normal) continue;
+      empty ??= document.context.register(document.context.formXObject([], { BBox: [0, 0, 1, 1] }));
+      widget.setNormalAppearance(empty);
+    }
+  }
+  form.flatten();
 }
 
 /** Throws `invalid_document` unless `bytes` is a PDF coss.com can sign. */
@@ -40,7 +59,7 @@ export async function inspectPdf(bytes: Uint8Array): Promise<InspectedPdf> {
   // Completion flattens form fields (else they'd stay editable over what was signed): it must be
   // able to.
   try {
-    loaded.getForm().flatten();
+    flattenForm(loaded);
   } catch {
     throw new SignError(
       "invalid_document",

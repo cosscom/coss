@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { asc, eq } from "drizzle-orm";
-import { PDFDocument, PDFName, PDFNumber } from "pdf-lib";
+import { PDFDict, PDFDocument, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import {
   cancelSignRequest,
   createSignService,
@@ -112,6 +112,19 @@ describe("inspectPdf", () => {
     field.addToPage(form.addPage([300, 300]), { x: 10, y: 10, width: 100, height: 20 });
     for (const widget of field.acroField.getWidgets()) widget.dict.delete(PDFName.of("Rect"));
     await expect(inspectPdf(await form.save())).rejects.toThrow("can't be flattened");
+    // An invisible signature field (no appearance) is fine: flattening removes it.
+    const signed = await PDFDocument.create();
+    const page = signed.addPage([300, 300]);
+    const widget = signed.context.register(
+      signed.context.obj({ Type: "Annot", Subtype: "Widget", Rect: [0, 0, 0, 0], P: page.ref }),
+    );
+    const sig = signed.context.register(
+      signed.context.obj({ FT: "Sig", T: PDFString.of("Signature1"), Kids: [widget] }),
+    );
+    signed.context.lookup(widget, PDFDict).set(PDFName.of("Parent"), sig);
+    page.node.addAnnot(widget);
+    signed.catalog.set(PDFName.of("AcroForm"), signed.context.obj({ Fields: [sig] }));
+    expect((await inspectPdf(await signed.save())).pages).toHaveLength(1);
     // pdf.js would scale this page; pdf-lib wouldn't.
     const scaled = await PDFDocument.create();
     scaled.addPage([200, 200]).node.set(PDFName.of("UserUnit"), PDFNumber.of(2));
