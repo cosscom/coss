@@ -57,6 +57,9 @@ const MIN_SHRINK_RATIO = 0.5;
 /** Feeds this small are broken, whatever the stored copy says. */
 const MIN_ENTRIES: Record<DatasetName, number> = { tor: 100, cloud: 1000, ipinfo_lite: 1000 };
 const FETCH_TIMEOUT_MS = 60_000;
+/** Attempts per feed URL: a connection the feed's host drops mid-download is retried. */
+const DOWNLOAD_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 2_000;
 
 /** Well-known networks a real IPinfo Lite file must know. */
 const ASN_CANARIES: [address: string, asn: number][] = [
@@ -74,33 +77,55 @@ export function validateAsnLookup(lookup: AsnLookup): void {
 
 type Built = { content: Uint8Array; entries: number };
 
-async function download(
-  fetcher: typeof fetch,
-  url: string,
-  kind: "text" | "json" | "bytes",
-): Promise<string | unknown | Uint8Array> {
-  const response = await fetcher(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-  if (!response.ok)
-    throw new Error(`GET ${new URL(url).host}${new URL(url).pathname} → ${response.status}`);
-  if (kind === "text") return response.text();
-  if (kind === "json") return response.json();
-  return new Uint8Array(await response.arrayBuffer());
+type Download = (url: string, kind: "text" | "json" | "bytes") => Promise<unknown>;
+
+/** An answer from the feed's host (a status or an unreadable body), not worth asking again. */
+class FeedError extends Error {}
+
+function downloader(fetcher: typeof fetch, retryDelayMs: number): Download {
+  const once = async (url: string, kind: "text" | "json" | "bytes") => {
+    const response = await fetcher(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!response.ok) {
+      throw new FeedError(`GET ${new URL(url).host}${new URL(url).pathname} → ${response.status}`);
+    }
+    if (kind === "text") return response.text();
+    if (kind === "bytes") return new Uint8Array(await response.arrayBuffer());
+    const text = await response.text();
+    try {
+      return JSON.parse(text) as unknown;
+    } catch (error) {
+      throw new FeedError(error instanceof Error ? error.message : String(error));
+    }
+  };
+  return async (url, kind) => {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await once(url, kind);
+      } catch (error) {
+        // Network failures (a reset or closed connection) are retried; a timeout already took a
+        // minute, and the next run comes in ten.
+        const timeout = error instanceof Error && error.name === "TimeoutError";
+        if (error instanceof FeedError || timeout || attempt >= DOWNLOAD_ATTEMPTS) throw error;
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs * attempt));
+      }
+    }
+  };
 }
 
 const encoder = new TextEncoder();
 
-async function buildTor(fetcher: typeof fetch): Promise<Built> {
-  const addresses = parseTorExitList((await download(fetcher, FEED_URLS.tor, "text")) as string);
+async function buildTor(download: Download): Promise<Built> {
+  const addresses = parseTorExitList((await download(FEED_URLS.tor, "text")) as string);
   return { content: encoder.encode(encodeTorDataset(addresses)), entries: addresses.length };
 }
 
-async function buildCloud(fetcher: typeof fetch): Promise<Built> {
+async function buildCloud(download: Download): Promise<Built> {
   // Every provider or none: a dataset missing one provider would silently drop its ranges.
   const [aws, gcp, oracle, digitalocean] = await Promise.all([
-    download(fetcher, FEED_URLS.aws, "json"),
-    download(fetcher, FEED_URLS.gcp, "json"),
-    download(fetcher, FEED_URLS.oracle, "json"),
-    download(fetcher, FEED_URLS.digitalocean, "text"),
+    download(FEED_URLS.aws, "json"),
+    download(FEED_URLS.gcp, "json"),
+    download(FEED_URLS.oracle, "json"),
+    download(FEED_URLS.digitalocean, "text"),
   ]);
   const ranges = [
     ...parseAwsRanges(aws),
@@ -112,9 +137,9 @@ async function buildCloud(fetcher: typeof fetch): Promise<Built> {
   return { content: encoder.encode(text), entries: text ? text.split("\n").length : 0 };
 }
 
-async function buildIpinfoLite(fetcher: typeof fetch, token: string): Promise<Built> {
+async function buildIpinfoLite(download: Download, token: string): Promise<Built> {
   const url = `${FEED_URLS.ipinfoLite}?token=${encodeURIComponent(token)}`;
-  const bytes = (await download(fetcher, url, "bytes")) as Uint8Array;
+  const bytes = (await download(url, "bytes")) as Uint8Array;
   validateAsnLookup(ipinfoLiteLookup(bytes));
   // The file has no record count; its tree size tracks the number of networks.
   return { content: bytes, entries: mmdbNodeCount(bytes) };
@@ -132,9 +157,15 @@ export type DatasetRefreshResult = {
  * skipped without a token.
  */
 export async function refreshDueDatasets(
-  opts: { fetch?: typeof fetch; ipinfoToken?: string; now?: Date; force?: boolean } = {},
+  opts: {
+    fetch?: typeof fetch;
+    ipinfoToken?: string;
+    now?: Date;
+    force?: boolean;
+    retryDelayMs?: number;
+  } = {},
 ): Promise<DatasetRefreshResult[]> {
-  const fetcher = opts.fetch ?? fetch;
+  const download = downloader(opts.fetch ?? fetch, opts.retryDelayMs ?? RETRY_DELAY_MS);
   const now = opts.now ?? new Date();
   const stored = new Map(
     (
@@ -149,10 +180,10 @@ export async function refreshDueDatasets(
     ).map((row) => [row.name, row]),
   );
   const builders: Record<DatasetName, (() => Promise<Built>) | null> = {
-    tor: () => buildTor(fetcher),
-    cloud: () => buildCloud(fetcher),
+    tor: () => buildTor(download),
+    cloud: () => buildCloud(download),
     ipinfo_lite: opts.ipinfoToken
-      ? () => buildIpinfoLite(fetcher, opts.ipinfoToken as string)
+      ? () => buildIpinfoLite(download, opts.ipinfoToken as string)
       : null,
   };
   const results: DatasetRefreshResult[] = [];
