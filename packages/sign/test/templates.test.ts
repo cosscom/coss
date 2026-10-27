@@ -210,6 +210,30 @@ describe("templates", () => {
     await signAsSigner(access, { values: {}, signature: TEST_SIGNATURE_PNG, actor: signer, store });
   });
 
+  test("a blank merge value fills nothing: the field stays the signer's", async () => {
+    const template = await ndaTemplate();
+    const { request } = await createRequestFromTemplate(service, {
+      ...env,
+      templateId: template.id,
+      environment: env,
+      apiKeyId: null,
+      actor,
+      params: {
+        signers: [
+          { role: "client", name: "Ada", email: "ada@example.com" },
+          { role: "company", name: "Grace", email: "grace@example.com" },
+        ],
+        merge_fields: { client_company: "   " },
+      },
+    });
+    const text = request.fields.find((field) => field.type === "text");
+    const [stored] = await db
+      .select({ value: schema.signField.value, prefilled: schema.signField.prefilled })
+      .from(schema.signField)
+      .where(eq(schema.signField.id, text?.id ?? ""));
+    expect(stored).toEqual({ value: null, prefilled: false });
+  });
+
   test("updates replace documents, roles and fields; templates keep their documents", async () => {
     const template = await ndaTemplate();
     const renamed = await service.updateTemplate({

@@ -643,12 +643,17 @@ export async function createRequestFromTemplate(
   const prefill = signers.map(({ role }) =>
     fields
       .filter((field) => field.role === role.key)
-      .map((field) =>
+      .map((field) => {
         // Own keys only: a merge key like `constructor` must not read an inherited property.
-        field.mergeKey && params.merge_fields && Object.hasOwn(params.merge_fields, field.mergeKey)
-          ? (params.merge_fields[field.mergeKey] ?? null)
-          : null,
-      ),
+        const value =
+          field.mergeKey &&
+          params.merge_fields &&
+          Object.hasOwn(params.merge_fields, field.mergeKey)
+            ? params.merge_fields[field.mergeKey]
+            : null;
+        // A blank value fills nothing: the field stays the signer's (and required, if it is).
+        return value?.trim() ? value : null;
+      }),
   );
   return service.create({
     environment: input.environment,
