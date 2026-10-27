@@ -13,6 +13,7 @@ import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
 import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
+import { SignResource } from "./resources/sign.ts";
 import { SmsResource } from "./resources/sms.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 import { WebhookEventsResource } from "./resources/webhook-events.ts";
@@ -114,6 +115,8 @@ export class Coss {
   readonly email: EmailResource;
   /** Text messages from the organization's numbers (`coss.sms.send()`). */
   readonly sms: SmsResource;
+  /** E-signatures: documents and signature requests (`coss.sign.requests.create()`). */
+  readonly sign: SignResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
   /** The client's own API key (`coss.apiKey.revoke()`). */
@@ -192,6 +195,7 @@ export class Coss {
     this.risk = new RiskResource(http);
     this.billing = new BillingResource(http);
     this.sms = new SmsResource(http);
+    this.sign = new SignResource(http);
   }
 
   /**

@@ -61,6 +61,8 @@ export const orgStatements = {
   smsSuppression: ["create", "read", "delete"],
   // The organization's SMS senders: phone numbers, carrier registrations, allowed countries.
   smsSender: ["create", "read", "update", "delete"],
+  // Sign (e-signatures): documents and signature requests (create, send, cancel, delete, read).
+  sign: ["create", "read", "update", "delete", "send"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -87,6 +89,7 @@ const fullCossAccess = {
   sms: ["send", "read"],
   smsSuppression: ["create", "read", "delete"],
   smsSender: ["create", "read", "update", "delete"],
+  sign: ["create", "read", "update", "delete", "send"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -110,6 +113,7 @@ const readOnlyCossAccess = {
   sms: ["read"],
   smsSuppression: ["read"],
   smsSender: ["read"],
+  sign: ["read"],
 } as const;
 
 export const orgRoles = {

@@ -122,6 +122,12 @@ export const ID_PREFIXES = {
   smsReceived: "smsin",
   smsNumber: "num",
   smsRegistration: "smsreg",
+  // Sign (e-signatures, `@coss/sign`).
+  signDocument: "sdoc",
+  signRequest: "sreq",
+  signSigner: "ssgn",
+  signField: "sfld",
+  signEvent: "sevt",
   // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
   migration: "mig",
   migrationItem: "migitem",

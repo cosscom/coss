@@ -41,6 +41,7 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   hook: ["create", "read", "update", "delete", "send"],
   sms: ["send", "read"],
   smsSuppression: ["create", "read", "delete"],
+  sign: ["create", "read", "update", "delete", "send"],
 };
 
 /** The header the dashboard's sign-up form carries `coss/device`'s token in (coss.com Risk). */

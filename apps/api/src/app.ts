@@ -9,6 +9,7 @@ import {
   type RateLimiter,
 } from "@coss/ratelimit";
 import type { RiskDeps } from "@coss/risk";
+import { createSignService, FakeDocumentStore, type SignService } from "@coss/sign";
 import type { SmsService } from "@coss/sms";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
@@ -37,6 +38,11 @@ export type CreateAppOptions = {
   emailService: EmailService;
   /** Sends store the SMS and enqueue its dispatch (`createSmsService`). */
   smsService: SmsService;
+  /**
+   * Sign's documents (`createSignService` over the deployment's document store). Defaults to the
+   * fake store (Postgres rows); `null` turns uploads and new requests off (`sign_unavailable`).
+   */
+  signService?: SignService | null;
   /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
   domainDeps?: DomainDeps;
   /**
@@ -196,6 +202,10 @@ export function createApp(opts: CreateAppOptions) {
     createV1Router({
       emailService,
       smsService: opts.smsService,
+      signService:
+        opts.signService === undefined
+          ? createSignService({ store: new FakeDocumentStore() })
+          : opts.signService,
       domainDeps,
       webhookDeps: opts.webhookDeps,
       portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
@@ -273,6 +283,15 @@ export function openApiDocumentConfig(serverUrl: string) {
         name: "SMS",
         description:
           "Send text messages from the organization's numbers, follow their delivery, and read replies and opt-outs.",
+      },
+      {
+        name: "Signature requests",
+        description:
+          "Ask people to sign PDFs, in your app or by email, with an audit trail and a sealed copy.",
+      },
+      {
+        name: "Sign documents",
+        description: "PDFs uploaded for signature requests, with their pages and text anchors.",
       },
       {
         name: "Receiving",

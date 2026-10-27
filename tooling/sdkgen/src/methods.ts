@@ -93,6 +93,16 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "GET /v1/sms/{id}": "sms.get",
   "GET /v1/sms/{id}/events": "sms.listEvents",
   "POST /v1/sms/{id}/cancel": "sms.cancel",
+  "POST /v1/sign/documents": "sign.documents.upload",
+  "GET /v1/sign/documents": "sign.documents.list",
+  "GET /v1/sign/documents/{id}": "sign.documents.get",
+  "DELETE /v1/sign/documents/{id}": "sign.documents.remove",
+  "POST /v1/sign/requests": "sign.requests.create",
+  "GET /v1/sign/requests": "sign.requests.list",
+  "GET /v1/sign/requests/{id}": "sign.requests.get",
+  "POST /v1/sign/requests/{id}/send": "sign.requests.send",
+  "POST /v1/sign/requests/{id}/cancel": "sign.requests.cancel",
+  "GET /v1/sign/requests/{id}/audit_trail": "sign.requests.auditTrail",
   "POST /v1/email_templates": "email.templates.create",
   "GET /v1/email_templates": "email.templates.list",
   "GET /v1/email_templates/{id}": "email.templates.get",
@@ -228,6 +238,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
  * act twice. The same operations the TypeScript SDK sends with `retry: false`.
  */
 export const NO_RETRY: ReadonlySet<string> = new Set([
+  "POST /v1/sign/documents",
   "POST /v1/hooks/event_types",
   "POST /v1/hooks/applications",
   "POST /v1/hooks/applications/{application}/endpoints",

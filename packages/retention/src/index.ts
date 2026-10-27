@@ -314,6 +314,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "deleted" },
   },
   {
+    id: "signature_requests",
+    label: "Signature requests",
+    description:
+      "Documents uploaded for signing, and signature requests with their signers, the fields they filled and their audit trail (with the addresses and browsers they signed from). Kept until you delete them: they are your records of what was signed.",
+    period: { until: "deleted" },
+  },
+  {
     id: "migrations",
     label: "Imports from other providers",
     description: `Reports of imports from Resend, SendGrid or Postmark: what was found, what was imported and what needs attention. The provider's API key is deleted as soon as an import finishes or is canceled, and an import that is never started is deleted after ${formatRetentionDays(RETENTION_DAYS.migrationDrafts)}. What it imported is kept like anything you create yourself.`,

@@ -18,6 +18,7 @@ import type { LogEntryInput, LogWriter } from "@coss/logs";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { RiskDeps } from "@coss/risk";
 import { testRiskDeps } from "@coss/risk/testing";
+import type { SignService } from "@coss/sign";
 import { createSmsService, FakeSmsProvider, type SmsService } from "@coss/sms";
 import { memorySmsDispatchQueue } from "@coss/sms/testing";
 import type { ApiKeyContext } from "@coss/tenancy";
@@ -44,6 +45,8 @@ export function createTestApp(
   opts: {
     emailService?: EmailService;
     smsService?: SmsService;
+    /** Defaults to the fake document store; `null`: Sign unavailable. */
+    signService?: SignService | null;
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
@@ -99,6 +102,7 @@ export function createTestApp(
   const app = createApp({
     emailService,
     smsService,
+    signService: opts.signService,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },
