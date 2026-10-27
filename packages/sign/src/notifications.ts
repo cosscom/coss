@@ -9,7 +9,13 @@
 import { db, schema, type Transaction } from "@coss/db";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { readSignedDocument } from "./complete.ts";
-import { invitationEmail, reminderEmail, type SignMailer, signedCopyEmail } from "./emails.ts";
+import {
+  invitationEmail,
+  oneLine,
+  reminderEmail,
+  type SignMailer,
+  signedCopyEmail,
+} from "./emails.ts";
 import { SignError } from "./errors.ts";
 import type { SignActor } from "./events.ts";
 import { recordSignEvent } from "./record.ts";
@@ -129,6 +135,8 @@ async function dueSigners(
         // Held while the organization is suspended: coss.com's own sender must never carry a
         // suspended organization's mail.
         sql`not exists (select 1 from ${schema.organizationSuspension} where ${schema.organizationSuspension.organizationId} = ${signRequest.organizationId})`,
+        // Nor while it is being deleted: its links already don't open.
+        sql`not exists (select 1 from ${schema.organizationDeletion} where ${schema.organizationDeletion.organizationId} = ${signRequest.organizationId} and ${schema.organizationDeletion.status} = 'pending')`,
         condition,
       ),
     )
@@ -171,7 +179,7 @@ async function sender(request: RequestRow) {
   const settings = await getSignSettings(request);
   return {
     from: settings.emailFrom,
-    requester: await requesterName({ organizationId: request.organizationId, settings }),
+    requester: oneLine(await requesterName({ organizationId: request.organizationId, settings })),
   };
 }
 

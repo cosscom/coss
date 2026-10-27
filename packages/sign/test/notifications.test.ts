@@ -211,6 +211,46 @@ describe("invitations", () => {
     expect(keys[0]).toBe(keys[1]);
   });
 
+  test("subjects carry no invisible formatting characters; deleting organizations get no email", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const opts = { limit: 50, scope: { organizationIds: [own.organization.id] } };
+    await create(env, { title: "Onboarding \u{1F469}\u200D\u{1F4BB} pack" });
+    const mailer = recordingMailer();
+    await runDueSignNotifications(opts, deps(mailer));
+    expect(mailer.sent[0]?.subject).toContain("Onboarding \u{1F469}\u{1F4BB} pack");
+    expect(mailer.sent[0]?.subject).not.toMatch(/[\p{Cc}\p{Cf}]/u);
+
+    const deleting = await createTestTenant();
+    await create(
+      {
+        ...env,
+        organizationId: deleting.organization.id,
+        projectId: deleting.project.id,
+        environmentId: deleting.development.id,
+      },
+      {},
+    );
+    await db.insert(schema.organizationDeletion).values({
+      organizationId: deleting.organization.id,
+      organizationName: deleting.organization.name,
+      organizationSlug: deleting.organization.slug,
+      requestedByEmail: "owner@example.com",
+      nextAttemptAt: null,
+    });
+    const quiet = recordingMailer();
+    await runDueSignNotifications(
+      { limit: 50, scope: { organizationIds: [deleting.organization.id] } },
+      deps(quiet),
+    );
+    expect(quiet.sent).toEqual([]);
+  });
+
   test("a signer who opened the invitation before it was recorded gets the bookkeeping only", async () => {
     const own = await createTestTenant();
     const env: SignEnvironment = {

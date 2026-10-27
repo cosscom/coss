@@ -40,8 +40,16 @@ export interface SignMailer {
 }
 
 /** A title as one line (subjects can't hold line breaks). */
-function oneLine(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
+/**
+ * One line of plain text, as subjects and sender names must be: the email product refuses
+ * control and invisible formatting characters (a zero-width joiner in an emoji sequence, say),
+ * which a request's title or a display name may hold.
+ */
+export function oneLine(value: string): string {
+  return value
+    .replace(/\p{Cf}/gu, "")
+    .replace(/[\s\p{Cc}]+/gu, " ")
+    .trim();
 }
 
 export function escapeHtml(value: string): string {
