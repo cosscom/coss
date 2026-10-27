@@ -51,6 +51,9 @@ export function signedDocumentKey(
   return `${organizationPrefix(request.organizationId)}${request.environmentId}/requests/${request.id}/signed-${sha256}.pdf`;
 }
 
+/** The request's organization isn't being deleted. */
+const notDeleting = sql`not exists (select 1 from ${schema.organizationDeletion} where ${schema.organizationDeletion.organizationId} = ${signRequest.organizationId} and ${schema.organizationDeletion.status} = 'pending')`;
+
 /** Leases up to `limit` completed requests waiting for their seal. */
 async function claim(opts: {
   now: Date;
@@ -65,6 +68,7 @@ async function claim(opts: {
       and(
         eq(signRequest.status, "completed"),
         isNull(signRequest.sealedAt),
+        notDeleting,
         or(isNull(signRequest.sealLeaseUntil), lte(signRequest.sealLeaseUntil, opts.now)),
         or(isNull(signRequest.sealNextAttemptAt), lte(signRequest.sealNextAttemptAt, opts.now)),
         opts.scope ? inArray(signRequest.organizationId, opts.scope.organizationIds) : undefined,
@@ -264,6 +268,9 @@ async function publish(
           eq(signRequest.id, request.id),
           eq(signRequest.organizationId, request.organizationId),
           isNull(signRequest.sealedAt),
+          // Teardown deletes the store's prefix once deletion is requested: a seal that races it
+          // loses here and deletes its copy, rather than publishing one the prefix already lost.
+          notDeleting,
           request.sealLeaseUntil
             ? eq(signRequest.sealLeaseUntil, request.sealLeaseUntil)
             : undefined,

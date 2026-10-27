@@ -65,9 +65,10 @@ async function signedRequest(
   values: (
     fields: { id: string; type: string; label: string | null }[],
   ) => Record<string, string | boolean> = () => ({}),
+  env: SignEnvironment = sandbox,
 ) {
   const { request } = await service.create({
-    environment: sandbox,
+    environment: env,
     apiKeyId: null,
     actor: { kind: "api_key" },
     params: {
@@ -86,7 +87,7 @@ async function signedRequest(
   });
   for (const signer of request.signers) {
     const session = await createSignSession({
-      ...sandbox,
+      ...env,
       requestId: request.id,
       signerId: signer.id,
       signUrl: "https://sign.test",
@@ -380,6 +381,49 @@ describe("completion", () => {
     expect(() =>
       readTimestampToken(minimal, digest, new Uint8Array([0, 0x12, 0x34])),
     ).not.toThrow();
+  });
+
+  test("an organization being deleted gets no seal, even one already in progress", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    const request = await signedRequest({}, () => ({}), env);
+    const ownScope = { organizationIds: [own.organization.id] };
+    // Deletion is requested while the seal is being made.
+    const racing: Sealer = {
+      name: "racing",
+      certificateChain: sealer.certificateChain,
+      sign: async (data) => {
+        await db.insert(schema.organizationDeletion).values({
+          organizationId: own.organization.id,
+          organizationName: own.organization.name,
+          organizationSlug: own.organization.slug,
+          requestedByEmail: "owner@example.com",
+          nextAttemptAt: null,
+        });
+        return sealer.sign(data);
+      },
+    };
+    await runDueSignCompletions({ limit: 5, scope: ownScope }, { store, sealer: racing });
+    const [row] = await db
+      .select({ key: schema.signRequest.signedDocumentKey })
+      .from(schema.signRequest)
+      .where(eq(schema.signRequest.id, request.id));
+    expect(row?.key).toBeNull();
+    const objects = await db
+      .select({ key: schema.signFakeObject.key })
+      .from(schema.signFakeObject)
+      .where(eq(schema.signFakeObject.organizationId, own.organization.id));
+    expect(objects.filter((object) => object.key.includes("/requests/"))).toEqual([]);
+    // And it isn't claimed again.
+    const later = new Date(Date.now() + 60 * 60_000);
+    expect(
+      await runDueSignCompletions({ limit: 5, now: later, scope: ownScope }, { store, sealer }),
+    ).toBe(0);
   });
 
   test("a failed seal is retried later, not at once", async () => {
