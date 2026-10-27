@@ -436,7 +436,9 @@ export function createSignService(opts: SignServiceOptions): SignService {
   ): Promise<{ request: SignRequestObjectOutput; replayed: boolean }> {
     const { environment: env, params } = input;
     const now = clock();
-    const expiresAt = checkExpiry(params.expires_at, now);
+    // `expires_at` is checked against the clock only for a new request (inside `insert`): a replay
+    // of the same key and body returns the original even once that time has passed.
+    const expiresAt = params.expires_at ? new Date(params.expires_at) : null;
     checkSigners(params);
 
     // Uploaded documents must be the environment's; inline ones are checked and stored first.
@@ -523,7 +525,9 @@ export function createSignService(opts: SignServiceOptions): SignService {
           })
           .onConflictDoNothing({ target: [signRequest.environmentId, signRequest.idempotencyKey] })
           .returning();
+        // A replay (the key's row exists) returns before this; a new request rolls back here.
         if (!row) return undefined;
+        checkExpiry(params.expires_at, now);
         if (inline.length > 0) await tx.insert(signDocument).values(inline);
         await tx.insert(signRequestDocument).values(
           ordered.map((document, position) => ({

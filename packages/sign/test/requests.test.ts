@@ -439,3 +439,35 @@ describe("signature requests", () => {
     expect(drafts.data.every((item) => item.status === "draft")).toBe(true);
   });
 });
+
+describe("idempotent replays and expiry", () => {
+  test("a replay returns the original even once its expires_at has passed", async () => {
+    let now = new Date();
+    const clocked = createSignService({ store, now: () => now });
+    const params = request({
+      documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+      expires_at: new Date(now.getTime() + 60_000).toISOString(),
+    });
+    const first = await clocked.create({
+      environment: sandbox,
+      apiKeyId: null,
+      actor,
+      params,
+      idempotencyKey: "expiring",
+    });
+    now = new Date(now.getTime() + 120_000);
+    const replay = await clocked.create({
+      environment: sandbox,
+      apiKeyId: null,
+      actor,
+      params,
+      idempotencyKey: "expiring",
+    });
+    expect(replay).toMatchObject({ replayed: true, request: { id: first.request.id } });
+    // A new request with that expiry is refused.
+    await expectSignError(
+      clocked.create({ environment: sandbox, apiKeyId: null, actor, params }),
+      "invalid_expiry",
+    );
+  });
+});

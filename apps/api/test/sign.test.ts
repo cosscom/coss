@@ -268,4 +268,30 @@ describe("Signature requests", () => {
     const list = await apiRequest(app, "GET", "/v1/sign/requests", { key: reader.key });
     expect(list.status).toBe(200);
   });
+
+  test("creating a request that is sent at once needs sign:send", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const creator = await createEnvironmentApiKey({
+      organizationId: tenant.organization.id,
+      environmentId: tenant.development.id,
+      name: "Sign creator",
+      userId: tenant.owner.id,
+      permissions: { sign: ["create", "read"] },
+    });
+    const body = {
+      title: "NDA",
+      documents: [{ filename: "nda.pdf", content: await buildTestPdfBase64() }],
+      signers: [signer()],
+    };
+    const sent = await apiRequest(app, "POST", "/v1/sign/requests", { key: creator.key, body });
+    expect(sent.status).toBe(403);
+    expect((await errorOf(sent)).code).toBe("insufficient_permissions");
+    const draft = await apiRequest(app, "POST", "/v1/sign/requests", {
+      key: creator.key,
+      body: { ...body, send: false },
+    });
+    expect(draft.status).toBe(201);
+    expect((await draft.json()).status).toBe("draft");
+  });
 });

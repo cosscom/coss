@@ -21,6 +21,7 @@ import {
   SignRequestObject,
   UploadSignDocumentRequest,
 } from "@coss/sign/schemas";
+import { apiKeyHasPermissions } from "@coss/tenancy";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import { z } from "zod";
@@ -377,6 +378,18 @@ export function createSignRoutes(signService: SignService | null): OpenAPIHono<A
     async (c) => {
       const service = available();
       const params = c.req.valid("json");
+      // Sending is its own permission (`POST …/send` needs it too): create-only keys make drafts.
+      if (
+        params.send !== false &&
+        !(await apiKeyHasPermissions(c.var.auth.apiKeyId, { sign: ["send"] }))
+      ) {
+        throw new ApiError(403, {
+          type: "permission_error",
+          code: "insufficient_permissions",
+          message:
+            "Creating a request that is sent at once needs the sign:send permission; pass `send: false` for a draft.",
+        });
+      }
       const idempotencyKey = c.req.valid("header")["Idempotency-Key"];
       const { apiKeyId, organizationId, projectId, environmentId, mode } = c.var.auth;
       const result = await service.create({
