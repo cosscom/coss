@@ -9,6 +9,7 @@ import { createHash } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import type { SignAnchor, SignPageSize } from "@coss/db/schema";
 import { and, asc, eq } from "drizzle-orm";
+import { PDFDocument } from "pdf-lib";
 import { SignError } from "./errors.ts";
 import type { SignActor } from "./events.ts";
 import { recordSignEvent } from "./record.ts";
@@ -410,6 +411,19 @@ export function decodeSignatureImage(value: string, param: string): Buffer {
   return bytes;
 }
 
+/**
+ * Throws `invalid_signing` unless the PNG decodes as a whole, the way the completed document embeds
+ * it: a header with nothing behind it would leave the request unsealable once it is committed.
+ */
+export async function checkSignatureImageDecodes(bytes: Uint8Array, param: string): Promise<void> {
+  try {
+    const document = await PDFDocument.create();
+    await document.embedPng(bytes);
+  } catch {
+    throw new SignError("invalid_signing", "The image is not a complete PNG.", { param });
+  }
+}
+
 function sha256(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -518,6 +532,8 @@ export async function signAsSigner(
   const { session } = access;
   const signature = decodeSignatureImage(input.signature, "signature");
   const initials = input.initials ? decodeSignatureImage(input.initials, "initials") : null;
+  await checkSignatureImageDecodes(signature, "signature");
+  if (initials) await checkSignatureImageDecodes(initials, "initials");
   // Check everything that doesn't need a lock before writing any bytes.
   const preview = await load(db, access);
   if (!preview.signer.consentedAt) {

@@ -410,6 +410,27 @@ describe("signing", () => {
     await expectSignError(declineAsSigner(access, { actor: signerActor }), "request_not_signable");
   });
 
+  test("a PNG that doesn't decode is refused before anything is signed", async () => {
+    const request = await createRequest(sandbox);
+    const { access } = await session(sandbox, request.id, request.signers[0]?.id ?? "");
+    const view = await openSigning(access, { actor: signerActor });
+    await consentToSign(access, { disclosureSha256: view.disclosure.sha256, actor: signerActor });
+    // The signature, IHDR and a size, and nothing else.
+    const header = Buffer.from(TEST_SIGNATURE_PNG, "base64").subarray(0, 33);
+    await expectSignError(
+      signAsSigner(access, {
+        values: {},
+        signature: header.toString("base64"),
+        actor: signerActor,
+        store,
+      }),
+      "invalid_signing",
+    );
+    expect(
+      (await getSignRequest({ ...sandbox, requestId: request.id })).signers[0]?.status,
+    ).not.toBe("signed");
+  });
+
   test("signature images must be small PNGs", () => {
     expect(decodeSignatureImage(TEST_SIGNATURE_PNG, "signature").length).toBeGreaterThan(0);
     expect(() => decodeSignatureImage("", "signature")).toThrow(SignError);
@@ -450,6 +471,16 @@ describe("settings", () => {
       updateSignSettings({ ...env, update: { allowed_origins: ["http://localhost:3000"] } }),
       "invalid_origin",
     );
+    // Concurrent updates of different settings both stick.
+    await Promise.all([
+      updateSignSettings({ ...env, update: { display_name: "Acme 2" } }),
+      updateSignSettings({ ...env, update: { accent_color: "#111111" } }),
+    ]);
+    expect(await getSignSettings(env)).toMatchObject({
+      displayName: "Acme 2",
+      accentColor: "#111111",
+      allowedOrigins: ["https://app.example.com"],
+    });
     expect(checkedSignOrigin("http://localhost:3000", "sandbox")).toBe("http://localhost:3000");
     expect(() => checkedSignOrigin("https://app.example.com/path", "live")).toThrow(SignError);
   });

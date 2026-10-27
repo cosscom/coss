@@ -141,6 +141,14 @@ export async function updateSignSettings(input: {
     disclosure:
       update.disclosure === undefined ? current.disclosure : update.disclosure?.trim() || null,
   };
+  const changed: Partial<SignSettings> = {
+    ...(update.allowed_origins !== undefined ? { allowedOrigins: next.allowedOrigins } : {}),
+    ...(update.display_name !== undefined ? { displayName: next.displayName } : {}),
+    ...(update.accent_color !== undefined ? { accentColor: next.accentColor } : {}),
+    ...(update.theme !== undefined ? { theme: next.theme } : {}),
+    ...(update.disclosure !== undefined ? { disclosure: next.disclosure } : {}),
+  };
+  if (Object.keys(changed).length === 0) return current;
   await db
     .insert(signSettings)
     .values({
@@ -149,8 +157,9 @@ export async function updateSignSettings(input: {
       environmentId: input.environmentId,
       ...next,
     })
-    .onConflictDoUpdate({ target: signSettings.environmentId, set: next });
-  return next;
+    // Only what this update sets: a concurrent update of other settings keeps its values.
+    .onConflictDoUpdate({ target: signSettings.environmentId, set: changed });
+  return getSignSettings(input);
 }
 
 /** Who signers see as the requester: the settings' display name, else the organization's. */

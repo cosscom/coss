@@ -82,12 +82,9 @@ function useSigningApi(sessionId: string) {
   return call;
 }
 
+/** Today's date as coss.com records it on the document (UTC). */
 function displayDate(): string {
-  return new Date().toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function Signing({ sessionId }: { sessionId: string }) {
@@ -333,12 +330,14 @@ function Documents({
   const fieldRefs = useRef(new Map<string, HTMLElement>());
   const viewedSent = useRef(false);
 
+  // The documents load once: a refreshed view (below) has the same ones.
+  const documentIds = view.documents.map((document) => document.id).join(",");
   useEffect(() => {
     let canceled = false;
     Promise.all(
-      view.documents.map(async (document) => {
-        const response = await call(`/documents/${document.id}`);
-        return [document.id, await response.arrayBuffer()] as const;
+      documentIds.split(",").map(async (id) => {
+        const response = await call(`/documents/${id}`);
+        return [id, await response.arrayBuffer()] as const;
       }),
     )
       .then((loaded) => {
@@ -357,7 +356,22 @@ function Documents({
     return () => {
       canceled = true;
     };
-  }, [call, view.documents, view.request.id, view.signer.id]);
+  }, [call, documentIds, view.request.id, view.signer.id]);
+
+  // Sequential order: ask again until it's this signer's turn (what they filled in stays).
+  const waiting = view.waiting_for.length > 0;
+  useEffect(() => {
+    if (!waiting) return;
+    const timer = setInterval(() => {
+      call("")
+        .then((response) => response.json() as Promise<SigningView>)
+        .then((next) => {
+          if (next.waiting_for.length === 0 || next.request.status !== "sent") onView(next);
+        })
+        .catch(() => {});
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [waiting, call, onView]);
 
   const required = useMemo(() => view.fields.filter((field) => field.required), [view.fields]);
   const missing = required.filter((field) => !isFilled(field, values, images));
