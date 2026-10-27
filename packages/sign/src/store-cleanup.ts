@@ -22,6 +22,24 @@ export async function scheduleStoreCleanup(
     .onConflictDoNothing();
 }
 
+/**
+ * Deletes objects nothing references (a failed or replayed write's), recorded first so a store
+ * failure (or a crash) leaves them to the worker's cleanup loop. Never throws.
+ */
+export async function discardStoreObjects(
+  store: DocumentStore,
+  organizationId: string,
+  keys: readonly string[],
+): Promise<void> {
+  if (keys.length === 0) return;
+  try {
+    await db.transaction((tx) => scheduleStoreCleanup(tx, organizationId, keys));
+    await removeStoreObjects(store, keys);
+  } catch (error) {
+    console.error("[sign] could not discard unused store objects:", error);
+  }
+}
+
 /** Deletes objects from the store, then their cleanup rows; a failure leaves the rows for the worker. */
 export async function removeStoreObjects(
   store: DocumentStore,

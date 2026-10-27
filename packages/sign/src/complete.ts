@@ -18,7 +18,7 @@ import type { Sealer } from "./seal/sealer.ts";
 import type { TimestampAuthority } from "./seal/tsa.ts";
 import { getSignSettings, requesterName } from "./settings.ts";
 import { type DocumentStore, organizationPrefix } from "./store.ts";
-import { removeStoreObjects, scheduleStoreCleanup } from "./store-cleanup.ts";
+import { discardStoreObjects } from "./store-cleanup.ts";
 
 const {
   environment,
@@ -241,9 +241,7 @@ async function discardUnpublished(
       )
       .limit(1);
     if (row?.key === key) return;
-    // Recorded first: if the store fails (or the worker stops), the cleanup loop deletes it later.
-    await db.transaction((tx) => scheduleStoreCleanup(tx, request.organizationId, [key]));
-    await removeStoreObjects(store, [key]);
+    await discardStoreObjects(store, request.organizationId, [key]);
   } catch (error) {
     console.error(`[sign] could not delete an unpublished seal of ${request.id}:`, error);
   }

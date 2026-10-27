@@ -10,10 +10,12 @@ import {
   createSignSession,
   deleteSignDocument,
   deleteSignRequest,
+  discardUnstoredDocuments,
   FakeDocumentStore,
   getSignRequest,
   LocalSealer,
   openSigning,
+  prepareDocument,
   purgeExpiredSignSessions,
   runDueSignCleanup,
   runDueSignCompletions,
@@ -295,6 +297,26 @@ describe("deletion cleanup", () => {
       .from(schema.signFakeObject)
       .where(eq(schema.signFakeObject.organizationId, tenant.organization.id));
     expect(objects.filter((object) => object.key.includes("/requests/"))).toEqual([]);
+  });
+
+  test("a failed upload's bytes the store wouldn't delete are left to the cleanup loop", async () => {
+    const { tenant, env } = await environment("sandbox");
+    const prepared = await prepareDocument(store, env, {
+      filename: "nda.pdf",
+      content: await buildTestPdfBase64(),
+      apiKeyId: null,
+    });
+    const stubborn = Object.assign(Object.create(store), {
+      delete: async () => {
+        throw new Error("S3 is down");
+      },
+    }) as FakeDocumentStore;
+    // No row was written for it (a refused request, say).
+    await discardUnstoredDocuments(stubborn, [prepared]);
+    expect(await store.get(prepared.storeKey)).not.toBeNull();
+    const scope = { organizationIds: [tenant.organization.id] };
+    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(1);
+    expect(await store.get(prepared.storeKey)).toBeNull();
   });
 
   test("an unpublished seal the store wouldn't delete is left to the cleanup loop", async () => {
