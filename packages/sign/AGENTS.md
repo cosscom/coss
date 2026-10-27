@@ -91,7 +91,8 @@ Templates and the builder come next (see "Not built yet" in the root `AGENTS.md`
   compare-and-set after the send, so a crash in between replays the same email (an invitation
   only moves `pending` to `notified`, never back from `viewed`/`signed`). A failed email puts that
   signer in backoff (`email_failures`, `email_retry_at`: 1, 2, 4… minutes, at most 6 hours), so it
-  never holds up anyone else's. Emails go
+  never holds up anyone else's. A suspended organization's signers get nothing until it is
+  reinstated (coss.com's sender must never carry its mail). Emails go
   through an injected `SignMailer` (never `@coss/email`): the worker's
   `apps/worker/src/sign-mailer.ts` sends from the settings' `email_from` in the request's
   environment (checked against the live provider's verified domains when set over the API), else

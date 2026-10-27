@@ -126,6 +126,9 @@ async function dueSigners(
       and(
         eq(signSigner.delivery, "email"),
         or(isNull(signSigner.emailRetryAt), lte(signSigner.emailRetryAt, now)),
+        // Held while the organization is suspended: coss.com's own sender must never carry a
+        // suspended organization's mail.
+        sql`not exists (select 1 from ${schema.organizationSuspension} where ${schema.organizationSuspension.organizationId} = ${signRequest.organizationId})`,
         condition,
       ),
     )

@@ -429,3 +429,28 @@ describe("delivery robustness", () => {
     expect(read.signers[0]?.status).toBe("viewed");
   });
 });
+
+describe("suspension", () => {
+  test("a suspended organization's signers aren't emailed until it is reinstated", async () => {
+    const own = await createTestTenant();
+    const env: SignEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.development.id,
+      mode: "sandbox",
+    };
+    await create(env, {});
+    await db
+      .insert(schema.organizationSuspension)
+      .values({ organizationId: own.organization.id, reason: "test" });
+    const mailer = recordingMailer();
+    const opts = { limit: 50, scope: { organizationIds: [own.organization.id] } };
+    await runDueSignNotifications(opts, deps(mailer));
+    expect(mailer.sent).toHaveLength(0);
+    await db
+      .delete(schema.organizationSuspension)
+      .where(eq(schema.organizationSuspension.organizationId, own.organization.id));
+    await runDueSignNotifications(opts, deps(mailer));
+    expect(mailer.sent).toHaveLength(1);
+  });
+});
