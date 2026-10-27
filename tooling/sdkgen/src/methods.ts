@@ -253,6 +253,8 @@ export const NO_RETRY: ReadonlySet<string> = new Set([
   "POST /v1/sign/documents",
   "POST /v1/sign/requests/{id}/remind",
   "POST /v1/sign/templates",
+  // Uploads inline documents again on a retry (the TypeScript SDK skips retries only then).
+  "PATCH /v1/sign/templates/{id}",
   "POST /v1/hooks/event_types",
   "POST /v1/hooks/applications",
   "POST /v1/hooks/applications/{application}/endpoints",

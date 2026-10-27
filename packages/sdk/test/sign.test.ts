@@ -278,6 +278,21 @@ describe("coss.sign.templates", () => {
     ]);
     expect(calls[5]?.headers.get("idempotency-key")).toBeTruthy();
   });
+
+  test("an update uploading documents isn't retried; one that doesn't is", async () => {
+    const failure = json(503, {
+      error: { type: "api_error", code: "x", message: "x", request_id: "req_1" },
+    });
+    const id = "stpl_01k5f9yq8re8vb6q2wmz0tb2xd";
+    const uploads = client(failure, json(200, {}));
+    await uploads.coss.sign.templates.update(id, {
+      documents: [{ filename: "nda.pdf", content: "JVBERg==" }],
+    });
+    expect(uploads.calls).toHaveLength(1);
+    const plain = client(failure, json(200, {}));
+    await plain.coss.sign.templates.update(id, { name: "NDA v2" });
+    expect(plain.calls).toHaveLength(2);
+  });
 });
 
 describe("mountBuilder", () => {

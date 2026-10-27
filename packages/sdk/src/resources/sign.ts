@@ -298,7 +298,10 @@ export class SignTemplatesResource {
     });
   }
 
-  /** Changes the fields given; `documents`, `roles` and `fields` replace the whole list. */
+  /**
+   * Changes the fields given; `documents`, `roles` and `fields` replace the whole list. Not
+   * retried automatically when it uploads documents (`content`): a retry would upload them again.
+   */
   update(
     id: string,
     params: UpdateSignTemplateParams,
@@ -308,6 +311,7 @@ export class SignTemplatesResource {
       method: "PATCH",
       path: `/v1/sign/templates/${encodeURIComponent(id)}`,
       body: params,
+      retry: !params.documents?.some((document) => "content" in document),
       signal: options?.signal,
     });
   }
