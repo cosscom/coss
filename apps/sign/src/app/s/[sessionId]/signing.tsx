@@ -381,15 +381,21 @@ function Documents({
   const waiting = view.waiting_for.length > 0;
   useEffect(() => {
     if (!waiting) return;
+    // A late answer (after signing, declining or leaving) must not bring back an older view.
+    let stopped = false;
     const timer = setInterval(() => {
       call("")
         .then((response) => response.json() as Promise<SigningView>)
         .then((next) => {
+          if (stopped) return;
           if (next.waiting_for.length === 0 || next.request.status !== "sent") onView(next);
         })
         .catch(() => {});
     }, 5000);
-    return () => clearInterval(timer);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
   }, [waiting, call, onView]);
 
   const required = useMemo(() => view.fields.filter((field) => field.required), [view.fields]);
