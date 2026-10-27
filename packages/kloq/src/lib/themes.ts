@@ -170,7 +170,7 @@ export function getTheme(): string {
 }
 
 type ViewTransitionDocument = Document & {
-  startViewTransition?: (update: () => void) => { finished: Promise<void> };
+  startViewTransition?: (update: () => void) => { finished: Promise<void>; ready?: Promise<void> };
 };
 
 /**
@@ -187,7 +187,11 @@ export function themeTransition(apply: () => void): void {
   root.setAttribute("data-kloq-swapping", "");
   const done = () => root.removeAttribute("data-kloq-swapping");
   try {
-    doc.startViewTransition(apply).finished.then(done, done);
+    const transition = doc.startViewTransition(apply);
+    // A transition skipped for the next one (a quick second swap) rejects `ready` with an
+    // AbortError; `apply` still runs, so there's nothing to handle.
+    transition.ready?.catch(() => {});
+    transition.finished.then(done, done);
   } catch {
     done();
     apply();
