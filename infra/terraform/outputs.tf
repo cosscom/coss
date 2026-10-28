@@ -11,6 +11,11 @@ output "portal_certificate_validation_records" {
   value       = [for option in aws_acm_certificate.portal.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
 }
 
+output "sign_certificate_validation_records" {
+  description = "CNAMEs to add (DNS only) in Sign's Cloudflare zone."
+  value       = [for option in aws_acm_certificate.sign.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
+}
+
 output "smtp_certificate_validation_records" {
   description = "CNAMEs to add (DNS only) in the coss.com Cloudflare zone for the SMTP relay's certificate."
   value       = [for option in aws_acm_certificate.smtp.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
@@ -30,7 +35,7 @@ output "api_distribution" {
 }
 
 output "alb_dns_name" {
-  description = "Target of the proxied track.cosslinks.com and portal host records (Cloudflare)."
+  description = "Target of the proxied track.cosslinks.com, portal and Sign host records (Cloudflare)."
   value       = aws_lb.main.dns_name
 }
 

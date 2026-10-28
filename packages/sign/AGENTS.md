@@ -158,15 +158,15 @@ templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` 
 
 Sign is off in production until all of this is done, in this order:
 
-1. **Domain:** buy the signing app's domain (placeholder `cosssign.com`) on Cloudflare. Then add
-   the `sign` service to `infra/aws/services.ts` and the deploy matrix, add `SIGN_HOST` routing
-   with an origin-verify header like `PORTAL_HOST`, and add its certificate. Run
-   `terraform apply` **before** merging that PR: a new ECS service must exist first.
-2. **Bucket:** `terraform apply` creates the bucket and both KMS keys (`sign.tf`).
-3. **Seal:** make a CSR from the `sign_seal_kms_key_id` key, buy a document-signing certificate
-   from a CA on Adobe's trust list (AATL), and set `SIGN_SEALER=kms`, `SIGN_SEAL_KMS_KEY_ID`,
-   `SIGN_SEAL_CERTIFICATE_CHAIN` (worker). Add a TSA contract's `SIGN_TSA_URL`.
-4. **Settings:** set `SIGN_DOCUMENTS_BUCKET` (api, worker, sign) and `SIGN_PUBLIC_URL` (api,
-   worker), plus `SIGN_NOTIFICATIONS_FROM` on a verified coss.com domain. Deploy.
+1. **Domain (done):** `cosssign.com` (self-serve Cloudflare account) → the `sign` service (README,
+   "Deploying to AWS"); `SIGN_PUBLIC_URL=https://cosssign.com` (web, api, worker).
+2. **Bucket (done):** `sign.tf` is applied: `coss-production-sign-documents-294417174674` and
+   both KMS keys (the seal's is `alias/coss-production-sign-seal`).
+3. **Seal:** buy a document-signing certificate from a CA on Adobe's trust list (AATL) for the
+   seal key (its CSR is signed by KMS: get the public key, sign the request's SHA-256 with
+   `kms sign --message-type DIGEST`), and set `SIGN_SEALER=kms`, `SIGN_SEAL_KMS_KEY_ID`,
+   `SIGN_SEAL_CERTIFICATE_CHAIN` (worker). Add a TSA's `SIGN_TSA_URL`.
+4. **Switch on:** set `SIGN_DOCUMENTS_BUCKET` (web, api, worker, sign), optionally
+   `SIGN_NOTIFICATIONS_FROM` (default `NOTIFICATIONS_FROM`'s address), `terraform apply`, deploy.
 5. **Before announcing:** get legal review of `DEFAULT_SIGN_DISCLOSURE` and the certificate
    wording, and price `sign.completed_requests` with a new rate card.

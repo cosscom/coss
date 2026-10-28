@@ -2,8 +2,8 @@
 
 The page a signer opens to sign a signature request: in the customer's app (an iframe, mounted with
 `mountSigning` from `coss/sign`), by redirect, or from coss.com's email (later). Next.js 16 (:3004
-locally), standalone image (`Dockerfile`), meant for its own ECS service on **its own registrable
-domain** (placeholder `cosssign.com`; not deployed yet, `SIGN_PUBLIC_URL` unset in production):
+locally), standalone image (`Dockerfile`), the `sign` ECS service on **its own registrable domain**
+(`cosssign.com`: Cloudflare → ALB with `X-Sign-Origin-Verify`, README "Deploying to AWS"):
 never serve it under coss.com, which would make it same-site with the dashboard. Product rules are
 in `packages/sign/AGENTS.md`.
 

@@ -6,7 +6,7 @@
  */
 import { SITE_ASSET_PREFIX, ZONE_ROUTES, type ZoneRoute } from "@coss/auth/slugs";
 
-export type TargetGroup = "web" | "site" | "portal" | "api";
+export type TargetGroup = "web" | "site" | "portal" | "sign" | "api";
 
 /**
  * CloudFront origins of the coss.com distribution: the ALB (every app in ECS), and one per
@@ -56,6 +56,15 @@ export const TRACKING_ORIGIN_VERIFY_PLACEHOLDER = "<tracking-origin-verify-secre
 export const PORTAL_HOST = "portal.cosshooks.com";
 export const PORTAL_ORIGIN_VERIFY_HEADER = "X-Portal-Origin-Verify";
 export const PORTAL_ORIGIN_VERIFY_PLACEHOLDER = "<portal-origin-verify-secret>";
+/**
+ * Sign's signing app (apps/sign) lives on a registrable domain of its own too, `cosssign.com` (the
+ * same self-serve Cloudflare account): signers open its links from emails and customers embed it.
+ * Set up like the portal (proxied record, the ALB's certificate, a header transform rule with its
+ * own secret), but on the apex, which signing links point at; `www` redirects to it.
+ */
+export const SIGN_HOST = "cosssign.com";
+export const SIGN_ORIGIN_VERIFY_HEADER = "X-Sign-Origin-Verify";
+export const SIGN_ORIGIN_VERIFY_PLACEHOLDER = "<sign-origin-verify-secret>";
 
 /** The API's open pixel and click redirect routes, the only paths custom hostnames serve. */
 export const TRACKING_PATH_PATTERN = "/t/*";
@@ -87,8 +96,8 @@ export type ListenerRule = {
  * The HTTPS listener's rules, in priority order. The listener's default action is a fixed 403:
  * a request without CloudFront's (or, for tracking, Cloudflare's) origin header matches no rule.
  * api.coss.com goes first, so the coss.com rules don't need a host condition; then the tracking
- * routes on any host (customer tracking domains, from Cloudflare) and the Hooks portal (also from
- * Cloudflare, with its own header); the dashboard (default zone) is last.
+ * routes on any host (customer tracking domains, from Cloudflare), the Hooks portal and Sign's
+ * signing app (also from Cloudflare, each with its own header); the dashboard (default zone) is last.
  */
 export function albListenerRules(): ListenerRule[] {
   const verified = {
@@ -122,6 +131,19 @@ export function albListenerRules(): ListenerRule[] {
           HttpHeaderConfig: {
             HttpHeaderName: PORTAL_ORIGIN_VERIFY_HEADER,
             Values: [PORTAL_ORIGIN_VERIFY_PLACEHOLDER],
+          },
+        },
+      ],
+    },
+    {
+      targetGroup: "sign",
+      conditions: [
+        { Field: "host-header", HostHeaderConfig: { Values: [SIGN_HOST] } },
+        {
+          Field: "http-header",
+          HttpHeaderConfig: {
+            HttpHeaderName: SIGN_ORIGIN_VERIFY_HEADER,
+            Values: [SIGN_ORIGIN_VERIFY_PLACEHOLDER],
           },
         },
       ],

@@ -548,6 +548,129 @@
       ]
     },
     {
+      "name": "sign",
+      "dockerfile": "apps/sign/Dockerfile",
+      "port": 3004,
+      "healthCheckPath": "/api/health",
+      "stopTimeout": 30,
+      "cpu": 256,
+      "memory": 512,
+      "minTasks": 2,
+      "needsInternet": false,
+      "env": [
+        {
+          "name": "DATABASE_URL",
+          "kind": "secret",
+          "required": true,
+          "value": "postgres://<user>:<password>@<rds-endpoint>:5432/coss?sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-global-bundle.pem",
+          "description": "RDS Postgres over verified TLS (the images ship the RDS CA bundle at that path)."
+        },
+        {
+          "name": "DATABASE_POOL_MAX",
+          "kind": "plain",
+          "required": false,
+          "value": "10",
+          "description": "pg pool size per task. Sum over all tasks must stay below RDS max_connections."
+        },
+        {
+          "name": "SIGN_DOCUMENTS_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production."
+        },
+        {
+          "name": "AWS_REGION",
+          "kind": "plain",
+          "required": false,
+          "value": "us-east-2",
+          "description": "Region of Sign's documents bucket."
+        },
+        {
+          "name": "VALKEY_URL",
+          "kind": "secret",
+          "required": true,
+          "description": "ElastiCache Serverless TLS URL printed by valkey:bootstrap; shared by web, api and worker."
+        },
+        {
+          "name": "VALKEY_CLUSTER",
+          "kind": "plain",
+          "required": true,
+          "value": "true",
+          "description": "ElastiCache Serverless uses the cluster protocol."
+        },
+        {
+          "name": "RATE_LIMIT_KEY_PREFIX",
+          "kind": "plain",
+          "required": false,
+          "value": "coss",
+          "description": "Counter namespace; must match the cache user's ACL."
+        },
+        {
+          "name": "CLIENT_IP_HEADER",
+          "kind": "plain",
+          "required": true,
+          "value": "x-forwarded-for",
+          "description": "Enables per-IP limits using the trusted proxy chain."
+        },
+        {
+          "name": "TRUSTED_PROXY_COUNT",
+          "kind": "plain",
+          "required": true,
+          "value": "2",
+          "description": "CloudFront and ALB append to X-Forwarded-For."
+        },
+        {
+          "name": "SENTRY_DSN",
+          "kind": "plain",
+          "required": false,
+          "value": "DSN of the `sign` Sentry project (Project settings → Client Keys)",
+          "description": "Unset: nothing is reported."
+        },
+        {
+          "name": "SENTRY_ENVIRONMENT",
+          "kind": "plain",
+          "required": false,
+          "value": "production (the stage's name)",
+          "description": "Sentry environment; defaults to NODE_ENV."
+        },
+        {
+          "name": "SENTRY_TRACES_SAMPLE_RATE",
+          "kind": "plain",
+          "required": false,
+          "value": "0.1",
+          "description": "Share of requests/jobs traced (0–1)."
+        },
+        {
+          "name": "NODE_ENV",
+          "kind": "image",
+          "required": true,
+          "value": "production",
+          "description": ""
+        },
+        {
+          "name": "PORT",
+          "kind": "image",
+          "required": true,
+          "value": "3004",
+          "description": ""
+        },
+        {
+          "name": "HOSTNAME",
+          "kind": "image",
+          "required": true,
+          "value": "0.0.0.0",
+          "description": ""
+        },
+        {
+          "name": "KEEP_ALIVE_TIMEOUT",
+          "kind": "image",
+          "required": true,
+          "value": "75000",
+          "description": ""
+        }
+      ]
+    },
+    {
       "name": "api",
       "dockerfile": "apps/api/Dockerfile",
       "port": 3001,
@@ -1562,6 +1685,29 @@
         },
         {
           "priority": 40,
+          "targetGroup": "sign",
+          "conditions": [
+            {
+              "Field": "host-header",
+              "HostHeaderConfig": {
+                "Values": [
+                  "cosssign.com"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Sign-Origin-Verify",
+                "Values": [
+                  "<sign-origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 50,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1586,7 +1732,7 @@
           ]
         },
         {
-          "priority": 50,
+          "priority": 60,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1611,7 +1757,7 @@
           ]
         },
         {
-          "priority": 60,
+          "priority": 70,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1636,7 +1782,7 @@
           ]
         },
         {
-          "priority": 70,
+          "priority": 80,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1661,7 +1807,7 @@
           ]
         },
         {
-          "priority": 80,
+          "priority": 90,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1686,7 +1832,7 @@
           ]
         },
         {
-          "priority": 90,
+          "priority": 100,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1711,7 +1857,7 @@
           ]
         },
         {
-          "priority": 100,
+          "priority": 110,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1736,7 +1882,7 @@
           ]
         },
         {
-          "priority": 110,
+          "priority": 120,
           "targetGroup": "site",
           "conditions": [
             {
@@ -1759,7 +1905,7 @@
           ]
         },
         {
-          "priority": 120,
+          "priority": 130,
           "targetGroup": "web",
           "conditions": [
             {

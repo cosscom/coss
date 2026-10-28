@@ -1,6 +1,6 @@
 # Sign (e-signatures): the documents bucket and the seal's signing key. Sign stays off in
-# production until SIGN_DOCUMENTS_BUCKET is set (plain_env, api and worker) and the signing app is
-# deployed; see packages/sign/AGENTS.md, "Going live".
+# production until SIGN_DOCUMENTS_BUCKET is set (plain_env: web, api, worker and sign); see
+# packages/sign/AGENTS.md, "Going live".
 
 # Encrypts every object of the bucket (documents, signatures, signed PDFs).
 resource "aws_kms_key" "sign_documents" {
@@ -117,6 +117,16 @@ resource "aws_iam_role_policy" "task_sign_web" {
   })
 }
 
+# The signing app shows documents and stores the signatures signers adopt.
+resource "aws_iam_role_policy" "task_sign_app" {
+  name = "sign-documents"
+  role = aws_iam_role.task["sign"].id
+  policy = jsonencode({
+    Version   = "2012-10-17"
+    Statement = [local.sign_bucket_statement, local.sign_key_statement]
+  })
+}
+
 # The worker seals completed documents, emails copies, and deletes an organization's prefix.
 resource "aws_iam_role_policy" "task_sign_worker" {
   name = "sign-documents"
@@ -141,7 +151,7 @@ resource "aws_iam_role_policy" "task_sign_worker" {
 }
 
 output "sign_documents_bucket" {
-  description = "SIGN_DOCUMENTS_BUCKET (web, api, worker, and the signing app once deployed)."
+  description = "SIGN_DOCUMENTS_BUCKET (web, api, worker and sign)."
   value       = aws_s3_bucket.sign_documents.bucket
 }
 

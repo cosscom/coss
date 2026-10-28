@@ -63,6 +63,7 @@ const SCHEMAS: Record<Exclude<ServiceName, "site">, string[]> = {
   api: schemaKeys("apps/api/src/env.ts", emailEnvShape),
   worker: schemaKeys("apps/worker/src/env.ts", emailWorkerEnvShape),
   portal: schemaKeys("apps/portal/src/env.ts", {}),
+  sign: schemaKeys("apps/sign/src/env.ts", {}),
   smtp: schemaKeys("apps/smtp/src/env.ts", emailEnvShape),
 };
 
