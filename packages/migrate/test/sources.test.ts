@@ -75,21 +75,27 @@ describe("providerClient", () => {
   });
 
   test("concurrent requests keep their spacing", async () => {
+    // A fake clock: real timers made this depend on how busy the machine was. The second
+    // request's timer fires late; the third is still spaced from that request's actual start.
+    let clock = 1_000;
+    const overshoot = [25];
     const starts: number[] = [];
     const client = providerClient({
       name: "Test",
       baseUrl: "https://api.test",
       headers: {},
       minIntervalMs: 40,
+      now: () => clock,
+      sleep: async (ms) => {
+        clock += ms + (overshoot.shift() ?? 0);
+      },
       fetch: async () => {
-        starts.push(performance.now());
+        starts.push(clock);
         return Response.json({});
       },
     });
     await Promise.all([client.get("/a"), client.get("/b"), client.get("/c")]);
-    const sorted = starts.sort((a, b) => a - b);
-    expect((sorted[1] ?? 0) - (sorted[0] ?? 0)).toBeGreaterThanOrEqual(35);
-    expect((sorted[2] ?? 0) - (sorted[1] ?? 0)).toBeGreaterThanOrEqual(35);
+    expect(starts).toEqual([1_000, 1_065, 1_105]);
   });
 
   test("a long wait isn't slept through: it's a rate_limited error with a time", async () => {
