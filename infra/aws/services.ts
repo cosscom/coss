@@ -4,7 +4,7 @@
  * infra/test checks it against the apps' env schemas, turbo.json and the Dockerfiles.
  */
 
-export type ServiceName = "web" | "site" | "portal" | "api" | "worker" | "smtp";
+export type ServiceName = "web" | "site" | "portal" | "sign" | "api" | "worker" | "smtp";
 
 /**
  * - `plain`: a task-definition `environment` value (`value`: the production value, or how to get it).
@@ -147,6 +147,14 @@ const signDocumentsBucket: EnvVar = {
   required: false,
   description:
     "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production.",
+};
+
+const awsRegion: EnvVar = {
+  name: "AWS_REGION",
+  kind: "plain",
+  required: false,
+  value: "us-east-2",
+  description: "Region of Sign's documents bucket.",
 };
 
 const signPublicUrl: EnvVar = {
@@ -417,7 +425,7 @@ const apiPublicUrl: EnvVar = {
  * Error and performance monitoring (Sentry organization `cosscom`, see @coss/observability). Each
  * runtime has its own project; DSNs aren't secrets (browsers receive the dashboard's).
  */
-function sentry(project: "web" | "portal" | "api" | "worker" | "smtp"): EnvVar[] {
+function sentry(project: "web" | "portal" | "sign" | "api" | "worker" | "smtp"): EnvVar[] {
   return [
     {
       name: "SENTRY_DSN",
@@ -665,6 +673,36 @@ export const SERVICES: Service[] = [
       ...sentry("portal"),
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
       { name: "PORT", kind: "image", required: true, value: "3003", description: "" },
+      { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
+      {
+        name: "KEEP_ALIVE_TIMEOUT",
+        kind: "image",
+        required: true,
+        value: "75000",
+        description: "",
+      },
+    ],
+  },
+  {
+    // Sign's signing app, on its own domain (SIGN_HOST in routing.ts: Cloudflare → ALB). It reads
+    // documents and stores signatures in the documents bucket (Terraform's task policy, sign.tf).
+    name: "sign",
+    dockerfile: "apps/sign/Dockerfile",
+    port: 3004,
+    healthCheckPath: "/api/health",
+    stopTimeout: 30,
+    cpu: 256,
+    memory: 512,
+    minTasks: 2,
+    needsInternet: false,
+    env: [
+      ...db,
+      signDocumentsBucket,
+      awsRegion,
+      ...rateLimits,
+      ...sentry("sign"),
+      { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },
+      { name: "PORT", kind: "image", required: true, value: "3004", description: "" },
       { name: "HOSTNAME", kind: "image", required: true, value: "0.0.0.0", description: "" },
       {
         name: "KEEP_ALIVE_TIMEOUT",

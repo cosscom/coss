@@ -45,6 +45,11 @@ variable "portal_host" {
   description = "The Hooks portal's host (PORTAL_HOST in infra/aws/routing.ts)."
 }
 
+variable "sign_host" {
+  type        = string
+  description = "Sign's signing app's host (SIGN_HOST in infra/aws/routing.ts)."
+}
+
 variable "external_origin_hosts" {
   type        = map(string)
   description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui and qnot repositories' Vercel projects."

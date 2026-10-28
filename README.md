@@ -523,6 +523,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   track.cosslinks.com + customer tracking domains (Cloudflare for SaaS) ──(X-Tracking-Origin-Verify)──▶ ALB /t/* ─▶ api
   Cloudflare DNS (cosshooks.com zone, self-serve account, proxied)
   portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
+  Cloudflare DNS (cosssign.com zone, self-serve account, proxied)
+  cosssign.com (Sign's signing app) ──(X-Sign-Origin-Verify)──▶ ALB ─▶ sign (Next, :3004)
   Cloudflare DNS (coss.com zone, DNS only)
   smtp.coss.com ──(TCP 465/2465, 587/2587, client IP preserved)──▶ NLB ─▶ smtp (Bun, :2465 TLS, :2587 STARTTLS)
 ```
@@ -629,6 +631,13 @@ Cloudflare DNS (coss.com zone, DNS only)
   the zone; the ALB forwards `portal.cosshooks.com` with it to the portal and nothing else. A redirect rule sends
   the apex to `https://coss.com`. `PORTAL_PUBLIC_URL=https://portal.cosshooks.com` (web, api) makes portal session
   links point there.
+- **Sign's signing app (`cosssign.com`, the same self-serve Cloudflare account):** `apps/sign` runs as the `sign`
+  service and is set up like the portal, but on the apex: a **proxied** CNAME to the ALB (flattened), its own SNI
+  listener certificate (validation CNAME from `terraform output sign_certificate_validation_records`), SSL mode
+  **Full (strict)**, and a transform rule setting `X-Sign-Origin-Verify: <secret>` (Secrets Manager
+  `coss/production/sign-origin-verify`) for `cosssign.com`. `www` (a proxied `100::`) only redirects to the apex.
+  `SIGN_PUBLIC_URL=https://cosssign.com` (web, api, worker) makes signing links point there. Sign itself stays off
+  until `SIGN_DOCUMENTS_BUCKET` is set (`packages/sign/AGENTS.md`, "Going live").
 
 ### Monitoring and cost guardrails
 
@@ -714,7 +723,7 @@ deploy.yml`) to ship main at once; with
 the Deploy run's failed jobs. A deploy job whose commit production already includes (a newer deploy went first)
 skips, so production never goes back to an older commit unless you dispatch one:
 
-1. Build and push the six images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the seven images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
    for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API, worker and SMTP relay), skipping images that exist. Base
    images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
@@ -723,7 +732,7 @@ skips, so production never goes back to an older commit unless you dispatch one:
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
    bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
    backward compatible with the running code.
-3. Roll out all six services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
+3. Roll out all seven services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
    ones are draining; the worker (no health check) once its old tasks are gone and the new ones ran for 60 s

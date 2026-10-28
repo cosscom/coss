@@ -52,6 +52,7 @@ locals {
     "<origin-verify-secret>"          = random_password.origin_verify.result
     "<tracking-origin-verify-secret>" = random_password.tracking_origin_verify.result
     "<portal-origin-verify-secret>"   = random_password.portal_origin_verify.result
+    "<sign-origin-verify-secret>"     = random_password.sign_origin_verify.result
   }
 }
 
@@ -100,4 +101,10 @@ resource "aws_lb_listener_rule" "spec" {
 resource "aws_lb_listener_certificate" "portal" {
   listener_arn    = aws_lb_listener.https.arn
   certificate_arn = aws_acm_certificate_validation.portal.certificate_arn
+}
+
+# Sign's signing app's host, on the same listener (SNI) like the portal's.
+resource "aws_lb_listener_certificate" "sign" {
+  listener_arn    = aws_lb_listener.https.arn
+  certificate_arn = aws_acm_certificate_validation.sign.certificate_arn
 }
