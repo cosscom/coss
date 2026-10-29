@@ -33,6 +33,7 @@ import {
 } from "./inboxes.ts";
 import {
   type EmailObjectOutput,
+  emailAddressProblem,
   SendEmailRequest,
   type SendEmailRequestOutput,
   uniqueRecipientCount,
@@ -274,12 +275,14 @@ export async function replyToInboxMessage(
   }
   // Everyone once, the inbox never: `to` first, then Cc, then Bcc.
   const seen = new Set<string>();
+  // Received display names can be ones a send refuses (invisible characters, too long): those
+  // recipients get their bare address.
   const keep = (values: readonly string[]) =>
-    values.filter((value) => {
+    values.flatMap((value) => {
       const address = bareAddress(value);
-      if (!address || own(address) || seen.has(address)) return false;
+      if (!address || own(address) || seen.has(address)) return [];
       seen.add(address);
-      return true;
+      return [emailAddressProblem(value) === null ? value : address];
     });
   const toList = keep(to);
   const ccList = keep([...(request.reply_all ? others : []), ...asList(request.cc)]);

@@ -551,6 +551,28 @@ describe("inboxes", () => {
     expect(JSON.stringify(read)).not.toContain("Secret plans");
   });
 
+  test("a sender's display name a send would refuse becomes the bare address", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "names" }, deps);
+    await receive({
+      to: [inbox.address, `${"Long ".repeat(60)}<long@example.com>`],
+      from: "Jane \u200d Doe <jane@example.com>",
+      subject: "Names",
+      text: "Hi",
+    });
+    const [summary] = (await listInboxMessages({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    const { message } = await replyToInboxMessage(service, {
+      environment: env,
+      apiKeyId: null,
+      inboxId: inbox.id,
+      messageId: summary?.id ?? "",
+      request: { text: "Hello", reply_all: true },
+    });
+    expect(message.to).toEqual(["jane@example.com"]);
+    expect(message.cc).toEqual(["long@example.com"]);
+  });
+
   test("reply-all answers everyone but the inbox; Reply-To wins over From", async () => {
     const tenant = await createTestTenant();
     const env = sandbox(tenant);
