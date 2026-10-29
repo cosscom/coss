@@ -14,7 +14,7 @@
  * Messages own no content: they point at the received email or the email, and are deleted with
  * it (retention, deletes); `purgeEmptyInboxThreads` drops threads with no message left.
  */
-import { randomInt } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { db, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { enqueueWebhookMessage } from "@coss/webhooks";
@@ -86,10 +86,20 @@ export function inboxAddressOf(recipient: string): string | null {
   return plus > 0 ? `${local.slice(0, plus)}${address.slice(at)}` : address;
 }
 
+/** Longer message ids (real ones are well under 250 characters) are neither stored nor matched. */
+const MAX_MESSAGE_ID_LENGTH = 512;
+
 /** `<id>`, the form message ids are stored and matched in; `null` for anything else. */
 export function messageIdKey(value: string | null | undefined): string | null {
   const id = value?.trim().replace(/^<|>$/g, "");
-  return id && /^[\x21-\x7e]+$/.test(id) && !/[<>]/.test(id) ? `<${id}>` : null;
+  if (!id || id.length > MAX_MESSAGE_ID_LENGTH) return null;
+  return /^[\x21-\x7e]+$/.test(id) && !/[<>]/.test(id) ? `<${id}>` : null;
+}
+
+/** What a thread's subject is matched by: a digest of `normalizeSubject`, '' for no subject. */
+export function subjectKey(subject: string | null): string {
+  const normalized = normalizeSubject(subject);
+  return normalized ? createHash("sha256").update(normalized).digest("hex") : "";
 }
 
 export function canSend(row: Pick<InboxRow, "kind">, sandbox: boolean): boolean {
@@ -339,7 +349,7 @@ async function findThread(
     inboxId: string;
     organizationId: string;
     refs: string[];
-    normalizedSubject: string;
+    subjectKey: string;
     sender: string | null;
     at: Date;
   },
@@ -386,7 +396,7 @@ async function findThread(
       if (outbound) return outbound.threadId;
     }
   }
-  if (!input.normalizedSubject || !input.sender) return null;
+  if (!input.subjectKey || !input.sender) return null;
   const [bySubject] = await tx
     .select({ id: inboxThread.id })
     .from(inboxThread)
@@ -394,7 +404,7 @@ async function findThread(
       and(
         eq(inboxThread.inboxId, input.inboxId),
         eq(inboxThread.organizationId, input.organizationId),
-        eq(inboxThread.normalizedSubject, input.normalizedSubject),
+        eq(inboxThread.subjectKey, input.subjectKey),
         sql`${input.sender} = any(${inboxThread.participants})`,
         gt(inboxThread.lastMessageAt, new Date(input.at.getTime() - SUBJECT_MATCH_WINDOW_MS)),
       ),
@@ -452,7 +462,7 @@ async function fileMessage(
       environmentId: input.row.environmentId,
       inboxId: input.row.id,
       subject: input.subject,
-      normalizedSubject: normalizeSubject(input.subject),
+      subjectKey: subjectKey(input.subject),
       participants: input.participants,
       lastMessageAt: input.at,
     })
@@ -523,7 +533,7 @@ export async function recordInboundInboxMessages(
       inboxId: row.id,
       organizationId: row.organizationId,
       refs,
-      normalizedSubject: normalizeSubject(message.subject),
+      subjectKey: subjectKey(message.subject),
       sender,
       at: message.receivedAt,
     });

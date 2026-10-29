@@ -294,8 +294,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   row into every inbox of that environment among the **envelope** recipients (never parsed `To`) and enqueues
   `inbox.message.received` (metadata only, like `email.received`; blocked messages never reach an inbox).
   Threading (`findThread`): an `In-Reply-To`/`References` id matching an inbound message's stored `Message-ID`
-  (`rfc_message_id`, normalized `<id>` by `messageIdKey`) or an outbound email's `provider_message_id` (the local
-  part of SES's `Message-ID`), else the same `normalizeSubject` with the sender already a participant and
+  (`rfc_message_id`, normalized `<id>` by `messageIdKey`; ids over 512 characters are neither stored nor matched) or an outbound email's `provider_message_id` (the local
+  part of SES's `Message-ID`), else the same `subjectKey` (a SHA-256 of `normalizeSubject`: senders' subjects are unbounded, index entries
+  aren't, and a failing insert would roll back the received email) with the sender already a participant and
   activity within `SUBJECT_MATCH_WINDOW_MS`, else a new thread, under an inbox-scoped advisory lock taken in
   inbox id order (two messages arriving together must not each start a thread); the thread row is locked
   (`FOR UPDATE`) while its participants and `last_message_at` move. Reads left-join the received email and the

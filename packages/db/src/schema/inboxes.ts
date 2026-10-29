@@ -75,9 +75,10 @@ export const inboxThread = pgTable(
     organizationId: text("organization_id").notNull(),
     environmentId: text("environment_id").notNull(),
     inboxId: text("inbox_id").notNull(),
-    // The first message's subject as it was, and the key replies are matched by (no `Re:`, lower case).
+    // The first message's subject as it was, and the key replies are matched by: the SHA-256 (hex) of
+    // the subject without `Re:`, lower-cased; '' for none. A digest, so any subject fits the index.
     subject: text("subject"),
-    normalizedSubject: text("normalized_subject").notNull(),
+    subjectKey: text("subject_key").notNull(),
     // Bare addresses of everyone in the conversation but the inbox itself.
     participants: text("participants").array().notNull().default(sql`'{}'::text[]`),
     lastMessageAt: timestamp("last_message_at", { withTimezone: true }).notNull(),
@@ -93,7 +94,7 @@ export const inboxThread = pgTable(
     unique("inbox_thread_id_organization_unique").on(t.id, t.organizationId),
     // Thread lists: most recent activity first.
     index("inbox_thread_inbox_last_message_idx").on(t.inboxId, t.lastMessageAt.desc(), t.id.desc()),
-    index("inbox_thread_inbox_subject_idx").on(t.inboxId, t.normalizedSubject),
+    index("inbox_thread_inbox_subject_idx").on(t.inboxId, t.subjectKey),
     // The retention purge of threads whose messages are gone.
     index("inbox_thread_last_message_at_idx").on(t.lastMessageAt),
     index("inbox_thread_organization_idx").on(t.organizationId),
@@ -119,7 +120,8 @@ export const inboxMessage = pgTable(
     direction: inboxMessageDirection("direction").notNull(),
     receivedEmailId: text("received_email_id"),
     emailId: text("email_id"),
-    // The `Message-ID` of an inbound message (outbound ones are matched by the provider's id).
+    // The `Message-ID` of an inbound message, at most `MAX_MESSAGE_ID_LENGTH` (outbound ones are
+    // matched by the provider's id).
     rfcMessageId: text("rfc_message_id"),
     createdAt: createdAt(),
   },

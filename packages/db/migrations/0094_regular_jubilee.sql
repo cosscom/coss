@@ -40,7 +40,7 @@ CREATE TABLE "inbox_thread" (
 	"environment_id" text NOT NULL,
 	"inbox_id" text NOT NULL,
 	"subject" text,
-	"normalized_subject" text NOT NULL,
+	"subject_key" text NOT NULL,
 	"participants" text[] DEFAULT '{}'::text[] NOT NULL,
 	"last_message_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -61,6 +61,6 @@ CREATE INDEX "inbox_message_inbox_rfc_message_id_idx" ON "inbox_message" USING b
 CREATE INDEX "inbox_message_received_email_idx" ON "inbox_message" USING btree ("received_email_id");--> statement-breakpoint
 CREATE INDEX "inbox_message_organization_idx" ON "inbox_message" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "inbox_thread_inbox_last_message_idx" ON "inbox_thread" USING btree ("inbox_id","last_message_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
-CREATE INDEX "inbox_thread_inbox_subject_idx" ON "inbox_thread" USING btree ("inbox_id","normalized_subject");--> statement-breakpoint
+CREATE INDEX "inbox_thread_inbox_subject_idx" ON "inbox_thread" USING btree ("inbox_id","subject_key");--> statement-breakpoint
 CREATE INDEX "inbox_thread_last_message_at_idx" ON "inbox_thread" USING btree ("last_message_at");--> statement-breakpoint
 CREATE INDEX "inbox_thread_organization_idx" ON "inbox_thread" USING btree ("organization_id");

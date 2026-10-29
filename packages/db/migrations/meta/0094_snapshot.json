@@ -1,5 +1,5 @@
 {
-  "id": "34ebbc31-4d14-42d6-b958-2390a034fd11",
+  "id": "80e3dc22-2a26-4122-9224-637c0e4e5279",
   "prevId": "d296c780-e8c7-4f4d-aae7-78c221e64fb2",
   "version": "7",
   "dialect": "postgresql",
@@ -18432,8 +18432,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "normalized_subject": {
-          "name": "normalized_subject",
+        "subject_key": {
+          "name": "subject_key",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -18504,7 +18504,7 @@
               "nulls": "last"
             },
             {
-              "expression": "normalized_subject",
+              "expression": "subject_key",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

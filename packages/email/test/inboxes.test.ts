@@ -514,7 +514,7 @@ describe("inboxes", () => {
       .select()
       .from(schema.inboxThread)
       .where(eq(schema.inboxThread.id, message.thread_id));
-    expect(thread).toMatchObject({ subject: null, normalizedSubject: "" });
+    expect(thread).toMatchObject({ subject: null, subjectKey: "" });
     const read = await getInboxThread({ ...env, inboxId: inbox.id, id: message.thread_id });
     expect(JSON.stringify(read)).not.toContain("Secret plans");
   });
@@ -581,6 +581,26 @@ describe("inboxes", () => {
       request: { text: "Me." },
     });
     expect(reply.to).toEqual(["answers@example.com"]);
+  });
+
+  test("oversized subjects and message ids from senders still file into threads", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "huge" }, deps);
+    // Random, so it doesn't compress under the index's entry limit.
+    const subject = Array.from({ length: 300 }, () => uniqueSuffix()).join(" ");
+    const longId = `<${"x".repeat(4000)}@example.com>`;
+    const [first] = await receive({ to: [inbox.address], subject, text: "One", messageId: longId });
+    expect(first?.kind).toBe("received");
+    // The subject still matches; the oversized id is simply not used.
+    await receive({
+      to: [inbox.address],
+      subject: `Re: ${subject}`,
+      text: "Two",
+      headers: { "In-Reply-To": longId },
+    });
+    const threads = await listInboxThreads({ ...env, inboxId: inbox.id, limit: 10 });
+    expect(threads.data.map((thread) => thread.message_count)).toEqual([2]);
   });
 
   test("deleting emails empties threads; the purge drops empty ones", async () => {
