@@ -55,7 +55,7 @@ ALTER TABLE "inbox_message" ADD CONSTRAINT "inbox_message_email_fk" FOREIGN KEY 
 ALTER TABLE "inbox_thread" ADD CONSTRAINT "inbox_thread_inbox_fk" FOREIGN KEY ("inbox_id","organization_id") REFERENCES "public"."inbox"("id","organization_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "inbox_environment_id_idx" ON "inbox" USING btree ("environment_id","id" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "inbox_organization_idx" ON "inbox" USING btree ("organization_id");--> statement-breakpoint
-CREATE INDEX "inbox_message_thread_idx" ON "inbox_message" USING btree ("thread_id","id");--> statement-breakpoint
+CREATE INDEX "inbox_message_thread_idx" ON "inbox_message" USING btree ("thread_id","created_at","id");--> statement-breakpoint
 CREATE INDEX "inbox_message_inbox_id_idx" ON "inbox_message" USING btree ("inbox_id","id" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "inbox_message_inbox_rfc_message_id_idx" ON "inbox_message" USING btree ("inbox_id","rfc_message_id") WHERE "inbox_message"."rfc_message_id" is not null;--> statement-breakpoint
 CREATE INDEX "inbox_message_received_email_idx" ON "inbox_message" USING btree ("received_email_id");--> statement-breakpoint

@@ -147,7 +147,8 @@ export const inboxMessage = pgTable(
     ),
     unique("inbox_message_inbox_received_email_unique").on(t.inboxId, t.receivedEmailId),
     unique("inbox_message_email_unique").on(t.emailId),
-    index("inbox_message_thread_idx").on(t.threadId, t.id),
+    // A thread's messages by when they were received or sent.
+    index("inbox_message_thread_idx").on(t.threadId, t.createdAt, t.id),
     index("inbox_message_inbox_id_idx").on(t.inboxId, t.id.desc()),
     index("inbox_message_inbox_rfc_message_id_idx")
       .on(t.inboxId, t.rfcMessageId)

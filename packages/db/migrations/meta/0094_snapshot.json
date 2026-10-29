@@ -1,5 +1,5 @@
 {
-  "id": "80e3dc22-2a26-4122-9224-637c0e4e5279",
+  "id": "79340ab0-ca0f-4b72-a301-a258a1e3286d",
   "prevId": "d296c780-e8c7-4f4d-aae7-78c221e64fb2",
   "version": "7",
   "dialect": "postgresql",
@@ -18234,6 +18234,12 @@
           "columns": [
             {
               "expression": "thread_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

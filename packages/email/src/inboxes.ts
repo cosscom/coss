@@ -934,7 +934,7 @@ async function latestPreviews(organizationId: string, ids: readonly string[]) {
         inArray(inboxMessage.threadId, [...ids]),
       ),
     )
-    .orderBy(inboxMessage.threadId, desc(inboxMessage.id));
+    .orderBy(inboxMessage.threadId, desc(inboxMessage.createdAt), desc(inboxMessage.id));
   const rows = (await selectMessages(false).where(
     inArray(inboxMessage.id, latest),
   )) as MessageRow[];
@@ -1030,13 +1030,16 @@ export async function getInboxThreadRow(
   return row ?? null;
 }
 
-/** The thread's latest `MAX_THREAD_MESSAGES` messages, oldest first. */
+/**
+ * The thread's latest `MAX_THREAD_MESSAGES` messages, oldest first: by when they were received or
+ * sent (a delayed notification files an older message later, so ids follow filing, not time).
+ */
 export async function threadMessages(
   scope: Scope & { inboxId: string; threadId: string },
 ): Promise<MessageRow[]> {
   const rows = (await selectMessages(true)
     .where(and(messagesOf(scope), eq(inboxMessage.threadId, scope.threadId)))
-    .orderBy(desc(inboxMessage.id))
+    .orderBy(desc(inboxMessage.createdAt), desc(inboxMessage.id))
     .limit(MAX_THREAD_MESSAGES)) as MessageRow[];
   return rows.reverse();
 }

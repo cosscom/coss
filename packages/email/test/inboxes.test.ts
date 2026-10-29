@@ -610,6 +610,44 @@ describe("inboxes", () => {
     expect(threads.data.map((thread) => thread.message_count)).toEqual([2]);
   });
 
+  test("a delayed notification files an older message in its place in the thread", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "late" }, deps);
+    const firstId = `<early-${uniqueSuffix()}@example.com>`;
+    const now = Date.now();
+    await receive({
+      to: [inbox.address],
+      subject: "Order",
+      text: "First",
+      messageId: firstId,
+      receivedAt: new Date(now - 60_000),
+    });
+    await receive({
+      to: [inbox.address],
+      subject: "Re: Order",
+      text: "Third",
+      headers: { "In-Reply-To": firstId },
+      receivedAt: new Date(now),
+    });
+    // Received between the two, but its notification arrives last.
+    await receive({
+      to: [inbox.address],
+      subject: "Re: Order",
+      text: "Second",
+      headers: { "In-Reply-To": firstId },
+      receivedAt: new Date(now - 30_000),
+    });
+    const [summary] = (await listInboxThreads({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    expect(summary?.preview).toBe("Third");
+    const thread = await getInboxThread({ ...env, inboxId: inbox.id, id: summary?.id ?? "" });
+    expect(thread?.messages.map((message) => message.extracted_text)).toEqual([
+      "First",
+      "Second",
+      "Third",
+    ]);
+  });
+
   test("deleting emails empties threads; the purge drops empty ones", async () => {
     const tenant = await createTestTenant();
     const env = sandbox(tenant);
