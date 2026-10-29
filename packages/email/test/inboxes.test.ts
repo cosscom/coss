@@ -34,6 +34,7 @@ import { DEVELOPMENT_LINK_KEYS } from "../src/link-tokens.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { deleteReceivedEmail } from "../src/received-emails.ts";
 import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { EmailSubject } from "../src/schemas.ts";
 import { createEmailService } from "../src/service.ts";
 import { updateStorageSettings } from "../src/storage-settings.ts";
 import {
@@ -117,6 +118,12 @@ describe("inbox text", () => {
     expect(replySubject("Your order")).toBe("Re: Your order");
     expect(replySubject("RE: Your order")).toBe("RE: Your order");
     expect(replySubject(null)).toBe("Re:");
+    // What a send refuses is left out, and the subject fits the send limit.
+    expect(replySubject("Hi\u0007 there\u200b")).toBe("Re: Hi  there");
+    const long = replySubject(`${"x".repeat(996)}😀`);
+    expect(long.length).toBeLessThanOrEqual(998);
+    expect(long.startsWith("Re: xxx")).toBe(true);
+    expect(EmailSubject.safeParse(replySubject("y".repeat(998))).success).toBe(true);
     expect(CreateInboxRequest.safeParse({ username: "agent..one" }).success).toBe(false);
     expect(CreateInboxRequest.safeParse({ username: "agent.one" }).success).toBe(true);
   });

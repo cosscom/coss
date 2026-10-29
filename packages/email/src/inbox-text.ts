@@ -12,11 +12,28 @@ export function normalizeSubject(subject: string | null): string {
   return (subject ?? "").replace(REPLY_PREFIX, "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-/** `Re: <subject>`, unless the subject already starts with a reply prefix. */
+/** The longest subject a send takes (`SUBJECT_MAX_LENGTH` in `schemas.ts`). */
+const SUBJECT_MAX_LENGTH = 998;
+
+/**
+ * `Re: <subject>`, unless the subject already starts with a reply prefix. A received subject may
+ * hold what a send refuses: control characters become spaces, invisible formatting characters
+ * go, and it is cut to the send limit (whole characters).
+ */
 export function replySubject(subject: string | null): string {
-  const value = (subject ?? "").trim();
+  const value = (subject ?? "")
+    .replace(/\p{Cc}/gu, " ")
+    .replace(/[\p{Cf}\p{Zl}\p{Zp}]/gu, "")
+    .trim();
   if (!value) return "Re:";
-  return /^\s*re\s*:/i.test(value) ? value : `Re: ${value}`;
+  const reply = /^\s*re\s*:/i.test(value) ? value : `Re: ${value}`;
+  if (reply.length <= SUBJECT_MAX_LENGTH) return reply;
+  let cut = "";
+  for (const character of reply) {
+    if (cut.length + character.length > SUBJECT_MAX_LENGTH) break;
+    cut += character;
+  }
+  return cut.trimEnd();
 }
 
 /** The line a quoted reply starts with ("On Mon, Oct 10, 2026 at 12:00, Jane <jane@…> wrote:"). */
