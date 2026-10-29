@@ -286,7 +286,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
 - **Inboxes** (`packages/email/src/{inboxes,inbox-send,inbox-text,inbox-schemas}.ts`, tables `inbox` (ids
   `inbox_`), `inbox_thread` (`thread_`), `inbox_message` (`imsg_`); `/v1/inboxes`, `coss.inboxes`, permission
-  `inbox`): addresses for agents, `<username>@<domain>` (lower-cased, unique everywhere), the domain being the
+  `inbox`): addresses for agents, `<username>@<domain>` (lower-cased, unique per environment: mail is routed to an environment first, so a
+  receiving domain that moves takes its addresses along and the old environment's inboxes keep their threads), the domain being the
   environment's managed one (`inboundAddressFor`, kind `managed`) or one of **its** receiving domains (`domain`);
   `username+tag@` reaches the inbox (`inboxAddressOf`). `client_id` (unique per environment) makes create return
   the existing inbox (200); at most `MAX_INBOXES_PER_ENVIRONMENT`, counted under a per-environment advisory lock.

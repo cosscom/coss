@@ -199,7 +199,9 @@ async function resolveDomain(
 
 /**
  * Creates an inbox, or returns the environment's inbox with the same `client_id`
- * (`created: false`). Usernames are unique per domain, and each domain belongs to one environment.
+ * (`created: false`). Addresses are unique per environment: mail is routed to an environment
+ * first, so another environment's inbox at an address (a receiving domain that moved) never
+ * receives anything and doesn't block it.
  */
 export async function createInbox(
   env: InboxEnvironment,
@@ -257,7 +259,7 @@ export async function createInbox(
       if (existing) return { inbox: toInboxObject(existing, sandbox), created: false };
     }
     if (input.username) {
-      throw new InboxError("address_taken", `${address} is already an inbox.`, {
+      throw new InboxError("address_taken", `${address} is already an inbox of this environment.`, {
         param: "username",
       });
     }

@@ -33,7 +33,7 @@ import {
 import { DEVELOPMENT_LINK_KEYS } from "../src/link-tokens.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { deleteReceivedEmail } from "../src/received-emails.ts";
-import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { createReceivingDomain, deleteReceivingDomain } from "../src/receiving-domains.ts";
 import { EmailSubject } from "../src/schemas.ts";
 import { createEmailService } from "../src/service.ts";
 import { updateStorageSettings } from "../src/storage-settings.ts";
@@ -250,6 +250,31 @@ describe("inboxes", () => {
       request: { to: "jane@example.com", subject: "Your order", text: "It shipped." },
     });
     expect(sent.message).toMatchObject({ direction: "outbound", status: "sent" });
+  });
+
+  test("a receiving domain that moves takes its addresses along", async () => {
+    const tenant = await createTestTenant();
+    const parent = await createVerifiedDomain(tenant.organization.id);
+    const hostname = `agents.${parent.name}`;
+    const receiving = (environmentId: string) =>
+      createReceivingDomain(
+        { organizationId: tenant.organization.id, domainId: parent.id, environmentId, hostname },
+        { mxHost: "inbound-smtp.us-east-1.amazonaws.com", managedDomain: MANAGED },
+        null,
+      );
+    await receiving(tenant.production.id);
+    const old = await createInbox(live(tenant), { username: "bot", domain: hostname }, deps);
+    await deleteReceivingDomain({ organizationId: tenant.organization.id, domainId: parent.id });
+    await receiving(tenant.development.id);
+    const moved = await createInbox(sandbox(tenant), { username: "bot", domain: hostname }, deps);
+    expect(moved.inbox.address).toBe(old.inbox.address);
+    expect(moved.inbox.id).not.toBe(old.inbox.id);
+    // Mail now reaches the new environment's inbox only.
+    await receive({ to: [moved.inbox.address], subject: "Hi", text: "Hello" });
+    const threads = (inboxId: string, env: InboxEnvironment) =>
+      listInboxThreads({ ...env, inboxId, limit: 10 }).then((page) => page.data.length);
+    expect(await threads(moved.inbox.id, sandbox(tenant))).toBe(1);
+    expect(await threads(old.inbox.id, live(tenant))).toBe(0);
   });
 
   test("received mail becomes threads, with an inbox.message.received webhook", async () => {

@@ -13,7 +13,7 @@ CREATE TABLE "inbox" (
 	"client_id" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "inbox_address_unique" UNIQUE("address"),
+	CONSTRAINT "inbox_environment_address_unique" UNIQUE("environment_id","address"),
 	CONSTRAINT "inbox_environment_client_id_unique" UNIQUE("environment_id","client_id"),
 	CONSTRAINT "inbox_id_organization_unique" UNIQUE("id","organization_id")
 );

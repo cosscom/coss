@@ -1,5 +1,5 @@
 {
-  "id": "79340ab0-ca0f-4b72-a301-a258a1e3286d",
+  "id": "b9e95c64-a16a-460b-9db5-da86ed957708",
   "prevId": "d296c780-e8c7-4f4d-aae7-78c221e64fb2",
   "version": "7",
   "dialect": "postgresql",
@@ -18133,10 +18133,11 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "inbox_address_unique": {
-          "name": "inbox_address_unique",
+        "inbox_environment_address_unique": {
+          "name": "inbox_environment_address_unique",
           "nullsNotDistinct": false,
           "columns": [
+            "environment_id",
             "address"
           ]
         },

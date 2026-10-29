@@ -28,8 +28,10 @@ const updatedAt = () =>
 export const inboxKind = pgEnum("inbox_kind", ["managed", "domain"]);
 
 /**
- * One address (`<username>@<domain>`, lower-cased, unique everywhere) an environment receives and
- * sends conversations at. Mail reaches it only while its domain routes to the environment.
+ * One address (`<username>@<domain>`, lower-cased, unique per environment) an environment receives
+ * and sends conversations at. Mail reaches it only while its domain routes to the environment: a
+ * receiving domain that moves to another environment (or organization) takes its mail along, and
+ * the new owner can create inboxes at the same addresses while the old ones keep their threads.
  */
 export const inbox = pgTable(
   "inbox",
@@ -56,7 +58,7 @@ export const inbox = pgTable(
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
-    unique("inbox_address_unique").on(t.address),
+    unique("inbox_environment_address_unique").on(t.environmentId, t.address),
     // NULL client ids are distinct.
     unique("inbox_environment_client_id_unique").on(t.environmentId, t.clientId),
     unique("inbox_id_organization_unique").on(t.id, t.organizationId),
