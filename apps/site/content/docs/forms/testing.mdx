@@ -1,0 +1,27 @@
+---
+title: Testing
+description: Try forms in a sandbox environment, and make Risk flag submissions on purpose.
+---
+
+Forms made with a sandbox (`coss_test_…`) key work end to end: posts are screened, stored and
+delivered. What's different:
+
+- **No emails reach anyone.** Notifications and verification emails go through the sandbox's
+  fake provider and keep their content (live environments don't): open one in the dashboard's
+  emails page and follow its link to confirm a submission. Contacts' double opt-in confirmations
+  are sent the same way but keep no content even in a sandbox, so test those in a live
+  environment with your own address.
+- **`allowed_origins` and `redirect_url` can use `http://localhost`** while you develop.
+- **Nothing is billed.**
+
+Risk's [test inputs](/docs/risk/testing) work in submissions, so you can see each outcome:
+
+| Submit                                    | Gets                                                    |
+| ----------------------------------------- | ------------------------------------------------------- |
+| A filled `_gotcha` field                  | `spam` (`honeypot`)                                     |
+| Text with `[coss-test:spam]` in any field | `spam` (`content`): it scores 0.99                      |
+| An email at `@disposable.test`            | A Risk reason (`email.disposable`): `held` or `spam`, per your thresholds |
+| Captcha token `test-pass` / `test-fail`   | A passing or failing captcha (in `cf-turnstile-response`) |
+
+Webhooks (`form.submission.*`) are delivered as in live environments, and
+`coss trigger form.submission.received` sends a sample one.

@@ -1,0 +1,65 @@
+---
+title: Spam filtering
+description: The honeypot, captcha, Risk and the content check, and what each does to a submission.
+---
+
+Every submission is screened before it is delivered. Spam is answered exactly like a success, so
+whoever sent it learns nothing; you find it on the form's **Spam** and **Held** tabs, or with
+`coss.forms.submissions.list(formId, { status: ["spam", "held"] })`.
+
+## The honeypot
+
+A field people never see (hide it with CSS) and bots fill in. A submission that fills it is `spam`
+(`spam_reason: "honeypot"`) at once: no Risk assessment, no files kept, no webhook. It is `_gotcha`
+unless you name another with `spam.honeypot_field`.
+
+## Risk
+
+Every other submission is a [Risk assessment](/docs/risk) in the form's environment: a `custom` event
+named `form_submission`, with the submitter's email (`submitter.email_field`), IP, user agent,
+captcha token, [`coss/device`](/docs/risk/devices) token and the text they wrote (`label: value`
+per field). It is in your Risk log like any assessment and uses your [rules](/docs/risk/rules),
+[lists](/docs/risk/lists-and-feedback), thresholds and velocity counters, so you can write rules
+for forms (`event_name` is `form_submission`).
+
+| Risk decides | The submission is                                                          |
+| ------------ | -------------------------------------------------------------------------- |
+| `block`      | `spam` (`spam_reason: "risk_block"`)                                         |
+| `review`     | `held` (`risk_review`) with `spam.on_review: "hold"` (the default); delivered with `"deliver"` |
+| `allow`      | Delivered                                                                  |
+
+A `review` also sends `risk.assessment.review` to your webhooks, like any assessment. If Risk can't
+be reached, the submission is delivered (Risk fails open).
+
+## The content check
+
+Risk classifies the submission's text in four categories (spam, phishing, malware, fraud). A
+submission scoring at least `spam.content_threshold` (default `0.9`) in any of them is `spam`
+(`spam_reason: "content"`), whatever your risk settings' own content thresholds say. Set it between
+`0.5` and `1`, or `null` to leave content to your risk settings. Live content classification is
+charged like any [content check](/docs/risk/content).
+
+## Captcha
+
+`spam.captcha: "required"` makes every submission carry a token from the captcha in the
+environment's [risk settings](/docs/risk/settings) (Turnstile or hCaptcha: set one up there first).
+A submission without one, or whose token fails or can't be checked (the provider didn't answer),
+is refused with a `captcha` error the submitter sees: a required captcha never lets one through
+unchecked. Add the widget to your form (its script puts the token in `cf-turnstile-response` or
+`h-captcha-response`), or set `spam.captcha_site_key` for [hosted pages](/docs/forms/hosted-pages).
+
+## Releasing
+
+`coss.forms.submissions.release(formId, id)` (or **Not spam** in the dashboard) delivers a `held`
+or `spam` submission as if it had been accepted, and records its Risk assessment's outcome as
+`legitimate`, so Risk learns from it.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const formId: string;
+declare const submissionId: string;
+// ---cut---
+const { data } = await coss.forms.submissions.release(formId, submissionId);
+// data?.status === "accepted"
+```

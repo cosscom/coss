@@ -138,6 +138,8 @@ const FUTURE_SITE_SEGMENTS = [
   "signatures",
   "documents",
   "contracts",
+  "forms",
+  "surveys",
   // Marketing and company pages
   "home",
   "pricing",

@@ -1,0 +1,46 @@
+---
+title: Double opt-in
+description: Have submitters confirm their email address, for a contact or for the whole submission.
+---
+
+Forms has two kinds of double opt-in, which you can combine.
+
+## Contacts
+
+When a form [adds submitters to your contacts](/docs/forms/destinations#contacts), `contacts.double_opt_in`
+decides whether a new (or unsubscribed) contact must confirm before they are `subscribed`. `null`
+(the default) follows the environment's marketing settings (`double_opt_in_default`). A confirming
+contact is `pending` and gets your [confirmation email](/docs/email/topics-and-preferences#double-opt-in),
+the same as contacts you add with the API: so the marketing settings need a `confirmation_from`
+sender first (saving the form checks). Without double opt-in, a new contact is `subscribed` and an
+existing one keeps their status.
+
+The submission itself is delivered at once (webhooks, notifications); only the contact waits.
+
+## The whole submission
+
+`submitter.verify` holds every submission until the submitter clicks the link coss.com emails them.
+Until then it is `pending_confirmation`: no webhook, no notification, no contact.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.forms.create({
+  name: "Beta access",
+  submitter: { verify: true, confirmation_from: "beta@example.com" },
+  redirect_url: "https://www.example.com/beta/confirmed",
+});
+```
+
+- The form needs the submitter's address (`submitter.email_field`): a submission without one is
+  refused.
+- The email comes from `submitter.confirmation_from`, which in live environments must be on one of
+  your verified domains: never from coss.com's address.
+- The link (`…/f/c/<token>`) works for 7 days. Opening it shows a button; confirming sends the
+  submission on (`form.submission.received`) and redirects to `redirect_url` if the form has one.
+- Each address gets at most 3 verification emails a day across all of coss.com, and each
+  organization 1,000. A submission never confirmed is deleted after
+  <RetentionPeriod of="form_spam" />.
+
+The submitter is told "Check your email" whatever happens to their submission, spam included.

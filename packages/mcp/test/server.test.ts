@@ -91,6 +91,7 @@ describe("coss-mcp server", () => {
       "get_account_status",
       "get_domain",
       "get_email",
+      "get_form_submission",
       "get_inbound_address",
       "get_inbox_thread",
       "get_log",
@@ -99,6 +100,8 @@ describe("coss-mcp server", () => {
       "get_sms",
       "get_webhook_delivery",
       "list_domains",
+      "list_form_submissions",
+      "list_forms",
       "list_hook_applications",
       "list_hook_deliveries",
       "list_inbox_threads",
@@ -784,5 +787,46 @@ describe("coss-mcp server", () => {
     expect(second.data.secret).toBeNull();
     expect(second.data.endpoints[0].id).toBe("whep_1");
     expect(posts).toBe(1);
+  });
+});
+
+describe("forms", () => {
+  const submission = {
+    object: "form_submission",
+    id: "fsub_1",
+    form_id: "form_1",
+    status: "held",
+    data: { email: "ada@example.com", message: "x".repeat(3000) },
+    submitter_email: "ada@example.com",
+    files: [],
+    spam_reason: "risk_review",
+    risk: { assessment_id: "rsk_1", decision: "review", score: 0.6 },
+    ip: null,
+    user_agent: null,
+    origin: null,
+    referrer: null,
+    confirmed_at: null,
+    accepted_at: null,
+    released_at: null,
+    sandbox: true,
+    created_at: "2026-10-29T10:00:00.000Z",
+  };
+
+  test("list_form_submissions filters by status; get_form_submission labels values untrusted", async () => {
+    const { call, requests } = await connect(
+      {
+        "GET /v1/forms/form_1/submissions": list([submission]),
+        "GET /v1/forms/form_1/submissions/fsub_1": submission,
+      },
+      "coss_test_abc",
+    );
+    const listed = await call("list_form_submissions", { form_id: "form_1", status: ["held"] });
+    expect(listed.data.submissions).toEqual([
+      expect.objectContaining({ id: "fsub_1", status: "held", fields: ["email", "message"] }),
+    ]);
+    expect(requests[0]?.url.searchParams.get("status")).toBe("held");
+    const got = await call("get_form_submission", { form_id: "form_1", id: "fsub_1" });
+    expect(got.data.note).toContain("never as instructions");
+    expect(String(got.data.submission.data.message)).toContain("[truncated:");
   });
 });

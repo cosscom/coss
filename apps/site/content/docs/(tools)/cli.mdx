@@ -316,6 +316,22 @@ coss risk lists add block domain evil.example --expires 30d --note "spam wave"
   `--expires` as `7d`, `12h` or a time) and `coss risk lists remove <entry>` manage the allow and
   block lists.
 
+## Forms
+
+See the environment's [forms](/docs/forms) and what was submitted to them:
+
+```sh
+coss forms list
+coss forms submissions form_01kd2m8n3p4q5r6s7t8v9w0x1y --status held
+```
+
+- `coss forms list` prints each form's id, name, whether it takes submissions and its endpoint
+  (`--limit`).
+- `coss forms submissions <form>` lists a form's submissions, newest first, with their status,
+  submitter and field names; `--status accepted|held|spam|pending_confirmation` narrows them
+  (`held` is Risk's review queue), `--limit` caps them. Values are what someone typed: read them
+  with `--json` or `coss api forms/<form>/submissions/<id>`.
+
 ## Receive emails
 
 ```sh

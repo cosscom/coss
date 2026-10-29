@@ -1,0 +1,92 @@
+---
+title: Forms
+description: A form endpoint for your site, with spam filtering, double opt-in and delivery built in.
+icon: Form
+---
+
+Forms gives each form on your site an endpoint to post to. You don't need a backend: a plain HTML
+`<form>` posts to it, Risk screens every submission, and accepted ones go to your
+[webhooks](/docs/webhooks), to your team by email and into your [contacts](/docs/email/contacts).
+It uses the same API key, logs and sandbox environments as everything else.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: form } = await coss.forms.create({
+  name: "Contact us",
+  allowed_origins: ["https://www.example.com"],
+  notifications: { recipients: ["support@example.com"] },
+});
+// form?.endpoint: https://…/f/form_01k…
+```
+
+Then point your form at its `endpoint`:
+
+```html
+<form action="https://…/f/form_01k…" method="post">
+  <input type="email" name="email" required>
+  <textarea name="message"></textarea>
+  <!-- The honeypot: people leave it empty, bots fill it in. -->
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+  <button>Send</button>
+</form>
+```
+
+You can also create forms in the dashboard: each environment's **Forms** page shows the snippet to
+paste.
+
+## What happens to a submission
+
+1. **The form checks it.** The form must be enabled and the post must come from one of its
+   `allowed_origins` (if it lists any). With `fields` defined, every value is validated against
+   them.
+2. **Risk screens it.** The honeypot, then a [Risk assessment](/docs/forms/spam-filtering) of the
+   submitter's email, IP, browser, captcha and the text they wrote. A submission Risk refuses is
+   `spam`; one it wants reviewed is `held`.
+3. **It is delivered.** An accepted submission sends `form.submission.received` to your
+   webhooks, emails the form's recipients and adds the submitter to your contacts
+   ([destinations](/docs/forms/destinations)). With `submitter.verify`, it first waits until the
+   submitter clicks the link emailed to them ([double opt-in](/docs/forms/double-opt-in)).
+
+Spam is answered exactly like a success, so nothing tells a bot what tripped it. You see it on the
+form's **Spam** tab and can release it (`coss.forms.submissions.release`).
+
+| Status                 | Means                                                      |
+| ---------------------- | ---------------------------------------------------------- |
+| `accepted`             | Delivered to webhooks, notifications and contacts          |
+| `held`                 | Risk asked for a review: release it, or leave it           |
+| `spam`                 | Refused by the honeypot, Risk or the content check         |
+| `pending_confirmation` | Waiting for the submitter to click the link in their email |
+
+Accepted submissions are kept for <RetentionPeriod of="form_submissions" />; spam, held and
+unconfirmed ones for <RetentionPeriod of="form_spam" />.
+
+## What's in it
+
+<Cards>
+  <Card title="HTML forms" href="/docs/forms/html-forms">
+    Fields, redirects, the honeypot, errors and JSON answers.
+  </Card>
+  <Card title="JavaScript" href="/docs/forms/javascript">
+    `coss/forms`: submit without a page load.
+  </Card>
+  <Card title="Hosted pages" href="/docs/forms/hosted-pages">
+    A page coss.com renders from your fields, to link to or embed.
+  </Card>
+  <Card title="Spam filtering" href="/docs/forms/spam-filtering">
+    The honeypot, captcha, Risk and the content check.
+  </Card>
+  <Card title="Double opt-in" href="/docs/forms/double-opt-in">
+    Confirming contacts, or the whole submission, by email.
+  </Card>
+  <Card title="Destinations" href="/docs/forms/destinations">
+    Webhooks, notification emails and contacts.
+  </Card>
+  <Card title="File uploads" href="/docs/forms/file-uploads">
+    Attachments, their limits and downloading them.
+  </Card>
+  <Card title="Testing" href="/docs/forms/testing">
+    Sandbox forms and the test inputs.
+  </Card>
+</Cards>

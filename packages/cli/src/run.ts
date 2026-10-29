@@ -15,6 +15,7 @@ import {
   emailsGetCommand,
   emailsListCommand,
 } from "./commands/emails-read.ts";
+import { FORMS_COMMANDS } from "./commands/forms.ts";
 import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import { inboxCommand, inboxGetCommand } from "./commands/inbox.ts";
 import { INBOXES_COMMANDS } from "./commands/inboxes.ts";
@@ -76,6 +77,7 @@ export const COMMANDS: readonly Command[] = [
   webhooksRetryCommand,
   ...HOOKS_COMMANDS,
   ...RISK_COMMANDS,
+  ...FORMS_COMMANDS,
   domainsListCommand,
   domainsAddCommand,
   domainsGetCommand,

@@ -147,6 +147,10 @@ read, which sends use from then on. A save does not publish by itself.
 **Hooks**: `list_hook_applications`, `send_hook_message` (delivers to the application's endpoints),
 `list_hook_deliveries`. See [Hooks](/docs/hooks).
 
+**Forms**: `list_forms`, `list_form_submissions` (by status: `held` is Risk's review queue),
+`get_form_submission` (the values, labelled as untrusted: someone typed them into a form). See
+[Forms](/docs/forms).
+
 **Risk**: `assess_risk` records a decision for a sign-up, login, message, checkout or custom event.
 `list_risk_assessments`, `list_risk_rules` and `list_risk_list_entries` read what the environment
 already decided and the rules and lists behind it. See [Risk](/docs/risk).

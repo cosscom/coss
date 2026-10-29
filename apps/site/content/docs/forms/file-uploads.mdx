@@ -1,0 +1,62 @@
+---
+title: File uploads
+description: Let submitters attach files, and download them afterwards.
+---
+
+Turn on `files` and a form takes `multipart/form-data` posts with files:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.forms.create({
+  name: "Job application",
+  fields: [
+    { name: "email", type: "email", required: true },
+    { name: "cv", type: "file", label: "CV", required: true },
+  ],
+  files: { enabled: true, max_files: 2, allowed_types: ["application/pdf", "image/*"] },
+});
+```
+
+```html
+<form action="https://…/f/form_01k…" method="post" enctype="multipart/form-data">
+  <input type="email" name="email" required>
+  <input type="file" name="cv" accept="application/pdf,image/*" required>
+  <button>Apply</button>
+</form>
+```
+
+| Setting          | Default                         | At most                     |
+| ---------------- | ------------------------------- | --------------------------- |
+| `max_files`      | 3 files per submission          | 10                          |
+| `max_file_bytes` | 10 MB per file                  | 10 MB                       |
+| All files        |                                 | 25 MB per submission        |
+| `allowed_types`  | Images (PNG, JPEG, GIF, WebP, HEIC), PDF, plain text, CSV, Word and Excel | `type/*` wildcards allowed |
+
+HTML, SVG, scripts and executables are always refused, whatever `allowed_types` says, and so are
+files whose names end in their extensions. Filenames keep only their last part. With `fields`
+defined, files are accepted only in `file` fields; a form without uploads refuses posts that carry
+files.
+
+Files are kept with their submission (deleted with it, and like it after
+<RetentionPeriod of="form_submissions" />). Spam caught by the honeypot keeps none.
+
+## Downloading
+
+Webhooks and the API list a submission's files (`files[]`: id, field, filename, type, size); fetch
+one's bytes with:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const formId: string;
+declare const submissionId: string;
+declare const fileId: string;
+// ---cut---
+const { data: bytes } = await coss.forms.submissions.file(formId, submissionId, fileId);
+// bytes: Uint8Array
+```
+
+The API serves them as `application/octet-stream` and the dashboard as downloads: a submitter chose
+these files, so never open them in your app's own origin. coss.com doesn't scan them for malware.
