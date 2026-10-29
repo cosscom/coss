@@ -303,7 +303,10 @@ pause password resets. Each organization gets one SES **tenant** per stream (iso
 created with its first domain, and every domain identity is associated with both. Each stream has its own
 **configuration set**, `<name>` and `<name>-marketing`, both publishing delivery events to SNS → SQS, where the
 worker picks them up; an EventBridge rule sends tenant pause/resume events to the same queue. SES suppression is
-off for tenants and configuration sets: coss.com's own suppression lists decide who is skipped.
+off for tenants and configuration sets: coss.com's own suppression lists decide who is skipped. Email sub-accounts
+(email for platforms) get a transactional tenant of their own (`<prefix>-sub_…`) with their first own domain. SES
+allows 10,000 tenants per account by default: request a quota increase (Service Quotas, "Tenants") before platforms
+onboard many users with their own domains.
 
 1. Use a dedicated AWS account (or at least region) per stage: SES identities are account-wide, so the same
    domain can't be verified in two stages of one account. New accounts start in the SES sandbox; request

@@ -16,6 +16,7 @@
     "dmarc",
     "dedicated-ips",
     "bimi",
+    "subaccounts",
     "---Tracking---",
     "delivery",
     "tracking",

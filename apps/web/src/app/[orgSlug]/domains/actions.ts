@@ -13,6 +13,7 @@ import {
   getReceivingDomain,
   getTrackingDomain,
   restartDomainVerification,
+  setDomainSharedWithSubaccounts,
   verifyTrackingDomain,
 } from "@coss/email";
 import { getEnvironmentById } from "@coss/tenancy";
@@ -337,5 +338,32 @@ export async function deleteDomainAction(
       target: { type: "domain", id: domain.id, label: domain.name },
     });
     redirect(`/${context.organization.slug}/domains`);
+  });
+}
+
+/** Lets the organization's sub-accounts send from this domain of its own, or stops them. */
+export async function shareDomainWithSubaccountsAction(
+  _previous: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const context = await requireOrgPermission(formString(formData, "orgSlug"), {
+      domain: ["create"],
+    });
+    const domain = await domainFromForm(context, formData);
+    const shared = formString(formData, "shared") === "true";
+    await setDomainSharedWithSubaccounts({
+      organizationId: domain.organizationId,
+      id: domain.id,
+      shared,
+    });
+    await recordAudit(context.session, {
+      organizationId: context.organization.id,
+      action: "domain.updated",
+      target: { type: "domain", id: domain.id, label: domain.name },
+      metadata: { shared_with_subaccounts: shared },
+    });
+    refresh();
+    return null;
   });
 }

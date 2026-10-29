@@ -424,3 +424,40 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   permissions); its test sends go only to verified members (`listVerifiedMemberEmails`, like template test sends),
   through the dashboard's email service (`apps/web/src/lib/email-service.ts`), and are charged `emailSendQuota` like
   the API's `POST /v1/broadcasts/{id}/test`.
+- **Sub-accounts** (email for platforms; `packages/email/src/{subaccounts,subaccount-reputation,subaccount-schemas}.ts`,
+  table `email_subaccount` (ids `sub_`), `/v1/subaccounts`, `coss.email.subaccounts`, permission `subaccount`, the
+  dashboard's `[envSlug]/subaccounts`): a customer's end user, per environment, addressed by id **or** the customer's
+  `uid` (unique per environment). Live ones need the plan's `subaccounts` feature and count against its
+  `subaccounts` limit (`PlanGate`); sandbox ones are free (`MAX_SANDBOX_SUBACCOUNTS`), have no domains and use the
+  fake provider like every sandbox send. A send names one with `subaccount` (API, batch per email, SMTP
+  `X-Coss-Subaccount`; omitted from the parsed request when absent, so older request hashes stay valid), resolved in
+  `prepareSend` (`sendingSubaccount`: unknown or deleting → 422 `subaccount_not_found`, `disabled` → 403
+  `subaccount_disabled`, reputation `paused` → 403 `subaccount_paused`) and checked again at the scheduled claim
+  (`assertSubaccountStillSends`); transactional only. The email stores `subaccount_id` (no FK: emails outlive the
+  sub-account) and carries it in reads, webhook event data and log lines. **Domains**: a domain may belong to a live
+  sub-account (`domain.subaccount_id`, ≤ `MAX_SUBACCOUNT_DOMAINS`, its own pending cap, outside the plan's `domains`
+  count). Its first one creates the sub-account's own transactional tenant (`ensureSubaccountTenant`, `email_tenant`
+  row with `subaccount_id`, named `tenantNameFor(prefix, sub_id)`, born `suppression_migrated_at` set) and its
+  identities are associated with that tenant only; organization functions (`getEmailTenant`, `listEmailTenants`,
+  `associateOrgDomains`, `ensureMissingStreamTenants`) see only the organization's own (`subaccount_id` NULL).
+  `authorizeLiveSender({ subaccountId })`: only the sub-account sends from its domains (the organization must name it
+  too), and sub-accounts send from the organization's domains only with `shared_with_subaccounts` (`PATCH
+  /v1/domains/{id}`, never on a sub-account's domain); the matching tenant's pause applies. The claim decides
+  `subaccount_tenant` (`subaccountTenantSql`: the From domain's most specific domain is the sub-account's and its
+  tenant exists) and sub-account email never uses the organization's dedicated pool (`claimRouting`);
+  `SesEmailProvider` sends `TenantName` of the sub-account then. Sub-account domains never count for SSO and have no
+  tracking or receiving domains. **Suppressions**: `email_suppression.subaccount_id`; management functions work on
+  exactly one list (`inList`), sends and `check` apply the sub-account's list plus the environment's
+  (`inSendLists`), and its bounces, complaints and one-click unsubscribes go on its list only (`autoSuppress` skips
+  a deleted sub-account's). Contacts' consent never applies to sub-account sends (contacts are the environment's own
+  audience). **Quotas**: `recipients_per_day`/`recipients_per_second`/`burst` on the row, charged after the
+  organization's through `emailSendQuotas` + `consumeAll` (`@coss/ratelimit`, buckets
+  `email.subaccount_recipients.*` with the row's rule; API and SMTP). **Reputation and screening**: see
+  `packages/reputation/AGENTS.md` and `packages/screening/AGENTS.md` (a screening block pauses the sub-account,
+  `pauseSubaccount`). **Stats** (`subaccountStats`, `GET /v1/subaccounts/{subaccount}/stats`): recipients per UTC
+  send day by current status, counted from its emails (`email_subaccount_send_time_idx`), so at most
+  `MAX_SUBACCOUNT_STATS_DAYS` (email retention). **Deletion**: `deleteSubaccount` sets `deleting` (sends refused,
+  scheduled ones fail at their claim), the worker's `subaccount-deletions` loop (`runDueSubaccountDeletions`, leased,
+  backing off) runs `releaseSubaccountEmailResources` (identities, domain rows, tenant) and deletes the row (cascading
+  its suppressions); organization deletion releases sub-accounts' identities and tenants with the rest. A downgrade
+  to a plan without sub-accounts is refused while live ones exist (`hasLiveSubaccounts`).

@@ -27,7 +27,8 @@ export default async function DomainsPage({ params }: PageProps<"/[orgSlug]/doma
   const { organization, can } = await requireOrgMember(orgSlug);
   if (!can({ domain: ["read"] })) notFound();
   const [domains, tenant] = await Promise.all([
-    listDomains({ organizationId: organization.id }),
+    // The organization's own: its sub-accounts' domains show on their pages.
+    listDomains({ organizationId: organization.id, subaccountId: null }),
     getEmailTenant(organization.id),
   ]);
   const canCreate = can({ domain: ["create"] });

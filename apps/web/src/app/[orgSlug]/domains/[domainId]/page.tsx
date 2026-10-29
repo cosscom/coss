@@ -42,7 +42,11 @@ import { domainConnectPlan } from "@/lib/domain-connect";
 import { emailRuntime } from "@/lib/email-runtime";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
-import { DeleteDomainButton, VerifyDomainButton } from "./domain-actions";
+import {
+  DeleteDomainButton,
+  ShareWithSubaccountsSwitch,
+  VerifyDomainButton,
+} from "./domain-actions";
 import { DomainConnectButton, DomainConnectReturn } from "./domain-connect";
 import {
   AddReceivingDomainDialog,
@@ -304,6 +308,20 @@ export default async function DomainPage({
               </SpecItem>
               <SpecItem label="Verified">{formatDateTime(domain.verifiedAt)}</SpecItem>
               <SpecItem label="Added">{formatDateTime(domain.createdAt)}</SpecItem>
+              {domain.subaccountId ? (
+                <SpecItem label="Sub-account" mono>
+                  <span className="truncate">{domain.subaccountId}</span>
+                </SpecItem>
+              ) : (
+                <SpecItem label="Shared with sub-accounts">
+                  <ShareWithSubaccountsSwitch
+                    disabled={!canCreate}
+                    domainId={domain.id}
+                    orgSlug={organization.slug}
+                    shared={domain.sharedWithSubaccounts}
+                  />
+                </SpecItem>
+              )}
               <SpecItem label="ID" mono>
                 <span className="truncate">{domain.id}</span>
               </SpecItem>

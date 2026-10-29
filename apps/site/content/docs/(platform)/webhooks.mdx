@@ -66,6 +66,18 @@ const secret = endpoint?.secret;
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 
+### Sub-account events
+
+A [sub-account](/docs/email/subaccounts)'s own reputation changes go to its environment's endpoints
+(live only). `data.subaccount_id` and `data.uid` name it.
+
+| Type                              | Sent when                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| `subaccount.reputation_warning`   | Its bounce or complaint rate crossed the warning threshold                  |
+| `subaccount.reputation_recovered` | The warning cleared                                                         |
+| `subaccount.paused`               | Its live sending was paused (a rate, or content screening: `data.trigger`)  |
+| `subaccount.reinstated`           | You reinstated it                                                           |
+
 ### Organization events
 
 These concern the whole organization, so every **live** environment's endpoints receive them

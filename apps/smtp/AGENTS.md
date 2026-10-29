@@ -17,7 +17,7 @@ repository root.
   addresses stay `to`/`cc`, every other envelope recipient is `bcc`; a header recipient missing from the envelope
   or a message without a `To` recipient is refused (never move Bcc'd addresses into visible headers). Reserved,
   `Content-*` and mail-client headers are dropped, the rest (≤ `MAX_HEADERS`) kept with RFC 2047 words still
-  encoded; `X-Coss-{Category,Tags,Tracking,Scheduled-At,Idempotency-Key}` set the API's fields and are never sent
+  encoded; `X-Coss-{Category,Tags,Tracking,Scheduled-At,Idempotency-Key,Subaccount}` set the API's fields and are never sent
   on. Failures are SMTP replies (`src/replies.ts`): 4xx where a retry can help (quotas, `request_in_progress`,
   outages), 5xx otherwise; a `250` names the email id. Each attributable message is a log line (source `smtp`,
   type `smtp.message`; `smtp.auth` for real keys refused), without addresses, subjects or content: refusals log
