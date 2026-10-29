@@ -1,7 +1,7 @@
 ---
 title: Data Processing Addendum
 description: How Cal.com processes personal data on your behalf as your processor, incorporated into the Terms of Service.
-lastUpdated: 2026-10-19
+lastUpdated: 2026-10-29
 ---
 
 This Data Processing Addendum ("**DPA**") forms part of, and is incorporated by reference into, the
@@ -232,7 +232,7 @@ Protection Laws require otherwise.
 **Categories of data subjects.** Recipients of Customer's messages (including to, cc, bcc and reply-to addresses, and
 the recipients of text messages); senders named in Customer's messages; people who send text messages to Customer's
 phone numbers; Customer's contact persons named in its SMS carrier registrations; users of Customer's own services
-whose events Customer submits for risk assessment; any other individuals whose personal data Customer includes in messages, attachments, tags, metadata,
+whose events Customer submits for risk assessment or whose phone numbers Customer checks; any other individuals whose personal data Customer includes in messages, attachments, tags, metadata,
 suppression lists, risk lists or webhook configuration.
 
 **Categories of personal data.** Email addresses and display names; phone numbers; the content of messages
@@ -249,7 +249,9 @@ hashes of them; payment details Customer submits with checkouts (amount, currenc
 funding type, billing and shipping countries, and keyed hashes of payment processors' card fingerprints, never card
 numbers); device data collected by coss.com's browser library where Customer uses it (a keyed hash of a random device
 identifier, time zone, languages, platform, screen size, touch support, automation markers); text Customer submits for
-content classification (processed transiently, never stored); and keyed
+content classification (processed transiently, never stored); phone numbers Customer checks and what is returned about
+them (whether the number is valid, its country, line type and carrier, and the date of its last SIM change),
+processed transiently and never stored; and keyed
 hashes of the keys Customer checks against its rate limit buckets.
 
 **Special categories of data.** None intended. Customer will not submit special categories of data unless agreed in
@@ -262,7 +264,7 @@ writing (see [section 3.2](#3-customers-obligations)).
 honoring opt-out requests; registering Customer's SMS senders with mobile carriers and their registries;
 recording and reporting delivery events; maintaining suppression lists; measuring open and
 click tracking where enabled; assessing the fraud and abuse risk of events Customer submits and remembering, as keyed
-hashes, identifiers seen in Customer's environments; classifying content Customer submits; rate limiting requests to
+hashes, identifiers seen in Customer's environments; classifying content Customer submits; looking up phone numbers Customer checks; rate limiting requests to
 Customer's own services on Customer's instruction; sending webhook events to endpoints Customer configures;
 protecting the Services and data subjects from spam, phishing, malware and fraud; and providing support.
 
@@ -304,7 +306,9 @@ domain registries (RDAP) only domain names. Captcha secrets are stored encrypted
 addresses go to the captcha provider Customer configures, on Customer's instruction. Content classification sends up
 to 8,000 characters of the submitted text and link hosts and paths without query strings to a provider that retains
 nothing, and keeps only the resulting scores; the text is never stored or logged. Rate limit keys are kept only as
-keyed hashes, in a cache, until their bucket refills.
+keyed hashes, in a cache, until their bucket refills. Phone checks send the phone data provider only the number,
+and only a well-formed one; neither the number nor the answer is stored or logged (answers are held in memory for up
+to an hour, so a repeated check isn't sent again).
 
 **Network and application security.** Outbound webhook requests are restricted to public addresses, with protections
 against server-side request forgery. Rate limits protect authentication and the API from abuse. Customer-supplied HTML
@@ -330,7 +334,7 @@ bound by written agreements (see [section 5](#5-subprocessors)).
 | Subprocessor | Purpose | Location |
 | --- | --- | --- |
 | Amazon Web Services, Inc. | Hosting, databases, storage, caching, queues, content delivery and email delivery (Amazon SES) | United States |
-| Twilio Inc. | SMS delivery and receiving; carrier registration | United States |
+| Twilio Inc. | SMS delivery and receiving; carrier registration; lookups of phone numbers Customer checks with Risk (line type, carrier, SIM changes) | United States |
 | Vercel, Inc. (AI Gateway) and the AI model providers available through it | Automated content screening of a sample of live messages, and classification of content Customer submits to Risk, with zero data retention | United States |
 
 The current list, including any changes announced under [section 5.3](#5-subprocessors), is maintained at
