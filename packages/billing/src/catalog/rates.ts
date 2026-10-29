@@ -63,6 +63,8 @@ const LAUNCH: RateCard = {
     "email.dedicated_ip": { default: flatRate(100_000n) },
     // US only; other countries are priced per contract.
     "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
+    // $0.01 per phone check (first priced when the meter was added; it had no usage before).
+    "risk.phone_checks": { default: flatRate(10_000_000n) },
     // $1.50 per 1,000 participant-minutes.
     "video.participant_minutes": { default: flatRate(1_500_000n) },
     // $0.10 per booking.

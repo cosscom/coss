@@ -60,8 +60,10 @@ repository root.
   Lookup v2 Line Type Intelligence, plus SIM Swap with `RISK_PHONE_SIM_SWAP`; complete answers cached an hour),
   2 s, failures are `degraded: ["phone_data"]`, no provider is a 503 `phone_lookup_unavailable`. Twilio has no
   porting data: `carrier` is the current network and `sim_swap` the takeover signal — never call it porting. Live
-  checks charge the organization's `risk.phone`/`risk.phone.day` buckets (paid lookups); sandbox environments only
-  read `sandboxPhoneData` (`+1 202 555 01xx`). **Calibration**
+  checks charge the organization's `risk.phone`/`risk.phone.day` buckets (paid lookups), are refused on a billing
+  hold (`billing_hold`, 402), reserve the `risk.phone_checks` meter through the injected `UsageGate` before asking
+  (Free's allowance; a failed lookup releases it) and `recordUsage` once the provider answered (not for invalid
+  input, failures or a missing line type); sandbox environments only read `sandboxPhoneData` (`+1 202 555 01xx`). **Calibration**
   (`GET /v1/risk/calibration`, the dashboard's Calibration page and rule precision): reasons' and rules' outcomes over
   90 days with suggested weights (precision pulled toward the default, none below 20 labeled); coss.com only suggests,
   and `risk_settings.reason_weights` (`scoreReasons(reasons, weights)`) applies what the customer chose.

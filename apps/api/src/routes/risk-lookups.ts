@@ -102,7 +102,10 @@ export const checkRiskPhoneRoute = createRoute({
     "Phone intelligence on its own: whether the number exists in its country's numbering plan, " +
     "its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the " +
     "last SIM swap where carriers share it. Stateless. A failed lookup is reported in " +
-    "`degraded`. Limited per organization as well as per key. Sandbox keys see the fictional " +
+    "`degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans " +
+    "include some every month, and Free stops at its allowance); invalid numbers, failed " +
+    "lookups and sandbox checks are free. Limited per organization as well as per key. " +
+    "Sandbox keys see the fictional " +
     "numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, " +
     "`0104` a recent SIM swap, `0199` invalid, the rest mobile).",
   security: [{ bearerAuth: [] }],
@@ -118,6 +121,10 @@ export const checkRiskPhoneRoute = createRoute({
     200: json("What coss.com knows about the number.", RiskPhoneCheck),
     ...jsonBodyErrors,
     ...commonErrors,
+    402: errorDoc(
+      "The plan's included phone checks are used up (`usage_limit_exceeded`), or live checks " +
+        "are paused by an overdue invoice or a spend limit (`billing_hold`).",
+    ),
     429: errorDoc(
       "Too many requests with this API key (`rate_limited`), too many phone checks for this " +
         "organization (`phone_check_rate_limited`), or too many requests with invalid keys from " +
@@ -210,7 +217,16 @@ export function createRiskLookupRoutes(deps: RiskDeps): OpenAPIHono<AppEnv> {
         });
       }
     }
-    return c.json(await checkPhone(deps, { organizationId, mode }, phone), 200);
+    const { environmentId, projectId, apiKeyId, ownerUserId } = c.var.auth;
+    const environment = {
+      organizationId,
+      mode,
+      environmentId,
+      projectId,
+      apiKeyId,
+      userId: ownerUserId,
+    };
+    return c.json(await checkPhone(deps, environment, phone), 200);
   });
 
   router.openapi(classifyRiskContentRoute, async (c) => {

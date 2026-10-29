@@ -120,6 +120,7 @@ describe("terms", () => {
       "sms.numbers": 0,
       "sms.registrations": 0,
       "sign.completed_requests": 0,
+      "risk.phone_checks": 100,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
     });

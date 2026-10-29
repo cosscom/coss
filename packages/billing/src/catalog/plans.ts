@@ -1,10 +1,14 @@
 /**
  * The plans. A plan's monthly fee is credit spendable on any product's usage, so a month costs
  * the larger of the fee and the usage (plus add-ons). Free has no credit but includes 3,000
- * emails a month and blocks usage beyond its allowance.
+ * emails a month and blocks usage beyond its allowance. Every plan includes 100 phone checks a
+ * month.
  */
 import { type Entitlements, perDay, perSecond } from "./entitlements.ts";
 import type { MeterKey } from "./meters.ts";
+
+/** Risk phone checks every plan includes each month. */
+const PHONE_CHECKS_INCLUDED = 100;
 
 export const PLAN_KEYS = ["free", "pro", "scale", "enterprise"] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
@@ -38,7 +42,7 @@ export const PLANS = {
     rank: 0,
     selfServe: true,
     feeCents: 0n,
-    includedUnits: { "email.recipients": 3_000 },
+    includedUnits: { "email.recipients": 3_000, "risk.phone_checks": PHONE_CHECKS_INCLUDED },
     overage: "blocked",
     termMonths: null,
     entitlements: {
@@ -74,7 +78,7 @@ export const PLANS = {
     rank: 1,
     selfServe: true,
     feeCents: 2_500n,
-    includedUnits: {},
+    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
     overage: "billed",
     termMonths: null,
     entitlements: {
@@ -117,7 +121,7 @@ export const PLANS = {
     rank: 2,
     selfServe: true,
     feeCents: 25_000n,
-    includedUnits: {},
+    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
     overage: "billed",
     termMonths: null,
     entitlements: {
@@ -159,7 +163,7 @@ export const PLANS = {
     rank: 3,
     selfServe: false,
     feeCents: 200_000n,
-    includedUnits: {},
+    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
     overage: "billed",
     termMonths: 12,
     entitlements: {

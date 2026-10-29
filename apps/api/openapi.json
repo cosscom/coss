@@ -1387,6 +1387,7 @@
                       "sms.numbers",
                       "sms.registrations",
                       "sign.completed_requests",
+                      "risk.phone_checks",
                       "video.participant_minutes",
                       "scheduling.bookings",
                       null
@@ -2016,6 +2017,7 @@
               "sms.numbers",
               "sms.registrations",
               "sign.completed_requests",
+              "risk.phone_checks",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -2037,6 +2039,7 @@
                 "sms.numbers",
                 "sms.registrations",
                 "sign.completed_requests",
+                "risk.phone_checks",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],
@@ -17465,6 +17468,7 @@
                     "sms.numbers",
                     "sms.registrations",
                     "sign.completed_requests",
+                    "risk.phone_checks",
                     "video.participant_minutes",
                     "scheduling.bookings"
                   ],
@@ -17808,6 +17812,7 @@
               "sms.numbers",
               "sms.registrations",
               "sign.completed_requests",
+              "risk.phone_checks",
               "video.participant_minutes",
               "scheduling.bookings"
             ],
@@ -18203,6 +18208,7 @@
               "sms.numbers",
               "sms.registrations",
               "sign.completed_requests",
+              "risk.phone_checks",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -62823,6 +62829,7 @@
                 "sms.numbers",
                 "sms.registrations",
                 "sign.completed_requests",
+                "risk.phone_checks",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],
@@ -78632,7 +78639,7 @@
           "Risk"
         ],
         "summary": "Check a phone number",
-        "description": "Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).",
+        "description": "Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).",
         "security": [
           {
             "bearerAuth": []
@@ -78702,6 +78709,27 @@
           },
           "401": {
             "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "The plan's included phone checks are used up (`usage_limit_exceeded`), or live checks are paused by an overdue invoice or a spend limit (`billing_hold`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

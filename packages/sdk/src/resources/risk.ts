@@ -440,13 +440,15 @@ export class RiskResource {
 
   /**
    * Checks a phone number (E.164) on its own: whether it exists, its line type (mobile, landline,
-   * VoIP…) and carrier, and a recent SIM swap where carriers share it. Nothing is stored.
+   * VoIP…) and carrier, and a recent SIM swap where carriers share it. Nothing is stored. Live
+   * checks that get an answer are billed, so this method is never retried automatically.
    */
   checkPhone(phone: string, options?: ReadOptions): Promise<CossResult<RiskPhoneCheck>> {
     return this.#http.request<RiskPhoneCheck>({
       method: "POST",
       path: "/v1/risk/phone/check",
       body: { phone },
+      retry: false,
       signal: options?.signal,
     });
   }
