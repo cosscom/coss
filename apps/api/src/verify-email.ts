@@ -85,6 +85,22 @@ export function verifyEmailSender(opts: {
   }
 
   return async (input) => {
+    // A send its key already made (a retry after the process stopped, before Verify saved the
+    // email's id) is that email, whichever sender the settings name now.
+    const candidates: { environment: SendEnvironment; route: "email" | "coss_email" }[] = [
+      { environment: input.environment, route: "email" },
+    ];
+    if (opts.coss && input.environment.mode === "live") {
+      candidates.push({ environment: opts.coss.environment, route: "coss_email" });
+    }
+    for (const candidate of candidates) {
+      const sent = await emailIdForIdempotencyKey({
+        organizationId: candidate.environment.organizationId,
+        environmentId: candidate.environment.environmentId,
+        idempotencyKey: input.idempotencyKey,
+      });
+      if (sent) return { route: candidate.route, emailId: sent, suppressed: false };
+    }
     if (input.environment.mode === "sandbox") {
       const sent = await send(
         input,

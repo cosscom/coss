@@ -312,6 +312,48 @@ describe("Verify over the API", () => {
     expect(again).toEqual(first);
   });
 
+  test("a retried email send finds its email in coss.com's environment after the sender changed", async () => {
+    const tenant = await createTestTenant();
+    const coss = await createTestTenant();
+    const cossDomain = await createVerifiedDomain(coss.organization.id);
+    const ownDomain = await createVerifiedDomain(tenant.organization.id);
+    const { emailService } = createTestApp();
+    const sender = verifyEmailSender({
+      service: emailService,
+      coss: {
+        environment: {
+          organizationId: coss.organization.id,
+          projectId: coss.project.id,
+          environmentId: coss.production.id,
+          mode: "live",
+        },
+        address: `notifications@${cossDomain.name}`,
+      },
+    });
+    const input = {
+      environment: {
+        organizationId: tenant.organization.id,
+        projectId: tenant.project.id,
+        environmentId: tenant.production.id,
+        mode: "live" as const,
+      },
+      apiKeyId: null,
+      apiKeyOwnerId: null,
+      from: null,
+      appName: "Acme",
+      to: "rio@example.com",
+      subject: "Your Acme verification code",
+      text: "Your code is 123456",
+      html: "<p>123456</p>",
+      idempotencyKey: "vrf_y:send:1",
+    };
+    const first = await sender(input);
+    expect(first.route).toBe("coss_email");
+    // The environment set its own sender since: the retry must not send a second email.
+    const again = await sender({ ...input, from: `codes@${ownDomain.name}` });
+    expect(again).toEqual(first);
+  });
+
   test("a check names a verification or a destination", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
