@@ -17,6 +17,8 @@ const SECRET_PATH_SEGMENTS: [RegExp, string][] = [
   [/(\/t\/[ocu]\/)(?!confirm\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
   // Double opt-in links (apps/api/src/routes/preferences.ts).
   [/(\/t\/u\/confirm\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
+  // Forms' submitter verification links (apps/api/src/routes/forms-public.ts).
+  [/(\/f\/c\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
   // Better Auth's emailed reset link, which redirects to the dashboard.
   [/(\/reset-password\/)(?![:[])[^/?#\s:]+/g, "$1[token]"],
 ];

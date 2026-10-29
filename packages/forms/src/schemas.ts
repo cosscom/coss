@@ -94,12 +94,11 @@ export const BLOCKED_FORM_FILE_TYPES = [
 
 /**
  * Field names a submission may carry that aren't data: the honeypot (its name is the form's),
- * `_next` (where to redirect), `_subject` (the notification's subject), `_coss_device` (the
- * `coss/device` token) and the captcha widgets' tokens.
+ * `_next` (where to redirect), `_coss_device` (the `coss/device` token) and the captcha widgets'
+ * tokens. Any other name starting with `_` is dropped too.
  */
 export const FORM_CONTROL_FIELDS = [
   "_next",
-  "_subject",
   "_coss_device",
   "cf-turnstile-response",
   "h-captcha-response",
