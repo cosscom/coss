@@ -71,7 +71,7 @@ describe("coss.inboxes", () => {
   test("sends and replies reuse one Idempotency-Key across retries", async () => {
     const { coss, calls } = client(
       1,
-      apiError(503, "api_error", "unavailable"),
+      apiError(503, { type: "api_error", code: "unavailable" }),
       json(202, { object: "inbox_message" }),
     );
     await coss.inboxes.messages.reply(inbox.id, "imsg_1", { text: "Hi" });
@@ -82,7 +82,7 @@ describe("coss.inboxes", () => {
   });
 
   test("create retries only with a client_id", async () => {
-    const failing = () => apiError(503, "api_error", "unavailable");
+    const failing = () => apiError(503, { type: "api_error", code: "unavailable" });
     const once = client(2, failing(), json(201, inbox));
     const result = await once.coss.inboxes.create({ username: "agent" });
     expect(result.error?.status).toBe(503);
