@@ -615,6 +615,58 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.received.delete",
     args: (r) => [pathId(r)],
   },
+  "POST /v1/inboxes": {
+    method: "inboxes.create",
+    args: (request) => [tsValue(request.body ?? {})],
+  },
+  "GET /v1/inboxes": { method: "inboxes.list", args: (request) => [queryParams(request)] },
+  "GET /v1/inboxes/{inbox_id}": { method: "inboxes.get", args: (r) => [inboxId(r)] },
+  "PATCH /v1/inboxes/{inbox_id}": {
+    method: "inboxes.update",
+    args: (request) => [inboxId(request), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/inboxes/{inbox_id}": { method: "inboxes.delete", args: (r) => [inboxId(r)] },
+  "GET /v1/inboxes/{inbox_id}/threads": {
+    method: "inboxes.threads.list",
+    args: (request) => [inboxId(request), queryParams(request)],
+  },
+  "GET /v1/inboxes/{inbox_id}/threads/{thread_id}": {
+    method: "inboxes.threads.get",
+    args: (request) => [inboxId(request), pathParam(request, "thread_id")],
+  },
+  "DELETE /v1/inboxes/{inbox_id}/threads/{thread_id}": {
+    method: "inboxes.threads.delete",
+    args: (request) => [inboxId(request), pathParam(request, "thread_id")],
+  },
+  "GET /v1/inboxes/{inbox_id}/messages": {
+    method: "inboxes.messages.list",
+    args: (request) => [inboxId(request), queryParams(request)],
+  },
+  "GET /v1/inboxes/{inbox_id}/messages/{message_id}": {
+    method: "inboxes.messages.get",
+    args: (request) => [inboxId(request), pathParam(request, "message_id")],
+  },
+  "POST /v1/inboxes/{inbox_id}/messages": {
+    method: "inboxes.messages.send",
+    args: (request) => [inboxId(request), tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "POST /v1/inboxes/{inbox_id}/messages/{message_id}/reply": {
+    method: "inboxes.messages.reply",
+    args: (request) => [
+      inboxId(request),
+      pathParam(request, "message_id"),
+      tsValue(request.body ?? {}),
+      requestOptions(request),
+    ],
+  },
+  "GET /v1/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}": {
+    method: "inboxes.messages.getAttachment",
+    args: (request) => [
+      inboxId(request),
+      pathParam(request, "message_id"),
+      pathParam(request, "attachment_id"),
+    ],
+  },
   "POST /v1/webhook_endpoints": {
     method: "webhookEndpoints.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
@@ -789,6 +841,10 @@ function bodyField(body: unknown, name: string): unknown {
 
 function pathId(request: SampleRequest): string {
   return pathParam(request, "id");
+}
+
+function inboxId(request: SampleRequest): string {
+  return pathParam(request, "inbox_id");
 }
 
 function pathParam(request: SampleRequest, name: string): string {

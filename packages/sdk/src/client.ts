@@ -8,6 +8,7 @@ import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { EnvironmentResource } from "./resources/environment.ts";
 import { HooksResource } from "./resources/hooks.ts";
+import { InboxesResource } from "./resources/inboxes.ts";
 import { listQuery } from "./resources/list-query.ts";
 import { LogDrainsResource } from "./resources/log-drains.ts";
 import { LogsResource } from "./resources/logs.ts";
@@ -117,6 +118,8 @@ export class Coss {
   readonly sms: SmsResource;
   /** E-signatures: documents and signature requests (`coss.sign.requests.create()`). */
   readonly sign: SignResource;
+  /** Email addresses for agents, with threads and replies (`coss.inboxes.create()`). */
+  readonly inboxes: InboxesResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
   /** The client's own API key (`coss.apiKey.revoke()`). */
@@ -196,6 +199,7 @@ export class Coss {
     this.billing = new BillingResource(http);
     this.sms = new SmsResource(http);
     this.sign = new SignResource(http);
+    this.inboxes = new InboxesResource(http);
   }
 
   /**

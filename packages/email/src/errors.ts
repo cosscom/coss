@@ -143,3 +143,32 @@ export class ContactError extends Error {
     this.param = opts?.param;
   }
 }
+
+export type InboxErrorCode =
+  | "not_found"
+  | "thread_not_found"
+  | "message_not_found"
+  | "receiving_unavailable"
+  | "unknown_domain"
+  | "address_taken"
+  | "too_many_inboxes"
+  | "inbox_cannot_send"
+  | "no_reply_recipient"
+  | "invalid_message";
+
+/**
+ * Expected failures of inboxes; messages are safe to show. `param` is the request field at fault.
+ * The `*not_found` codes are 404s; the rest are 422 (not 409: the SDK retries those, and these
+ * conflicts never resolve on their own).
+ */
+export class InboxError extends Error {
+  readonly code: InboxErrorCode;
+  readonly param: string | undefined;
+
+  constructor(code: InboxErrorCode, message: string, opts?: { param?: string }) {
+    super(message);
+    this.name = "InboxError";
+    this.code = code;
+    this.param = opts?.param;
+  }
+}

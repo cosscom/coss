@@ -202,6 +202,20 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "GET /v1/received_emails/{id}/raw": "email.received.getRaw",
   "GET /v1/received_emails/{id}/attachments/{attachment_id}": "email.received.getAttachment",
   "DELETE /v1/received_emails/{id}": "email.received.delete",
+  "POST /v1/inboxes": "inboxes.create",
+  "GET /v1/inboxes": "inboxes.list",
+  "GET /v1/inboxes/{inbox_id}": "inboxes.get",
+  "PATCH /v1/inboxes/{inbox_id}": "inboxes.update",
+  "DELETE /v1/inboxes/{inbox_id}": "inboxes.delete",
+  "GET /v1/inboxes/{inbox_id}/threads": "inboxes.threads.list",
+  "GET /v1/inboxes/{inbox_id}/threads/{thread_id}": "inboxes.threads.get",
+  "DELETE /v1/inboxes/{inbox_id}/threads/{thread_id}": "inboxes.threads.delete",
+  "GET /v1/inboxes/{inbox_id}/messages": "inboxes.messages.list",
+  "GET /v1/inboxes/{inbox_id}/messages/{message_id}": "inboxes.messages.get",
+  "POST /v1/inboxes/{inbox_id}/messages": "inboxes.messages.send",
+  "POST /v1/inboxes/{inbox_id}/messages/{message_id}/reply": "inboxes.messages.reply",
+  "GET /v1/inboxes/{inbox_id}/messages/{message_id}/attachments/{attachment_id}":
+    "inboxes.messages.getAttachment",
   "POST /v1/webhook_endpoints": "webhookEndpoints.create",
   "GET /v1/webhook_endpoints": "webhookEndpoints.list",
   "GET /v1/webhook_endpoints/{id}": "webhookEndpoints.get",
@@ -252,6 +266,8 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
  * act twice. The same operations the TypeScript SDK sends with `retry: false`.
  */
 export const NO_RETRY: ReadonlySet<string> = new Set([
+  // Deduplicated only by `client_id` (the TypeScript SDK retries only then).
+  "POST /v1/inboxes",
   "POST /v1/sign/documents",
   "POST /v1/sign/requests/{id}/remind",
   "POST /v1/sign/templates",

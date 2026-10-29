@@ -2,6 +2,7 @@
   "pages": [
     "(start)",
     "email",
+    "inboxes",
     "sms",
     "sign",
     "hooks",

@@ -228,6 +228,8 @@ export {
   type DomainErrorCode,
   EmailError,
   type EmailErrorCode,
+  InboxError,
+  type InboxErrorCode,
 } from "./errors.ts";
 export {
   COSS_EVENT_SOURCE,
@@ -265,6 +267,32 @@ export {
   organizationPrefix,
   receivedEmailPrefix,
 } from "./inbound-store.ts";
+export {
+  type InboxSendInput,
+  type InboxSendQuota,
+  replyToInboxMessage,
+  sendInboxMessage,
+} from "./inbox-send.ts";
+export { extractReplyText, normalizeSubject, replySubject } from "./inbox-text.ts";
+export {
+  createInbox,
+  deleteInbox,
+  deleteInboxThread,
+  getInbox,
+  getInboxMessage,
+  getInboxMessageAttachmentKey,
+  getInboxRow,
+  getInboxThread,
+  type InboxEnvironment,
+  type InboxRow,
+  listInboxes,
+  listInboxMessages,
+  listInboxThreads,
+  MAX_INBOXES_PER_ENVIRONMENT,
+  purgeEmptyInboxThreads,
+  toInboxObject,
+  updateInbox,
+} from "./inboxes.ts";
 export {
   CONFIRMATION_LINK_TTL_MS,
   confirmationLink,

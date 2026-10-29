@@ -57,6 +57,13 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
     description: "Delete received emails (reading them needs Emails: Read).",
   },
   {
+    resource: "inbox",
+    label: "Inboxes",
+    group: "Email",
+    description:
+      "Create, rename and delete inboxes; read their threads and messages, send and reply from them.",
+  },
+  {
     resource: "domain",
     label: "Domains",
     group: "Email",

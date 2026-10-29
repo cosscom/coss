@@ -94,6 +94,11 @@ export type SendEmailInput = {
    * (`template_revision_mismatch`) unless it is still at the revision the caller checked.
    */
   templateDraft?: { revision: number };
+  /**
+   * Internal callers only (inboxes): runs in the transaction that stores the email, only when this
+   * request stored it (never for a replay).
+   */
+  afterInsert?: (tx: Transaction, row: EmailRow) => Promise<void>;
 };
 
 export type SendEmailBatchInput = {
@@ -1389,6 +1394,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         requestHash,
       });
       if (!inserted) return undefined;
+      await input.afterInsert?.(tx, inserted.row);
       await reserveUsage(tx, environment, inserted.billable);
       return inserted.row;
     };

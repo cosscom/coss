@@ -1,5 +1,6 @@
 import {
   ApiIcon,
+  InboxIcon,
   Layers01Icon,
   Mail01Icon,
   Message01Icon,
@@ -15,6 +16,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 const SECTION_ICONS = {
   Api: ApiIcon,
   Code: SourceCodeIcon,
+  Inbox: InboxIcon,
   Layers: Layers01Icon,
   Mail: Mail01Icon,
   Message: Message01Icon,

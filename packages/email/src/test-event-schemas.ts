@@ -16,8 +16,13 @@ import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES, HookEndpointWebhookEvent } from "@coss/webhooks/schemas";
 import { z } from "zod";
 import { BroadcastWebhookEvent } from "./broadcast-schemas.ts";
-import { BROADCAST_EVENT_TYPES, CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
+import {
+  BROADCAST_EVENT_TYPES,
+  CONTACT_EVENT_TYPES,
+  INBOX_EVENT_TYPES,
+} from "./contact-event-types.ts";
 import { ContactWebhookEvent } from "./contact-schemas.ts";
+import { InboxMessageReceivedWebhookEvent } from "./inbox-schemas.ts";
 import {
   DOMAIN_EVENT_TYPES,
   EMAIL_EVENT_TYPES,
@@ -42,6 +47,7 @@ export const TEST_WEBHOOK_EVENT_TYPES = [
   ...RISK_EVENT_TYPES,
   ...CONTACT_EVENT_TYPES,
   ...BROADCAST_EVENT_TYPES,
+  ...INBOX_EVENT_TYPES,
   ...SMS_EVENT_TYPES,
   ...RECEIVED_SMS_EVENT_TYPES,
   ...SIGN_WEBHOOK_EVENT_TYPES,
@@ -56,6 +62,7 @@ export function webhookEventSchema(type: TestWebhookEventType): z.ZodType {
   if (type.startsWith("hook_endpoint.")) return HookEndpointWebhookEvent;
   if (type.startsWith("risk.")) return RiskWebhookEvent;
   if (type.startsWith("contact.")) return ContactWebhookEvent;
+  if (type.startsWith("inbox.")) return InboxMessageReceivedWebhookEvent;
   if ((RECEIVED_SMS_EVENT_TYPES as readonly string[]).includes(type)) {
     return ReceivedSmsWebhookEvent;
   }
@@ -123,6 +130,7 @@ export const WebhookTestEventObject = z
         RiskWebhookEvent,
         ContactWebhookEvent,
         BroadcastWebhookEvent,
+        InboxMessageReceivedWebhookEvent,
         SmsWebhookEvent,
         ReceivedSmsWebhookEvent,
         SignRequestWebhookEvent,

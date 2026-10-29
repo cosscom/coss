@@ -1,0 +1,493 @@
+import { describe, expect, test } from "bun:test";
+import { db, schema } from "@coss/db";
+import { uniqueSuffix } from "@coss/db/testing";
+import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
+import { LATEST_API_VERSION } from "@coss/versioning";
+import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
+import { testManagementDeps } from "@coss/webhooks/testing";
+import { eq } from "drizzle-orm";
+import { InboxError } from "../src/errors.ts";
+import { receiveFakeEmail } from "../src/inbound.ts";
+import { buildTestMessage } from "../src/inbound-mime.ts";
+import { FakeInboundStore } from "../src/inbound-store.ts";
+import { InboxMessageReceivedWebhookEvent, InboxObject } from "../src/inbox-schemas.ts";
+import { replyReferences, replyToInboxMessage, sendInboxMessage } from "../src/inbox-send.ts";
+import { extractReplyText, normalizeSubject, replySubject } from "../src/inbox-text.ts";
+import {
+  createInbox,
+  deleteInbox,
+  deleteInboxThread,
+  getInboxMessage,
+  getInboxThread,
+  type InboxEnvironment,
+  listInboxes,
+  listInboxMessages,
+  listInboxThreads,
+  purgeEmptyInboxThreads,
+  updateInbox,
+} from "../src/inboxes.ts";
+import { FakeEmailProvider } from "../src/providers/fake.ts";
+import { deleteReceivedEmail } from "../src/received-emails.ts";
+import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { createVerifiedDomain, dispatchingEmailService } from "../src/testing.ts";
+
+const MANAGED = "inbound.coss.test";
+const store = new FakeInboundStore();
+const deps = { store, managedDomain: MANAGED };
+const service = dispatchingEmailService({
+  liveProvider: new FakeEmailProvider({ log: false }),
+  sandboxProvider: new FakeEmailProvider({ log: false }),
+});
+
+function sandbox(tenant: TestTenant): InboxEnvironment {
+  return {
+    organizationId: tenant.organization.id,
+    projectId: tenant.project.id,
+    environmentId: tenant.development.id,
+    mode: "sandbox",
+  };
+}
+
+function live(tenant: TestTenant): InboxEnvironment {
+  return {
+    organizationId: tenant.organization.id,
+    projectId: tenant.project.id,
+    environmentId: tenant.production.id,
+    mode: "live",
+  };
+}
+
+async function refusal(promise: Promise<unknown>): Promise<InboxError> {
+  const error = await promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
+  if (!(error instanceof InboxError)) throw new Error(`expected an InboxError, got ${error}`);
+  return error;
+}
+
+async function receive(input: {
+  to: string[];
+  recipients?: string[];
+  from?: string;
+  subject: string;
+  text?: string;
+  html?: string;
+  messageId?: string;
+  headers?: Record<string, string>;
+  receivedAt?: Date;
+}) {
+  const raw = buildTestMessage({
+    from: input.from ?? "Jane <jane@example.com>",
+    to: input.to,
+    subject: input.subject,
+    ...(input.text !== undefined ? { text: input.text } : {}),
+    ...(input.html !== undefined ? { html: input.html } : {}),
+    ...(input.messageId ? { messageId: input.messageId } : {}),
+    ...(input.headers ? { headers: input.headers } : {}),
+  });
+  return receiveFakeEmail(
+    {
+      raw,
+      mailFrom: "jane@example.com",
+      recipients: input.recipients ?? input.to,
+      subject: input.subject,
+      ...(input.receivedAt ? { receivedAt: input.receivedAt } : {}),
+    },
+    deps,
+  );
+}
+
+describe("inbox text", () => {
+  test("subjects are matched without reply prefixes", () => {
+    expect(normalizeSubject("Re: RE: Fwd:  Your   Order")).toBe("your order");
+    expect(normalizeSubject("AW: Re[2]: Hello")).toBe("hello");
+    expect(normalizeSubject(null)).toBe("");
+    expect(replySubject("Your order")).toBe("Re: Your order");
+    expect(replySubject("RE: Your order")).toBe("RE: Your order");
+    expect(replySubject(null)).toBe("Re:");
+  });
+
+  test("extracted text leaves out the quoted conversation and the signature", () => {
+    expect(
+      extractReplyText(
+        "Thanks, that works!\n\nOn Mon, Oct 10, 2026 at 12:00 PM Acme <help@acme.com> wrote:\n> Here you go",
+      ),
+    ).toBe("Thanks, that works!");
+    expect(
+      extractReplyText(
+        "Sounds good.\n\nOn Mon, Oct 10, 2026 at 12:00 PM Acme Support <help@acme.com>\nwrote:\n> old",
+      ),
+    ).toBe("Sounds good.");
+    expect(extractReplyText("Yes please\n-- \nJane Doe\nCEO")).toBe("Yes please");
+    expect(extractReplyText("New text\n\n> quoted\n> more")).toBe("New text");
+    expect(extractReplyText("Fine\n\n-----Original Message-----\nFrom: someone\nold text")).toBe(
+      "Fine",
+    );
+    expect(extractReplyText("> only quoted")).toBe("> only quoted");
+    expect(extractReplyText(null)).toBeNull();
+  });
+
+  test("references keep the root and the latest ids within a header line", () => {
+    expect(replyReferences(["<a@x>", "b@x"], "<c@x>")).toEqual(["<a@x>", "<b@x>", "<c@x>"]);
+    const many = Array.from(
+      { length: 40 },
+      (_, index) => `<${"m".repeat(30)}${index}@example.com>`,
+    );
+    const kept = replyReferences(many, "<parent@example.com>");
+    expect(kept[0]).toBe(many[0]);
+    expect(kept.at(-1)).toBe("<parent@example.com>");
+    expect(kept.join(" ").length).toBeLessThanOrEqual(900);
+  });
+});
+
+describe("inboxes", () => {
+  test("creates inboxes at the environment's inbound domain, once per client id", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox, created } = await createInbox(
+      env,
+      { username: "support-agent", displayName: "Acme Support", clientId: "agent-1" },
+      deps,
+    );
+    expect(created).toBe(true);
+    expect(InboxObject.parse(inbox)).toMatchObject({
+      username: "support-agent",
+      kind: "managed",
+      display_name: "Acme Support",
+      client_id: "agent-1",
+      can_send: true,
+      sandbox: true,
+    });
+    expect(inbox.address).toMatch(/^support-agent@[a-z2-9]{12}\.inbound\.coss\.test$/);
+
+    const again = await createInbox(env, { clientId: "agent-1", username: "other" }, deps);
+    expect(again).toEqual({ inbox, created: false });
+
+    const random = await createInbox(env, {}, deps);
+    expect(random.inbox.username).toMatch(/^agent-[a-z2-9]{10}$/);
+    expect(random.inbox.domain).toBe(inbox.domain);
+
+    const taken = await refusal(createInbox(env, { username: "support-agent" }, deps));
+    expect(taken).toMatchObject({ code: "address_taken", param: "username" });
+
+    const unknown = await refusal(createInbox(env, { domain: "agents.example.com" }, deps));
+    expect(unknown).toMatchObject({ code: "unknown_domain", param: "domain" });
+    const off = await refusal(createInbox(env, {}, { managedDomain: null }));
+    expect(off.code).toBe("receiving_unavailable");
+
+    const page = await listInboxes({ ...env, limit: 1 });
+    expect(page.hasMore).toBe(true);
+    expect(page.data[0]?.id).toBe(random.inbox.id);
+    const next = await listInboxes({ ...env, limit: 10, after: page.data[0]?.id });
+    expect(next.data.map((item) => item.id)).toEqual([inbox.id]);
+
+    const renamed = await updateInbox({ ...env, id: inbox.id }, { displayName: null });
+    expect(renamed.display_name).toBeNull();
+    expect(await deleteInbox({ ...env, id: inbox.id })).toBe(true);
+    expect(await deleteInbox({ ...env, id: inbox.id })).toBe(false);
+    // Other organizations can't touch it.
+    const other = await createTestTenant();
+    expect(await deleteInbox({ ...sandbox(other), id: random.inbox.id })).toBe(false);
+  });
+
+  test("live inboxes at the managed domain only receive; receiving domains send", async () => {
+    const tenant = await createTestTenant();
+    const env = live(tenant);
+    const managed = await createInbox(env, { username: "bot" }, deps);
+    expect(managed.inbox.can_send).toBe(false);
+    const refused = await refusal(
+      sendInboxMessage(service, {
+        environment: env,
+        apiKeyId: null,
+        inboxId: managed.inbox.id,
+        request: { to: "jane@example.com", subject: "Hi", text: "Hello" },
+      }),
+    );
+    expect(refused.code).toBe("inbox_cannot_send");
+
+    const parent = await createVerifiedDomain(tenant.organization.id);
+    await createReceivingDomain(
+      {
+        organizationId: tenant.organization.id,
+        domainId: parent.id,
+        environmentId: tenant.production.id,
+        hostname: `agents.${parent.name}`,
+      },
+      { mxHost: "inbound-smtp.us-east-1.amazonaws.com", managedDomain: MANAGED },
+      null,
+    );
+    const own = await createInbox(env, { username: "bot", domain: `Agents.${parent.name}.` }, deps);
+    expect(own.inbox).toMatchObject({
+      kind: "domain",
+      address: `bot@agents.${parent.name}`,
+      can_send: true,
+    });
+    const sent = await sendInboxMessage(service, {
+      environment: env,
+      apiKeyId: null,
+      inboxId: own.inbox.id,
+      request: { to: "jane@example.com", subject: "Your order", text: "It shipped." },
+    });
+    expect(sent.message).toMatchObject({ direction: "outbound", status: "sent" });
+  });
+
+  test("received mail becomes threads, with an inbox.message.received webhook", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { endpoint } = await createWebhookEndpoint(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.development.id,
+        url: "https://example.com/hook",
+        eventTypes: ["inbox.message.received"],
+        apiVersion: LATEST_API_VERSION,
+        userId: null,
+      },
+      testManagementDeps,
+    );
+    const { inbox } = await createInbox(env, { username: "help" }, deps);
+    const other = await createInbox(env, { username: "sales" }, deps);
+    const firstId = `<first-${uniqueSuffix()}@example.com>`;
+    const [outcome] = await receive({
+      to: [inbox.address],
+      // A subaddress reaches the inbox too.
+      recipients: [inbox.address.replace("help@", "help+orders@")],
+      subject: "My order arrived damaged",
+      text: "Hi, the order arrived damaged.\n\nJane",
+      messageId: firstId,
+    });
+    expect(outcome?.kind).toBe("received");
+
+    const threads = await listInboxThreads({ ...env, inboxId: inbox.id, limit: 10 });
+    expect(threads.data).toHaveLength(1);
+    const [thread] = threads.data;
+    expect(thread).toMatchObject({
+      subject: "My order arrived damaged",
+      participants: ["jane@example.com"],
+      message_count: 1,
+      preview: "Hi, the order arrived damaged. Jane",
+    });
+    expect(thread?.last_inbound_at).toBe(thread?.last_message_at ?? "");
+    expect((await listInboxThreads({ ...env, inboxId: other.inbox.id, limit: 10 })).data).toEqual(
+      [],
+    );
+
+    const [delivery] = await db
+      .select({ payload: schema.webhookMessage.payload })
+      .from(schema.webhookDelivery)
+      .innerJoin(
+        schema.webhookMessage,
+        eq(schema.webhookMessage.id, schema.webhookDelivery.messageId),
+      )
+      .where(eq(schema.webhookDelivery.endpointId, endpoint.id));
+    const event = InboxMessageReceivedWebhookEvent.parse(
+      renderWebhookPayload(delivery?.payload ?? {}, LATEST_API_VERSION),
+    );
+    expect(event.data).toMatchObject({
+      inbox_id: inbox.id,
+      inbox_address: inbox.address,
+      thread_id: thread?.id,
+      new_thread: true,
+      subject: "My order arrived damaged",
+      sandbox: true,
+      received_email_id: outcome?.kind === "received" ? outcome.receivedEmailId : "",
+    });
+    expect(JSON.stringify(event)).not.toContain("arrived damaged.");
+
+    // A reply by reference joins the thread, whatever its subject.
+    await receive({
+      to: [inbox.address],
+      subject: "something else",
+      text: "Any news?\n\nOn Mon, Oct 10, 2026 at 12:00 PM Jane <jane@example.com> wrote:\n> Hi",
+      headers: { "In-Reply-To": firstId, References: firstId },
+    });
+    // The same subject from someone already in the thread joins it too; from a stranger it doesn't.
+    await receive({ to: [inbox.address], subject: "RE: my order arrived damaged", text: "Hello?" });
+    await receive({
+      to: [inbox.address],
+      from: "mallory@example.net",
+      subject: "Re: My order arrived damaged",
+      text: "Unrelated",
+    });
+
+    const all = await listInboxThreads({ ...env, inboxId: inbox.id, limit: 10 });
+    expect(all.data).toHaveLength(2);
+    const joined = await getInboxThread({ ...env, inboxId: inbox.id, id: thread?.id ?? "" });
+    expect(joined?.message_count).toBe(3);
+    expect(joined?.messages.map((message) => message.extracted_text)).toEqual([
+      "Hi, the order arrived damaged.\n\nJane",
+      "Any news?",
+      "Hello?",
+    ]);
+    expect(joined?.messages[0]).toMatchObject({
+      direction: "inbound",
+      status: "received",
+      message_id: firstId,
+      from: "Jane <jane@example.com>",
+    });
+
+    const messages = await listInboxMessages({ ...env, inboxId: inbox.id, limit: 2 });
+    expect(messages.hasMore).toBe(true);
+    expect(messages.data[0]).toMatchObject({ from: "mallory@example.net", preview: "Unrelated" });
+    expect(messages.data[0]).not.toHaveProperty("text");
+  });
+
+  test("sends start threads and replies continue them, by reference and subject", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "agent", displayName: "Acme Bot" }, deps);
+    const sendInput = { environment: env, apiKeyId: null, inboxId: inbox.id };
+
+    const { message: sent } = await sendInboxMessage(service, {
+      ...sendInput,
+      idempotencyKey: "first",
+      request: {
+        to: ["Jane <jane@example.com>"],
+        subject: "Quick question",
+        text: "Do you still need help?",
+      },
+    });
+    expect(sent).toMatchObject({
+      direction: "outbound",
+      status: "sent",
+      from: `"Acme Bot" <${inbox.address}>`,
+      to: ["Jane <jane@example.com>"],
+      subject: "Quick question",
+      extracted_text: "Do you still need help?",
+    });
+    const replay = await sendInboxMessage(service, {
+      ...sendInput,
+      idempotencyKey: "first",
+      request: {
+        to: ["Jane <jane@example.com>"],
+        subject: "Quick question",
+        text: "Do you still need help?",
+      },
+    });
+    expect(replay).toEqual({ message: sent, replayed: true });
+
+    // Jane replies to the sent message: SES-style `Message-ID` of its provider id.
+    const [row] = await db
+      .select({ providerMessageId: schema.email.providerMessageId })
+      .from(schema.email)
+      .where(eq(schema.email.id, sent.email_id ?? ""));
+    const sentId = `<${row?.providerMessageId}@email.amazonses.com>`;
+    const janeId = `<jane-${uniqueSuffix()}@example.com>`;
+    await receive({
+      to: [inbox.address],
+      subject: "Different subject",
+      text: "Yes, please call me.",
+      messageId: janeId,
+      headers: { "In-Reply-To": sentId, References: sentId },
+    });
+    const thread = await getInboxThread({ ...env, inboxId: inbox.id, id: sent.thread_id });
+    expect(thread?.messages.map((message) => message.direction)).toEqual(["outbound", "inbound"]);
+    const inbound = thread?.messages[1];
+
+    const { message: reply } = await replyToInboxMessage(service, {
+      ...sendInput,
+      messageId: inbound?.id ?? "",
+      request: { text: "Calling you now.", reply_all: true },
+    });
+    expect(reply).toMatchObject({
+      thread_id: sent.thread_id,
+      to: ["Jane <jane@example.com>"],
+      cc: [],
+      subject: "Re: Different subject",
+      in_reply_to: janeId,
+      references: [sentId, janeId],
+    });
+    const full = await getInboxMessage({ ...env, inboxId: inbox.id, id: reply.id });
+    expect(full?.text).toBe("Calling you now.");
+
+    // A follow-up to the inbox's own message goes to the same recipients.
+    const { message: followUp } = await replyToInboxMessage(service, {
+      ...sendInput,
+      messageId: sent.id,
+      request: { text: "Following up.", cc: ["boss@example.com", inbox.address] },
+    });
+    expect(followUp).toMatchObject({
+      to: ["Jane <jane@example.com>"],
+      cc: ["boss@example.com"],
+      subject: "Re: Quick question",
+      thread_id: sent.thread_id,
+    });
+    const after = await getInboxThread({ ...env, inboxId: inbox.id, id: sent.thread_id });
+    expect(after?.participants).toEqual(["jane@example.com", "boss@example.com"]);
+    expect(after?.message_count).toBe(4);
+    expect(after?.last_inbound_at).not.toBe(after?.last_message_at);
+
+    const missing = await refusal(
+      replyToInboxMessage(service, {
+        ...sendInput,
+        messageId: "imsg_missing",
+        request: { text: "Hi" },
+      }),
+    );
+    expect(missing.code).toBe("message_not_found");
+    const invalid = await refusal(
+      sendInboxMessage(service, {
+        ...sendInput,
+        request: { to: "jane@example.com", subject: "Hi" },
+      }),
+    );
+    expect(invalid).toMatchObject({ code: "invalid_message", param: "html" });
+  });
+
+  test("reply-all answers everyone but the inbox; Reply-To wins over From", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "desk" }, deps);
+    await receive({
+      to: [inbox.address, "Ann <ann@example.com>"],
+      subject: "Team question",
+      text: "Hi all",
+      headers: { "Reply-To": "list@example.com", Cc: "bob@example.com" },
+    });
+    const [thread] = (await listInboxThreads({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    const messages = await listInboxMessages({ ...env, inboxId: inbox.id, limit: 1 });
+    const { message } = await replyToInboxMessage(service, {
+      environment: env,
+      apiKeyId: null,
+      inboxId: inbox.id,
+      messageId: messages.data[0]?.id ?? "",
+      request: { text: "Answer", reply_all: true },
+    });
+    expect(message).toMatchObject({
+      thread_id: thread?.id,
+      to: ["list@example.com"],
+      cc: ["Ann <ann@example.com>", "bob@example.com"],
+    });
+  });
+
+  test("deleting emails empties threads; the purge drops empty ones", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "purge" }, deps);
+    const [outcome] = await receive({ to: [inbox.address], subject: "Gone soon", text: "bye" });
+    const [thread] = (await listInboxThreads({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    await deleteReceivedEmail(
+      { ...env, id: outcome?.kind === "received" ? outcome.receivedEmailId : "" },
+      store,
+    );
+    // Hidden from lists once empty.
+    expect((await listInboxThreads({ ...env, inboxId: inbox.id, limit: 10 })).data).toEqual([]);
+    expect(await getInboxThread({ ...env, inboxId: inbox.id, id: thread?.id ?? "" })).toBeNull();
+    const scope = { organizationIds: [tenant.organization.id] };
+    expect(await purgeEmptyInboxThreads({ limit: 10, scope })).toBe(0);
+    const tomorrow = new Date(Date.now() + 25 * 60 * 60 * 1000);
+    expect(await purgeEmptyInboxThreads({ now: tomorrow, limit: 10, scope })).toBe(1);
+
+    await receive({ to: [inbox.address], subject: "Another", text: "hi" });
+    const [kept] = (await listInboxThreads({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    expect(await deleteInboxThread({ ...env, inboxId: inbox.id, id: kept?.id ?? "" })).toBe(true);
+    expect((await listInboxThreads({ ...env, inboxId: inbox.id, limit: 10 })).data).toEqual([]);
+    // The received email stays the environment's.
+    const received = await db
+      .select({ id: schema.receivedEmail.id })
+      .from(schema.receivedEmail)
+      .where(eq(schema.receivedEmail.environmentId, tenant.development.id));
+    expect(received).toHaveLength(1);
+  });
+});

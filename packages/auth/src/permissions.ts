@@ -63,6 +63,8 @@ export const orgStatements = {
   smsSender: ["create", "read", "update", "delete"],
   // Sign (e-signatures): documents and signature requests (create, send, cancel, delete, read).
   sign: ["create", "read", "update", "delete", "send"],
+  // Inboxes (for agents): create, rename and delete them, read their threads, send and reply.
+  inbox: ["create", "read", "update", "delete", "send"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -90,6 +92,7 @@ const fullCossAccess = {
   smsSuppression: ["create", "read", "delete"],
   smsSender: ["create", "read", "update", "delete"],
   sign: ["create", "read", "update", "delete", "send"],
+  inbox: ["create", "read", "update", "delete", "send"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -114,6 +117,7 @@ const readOnlyCossAccess = {
   smsSuppression: ["read"],
   smsSender: ["read"],
   sign: ["read"],
+  inbox: ["read"],
 } as const;
 
 export const orgRoles = {

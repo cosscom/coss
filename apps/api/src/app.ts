@@ -314,6 +314,11 @@ export function openApiDocumentConfig(serverUrl: string) {
         description: "Email received at the environment's inbound address and receiving domains.",
       },
       {
+        name: "Inboxes",
+        description:
+          "Email addresses for agents: received mail kept as threads, sends and replies from the address.",
+      },
+      {
         name: "Contacts",
         description: "The people marketing email goes to, with their properties and consent.",
       },

@@ -18,6 +18,7 @@ import { createEmailTemplateRoutes } from "./email-templates.ts";
 import { createEmailRoutes } from "./emails.ts";
 import { createEnvironmentRoutes } from "./environment.ts";
 import { createHookRoutes } from "./hooks/index.ts";
+import { createInboxRoutes } from "./inboxes.ts";
 import { createLogDrainRoutes } from "./log-drains.ts";
 import { createLogRoutes } from "./logs.ts";
 import { createReceivedEmailRoutes } from "./received-emails.ts";
@@ -121,6 +122,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   // Hooks endpoint secrets use the same key ring too.
   v1.route("/", createHookRoutes({ ...deps.webhookDeps, portalUrl: deps.portalUrl }));
   v1.route("/", createReceivedEmailRoutes(deps.inbound));
+  v1.route("/", createInboxRoutes({ emailService: deps.emailService, inbound: deps.inbound }));
   v1.route("/", createRiskRoutes(deps.riskDeps));
   v1.route("/", createRiskConfigRoutes(deps.riskDeps));
   v1.route("/", createRiskLookupRoutes(deps.riskDeps));

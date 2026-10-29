@@ -295,6 +295,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "deleted" },
   },
   {
+    id: "inboxes",
+    label: "Inboxes",
+    description:
+      "Inboxes with their addresses and names, and their threads' subjects and participants. Each message of a thread goes with its email (sent or received, as above), and a thread goes a day after its last message did.",
+    period: { until: "deleted" },
+  },
+  {
     id: "contacts",
     label: "Contacts",
     description:
