@@ -63,3 +63,42 @@ export function smsRecipientQuota(
     organizationId: auth.organizationId,
   };
 }
+
+/** Hashes a destination (phone number or email address) into an environment-scoped subject. */
+function destinationSubject(environmentId: string, destination: string): string {
+  const hashed = createHash("sha256").update(destination).digest("hex").slice(0, 32);
+  return `${environmentId}:${hashed}`;
+}
+
+/** Verify: codes sent to one destination of an environment (each send, resends included). */
+export function verifyDestinationQuota(
+  auth: { organizationId: string; environmentId: string },
+  destination: string,
+): RateLimitRequest {
+  return {
+    buckets: ["verify.destination.window"],
+    subject: destinationSubject(auth.environmentId, destination),
+    organizationId: auth.organizationId,
+  };
+}
+
+/** Verify: checks of one destination's codes. */
+export function verifyCheckQuota(
+  auth: { organizationId: string; environmentId: string },
+  destination: string,
+): RateLimitRequest {
+  return {
+    buckets: ["verify.check.destination.hour"],
+    subject: destinationSubject(auth.environmentId, destination),
+    organizationId: auth.organizationId,
+  };
+}
+
+/** Verify: an organization's codes from coss.com's shared numbers. */
+export function verifySharedSmsQuota(auth: { organizationId: string }): RateLimitRequest {
+  return {
+    buckets: ["verify.shared_sms.day"],
+    subject: auth.organizationId,
+    organizationId: auth.organizationId,
+  };
+}

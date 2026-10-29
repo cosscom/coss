@@ -492,6 +492,21 @@ export type {
   UpdateTrackingRuleParams,
 } from "./types/tracking.ts";
 export type {
+  CheckVerificationParams,
+  ListVerificationsParams,
+  StartVerificationParams,
+  Verification,
+  VerificationCheck,
+  VerificationReason,
+  VerificationSend,
+  VerificationStatus,
+  VerificationWebhookEvent,
+  VerificationWebhookEventData,
+  VerifyChannel,
+  VerifySendRoute,
+  VerifyWebhookEventType,
+} from "./types/verify.ts";
+export type {
   AccountEventType,
   AccountWebhookEvent,
   AccountWebhookEventData,

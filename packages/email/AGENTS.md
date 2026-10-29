@@ -245,7 +245,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `EMAIL_CONTENT_KEYS` (`@coss/logs`) on `/v1/emails*` for such emails (`markEmailContent` in each route that
   returns emails) and while the environment is `discard`. Not covered (documented):
   click tracking's `email_link` URLs, received email, a broadcast's own content, tags and categories. The
-  fake provider never logs subjects. `discard_body` (internal auth emails) stays a separate, body-only flag.
+  fake provider never logs subjects. `discard_body` (internal auth emails and Verify's codes) stays a separate, body-only flag; with it,
+  `hashSendRequest` leaves `html`/`text` out of the stored request hash (a code's hash would
+  confirm guesses).
 - **Generated text parts** (`packages/email/src/html-text.ts`, `htmlToText`): an email sent with `html` and no
   `text` gets a plain-text part built from the original HTML in `toOutbound`, for the provider's copy only (like
   tracking: `email.text` stays `null`, so API reads, request hashes and webhooks are unchanged). It is built before

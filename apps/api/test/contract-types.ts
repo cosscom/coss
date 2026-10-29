@@ -200,6 +200,7 @@ import type {
 } from "@coss/risk/schemas";
 import type { SignRequestWebhookEvent } from "@coss/sign/schemas";
 import type { ReceivedSmsWebhookEvent, SmsWebhookEvent } from "@coss/sms/schemas";
+import type { VerificationWebhookEvent } from "@coss/verify/schemas";
 import type { ApiVersion } from "@coss/versioning";
 import type {
   CreateLogDrainRequest,
@@ -656,7 +657,8 @@ export type Contract = [
       | z.output<typeof InboxMessageReceivedWebhookEvent>
       | z.output<typeof SmsWebhookEvent>
       | z.output<typeof ReceivedSmsWebhookEvent>
-      | z.output<typeof SignRequestWebhookEvent>,
+      | z.output<typeof SignRequestWebhookEvent>
+      | z.output<typeof VerificationWebhookEvent>,
       WebhookEvent
     >
   >,

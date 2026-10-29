@@ -1,5 +1,6 @@
 /** Phone numbers: validation and the country a number belongs to (what SMS is priced by). */
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { parsePhoneNumberFromString as parseWithTypes } from "libphonenumber-js/max";
 
 /** `+` and 7 to 15 digits, the first not 0: the only form the API accepts. */
 export const E164 = /^\+[1-9]\d{6,14}$/;
@@ -30,4 +31,29 @@ export function parsePhoneNumber(value: string): ParsedPhoneNumber | null {
   const parsed = parsePhoneNumberFromString(value);
   if (!parsed?.isValid() || !parsed.country) return null;
   return { phoneNumber: parsed.number, country: parsed.country };
+}
+
+/** What kind of line a number is, as numbering plans say (`unknown` when they don't). */
+export type PhoneNumberType =
+  | "mobile"
+  | "fixed_line"
+  | "fixed_line_or_mobile"
+  | "toll_free"
+  | "premium_rate"
+  | "shared_cost"
+  | "voip"
+  | "personal_number"
+  | "pager"
+  | "uan"
+  | "voicemail"
+  | "unknown";
+
+/**
+ * The line type of a valid E.164 number, from libphonenumber's full metadata (the default
+ * metadata can't tell). The simulator's numbers are mobiles.
+ */
+export function phoneNumberType(phoneNumber: string): PhoneNumberType {
+  if (isSimulatorNumber(phoneNumber)) return "mobile";
+  const type = parseWithTypes(phoneNumber)?.getType();
+  return type ? (type.toLowerCase() as PhoneNumberType) : "unknown";
 }

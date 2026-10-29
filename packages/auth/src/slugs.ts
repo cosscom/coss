@@ -133,6 +133,8 @@ const FUTURE_SITE_SEGMENTS = [
   "webhooks",
   "sign",
   "esign",
+  "verify",
+  "otp",
   "signatures",
   "documents",
   "contracts",

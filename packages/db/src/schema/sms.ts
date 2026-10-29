@@ -6,6 +6,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   foreignKey,
   index,
   integer,
@@ -226,6 +227,9 @@ export const smsMessage = pgTable(
     // The organization's number it is sent from (live sends; no FK: numbers can be released).
     numberId: text("number_id"),
     body: text("body").notNull(),
+    // Internal senders only (Verify's codes): the body is a secret, cleared once the message is
+    // sent, failed or canceled.
+    discardBody: boolean("discard_body").notNull().default(false),
     // `gsm7` or `ucs2`: how the body is encoded, which decides `segments`.
     encoding: text("encoding").notNull(),
     segments: integer("segments").notNull(),

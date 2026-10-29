@@ -2359,6 +2359,7 @@ export const logSource = pgEnum("log_source", [
   "smtp",
   "sms",
   "sign",
+  "verify",
 ]);
 export type LogSource = (typeof logSource.enumValues)[number];
 
@@ -2486,6 +2487,7 @@ export const logDrainSource = pgEnum("log_drain_source", [
   "smtp",
   "sms",
   "sign",
+  "verify",
 ]);
 export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
 

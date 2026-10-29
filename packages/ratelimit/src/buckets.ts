@@ -210,6 +210,34 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Verify: codes sent to one destination (an environment's phone number or email address, hashed),
+  // resends included. Real users wait for a code; a loop doesn't.
+  "verify.destination.window": {
+    scope: "destination",
+    limit: 5,
+    periodMs: 10 * MINUTE,
+    burst: 5,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Verify: checks per destination, across its verifications (each also allows only a few attempts).
+  "verify.check.destination.hour": {
+    scope: "destination",
+    limit: 60,
+    periodMs: HOUR,
+    burst: 30,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Verify: codes an organization sends from coss.com's shared numbers (coss.com pays the carrier
+  // before the organization's invoice does). Raised per organization by admins.
+  "verify.shared_sms.day": {
+    scope: "org",
+    limit: 1_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
   // Received emails accepted per organization (the worker charges one per environment a message
   // is delivered to). Over the limit, messages are dropped and counted. Fails open: a store outage
   // must never lose a customer's mail.

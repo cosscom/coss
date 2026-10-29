@@ -25,7 +25,7 @@ import type { ScreenInput, ScreenOutcome } from "@coss/screening";
 import { and, asc, eq, inArray, isNull, lte, not, notExists, or } from "drizzle-orm";
 import type { SmsDispatchQueue } from "./dispatch.ts";
 import { SmsError } from "./errors.ts";
-import { COSS_SMS_EVENT_SOURCE, recordSmsEvent } from "./events.ts";
+import { COSS_SMS_EVENT_SOURCE, discardSmsBody, recordSmsEvent } from "./events.ts";
 import { UNKNOWN_FAILURE } from "./failures.ts";
 import { isTollFreeNumber, parsePhoneNumber } from "./phone.ts";
 import {
@@ -60,6 +60,11 @@ export type SendSmsInput = {
   apiKeyOwnerId?: string | null;
   params: SendSmsRequestOutput;
   idempotencyKey?: string | null;
+  /**
+   * Internal callers only (Verify): the body is a secret (a one-time code), so it is cleared once
+   * the message is sent, failed or canceled. Its history keeps everything else.
+   */
+  discardBody?: boolean;
 };
 
 export type SmsServiceOptions = {
@@ -126,8 +131,19 @@ export const SCREENING_RETRY_DELAY_S = 60;
 const DISPATCH_DUE_LIMIT = 50;
 const DISPATCH_DUE_CONCURRENCY = 5;
 
-/** Fingerprint of a parsed send request, compared when an idempotency key is reused. */
-export function hashSendSmsRequest(params: SendSmsRequestOutput): string {
+/**
+ * Fingerprint of a parsed send request, compared when an idempotency key is reused. With
+ * `discardBody` the text (a one-time code) is left out: a plain hash of it would let the stored
+ * fingerprint confirm guesses; the caller's key names the message on its own.
+ */
+export function hashSendSmsRequest(
+  params: SendSmsRequestOutput,
+  opts: { discardBody?: boolean } = {},
+): string {
+  if (opts.discardBody) {
+    const { body: _body, ...rest } = params;
+    return hashRequest(rest);
+  }
   return hashRequest(params);
 }
 
@@ -284,6 +300,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
         .returning({ id: smsMessage.id });
       // A failure only counts if it is the recorded outcome; provider events are facts either way.
       if (!updated && outcome.status === "failed") return;
+      if (updated) await discardSmsBody(tx, row);
       for (const event of events) await recordSmsEvent(tx, event);
       if (updated && outcome.status === "sent" && sandbox && row.to === SMS_SIMULATOR.reply) {
         // The simulator answers: a received message in the sender's own (sandbox) environment.
@@ -595,7 +612,9 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
     const { environment: env, params } = input;
     const sandbox = env.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
-    const requestHash = idempotencyKey ? hashSendSmsRequest(params) : null;
+    const requestHash = idempotencyKey
+      ? hashSendSmsRequest(params, { discardBody: input.discardBody })
+      : null;
     const replayOnError = async (error: unknown) => {
       // A retry of a request that already succeeded still replays, even if its sender changed since.
       const replay =
@@ -656,6 +675,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
           toCountry: to.country,
           numberId,
           body: params.body,
+          discardBody: input.discardBody ?? false,
           encoding: segmentation.encoding,
           segments: segmentation.segments,
           tags: params.tags ?? [],
@@ -737,7 +757,11 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
 
   async function replay(input: SendSmsInput): Promise<SmsObjectOutput | null> {
     if (!input.idempotencyKey) return null;
-    return findReplay(input.environment, input.idempotencyKey, hashSendSmsRequest(input.params));
+    return findReplay(
+      input.environment,
+      input.idempotencyKey,
+      hashSendSmsRequest(input.params, { discardBody: input.discardBody }),
+    );
   }
 
   return { send, replay, dispatch, cancel: cancelScheduledSms, dispatchDue };

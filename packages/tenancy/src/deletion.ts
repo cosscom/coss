@@ -30,6 +30,7 @@ const {
   smsMessage,
   smsReceived,
   smsSuppression,
+  verifyRequest,
   environment,
   hookAttempt,
   hookDelivery,
@@ -530,6 +531,15 @@ async function deleteOrganizationData(
         and(
           eq(smsSuppression.environmentId, environmentId),
           eq(smsSuppression.organizationId, organizationId),
+        ),
+      ],
+      // Verifications (their sends cascade).
+      [
+        verifyRequest,
+        verifyRequest.id,
+        and(
+          eq(verifyRequest.environmentId, environmentId),
+          eq(verifyRequest.organizationId, organizationId),
         ),
       ],
       // Contacts (their audience memberships and topic choices cascade).

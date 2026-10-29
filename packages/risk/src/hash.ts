@@ -1,6 +1,6 @@
 /**
  * Keyed hashes of identifiers (mailboxes, IPs, subnets, user ids, email domains, payment cards'
- * fingerprints, browsers' device ids) for everything
+ * fingerprints, browsers' device ids, phone number prefixes) for everything
  * risk remembers: velocity counters, duplicate detection, fraud reports and the keys of customers'
  * rate limit buckets. HMAC-SHA256 with `RISK_HASH_KEY`, separated by environment and kind, so a
  * hash means nothing in another environment or without the key. Rotating the key resets that
@@ -16,7 +16,9 @@ export type RiskHashKind =
   | "email_domain"
   | "limit_key"
   | "card"
-  | "device";
+  | "device"
+  // Verify's destinations: phone number prefixes (and countries) and email addresses' domains.
+  | "phone_prefix";
 
 export type RiskHasher = (environmentId: string, kind: RiskHashKind, value: string) => string;
 

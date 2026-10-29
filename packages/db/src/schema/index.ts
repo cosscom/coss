@@ -5,3 +5,4 @@ export * from "./inboxes.ts";
 export * from "./push.ts";
 export * from "./sign.ts";
 export * from "./sms.ts";
+export * from "./verify.ts";

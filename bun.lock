@@ -28,6 +28,7 @@
         "@coss/sign": "workspace:*",
         "@coss/sms": "workspace:*",
         "@coss/tenancy": "workspace:*",
+        "@coss/verify": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "@hono/zod-openapi": "catalog:",
@@ -446,6 +447,7 @@
         "@coss/screening": "workspace:*",
         "@coss/sign": "workspace:*",
         "@coss/sms": "workspace:*",
+        "@coss/verify": "workspace:*",
         "@coss/versioning": "workspace:*",
         "@coss/webhooks": "workspace:*",
         "drizzle-orm": "catalog:",
@@ -823,6 +825,31 @@
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "tailwindcss": ">=4.3.0 <5",
+      },
+    },
+    "packages/verify": {
+      "name": "@coss/verify",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/billing": "workspace:*",
+        "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/ratelimit": "workspace:*",
+        "@coss/reputation": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "@coss/risk": "workspace:*",
+        "@coss/signals": "workspace:*",
+        "@coss/sms": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/versioning": {
@@ -1304,6 +1331,8 @@
     "@coss/tsconfig": ["@coss/tsconfig@workspace:tooling/typescript"],
 
     "@coss/ui": ["@coss/ui@workspace:packages/ui"],
+
+    "@coss/verify": ["@coss/verify@workspace:packages/verify"],
 
     "@coss/versioning": ["@coss/versioning@workspace:packages/versioning"],
 

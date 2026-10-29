@@ -57,6 +57,36 @@ async function usageOf(organizationId: string) {
 }
 
 describe("sandbox sends", () => {
+  test("discardBody clears the text once the message is sent or failed", async () => {
+    const tenant = await createTestTenant();
+    const service = dispatchingSmsService();
+    const sent = await service.send({
+      environment: env(tenant.development),
+      apiKeyId: null,
+      params: params(),
+      discardBody: true,
+    });
+    const failed = await service.send({
+      environment: env(tenant.development),
+      apiKeyId: null,
+      params: params({ to: SMS_SIMULATOR.invalidNumber }),
+      discardBody: true,
+    });
+    const kept = await service.send({
+      environment: env(tenant.development),
+      apiKeyId: null,
+      params: params(),
+    });
+    const bodies = await db
+      .select({ id: smsMessage.id, body: smsMessage.body })
+      .from(smsMessage)
+      .where(eq(smsMessage.organizationId, tenant.organization.id));
+    const body = (id: string) => bodies.find((row) => row.id === id)?.body;
+    expect(body(sent.sms.id)).toBe("");
+    expect(body(failed.sms.id)).toBe("");
+    expect(body(kept.sms.id)).toBe("Your code is 123456");
+  });
+
   test("a message is delivered by the simulator, with its events and no usage", async () => {
     const tenant = await createTestTenant();
     const service = dispatchingSmsService();

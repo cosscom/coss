@@ -114,10 +114,23 @@ export {
   updateRiskSettings,
 } from "./settings.ts";
 export {
+  type CountedVelocity,
   MemoryVelocityStore,
   ValkeyVelocityStore,
   VELOCITY_SCRIPT,
   type VelocityCounts,
+  type VelocityIncrementOptions,
   type VelocityStore,
   velocityKey,
 } from "./velocity.ts";
+export {
+  checkVerificationRisk,
+  phonePrefix,
+  recordVerificationApproval,
+  uncountVerificationStart,
+  type VerificationDestination,
+  type VerificationEnvironment,
+  type VerificationReason,
+  type VerificationRisk,
+  type VerificationRiskInput,
+} from "./verification.ts";

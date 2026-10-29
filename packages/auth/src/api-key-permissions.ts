@@ -22,6 +22,7 @@ export type ApiKeyPermissionGroup =
   | "Email"
   | "SMS"
   | "Sign"
+  | "Verify"
   | "Platform"
   | "Risk"
   | "Hooks"
@@ -114,6 +115,13 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
       "Upload documents, create, send and cancel signature requests; read them, their signers and audit trails.",
   },
   {
+    resource: "verify",
+    label: "Verifications",
+    group: "Verify",
+    description:
+      "Start, check and cancel verifications (one-time codes by SMS or email); read them.",
+  },
+  {
     resource: "webhook",
     label: "Webhooks",
     group: "Platform",
@@ -174,6 +182,7 @@ export const API_KEY_PERMISSION_GROUPS: readonly ApiKeyPermissionGroup[] = [
   "Email",
   "SMS",
   "Sign",
+  "Verify",
   "Platform",
   "Risk",
   "Hooks",
@@ -188,6 +197,7 @@ const ACTION_LABELS: Record<string, string> = {
   send: "Send",
   publish: "Publish",
   verify: "Verify",
+  check: "Check",
   assess: "Assess",
   feedback: "Feedback",
 };

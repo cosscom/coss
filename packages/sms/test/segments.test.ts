@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { parsePhoneNumber } from "../src/phone.ts";
+import { parsePhoneNumber, phoneNumberType } from "../src/phone.ts";
 import { smsKeyword } from "../src/schemas.ts";
 import { countSegments, isGsm7 } from "../src/segments.ts";
+import { hashSendSmsRequest } from "../src/service.ts";
 
 describe("countSegments", () => {
   test("GSM-7 fits 160 characters in one segment, then 153 per segment", () => {
@@ -96,4 +97,25 @@ test("toll-free numbers' multipart segments hold one unit less", () => {
   expect(countSegments("д".repeat(134)).segments).toBe(2);
   expect(countSegments("д".repeat(134), { tollFree: true }).segments).toBe(3);
   expect(countSegments("a".repeat(160), { tollFree: true }).segments).toBe(1);
+});
+
+describe("hashSendSmsRequest", () => {
+  test("a discarded body (a one-time code) never enters the fingerprint", () => {
+    const params = { from: "+14155550123", to: "+14155550199", body: "Your code is 123456" };
+    expect(hashSendSmsRequest(params, { discardBody: true })).toBe(
+      hashSendSmsRequest({ ...params, body: "Your code is 654321" }, { discardBody: true }),
+    );
+    expect(hashSendSmsRequest(params)).not.toBe(
+      hashSendSmsRequest({ ...params, body: "Your code is 654321" }),
+    );
+  });
+});
+
+describe("phoneNumberType", () => {
+  test("tells mobiles from premium-rate and toll-free numbers", () => {
+    expect(phoneNumberType("+447400123456")).toBe("mobile");
+    expect(phoneNumberType("+19005551234")).toBe("premium_rate");
+    expect(phoneNumberType("+18005551234")).toBe("toll_free");
+    expect(phoneNumberType("+15005550006")).toBe("mobile");
+  });
 });

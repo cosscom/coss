@@ -216,6 +216,29 @@ export async function toEmailObjects(
   );
 }
 
+/**
+ * The id of the email an idempotency key made in an environment, if any (an internal sender
+ * recovering a send whose answer it lost).
+ */
+export async function emailIdForIdempotencyKey(input: {
+  organizationId: string;
+  environmentId: string;
+  idempotencyKey: string;
+}): Promise<string | null> {
+  const [row] = await db
+    .select({ id: email.id })
+    .from(email)
+    .where(
+      and(
+        eq(email.organizationId, input.organizationId),
+        eq(email.environmentId, input.environmentId),
+        eq(email.idempotencyKey, input.idempotencyKey),
+      ),
+    )
+    .limit(1);
+  return row?.id ?? null;
+}
+
 /** One email of an environment. Malformed, unknown and foreign ids are all `null`. */
 export async function getEmail(input: {
   organizationId: string;

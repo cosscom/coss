@@ -121,6 +121,8 @@ describe("terms", () => {
       "sms.registrations": 0,
       "sign.completed_requests": 0,
       "risk.phone_checks": 100,
+      "verify.verifications": 0,
+      "verify.sms": 0,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
     });

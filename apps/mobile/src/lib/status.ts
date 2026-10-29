@@ -210,6 +210,7 @@ export const DRAIN_SOURCE_LABELS: Record<string, string> = {
   smtp: "SMTP messages",
   sms: "SMS events",
   sign: "Signature events",
+  verify: "Verification events",
   audit: "Audit events",
 };
 

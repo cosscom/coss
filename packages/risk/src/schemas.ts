@@ -427,6 +427,42 @@ export const REASONS = {
 export type RiskReasonCode = keyof typeof REASONS;
 export const RISK_REASON_CODES = Object.keys(REASONS) as [RiskReasonCode, ...RiskReasonCode[]];
 
+/**
+ * Why Verify's fraud guard (`checkVerificationRisk`) blocked a verification before sending its
+ * code. Not assessment reasons: they never score, and the guard creates no assessment.
+ */
+export const VERIFICATION_REASONS = {
+  "list.blocked": "An entry of the environment's Risk block list matched.",
+  "ip.tor": "The end user's IP address is a Tor exit node.",
+  "phone.premium_rate":
+    "A premium-rate or shared-cost number: texting it earns its owner money (SMS pumping).",
+  "phone.not_mobile": "A toll-free, pager, voicemail or similar number that can't get a text.",
+  "verify.prefix_velocity":
+    "Many verifications to numbers sharing this one's prefix in the last hour (`value`).",
+  "verify.prefix_low_conversion":
+    "Verifications to numbers sharing this one's prefix are rarely approved (`value`: percent approved in the last hour).",
+  "verify.country_low_conversion":
+    "Verifications to this country are rarely approved (`value`: percent approved in the last hour).",
+  "velocity.verifications_per_ip_1h":
+    "Many verifications from the end user's IP address in the last hour (`value`).",
+  "velocity.verifications_per_user_1h":
+    "Many verifications for the same user in the last hour (`value`).",
+} as const;
+export type VerificationReasonCode = keyof typeof VERIFICATION_REASONS;
+
+/** The guard's thresholds (per environment; `sharedPrefixPerHour` across coss.com's shared numbers). */
+export const VERIFICATION_THRESHOLDS = {
+  ipPerHour: 20,
+  userPerHour: 10,
+  prefixPerHour: 30,
+  sharedPrefixPerHour: 100,
+  /** Low conversion counts once this many verifications went to the prefix (or country) in an hour. */
+  prefixMinimum: 10,
+  prefixMinApprovalRate: 0.2,
+  countryMinimum: 50,
+  countryMinApprovalRate: 0.1,
+} as const;
+
 /** At or above: `review`; at or above `block`: `block` (unless a list or a rule decided). */
 export const DEFAULT_THRESHOLDS = { review: 0.5, block: 0.85 } as const;
 

@@ -85,6 +85,10 @@ export const RATE_CARDS: readonly RateCard[] = [
       "sms.received_segments": {
         byDimension: flatRates("country", SMS_PRICES_2026_11_01.inbound),
       },
+      // Verify: $0.05 per approved verification; codes from coss.com's shared numbers at the SMS
+      // price of their country.
+      "verify.verifications": { default: flatRate(50_000_000n) },
+      "verify.sms": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
       // $1.15 a month for a local number, $2.15 for a toll-free one.
       "sms.numbers": {
         byDimension: flatRates("type", { local: 1_150_000_000n, toll_free: 2_150_000_000n }),

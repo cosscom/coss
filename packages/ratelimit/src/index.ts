@@ -34,7 +34,14 @@ export {
   setRateLimitOverride,
   withPlanRules,
 } from "./overrides.ts";
-export { emailSendQuota, smsRecipientQuota, smsSendQuota } from "./quotas.ts";
+export {
+  emailSendQuota,
+  smsRecipientQuota,
+  smsSendQuota,
+  verifyCheckQuota,
+  verifyDestinationQuota,
+  verifySharedSmsQuota,
+} from "./quotas.ts";
 export { createRateLimitRuntime, type RateLimitRuntime } from "./runtime.ts";
 export {
   createValkeyClient,

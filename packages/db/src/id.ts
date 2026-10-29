@@ -137,6 +137,11 @@ export const ID_PREFIXES = {
   inbox: "inbox",
   inboxThread: "thread",
   inboxMessage: "imsg",
+  // Verify (one-time codes, `@coss/verify`).
+  verifyRequest: "vrf",
+  verifySend: "vrfsend",
+  verifySettings: "vrfset",
+  verifyCheck: "vrfchk",
   // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
   migration: "mig",
   migrationItem: "migitem",
