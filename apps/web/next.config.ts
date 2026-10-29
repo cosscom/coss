@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
     "@coss/sms",
     "@coss/migrate",
     "@coss/sign",
+    "@coss/verify",
   ],
   // pdf.js and pdf-lib (through @coss/sign) are plain npm packages: Node loads them as they are.
   serverExternalPackages: ["pdfjs-dist", "pdf-lib"],

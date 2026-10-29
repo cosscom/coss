@@ -1,0 +1,25 @@
+---
+title: Testing
+description: Sandbox verifications, where the code is always zeros.
+---
+
+Verifications started with a sandbox (`coss_test_…`) key work end to end, with three differences:
+
+- **The code is always zeros** (`000000` with the default length), so your tests can check it.
+- **Nothing reaches a phone or mailbox.** SMS go through the [SMS simulator](/docs/sms/testing) and
+  emails through the sandbox's fake provider; both appear in the dashboard with their text.
+- **Nothing is billed.**
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss({ apiKey: "coss_test_…" });
+// ---cut---
+await coss.verify.start({ to: "+15005550006" });
+const { data } = await coss.verify.check({ to: "+15005550006", code: "000000" });
+//      ^?
+```
+
+The fraud guard runs as in live environments: `+19005551234` (a premium-rate number) is blocked,
+and so is the [Risk sandbox](/docs/risk/testing)'s Tor address `192.0.2.1` as `ip`. Webhooks
+(`verification.*`) are delivered as usual, and `coss trigger verification.approved` sends a
+sample one.

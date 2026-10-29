@@ -12,7 +12,7 @@ const link = (path: string) => `${SITE_URL}${markdownUrl(path)}`;
  */
 export const AGENT_BRIEF = `# coss.com
 
-> One API key and one SDK for transactional and marketing email, inboxes for AI agents, SMS, Hooks (webhooks as a service for your own users) and Risk (sign-up, login and payment risk decisions). These docs are written for people and coding agents alike.
+> One API key and one SDK for transactional and marketing email, inboxes for AI agents, SMS, Verify (one-time codes by SMS or email), Hooks (webhooks as a service for your own users) and Risk (sign-up, login and payment risk decisions). These docs are written for people and coding agents alike.
 
 ## Reading these docs
 

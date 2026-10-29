@@ -60,6 +60,9 @@ const secret = endpoint?.secret;
 | `sign_request.completed` | Everyone signed and the sealed, signed document is ready to download |
 | `sign_request.canceled`  | You canceled it                                         |
 | `sign_request.expired`   | It passed its `expires_at` before everyone signed       |
+| `verification.approved`  | The right code was checked (billed once)                |
+| `verification.failed`    | Too many wrong codes, or the code couldn't be sent (`data.failure`) |
+| `verification.blocked`   | The fraud guard stopped it before a code was sent (`data.reasons`) |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 

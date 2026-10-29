@@ -1,0 +1,7 @@
+{
+  "title": "Verify",
+  "description": "One-time codes by SMS or email, behind a fraud guard that stops SMS pumping.",
+  "root": true,
+  "icon": "Otp",
+  "pages": ["index", "sms", "email", "fraud-guard", "testing"]
+}

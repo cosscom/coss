@@ -109,3 +109,14 @@ One-time codes as a service: `start` sends a code to a phone number (SMS) or an 
   `@coss/email`'s `WEBHOOK_EVENT_TYPES` and the test events, mirrored by the SDK).
 - **Retention**: `RETENTION_DAYS.verifications` (30) after creation (`purgeExpiredVerifications`,
   the worker's `retention` loop); organization deletion deletes them per environment.
+- **API** (`apps/api/src/routes/verify.ts`, `coss.verify` in the SDK): `POST /v1/verifications`
+  (201), `POST /v1/verifications/check`, list, get, `POST …/{id}/cancel`; permissions `verify`
+  (`send`, `check`, `read`; `update` — settings — is dashboard-only). The API wires the service in
+  `createApp` with its rate limiter and the email sender `apps/api/src/verify-email.ts`
+  (`NOTIFICATIONS_*` for coss.com's sender, `VERIFY_SMS_*` for the shared numbers).
+- **Dashboard** (`apps/web/src/app/[orgSlug]/projects/[projectSlug]/[envSlug]/verify/`):
+  verifications (list by status and destination, detail with the fraud guard's reasons and each
+  send) and settings (`verify:update`, audited `verify_settings.updated`; `email_from` checked
+  with `authorizeLiveSender` in live environments). Members read.
+- **Docs**: `apps/site/content/docs/verify/` (overview, SMS, email, fraud guard with every reason,
+  testing). The reasons table there mirrors `VERIFICATION_REASONS`: change them together.

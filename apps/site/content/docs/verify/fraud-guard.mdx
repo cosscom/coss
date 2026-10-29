@@ -1,0 +1,56 @@
+---
+title: Fraud guard
+description: How Verify stops SMS pumping and abuse before a code is sent.
+---
+
+SMS pumping (toll fraud) is someone requesting codes for numbers whose owners are paid for every
+text they receive: premium-rate numbers, or whole ranges of numbers in one country, requested by
+a script through your sign-up form. Nobody ever enters those codes. The fraud guard checks every
+new verification **before** a code is sent; a blocked one is stored with its `reasons`, the call
+fails with `verification_blocked`, and nothing is sent or billed.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { error } = await coss.verify.start({
+  to: "+14155550123",
+  ip: "203.0.113.7", // the end user's address, not your server's
+  user_id: "user_42",
+});
+if (error?.code === "verification_blocked") {
+  // Tell the user you can't send a code right now.
+}
+```
+
+It uses [Risk](/docs/risk)'s building blocks without creating assessments:
+
+- **Your Risk lists.** An allow-list entry for the user, IP address or country lets the
+  verification through; a block-list entry blocks it.
+- **The number.** Premium-rate and shared-cost numbers, and numbers that can't get a text
+  (toll-free, pagers, voicemail), are blocked.
+- **The IP address**, when you pass it: Tor exit nodes are blocked.
+- **Velocity.** Too many verifications from one IP address or for one user in an hour, too many
+  to numbers sharing a prefix (the number without its last four digits), or verifications to a
+  prefix or a country that are rarely approved: real people enter their codes, pumping never
+  does.
+
+It never blocks for a signal it couldn't read (it fails open). Resending a pending verification
+isn't checked again; it is limited to 5 sends and 5 codes per destination every 10 minutes.
+
+## Reasons
+
+| Reason | What it means |
+| --- | --- |
+| `list.blocked` | An entry of your Risk block list matched. |
+| `ip.tor` | The end user's IP address is a Tor exit node. |
+| `phone.premium_rate` | A premium-rate or shared-cost number: texting it earns its owner money. |
+| `phone.not_mobile` | A toll-free, pager, voicemail or similar number that can't get a text. |
+| `verify.prefix_velocity` | Many verifications to numbers sharing this one's prefix in the last hour (`value`). |
+| `verify.prefix_low_conversion` | Verifications to numbers sharing this one's prefix are rarely approved (`value`: percent approved in the last hour). |
+| `verify.country_low_conversion` | Verifications to this country are rarely approved (`value`: percent approved in the last hour). |
+| `velocity.verifications_per_ip_1h` | Many verifications from the end user's IP address in the last hour (`value`). |
+| `velocity.verifications_per_user_1h` | Many verifications for the same user in the last hour (`value`). |
+
+The `verification.blocked` webhook tells you as it happens, and the dashboard's Verifications page
+lists blocked ones with their reasons.
