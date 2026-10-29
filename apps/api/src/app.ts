@@ -192,10 +192,12 @@ export function createApp(opts: CreateAppOptions) {
   const strictHeaders = secureHeaders();
   // Mail clients and webmail load the open pixel from other origins.
   const trackingHeaders = secureHeaders({ crossOriginResourcePolicy: "cross-origin" });
-  // Customers' sites read forms' JSON answers (CORS) and frame hosted pages their CSP allows.
+  // Customers' sites read forms' JSON answers (CORS) and frame hosted pages their CSP allows; the
+  // pages set their own referrer policy (a hosted page must keep its origin on its posts).
   const formHeaders = secureHeaders({
     crossOriginResourcePolicy: "cross-origin",
     xFrameOptions: false,
+    referrerPolicy: false,
   });
   app.use((c, next) =>
     (c.req.path.startsWith(TRACKING_PATH_PREFIX)

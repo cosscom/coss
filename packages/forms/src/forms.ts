@@ -13,6 +13,7 @@ import type {
 import { resolveRiskSettings } from "@coss/risk";
 import { and, count, desc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import { FormError } from "./errors.ts";
+import { hostedPageText } from "./hosted.ts";
 import {
   BLOCKED_FORM_FILE_TYPES,
   type CreateFormRequestOutput,
@@ -26,6 +27,7 @@ import {
   MAX_FORM_FILE_BYTES,
   MAX_FORM_LIST_LIMIT,
   MAX_FORMS_PER_ENVIRONMENT,
+  RESERVED_FORM_FIELD_NAMES,
   type UpdateFormRequestOutput,
 } from "./schemas.ts";
 import type { FormFileStore } from "./store.ts";
@@ -59,6 +61,11 @@ export type FormEnvironment = {
  */
 export type FormChecks = {
   verifiedAddress(input: { organizationId: string; address: string }): Promise<boolean>;
+  /**
+   * Screens a live hosted page's text when it is published (Risk's content classification):
+   * false refuses it (phishing). Absent, or unable to classify: published.
+   */
+  screenHostedPage?(input: { organizationId: string; text: string }): Promise<boolean>;
 };
 
 /** Where forms are served (`FORMS_PUBLIC_URL`), for the object's `endpoint` and `hosted_url`. */
@@ -416,6 +423,13 @@ async function check(env: FormEnvironment, values: FormValues, checks: FormCheck
       param: "spam.honeypot_field",
     });
   }
+  if ((RESERVED_FORM_FIELD_NAMES as readonly string[]).includes(values.honeypotField)) {
+    throw new FormError(
+      "invalid_fields",
+      `${values.honeypotField} is a control field of the endpoint: pick another honeypot name.`,
+      { param: "spam.honeypot_field" },
+    );
+  }
   if (values.captcha === "required") {
     const risk = await resolveRiskSettings(db, env);
     if (!risk.captcha) {
@@ -430,7 +444,7 @@ async function check(env: FormEnvironment, values: FormValues, checks: FormCheck
     await checkContacts(env, values.contacts, defined);
     await checkConfirmationSender(env, values.contacts);
   }
-  if (values.hosted?.enabled) checkHosted(values.fields);
+  if (values.hosted?.enabled) checkHosted(values);
   if (values.verifySubmitter && env.mode === "live" && !values.confirmationFrom) {
     throw new FormError(
       "invalid_sender",
@@ -576,7 +590,8 @@ async function checkConfirmationSender(
 }
 
 /** Hosted pages need fields, and never ask for credentials or card numbers. */
-function checkHosted(fields: FormFieldDefinition[] | null): void {
+function checkHosted(values: FormValues): void {
+  const { fields } = values;
   if (!fields || fields.filter((field) => field.type !== "hidden").length === 0) {
     throw new FormError("hosted_needs_fields", "A hosted page needs the form's fields.", {
       param: "hosted.enabled",
@@ -593,6 +608,31 @@ function checkHosted(fields: FormFieldDefinition[] | null): void {
         { param: `fields[${index}]` },
       );
     }
+    // Nothing on the page can fill it in, so no one could submit.
+    if (field.type === "hidden" && field.required) {
+      throw new FormError(
+        "invalid_fields",
+        "A hosted page can't fill in a required hidden field: make it optional.",
+        { param: `fields[${index}].required` },
+      );
+    }
+  }
+  // A verifying form needs the address typed in: the page shows only its fields.
+  const email = fields.find((field) => field.name === values.emailField);
+  if (values.verifySubmitter && (!email || email.type === "hidden")) {
+    throw new FormError(
+      "invalid_fields",
+      `Verifying submitters needs a visible ${values.emailField} field on the hosted page.`,
+      { param: "submitter.email_field" },
+    );
+  }
+  // Without the site key the page has no widget, and every post would fail the captcha.
+  if (values.captcha === "required" && !values.captchaSiteKey) {
+    throw new FormError(
+      "captcha_not_configured",
+      "A hosted page with a required captcha needs its site key.",
+      { param: "spam.captcha_site_key" },
+    );
   }
 }
 
@@ -613,6 +653,23 @@ async function environmentMode(input: {
   return row?.mode ?? null;
 }
 
+/** A live hosted page being published must pass screening (`FormChecks.screenHostedPage`). */
+async function screenPublished(
+  env: FormEnvironment,
+  values: FormValues,
+  checks: FormChecks,
+): Promise<void> {
+  if (env.mode !== "live" || !checks.screenHostedPage) return;
+  const text = hostedPageText(values);
+  if (!(await checks.screenHostedPage({ organizationId: env.organizationId, text }))) {
+    throw new FormError(
+      "hosted_content_refused",
+      "This page's text looks like phishing or spam, so it can't be published. Contact support if that's wrong.",
+      { param: "hosted" },
+    );
+  }
+}
+
 export async function createForm(
   env: FormEnvironment,
   params: CreateFormRequestOutput,
@@ -620,6 +677,7 @@ export async function createForm(
 ): Promise<FormObjectOutput> {
   const values = merged(null, params, env.mode);
   await check(env, values, opts.checks);
+  if (values.hosted?.enabled) await screenPublished(env, values, opts.checks);
   const row = await db.transaction(async (tx) => {
     // One environment's creates queue here, so two can't both pass the count.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`form:${env.environmentId}`}))`);
@@ -735,7 +793,11 @@ export async function updateForm(
     // Republished whenever the page is on and something it shows changed.
     const republished =
       hosted.enabled &&
-      (!hostedOf(current).enabled || params.hosted !== undefined || params.fields !== undefined);
+      (!hostedOf(current).enabled ||
+        params.hosted !== undefined ||
+        params.fields !== undefined ||
+        params.name !== undefined);
+    if (republished) await screenPublished(env, values, opts.checks);
     const row = await db.transaction(async (tx) => {
       const [locked] = await tx
         .select()

@@ -285,3 +285,77 @@ describe("/f/c/:token", () => {
     expect((await app.fetch(new Request(`${FORMS_URL}/f/c/cossf_nope`))).status).toBe(404);
   });
 });
+
+describe("hosted pages", () => {
+  test("GET renders the published form with a honeypot; a refused post shows it again", async () => {
+    const { app } = createTestApp({ forms: { url: FORMS_URL } });
+    const form = await newForm({
+      hosted: { enabled: true, title: "Join the <waitlist>", submit_label: "Join" },
+      fields: [
+        { name: "email", type: "email", required: true, label: "Email" },
+        { name: "plan", type: "select", options: ["Free", "Pro"] },
+      ],
+    });
+    const page = await app.fetch(new Request(`${FORMS_URL}/f/${form.id}`));
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    expect(html).toContain("Join the &lt;waitlist&gt;");
+    expect(html).toContain('name="_gotcha"');
+    expect(html).toContain('type="email" name="email"');
+    expect(html).toContain('<option value="Pro">Pro</option>');
+    expect(page.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
+
+    const refused = await app.fetch(
+      htmlPost(
+        form.id,
+        { _hosted: "1", email: "nope", plan: "Pro" },
+        { Origin: FORMS_URL, Referer: `${FORMS_URL}/f/${form.id}` },
+      ),
+    );
+    expect(refused.status).toBe(422);
+    const again = await refused.text();
+    expect(again).toContain("must be an email address");
+    expect(again).toContain('value="nope"');
+    expect(again).toContain('<option value="Pro" selected>');
+  });
+
+  test("framed and posted from an allowed origin: the origin survives, so do the frames", async () => {
+    const { app } = createTestApp({ forms: { url: FORMS_URL } });
+    const form = await newForm({
+      allowed_origins: ["https://www.example.com"],
+      hosted: { enabled: true },
+      fields: [
+        { name: "email", type: "email", required: true },
+        { name: "seats", type: "number" },
+      ],
+    });
+    const page = await app.fetch(new Request(`${FORMS_URL}/f/${form.id}`));
+    // `no-referrer` would make the browser post `Origin: null`.
+    expect(page.headers.get("referrer-policy")).toBe("same-origin");
+    expect(page.headers.get("content-security-policy")).toContain(
+      "frame-ancestors https://www.example.com",
+    );
+    expect(await page.text()).toContain('type="number" name="seats" value="" step="any"');
+
+    const posted = await app.fetch(
+      htmlPost(
+        form.id,
+        { _hosted: "1", email: "ada@example.com", seats: "1.5" },
+        { Origin: FORMS_URL, Referer: `${FORMS_URL}/f/${form.id}` },
+      ),
+    );
+    expect(posted.status).toBe(200);
+    expect(posted.headers.get("content-security-policy")).toContain(
+      "frame-ancestors https://www.example.com",
+    );
+    // Not a hosted post: the thank-you page is never framed.
+    const plain = await app.fetch(htmlPost(form.id, { email: "bea@example.com" }));
+    expect(plain.headers.get("content-security-policy")).toContain("frame-ancestors 'none'");
+  });
+
+  test("forms without a published page answer 404", async () => {
+    const { app } = createTestApp({ forms: { url: FORMS_URL } });
+    const form = await newForm();
+    expect((await app.fetch(new Request(`${FORMS_URL}/f/${form.id}`))).status).toBe(404);
+  });
+});

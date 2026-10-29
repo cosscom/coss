@@ -45,6 +45,17 @@ export const MAX_FORM_FIELDS = 50;
 export const MAX_FORM_FIELD_OPTIONS = 50;
 /** Fields one submission can carry (named, defined or not), its control fields aside. */
 export const MAX_SUBMISSION_FIELDS = 100;
+/**
+ * Field names the endpoint reads as controls (a redirect, the device token, the hosted page's
+ * marker, captcha tokens): never a form's honeypot, or every honest post would look filled in.
+ */
+export const RESERVED_FORM_FIELD_NAMES = [
+  "_next",
+  "_coss_device",
+  "_hosted",
+  "cf-turnstile-response",
+  "h-captcha-response",
+] as const;
 /** Values one submission can carry in all (a field repeated for checkboxes counts each). */
 export const MAX_SUBMISSION_VALUES = 1000;
 export const MAX_SUBMISSION_VALUE_LENGTH = 10_000;

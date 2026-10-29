@@ -2,6 +2,7 @@ export * from "./deliveries.ts";
 export * from "./emails.ts";
 export * from "./errors.ts";
 export * from "./forms.ts";
+export * from "./hosted.ts";
 export * from "./pages.ts";
 export * from "./parse.ts";
 export * from "./record.ts";

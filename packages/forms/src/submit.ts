@@ -258,7 +258,12 @@ export async function submitForm(
     verifySubmitter: row.verifySubmitter,
   };
   const origin = originOf(input.origin) ?? originOf(input.referrer);
-  if (row.allowedOrigins.length > 0 && (!origin || !row.allowedOrigins.includes(origin))) {
+  // The hosted page posts from the forms host itself.
+  const hostedOrigin = new URL(deps.links.publicUrl).origin;
+  if (
+    row.allowedOrigins.length > 0 &&
+    (!origin || (!row.allowedOrigins.includes(origin) && origin !== hostedOrigin))
+  ) {
     return { outcome: "origin_refused", form: shown };
   }
   if (deps.admit && !(await deps.admit(row))) return { outcome: "rate_limited", form: shown };

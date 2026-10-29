@@ -12,6 +12,7 @@ import {
   type FormFileStore,
   getForm,
   getFormSubmission,
+  hostedPageScreening,
   listFormSubmissions,
   listForms,
   readFormSubmissionFile,
@@ -314,6 +315,7 @@ export type FormRouteDeps = {
 export function createFormRoutes(deps: FormRouteDeps): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
   const checks: FormChecks = {
+    screenHostedPage: hostedPageScreening(deps.riskDeps),
     async verifiedAddress({ organizationId, address }) {
       try {
         await authorizeLiveSender({ organizationId, from: address, provider: deps.liveProvider });
