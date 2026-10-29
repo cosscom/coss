@@ -76,3 +76,36 @@ export interface ListSubaccountsParams {
   /** The last `id` of the previous page. */
   after?: string;
 }
+
+/** Query of `GET /v1/subaccounts/{subaccount}/stats`. */
+export interface SubaccountStatsParams {
+  /** First day (UTC, `YYYY-MM-DD`); default 30 days before `to`. */
+  from?: string;
+  /** Last day (UTC, `YYYY-MM-DD`), included; default today. */
+  to?: string;
+}
+
+/** One day of a sub-account's sending; recipients count by their current status. */
+export interface SubaccountStatsDay {
+  /** `YYYY-MM-DD` (UTC). */
+  date: string;
+  recipients: number;
+  /** Handed to the provider (delivered or not). */
+  sent: number;
+  delivered: number;
+  bounced: number;
+  complained: number;
+  failed: number;
+  /** Skipped: on a suppression list. */
+  suppressed: number;
+}
+
+/** A sub-account's sending per day (at most the last 45 days). */
+export interface SubaccountStats {
+  object: "subaccount_stats";
+  subaccount_id: string;
+  from: string;
+  to: string;
+  /** One entry per day with sends, oldest first. */
+  data: SubaccountStatsDay[];
+}

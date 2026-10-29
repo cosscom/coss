@@ -5,14 +5,18 @@ import {
   pageSubaccounts,
   requireSubaccount,
   type SubaccountRow,
+  subaccountStats,
   toSubaccountObject,
   updateSubaccount,
 } from "@coss/email";
 import {
   CreateSubaccountRequest,
   ListSubaccountsQuery,
+  MAX_SUBACCOUNT_STATS_DAYS,
   Subaccount,
   SubaccountList,
+  SubaccountStats,
+  SubaccountStatsQuery,
   UpdateSubaccountRequest,
 } from "@coss/email/subaccount-schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
@@ -166,6 +170,29 @@ export const deleteSubaccountRoute = createRoute({
   },
 });
 
+export const getSubaccountStatsRoute = createRoute({
+  method: "get",
+  path: "/subaccounts/{subaccount}/stats",
+  operationId: "getSubaccountStats",
+  tags: [TAG],
+  summary: "Retrieve a sub-account's stats",
+  description:
+    "The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, " +
+    "failed and suppressed, counted from its emails as they are now (a later bounce moves its " +
+    `day's numbers). Emails are kept ${MAX_SUBACCOUNT_STATS_DAYS} days, so earlier days are left out.`,
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ subaccount: ["read"] }), rateLimit("api.read")],
+  request: { params: SubaccountParams, query: SubaccountStatsQuery },
+  responses: {
+    200: jsonDoc("The sub-account's stats.", SubaccountStats),
+    ...commonErrors,
+    404: subaccountNotFound,
+    422: errorDoc(
+      "A query parameter failed validation (`validation_error`), or `from` is after `to` (`invalid_range`).",
+    ),
+  },
+});
+
 function label(row: SubaccountRow): string {
   return row.uid ?? row.name;
 }
@@ -226,6 +253,20 @@ export function createSubaccountRoutes(): OpenAPIHono<AppEnv> {
   router.openapi(getSubaccountRoute, async (c) => {
     const row = await requirePathSubaccount(c.var.auth, c.req.valid("param").subaccount);
     return c.json(toSubaccountObject(row), 200);
+  });
+
+  router.openapi(getSubaccountStatsRoute, async (c) => {
+    const row = await requirePathSubaccount(c.var.auth, c.req.valid("param").subaccount);
+    const query = c.req.valid("query");
+    return c.json(
+      await subaccountStats({
+        organizationId: row.organizationId,
+        subaccountId: row.id,
+        from: query.from,
+        to: query.to,
+      }),
+      200,
+    );
   });
 
   router.openapi(updateSubaccountRoute, async (c) => {

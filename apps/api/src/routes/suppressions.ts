@@ -5,6 +5,8 @@ import {
   importSuppressions,
   listSuppressions,
   removeSuppression,
+  requireSubaccount,
+  type SuppressionEnvironment,
   suppressionsCsvStream,
 } from "@coss/email";
 import {
@@ -36,6 +38,10 @@ const SuppressionIdParams = z.object({
     examples: ["sup_01k7c8m4q2f3e9v6t5r1n0p8yz"],
   }),
 });
+
+const subaccountNotFoundDoc = errorDoc(
+  "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
+);
 
 const notFoundDoc = errorDoc(
   "No suppression with this id exists in the API key's environment (`not_found`).",
@@ -77,6 +83,7 @@ export const createSuppressionRoute = createRoute({
     201: json("The new entry.", Suppression),
     400: errorDoc("The body is not valid JSON (`invalid_json`)."),
     ...commonErrors,
+    404: subaccountNotFoundDoc,
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     422: errorDoc("The body failed validation (`validation_error`, see `issues`)."),
@@ -98,6 +105,7 @@ export const listSuppressionsRoute = createRoute({
   responses: {
     200: json("A page of entries.", SuppressionList),
     ...commonErrors,
+    404: subaccountNotFoundDoc,
     422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
   },
 });
@@ -117,6 +125,7 @@ export const checkSuppressionRoute = createRoute({
   responses: {
     200: json("The result.", SuppressionCheck),
     ...commonErrors,
+    404: subaccountNotFoundDoc,
     422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
   },
 });
@@ -147,6 +156,7 @@ export const importSuppressionsRoute = createRoute({
     200: json("What the import did.", SuppressionImport),
     400: errorDoc("The body is not valid JSON (`invalid_json`)."),
     ...commonErrors,
+    404: subaccountNotFoundDoc,
     413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
     415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
     422: errorDoc(
@@ -175,6 +185,7 @@ export const exportSuppressionsRoute = createRoute({
       content: { "text/csv": { schema: z.string() } },
     },
     ...commonErrors,
+    404: subaccountNotFoundDoc,
     422: errorDoc("A query parameter failed validation (`validation_error`, see `issues`)."),
   },
 });
@@ -216,41 +227,61 @@ export const deleteSuppressionRoute = createRoute({
 
 const NOT_FOUND_MESSAGE = "No suppression with this id exists in this API key's environment.";
 
+/** The list a request names: a sub-account's (in the key's environment), else the environment's. */
+async function listOf(
+  auth: AppEnv["Variables"]["auth"],
+  subaccount: string | undefined,
+): Promise<SuppressionEnvironment> {
+  const { organizationId, environmentId } = auth;
+  if (subaccount === undefined) return { organizationId, environmentId };
+  const row = await requireSubaccount({
+    organizationId,
+    environmentId,
+    ref: subaccount,
+    param: "subaccount",
+  });
+  return { organizationId, environmentId, subaccountId: row.id };
+}
+
 export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
 
   router.openapi(createSuppressionRoute, async (c) => {
     const params = c.req.valid("json");
-    const { organizationId, environmentId } = c.var.auth;
-    const result = await addSuppression({ organizationId, environmentId }, params);
+    const { environmentId } = c.var.auth;
+    const result = await addSuppression(await listOf(c.var.auth, params.subaccount), params);
     // The key's environment always exists while the key authenticates.
     if (!result) throw new Error(`Environment ${environmentId} not found.`);
     if (!result.created) return c.json(result.suppression, 200);
     await recordApiAudit(c, {
       action: "suppression.created",
       target: { type: "suppression", id: result.suppression.id, label: result.suppression.address },
-      metadata: { scope: result.suppression.scope },
+      metadata: {
+        scope: result.suppression.scope,
+        ...(result.suppression.subaccount_id && {
+          subaccount_id: result.suppression.subaccount_id,
+        }),
+      },
     });
     return c.json(result.suppression, 201);
   });
 
   router.openapi(listSuppressionsRoute, async (c) => {
     const query = c.req.valid("query");
-    const { organizationId, environmentId } = c.var.auth;
-    return c.json(await listSuppressions({ organizationId, environmentId }, query), 200);
+    return c.json(await listSuppressions(await listOf(c.var.auth, query.subaccount), query), 200);
   });
 
   // Registered before `/suppressions/{id}`, which would otherwise match `check`.
   router.openapi(checkSuppressionRoute, async (c) => {
     const query = c.req.valid("query");
-    const { organizationId, environmentId } = c.var.auth;
-    return c.json(await checkSuppression({ organizationId, environmentId }, query), 200);
+    return c.json(await checkSuppression(await listOf(c.var.auth, query.subaccount), query), 200);
   });
 
   router.openapi(importSuppressionsRoute, async (c) => {
-    const { suppressions } = c.req.valid("json");
-    const { organizationId, environmentId } = c.var.auth;
-    const result = await importSuppressions({ organizationId, environmentId }, suppressions);
+    const { suppressions, subaccount } = c.req.valid("json");
+    const { environmentId } = c.var.auth;
+    const list = await listOf(c.var.auth, subaccount);
+    const result = await importSuppressions(list, suppressions);
     if (!result) throw new Error(`Environment ${environmentId} not found.`);
     await recordApiAudit(c, {
       action: "suppression.imported",
@@ -258,6 +289,7 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
         created: result.created,
         existing: result.existing,
         invalid: result.invalid.length,
+        ...(list.subaccountId && { subaccount_id: list.subaccountId }),
       },
     });
     return c.json(result, 200);
@@ -266,10 +298,11 @@ export function createSuppressionRoutes(): OpenAPIHono<AppEnv> {
   // Like `check`, registered before `/suppressions/{id}`.
   router.openapi(exportSuppressionsRoute, async (c) => {
     const query = c.req.valid("query");
-    const { organizationId, environmentId } = c.var.auth;
-    return c.body(suppressionsCsvStream({ organizationId, environmentId }, query), 200, {
+    const { environmentId } = c.var.auth;
+    const list = await listOf(c.var.auth, query.subaccount);
+    return c.body(suppressionsCsvStream(list, query), 200, {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="suppressions-${environmentId}.csv"`,
+      "Content-Disposition": `attachment; filename="suppressions-${list.subaccountId ?? environmentId}.csv"`,
       "Cache-Control": "no-store",
     });
   });

@@ -65,7 +65,10 @@ export class SuppressionResource {
       const result = await this.#http.request<SuppressionImport>({
         method: "POST",
         path: "/v1/suppressions/import",
-        body: { suppressions: batch },
+        body: {
+          ...(params.subaccount === undefined ? {} : { subaccount: params.subaccount }),
+          suppressions: batch,
+        },
         signal: options?.signal,
       });
       if (result.error) return result;

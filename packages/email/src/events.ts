@@ -119,6 +119,7 @@ export async function recordProviderEvent(
       category: email.category,
       stream: email.stream,
       broadcastId: email.broadcastId,
+      subaccountId: email.subaccountId,
       createdAt: email.createdAt,
       dedicatedPool: email.dedicatedPool,
       mode: environment.mode,
@@ -351,6 +352,8 @@ export async function recordProviderEvent(
         address: row.recipient,
         reason: suppressReason,
         emailId: target.id,
+        // A sub-account's bounces and complaints go on its own list only.
+        subaccountId: target.subaccountId,
         scope:
           suppressReason === "complaint" && target.stream === "marketing"
             ? MARKETING_STREAM_SCOPE
@@ -375,6 +378,7 @@ export async function recordProviderEvent(
         sandbox: target.mode === "sandbox",
         recipient: row.recipient,
         occurred_at: row.occurredAt.toISOString(),
+        ...(target.subaccountId ? { subaccount_id: target.subaccountId } : {}),
         ...row.details,
       },
     };

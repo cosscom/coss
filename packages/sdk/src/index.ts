@@ -482,6 +482,9 @@ export type {
   SubaccountQuotasParams,
   SubaccountReputation,
   SubaccountReputationStatus,
+  SubaccountStats,
+  SubaccountStatsDay,
+  SubaccountStatsParams,
   SubaccountStatus,
   UpdateSubaccountParams,
 } from "./types/subaccount.ts";

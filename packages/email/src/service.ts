@@ -59,6 +59,7 @@ import {
 import { emailScreeningContent } from "./screening.ts";
 import { type Skip, skippedRecipients } from "./send-eligibility.ts";
 import { resolveStoreContent } from "./storage-settings.ts";
+import { assertSubaccountStillSends, sendingSubaccount } from "./subaccounts.ts";
 import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
 import { topicsByKey } from "./topics.ts";
 import { newTrackingToken } from "./tracking.ts";
@@ -881,6 +882,34 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       sandbox ? undefined : withinBudget(),
     );
 
+    const failScheduled = (error: EmailError) =>
+      db.transaction(async (tx) => {
+        const [failed] = await tx
+          .update(email)
+          .set({ status: "failed", errorCode: error.code, errorMessage: error.message })
+          .where(stillDue)
+          .returning({ id: email.id });
+        if (!failed) return;
+        await purgeSendContent(tx, row);
+        await recordProviderEvent(
+          tx,
+          cossEvent(row, {
+            type: "email.failed",
+            providerEventType: "SenderRejected",
+            sourceId: error.code,
+            data: { failure: { code: error.code, message: error.message } },
+          }),
+        );
+      });
+    if (row.subaccountId) {
+      try {
+        await assertSubaccountStillSends(row.organizationId, row.subaccountId);
+      } catch (error) {
+        if (!(error instanceof EmailError)) throw error;
+        await failScheduled(error);
+        return;
+      }
+    }
     if (!sandbox) {
       try {
         await authorizeLiveSender({
@@ -893,24 +922,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         if (!(error instanceof EmailError)) throw error;
         // Held, not failed: it goes once the hold is lifted (like a suspension).
         if (error.code === "billing_hold") return;
-        await db.transaction(async (tx) => {
-          const [failed] = await tx
-            .update(email)
-            .set({ status: "failed", errorCode: error.code, errorMessage: error.message })
-            .where(stillDue)
-            .returning({ id: email.id });
-          if (!failed) return;
-          await purgeSendContent(tx, row);
-          await recordProviderEvent(
-            tx,
-            cossEvent(row, {
-              type: "email.failed",
-              providerEventType: "SenderRejected",
-              sourceId: error.code,
-              data: { failure: { code: error.code, message: error.message } },
-            }),
-          );
-        });
+        await failScheduled(error);
         return;
       }
     }
@@ -1229,6 +1241,16 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       throw new Error("Tracking requires the email service's trackingBaseUrl.");
     }
     const stream = params.stream ?? "transactional";
+    // Email for platforms: resolved (and checked) once per send; the claim checks it again.
+    const subaccount =
+      params.subaccount === undefined
+        ? null
+        : await sendingSubaccount({
+            organizationId: environment.organizationId,
+            environmentId: environment.environmentId,
+            ref: params.subaccount,
+            param: `${opts.paramPrefix ?? ""}subaccount`,
+          });
     // CAN-SPAM: every marketing email carries the sender's postal address.
     if (stream === "marketing" && !(await getMarketingSettingsRow(environment))?.mailingAddress) {
       throw new EmailError(
@@ -1269,6 +1291,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         templateId: content?.template.id ?? null,
         templateVersion: content?.template.version ?? null,
         templateLocale: content?.template.locale ?? null,
+        subaccountId: subaccount?.id ?? null,
       },
       scheduled,
       // Decoded once, outside the (retried) insert transaction.
@@ -1306,7 +1329,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const recipients = recipientRows(row);
     const suppressed = await skippedRecipients(
       tx,
-      environment,
+      { ...environment, subaccountId: row.subaccountId },
       recipients.map((recipient) => recipient.address),
       { category: row.category, stream: row.stream },
     );

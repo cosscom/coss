@@ -19,6 +19,7 @@ type Unsubscribable = {
   environmentId: string;
   category: string;
   recipient: string;
+  subaccountId: string | null;
 };
 
 /** The email and recipient a token unsubscribes; `null` for unknown tokens and other emails. */
@@ -32,6 +33,7 @@ async function findUnsubscribable(token: string): Promise<Unsubscribable | null>
       environmentId: email.environmentId,
       category: email.category,
       unsubscribe: email.unsubscribe,
+      subaccountId: email.subaccountId,
     })
     .from(email)
     .where(eq(email.trackingToken, token))
@@ -56,6 +58,7 @@ async function findUnsubscribable(token: string): Promise<Unsubscribable | null>
     environmentId: row.environmentId,
     category: row.category,
     recipient: only.address,
+    subaccountId: row.subaccountId,
   };
 }
 
@@ -93,6 +96,7 @@ export async function recordUnsubscribe(input: { token: string; now?: Date }): P
       address: target.recipient,
       reason: "unsubscribe",
       emailId: target.id,
+      subaccountId: target.subaccountId,
       scope: target.category,
     });
   });

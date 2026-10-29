@@ -36,6 +36,8 @@ export interface EmailWebhookEventData extends EmailEventData {
   recipient: string | null;
   /** ISO 8601 timestamp of the event itself (deliveries can arrive later, and out of order). */
   occurred_at: string;
+  /** Only for an email sent for a sub-account: its id. */
+  subaccount_id?: string;
 }
 
 /** An email event. `id` equals the `webhook-id` header and `EmailEvent.id`. */

@@ -6,7 +6,7 @@
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
-import { and, asc, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { SIMULATOR_DOMAIN } from "./providers/fake.ts";
 import {
   ALL_CATEGORIES,
@@ -31,15 +31,53 @@ const { emailSuppression } = schema;
 
 export type SuppressionRow = typeof emailSuppression.$inferSelect;
 
-/** The environment a suppression list belongs to. */
-export type SuppressionEnvironment = { organizationId: string; environmentId: string };
+/**
+ * A suppression list: the environment's own, or one of its sub-accounts' (`subaccountId`, already
+ * checked to be the environment's).
+ */
+export type SuppressionEnvironment = {
+  organizationId: string;
+  environmentId: string;
+  subaccountId?: string | null;
+};
 
+/** Every entry of the environment, whichever list (lookups by id). */
 function inEnvironment(env: SuppressionEnvironment) {
   return and(
     eq(emailSuppression.organizationId, env.organizationId),
     eq(emailSuppression.environmentId, env.environmentId),
   );
 }
+
+/** The entries of exactly one list (management: list, add, import, export). */
+function inList(env: SuppressionEnvironment) {
+  return and(
+    inEnvironment(env),
+    env.subaccountId
+      ? eq(emailSuppression.subaccountId, env.subaccountId)
+      : isNull(emailSuppression.subaccountId),
+  );
+}
+
+/** The entries a send applies: a sub-account's sends skip its own and the environment's. */
+function inSendLists(env: SuppressionEnvironment) {
+  return and(
+    inEnvironment(env),
+    env.subaccountId
+      ? or(
+          isNull(emailSuppression.subaccountId),
+          eq(emailSuppression.subaccountId, env.subaccountId),
+        )
+      : isNull(emailSuppression.subaccountId),
+  );
+}
+
+const ON_LIST = [
+  emailSuppression.environmentId,
+  emailSuppression.subaccountId,
+  emailSuppression.address,
+  emailSuppression.scope,
+];
 
 /** Scopes that suppress an email with `category` (`*` alone when it has none). */
 /** The entries that suppress an email of `category` in `stream`. */
@@ -61,6 +99,7 @@ export function toSuppressionObject(row: SuppressionRow): SuppressionOutput {
     scope: row.scope,
     reason: row.reason,
     email_id: row.emailId,
+    subaccount_id: row.subaccountId,
     created_at: row.createdAt.toISOString(),
   };
 }
@@ -81,13 +120,12 @@ export async function addSuppression(
       organizationId: env.organizationId,
       projectId,
       environmentId: env.environmentId,
+      subaccountId: env.subaccountId ?? null,
       address: params.address,
       scope: params.scope,
       reason: "manual",
     })
-    .onConflictDoNothing({
-      target: [emailSuppression.environmentId, emailSuppression.address, emailSuppression.scope],
-    })
+    .onConflictDoNothing({ target: ON_LIST })
     .returning();
   if (inserted) return { suppression: toSuppressionObject(inserted), created: true };
   const [existing] = await db
@@ -95,7 +133,7 @@ export async function addSuppression(
     .from(emailSuppression)
     .where(
       and(
-        inEnvironment(env),
+        inList(env),
         eq(emailSuppression.address, params.address),
         eq(emailSuppression.scope, params.scope),
       ),
@@ -183,19 +221,14 @@ export async function importSuppressions(
             organizationId: env.organizationId,
             projectId,
             environmentId: env.environmentId,
+            subaccountId: env.subaccountId ?? null,
             address: entry.address,
             scope: entry.scope,
             reason: entry.reason ?? ("import" as const),
             ...(entry.createdAt ? { createdAt: entry.createdAt } : {}),
           })),
         )
-        .onConflictDoNothing({
-          target: [
-            emailSuppression.environmentId,
-            emailSuppression.address,
-            emailSuppression.scope,
-          ],
-        })
+        .onConflictDoNothing({ target: ON_LIST })
         .returning({ id: emailSuppression.id });
       created += inserted.length;
     }
@@ -222,7 +255,7 @@ export async function* exportSuppressionPages(
       .from(emailSuppression)
       .where(
         and(
-          inEnvironment(env),
+          inList(env),
           filter.scope === undefined ? undefined : eq(emailSuppression.scope, filter.scope),
           filter.reason === undefined ? undefined : eq(emailSuppression.reason, filter.reason),
           after === undefined ? undefined : gt(emailSuppression.id, after),
@@ -281,7 +314,7 @@ export async function listSuppressions(
           sequence: emailSuppression.sequence,
         })
         .from(emailSuppression)
-        .where(and(inEnvironment(env), eq(emailSuppression.id, query.after)))
+        .where(and(inList(env), eq(emailSuppression.id, query.after)))
         .limit(1)
     : [];
   if (query.after && !cursor) return { object: "list", data: [], has_more: false };
@@ -290,7 +323,7 @@ export async function listSuppressions(
     .from(emailSuppression)
     .where(
       and(
-        inEnvironment(env),
+        inList(env),
         query.address === undefined ? undefined : eq(emailSuppression.address, query.address),
         query.scope === undefined ? undefined : eq(emailSuppression.scope, query.scope),
         cursor
@@ -341,7 +374,10 @@ export async function removeSuppression(env: SuppressionEnvironment, id: string)
   return deleted.length > 0;
 }
 
-/** Whether a send with `category` would skip `address`, and the entries that match. */
+/**
+ * Whether a send with `category` (for the list's sub-account, if any) would skip `address`, and
+ * the entries that match.
+ */
 export async function checkSuppression(
   env: SuppressionEnvironment,
   query: CheckSuppressionQueryOutput,
@@ -351,7 +387,7 @@ export async function checkSuppression(
     .from(emailSuppression)
     .where(
       and(
-        inEnvironment(env),
+        inSendLists(env),
         eq(emailSuppression.address, query.address),
         inArray(emailSuppression.scope, matchingScopes(query.category, query.stream)),
       ),
@@ -367,7 +403,7 @@ export async function checkSuppression(
 
 /**
  * The matching entry of each suppressed address among `addresses` (bare, lower-cased) for an email
- * with `category`. A `*` entry wins over a category entry.
+ * with `category` (sent for `env.subaccountId`, if any). A `*` entry wins over a category entry.
  */
 export async function suppressedRecipients(
   tx: Executor,
@@ -383,7 +419,7 @@ export async function suppressedRecipients(
     .from(emailSuppression)
     .where(
       and(
-        inEnvironment(env),
+        inSendLists(env),
         inArray(emailSuppression.address, addresses),
         inArray(emailSuppression.scope, matchingScopes(category, stream)),
       ),
@@ -410,12 +446,28 @@ export async function autoSuppress(
     address: string;
     reason: Exclude<SuppressionReason, "manual">;
     emailId: string;
+    /** The sub-account the email was sent for: the entry goes on its list. */
+    subaccountId?: string | null;
     /** `*` unless given. */
     scope?: string;
   },
 ): Promise<void> {
   const address = input.address.toLowerCase();
   if (address.endsWith(`@${SIMULATOR_DOMAIN}`)) return;
+  // A deleted sub-account's list went with it; late events about its emails add nothing.
+  if (input.subaccountId) {
+    const [list] = await tx
+      .select({ id: schema.emailSubaccount.id })
+      .from(schema.emailSubaccount)
+      .where(
+        and(
+          eq(schema.emailSubaccount.id, input.subaccountId),
+          eq(schema.emailSubaccount.organizationId, input.organizationId),
+        ),
+      )
+      .limit(1);
+    if (!list) return;
+  }
   await tx
     .insert(emailSuppression)
     .values({
@@ -426,8 +478,7 @@ export async function autoSuppress(
       scope: input.scope ?? ALL_CATEGORIES,
       reason: input.reason,
       emailId: input.emailId,
+      subaccountId: input.subaccountId ?? null,
     })
-    .onConflictDoNothing({
-      target: [emailSuppression.environmentId, emailSuppression.address, emailSuppression.scope],
-    });
+    .onConflictDoNothing({ target: ON_LIST });
 }

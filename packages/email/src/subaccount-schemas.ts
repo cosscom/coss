@@ -195,3 +195,70 @@ export const SubaccountList = z
     id: "SubaccountList",
     examples: [{ object: "list", data: [SUBACCOUNT_EXAMPLE], has_more: false }],
   });
+
+/** How far back stats reach: emails are kept 45 days (`RETENTION_DAYS.emails`). */
+export const MAX_SUBACCOUNT_STATS_DAYS = 45;
+
+const DateOnly = z.iso.date();
+
+export const SubaccountStatsQuery = z
+  .object({
+    from: DateOnly.optional().meta({
+      description: "First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.",
+      examples: ["2026-10-01"],
+    }),
+    to: DateOnly.optional().meta({
+      description: "Last day (UTC, `YYYY-MM-DD`), included; default today.",
+      examples: ["2026-10-15"],
+    }),
+  })
+  .meta({ id: "SubaccountStatsQuery" });
+
+const STATS_DAY_EXAMPLE = {
+  date: "2026-10-15",
+  recipients: 120,
+  sent: 118,
+  delivered: 115,
+  bounced: 2,
+  complained: 0,
+  failed: 0,
+  suppressed: 2,
+};
+
+export const SubaccountStatsDay = z
+  .object({
+    date: DateOnly,
+    recipients: z.number().int().meta({ description: "Recipients of the emails sent that day." }),
+    sent: z.number().int().meta({ description: "Handed to the provider (delivered or not)." }),
+    delivered: z.number().int(),
+    bounced: z.number().int(),
+    complained: z.number().int(),
+    failed: z.number().int(),
+    suppressed: z.number().int().meta({ description: "Skipped: on a suppression list." }),
+  })
+  .meta({ id: "SubaccountStatsDay", examples: [STATS_DAY_EXAMPLE] });
+
+export const SubaccountStats = z
+  .object({
+    object: z.literal("subaccount_stats"),
+    subaccount_id: z.string(),
+    from: DateOnly,
+    to: DateOnly,
+    data: z.array(SubaccountStatsDay).meta({
+      description:
+        "One entry per day with sends, oldest first; recipients count by their current status.",
+    }),
+  })
+  .meta({
+    id: "SubaccountStats",
+    examples: [
+      {
+        object: "subaccount_stats",
+        subaccount_id: SUBACCOUNT_ID,
+        from: "2026-10-15",
+        to: "2026-10-15",
+        data: [STATS_DAY_EXAMPLE],
+      },
+    ],
+  });
+export type SubaccountStatsOutput = z.output<typeof SubaccountStats>;

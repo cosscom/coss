@@ -130,6 +130,7 @@ export function toEmailObject(
     batch_id: row.batchId,
     template: templateReference(row),
     broadcast_id: row.broadcastId,
+    subaccount_id: row.subaccountId,
     content_storage: contentStorageObject(row),
   };
 }
@@ -341,6 +342,8 @@ export type EmailListFilters = {
   senderDomain?: string;
   /** Only the emails of this batch. */
   batchId?: string;
+  /** Only the emails sent for this sub-account (its id). */
+  subaccountId?: string;
   /** Only emails created at or after this time. */
   createdAfter?: Date;
   /** Only emails created before this time. */
@@ -435,6 +438,7 @@ function listConditions(
     );
   }
   if (input.batchId !== undefined) conditions.push(eq(email.batchId, input.batchId));
+  if (input.subaccountId !== undefined) conditions.push(eq(email.subaccountId, input.subaccountId));
   if (input.createdAfter) conditions.push(gte(email.createdAt, input.createdAfter));
   if (input.createdBefore) conditions.push(lt(email.createdAt, input.createdBefore));
   if (input.before !== undefined) {
@@ -554,6 +558,7 @@ export async function listEmailSummariesPage(
       scheduledAt: email.scheduledAt,
       batchId: email.batchId,
       broadcastId: email.broadcastId,
+      subaccountId: email.subaccountId,
       templateId: email.templateId,
       templateVersion: email.templateVersion,
       templateLocale: email.templateLocale,
@@ -600,6 +605,7 @@ export async function listEmailSummariesPage(
       scheduled_at: row.scheduledAt?.toISOString() ?? null,
       batch_id: row.batchId,
       broadcast_id: row.broadcastId,
+      subaccount_id: row.subaccountId,
       template: templateReference(row),
       content_storage: contentStorageObject(row),
     })),

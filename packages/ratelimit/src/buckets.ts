@@ -10,9 +10,17 @@ const DAY = 24 * HOUR;
 
 /**
  * What a bucket counts per: one API key (or another opaque id, like a Hooks endpoint), organization,
- * environment, client IP, email address, or destination host of outgoing requests.
+ * environment, email sub-account, client IP, email address, or destination host of outgoing
+ * requests.
  */
-export type BucketScope = "key" | "org" | "environment" | "ip" | "email" | "destination";
+export type BucketScope =
+  | "key"
+  | "org"
+  | "environment"
+  | "subaccount"
+  | "ip"
+  | "email"
+  | "destination";
 
 export type LimitRule = {
   /** Tokens added per `periodMs`. */
@@ -173,6 +181,23 @@ export const BUCKETS = {
     limit: 500,
     periodMs: DAY,
     overridable: true,
+    failureMode: "deny",
+  },
+  // Quotas a customer sets on one of its email sub-accounts, on top of the organization's. Every
+  // charge carries the sub-account's own rule (`rule`); these defaults are never used.
+  "email.subaccount_recipients.second": {
+    scope: "subaccount",
+    limit: 14,
+    periodMs: SECOND,
+    burst: 100,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "email.subaccount_recipients.day": {
+    scope: "subaccount",
+    limit: 10_000,
+    periodMs: DAY,
+    overridable: false,
     failureMode: "deny",
   },
   // SMS segments sent per organization (live) or environment (sandbox), across all keys. The

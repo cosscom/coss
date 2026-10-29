@@ -22,7 +22,10 @@ export type EmailErrorCode =
   | "mailing_address_required"
   | "sandbox_only"
   | "live_only_event_type"
-  | "invalid_test_event";
+  | "invalid_test_event"
+  | "subaccount_not_found"
+  | "subaccount_disabled"
+  | "subaccount_paused";
 
 const STATUS_BY_CODE = {
   idempotency_key_reused: 422,
@@ -55,6 +58,10 @@ const STATUS_BY_CODE = {
   sandbox_only: 403,
   live_only_event_type: 422,
   invalid_test_event: 422,
+  // A sub-account named in a send body is a field at fault, not a missing resource.
+  subaccount_not_found: 422,
+  subaccount_disabled: 403,
+  subaccount_paused: 403,
 } as const satisfies Record<EmailErrorCode, number>;
 
 /** Expected failures of the email service; `status` is the HTTP status the API should use. */
@@ -179,7 +186,8 @@ export type SubaccountErrorCode =
   | "invalid_uid"
   | "too_many_subaccounts"
   | "subaccount_deleting"
-  | "invalid_quotas";
+  | "invalid_quotas"
+  | "invalid_range";
 
 const SUBACCOUNT_STATUS_BY_CODE = {
   subaccount_not_found: 404,
@@ -189,6 +197,7 @@ const SUBACCOUNT_STATUS_BY_CODE = {
   too_many_subaccounts: 422,
   subaccount_deleting: 422,
   invalid_quotas: 422,
+  invalid_range: 422,
 } as const satisfies Record<SubaccountErrorCode, number>;
 
 /** Expected failures of sub-account management; messages are safe to show. */

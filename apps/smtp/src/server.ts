@@ -4,11 +4,11 @@
  * and quotas as `POST /v1/emails`. Side-effect free: src/index.ts wires the dependencies, tests
  * run it in-process.
  */
-import type { EmailService } from "@coss/email";
+import { type EmailService, findSubaccount } from "@coss/email";
 import { emailAddressProblem, MAX_RECIPIENTS, uniqueRecipientCount } from "@coss/email/schemas";
 import { messageToSendRequest, SMTP_MAX_MESSAGE_BYTES } from "@coss/email/smtp";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
-import { emailSendQuota, type RateLimiter } from "@coss/ratelimit";
+import { consumeAll, emailSendQuotas, type RateLimiter, refundAll } from "@coss/ratelimit";
 import type { ApiKeyContext, RefusedKeyContext } from "@coss/tenancy";
 import {
   SMTPServer,
@@ -268,9 +268,23 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
       emailId,
     });
 
-    const quota = emailSendQuota(context, uniqueRecipientCount(mapped.params));
-    const decision = await rateLimiter.consume(quota);
-    if (!decision.allowed) {
+    const quota = await emailSendQuotas(
+      context,
+      [
+        {
+          recipients: uniqueRecipientCount(mapped.params),
+          subaccount: mapped.params.subaccount,
+        },
+      ],
+      (ref) =>
+        findSubaccount({
+          organizationId: context.organizationId,
+          environmentId: context.environmentId,
+          ref,
+        }),
+    );
+    const decision = await consumeAll(rateLimiter, quota);
+    if (decision) {
       // A matching replay needs no quota (it cannot create or dispatch a send).
       const replay = await emailService.replay(input);
       if (replay) return accepted(replay.id);
@@ -294,11 +308,11 @@ export function createSmtpRelay(options: SmtpRelayOptions): SmtpRelay {
     try {
       const { email, replayed } = await emailService.send(input);
       // A replay sent nothing new (a client retry with the same X-Coss-Idempotency-Key).
-      if (replayed) await rateLimiter.refund(quota);
+      if (replayed) await refundAll(rateLimiter, quota);
       return accepted(email.id);
     } catch (error) {
       // Rejected before anything was stored (sender, idempotency conflicts, outages).
-      await rateLimiter.refund(quota);
+      await refundAll(rateLimiter, quota);
       const outcome = sendErrorReply(error);
       if (outcome) return { outcome };
       console.error("[smtp] send failed:", error);
