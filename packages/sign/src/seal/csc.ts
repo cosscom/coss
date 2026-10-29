@@ -138,7 +138,9 @@ export class CscSealer implements Sealer {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    await this.prepare();
+    // The credential the caller read the chain from: never refreshed mid-seal (`prepare` does that
+    // before a seal starts).
+    if (!this.credential) await this.prepare();
     const credential = this.credential as Credential;
     const hash = Buffer.from(await sha256(data)).toString("base64");
     const { SAD } = await this.call<{ SAD?: string }>("credentials/authorize", {

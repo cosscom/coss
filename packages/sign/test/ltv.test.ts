@@ -234,6 +234,20 @@ describe("sealing with validation data (PAdES B-LT)", () => {
     ).rejects.toThrow("The seal's certificate is valid from");
   });
 
+  test("a signature by a key other than the certificate's doesn't seal", async () => {
+    const other = await sealingCertificate(root, "Another key");
+    const document = await PDFDocument.load(await buildTestPdf());
+    await expect(
+      sealPdf(document, {
+        sealer: LocalSealer.fromKey([leaf.der], other.privateKey),
+        name: "coss.com",
+        reason: "Test",
+        signedAt: new Date(),
+        fetch: caServers({ root }).fetch,
+      }),
+    ).rejects.toThrow("doesn't match its certificate");
+  });
+
   test("a seal whose validation data can't be found fails (and is retried)", async () => {
     const servers = caServers({ root, down: new Set([CA_URLS.ocsp, CA_URLS.crl]) });
     const document = await PDFDocument.load(await buildTestPdf());

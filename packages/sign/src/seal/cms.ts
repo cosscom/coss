@@ -4,6 +4,7 @@
  * certificate's hash (`signingCertificateV2`, which PAdES requires). No signing time attribute:
  * PAdES puts the time in the signature dictionary (`/M`) and the timestamp.
  */
+import { createPublicKey, verify } from "node:crypto";
 import {
   asn1js,
   OID,
@@ -83,8 +84,9 @@ export async function cadesSignature(input: {
   /** Certificates to embed besides the sealer's chain (e.g. the TSA's). */
   extraCertificates?: readonly Uint8Array[];
 }): Promise<Uint8Array> {
-  await input.sealer.prepare?.();
-  const [leaf] = input.sealer.certificateChain;
+  // Read once: the CMS names these certificates, and the signature must be by the first.
+  const chain = [...input.sealer.certificateChain];
+  const [leaf] = chain;
   if (!leaf) throw new Error("The sealer has no certificate.");
   const certificate = parseCertificate(leaf);
   const { attributes, der } = await signedAttributes({
@@ -93,6 +95,16 @@ export async function cadesSignature(input: {
     certificate: leaf,
   });
   const signature = await input.sealer.sign(der);
+  // A signature by another key (a KMS key configured with the wrong chain, a credential renewed
+  // mid-seal) would make a seal nobody can validate: refused, and the seal retried.
+  const publicKey = createPublicKey({
+    key: Buffer.from(certificate.subjectPublicKeyInfo.toSchema().toBER(false)),
+    format: "der",
+    type: "spki",
+  });
+  if (!verify("sha256", der, publicKey, signature)) {
+    throw new Error("The seal's signature doesn't match its certificate.");
+  }
   const signerInfo = new pkijs.SignerInfo({
     version: 1,
     sid: new pkijs.IssuerAndSerialNumber({
@@ -120,8 +132,8 @@ export async function cadesSignature(input: {
     version: 1,
     digestAlgorithms: [new pkijs.AlgorithmIdentifier({ algorithmId: OID.sha256 })],
     encapContentInfo: new pkijs.EncapsulatedContentInfo({ eContentType: OID.data }),
-    certificates: [...input.sealer.certificateChain, ...(input.extraCertificates ?? [])].map(
-      (der) => parseCertificate(der),
+    certificates: [...chain, ...(input.extraCertificates ?? [])].map((der) =>
+      parseCertificate(der),
     ),
     signerInfos: [signerInfo],
   });
