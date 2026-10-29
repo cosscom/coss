@@ -7,6 +7,7 @@
 import type { MailDomainVerdict } from "@coss/signals/email";
 import { type IpSignals, normalizeIp } from "@coss/signals/ip";
 import type { DeviceReading } from "./device.ts";
+import type { PhoneData } from "./phone.ts";
 import type { IpPrivacy } from "./privacy.ts";
 import { CONTENT_CATEGORIES, type ContentCategory } from "./schemas.ts";
 
@@ -65,6 +66,50 @@ export function sandboxIpPrivacy(address: string): IpPrivacy | null {
   const ip = normalizeIp(address);
   if (!ip?.startsWith("192.0.2.")) return null;
   return PRIVACY_FIXTURES[ip] ?? { vpn: false, proxy: false, relay: false, service: null };
+}
+
+/** Fixtures that differ from an ordinary mobile; `0104`'s SIM changed 6 hours before the check. */
+const PHONE_FIXTURES: Record<string, Partial<PhoneData>> = {
+  "+12025550101": {
+    lineType: "landline",
+    carrier: { name: "Example Telephone", mobileCountryCode: null, mobileNetworkCode: null },
+    simSwap: null,
+  },
+  "+12025550102": {
+    lineType: "non_fixed_voip",
+    carrier: { name: "Example Voice", mobileCountryCode: null, mobileNetworkCode: null },
+    simSwap: null,
+  },
+  "+12025550103": {
+    lineType: "fixed_voip",
+    carrier: { name: "Example Cable", mobileCountryCode: null, mobileNetworkCode: null },
+    simSwap: null,
+  },
+  "+12025550199": { valid: false, country: null, lineType: null, carrier: null, simSwap: null },
+};
+const SANDBOX_SIM_SWAPPED = "+12025550104";
+
+/**
+ * Phone data for a fictional number (`+1 202 555 01xx`), as if the provider were configured:
+ * `0101` a landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a mobile whose SIM just
+ * changed, `0199` invalid, the rest ordinary mobiles. `null` for any other number.
+ */
+export function sandboxPhoneData(phone: string, now: Date = new Date()): PhoneData | null {
+  if (!/^\+120255501\d\d$/.test(phone)) return null;
+  const swapped = phone === SANDBOX_SIM_SWAPPED;
+  return {
+    valid: true,
+    country: "US",
+    lineType: "mobile",
+    carrier: { name: "Example Wireless", mobileCountryCode: "001", mobileNetworkCode: "01" },
+    simSwap: {
+      swappedAt: swapped ? new Date(now.getTime() - 6 * 3_600_000).toISOString() : null,
+      recent: swapped,
+      period: "PT48H",
+    },
+    ...PHONE_FIXTURES[phone],
+    missing: [],
+  };
 }
 
 /** Device tokens with fixed readings in sandbox environments (no browser needed). */

@@ -45,7 +45,7 @@ repository root.
   `request-log.ts`) and `redactBody` keeps only string lengths inside `content` objects. Live classifications
   charge the organization's `risk.classify`/`risk.classify.day` buckets (`chargeClassification`): over them, classify
   is a 429 and assessments go on without content (`degraded: ["content"]`). The building blocks
-  (`/v1/risk/email/check`, `/ip/check`, classify) store and count nothing about the address or text and share
+  (`/v1/risk/email/check`, `/ip/check`, `/phone/check`, classify) store and count nothing about the address or text and share
   `risk:assess` and the `risk.assess` bucket. **Checkouts** (`checkout` on `checkout` events only): amount,
   currency, the card's country/funding, billing and shipping countries; the processor's card `fingerprint` is
   hashed (`card` kind, `card_hash`, velocity dimension `card`, `history.fraud_card`) and redacted from request logs
@@ -54,7 +54,14 @@ repository root.
   `device_hash`, `risk_identity` kind `device` for `duplicate.device` under its own advisory lock after the mailbox's,
   velocity and fraud memory); malformed or day-old tokens are `device.invalid`. **IP privacy data**
   (`RiskDeps.ipPrivacy`, `RISK_IP_PRIVACY`): looked up before the transaction like the datasets, 500 ms, failures are
-  `degraded: ["ip_privacy"]`; a provider's answer replaces the network's `ip.vpn_network` guess. **Calibration**
+  `degraded: ["ip_privacy"]`; a provider's answer replaces the network's `ip.vpn_network` guess. **Phone checks**
+  (`POST /v1/risk/phone/check`, `checkPhone`; a building block only, not an assessment signal yet): E.164 only
+  (`normalizePhone`; anything else is `valid: false` and never sent), `RiskDeps.phoneLookup` (`twilioPhoneLookup`:
+  Lookup v2 Line Type Intelligence, plus SIM Swap with `RISK_PHONE_SIM_SWAP`; complete answers cached an hour),
+  2 s, failures are `degraded: ["phone_data"]`, no provider is a 503 `phone_lookup_unavailable`. Twilio has no
+  porting data: `carrier` is the current network and `sim_swap` the takeover signal — never call it porting. Live
+  checks charge the organization's `risk.phone`/`risk.phone.day` buckets (paid lookups); sandbox environments only
+  read `sandboxPhoneData` (`+1 202 555 01xx`). **Calibration**
   (`GET /v1/risk/calibration`, the dashboard's Calibration page and rule precision): reasons' and rules' outcomes over
   90 days with suggested weights (precision pulled toward the default, none below 20 labeled); coss.com only suggests,
   and `risk_settings.reason_weights` (`scoreReasons(reasons, weights)`) applies what the customer chose.

@@ -61,7 +61,7 @@ const CAPABILITY_RESPONSES = [
  * Stateless lookup identifiers and classification text must not enter request logs. Lookup
  * responses (including errors) are omitted too; assessments' `content` is redacted by `redactBody`.
  */
-const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check"];
+const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/risk/phone/check"];
 const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 
 /**

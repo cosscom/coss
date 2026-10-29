@@ -1813,6 +1813,12 @@ describe("coss.risk building blocks and rate limits against the API", () => {
       object: "risk_ip_check",
       hosting_kind: "vpn",
     });
+    expect((await coss.risk.checkPhone("+1 202-555-0104")).data).toMatchObject({
+      object: "risk_phone_check",
+      phone: "+12025550104",
+      line_type: "mobile",
+      sim_swap: { recent: true },
+    });
     expect(await coss.risk.classify({ text: "Pay with gift cards [coss-test:fraud]" })).toEqual({
       data: {
         object: "risk_content_classification",

@@ -85,6 +85,23 @@ export const BUCKETS = {
     overridable: true,
     failureMode: "deny",
   },
+  // Phone checks (`POST /v1/risk/phone/check`): every live one is a paid lookup (Twilio), so it
+  // is capped per organization as well as by the key's `risk.assess` bucket.
+  "risk.phone": {
+    scope: "org",
+    limit: 5,
+    periodMs: SECOND,
+    burst: 10,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "risk.phone.day": {
+    scope: "org",
+    limit: 1_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
   // Rate limiting as a service (`POST /v1/risk/limits`): the call itself, per key. Customers' own
   // buckets decide what a store outage means for them, so this one lets the request through.
   "risk.limit": {

@@ -17,6 +17,7 @@ import {
 import type { RiskDeps } from "./assess.ts";
 import { domainAge } from "./domain-age.ts";
 import { RiskError } from "./errors.ts";
+import { normalizePhone, type PhoneData } from "./phone.ts";
 import type { IpPrivacy } from "./privacy.ts";
 import {
   SANDBOX_DISPOSABLE_DOMAIN,
@@ -25,6 +26,7 @@ import {
   sandboxIpPrivacy,
   sandboxIpSignals,
   sandboxMailDomainVerdict,
+  sandboxPhoneData,
 } from "./sandbox.ts";
 import {
   CONTENT_CATEGORIES,
@@ -32,12 +34,14 @@ import {
   type RiskContentClassificationOutput,
   type RiskEmailCheckOutput,
   type RiskIpCheckOutput,
+  type RiskPhoneCheckOutput,
 } from "./schemas.ts";
 import type { Turns } from "./turns.ts";
 
 const DEFAULT_DNS_TIMEOUT_MS = 800;
 const DEFAULT_DOMAIN_AGE_TIMEOUT_MS = 1000;
 const DEFAULT_IP_PRIVACY_TIMEOUT_MS = 500;
+const DEFAULT_PHONE_LOOKUP_TIMEOUT_MS = 2000;
 /** Classification asks a model: at most this long, then the caller goes without it. */
 export const DEFAULT_CLASSIFY_TIMEOUT_MS = 3000;
 
@@ -200,6 +204,69 @@ export async function checkIp(
     country: signals?.country ?? null,
     privacy: privacy.privacy,
     degraded: missing,
+  };
+}
+
+/**
+ * `POST /v1/risk/phone/check`. Sandbox environments only get the fixtures (the provider is paid
+ * per lookup, and sandbox keys are free); numbers that aren't E.164 are never sent. Throws
+ * `RiskError("phone_lookup_unavailable")` when live environments have no provider.
+ */
+export async function checkPhone(
+  deps: RiskDeps,
+  environment: LookupEnvironment,
+  input: string,
+): Promise<RiskPhoneCheckOutput> {
+  const phone = normalizePhone(input);
+  const unknown: RiskPhoneCheckOutput = {
+    object: "risk_phone_check",
+    phone: phone ?? input,
+    valid: phone !== null,
+    country: null,
+    line_type: null,
+    carrier: null,
+    sim_swap: null,
+    degraded: [],
+  };
+  if (!phone) return unknown;
+  if (environment.mode === "sandbox") {
+    const fixture = sandboxPhoneData(phone);
+    return fixture ? phoneCheck(phone, fixture) : unknown;
+  }
+  if (!deps.phoneLookup) {
+    throw new RiskError(
+      "phone_lookup_unavailable",
+      "Phone checks aren't available at the moment. Retry later.",
+    );
+  }
+  const timeoutMs = deps.phoneLookupTimeoutMs ?? DEFAULT_PHONE_LOOKUP_TIMEOUT_MS;
+  try {
+    return phoneCheck(phone, await deps.phoneLookup(phone, AbortSignal.timeout(timeoutMs)));
+  } catch (error) {
+    // Never the number: only that the provider failed.
+    console.warn("[risk] Phone lookup failed:", error instanceof Error ? error.name : "error");
+    return { ...unknown, degraded: ["phone_data"] };
+  }
+}
+
+function phoneCheck(phone: string, data: PhoneData): RiskPhoneCheckOutput {
+  return {
+    object: "risk_phone_check",
+    phone,
+    valid: data.valid,
+    country: data.country,
+    line_type: data.lineType,
+    carrier: data.carrier && {
+      name: data.carrier.name,
+      mobile_country_code: data.carrier.mobileCountryCode,
+      mobile_network_code: data.carrier.mobileNetworkCode,
+    },
+    sim_swap: data.simSwap && {
+      recent: data.simSwap.recent,
+      swapped_at: data.simSwap.swappedAt,
+      period: data.simSwap.period,
+    },
+    degraded: data.missing.map((part) => (part === "line_type" ? "phone_data" : "sim_swap")),
   };
 }
 

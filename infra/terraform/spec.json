@@ -909,6 +909,34 @@
           "description": "An IPinfo token whose plan includes privacy detection (not the free Lite one). Required with RISK_IP_PRIVACY=ipinfo."
         },
         {
+          "name": "RISK_PHONE_LOOKUP",
+          "kind": "plain",
+          "required": false,
+          "value": "off",
+          "description": "Risk's phone checks in live environments (off|twilio): `twilio` sends each checked number to Twilio Lookup (Line Type Intelligence, paid per lookup). Update Twilio's purpose in the DPA's subprocessors before turning it on."
+        },
+        {
+          "name": "RISK_PHONE_SIM_SWAP",
+          "kind": "plain",
+          "required": false,
+          "value": "false",
+          "description": "`true` also asks Twilio Lookup for the last SIM swap (a private beta: only after Twilio's carrier approval)."
+        },
+        {
+          "name": "TWILIO_ACCOUNT_SID",
+          "kind": "secret",
+          "required": false,
+          "value": "AC… (the parent account)",
+          "description": "Creates organizations' subaccounts and sends on their behalf."
+        },
+        {
+          "name": "TWILIO_AUTH_TOKEN",
+          "kind": "secret",
+          "required": false,
+          "value": "The parent account's auth token",
+          "description": "Authenticates the parent account's requests."
+        },
+        {
           "name": "SENTRY_DSN",
           "kind": "plain",
           "required": false,

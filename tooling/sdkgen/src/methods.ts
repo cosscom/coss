@@ -236,6 +236,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "DELETE /v1/risk/users/{user_id}": "risk.users.forget",
   "POST /v1/risk/email/check": "risk.checkEmail",
   "POST /v1/risk/ip/check": "risk.checkIp",
+  "POST /v1/risk/phone/check": "risk.checkPhone",
   "POST /v1/risk/content/classify": "risk.classify",
   "POST /v1/risk/limits": "risk.limit",
   "POST /v1/risk/limit_buckets": "risk.limitBuckets.create",

@@ -721,6 +721,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "risk.checkIp",
     args: (request) => [tsValue(bodyField(request.body, "ip") ?? "")],
   },
+  "POST /v1/risk/phone/check": {
+    method: "risk.checkPhone",
+    args: (request) => [tsValue(bodyField(request.body, "phone") ?? "")],
+  },
   "POST /v1/risk/content/classify": {
     method: "risk.classify",
     args: (request) => [tsValue(request.body ?? {})],

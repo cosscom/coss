@@ -51,10 +51,17 @@ export {
 export {
   checkEmail,
   checkIp,
+  checkPhone,
   classifyContent,
   DEFAULT_CLASSIFY_TIMEOUT_MS,
   type LookupEnvironment,
 } from "./lookups.ts";
+export {
+  normalizePhone,
+  type PhoneData,
+  type PhoneLookup,
+  twilioPhoneLookup,
+} from "./phone.ts";
 export { type IpPrivacy, type IpPrivacyLookup, ipinfoPrivacyLookup } from "./privacy.ts";
 export {
   getRiskAssessment,

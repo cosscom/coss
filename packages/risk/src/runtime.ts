@@ -17,10 +17,11 @@ import type { RiskDeps } from "./assess.ts";
 import { createIpIntelligenceSource } from "./datasets.ts";
 import type { RiskEnv } from "./env.ts";
 import { DEVELOPMENT_HASH_KEY, type RiskHasher, riskHasher } from "./hash.ts";
+import { type PhoneLookup, twilioPhoneLookup } from "./phone.ts";
 import { type IpPrivacyLookup, ipinfoPrivacyLookup } from "./privacy.ts";
 import { MemoryVelocityStore, ValkeyVelocityStore } from "./velocity.ts";
 
-export { type RiskEnv, riskEnvShape } from "./env.ts";
+export { type RiskEnv, riskEnvShape, riskPhoneEnvShape } from "./env.ts";
 
 /** The identifier hasher; production refuses to run without `RISK_HASH_KEY`. */
 export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } = {}): RiskHasher {
@@ -39,6 +40,19 @@ export function ipPrivacyFromEnv(env: RiskEnv): IpPrivacyLookup | null {
     throw new Error("RISK_IP_PRIVACY=ipinfo needs IPINFO_PRIVACY_TOKEN.");
   }
   return ipinfoPrivacyLookup({ token: env.IPINFO_PRIVACY_TOKEN });
+}
+
+/** The phone data provider, or `null` when off; `twilio` without credentials is a startup error. */
+export function phoneLookupFromEnv(env: RiskEnv): PhoneLookup | null {
+  if ((env.RISK_PHONE_LOOKUP ?? "off") === "off") return null;
+  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN) {
+    throw new Error("RISK_PHONE_LOOKUP=twilio needs TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.");
+  }
+  return twilioPhoneLookup({
+    accountSid: env.TWILIO_ACCOUNT_SID,
+    authToken: env.TWILIO_AUTH_TOKEN,
+    simSwap: env.RISK_PHONE_SIM_SWAP ?? false,
+  });
 }
 
 export function createRiskDeps(
@@ -84,5 +98,6 @@ export function createRiskDeps(
     // Customers' buckets share the velocity connection; in memory without Valkey (development).
     limits: opts.valkey ? new ValkeyStore(opts.valkey) : new MemoryStore(),
     ipPrivacy: ipPrivacyFromEnv(env),
+    phoneLookup: phoneLookupFromEnv(env),
   };
 }

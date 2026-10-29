@@ -447,7 +447,9 @@ function fromRiskError(error: RiskError): ApiError {
     case "limit_bucket_name_taken":
       return invalidRequest(error.code, error.message, error.param);
     case "classification_unavailable":
-      // The model failed or timed out: worth a retry (the SDK retries 503s).
+    case "phone_lookup_unavailable":
+      // The model failed or timed out, or there is no phone data provider: worth a retry (the SDK
+      // retries 503s).
       return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
     case "not_found":
       return new ApiError(404, {
