@@ -171,6 +171,13 @@ export interface Domain {
   receiving: ReceivingDomain | null;
   /** The last BIMI check: whether mailbox providers can find the domain's brand logo. */
   bimi: DomainBimi;
+  /**
+   * The sub-account the domain belongs to (only it sends from it, with its own reputation);
+   * `null` for the organization's own.
+   */
+  subaccount_id: string | null;
+  /** An organization's domain its sub-accounts may send from too. */
+  shared_with_subaccounts: boolean;
 }
 
 /** Body of `POST /v1/domains`. */
@@ -180,6 +187,20 @@ export interface CreateDomainParams {
    * Internationalized domains must be punycode-encoded.
    */
   name: string;
+  /** Add it for one of your live sub-accounts (its id or your uid): only it sends from it. */
+  subaccount?: string;
+}
+
+/** Query of `GET /v1/domains`. */
+export interface ListDomainsParams {
+  /** Only this sub-account's domains (its id or your uid). */
+  subaccount?: string;
+}
+
+/** Body of `PATCH /v1/domains/{id}`. */
+export interface UpdateDomainParams {
+  /** Let your sub-accounts send from this domain of yours (through your organization's reputation). */
+  shared_with_subaccounts: boolean;
 }
 
 /** Returned by `domains.delete`. */

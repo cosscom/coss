@@ -510,6 +510,7 @@ describe("GET /openapi.json", () => {
       ["post /v1/email_templates/{id}/versions/{version}/restore", "restoreEmailTemplateVersion"],
       ["post /v1/domains", "createDomain"],
       ["get /v1/domains", "listDomains"],
+      ["patch /v1/domains/{id}", "updateDomain"],
       ["get /v1/domains/{id}", "getDomain"],
       ["delete /v1/domains/{id}", "deleteDomain"],
       ["post /v1/domains/{id}/verify", "verifyDomain"],

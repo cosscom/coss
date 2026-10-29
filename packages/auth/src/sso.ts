@@ -12,7 +12,7 @@ import { db } from "@coss/db";
 import { ID_PREFIXES } from "@coss/db/id";
 import * as schema from "@coss/db/schema";
 import { emailDomainOf } from "@coss/signals/email";
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, isNull, ne } from "drizzle-orm";
 
 export { emailDomainOf };
 
@@ -70,6 +70,7 @@ export async function ssoDomainForEmail(
       name: schema.domain.name,
       organizationId: schema.domain.organizationId,
       status: schema.domain.status,
+      subaccountId: schema.domain.subaccountId,
     })
     .from(schema.domain)
     .where(
@@ -82,6 +83,8 @@ export async function ssoDomainForEmail(
   if (
     !match ||
     match.organizationId !== input.organizationId ||
+    // An email sub-account's domain is the customer's user's, never the organization's members'.
+    match.subaccountId !== null ||
     match.status !== "verified" ||
     !input.providerDomains.includes(match.name)
   ) {
@@ -103,6 +106,7 @@ export async function unverifiedSsoDomains(
     .where(
       and(
         eq(schema.domain.organizationId, organizationId),
+        isNull(schema.domain.subaccountId),
         inArray(schema.domain.name, [...domains]),
         eq(schema.domain.status, "verified"),
       ),

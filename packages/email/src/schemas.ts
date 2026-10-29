@@ -1707,6 +1707,8 @@ const DOMAIN_EXAMPLE = {
   tracking: TRACKING_DOMAIN_EXAMPLE,
   receiving: null,
   bimi: BIMI_EXAMPLE,
+  subaccount_id: null,
+  shared_with_subaccounts: false,
 } as const;
 
 export const DomainRecordObject = z
@@ -1909,6 +1911,13 @@ export const DomainObject = z
     // The receiving hostname (`null` when the domain doesn't receive email). A union, like `tracking`.
     receiving: z.union([ReceivingDomainObject, z.null()]),
     bimi: DomainBimiObject,
+    subaccount_id: z.string().nullable().meta({
+      description:
+        "The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own.",
+    }),
+    shared_with_subaccounts: z.boolean().meta({
+      description: "An organization's domain its sub-accounts may send from too.",
+    }),
   })
   .meta({ id: "Domain", examples: [DOMAIN_EXAMPLE] });
 
@@ -2008,8 +2017,29 @@ export const CreateDomainRequest = z
           "internationalized domains must be punycode-encoded.",
         examples: ["acme.com"],
       }),
+    subaccount: SubaccountRef.optional().meta({
+      description:
+        "Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends " +
+        "from it, through its own reputation.",
+      examples: ["user_8812"],
+    }),
   })
   .meta({ id: "CreateDomainRequest", examples: [{ name: "acme.com" }] });
+
+export const ListDomainsQuery = z.strictObject({
+  subaccount: SubaccountRef.optional().meta({
+    description: "Only this sub-account's domains (its id or your uid).",
+  }),
+});
+
+export const UpdateDomainRequest = z
+  .strictObject({
+    shared_with_subaccounts: z.boolean().meta({
+      description:
+        "Let your sub-accounts send from this domain of yours (through your organization's reputation).",
+    }),
+  })
+  .meta({ id: "UpdateDomainRequest", examples: [{ shared_with_subaccounts: true }] });
 
 export type CreateDomainRequestInput = z.input<typeof CreateDomainRequest>;
 

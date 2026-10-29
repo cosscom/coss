@@ -1197,7 +1197,9 @@ export const tenantSendingStatus = pgEnum("tenant_sending_status", [
 
 /**
  * The provider-side tenants of an organization, one per stream (an SES tenant: isolated
- * reputation, suppression list and pausing). Created with the organization's first domain.
+ * reputation, suppression list and pausing). Created with the organization's first domain. An
+ * email sub-account gets its own (transactional) tenant with its first own domain
+ * (`subaccount_id`).
  */
 export const emailTenant = pgTable(
   "email_tenant",
@@ -1205,10 +1207,11 @@ export const emailTenant = pgTable(
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+    subaccountId: text("subaccount_id"),
     // One tenant per stream: SES pauses (and rates) each on its own.
     stream: emailStream("stream").notNull().default("transactional"),
     provider: text("provider").notNull(),
-    tenantName: text("tenant_name").notNull().unique("email_tenant_name_unique"),
+    tenantName: text("tenant_name").primaryKey(),
     tenantArn: text("tenant_arn"),
     sendingStatus: tenantSendingStatus("sending_status").notNull().default("enabled"),
     // Bootstrap commits the imported lists and this marker together before disabling SES
@@ -1219,7 +1222,17 @@ export const emailTenant = pgTable(
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (t) => [primaryKey({ columns: [t.organizationId, t.stream] })],
+  (t) => [
+    unique("email_tenant_owner_stream_unique")
+      .on(t.organizationId, t.subaccountId, t.stream)
+      .nullsNotDistinct(),
+    // No cascade: deleting a sub-account deletes its provider tenant first.
+    foreignKey({
+      name: "email_tenant_subaccount_fk",
+      columns: [t.subaccountId, t.organizationId],
+      foreignColumns: [emailSubaccount.id, emailSubaccount.organizationId],
+    }),
+  ],
 );
 
 export const dedicatedIpPoolStatus = pgEnum("dedicated_ip_pool_status", [
@@ -1411,10 +1424,25 @@ export const domain = pgTable(
     createdByUserId: text("created_by_user_id").references(() => user.id, {
       onDelete: "set null",
     }),
+    // Email for platforms: the sub-account the domain belongs to (only it sends from it, through
+    // its own tenant). No cascade: deleting a sub-account releases its identities first.
+    subaccountId: text("subaccount_id"),
+    // An organization's domain its sub-accounts may send from too (through its tenant).
+    sharedWithSubaccounts: boolean("shared_with_subaccounts").notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
+    foreignKey({
+      name: "domain_subaccount_fk",
+      columns: [t.subaccountId, t.organizationId],
+      foreignColumns: [emailSubaccount.id, emailSubaccount.organizationId],
+    }),
+    check(
+      "domain_shared_not_subaccount",
+      sql`not (${t.sharedWithSubaccounts} and ${t.subaccountId} is not null)`,
+    ),
+    index("domain_subaccount_idx").on(t.subaccountId).where(sql`${t.subaccountId} is not null`),
     unique("domain_dmarc_report_token_unique").on(t.dmarcReportToken),
     uniqueIndex("domain_name_active_unique").on(t.name).where(sql`${t.status} <> 'failed'`),
     index("domain_organization_idx").on(t.organizationId),

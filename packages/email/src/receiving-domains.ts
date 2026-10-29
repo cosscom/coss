@@ -208,6 +208,12 @@ export async function createReceivingDomain(
     )
     .limit(1);
   if (!target) throw new DomainError("not_found", "No such environment in this organization.");
+  if (parent.subaccountId) {
+    throw new DomainError(
+      "subaccount_domain",
+      "Sub-accounts' domains don't have receiving domains yet.",
+    );
+  }
   const hostname = normalizeReceivingHostname(input.hostname, parent, config);
   if (await getReceivingDomain(input)) {
     throw new DomainError(

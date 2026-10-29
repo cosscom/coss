@@ -198,6 +198,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "GET /v1/domains": "domains.list",
   "GET /v1/dedicated_ips": "email.dedicatedIps.get",
   "GET /v1/domains/{id}": "domains.get",
+  "PATCH /v1/domains/{id}": "domains.update",
   "POST /v1/domains/{id}/verify": "domains.verify",
   "DELETE /v1/domains/{id}": "domains.delete",
   "POST /v1/domains/{id}/tracking": "domains.tracking.create",

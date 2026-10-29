@@ -117,6 +117,16 @@ describe("SesEmailProvider", () => {
     });
   });
 
+  test("an email from a sub-account's domain goes through the sub-account's tenant", async () => {
+    const api = new FakeSesApi();
+    const provider = new SesEmailProvider(api, config);
+    await provider.send(outbound({ tenantSubaccountId: "sub_01k7c8m4q2f3e9v6t5r1n0p8yz" }));
+    expect(api.sent[0]).toMatchObject({
+      ConfigurationSetName: "coss-test",
+      TenantName: "test-sub_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    });
+  });
+
   test("hands attachments to SES, inline ones with their content id", async () => {
     const api = new FakeSesApi();
     const provider = new SesEmailProvider(api, config);

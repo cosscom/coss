@@ -31,6 +31,7 @@ import {
   recheckDueTrackingDomains,
   reconcileDedicatedIpPools,
   releaseOrganizationEmailResources,
+  releaseSubaccountEmailResources,
   runDueBroadcasts,
   runDueDmarcNotifications,
   runDueSubaccountDeletions,
@@ -440,7 +441,7 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       intervalMs: 10_000,
       run: async () =>
         (await runDueSubaccountDeletions(
-          { release: async () => {} },
+          { release: (row) => releaseSubaccountEmailResources(row, deps.domains) },
           { limit: DELETION_BATCH },
         )) === DELETION_BATCH,
     }),

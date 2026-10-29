@@ -80,14 +80,22 @@ export class SesIdentityProvider implements IdentityProvider {
   async ensureTenant(input: {
     organizationId: string;
     stream: EmailStream;
+    subaccountId?: string | null;
   }): Promise<ProviderTenant> {
-    const tenantName = tenantNameFor(this.#config.tenantPrefix, input.organizationId, input.stream);
+    const tenantName = tenantNameFor(
+      this.#config.tenantPrefix,
+      input.subaccountId ?? input.organizationId,
+      input.stream,
+    );
     let tenantArn: string | undefined;
     try {
       const created = await this.#api.createTenant({
         TenantName: tenantName,
         SuppressionAttributes: TENANT_SUPPRESSION,
-        Tags: [{ Key: "coss_organization_id", Value: input.organizationId }],
+        Tags: [
+          { Key: "coss_organization_id", Value: input.organizationId },
+          ...(input.subaccountId ? [{ Key: "coss_subaccount_id", Value: input.subaccountId }] : []),
+        ],
       });
       tenantArn = created.TenantArn;
     } catch (error) {

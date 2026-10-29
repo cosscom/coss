@@ -24,9 +24,11 @@ export class FakeIdentityProvider implements IdentityProvider {
   async ensureTenant(input: {
     organizationId: string;
     stream: EmailStream;
+    subaccountId?: string | null;
   }): Promise<ProviderTenant> {
     const suffix = input.stream === "transactional" ? "" : `-${input.stream}`;
-    return { tenantName: `fake-${input.organizationId}${suffix}`, tenantArn: null };
+    const owner = input.subaccountId ?? input.organizationId;
+    return { tenantName: `fake-${owner}${suffix}`, tenantArn: null };
   }
 
   async createDomainIdentity(input: { domain: string }): Promise<DomainIdentity> {

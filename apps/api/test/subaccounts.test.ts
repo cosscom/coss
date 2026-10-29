@@ -365,4 +365,57 @@ describe("sub-accounts API", () => {
       expect.arrayContaining([expect.objectContaining({ path: "subaccount" })]),
     );
   });
+
+  test("domains for a sub-account, listed by sub-account, and shared parent domains", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const key = tenant.liveKey;
+    await json(
+      await apiRequest(app, "POST", "/v1/subaccounts", { key, body: { name: "A", uid: "a" } }),
+    );
+    const suffix = crypto.randomUUID().slice(0, 8);
+    const own = await json<{ id: string; subaccount_id: string | null }>(
+      await apiRequest(app, "POST", "/v1/domains", {
+        key,
+        body: { name: `own-${suffix}.coss.test` },
+      }),
+    );
+    const theirs = await json<{ id: string; subaccount_id: string | null }>(
+      await apiRequest(app, "POST", "/v1/domains", {
+        key,
+        body: { name: `a-${suffix}.coss.test`, subaccount: "a" },
+      }),
+    );
+    expect(own.subaccount_id).toBeNull();
+    expect(theirs.subaccount_id).toStartWith("sub_");
+
+    const listed = await json<{ data: { id: string }[] }>(
+      await apiRequest(app, "GET", "/v1/domains?subaccount=a", { key }),
+    );
+    expect(listed.data.map((row) => row.id)).toEqual([theirs.id]);
+
+    const shared = await json<{ shared_with_subaccounts: boolean }>(
+      await apiRequest(app, "PATCH", `/v1/domains/${own.id}`, {
+        key,
+        body: { shared_with_subaccounts: true },
+      }),
+    );
+    expect(shared.shared_with_subaccounts).toBe(true);
+    const refused = await apiRequest(app, "PATCH", `/v1/domains/${theirs.id}`, {
+      key,
+      body: { shared_with_subaccounts: true },
+    });
+    expect(refused.status).toBe(422);
+    expect((await errorOf(refused)).code).toBe("not_shareable");
+
+    const unknown = await apiRequest(app, "POST", "/v1/domains", {
+      key,
+      body: { name: `x-${suffix}.coss.test`, subaccount: "nobody" },
+    });
+    expect(unknown.status).toBe(422);
+    expect(await errorOf(unknown)).toMatchObject({
+      code: "subaccount_not_found",
+      param: "subaccount",
+    });
+  });
 });

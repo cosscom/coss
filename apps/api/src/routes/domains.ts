@@ -5,6 +5,7 @@ import {
   createReceivingDomain,
   createTrackingDomain,
   type DomainDeps,
+  DomainError,
   type DomainRow,
   deleteDomain,
   deleteReceivingDomain,
@@ -12,13 +13,16 @@ import {
   dmarcOverview,
   domainObject,
   domainObjects,
+  findSubaccount,
   getDmarcReport,
   getDomain,
   getReceivingDomain,
   listDmarcReports,
   listDomains,
   MAX_PENDING_DOMAINS,
+  MAX_SUBACCOUNT_DOMAINS,
   restartDomainVerification,
+  setDomainSharedWithSubaccounts,
   verifyTrackingDomain,
 } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
@@ -34,6 +38,8 @@ import {
   DomainList,
   DomainObject,
   ListDmarcReportsQuery,
+  ListDomainsQuery,
+  UpdateDomainRequest,
 } from "@coss/email/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
@@ -93,9 +99,44 @@ export const createDomainRoute = createRoute({
     422: errorDoc(
       "The body failed validation (`validation_error`), the name is not a usable domain " +
         "(`invalid_domain`), it is already in use here or by another account (`domain_taken`), " +
-        `or ${PENDING_LIMIT} (\`too_many_pending_domains\`).`,
+        `or ${PENDING_LIMIT} (\`too_many_pending_domains\`). For a sub-account: it doesn't exist ` +
+        "in the API key's environment (`subaccount_not_found`), isn't live " +
+        "(`subaccount_not_live`), or has " +
+        `${MAX_SUBACCOUNT_DOMAINS} domains already (\`too_many_subaccount_domains\`).`,
     ),
     502: errorDoc("The delivery provider could not set the domain up; retry (`provider_error`)."),
+  },
+});
+
+export const updateDomainRoute = createRoute({
+  method: "patch",
+  path: "/domains/{id}",
+  operationId: "updateDomain",
+  tags: ["Domains"],
+  summary: "Update a sending domain",
+  description:
+    "Shares one of the organization's own domains with its sub-accounts (they may then send from " +
+    "it, through the organization's reputation), or stops sharing it.",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ domain: ["create"] }),
+    rateLimit("api.write"),
+    upgradeRequestBody("PATCH /v1/domains/{id}"),
+  ],
+  request: {
+    params: DomainIdParams,
+    body: { required: true, content: { "application/json": { schema: UpdateDomainRequest } } },
+  },
+  responses: {
+    200: jsonDoc("The domain.", DomainObject),
+    400: errorDoc("The body is not valid JSON (`invalid_json`)."),
+    ...commonErrors,
+    404: domainNotFound,
+    413: errorDoc("The request body is larger than 5 MB (`payload_too_large`)."),
+    415: errorDoc("The body is not sent as `application/json` (`unsupported_media_type`)."),
+    422: errorDoc(
+      "The body failed validation (`validation_error`), or the domain is a sub-account's (`not_shareable`).",
+    ),
   },
 });
 
@@ -108,9 +149,13 @@ export const listDomainsRoute = createRoute({
   description: `Every domain of the organization, ordered by name. ${SCOPE_NOTE}`,
   security: [{ bearerAuth: [] }],
   middleware: [requireApiKey({ domain: ["read"] }), rateLimit("api.read")],
+  request: { query: ListDomainsQuery },
   responses: {
     200: jsonDoc("The organization's domains.", DomainList),
     ...commonErrors,
+    422: errorDoc(
+      "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
+    ),
   },
 });
 
@@ -418,25 +463,68 @@ export function createDomainRoutes(
     return row;
   }
 
+  /** The sub-account a body or query names, in the key's environment (a field at fault: 422). */
+  async function namedSubaccount(
+    auth: AppEnv["Variables"]["auth"],
+    ref: string | undefined,
+  ): Promise<string | undefined> {
+    if (ref === undefined) return undefined;
+    const row = await findSubaccount({
+      organizationId: auth.organizationId,
+      environmentId: auth.environmentId,
+      ref,
+    });
+    if (!row || row.status === "deleting") {
+      throw new DomainError("subaccount_not_found", `No sub-account "${ref}" exists here.`);
+    }
+    return row.id;
+  }
+
   router.openapi(createDomainRoute, async (c) => {
-    const { name } = c.req.valid("json");
+    const { name, subaccount } = c.req.valid("json");
+    const subaccountId = await namedSubaccount(c.var.auth, subaccount);
     // Tenancy always comes from the authenticated key, never from the request. There is no user
     // behind an API key, so the domain records no creator.
     const row = await createDomain(
-      { organizationId: c.var.auth.organizationId, name, userId: null },
+      { organizationId: c.var.auth.organizationId, name, userId: null, subaccountId },
       deps,
     );
     await recordApiAudit(c, {
       action: "domain.created",
       target: { type: "domain", id: row.id, label: row.name },
       environmentScoped: false,
+      ...(subaccountId && { metadata: { subaccount_id: subaccountId } }),
     });
+    return c.json(await domainObject(row, dmarcReportDomain), 200);
+  });
+
+  router.openapi(updateDomainRoute, async (c) => {
+    const { id } = c.req.valid("param");
+    const body = c.req.valid("json");
+    const existing = await requireDomain(c.var.auth.organizationId, id);
+    const row = await setDomainSharedWithSubaccounts({
+      organizationId: existing.organizationId,
+      id: existing.id,
+      shared: body.shared_with_subaccounts,
+    });
+    if (existing.sharedWithSubaccounts !== row.sharedWithSubaccounts) {
+      await recordApiAudit(c, {
+        action: "domain.updated",
+        target: { type: "domain", id: row.id, label: row.name },
+        environmentScoped: false,
+        metadata: { shared_with_subaccounts: row.sharedWithSubaccounts },
+      });
+    }
     return c.json(await domainObject(row, dmarcReportDomain), 200);
   });
 
   router.openapi(listDomainsRoute, async (c) => {
     const { organizationId } = c.var.auth;
-    const rows = await listDomains({ organizationId });
+    const query = c.req.valid("query");
+    const rows = await listDomains({
+      organizationId,
+      subaccountId: await namedSubaccount(c.var.auth, query.subaccount),
+    });
     return c.json(
       {
         object: "list" as const,
