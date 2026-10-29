@@ -4,6 +4,7 @@
  * database: `@coss/email/schemas` is safe to load anywhere.
  */
 import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
+import { FORM_WEBHOOK_EVENT_TYPES } from "@coss/forms/schemas";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { RISK_EVENT_TYPES } from "@coss/risk/schemas";
 import { SIGN_WEBHOOK_EVENT_TYPES } from "@coss/sign/schemas";
@@ -909,8 +910,8 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
  * organization's domain events (`domain.*`), reputation changes (`account.*`, and each
  * sub-account's `subaccount.*`) and billing events (`billing.*`), all delivered to live
  * environments only, risk reviews (`risk.*`), contact changes (`contact.*`), broadcasts, inbox
- * messages (`inbox.*`), SMS (`sms.*`), signature requests (`sign_request.*`) and verifications
- * (`verification.*`).
+ * messages (`inbox.*`), SMS (`sms.*`), signature requests (`sign_request.*`), verifications
+ * (`verification.*`) and form submissions (`form.submission.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
@@ -927,6 +928,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...SMS_WEBHOOK_EVENT_TYPES,
   ...SIGN_WEBHOOK_EVENT_TYPES,
   ...VERIFY_WEBHOOK_EVENT_TYPES,
+  ...FORM_WEBHOOK_EVENT_TYPES,
 ] as const;
 // Examples shown in the API reference; test/schema-examples.test.ts parses each with its schema.
 const EMAIL_ID_EXAMPLE = "email_01k7c8m4q2f3e9v6t5r1n0p8yz";

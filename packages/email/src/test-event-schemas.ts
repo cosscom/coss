@@ -3,6 +3,7 @@
  * no database imports: `@coss/email/test-event-schemas` is safe to load anywhere.
  */
 import { BILLING_EVENT_TYPES } from "@coss/billing/wire";
+import { FORM_WEBHOOK_EVENT_TYPES, FormSubmissionWebhookEvent } from "@coss/forms/schemas";
 import { ACCOUNT_EVENT_TYPES } from "@coss/reputation/schemas";
 import { RISK_EVENT_TYPES, RiskWebhookEvent } from "@coss/risk/schemas";
 import { SIGN_WEBHOOK_EVENT_TYPES, SignRequestWebhookEvent } from "@coss/sign/schemas";
@@ -55,6 +56,7 @@ export const TEST_WEBHOOK_EVENT_TYPES = [
   ...RECEIVED_SMS_EVENT_TYPES,
   ...SIGN_WEBHOOK_EVENT_TYPES,
   ...VERIFY_WEBHOOK_EVENT_TYPES,
+  ...FORM_WEBHOOK_EVENT_TYPES,
 ] as const;
 
 export type TestWebhookEventType = (typeof TEST_WEBHOOK_EVENT_TYPES)[number];
@@ -73,6 +75,7 @@ export function webhookEventSchema(type: TestWebhookEventType): z.ZodType {
   if (type.startsWith("sms.")) return SmsWebhookEvent;
   if (type.startsWith("sign_request.")) return SignRequestWebhookEvent;
   if (type.startsWith("verification.")) return VerificationWebhookEvent;
+  if (type.startsWith("form.")) return FormSubmissionWebhookEvent;
   return BroadcastWebhookEvent;
 }
 
@@ -140,6 +143,7 @@ export const WebhookTestEventObject = z
         ReceivedSmsWebhookEvent,
         SignRequestWebhookEvent,
         VerificationWebhookEvent,
+        FormSubmissionWebhookEvent,
       ])
       .meta({
         description:

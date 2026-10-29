@@ -8,6 +8,7 @@ import type { BillingHoldReason, Credit, InvoiceSummary, Meter, PlanKey } from "
 import type { BroadcastStats, BroadcastStatus } from "./broadcast.ts";
 import type { ContactSource, ContactStatus } from "./contact.ts";
 import type { EmailEventData, EmailEventType, EmailTag } from "./email.ts";
+import type { FormSubmissionWebhookEvent } from "./forms.ts";
 import type { InboxMessageReceivedWebhookEvent } from "./inbox.ts";
 import type { ReceivedEmailVerdicts } from "./received-email.ts";
 import type { MarketingStanding, ReputationCheck, ReputationStatus } from "./reputation.ts";
@@ -470,4 +471,5 @@ export type WebhookEvent =
   | SmsWebhookEvent
   | ReceivedSmsWebhookEvent
   | SignRequestWebhookEvent
-  | VerificationWebhookEvent;
+  | VerificationWebhookEvent
+  | FormSubmissionWebhookEvent;

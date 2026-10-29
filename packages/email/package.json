@@ -31,6 +31,7 @@
     "@aws-sdk/client-sesv2": "catalog:",
     "@coss/billing": "workspace:*",
     "@coss/db": "workspace:*",
+    "@coss/forms": "workspace:*",
     "@coss/logs": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",

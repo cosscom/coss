@@ -8,6 +8,7 @@ import { startJobBoss } from "@coss/db/jobs";
 import { createEmailService, notificationEnvironment } from "@coss/email";
 import { ensureEmailDispatchQueues, pgBossDispatchQueue } from "@coss/email/dispatch";
 import { linkKeysFromEnv } from "@coss/email/runtime";
+import { formsStoreFromEnv } from "@coss/forms/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
 import { createRiskDeps, riskHashKeyFromEnv } from "@coss/risk/runtime";
@@ -122,6 +123,12 @@ const app = createApp({
   publicUrl: env.API_PUBLIC_URL,
   portalUrl: env.PORTAL_PUBLIC_URL ?? null,
   signUrl: env.SIGN_PUBLIC_URL ?? null,
+  // Forms' public endpoint answers only on FORMS_PUBLIC_URL's host in production.
+  forms: {
+    url: env.FORMS_PUBLIC_URL ?? null,
+    store: formsStoreFromEnv(env),
+    hostOnly: process.env.NODE_ENV === "production",
+  },
   rateLimiter: rateLimits.limiter,
   clientIp: rateLimits.clientIp,
 

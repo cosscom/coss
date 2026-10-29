@@ -158,6 +158,7 @@ import type {
   CreateTestWebhookEventRequest,
   WebhookTestEventObject,
 } from "@coss/email/test-event-schemas";
+import type { FormSubmissionWebhookEvent } from "@coss/forms/schemas";
 import type {
   LogDrainSource as ApiLogDrainSource,
   AuditEvent,
@@ -683,7 +684,8 @@ export type Contract = [
       | z.output<typeof SmsWebhookEvent>
       | z.output<typeof ReceivedSmsWebhookEvent>
       | z.output<typeof SignRequestWebhookEvent>
-      | z.output<typeof VerificationWebhookEvent>,
+      | z.output<typeof VerificationWebhookEvent>
+      | z.output<typeof FormSubmissionWebhookEvent>,
       WebhookEvent
     >
   >,

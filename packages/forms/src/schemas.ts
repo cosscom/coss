@@ -45,6 +45,8 @@ export const MAX_FORM_FIELDS = 50;
 export const MAX_FORM_FIELD_OPTIONS = 50;
 /** Fields one submission can carry (named, defined or not), its control fields aside. */
 export const MAX_SUBMISSION_FIELDS = 100;
+/** Values one submission can carry in all (a field repeated for checkboxes counts each). */
+export const MAX_SUBMISSION_VALUES = 1000;
 export const MAX_SUBMISSION_VALUE_LENGTH = 10_000;
 /** Text of one submission, every value counted in UTF-8. */
 export const MAX_SUBMISSION_TEXT_BYTES = 64 * 1024;

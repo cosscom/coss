@@ -14,6 +14,7 @@ import {
 import type { InboundRuntime } from "@coss/email/runtime";
 import type { SendEmailRequestInput } from "@coss/email/schemas";
 import { createVerifiedDomain, memoryDispatchQueue } from "@coss/email/testing";
+import type { FormFileStore } from "@coss/forms";
 import type { LogEntryInput, LogWriter } from "@coss/logs";
 import type { ClientIpResolver, RateLimiter } from "@coss/ratelimit";
 import type { RiskDeps } from "@coss/risk";
@@ -50,6 +51,8 @@ export function createTestApp(
     signUrl?: string | null;
     /** Verify's shared numbers and coss.com's email sender (none by default). */
     verify?: CreateAppOptions["verify"];
+    /** Defaults to the local API's origin and the fake file store. */
+    forms?: { url?: string | null; store?: FormFileStore | null; hostOnly?: boolean };
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
@@ -108,6 +111,7 @@ export function createTestApp(
     signService: opts.signService,
     signUrl: opts.signUrl,
     verify: opts.verify,
+    forms: opts.forms,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },

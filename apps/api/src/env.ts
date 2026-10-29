@@ -1,4 +1,5 @@
 import { emailEnvShape, emailLinkEnvShape } from "@coss/email/env";
+import { formsPublicEnvShape, formsStoreEnvShape } from "@coss/forms/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
@@ -67,6 +68,10 @@ export const env = createEnv({
     ...verifyEnvShape,
     NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
     NOTIFICATIONS_FROM: z.string().optional(),
+    // Where forms are served (`/f/<id>`, a domain of its own in production; unset there: Forms is
+    // off) and where their uploads live (with AWS_REGION; unset in production: no uploads).
+    ...formsPublicEnvShape,
+    FORMS_FILES_BUCKET: formsStoreEnvShape.FORMS_FILES_BUCKET,
     ...rateLimitEnvShape,
     // Keys what risk assessments remember (velocity, duplicates, fraud reports).
     RISK_HASH_KEY:

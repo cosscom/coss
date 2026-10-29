@@ -34,6 +34,8 @@ const EVENT_CATEGORY_LABELS: Record<string, string> = {
   contact: "Contacts",
   broadcast: "Broadcasts",
   sms: "SMS",
+  sign_request: "Sign",
+  form: "Forms",
 };
 
 export function CreateEndpointDialog(props: Target & { eventTypes: readonly string[] }) {

@@ -1,6 +1,7 @@
 import type { PlanGate, UsageGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
+import { FakeFormFileStore, type FormFileStore } from "@coss/forms";
 import { type LogWriter, noopLogWriter } from "@coss/logs";
 import {
   type ClientIpResolver,
@@ -25,6 +26,7 @@ import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { requestLog } from "./middleware/request-log.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
+import { createFormRoutes, FORMS_PATH_PREFIX } from "./routes/forms-public.ts";
 import { createPreferenceRoutes } from "./routes/preferences.ts";
 import { createSmsCallbackRoutes, SMS_CALLBACK_PATH } from "./routes/sms-callbacks.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
@@ -93,6 +95,12 @@ export type CreateAppOptions = {
    * app; `null` (not deployed) makes creating a signing session fail with 503.
    */
   signUrl?: string | null;
+  /**
+   * Forms: where they are served (`FORMS_PUBLIC_URL`; default the local API, `null` turns new
+   * forms and the public endpoint off) and the uploads' store (default the fake store, `null`
+   * refuses files). `hostOnly` (production) serves `/f/*` only on that URL's host.
+   */
+  forms?: { url?: string | null; store?: FormFileStore | null; hostOnly?: boolean };
   /** Defaults to in-memory counters (one per app), which only suit tests and a single process. */
   rateLimiter?: RateLimiter;
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
@@ -148,6 +156,8 @@ export function createApp(opts: CreateAppOptions) {
   const rateLimiter = opts.rateLimiter ?? createRateLimiter({ store: new MemoryStore() });
   const clientIp = opts.clientIp ?? (() => null);
   const versioning = opts.versioning ?? apiVersioning;
+  const formsUrl = opts.forms?.url === undefined ? "http://localhost:3001" : opts.forms.url;
+  const formsStore = opts.forms?.store === undefined ? new FakeFormFileStore() : opts.forms.store;
   // Sub-routers inherit this hook: every validation failure becomes the 422 envelope.
   const app = new OpenAPIHono<AppEnv>({ defaultHook: validationHook });
 
@@ -182,8 +192,17 @@ export function createApp(opts: CreateAppOptions) {
   const strictHeaders = secureHeaders();
   // Mail clients and webmail load the open pixel from other origins.
   const trackingHeaders = secureHeaders({ crossOriginResourcePolicy: "cross-origin" });
+  // Customers' sites read forms' JSON answers (CORS) and frame hosted pages their CSP allows.
+  const formHeaders = secureHeaders({
+    crossOriginResourcePolicy: "cross-origin",
+    xFrameOptions: false,
+  });
   app.use((c, next) =>
-    (c.req.path.startsWith(TRACKING_PATH_PREFIX) ? trackingHeaders : strictHeaders)(c, next),
+    (c.req.path.startsWith(TRACKING_PATH_PREFIX)
+      ? trackingHeaders
+      : c.req.path.startsWith(FORMS_PATH_PREFIX)
+        ? formHeaders
+        : strictHeaders)(c, next),
   );
   const defaultBodyLimit = limitBody(BODY_LIMIT_BYTES);
   app.use((c, next) => (hasOwnBodyLimit(c) ? next() : defaultBodyLimit(c, next)));
@@ -214,6 +233,20 @@ export function createApp(opts: CreateAppOptions) {
     SMS_CALLBACK_PATH,
     createSmsCallbackRoutes({ keys: opts.webhookDeps.secretsKeys, publicUrl: opts.publicUrl }),
   );
+
+  // Forms' public endpoint, where customers' sites post (its own host in production).
+  if (formsUrl) {
+    app.route(
+      "/f",
+      createFormRoutes({
+        riskDeps: opts.riskDeps,
+        store: formsStore,
+        links: { publicUrl: formsUrl },
+        hostOnly: opts.forms?.hostOnly ? new URL(formsUrl).host.toLowerCase() : null,
+        billing: opts.billing,
+      }),
+    );
+  }
 
   app.route(
     "/v1",

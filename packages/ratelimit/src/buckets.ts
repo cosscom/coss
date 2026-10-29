@@ -610,6 +610,47 @@ export const BUCKETS = {
     overridable: false,
     failureMode: "deny",
   },
+  // Forms' public endpoint (`/f/:id`): per form (checked before any database work), per client IP,
+  // and per organization per day (once the form is known). Public ingress: deny on store errors.
+  "forms.submit.form": {
+    scope: "key",
+    limit: 10,
+    periodMs: SECOND,
+    burst: 50,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "forms.submit.ip": {
+    scope: "ip",
+    limit: 20,
+    periodMs: MINUTE,
+    burst: 20,
+    overridable: false,
+    failureMode: "deny",
+  },
+  "forms.submissions.day": {
+    scope: "org",
+    limit: 10_000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  // Submitter verification emails: the customer's sends, capped per organization and per address
+  // across every organization (like double opt-in confirmations).
+  "forms.verifications.day": {
+    scope: "org",
+    limit: 1000,
+    periodMs: DAY,
+    overridable: true,
+    failureMode: "deny",
+  },
+  "forms.verification.address": {
+    scope: "email",
+    limit: 3,
+    periodMs: DAY,
+    overridable: false,
+    failureMode: "deny",
+  },
   "portal.ip": {
     scope: "ip",
     limit: 50,

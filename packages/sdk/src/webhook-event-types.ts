@@ -73,6 +73,8 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "verification.approved",
   "verification.failed",
   "verification.blocked",
+  "form.submission.received",
+  "form.submission.flagged",
 ];
 
 /** Types only live environments receive: `domain.*`, `account.*`, `subaccount.*` and `billing.*`. */
