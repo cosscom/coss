@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createUsageGate } from "@coss/billing";
 import { PLANS } from "@coss/billing/catalog";
+import { createTestContract } from "@coss/billing/testing";
 import { db, schema } from "@coss/db";
 import { and, eq } from "drizzle-orm";
 import type { RiskDeps } from "../src/assess.ts";
@@ -208,13 +209,20 @@ describe("checkPhone", () => {
     expect(await usage()).toBe(2);
   });
 
-  test("Free stops at its allowance; failed lookups give their reservation back", async () => {
-    const included = PLANS.free.includedUnits["risk.phone_checks"];
+  test("a capped plan stops at its allowance; failed lookups give their reservation back", async () => {
+    expect(PLANS.free.includedUnits["risk.phone_checks"]).toBe(100);
+    const included = 3;
     const phoneLookup = fakePhoneLookup({ "+14155550124": "fail" });
     const { deps, environment, organizationId, usage } = await phoneSetup({
       phoneLookup,
       usage: createUsageGate(),
     });
+    // Free's terms with a smaller allowance (the cap is the included units on Free).
+    await createTestContract(
+      organizationId,
+      { version: 1, plan: "free", includedUnits: { "risk.phone_checks": included } },
+      { effectiveFrom: new Date(Date.now() - 60_000), kind: "sales" },
+    );
     for (let i = 1; i < included; i++) await checkPhone(deps, environment, "+14155550123");
     await checkPhone(deps, environment, "+14155550124");
     await checkPhone(deps, environment, "+14155550123");

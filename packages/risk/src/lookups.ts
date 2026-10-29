@@ -265,6 +265,8 @@ export async function checkPhone(
   }
   const usage = { organizationId, meter: PHONE_METER, quantity: 1 } as const;
   const gate = deps.usage;
+  // A release goes back to the month the reservation was made in, even after midnight.
+  const reservedAt = new Date();
   if (gate) await db.transaction((tx) => gate.reserve(tx, usage));
   const timeoutMs = deps.phoneLookupTimeoutMs ?? DEFAULT_PHONE_LOOKUP_TIMEOUT_MS;
   let data: PhoneData | null = null;
@@ -278,17 +280,20 @@ export async function checkPhone(
     // Nothing to bill for: the reservation goes back.
     if (gate?.release) {
       const release = gate.release.bind(gate);
-      await db.transaction((tx) => release(tx, usage));
+      await db.transaction((tx) => release(tx, { ...usage, reservedAt }));
     }
     return data ? phoneCheck(phone, data) : { ...unknown, degraded: ["phone_data"] };
   }
-  await recordUsage(db, {
-    ...usage,
-    environmentId: environment.environmentId,
-    projectId: environment.projectId,
-    apiKeyId: environment.apiKeyId,
-    userId: environment.userId,
-  });
+  // Counter and attribution commit together, in one hour.
+  await db.transaction((tx) =>
+    recordUsage(tx, {
+      ...usage,
+      environmentId: environment.environmentId,
+      projectId: environment.projectId,
+      apiKeyId: environment.apiKeyId,
+      userId: environment.userId,
+    }),
+  );
   return phoneCheck(phone, data);
 }
 
