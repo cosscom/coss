@@ -137,6 +137,11 @@ export type EmailService = {
     environmentId: string;
     emailId: string;
   }): Promise<EmailObjectOutput>;
+  /**
+   * The `Message-ID` an email got from the provider that accepted it (replies reference it);
+   * `null` before that, or when the provider doesn't say.
+   */
+  messageIdOf?(email: { provider: string | null; providerMessageId: string | null }): string | null;
   /** Moves a scheduled email to a new time (`scheduled_at`, already validated). */
   reschedule(input: {
     organizationId: string;
@@ -1585,6 +1590,13 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     cancel: cancelScheduledEmail,
     reschedule: rescheduleEmail,
     dispatchDue,
+    messageIdOf(row) {
+      if (!row.provider || !row.providerMessageId) return null;
+      const provider = [opts.liveProvider, opts.sandboxProvider].find(
+        (candidate) => candidate.name === row.provider,
+      );
+      return provider?.messageId?.(row.providerMessageId) ?? null;
+    },
   };
 }
 

@@ -51,6 +51,13 @@ export type InboxSendQuota = {
   refund(): Promise<void>;
 };
 
+export type InboxSendResult = {
+  message: InboxMessageObjectOutput;
+  replayed: boolean;
+  /** The email's content storage, snapshotted at send (request logs redact discarded content). */
+  contentStorage: EmailObjectOutput["content_storage"]["mode"];
+};
+
 export type InboxSendInput = {
   environment: InboxEnvironment;
   apiKeyId: string | null;
@@ -104,7 +111,7 @@ async function requireSendingInbox(input: InboxSendInput): Promise<InboxRow> {
 async function send(
   emailService: EmailService,
   input: InboxSendInput & { row: InboxRow; threadId: string | null; params: unknown },
-): Promise<{ message: InboxMessageObjectOutput; replayed: boolean }> {
+): Promise<InboxSendResult> {
   const parsed = SendEmailRequest.safeParse(input.params);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -125,7 +132,9 @@ async function send(
         row: input.row,
         threadId: input.threadId,
         emailId: row.id,
-        subject: row.subject,
+        // Content storage `discard`: the subject goes with the email's content, so a new thread
+        // keeps none.
+        subject: row.storeContent ? row.subject : null,
         to: row.to,
         cc: row.cc,
         at: row.createdAt,
@@ -155,7 +164,7 @@ async function send(
       "This request was already sent, and its message has been deleted from the inbox since.",
     );
   }
-  return { message, replayed };
+  return { message, replayed, contentStorage: email.content_storage.mode };
 }
 
 async function sendWithQuota(
@@ -186,7 +195,7 @@ async function sendWithQuota(
 export async function sendInboxMessage(
   emailService: EmailService,
   input: InboxSendInput & { request: SendInboxMessageRequestOutput },
-): Promise<{ message: InboxMessageObjectOutput; replayed: boolean }> {
+): Promise<InboxSendResult> {
   const row = await requireSendingInbox(input);
   const { request } = input;
   return send(emailService, {
@@ -215,7 +224,7 @@ export async function sendInboxMessage(
 export async function replyToInboxMessage(
   emailService: EmailService,
   input: InboxSendInput & { messageId: string; request: ReplyInboxMessageRequestOutput },
-): Promise<{ message: InboxMessageObjectOutput; replayed: boolean }> {
+): Promise<InboxSendResult> {
   const row = await requireSendingInbox(input);
   const scope = { ...input.environment, inboxId: row.id };
   const parent = await getInboxMessageRow({ ...scope, id: input.messageId });
@@ -244,8 +253,10 @@ export async function replyToInboxMessage(
     const headers = Object.fromEntries(
       Object.entries(outbound.headers).map(([name, value]) => [name.toLowerCase(), value]),
     );
-    inReplyTo = messageIdKey(headers["in-reply-to"]);
-    references = replyReferences(headers.references?.split(/\s+/) ?? [], null);
+    // The inbox's own message, once its provider gave it a Message-ID; else what it answered.
+    const parentId = emailService.messageIdOf?.(outbound) ?? null;
+    inReplyTo = messageIdKey(parentId ?? headers["in-reply-to"]);
+    references = replyReferences(headers.references?.split(/\s+/) ?? [], parentId);
   } else {
     throw new InboxError(
       "message_not_found",

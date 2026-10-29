@@ -44,6 +44,7 @@ import { notFound } from "../errors.ts";
 import { requireApiKey } from "../middleware/api-key.ts";
 import { upgradeRequestBody } from "../middleware/api-version.ts";
 import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
+import { markEmailContent } from "../middleware/request-log.ts";
 import type { AppEnv } from "../types.ts";
 import { commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
 import { idempotencyHeaders, idempotencyHook, idempotentReplayedHeader } from "./idempotency.ts";
@@ -623,10 +624,11 @@ export function createInboxRoutes(deps: {
     async (c) => {
       const { inbox_id: inboxId } = c.req.valid("param");
       const key = c.req.valid("header")["Idempotency-Key"];
-      const { message, replayed } = await sendInboxMessage(deps.emailService, {
+      const { message, replayed, contentStorage } = await sendInboxMessage(deps.emailService, {
         ...sender(c, inboxId, key),
         request: c.req.valid("json"),
       });
+      markEmailContent(c, [{ content_storage: { mode: contentStorage } }]);
       if (replayed) c.header("Idempotent-Replayed", "true");
       return c.json(message, 202);
     },
@@ -640,11 +642,12 @@ export function createInboxRoutes(deps: {
     async (c) => {
       const { inbox_id: inboxId, message_id: messageId } = c.req.valid("param");
       const key = c.req.valid("header")["Idempotency-Key"];
-      const { message, replayed } = await replyToInboxMessage(deps.emailService, {
+      const { message, replayed, contentStorage } = await replyToInboxMessage(deps.emailService, {
         ...sender(c, inboxId, key),
         messageId,
         request: c.req.valid("json"),
       });
+      markEmailContent(c, [{ content_storage: { mode: contentStorage } }]);
       if (replayed) c.header("Idempotent-Replayed", "true");
       return c.json(message, 202);
     },

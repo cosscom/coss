@@ -270,6 +270,7 @@ export {
 export {
   type InboxSendInput,
   type InboxSendQuota,
+  type InboxSendResult,
   replyToInboxMessage,
   sendInboxMessage,
 } from "./inbox-send.ts";

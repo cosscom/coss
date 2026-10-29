@@ -29,6 +29,7 @@ import {
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { deleteReceivedEmail } from "../src/received-emails.ts";
 import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { updateStorageSettings } from "../src/storage-settings.ts";
 import { createVerifiedDomain, dispatchingEmailService } from "../src/testing.ts";
 
 const MANAGED = "inbound.coss.test";
@@ -365,7 +366,7 @@ describe("inboxes", () => {
         text: "Do you still need help?",
       },
     });
-    expect(replay).toEqual({ message: sent, replayed: true });
+    expect(replay).toEqual({ message: sent, replayed: true, contentStorage: "store" });
 
     // Jane replies to the sent message: SES-style `Message-ID` of its provider id.
     const [row] = await db
@@ -407,11 +408,15 @@ describe("inboxes", () => {
       messageId: sent.id,
       request: { text: "Following up.", cc: ["boss@example.com", inbox.address] },
     });
+    // It references the inbox's own first message, by the Message-ID its provider gave it.
+    const sentMessageId = `<${row?.providerMessageId}@fake.coss.test>`;
     expect(followUp).toMatchObject({
       to: ["Jane <jane@example.com>"],
       cc: ["boss@example.com"],
       subject: "Re: Quick question",
       thread_id: sent.thread_id,
+      in_reply_to: sentMessageId,
+      references: [sentMessageId],
     });
     const after = await getInboxThread({ ...env, inboxId: inbox.id, id: sent.thread_id });
     expect(after?.participants).toEqual(["jane@example.com", "boss@example.com"]);
@@ -433,6 +438,30 @@ describe("inboxes", () => {
       }),
     );
     expect(invalid).toMatchObject({ code: "invalid_message", param: "html" });
+  });
+
+  test("without content storage, a sent message's thread keeps no copy of its subject", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    await updateStorageSettings(
+      { organizationId: env.organizationId, environmentId: env.environmentId },
+      { contentStorage: "discard" },
+    );
+    const { inbox } = await createInbox(env, { username: "private" }, deps);
+    const { message, contentStorage } = await sendInboxMessage(service, {
+      environment: env,
+      apiKeyId: null,
+      inboxId: inbox.id,
+      request: { to: "jane@example.com", subject: "Secret plans", text: "Shh." },
+    });
+    expect(contentStorage).toBe("discard");
+    const [thread] = await db
+      .select()
+      .from(schema.inboxThread)
+      .where(eq(schema.inboxThread.id, message.thread_id));
+    expect(thread).toMatchObject({ subject: null, normalizedSubject: "" });
+    const read = await getInboxThread({ ...env, inboxId: inbox.id, id: message.thread_id });
+    expect(JSON.stringify(read)).not.toContain("Secret plans");
   });
 
   test("reply-all answers everyone but the inbox; Reply-To wins over From", async () => {

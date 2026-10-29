@@ -585,7 +585,8 @@ export async function recordOutboundInboxMessage(
     row: InboxRow;
     threadId: string | null;
     emailId: string;
-    subject: string;
+    /** `null` for an email sent without content storage: the thread keeps no copy of it. */
+    subject: string | null;
     to: readonly string[];
     cc: readonly string[];
     at: Date;
@@ -646,6 +647,8 @@ const messageColumns = (bodies: boolean) => ({
     subject: email.subject,
     status: email.status,
     headers: email.headers,
+    provider: email.provider,
+    providerMessageId: email.providerMessageId,
     text: bodies ? email.text : sql<string | null>`left(${email.text}, ${PREVIEW_SOURCE_LENGTH})`,
     html: bodies
       ? email.html
@@ -679,6 +682,8 @@ type MessageRow = {
     subject: string;
     status: InboxMessageSummaryOutput["status"];
     headers: Record<string, string>;
+    provider: string | null;
+    providerMessageId: string | null;
     text: string | null;
     html: string | null;
   } | null;

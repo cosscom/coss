@@ -302,7 +302,11 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `Idempotency-Key`s are namespaced `inbox:<id>:<key>` so they never meet `POST /v1/emails`' keys; the API charges
   `emailSendQuota` through `InboxSendQuota` once the reply's recipients are known (refunded on replays and
   refusals). Inbox sends never track (no pixel, no rewritten links) and take no custom headers: replies set
-  `In-Reply-To` and `References` (`replyReferences`, one header line). **Live inboxes at the managed domain only
+  `In-Reply-To` and `References` (`replyReferences`, one header line); a follow-up to the inbox's own message
+  references its provider `Message-ID` (`EmailService.messageIdOf`, `EmailProvider.messageId`: SES's
+  `<id@<region>.amazonses.com>`, `email.amazonses.com` in us-east-1). A send under content storage `discard`
+  starts a thread without a subject (the thread would outlive the purged content), and the API marks inbox send
+  responses with the email's snapshot (`markEmailContent`), so replays never log discarded content. **Live inboxes at the managed domain only
   receive** (`canSend`: sandbox, or kind `domain`; live sending still needs `authorizeLiveSender` to pass) — sending
   from coss.com's inbound domain would put every customer on one shared sender reputation. Messages hold no
   content: they point at the `received_email` or `email` and cascade with it (retention, deletes);

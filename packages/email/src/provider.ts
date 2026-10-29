@@ -91,6 +91,11 @@ export class ThrottledSendError extends Error {
 export interface EmailProvider {
   readonly name: string;
   send(message: OutboundEmail): Promise<SendResult>;
+  /**
+   * The `Message-ID` header the provider gave a message it accepted as `providerMessageId`, for
+   * replies to reference it; absent when the provider doesn't say.
+   */
+  messageId?(providerMessageId: string): string;
 }
 
 /** What the provider needs published in DNS for a new domain identity. */
