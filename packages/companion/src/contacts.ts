@@ -4,7 +4,7 @@ import type { Page } from "./index.ts";
 
 export type ContactStatus = "subscribed" | "unsubscribed" | "pending";
 
-export type ContactSource = "api" | "dashboard" | "import" | "preference_center";
+export type ContactSource = "api" | "dashboard" | "import" | "preference_center" | "form";
 
 export type ContactPropertyType = "string" | "number" | "boolean" | "date";
 

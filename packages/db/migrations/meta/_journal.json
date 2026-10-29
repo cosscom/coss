@@ -715,6 +715,13 @@
       "when": 1793375420678,
       "tag": "0101_striped_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1793378134944,
+      "tag": "0102_tidy_sleeper",
+      "breakpoints": true
     }
   ]
 }

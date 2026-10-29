@@ -1535,6 +1535,7 @@
                       "risk.phone_checks",
                       "verify.verifications",
                       "verify.sms",
+                      "forms.submissions",
                       "video.participant_minutes",
                       "scheduling.bookings",
                       null
@@ -2169,6 +2170,7 @@
               "risk.phone_checks",
               "verify.verifications",
               "verify.sms",
+              "forms.submissions",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -2195,6 +2197,7 @@
                 "risk.phone_checks",
                 "verify.verifications",
                 "verify.sms",
+                "forms.submissions",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],
@@ -2699,7 +2702,8 @@
                   "api",
                   "dashboard",
                   "import",
-                  "preference_center"
+                  "preference_center",
+                  "form"
                 ]
               },
               "topic": {
@@ -15369,7 +15373,8 @@
               "api",
               "dashboard",
               "import",
-              "preference_center"
+              "preference_center",
+              "form"
             ],
             "description": "How the contact was created."
           },
@@ -18628,7 +18633,8 @@
           "smtp",
           "sms",
           "sign",
-          "verify"
+          "verify",
+          "forms"
         ],
         "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay. `sms`: an SMS event."
       },
@@ -19008,6 +19014,7 @@
                     "risk.phone_checks",
                     "verify.verifications",
                     "verify.sms",
+                    "forms.submissions",
                     "video.participant_minutes",
                     "scheduling.bookings"
                   ],
@@ -19364,6 +19371,7 @@
               "risk.phone_checks",
               "verify.verifications",
               "verify.sms",
+              "forms.submissions",
               "video.participant_minutes",
               "scheduling.bookings"
             ],
@@ -19764,6 +19772,7 @@
               "risk.phone_checks",
               "verify.verifications",
               "verify.sms",
+              "forms.submissions",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -20015,6 +20024,7 @@
           "sms",
           "sign",
           "verify",
+          "forms",
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
@@ -20044,7 +20054,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 9,
+            "maxItems": 10,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
           }
         },
@@ -20232,7 +20242,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 9,
+            "maxItems": 10,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
           "enabled": {
@@ -69043,6 +69053,7 @@
                 "risk.phone_checks",
                 "verify.verifications",
                 "verify.sms",
+                "forms.submissions",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],

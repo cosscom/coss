@@ -23,6 +23,9 @@ const {
   emailBatch,
   emailSubaccount,
   emailSuppression,
+  formFakeObject,
+  formStoreCleanup,
+  formSubmission,
   signFakeObject,
   signRequest,
   signStoreCleanup,
@@ -559,6 +562,16 @@ async function deleteOrganizationData(
         contact.id,
         and(eq(contact.environmentId, environmentId), eq(contact.organizationId, organizationId)),
       ],
+      // Form submissions (their files' rows and deliveries cascade; the bytes go with the store's
+      // prefix in `releaseProviderResources`, or below without a bucket).
+      [
+        formSubmission,
+        formSubmission.id,
+        and(
+          eq(formSubmission.environmentId, environmentId),
+          eq(formSubmission.organizationId, organizationId),
+        ),
+      ],
       // Risk assessments (their feedback cascades) and what the environment remembers.
       ...[riskAssessment, riskIdentity, riskReport, riskListEntry, riskUserNetwork].map(
         (table) =>
@@ -680,6 +693,20 @@ async function deleteOrganizationData(
     ))
   )
     return false;
+  // Forms' uploads without a bucket (development), and pending store deletions.
+  for (const table of [formFakeObject, formStoreCleanup]) {
+    if (
+      !(await deleteInBatches(
+        deletion,
+        table,
+        table.key,
+        eq(table.organizationId, organizationId),
+        batchSize,
+        signal,
+      ))
+    )
+      return false;
+  }
   // Sign's pending store deletions: the organization's whole prefix goes anyway.
   if (
     !(await deleteInBatches(

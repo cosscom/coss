@@ -8,7 +8,7 @@
  * transactional email is unaffected) or `pending` (waiting for a double opt-in confirmation).
  */
 export type ContactStatus = "subscribed" | "unsubscribed" | "pending";
-export type ContactSource = "api" | "dashboard" | "import" | "preference_center";
+export type ContactSource = "api" | "dashboard" | "import" | "preference_center" | "form";
 export type ContactTopicStatus = "opted_in" | "opted_out";
 /** Values of custom properties (`date` ones are ISO 8601 strings). */
 export type ContactPropertyValue = string | number | boolean;

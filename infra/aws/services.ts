@@ -149,6 +149,14 @@ const signDocumentsBucket: EnvVar = {
     "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production.",
 };
 
+const formsFilesBucket: EnvVar = {
+  name: "FORMS_FILES_BUCKET",
+  kind: "plain",
+  required: false,
+  description:
+    "Forms' bucket of uploaded files (Terraform output forms_files_bucket), with AWS_REGION. Unset: forms refuse uploads in production.",
+};
+
 const awsRegion: EnvVar = {
   name: "AWS_REGION",
   kind: "plain",
@@ -883,6 +891,7 @@ export const SERVICES: Service[] = [
       apiPublicUrl,
       trackingPublicUrl,
       signDocumentsBucket,
+      formsFilesBucket,
       ...signSeal,
       signPublicUrl,
       {

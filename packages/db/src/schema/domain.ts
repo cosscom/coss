@@ -765,6 +765,7 @@ export const contactSource = pgEnum("contact_source", [
   "dashboard",
   "import",
   "preference_center",
+  "form",
 ]);
 export const contactPropertyType = pgEnum("contact_property_type", [
   "string",
@@ -2489,6 +2490,7 @@ export const logSource = pgEnum("log_source", [
   "sms",
   "sign",
   "verify",
+  "forms",
 ]);
 export type LogSource = (typeof logSource.enumValues)[number];
 
@@ -2617,6 +2619,7 @@ export const logDrainSource = pgEnum("log_drain_source", [
   "sms",
   "sign",
   "verify",
+  "forms",
 ]);
 export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
 

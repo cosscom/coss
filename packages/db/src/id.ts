@@ -144,6 +144,11 @@ export const ID_PREFIXES = {
   verifySend: "vrfsend",
   verifySettings: "vrfset",
   verifyCheck: "vrfchk",
+  // Forms (hosted form endpoints, `@coss/forms`).
+  form: "form",
+  formSubmission: "fsub",
+  formSubmissionFile: "ffile",
+  formDelivery: "fdlv",
   // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
   migration: "mig",
   migrationItem: "migitem",

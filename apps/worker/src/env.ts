@@ -1,5 +1,6 @@
 import { billingEnvShape } from "@coss/billing/env";
 import { emailWorkerEnvShape } from "@coss/email/env";
+import { formsStoreEnvShape } from "@coss/forms/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskDatasetEnvShape } from "@coss/risk/env";
@@ -40,6 +41,8 @@ export const env = createEnv({
     // coss.com's own sender of Sign emails ("<requester> via coss.com"), an address on a verified
     // domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default: NOTIFICATIONS_FROM's address.
     SIGN_NOTIFICATIONS_FROM: z.email().optional(),
+    // Files uploaded to forms (with AWS_REGION); unset in production: forms refuse uploads.
+    FORMS_FILES_BUCKET: formsStoreEnvShape.FORMS_FILES_BUCKET,
     // Comma-separated loops this worker runs (`WORKER_LOOP_NAMES` in src/jobs.ts), e.g. `hooks` for
     // tasks dedicated to Hooks deliveries; unset runs every loop.
     WORKER_LOOPS: z

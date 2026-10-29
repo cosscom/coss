@@ -125,6 +125,7 @@ describe("terms", () => {
       "risk.phone_checks": 100,
       "verify.verifications": 0,
       "verify.sms": 0,
+      "forms.submissions": 0,
       "video.participant_minutes": 0,
       "scheduling.bookings": 0,
     });

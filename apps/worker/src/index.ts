@@ -25,6 +25,7 @@ import {
 } from "@coss/email/dispatch";
 import { createEmailRuntime, emailRuntimeConfig, linkKeysFromEnv } from "@coss/email/runtime";
 import { createS3Api } from "@coss/email/ses";
+import { formsStoreFromEnv } from "@coss/forms/runtime";
 import { recordHookDeliveryOutcomes } from "@coss/hooks";
 import { logPushSender, type PushSender } from "@coss/push";
 import { type ApnsSender, createApnsSender } from "@coss/push/apns";
@@ -254,6 +255,9 @@ const signNotifications =
       }
     : null;
 
+// Forms: files of deleted and purged submissions, and organization deletion.
+const formsStore = formsStoreFromEnv(env);
+
 const loops = startJobs({
   systemOrganizationId,
   dispatchQueue,
@@ -294,6 +298,7 @@ const loops = startJobs({
   signCompletion,
   signNotifications,
   signStore,
+  formsStore,
   webhooks: { secretsKeys, send },
   migrations: {
     secretsKeys,

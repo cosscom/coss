@@ -70,6 +70,27 @@ async function seedOrganizationData(tenant: TestTenant) {
   await db
     .insert(schema.signTemplateDocument)
     .values({ templateId: template.id, documentId: document.id, organizationId, position: 0 });
+  const [form] = await db
+    .insert(schema.form)
+    .values({ ...scope, name: "Contact" })
+    .returning();
+  if (!form) throw new Error("forms seed failed");
+  const [submission] = await db
+    .insert(schema.formSubmission)
+    .values({ ...scope, formId: form.id, status: "accepted", data: { message: "hi" } })
+    .returning();
+  await db.insert(schema.formFakeObject).values({
+    key: `orgs/${organizationId}/upload`,
+    organizationId,
+    contentType: "text/plain",
+    content: Buffer.from("hi"),
+  });
+  await db.insert(schema.formDelivery).values({
+    organizationId,
+    environmentId: environment.id,
+    submissionId: submission?.id ?? "",
+    kind: "notification",
+  });
   const emails = await db
     .insert(schema.email)
     .values(
@@ -336,6 +357,9 @@ describe("runDueOrganizationDeletions", () => {
     expect(await count(schema.email, organizationId)).toBe(0);
     expect(await count(schema.webhookMessage, organizationId)).toBe(0);
     for (const table of [
+      schema.form,
+      schema.formSubmission,
+      schema.formDelivery,
       schema.signRequest,
       schema.signTemplate,
       schema.signDocument,
@@ -361,6 +385,11 @@ describe("runDueOrganizationDeletions", () => {
         .where(eq(table.organizationId, organizationId));
       expect(rows).toEqual([]);
     }
+    const formFiles = await db
+      .select()
+      .from(schema.formFakeObject)
+      .where(eq(schema.formFakeObject.organizationId, organizationId));
+    expect(formFiles).toEqual([]);
     const receipts = await db
       .select()
       .from(schema.smsInboundReceipt)
