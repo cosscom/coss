@@ -99,8 +99,9 @@ export function fromTwilioLookup(body: unknown): PhoneData {
   const line = parsed.line_type_intelligence;
   let lineType: PhoneLineType | null = null;
   let carrier: PhoneCarrier | null = null;
-  if (line?.error_code != null) missing.push("line_type");
-  else if (line) {
+  // No line type for a valid number (an error, or no data at all) is a missing part: never billed.
+  if (!line || line.error_code != null) missing.push("line_type");
+  else {
     lineType = TWILIO_LINE_TYPES[line.type ?? ""] ?? "unknown";
     // Twilio has no carrier for toll-free, premium, personal… numbers.
     if (line.carrier_name) {

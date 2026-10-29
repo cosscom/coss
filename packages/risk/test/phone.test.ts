@@ -91,6 +91,9 @@ describe("fromTwilioLookup", () => {
     });
     expect(errors).toMatchObject({ lineType: null, simSwap: null });
     expect(errors.missing).toEqual(["line_type", "sim_swap"]);
+    expect(fromTwilioLookup({ ...answer, line_type_intelligence: null }).missing).toEqual([
+      "line_type",
+    ]);
   });
 
   test("invalid numbers carry nothing else", () => {
