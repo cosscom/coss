@@ -199,6 +199,19 @@ describe("CSC sealer", () => {
     await expect(without.prepare()).rejects.toThrow("TOTP secret");
   });
 
+  test("the credential is read again after an hour (a renewed certificate)", async () => {
+    let now = new Date("2026-10-29T12:00:00Z");
+    const service = cscService();
+    const sealer = new CscSealer({ ...OPTIONS, fetch: service.fetch, now: () => now });
+    await sealer.prepare();
+    now = new Date("2026-10-29T12:30:00Z");
+    await sealer.prepare();
+    expect(service.calls.filter((call) => call.path === "credentials/info")).toHaveLength(1);
+    now = new Date("2026-10-29T13:01:00Z");
+    await sealer.prepare();
+    expect(service.calls.filter((call) => call.path === "credentials/info")).toHaveLength(2);
+  });
+
   test("RFC 6238's test vector (SHA-1, 59 s), as 6 digits", () => {
     const secret = Buffer.from("12345678901234567890").toString("base64");
     expect(totp(secret, new Date(59_000))).toBe("287082");

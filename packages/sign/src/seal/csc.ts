@@ -30,6 +30,8 @@ const SHA256 = "2.16.840.1.101.3.4.2.1";
 const SIGN_ALGORITHMS = { rsa: "1.2.840.113549.1.1.11", ecdsa: "1.2.840.10045.4.3.2" } as const;
 /** Tokens are renewed this long before they expire. */
 const TOKEN_MARGIN_MS = 5 * 60_000;
+/** The credential is read again this often, so a certificate the CA renewed is picked up. */
+const CREDENTIAL_TTL_MS = 60 * 60_000;
 
 /** An RFC 6238 one-time password: HMAC-SHA1 over the 30-second counter, 6 digits. */
 export function totp(secretBase64: string, at: Date): string {
@@ -57,6 +59,8 @@ type CredentialInfo = {
 };
 
 type Credential = {
+  loadedAt: number;
+  notAfter: number;
   chain: Uint8Array[];
   signAlgorithm: string;
   needsOtp: boolean;
@@ -77,10 +81,18 @@ export class CscSealer implements Sealer {
 
   /**
    * Reads the credential (its certificate chain, key and authorization mode) before the first
-   * seal, not at start: the worker must start even when the CA doesn't answer.
+   * seal, not at start (the worker must start even when the CA doesn't answer), and again every
+   * hour or once its certificate has expired.
    */
   async prepare(): Promise<void> {
-    if (this.credential) return;
+    const now = this.now().getTime();
+    if (
+      this.credential &&
+      now - this.credential.loadedAt < CREDENTIAL_TTL_MS &&
+      now < this.credential.notAfter
+    ) {
+      return;
+    }
     this.loading ??= this.load().finally(() => {
       this.loading = null;
     });
@@ -117,6 +129,8 @@ export class CscSealer implements Sealer {
       throw new Error("The CSC credential needs a one-time password: set its TOTP secret.");
     }
     return {
+      loadedAt: this.now().getTime(),
+      notAfter: parseCertificate(leaf).notAfter.value.getTime(),
       chain,
       signAlgorithm: SIGN_ALGORITHMS[signatureAlgorithmFor(parseCertificate(leaf))],
       needsOtp: mode === "explicit",

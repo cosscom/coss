@@ -9,7 +9,7 @@
 import { randomBytes } from "node:crypto";
 import { PDFArray, type PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import { cadesSignature } from "./cms.ts";
-import { asn1js, sha256, toArrayBuffer } from "./crypto.ts";
+import { asn1js, parseCertificate, sha256, toArrayBuffer } from "./crypto.ts";
 import { appendDss } from "./dss.ts";
 import { certificatesOf, collectValidationData, hasRevocationData } from "./ltv.ts";
 import type { Sealer } from "./sealer.ts";
@@ -33,6 +33,16 @@ export type SealOptions = {
 
 /** Seals `document` (which this saves): returns the sealed file's bytes. */
 export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise<Uint8Array> {
+  await opts.sealer.prepare?.();
+  const [leaf] = opts.sealer.certificateChain;
+  if (!leaf) throw new Error("The sealer has no certificate.");
+  const certificate = parseCertificate(leaf);
+  if (opts.signedAt < certificate.notBefore.value || opts.signedAt > certificate.notAfter.value) {
+    // A seal nobody could validate: refused (and retried) rather than published.
+    throw new Error(
+      `The seal's certificate is valid from ${certificate.notBefore.value.toISOString()} to ${certificate.notAfter.value.toISOString()}.`,
+    );
+  }
   const { context } = document;
   // A name of this seal's own, so finding it can't land on anything in the uploaded documents.
   const rangeName = `ByteRange${randomBytes(8).toString("hex")}`;

@@ -82,6 +82,18 @@ describe("validation data", () => {
     ).rejects.toThrow("is revoked");
   });
 
+  test("an answer without nextUpdate counts only while it's recent", async () => {
+    const recent = caServers({ root, omitNextUpdate: true, issuedAgoMs: 3_600_000 });
+    expect(
+      (await collectValidationData([leaf.der, root.der], { fetch: recent.fetch })).ocspResponses,
+    ).toHaveLength(1);
+    // Three days old: a stale cache or a replay, by OCSP and by CRL alike.
+    const stale = caServers({ root, omitNextUpdate: true, issuedAgoMs: 3 * 86_400_000 });
+    await expect(
+      collectValidationData([leaf.der, root.der], { fetch: stale.fetch }),
+    ).rejects.toThrow(/OCSP response isn't current.*CRL isn't current/);
+  });
+
   test("an OCSP answer from someone the CA didn't delegate to isn't used", async () => {
     const stranger = await issue({ commonName: "Not the CA" });
     const servers = caServers({ root, ocspSigner: stranger, down: new Set([CA_URLS.crl]) });
@@ -169,6 +181,24 @@ describe("sealing with validation data (PAdES B-LT)", () => {
     const reloaded = await PDFDocument.load(bytes);
     expect(reloaded.getPageCount()).toBe(1);
     expect(reloaded.catalog.lookup(PDFName.of("AcroForm"), PDFDict)).toBeDefined();
+  });
+
+  test("a certificate that has expired doesn't seal", async () => {
+    const expired = await issue({
+      commonName: "Expired seal",
+      issuer: root,
+      notAfter: new Date(Date.now() - 60_000),
+    });
+    const document = await PDFDocument.load(await buildTestPdf());
+    await expect(
+      sealPdf(document, {
+        sealer: LocalSealer.fromKey([expired.der], expired.privateKey),
+        name: "coss.com",
+        reason: "Test",
+        signedAt: new Date(),
+        fetch: caServers({ root }).fetch,
+      }),
+    ).rejects.toThrow("The seal's certificate is valid from");
   });
 
   test("a seal whose validation data can't be found fails (and is retried)", async () => {

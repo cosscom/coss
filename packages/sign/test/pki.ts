@@ -41,6 +41,8 @@ export async function issue(opts: {
   caIssuersUrl?: string;
   extKeyUsage?: string[];
   ocspNoCheck?: boolean;
+  /** Default: from a day ago to a year from now. */
+  notAfter?: Date;
 }): Promise<Issued> {
   const keys = (await webcrypto.subtle.generateKey(ALGORITHM, true, [
     "sign",
@@ -52,7 +54,7 @@ export async function issue(opts: {
   certificate.subject = name(opts.commonName);
   certificate.issuer = opts.issuer ? opts.issuer.certificate.subject : name(opts.commonName);
   certificate.notBefore.value = new Date(Date.now() - 86_400_000);
-  certificate.notAfter.value = new Date(Date.now() + 365 * 86_400_000);
+  certificate.notAfter.value = opts.notAfter ?? new Date(Date.now() + 365 * 86_400_000);
   const extensions: pkijs.Extension[] = [
     new pkijs.Extension({
       extnID: "2.5.29.15",
@@ -144,7 +146,12 @@ export function caServers(opts: {
   revoked?: Set<number>;
   down?: Set<string>;
   ocspSigner?: Issued;
+  /** Answers issued this long ago (default a minute), with or without `nextUpdate`. */
+  issuedAgoMs?: number;
+  omitNextUpdate?: boolean;
 }) {
+  const thisUpdate = () => new Date(Date.now() - (opts.issuedAgoMs ?? 60_000));
+  const nextUpdate = () => (opts.omitNextUpdate ? undefined : new Date(Date.now() + 86_400_000));
   const calls: string[] = [];
   const fetchImpl = (async (input: unknown, init?: RequestInit): Promise<Response> => {
     const url = String(input);
@@ -155,9 +162,10 @@ export function caServers(opts: {
       const list = new pkijs.CertificateRevocationList({
         version: 1,
         issuer: opts.root.certificate.subject,
-        thisUpdate: new pkijs.Time({ type: 0, value: new Date(Date.now() - 60_000) }),
-        nextUpdate: new pkijs.Time({ type: 0, value: new Date(Date.now() + 86_400_000) }),
+        thisUpdate: new pkijs.Time({ type: 0, value: thisUpdate() }),
       });
+      const next = nextUpdate();
+      if (next) list.nextUpdate = new pkijs.Time({ type: 0, value: next });
       list.revokedCertificates = [...(opts.revoked ?? [])].map(
         (value) =>
           new pkijs.RevokedCertificate({
@@ -185,8 +193,9 @@ export function caServers(opts: {
               value: [new asn1js.GeneralizedTime({ valueDate: new Date(Date.now() - 3_600_000) })],
             })
           : new asn1js.Primitive({ idBlock: { tagClass: 3, tagNumber: 0 } });
-        response.thisUpdate = new Date(Date.now() - 60_000);
-        response.nextUpdate = new Date(Date.now() + 86_400_000);
+        response.thisUpdate = thisUpdate();
+        const next = nextUpdate();
+        if (next) response.nextUpdate = next;
         basic.tbsResponseData.responses.push(response);
       }
       if (opts.ocspSigner) basic.certs = [opts.ocspSigner.certificate];

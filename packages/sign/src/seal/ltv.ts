@@ -29,6 +29,20 @@ const MAX_CERTIFICATES = 16;
 const MAX_RESPONSE_BYTES = 10 * 1024 * 1024;
 /** How far a responder's clock may run ahead of ours. */
 const CLOCK_SKEW_MS = 5 * 60_000;
+/**
+ * The oldest an answer without `nextUpdate` may be: such a responder always has newer
+ * information, so an old one is a stale cache or a replay that could hide a revocation.
+ */
+const MAX_UNBOUNDED_AGE_MS = 2 * 86_400_000;
+
+/** Issued not in the future, and not past its `nextUpdate` (or, without one, not too old). */
+function isCurrent(thisUpdate: Date, nextUpdate: Date | undefined, now: Date): boolean {
+  const at = now.getTime();
+  if (thisUpdate.getTime() > at + CLOCK_SKEW_MS) return false;
+  return nextUpdate
+    ? nextUpdate.getTime() >= at
+    : at - thisUpdate.getTime() <= MAX_UNBOUNDED_AGE_MS;
+}
 
 type Entry = { der: Uint8Array; certificate: pkijs.Certificate };
 
@@ -246,11 +260,7 @@ async function ocspResponse(
     throw new Error("The OCSP response is for another certificate.");
   if (certStatus === 1) throw new RevokedError(`"${commonName(subject.certificate)}" is revoked.`);
   if (certStatus !== 0) throw new Error("The OCSP responder doesn't know the certificate.");
-  const now = opts.now.getTime();
-  if (
-    single.thisUpdate.getTime() > now + CLOCK_SKEW_MS ||
-    (single.nextUpdate && single.nextUpdate.getTime() < now)
-  ) {
+  if (!isCurrent(single.thisUpdate, single.nextUpdate, opts.now)) {
     throw new Error("The OCSP response isn't current.");
   }
   return {
@@ -279,11 +289,7 @@ async function crl(
     verified = false;
   }
   if (!verified) throw new Error("The CRL doesn't verify.");
-  const now = opts.now.getTime();
-  if (
-    list.thisUpdate.value.getTime() > now + CLOCK_SKEW_MS ||
-    (list.nextUpdate && list.nextUpdate.value.getTime() < now)
-  ) {
+  if (!isCurrent(list.thisUpdate.value, list.nextUpdate?.value, opts.now)) {
     throw new Error("The CRL isn't current.");
   }
   if (list.isCertificateRevoked(subject.certificate)) {
