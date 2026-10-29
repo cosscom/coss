@@ -187,13 +187,14 @@ export class LocalTsa implements TimestampAuthority {
     const signature = new Uint8Array(
       await webcrypto.subtle.sign("RSASSA-PKCS1-v1_5", this.privateKey, toArrayBuffer(der)),
     );
+    const encapContentInfo = new pkijs.EncapsulatedContentInfo({ eContentType: OID.tstInfo });
+    // Set after construction: pkijs's constructor makes any eContent a constructed (BER) string,
+    // which DER-only validators refuse.
+    encapContentInfo.eContent = new asn1js.OctetString({ valueHex: toArrayBuffer(content) });
     const signedData = new pkijs.SignedData({
       version: 3,
       digestAlgorithms: [new pkijs.AlgorithmIdentifier({ algorithmId: OID.sha256 })],
-      encapContentInfo: new pkijs.EncapsulatedContentInfo({
-        eContentType: OID.tstInfo,
-        eContent: new asn1js.OctetString({ valueHex: toArrayBuffer(content) }),
-      }),
+      encapContentInfo,
       certificates: [certificate],
       signerInfos: [
         new pkijs.SignerInfo({

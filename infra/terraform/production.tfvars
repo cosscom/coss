@@ -23,7 +23,11 @@ github_repository = "cosscom/coss"
 # (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
 deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
-unset_secrets      = ["IPINFO_PRIVACY_TOKEN"]
+unset_secrets = [
+  "IPINFO_PRIVACY_TOKEN",
+  # Sign's CSC sealer (SSL.com eSigner): until its account exists.
+  "SIGN_CSC_CLIENT_SECRET", "SIGN_CSC_PASSWORD", "SIGN_CSC_TOTP_SECRET",
+]
 initial_image_tag  = "2a8195a759b0f11d430f3e9cebfcf535a99dbca7"
 log_retention_days = 30
 
@@ -105,13 +109,15 @@ plain_env = {
     SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   sign = {
-    DATABASE_POOL_MAX     = "5"
-    AWS_REGION            = "us-east-2"
-    VALKEY_CLUSTER        = "true"
-    RATE_LIMIT_KEY_PREFIX = "coss"
-    CLIENT_IP_HEADER      = "x-forwarded-for"
-    TRUSTED_PROXY_COUNT   = "2"
-    SENTRY_ENVIRONMENT    = "production"
+    DATABASE_POOL_MAX         = "5"
+    AWS_REGION                = "us-east-2"
+    VALKEY_CLUSTER            = "true"
+    RATE_LIMIT_KEY_PREFIX     = "coss"
+    CLIENT_IP_HEADER          = "x-forwarded-for"
+    TRUSTED_PROXY_COUNT       = "2"
+    SENTRY_DSN                = "https://30de17f59463cdd79a213f162e0101c6@o4512237982711808.ingest.de.sentry.io/4512341461631056"
+    SENTRY_ENVIRONMENT        = "production"
+    SENTRY_TRACES_SAMPLE_RATE = "0.1"
   }
   api = {
     BETTER_AUTH_URL     = "https://coss.com"
@@ -176,6 +182,9 @@ plain_env = {
     # Account and reputation emails go out through coss.com itself, from its own organization.
     NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
     NOTIFICATIONS_FROM           = "coss.com <notifications@coss.com>"
+    # Sign's seal timestamps (PAdES B-T): DigiCert's public TSA, whose chain reaches an unrestricted
+    # AATL root. Unused until SIGN_SEALER is set.
+    SIGN_TSA_URL = "http://timestamp.digicert.com"
     # Push notifications to the iOS app: the "coss.com push" key (production, topic com.coss.ios).
     APNS_KEY_ID               = "WCQDCU4HUL"
     APNS_TEAM_ID              = "ADWKXDJV75"

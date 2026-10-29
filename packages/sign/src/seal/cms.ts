@@ -83,6 +83,7 @@ export async function cadesSignature(input: {
   /** Certificates to embed besides the sealer's chain (e.g. the TSA's). */
   extraCertificates?: readonly Uint8Array[];
 }): Promise<Uint8Array> {
+  await input.sealer.prepare?.();
   const [leaf] = input.sealer.certificateChain;
   if (!leaf) throw new Error("The sealer has no certificate.");
   const certificate = parseCertificate(leaf);

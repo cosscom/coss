@@ -27,8 +27,9 @@ document's SHA-256 as sent, and the whole audit trail.
 ## The seal
 
 The PDF carries a PAdES signature by coss.com with a trusted timestamp, so PDF viewers show that it
-hasn't changed since it was sealed. `signed_document.sha256` on the request is the sealed file's
-hash.
+hasn't changed since it was sealed. It also carries the revocation data of every certificate
+involved, collected when it was sealed (PAdES B-LT), so the seal still verifies after those
+certificates expire. `signed_document.sha256` on the request is the sealed file's hash.
 
 ## The audit trail
 

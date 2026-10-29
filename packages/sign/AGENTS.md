@@ -70,15 +70,34 @@ templates and the embedded builder. See "Not built yet" in the root `AGENTS.md` 
   to `completed`) in Cal Sans/Paper Mono (`assets/`, OFL; glyphs a font lacks become "?") — seals
   it, stores it at `orgs/<org>/<env>/requests/<id>/signed.pdf` and records `sealed` (with its
   SHA-256), whose webhook is `sign_request.completed`: that webhook means "ready to download".
-- **Seal** (`seal/`): PAdES (`/SubFilter /ETSI.CAdES.detached`) in an invisible signature field,
-  `/ByteRange` over everything but the 32 KB `/Contents` placeholder, saved without object streams.
+- **Seal** (`seal/`): PAdES (`/SubFilter /ETSI.CAdES.detached`) in an invisible signature field
+  (`coss-com-seal`: field names can't contain periods), `/ByteRange` over everything but the 32 KB
+  `/Contents` placeholder, saved without object streams.
   The CMS (`cms.ts`, pkijs + asn1js — keep them the same copies, `seal/crypto.ts`) signs content
   type, message digest and `signingCertificateV2`, and with a TSA (`tsa.ts`, RFC 3161) carries a
   `signatureTimeStampToken` over the signature value (B-T); the token must be over that value, carry the nonce (compared as a number) and verify with its time-stamping certificate. Sealers: `KmsSealer` (KMS `Sign` with
-  `MessageType: DIGEST`, RSA PKCS #1 v1.5 or ECDSA, chain from `SIGN_SEAL_CERTIFICATE_CHAIN`) and
-  `LocalSealer` (a self-signed key per process). `sealerFromEnv` (`./runtime`) reads
-  `signSealEnvShape` (`./env`). No DSS/LTV yet. Verify with `readPdfSeal` + pkijs (tests) or
-  `openssl cms -verify -binary -inform DER -content <signed bytes>`.
+  `MessageType: DIGEST`, RSA PKCS #1 v1.5 or ECDSA, chain from `SIGN_SEAL_CERTIFICATE_CHAIN`),
+  `CscSealer` (`csc.ts`: the CA keeps the key behind a CSC v1 API — SSL.com eSigner eSealing;
+  OAuth password grant, token cached; per seal `credentials/authorize` for that one hash then
+  `signatures/signHash` with `hashAlgo` + `signAlgo`; an OTP from a base64 TOTP secret only for
+  `authMode: explicit`; the chain comes from `credentials/info` in `prepare()`, before the first
+  seal, never at start; a signature that doesn't verify against the chain is refused and the
+  credential re-read) and `LocalSealer` (a self-signed key per process). `sealerFromEnv`
+  (`./runtime`) reads `signSealEnvShape` (`./env`). **Long-term validation** (B-LT, `ltv.ts` +
+  `dss.ts`): after the CMS is written, every certificate in it and in its timestamp token gets an
+  OCSP response (SHA-1 CertID; signed by the issuer or a delegated `id-kp-OCSPSigning` responder
+  it issued — checked by `signedByResponder`, not pkijs's `verify`, which wants the signer
+  embedded and a chain to a root) or else a CRL, verified and current, its issuer found among
+  the certificates or fetched from caIssuers; roots and `ocsp-nocheck` responders are skipped, and
+  so is a cross-signed certificate naming no caIssuers URL (warned). A revoked certificate, or one
+  whose URLs give no good answer, fails the seal (retried with backoff), so a document is never
+  published without its data. The data goes into a DSS (certs, OCSPs, CRLs; no VRI) in an
+  incremental update after the signed bytes, with the catalog rewritten under its own number and
+  ESIC extension level 5. Self-signed development keys have no URLs: no DSS. Verify with
+  `readPdfSeal` + pkijs (tests), `openssl cms -verify -binary -inform DER -content <signed bytes>`,
+  or pyHanko (`DocumentSecurityStore.read_dss(…).as_validation_context({…, "allow_fetching":
+  False, "revocation_mode": "require"})` then `validate_pdf_signature`: valid with only the
+  embedded data). Tests build a CA with OCSP/CRL/caIssuers servers in `test/pki.ts`.
 - **Email delivery** (`notifications.ts`, `emails.ts`; the worker's `sign-notifications` loop,
   `runDueSignNotifications`): expires `sent` requests past `expires_at` (`expired`, webhook
   `sign_request.expired`); invites `delivery: email` signers whose turn it is (`notified`);
@@ -162,10 +181,15 @@ Sign is off in production until all of this is done, in this order:
    "Deploying to AWS"); `SIGN_PUBLIC_URL=https://cosssign.com` (web, api, worker).
 2. **Bucket (done):** `sign.tf` is applied: `coss-production-sign-documents-294417174674` and
    both KMS keys (the seal's is `alias/coss-production-sign-seal`).
-3. **Seal:** buy a document-signing certificate from a CA on Adobe's trust list (AATL) for the
-   seal key (its CSR is signed by KMS: get the public key, sign the request's SHA-256 with
-   `kms sign --message-type DIGEST`), and set `SIGN_SEALER=kms`, `SIGN_SEAL_KMS_KEY_ID`,
-   `SIGN_SEAL_CERTIFICATE_CHAIN` (worker). Add a TSA's `SIGN_TSA_URL`.
+3. **Seal:** a document-signing certificate from a CA on Adobe's trust list (AATL), either for
+   the KMS key (its CSR is signed by KMS: get the public key, sign the request's SHA-256 with
+   `kms sign --message-type DIGEST`; asked of Sectigo, since AATL CAs want key attestation KMS
+   can't give) → `SIGN_SEALER=kms`, `SIGN_SEAL_KMS_KEY_ID`, `SIGN_SEAL_CERTIFICATE_CHAIN`; or an
+   OV document signing certificate in SSL.com eSigner converted to eSealing ("Remove 2FA") →
+   `SIGN_SEALER=csc` with `SIGN_CSC_*` (worker; the password and any client secret through
+   `put-secret.sh`, then out of `unset_secrets`). `SIGN_TSA_URL` is set (DigiCert). Before
+   switching on, seal a test PDF with the same values (`bun run --cwd packages/sign seal:test
+   --out <file>`) and open it in Acrobat: signer trusted, timestamp trusted, "LTV enabled".
 4. **Switch on:** set `SIGN_DOCUMENTS_BUCKET` (web, api, worker, sign), optionally
    `SIGN_NOTIFICATIONS_FROM` (default `NOTIFICATIONS_FROM`'s address), `terraform apply`, deploy.
 5. **Before announcing:** get legal review of `DEFAULT_SIGN_DISCLOSURE` and the certificate
