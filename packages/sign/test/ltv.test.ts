@@ -1,12 +1,19 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { PDFArray, PDFDict, PDFDocument, PDFName, type PDFRawStream } from "pdf-lib";
-import { pkijs, toArrayBuffer } from "../src/seal/crypto.ts";
+import { asn1js, pkijs, toArrayBuffer } from "../src/seal/crypto.ts";
 import { collectValidationData } from "../src/seal/ltv.ts";
 import { readPdfSeal, sealPdf } from "../src/seal/pdf-signature.ts";
 import { LocalSealer } from "../src/seal/sealer.ts";
 import { LocalTsa } from "../src/seal/tsa.ts";
 import { buildTestPdf } from "../src/testing.ts";
-import { CA_URLS, caServers, type Issued, issue, sealingCertificate } from "./pki.ts";
+import {
+  CA_URLS,
+  caServers,
+  type Issued,
+  issue,
+  issuingDistributionPoint,
+  sealingCertificate,
+} from "./pki.ts";
 
 let root: Issued;
 let leaf: Issued;
@@ -92,6 +99,32 @@ describe("validation data", () => {
     await expect(
       collectValidationData([leaf.der, root.der], { fetch: stale.fetch }),
     ).rejects.toThrow(/OCSP response isn't current.*CRL isn't current/);
+  });
+
+  test("only a CRL that covers the certificate counts (no deltas, partitions or reason scopes)", async () => {
+    const viaCrl = (crlExtensions: pkijs.Extension[]) =>
+      collectValidationData([leaf.der, root.der], {
+        fetch: caServers({ root, crlExtensions, down: new Set([CA_URLS.ocsp]) }).fetch,
+      });
+    expect(
+      (await viaCrl([issuingDistributionPoint({ url: CA_URLS.crl, onlyContainsUserCerts: true })]))
+        .crls,
+    ).toHaveLength(1);
+    const delta = new pkijs.Extension({
+      extnID: "2.5.29.27",
+      critical: true,
+      extnValue: new asn1js.Integer({ value: 1 }).toBER(false),
+    });
+    await expect(viaCrl([delta])).rejects.toThrow("is a delta CRL");
+    await expect(
+      viaCrl([issuingDistributionPoint({ url: "http://crl.ca.test/partition-2.crl" })]),
+    ).rejects.toThrow("is another distribution point's");
+    await expect(
+      viaCrl([issuingDistributionPoint({ url: CA_URLS.crl, onlySomeReasons: 0x60 })]),
+    ).rejects.toThrow("covers only some reasons");
+    await expect(
+      viaCrl([issuingDistributionPoint({ url: CA_URLS.crl, onlyContainsCACerts: true })]),
+    ).rejects.toThrow("covers only CA certificates");
   });
 
   test("an OCSP answer from someone the CA didn't delegate to isn't used", async () => {

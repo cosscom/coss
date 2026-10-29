@@ -149,6 +149,8 @@ export function caServers(opts: {
   /** Answers issued this long ago (default a minute), with or without `nextUpdate`. */
   issuedAgoMs?: number;
   omitNextUpdate?: boolean;
+  /** CRL extensions (a delta indicator, an issuing distribution point). */
+  crlExtensions?: pkijs.Extension[];
 }) {
   const thisUpdate = () => new Date(Date.now() - (opts.issuedAgoMs ?? 60_000));
   const nextUpdate = () => (opts.omitNextUpdate ? undefined : new Date(Date.now() + 86_400_000));
@@ -166,6 +168,9 @@ export function caServers(opts: {
       });
       const next = nextUpdate();
       if (next) list.nextUpdate = new pkijs.Time({ type: 0, value: next });
+      if (opts.crlExtensions) {
+        list.crlExtensions = new pkijs.Extensions({ extensions: opts.crlExtensions });
+      }
       list.revokedCertificates = [...(opts.revoked ?? [])].map(
         (value) =>
           new pkijs.RevokedCertificate({
@@ -222,5 +227,22 @@ export function sealingCertificate(root: Issued, commonName = "coss.com test sea
     ocspUrl: CA_URLS.ocsp,
     crlUrl: CA_URLS.crl,
     caIssuersUrl: CA_URLS.caIssuers,
+  });
+}
+
+/** An issuing distribution point extension for a CRL. */
+export function issuingDistributionPoint(
+  point: Partial<pkijs.IssuingDistributionPointParameters> & { url?: string },
+): pkijs.Extension {
+  const { url, ...rest } = point;
+  return new pkijs.Extension({
+    extnID: "2.5.29.28",
+    critical: true,
+    extnValue: new pkijs.IssuingDistributionPoint({
+      ...(url ? { distributionPoint: [uri(url)] } : {}),
+      ...rest,
+    })
+      .toSchema()
+      .toBER(false),
   });
 }

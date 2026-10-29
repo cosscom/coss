@@ -271,6 +271,44 @@ async function ocspResponse(
   };
 }
 
+const ISSUING_DISTRIBUTION_POINT = "2.5.29.28";
+const DELTA_CRL_INDICATOR = "2.5.29.27";
+const BASIC_CONSTRAINTS = "2.5.29.19";
+
+/**
+ * Why `list` can't speak for `certificate` (null when it can): a delta CRL needs its base, and a
+ * scoped one (an issuing distribution point) must be the partition fetched from the certificate's
+ * own distribution point, for all reasons, direct, and for its kind of certificate. Otherwise
+ * another valid CRL of the same issuer could stand in for the one that lists it.
+ */
+function coversCertificate(
+  list: pkijs.CertificateRevocationList,
+  certificate: pkijs.Certificate,
+  url: string,
+): string | null {
+  const extensions = list.crlExtensions?.extensions ?? [];
+  if (extensions.some((item) => item.extnID === DELTA_CRL_INDICATOR)) return "is a delta CRL";
+  const point = extensions.find((item) => item.extnID === ISSUING_DISTRIBUTION_POINT)
+    ?.parsedValue as pkijs.IssuingDistributionPoint | undefined;
+  if (!point) return null;
+  if (point.onlySomeReasons !== undefined) return "covers only some reasons";
+  if (point.indirectCRL) return "is an indirect CRL";
+  if (point.onlyContainsAttributeCerts) return "covers attribute certificates";
+  const isCa =
+    (extension(certificate, BASIC_CONSTRAINTS)?.parsedValue as pkijs.BasicConstraints | undefined)
+      ?.cA === true;
+  if (point.onlyContainsUserCerts && isCa) return "covers only end-entity certificates";
+  if (point.onlyContainsCACerts && !isCa) return "covers only CA certificates";
+  const names = Array.isArray(point.distributionPoint) ? point.distributionPoint : [];
+  if (
+    point.distributionPoint !== undefined &&
+    !names.some((name) => name.type === URI_NAME && String(name.value) === url)
+  ) {
+    return "is another distribution point's";
+  }
+  return null;
+}
+
 /** A verified, current CRL from `issuer` that doesn't list `certificate`. */
 async function crl(
   subject: Entry,
@@ -292,6 +330,8 @@ async function crl(
   if (!isCurrent(list.thisUpdate.value, list.nextUpdate?.value, opts.now)) {
     throw new Error("The CRL isn't current.");
   }
+  const scope = coversCertificate(list, subject.certificate, url);
+  if (scope) throw new Error(`The CRL ${scope}.`);
   if (list.isCertificateRevoked(subject.certificate)) {
     throw new RevokedError(`"${commonName(subject.certificate)}" is revoked.`);
   }
