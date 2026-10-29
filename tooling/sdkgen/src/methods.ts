@@ -100,6 +100,16 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "GET /v1/sms/{id}": "sms.get",
   "GET /v1/sms/{id}/events": "sms.listEvents",
   "POST /v1/sms/{id}/cancel": "sms.cancel",
+  "POST /v1/forms": "forms.create",
+  "GET /v1/forms": "forms.list",
+  "GET /v1/forms/{id}": "forms.get",
+  "PATCH /v1/forms/{id}": "forms.update",
+  "DELETE /v1/forms/{id}": "forms.remove",
+  "GET /v1/forms/{id}/submissions": "forms.submissions.list",
+  "GET /v1/forms/{id}/submissions/{submission_id}": "forms.submissions.get",
+  "DELETE /v1/forms/{id}/submissions/{submission_id}": "forms.submissions.remove",
+  "POST /v1/forms/{id}/submissions/{submission_id}/release": "forms.submissions.release",
+  "GET /v1/forms/{id}/submissions/{submission_id}/files/{file_id}": "forms.submissions.file",
   "POST /v1/sign/documents": "sign.documents.upload",
   "GET /v1/sign/documents": "sign.documents.list",
   "GET /v1/sign/documents/{id}": "sign.documents.get",
@@ -279,6 +289,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
  * act twice. The same operations the TypeScript SDK sends with `retry: false`.
  */
 export const NO_RETRY: ReadonlySet<string> = new Set([
+  "POST /v1/forms",
   // Deduplicated only by `client_id` (the TypeScript SDK retries only then).
   "POST /v1/inboxes",
   "POST /v1/sign/documents",

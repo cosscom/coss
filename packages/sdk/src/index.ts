@@ -32,6 +32,7 @@ export type {
   EmailTemplateVersionsResource,
 } from "./resources/email-templates.ts";
 export type { EnvironmentResource } from "./resources/environment.ts";
+export type { FormSubmissionsResource, FormsResource } from "./resources/forms.ts";
 export type {
   HookApplicationsResource,
   HookDeliveriesResource,

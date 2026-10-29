@@ -308,6 +308,34 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
   "GET /v1/sms/received": { method: "sms.received.list", args: (r) => [queryParams(r)] },
   "GET /v1/sms/received/{id}": { method: "sms.received.get", args: (r) => [pathId(r)] },
   "GET /v1/sms/numbers": { method: "sms.numbers.list", args: () => [] },
+  "POST /v1/forms": { method: "forms.create", args: (r) => [tsValue(r.body ?? {})] },
+  "GET /v1/forms": { method: "forms.list", args: (r) => [queryParams(r)] },
+  "GET /v1/forms/{id}": { method: "forms.get", args: (r) => [pathId(r)] },
+  "PATCH /v1/forms/{id}": {
+    method: "forms.update",
+    args: (r) => [pathId(r), tsValue(r.body ?? {})],
+  },
+  "DELETE /v1/forms/{id}": { method: "forms.remove", args: (r) => [pathId(r)] },
+  "GET /v1/forms/{id}/submissions": {
+    method: "forms.submissions.list",
+    args: (r) => [pathId(r), queryParams(r)],
+  },
+  "GET /v1/forms/{id}/submissions/{submission_id}": {
+    method: "forms.submissions.get",
+    args: (r) => [pathId(r), pathParam(r, "submission_id")],
+  },
+  "DELETE /v1/forms/{id}/submissions/{submission_id}": {
+    method: "forms.submissions.remove",
+    args: (r) => [pathId(r), pathParam(r, "submission_id")],
+  },
+  "POST /v1/forms/{id}/submissions/{submission_id}/release": {
+    method: "forms.submissions.release",
+    args: (r) => [pathId(r), pathParam(r, "submission_id")],
+  },
+  "GET /v1/forms/{id}/submissions/{submission_id}/files/{file_id}": {
+    method: "forms.submissions.file",
+    args: (r) => [pathId(r), pathParam(r, "submission_id"), pathParam(r, "file_id")],
+  },
   "POST /v1/sign/documents": {
     method: "sign.documents.upload",
     args: (request) => [tsValue(request.body ?? {})],

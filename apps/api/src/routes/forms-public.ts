@@ -39,7 +39,7 @@ const TEXT_BODY_LIMIT_BYTES = 512 * 1024;
 /** Uploads: every file a submission may carry, plus the multipart framing and its text. */
 const MULTIPART_BODY_LIMIT_BYTES = MAX_SUBMISSION_FILE_BYTES + 2 * 1024 * 1024;
 
-export type FormRoutesOptions = {
+export type FormEndpointOptions = {
   riskDeps: RiskDeps;
   store: FormFileStore | null;
   links: FormLinks;
@@ -180,7 +180,7 @@ function publicStatus(result: Extract<SubmitFormResult, { submissionId: string }
     : "received";
 }
 
-export function createFormRoutes(opts: FormRoutesOptions): Hono<AppEnv> {
+export function createFormEndpointRoutes(opts: FormEndpointOptions): Hono<AppEnv> {
   const router = new Hono<AppEnv>();
 
   router.use("*", async (c, next) => {

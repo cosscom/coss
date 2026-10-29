@@ -26,7 +26,7 @@ import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { requestLog } from "./middleware/request-log.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
-import { createFormRoutes, FORMS_PATH_PREFIX } from "./routes/forms-public.ts";
+import { createFormEndpointRoutes, FORMS_PATH_PREFIX } from "./routes/forms-public.ts";
 import { createPreferenceRoutes } from "./routes/preferences.ts";
 import { createSmsCallbackRoutes, SMS_CALLBACK_PATH } from "./routes/sms-callbacks.ts";
 import { createTrackingRoutes, TRACKING_PATH_PREFIX } from "./routes/tracking.ts";
@@ -238,7 +238,7 @@ export function createApp(opts: CreateAppOptions) {
   if (formsUrl) {
     app.route(
       "/f",
-      createFormRoutes({
+      createFormEndpointRoutes({
         riskDeps: opts.riskDeps,
         store: formsStore,
         links: { publicUrl: formsUrl },
@@ -273,6 +273,8 @@ export function createApp(opts: CreateAppOptions) {
       webhookDeps: opts.webhookDeps,
       portalUrl: opts.portalUrl === undefined ? "http://localhost:3003" : opts.portalUrl,
       signUrl: opts.signUrl === undefined ? "http://localhost:3004" : opts.signUrl,
+      formsUrl,
+      formsStore,
       riskDeps: opts.riskDeps,
       inbound,
       shutdownSignal: opts.shutdownSignal ?? new AbortController().signal,
@@ -376,6 +378,16 @@ export function openApiDocumentConfig(serverUrl: string) {
         name: "Verifications",
         description:
           "One-time codes by SMS or email, checked against what the end user typed, behind a fraud guard.",
+      },
+      {
+        name: "Forms",
+        description:
+          "Hosted form endpoints your site posts to, screened by Risk and delivered to webhooks, email and contacts.",
+      },
+      {
+        name: "Form submissions",
+        description:
+          "What people submitted to a form, with uploaded files; release spam, or delete.",
       },
       {
         name: "Receiving",
