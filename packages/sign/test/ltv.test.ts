@@ -127,6 +127,25 @@ describe("validation data", () => {
     ).rejects.toThrow("covers only CA certificates");
   });
 
+  test("status and freshness come from this certificate's own entry (the whole CertID)", async () => {
+    // Our entry is stale; a fresh one for another issuer's certificate with the same serial
+    // comes first and must not vouch for it.
+    const servers = caServers({
+      root,
+      decoyEntry: true,
+      omitNextUpdate: true,
+      issuedAgoMs: 3 * 86_400_000,
+      down: new Set([CA_URLS.crl]),
+    });
+    await expect(
+      collectValidationData([leaf.der, root.der], { fetch: servers.fetch }),
+    ).rejects.toThrow("The OCSP response isn't current");
+    const fresh = caServers({ root, decoyEntry: true });
+    expect(
+      (await collectValidationData([leaf.der, root.der], { fetch: fresh.fetch })).ocspResponses,
+    ).toHaveLength(1);
+  });
+
   test("an OCSP answer from someone the CA didn't delegate to isn't used", async () => {
     const stranger = await issue({ commonName: "Not the CA" });
     const servers = caServers({ root, ocspSigner: stranger, down: new Set([CA_URLS.crl]) });

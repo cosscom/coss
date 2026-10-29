@@ -151,6 +151,8 @@ export function caServers(opts: {
   omitNextUpdate?: boolean;
   /** CRL extensions (a delta indicator, an issuing distribution point). */
   crlExtensions?: pkijs.Extension[];
+  /** OCSP answers also carry this entry first: same serial, another issuer's hashes, fresh. */
+  decoyEntry?: boolean;
 }) {
   const thisUpdate = () => new Date(Date.now() - (opts.issuedAgoMs ?? 60_000));
   const nextUpdate = () => (opts.omitNextUpdate ? undefined : new Date(Date.now() + 86_400_000));
@@ -188,6 +190,23 @@ export function caServers(opts: {
       const basic = new pkijs.BasicOCSPResponse();
       basic.tbsResponseData.responderID = signer.certificate.subject;
       basic.tbsResponseData.producedAt = new Date();
+      if (opts.decoyEntry) {
+        const [first] = request.tbsRequest.requestList;
+        if (first) {
+          const decoy = new pkijs.SingleResponse({
+            certID: new pkijs.CertID({
+              hashAlgorithm: first.reqCert.hashAlgorithm,
+              issuerNameHash: new asn1js.OctetString({ valueHex: new Uint8Array(20).fill(1) }),
+              issuerKeyHash: new asn1js.OctetString({ valueHex: new Uint8Array(20).fill(2) }),
+              serialNumber: first.reqCert.serialNumber,
+            }),
+          });
+          decoy.certStatus = new asn1js.Primitive({ idBlock: { tagClass: 3, tagNumber: 0 } });
+          decoy.thisUpdate = new Date();
+          decoy.nextUpdate = new Date(Date.now() + 86_400_000);
+          basic.tbsResponseData.responses.push(decoy);
+        }
+      }
       for (const item of request.tbsRequest.requestList) {
         const serialNumber = item.reqCert.serialNumber.valueBlock.valueDec;
         const revoked = opts.revoked?.has(serialNumber);

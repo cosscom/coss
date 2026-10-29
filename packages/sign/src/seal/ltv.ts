@@ -217,6 +217,46 @@ async function signedByResponder(
   return false;
 }
 
+const CERT_ID_HASHES: Record<string, string> = {
+  "1.3.14.3.2.26": "SHA-1",
+  "2.16.840.1.101.3.4.2.1": "SHA-256",
+  "2.16.840.1.101.3.4.2.2": "SHA-384",
+  "2.16.840.1.101.3.4.2.3": "SHA-512",
+};
+
+function sameBytes(a: asn1js.OctetString | asn1js.Integer, b: asn1js.OctetString | asn1js.Integer) {
+  return Buffer.from(a.valueBlock.valueHexView).equals(Buffer.from(b.valueBlock.valueHexView));
+}
+
+/**
+ * The response's entry for exactly this certificate: its whole CertID (issuer name and key
+ * hashes under the hash the responder used, and the serial), so the status and the freshness
+ * read are that entry's, never another issuer's certificate with the same serial.
+ */
+async function responseFor(
+  basic: pkijs.BasicOCSPResponse,
+  subject: Entry,
+  issuer: Entry,
+): Promise<pkijs.SingleResponse | undefined> {
+  for (const single of basic.tbsResponseData.responses) {
+    const hashAlgorithm = CERT_ID_HASHES[single.certID.hashAlgorithm.algorithmId];
+    if (!hashAlgorithm) continue;
+    const expected = new pkijs.CertID();
+    await expected.createForCertificate(subject.certificate, {
+      hashAlgorithm,
+      issuerCertificate: issuer.certificate,
+    });
+    if (
+      sameBytes(single.certID.serialNumber, expected.serialNumber) &&
+      sameBytes(single.certID.issuerNameHash, expected.issuerNameHash) &&
+      sameBytes(single.certID.issuerKeyHash, expected.issuerKeyHash)
+    ) {
+      return single;
+    }
+  }
+  return undefined;
+}
+
 /**
  * A verified OCSP response saying `certificate` is good: signed by its issuer or a responder the
  * issuer delegated to, and current.
@@ -249,15 +289,10 @@ async function ocspResponse(
   if (!(await signedByResponder(basic, issuer, opts.now))) {
     throw new Error("The OCSP response doesn't verify.");
   }
-  const single = basic.tbsResponseData.responses.find((candidate) =>
-    candidate.certID.serialNumber.isEqual(subject.certificate.serialNumber),
-  );
-  const { isForCertificate, status: certStatus } = await basic.getCertificateStatus(
-    subject.certificate,
-    issuer.certificate,
-  );
-  if (!single || !isForCertificate)
-    throw new Error("The OCSP response is for another certificate.");
+  const single = await responseFor(basic, subject, issuer);
+  if (!single) throw new Error("The OCSP response is for another certificate.");
+  // CertStatus: good [0], revoked [1], unknown [2].
+  const certStatus = (single.certStatus as asn1js.BaseBlock).idBlock.tagNumber;
   if (certStatus === 1) throw new RevokedError(`"${commonName(subject.certificate)}" is revoked.`);
   if (certStatus !== 0) throw new Error("The OCSP responder doesn't know the certificate.");
   if (!isCurrent(single.thisUpdate, single.nextUpdate, opts.now)) {
