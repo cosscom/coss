@@ -2,6 +2,7 @@
  * Public wire schemas of email sub-accounts (snake_case). Plain zod, no database imports: exported
  * as `@coss/email/subaccount-schemas`.
  */
+import { ReputationCheckObject } from "@coss/reputation/schemas";
 import { z } from "zod";
 
 export const SUBACCOUNT_STATUSES = ["active", "disabled", "deleting"] as const;
@@ -262,3 +263,74 @@ export const SubaccountStats = z
     ],
   });
 export type SubaccountStatsOutput = z.output<typeof SubaccountStats>;
+
+/**
+ * Webhook events about a sub-account's own reputation (delivered to its environment; live only,
+ * like `account.*`).
+ */
+export const SUBACCOUNT_EVENT_TYPES = [
+  "subaccount.reputation_warning",
+  "subaccount.reputation_recovered",
+  "subaccount.paused",
+  "subaccount.reinstated",
+] as const;
+export type SubaccountEventType = (typeof SUBACCOUNT_EVENT_TYPES)[number];
+
+const SUBACCOUNT_EVENT_EXAMPLE = {
+  id: "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+  object: "event",
+  type: "subaccount.paused",
+  api_version: "2026-10-01",
+  created_at: CREATED,
+  data: {
+    subaccount_id: SUBACCOUNT_ID,
+    uid: "user_8812",
+    status: "paused",
+    previous_status: "warning",
+    trigger: "bounce_rate",
+    occurred_at: CREATED,
+    checks: [
+      {
+        trigger: "bounce_rate",
+        severity: "suspend",
+        message: "Bounce rate 9.50% is at or above the 8.00% suspension threshold.",
+        rate: 0.095,
+        count: 19,
+        volume: 200,
+        warning_threshold: 0.04,
+        suspend_threshold: 0.08,
+        minimum_volume: 200,
+      },
+    ],
+  },
+};
+
+export const SubaccountWebhookEvent = z
+  .object({
+    id: z.string().meta({ description: "The event id, also sent as the `webhook-id` header." }),
+    object: z.literal("event"),
+    type: z.enum(SUBACCOUNT_EVENT_TYPES),
+    api_version: z.string().meta({
+      description:
+        "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.",
+    }),
+    created_at: Timestamp,
+    data: z.object({
+      subaccount_id: z.string(),
+      uid: z.string().nullable(),
+      status: z.enum(SUBACCOUNT_REPUTATION_STATUSES),
+      previous_status: z.enum(SUBACCOUNT_REPUTATION_STATUSES),
+      trigger: z.string().nullable().meta({
+        description:
+          "What changed it: a check (`bounce_rate`, `complaint_rate`), `content_screening` or `reinstated`.",
+      }),
+      occurred_at: Timestamp,
+      checks: z.array(ReputationCheckObject).meta({
+        description: "The measurements behind the change (empty for reinstatements and screening).",
+      }),
+    }),
+  })
+  .meta({ id: "SubaccountWebhookEvent", examples: [SUBACCOUNT_EVENT_EXAMPLE] });
+export type SubaccountWebhookEventOutput = z.output<typeof SubaccountWebhookEvent>;
+/** What the outbox stores: delivery adds `api_version` when it renders the event for an endpoint. */
+export type StoredSubaccountWebhookEvent = Omit<SubaccountWebhookEventOutput, "api_version">;

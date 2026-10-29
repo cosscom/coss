@@ -74,7 +74,12 @@ export async function countSlices(
   organizationId: string,
   from: Date,
   to: Date,
-  opts: { inclusive?: boolean; stream?: EmailStream } = {},
+  opts: {
+    inclusive?: boolean;
+    stream?: EmailStream;
+    /** Only one email sub-account's emails (its own reputation). */
+    subaccountId?: string;
+  } = {},
 ): Promise<Map<number, SliceCounts>> {
   const stream = opts.stream ?? "transactional";
   const recipientEvent = (condition: ReturnType<typeof sql>) => sql`exists (
@@ -110,6 +115,7 @@ export async function countSlices(
       on ${environment.id} = ${email.environmentId}
       and ${environment.organizationId} = ${email.organizationId}
     where ${email.organizationId} = ${organizationId}
+      and ${opts.subaccountId ? sql`${email.subaccountId} = ${opts.subaccountId}` : sql`true`}
       and ${email.stream} = ${stream}
       and ${SEND_TIME} >= ${from.toISOString()}::timestamptz
       and ${SEND_TIME} ${upper} ${to.toISOString()}::timestamptz

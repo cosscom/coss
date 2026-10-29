@@ -6,6 +6,7 @@ import {
   EmailWebhookEvent,
   ReceivedEmailWebhookEvent,
 } from "@coss/email/schemas";
+import { SubaccountWebhookEvent } from "@coss/email/subaccount-schemas";
 import { AccountWebhookEvent } from "@coss/reputation/schemas";
 import { RiskWebhookEvent } from "@coss/risk/schemas";
 import { SignRequestWebhookEvent } from "@coss/sign/schemas";
@@ -23,6 +24,7 @@ const WEBHOOK_EVENTS = {
   ReceivedEmailWebhookEvent,
   DomainWebhookEvent,
   AccountWebhookEvent,
+  SubaccountWebhookEvent,
   BillingWebhookEvent,
   RiskWebhookEvent,
   HookEndpointWebhookEvent,

@@ -35,6 +35,7 @@ import {
   runDueBroadcasts,
   runDueDmarcNotifications,
   runDueSubaccountDeletions,
+  runDueSubaccountEvaluations,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -402,11 +403,15 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       // suspends live sending on its own when a rate crosses the policy.
       name: "reputation",
       intervalMs: 60_000,
-      run: async () =>
-        (await runDueReputationEvaluations(
+      run: async () => {
+        const organizations = await runDueReputationEvaluations(
           { limit: REPUTATION_BATCH },
           { checks: REPUTATION_CHECKS, systemOrganizationId: deps.systemOrganizationId },
-        )) === REPUTATION_BATCH,
+        );
+        // Email sub-accounts' own standings (their pauses never touch the organization's).
+        const subaccounts = await runDueSubaccountEvaluations({ limit: REPUTATION_BATCH });
+        return organizations === REPUTATION_BATCH || subaccounts === REPUTATION_BATCH;
+      },
     }),
     start({
       // Organization deletions: releases domains and the SES tenant, then deletes the data.

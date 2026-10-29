@@ -614,6 +614,14 @@ export {
   updateStorageSettings,
 } from "./storage-settings.ts";
 export {
+  decideSubaccount,
+  evaluateSubaccount,
+  markSubaccountReputationDue,
+  pauseSubaccount,
+  reinstateSubaccount,
+  runDueSubaccountEvaluations,
+} from "./subaccount-reputation.ts";
+export {
   createSubaccount,
   deleteSubaccount,
   findSubaccount,

@@ -2,11 +2,12 @@
  * The reputation check for content screening: within the evaluation window, any enforced
  * `blocked` verdict suspends and any enforced `flagged` verdict warns. A warning therefore clears
  * once the flags age out of the window, and a reinstatement (which restarts the window) is not
- * undone by the block that caused the suspension.
+ * undone by the block that caused the suspension. Verdicts of a group (an email sub-account,
+ * `ScreenInput.group`) are left out: they pause the group instead.
  */
 import { db, schema } from "@coss/db";
 import type { CheckResult, ReputationCheck } from "@coss/reputation";
-import { and, count, eq, gte, lte, ne } from "drizzle-orm";
+import { and, count, eq, gte, isNull, lte, ne } from "drizzle-orm";
 import { CONTENT_SCREENING_TRIGGER } from "./screen.ts";
 
 const { contentScreening } = schema;
@@ -20,6 +21,8 @@ export const contentScreeningCheck: ReputationCheck = {
       .where(
         and(
           eq(contentScreening.organizationId, context.organizationId),
+          // A group's verdicts (an email sub-account's) act on the group alone.
+          isNull(contentScreening.groupId),
           gte(contentScreening.createdAt, context.windowStart),
           lte(contentScreening.createdAt, context.now),
           eq(contentScreening.enforced, true),

@@ -160,6 +160,39 @@ export interface AccountWebhookEvent {
   data: AccountWebhookEventData;
 }
 
+/** A sub-account's own reputation changes (sent to its environment; live only). */
+export type SubaccountEventType =
+  | "subaccount.reputation_warning"
+  | "subaccount.reputation_recovered"
+  | "subaccount.paused"
+  | "subaccount.reinstated";
+
+export interface SubaccountWebhookEventData {
+  subaccount_id: string;
+  /** Your own id for it. */
+  uid: string | null;
+  status: "good" | "warning" | "paused";
+  previous_status: "good" | "warning" | "paused";
+  /** What changed it: a check (`bounce_rate`, `complaint_rate`), `content_screening` or `reinstated`. */
+  trigger: string | null;
+  /** ISO 8601 timestamp. */
+  occurred_at: string;
+  /** The measurements behind the change (empty for reinstatements and screening). */
+  checks: ReputationCheck[];
+}
+
+/** A sub-account's reputation change. `id` equals the `webhook-id` header. */
+export interface SubaccountWebhookEvent {
+  id: string;
+  object: "event";
+  type: SubaccountEventType;
+  /** The API version this event is rendered in: the receiving endpoint's `api_version`. */
+  api_version: string;
+  /** ISO 8601 timestamp. */
+  created_at: string;
+  data: SubaccountWebhookEventData;
+}
+
 /** Billing events (organization-wide; sent to live environments only). */
 export type BillingEventType =
   | "billing.invoice_finalized"
@@ -427,6 +460,7 @@ export type WebhookEvent =
   | ReceivedEmailWebhookEvent
   | DomainWebhookEvent
   | AccountWebhookEvent
+  | SubaccountWebhookEvent
   | BillingWebhookEvent
   | RiskWebhookEvent
   | HookEndpointWebhookEvent

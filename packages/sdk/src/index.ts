@@ -555,6 +555,9 @@ export type {
   RiskWebhookEventData,
   SmsWebhookEvent,
   SmsWebhookEventData,
+  SubaccountEventType,
+  SubaccountWebhookEvent,
+  SubaccountWebhookEventData,
   WebhookEvent,
 } from "./types/webhook.ts";
 export type {

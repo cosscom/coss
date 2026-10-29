@@ -12,6 +12,7 @@ import { VERIFY_WEBHOOK_EVENT_TYPES } from "@coss/verify/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
 import { z } from "zod";
+import { SUBACCOUNT_EVENT_TYPES } from "./subaccount-schemas.ts";
 import {
   EmailTemplateReference,
   TemplateLocale,
@@ -905,16 +906,18 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
 
 /**
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
- * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
- * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`),
- * contact changes (`contact.*`), broadcasts, inbox messages (`inbox.*`), SMS (`sms.*`),
- * signature requests (`sign_request.*`) and verifications (`verification.*`).
+ * organization's domain events (`domain.*`), reputation changes (`account.*`, and each
+ * sub-account's `subaccount.*`) and billing events (`billing.*`), all delivered to live
+ * environments only, risk reviews (`risk.*`), contact changes (`contact.*`), broadcasts, inbox
+ * messages (`inbox.*`), SMS (`sms.*`), signature requests (`sign_request.*`) and verifications
+ * (`verification.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
   ...RECEIVED_EMAIL_EVENT_TYPES,
   ...DOMAIN_EVENT_TYPES,
   ...ACCOUNT_EVENT_TYPES,
+  ...SUBACCOUNT_EVENT_TYPES,
   ...HOOK_OPERATIONAL_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
   ...RISK_EVENT_TYPES,

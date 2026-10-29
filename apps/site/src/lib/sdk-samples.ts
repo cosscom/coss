@@ -251,6 +251,10 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.subaccounts.delete",
     args: (request) => [pathParam(request, "subaccount")],
   },
+  "POST /v1/subaccounts/{subaccount}/reinstate": {
+    method: "email.subaccounts.reinstate",
+    args: (request) => [pathParam(request, "subaccount")],
+  },
   "GET /v1/subaccounts/{subaccount}/stats": {
     method: "email.subaccounts.stats",
     args: (request) => [pathParam(request, "subaccount"), queryParams(request)],
