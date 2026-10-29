@@ -6,6 +6,7 @@ mock.module("@coss/email", () => ({
   ContactError: class extends Error {},
   DomainError: class extends Error {},
   EmailError: class extends Error {},
+  InboxError: class extends Error {},
 }));
 mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const { discoverOidcEndpoints, samlConfigFrom, samlEntryPointFromMetadata, ssoUrls } = await import(

@@ -51,6 +51,7 @@ const {
   riskUserNetwork,
   organizationDeletion,
   organizationSuspension,
+  inboxThread,
   receivedEmail,
   scimConnectionBinding,
   scimGroup,
@@ -464,6 +465,15 @@ async function deleteOrganizationData(
         and(
           eq(receivedEmail.environmentId, environmentId),
           eq(receivedEmail.organizationId, organizationId),
+        ),
+      ],
+      // Their messages went with the emails and received emails above.
+      [
+        inboxThread,
+        inboxThread.id,
+        and(
+          eq(inboxThread.environmentId, environmentId),
+          eq(inboxThread.organizationId, organizationId),
         ),
       ],
       [

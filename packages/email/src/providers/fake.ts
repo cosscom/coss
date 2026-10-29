@@ -128,6 +128,11 @@ export class FakeEmailProvider implements EmailProvider {
   readonly #log: boolean;
   readonly #fail?: (message: OutboundEmail) => boolean;
 
+  /** A stand-in host: nothing the fake accepts is delivered anywhere. */
+  messageId(providerMessageId: string): string {
+    return `<${providerMessageId}@fake.coss.test>`;
+  }
+
   constructor(opts: { log?: boolean; fail?: (message: OutboundEmail) => boolean } = {}) {
     this.#log = opts.log ?? true;
     this.#fail = opts.fail;

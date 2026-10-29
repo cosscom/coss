@@ -1,0 +1,116 @@
+---
+title: Inboxes
+description: Give an AI agent its own email address. Mail to it arrives as threads, with a webhook for each message, and the agent replies from the same address.
+icon: Inbox
+---
+
+An **inbox** is an email address of an [environment](/docs/environments), usually one per agent
+(or per user an agent works for). Mail sent to it is kept as **threads**, conversations of
+messages, and each message that arrives sends an `inbox.message.received`
+[webhook](/docs/webhooks). The agent reads the thread and replies from the inbox's address; the
+reply lands in the same thread, and so does the answer to it.
+
+| Concept | What it is                                                                                   |
+| ------- | -------------------------------------------------------------------------------------------- |
+| Inbox   | An address, `username@domain`, at coss.com's inbound domain or one of your receiving domains. |
+| Thread  | A conversation: the messages that answer one another.                                         |
+| Message | One email in a thread: `inbound` (received) or `outbound` (sent from the inbox).              |
+
+Inboxes build on [receiving](/docs/email/receiving) and [sending](/docs/email/sending): an inbound
+message is a received email, an outbound one is an email, with its usual delivery events.
+
+## Quickstart
+
+Create an inbox. Without a `domain`, its address is at the environment's own domain under
+coss.com's inbound domain, which needs no DNS setup:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: inbox } = await coss.inboxes.create({
+  username: "support-agent",
+  display_name: "Acme Support",
+  client_id: "agent-42", // your own id: creating it again returns this inbox
+});
+
+console.log(inbox?.address); // support-agent@k3j9x2m7qp4l.inbound.coss.com
+```
+
+Then handle `inbox.message.received` (subscribe a [webhook endpoint](/docs/webhooks) to it, or run
+`coss listen` while you develop): read the thread and reply.
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+declare function askYourAgent(conversation: string): Promise<string>;
+// ---cut---
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "inbox.message.received" && !event.data.spam) {
+  const { inbox_id, thread_id, message_id } = event.data;
+  const { data: thread } = await coss.inboxes.threads.get(inbox_id, thread_id);
+
+  // `extracted_text` is each message's own words, without the quoted conversation.
+  const conversation = (thread?.messages ?? [])
+    .map((message) => `${message.direction === "inbound" ? message.from : "You"}: ${message.extracted_text}`)
+    .join("\n\n");
+
+  await coss.inboxes.messages.reply(
+    inbox_id,
+    message_id,
+    { text: await askYourAgent(conversation) },
+    { idempotencyKey: `reply-${message_id}` }, // a redelivered webhook won't reply twice
+  );
+}
+```
+
+The reply goes to the sender (their `Reply-To`, when they set one) with `Re:` and the headers mail
+clients thread by. `reply_all: true` also answers everyone else on the message. To start a
+conversation instead, send a message from the inbox:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const inboxId: string;
+// ---cut---
+const { data: message } = await coss.inboxes.messages.send(inboxId, {
+  to: "jane@example.com",
+  subject: "Your order",
+  text: "Hi Jane, your order has shipped. Reply here with any questions.",
+});
+console.log(message?.thread_id, message?.email_id);
+```
+
+## Addresses and sending
+
+| Inbox at                                                     | Receives | Sends from live environments |
+| ------------------------------------------------------------ | -------- | ---------------------------- |
+| coss.com's inbound domain (`…@k3j9x2m7qp4l.inbound.coss.com`) | Yes      | No                           |
+| A receiving domain under one of your verified domains        | Yes      | Yes                          |
+
+- Live environments send only from your own verified [domains](/docs/email/domains): to send from
+  an inbox, set up [receiving](/docs/email/receiving#addresses) on a subdomain of a verified domain
+  (e.g. `agents.acme.com`) and create the inbox there with `domain: "agents.acme.com"`. An inbox's
+  `can_send` says whether it can send.
+- Sandbox environments (`coss_test_…` keys) send from every inbox and deliver nothing, like every
+  sandbox send. Mail sent to a sandbox inbox is still received, so you can test the whole loop
+  with your own mail client.
+- Usernames are lower-case letters, digits, `.`, `_` and `-`. Mail to `username+anything@domain`
+  reaches the inbox too, so an agent can hand out one address per task.
+- Messages from an inbox are ordinary emails: they count against the send quota and your plan's
+  emails, appear in the environment's emails and logs, and are never tracked (no pixel, no
+  rewritten links).
+- An environment can have up to 1,000 inboxes.
+
+## Inboxes and received emails
+
+Every inbound message is also a received email of the environment: `email.received` fires too, and
+the email shows under **Received emails**. Subscribe to `inbox.message.received` for inbox mail
+only. Deleting an inbox deletes its threads, not their emails; mail to its address is then
+received like any other mail to the environment's domain.
+
+Messages follow the [retention](/docs/data-retention) of their emails: inbound messages are
+deleted with their received email, outbound ones with their email, and a thread whose messages
+are all gone disappears.

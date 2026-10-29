@@ -27,10 +27,14 @@ const OWN_LIMIT_PATHS: ReadonlySet<string> = new Set([
 /** Template updates take inline documents too. */
 const OWN_LIMIT_PATCH = /^\/v1\/sign\/templates\/[^/]+$/;
 
+/** Inboxes' sends and replies, with attachments like `/v1/emails`. */
+const OWN_LIMIT_POST = /^\/v1\/inboxes\/[^/]+\/messages(\/[^/]+\/reply)?$/;
+
 /** The send and upload routes enforce their own, larger limit after authenticating the caller. */
 export function hasOwnBodyLimit(c: Context): boolean {
   return (
-    (c.req.method === "POST" && OWN_LIMIT_PATHS.has(c.req.path)) ||
+    (c.req.method === "POST" &&
+      (OWN_LIMIT_PATHS.has(c.req.path) || OWN_LIMIT_POST.test(c.req.path))) ||
     (c.req.method === "PATCH" && OWN_LIMIT_PATCH.test(c.req.path))
   );
 }

@@ -4,6 +4,7 @@
  */
 import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
+import type { InboxEventType } from "./inbox.ts";
 import type { SignWebhookEventType } from "./sign.ts";
 import type { ReceivedSmsEventType, SmsEventType } from "./sms.ts";
 import type {
@@ -32,6 +33,7 @@ export type WebhookEventType =
   | HookOperationalEventType
   | ContactEventType
   | BroadcastEventType
+  | InboxEventType
   | SmsEventType
   | ReceivedSmsEventType
   | SignWebhookEventType;

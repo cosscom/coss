@@ -6,7 +6,7 @@
  */
 
 import { BillingError } from "@coss/billing";
-import { BroadcastError, ContactError, DomainError, EmailError } from "@coss/email";
+import { BroadcastError, ContactError, DomainError, EmailError, InboxError } from "@coss/email";
 import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { SignError } from "@coss/sign";
@@ -386,6 +386,18 @@ function fromContactError(error: ContactError): ApiError {
   return invalidRequest(error.code, error.message, error.param);
 }
 
+function fromInboxError(error: InboxError): ApiError {
+  if (error.code.endsWith("not_found")) {
+    return new ApiError(404, {
+      type: "not_found_error",
+      code: "not_found",
+      message: error.message,
+    });
+  }
+  // Conflicts (`address_taken`, `too_many_inboxes`) are 422, not 409: the SDK retries those.
+  return invalidRequest(error.code, error.message, error.param);
+}
+
 function fromBroadcastError(error: BroadcastError): ApiError {
   switch (error.code) {
     case "not_found":
@@ -511,6 +523,7 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof ContactError) return fromContactError(error);
   if (error instanceof BroadcastError) return fromBroadcastError(error);
+  if (error instanceof InboxError) return fromInboxError(error);
   if (error instanceof WebhookError) return fromWebhookError(error);
   if (error instanceof RiskError) return fromRiskError(error);
   if (error instanceof SmsError) return fromSmsError(error);

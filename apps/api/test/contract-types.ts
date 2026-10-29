@@ -70,6 +70,7 @@ import type {
   UpdateTopicRequest,
   UpsertContactRequest,
 } from "@coss/email/contact-schemas";
+import type { InboxMessageReceivedWebhookEvent } from "@coss/email/inbox-schemas";
 import type {
   CheckSuppressionQuery,
   CreateDomainRequest,
@@ -652,6 +653,7 @@ export type Contract = [
       | z.output<typeof RiskWebhookEvent>
       | z.output<typeof ContactWebhookEvent>
       | z.output<typeof BroadcastWebhookEvent>
+      | z.output<typeof InboxMessageReceivedWebhookEvent>
       | z.output<typeof SmsWebhookEvent>
       | z.output<typeof ReceivedSmsWebhookEvent>
       | z.output<typeof SignRequestWebhookEvent>,

@@ -41,11 +41,11 @@ function skipped(method: string, path: string): boolean {
 
 /**
  * Responses carrying customer content the log must not copy: received emails (bodies, headers,
- * attachments of third-party mail) and received text messages (other people's words). Logged lines
- * would outlive deleting them, and every member reads the environment's log and its drains. Error
- * envelopes are still kept.
+ * attachments of third-party mail, also in inboxes' threads and messages) and received text
+ * messages (other people's words). Logged lines would outlive deleting them, and every member reads
+ * the environment's log and its drains. Error envelopes are still kept.
  */
-const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/sms/received"];
+const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/inboxes", "/v1/sms/received"];
 /**
  * Responses that are capabilities: preference links change a contact's consent and need
  * `contact:update`, and Sign's session links (the token is in the URL's fragment too) sign as a
@@ -65,14 +65,15 @@ const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/ris
 const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 
 /**
- * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule):
+ * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule,
+ * inboxes' sends and replies):
  * their subjects, bodies, headers, template variables and attachment filenames are redacted (the
  * log would otherwise keep what the email itself doesn't) when an email they answer with was sent
  * without content storage (`markEmailContent`, from the email's own snapshot: a read or an
  * idempotent replay after switching back to `store`), or when the environment's content storage
  * is `discard` now (requests refused before any email exists).
  */
-const EMAIL_CONTENT_PATHS = /^\/v1\/emails(\/|$)/;
+const EMAIL_CONTENT_PATHS = /^\/v1\/(emails(\/|$)|inboxes\/[^/]+\/messages(\/|$))/;
 
 /** Marks the request as answering with an email sent without content storage, if one is. */
 export function markEmailContent(

@@ -89,6 +89,12 @@ export class SesEmailProvider implements EmailProvider {
     this.#sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   }
 
+  /** SES's `Message-ID` is the message id at its region's host (`email.amazonses.com` in us-east-1). */
+  messageId(providerMessageId: string): string {
+    const host = this.#config.region === "us-east-1" ? "email" : this.#config.region;
+    return `<${providerMessageId}@${host}.amazonses.com>`;
+  }
+
   async send(message: OutboundEmail): Promise<SendResult> {
     const body: Body = {};
     if (message.html !== null) body.Html = { Data: message.html, Charset: "UTF-8" };

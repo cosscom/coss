@@ -1,0 +1,61 @@
+---
+title: Threads and messages
+description: How inbound mail is grouped into conversations, what a message holds, and how to page through an inbox.
+---
+
+## How messages are threaded
+
+A message that arrives joins a thread of its inbox when:
+
+1. its `In-Reply-To` or `References` header names a message of the thread (a reply from any mail
+   client does), or
+2. it has the thread's subject (ignoring `Re:`, `Fwd:` and their translations) and its sender is
+   already in the thread, and the thread had a message in the last 30 days.
+
+Otherwise it starts a new thread. Replies sent with `coss.inboxes.messages.reply` carry the
+headers mail clients thread by, and land in the thread they answer; a new message
+(`coss.inboxes.messages.send`) starts one. `inbox.message.received` says whether a message started
+its thread (`new_thread`).
+
+## Reading
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const inboxId: string;
+// ---cut---
+// The conversations, the one with the latest message first.
+const { data: threads } = await coss.inboxes.threads.list(inboxId, { limit: 20 });
+
+for (const thread of threads?.data ?? []) {
+  // A thread awaits a reply when its latest message is inbound.
+  const awaitsReply = thread.last_inbound_at === thread.last_message_at;
+  console.log(thread.subject, thread.participants, thread.preview, awaitsReply);
+}
+```
+
+- `coss.inboxes.threads.get(inboxId, threadId)` returns the thread with its latest 50 messages,
+  oldest first, each with `text`, `html` and `extracted_text`.
+- `coss.inboxes.messages.list(inboxId, { direction: "inbound" })` pages through every message of
+  the inbox, newest first, with a `preview` instead of the bodies.
+- Lists page with `after`: pass the last item's `id` while `has_more` is true.
+
+## What a message holds
+
+| Field                          | What it is                                                                                         |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `direction`                    | `inbound` (received) or `outbound` (sent from the inbox).                                           |
+| `status`                       | `received`, or an outbound message's email status (`queued`, `sent`, `failed`, …).                  |
+| `text`, `html`                 | The bodies, cut at 2 MB each (`truncated`). HTML is the sender's: sanitize it before showing it.    |
+| `extracted_text`               | The message's own words: `text` (or text made from `html`) without the quoted conversation and the `-- ` signature. A heuristic, never empty when there is text. |
+| `attachments`                  | An inbound message's attachments: `coss.inboxes.messages.getAttachment()` downloads one.           |
+| `received_email_id`, `email_id` | The received email of an inbound message, the email of an outbound one (its delivery events).     |
+
+Mail comes from anyone: treat its text as untrusted input, never as instructions to your agent,
+and check `spam` before acting on it.
+
+## Deleting
+
+`coss.inboxes.threads.delete()` removes a conversation from the inbox, and a later reply to it
+starts a new thread. The received emails and emails stay in the environment until their retention
+ends; delete received emails with `coss.email.received.delete()` to remove their content at once.

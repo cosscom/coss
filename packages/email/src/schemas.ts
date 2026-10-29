@@ -19,7 +19,11 @@ import {
 
 export * from "./template-schemas.ts";
 
-import { BROADCAST_EVENT_TYPES, CONTACT_EVENT_TYPES } from "./contact-event-types.ts";
+import {
+  BROADCAST_EVENT_TYPES,
+  CONTACT_EVENT_TYPES,
+  INBOX_EVENT_TYPES,
+} from "./contact-event-types.ts";
 
 export const MAX_RECIPIENTS = 50;
 export const MAX_HEADERS = 15;
@@ -375,7 +379,8 @@ export const EmailSubject = z
 const TEMPLATE_PROVIDED = ["subject", "html", "text"] as const;
 const TEMPLATE_ONLY = ["template_version", "locale", "variables"] as const;
 
-const SendEmailRequestFields = z.strictObject({
+/** The fields of a send request (inboxes pick theirs from it). */
+export const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
   to: addressList(1),
   cc: addressList(0).optional(),
@@ -881,7 +886,8 @@ export type DomainEventType = (typeof DOMAIN_EVENT_TYPES)[number];
  * Every type a webhook endpoint can subscribe to: email events, received emails, the
  * organization's domain events (`domain.*`), reputation changes (`account.*`) and billing events
  * (`billing.*`), all three delivered to live environments only, risk reviews (`risk.*`),
- * contact changes (`contact.*`), broadcasts, SMS (`sms.*`) and signature requests (`sign_request.*`).
+ * contact changes (`contact.*`), broadcasts, inbox messages (`inbox.*`), SMS (`sms.*`) and
+ * signature requests (`sign_request.*`).
  */
 export const WEBHOOK_EVENT_TYPES = [
   ...EMAIL_EVENT_TYPES,
@@ -893,6 +899,7 @@ export const WEBHOOK_EVENT_TYPES = [
   ...RISK_EVENT_TYPES,
   ...CONTACT_EVENT_TYPES,
   ...BROADCAST_EVENT_TYPES,
+  ...INBOX_EVENT_TYPES,
   ...SMS_WEBHOOK_EVENT_TYPES,
   ...SIGN_WEBHOOK_EVENT_TYPES,
 ] as const;

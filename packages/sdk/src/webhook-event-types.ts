@@ -48,6 +48,7 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "broadcast.paused",
   "broadcast.canceled",
   "broadcast.failed",
+  "inbox.message.received",
   "sms.scheduled",
   "sms.sent",
   "sms.delivered",

@@ -1,7 +1,7 @@
 /**
- * Webhook event types of contacts and broadcasts (environment-scoped). No imports: `schemas.ts`
- * lists them in `WEBHOOK_EVENT_TYPES` while `contact-schemas.ts` and `broadcast-schemas.ts` build
- * on `schemas.ts`.
+ * Webhook event types of contacts, broadcasts and inboxes (environment-scoped). No imports:
+ * `schemas.ts` lists them in `WEBHOOK_EVENT_TYPES` while `contact-schemas.ts`,
+ * `broadcast-schemas.ts` and `inbox-schemas.ts` build on `schemas.ts`.
  */
 export const CONTACT_EVENT_TYPES = [
   "contact.created",
@@ -22,3 +22,8 @@ export const BROADCAST_EVENT_TYPES = [
 ] as const;
 
 export type BroadcastEventType = (typeof BROADCAST_EVENT_TYPES)[number];
+
+/** A message arrived in an inbox (`inbox-schemas.ts`). */
+export const INBOX_EVENT_TYPES = ["inbox.message.received"] as const;
+
+export type InboxEventType = (typeof INBOX_EVENT_TYPES)[number];

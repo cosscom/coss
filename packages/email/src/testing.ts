@@ -67,6 +67,7 @@ export function dispatchingEmailService(opts: {
     queue,
     dispatch: service.dispatch,
     dispatchDue: service.dispatchDue,
+    messageIdOf: service.messageIdOf,
     cancel: service.cancel,
     reschedule: service.reschedule,
     replay: service.replay,

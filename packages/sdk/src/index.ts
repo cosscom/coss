@@ -41,6 +41,11 @@ export type {
   HookPortalResource,
   HooksResource,
 } from "./resources/hooks.ts";
+export type {
+  InboxesResource,
+  InboxMessagesResource,
+  InboxThreadsResource,
+} from "./resources/inboxes.ts";
 export type { LogDrainBatchesResource, LogDrainsResource } from "./resources/log-drains.ts";
 export type { LogsResource } from "./resources/logs.ts";
 export type { ReceivedEmailsResource } from "./resources/received-emails.ts";
@@ -286,6 +291,28 @@ export type {
   UpdateHookEndpointParams,
   UpdateHookEventTypeParams,
 } from "./types/hooks.ts";
+export type {
+  CreateInboxParams,
+  DeletedInbox,
+  DeletedInboxThread,
+  Inbox,
+  InboxEventType,
+  InboxKind,
+  InboxMessage,
+  InboxMessageDirection,
+  InboxMessageReceivedWebhookEvent,
+  InboxMessageReceivedWebhookEventData,
+  InboxMessageStatus,
+  InboxMessageSummary,
+  InboxThread,
+  InboxThreadSummary,
+  ListInboxesParams,
+  ListInboxMessagesParams,
+  ListInboxThreadsParams,
+  ReplyInboxMessageParams,
+  SendInboxMessageParams,
+  UpdateInboxParams,
+} from "./types/inbox.ts";
 export type { ListLogsParams, Log, LogLevel, LogSource } from "./types/log.ts";
 export type {
   CreateLogDrainParams,

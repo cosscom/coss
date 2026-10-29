@@ -17,6 +17,7 @@ import {
 } from "./commands/emails-read.ts";
 import { HOOKS_COMMANDS } from "./commands/hooks.ts";
 import { inboxCommand, inboxGetCommand } from "./commands/inbox.ts";
+import { INBOXES_COMMANDS } from "./commands/inboxes.ts";
 import { initCommand } from "./commands/init.ts";
 import { listenCommand } from "./commands/listen.ts";
 import { loginCommand } from "./commands/login.ts";
@@ -66,6 +67,7 @@ export const COMMANDS: readonly Command[] = [
   logsTailCommand,
   inboxCommand,
   inboxGetCommand,
+  ...INBOXES_COMMANDS,
   listenCommand,
   triggerCommand,
   webhooksListCommand,

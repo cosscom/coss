@@ -1,6 +1,7 @@
 import {
   BanIcon,
   BookmarkIcon,
+  BotIcon,
   BoxesIcon,
   BuildingIcon,
   CableIcon,
@@ -74,6 +75,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Emails", path: "/emails", icon: MailIcon },
       { label: "Templates", path: "/templates", icon: LayoutTemplateIcon },
       { label: "Received", path: "/received", icon: InboxIcon },
+      { label: "Inboxes", path: "/inboxes", icon: BotIcon },
       { label: "Suppressions", path: "/suppressions", icon: BanIcon },
       { label: "Tracking", path: "/tracking", icon: MousePointerClickIcon },
       { label: "Content storage", path: "/content-storage", icon: DatabaseIcon },
@@ -241,6 +243,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   endpoints: "Endpoints",
   messages: "Messages",
   received: "Received",
+  inboxes: "Inboxes",
   suppressions: "Suppressions",
   broadcasts: "Broadcasts",
   contacts: "Contacts",

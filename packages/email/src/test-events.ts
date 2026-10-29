@@ -201,6 +201,16 @@ export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): Store
       occurred_at: at,
       ...emailDetails(type, at),
     };
+  } else if (type.startsWith("inbox.")) {
+    data = {
+      ...base,
+      inbox_id: newId(ID_PREFIXES.inbox),
+      thread_id: newId(ID_PREFIXES.inboxThread),
+      message_id: newId(ID_PREFIXES.inboxMessage),
+      received_email_id: newId(ID_PREFIXES.receivedEmail),
+      sandbox: true,
+      received_at: at,
+    };
   } else if (type.startsWith("hook_endpoint.")) {
     data = {
       ...base,

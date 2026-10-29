@@ -133,6 +133,10 @@ export const ID_PREFIXES = {
   signTemplate: "stpl",
   signTemplateField: "stfld",
   signBuilderSession: "sbs",
+  // Inboxes for agents: addresses with threads (`@coss/email` inboxes).
+  inbox: "inbox",
+  inboxThread: "thread",
+  inboxMessage: "imsg",
   // Imports from another email provider (Resend, SendGrid, Postmark), `@coss/migrate`.
   migration: "mig",
   migrationItem: "migitem",

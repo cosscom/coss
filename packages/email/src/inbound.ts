@@ -12,6 +12,9 @@
  * message once (unique provider message id per environment); content written for a duplicate is
  * deleted again. A message with a virus verdict keeps only its envelope and verdicts (`blocked`).
  *
+ * Inboxes among an environment's recipients file the message into a thread in the same
+ * transaction (`inboxes.ts`).
+ *
  * Recipients that are DMARC report addresses (`dmarc-<token>@<managed domain>`) are split off
  * first and ingested as reports (`dmarc-reports.ts`); they never become received emails.
  */
@@ -31,6 +34,7 @@ import {
   scrubParsedHeaders,
 } from "./inbound-mime.ts";
 import { type InboundContentStore, receivedEmailPrefix } from "./inbound-store.ts";
+import { recordInboundInboxMessages } from "./inboxes.ts";
 import type { StoredReceivedEmailWebhookEvent, VERDICT_STATUSES } from "./schemas.ts";
 
 const {
@@ -495,6 +499,24 @@ async function receiveRouted(
           environmentId: route.environmentId,
           type: payload.type,
           payload,
+        });
+        // Inboxes among the recipients get it in a thread (and their own webhook).
+        await recordInboundInboxMessages(tx, {
+          organizationId: route.organizationId,
+          environmentId: route.environmentId,
+          sandbox: route.mode === "sandbox",
+          receivedEmailId: id,
+          recipients: route.recipients,
+          from: parsed?.from ?? null,
+          to: parsed?.to ?? [],
+          cc: content?.cc ?? [],
+          subject: parsed?.subject ?? null,
+          messageId: parsed?.messageId ?? null,
+          inReplyTo: content?.inReplyTo ?? null,
+          references: content?.references ?? [],
+          attachmentCount: attachments.length,
+          spam: message.verdicts.spam === "fail",
+          receivedAt: message.receivedAt,
         });
       }
       return inserted.id;

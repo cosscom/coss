@@ -11,6 +11,7 @@ import {
 } from "@coss/billing";
 import {
   purgeEmptyEmailBatches,
+  purgeEmptyInboxThreads,
   purgeExpiredDedicatedIpRollups,
   purgeExpiredDmarcNotifications,
   purgeExpiredDmarcReports,
@@ -66,6 +67,8 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   // The fake content store's stand-in for the S3 bucket's lifecycle rule.
   { name: "fake received email content", purge: purgeExpiredFakeInboundObjects },
   { name: "inbound drop counts", purge: purgeExpiredInboundDropCounters },
+  // After emails and received emails: their messages left with them.
+  { name: "empty inbox threads", purge: purgeEmptyInboxThreads },
   // Records of expired reports first, then the reports (bounded steps, no big cascade).
   { name: "dmarc reports", purge: purgeExpiredDmarcReports },
   { name: "dmarc notifications", purge: purgeExpiredDmarcNotifications },
