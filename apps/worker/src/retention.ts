@@ -43,6 +43,7 @@ import { purgeExpiredScreenings } from "@coss/screening";
 import { purgeExpiredSignSessions } from "@coss/sign";
 import { purgeExpiredReceivedSms, purgeExpiredSmsMessages } from "@coss/sms";
 import { purgeExpiredAdminAuditEvents, purgeExpiredAuthRows } from "@coss/tenancy/retention";
+import { purgeExpiredVerifications } from "@coss/verify";
 import {
   purgeExpiredLogDrainBatches,
   purgeExpiredWebhookListeners,
@@ -82,6 +83,7 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "hook idempotency keys", purge: purgeExpiredHookIdempotencyKeys },
   { name: "hook portal sessions", purge: purgeExpiredHookPortalSessions },
   { name: "sign sessions", purge: purgeExpiredSignSessions },
+  { name: "verifications", purge: purgeExpiredVerifications },
   { name: "hook recoveries", purge: purgeFinishedHookRecoveries },
   { name: "hook delivery rollups", purge: purgeExpiredHookDeliveryRollups },
   { name: "content screenings", purge: purgeExpiredScreenings },

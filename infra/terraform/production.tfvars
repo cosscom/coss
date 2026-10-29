@@ -151,10 +151,14 @@ plain_env = {
     # Risk's phone checks: Twilio Lookup's line type and carrier with the parent account
     # (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are in the secret). SIM swaps wait for Twilio's
     # carrier approval (RISK_PHONE_SIM_SWAP).
-    RISK_PHONE_LOOKUP         = "twilio"
-    SENTRY_DSN                = "https://32c12dc572c854d73947e15894cd2713@o4512237982711808.ingest.de.sentry.io/4512245153398864"
-    SENTRY_ENVIRONMENT        = "production"
-    SENTRY_TRACES_SAMPLE_RATE = "0.1"
+    RISK_PHONE_LOOKUP = "twilio"
+    # Verify's email codes for environments without a sender of their own come from coss.com's
+    # (shared SMS numbers, VERIFY_SMS_*, wait for coss.com's own one-time-code registration).
+    NOTIFICATIONS_ENVIRONMENT_ID = "env_01m4s0af5zent8fzxwmtkergw5"
+    NOTIFICATIONS_FROM           = "coss.com <notifications@coss.com>"
+    SENTRY_DSN                   = "https://32c12dc572c854d73947e15894cd2713@o4512237982711808.ingest.de.sentry.io/4512245153398864"
+    SENTRY_ENVIRONMENT           = "production"
+    SENTRY_TRACES_SAMPLE_RATE    = "0.1"
   }
   worker = {
     SMS_PROVIDER                        = "twilio"

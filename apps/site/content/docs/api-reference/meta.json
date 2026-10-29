@@ -34,6 +34,8 @@
     "sign-documents",
     "sign-templates",
     "sign-settings",
+    "---Verify---",
+    "verifications",
     "---Hooks---",
     "hooks-applications",
     "hooks-event-types",

@@ -6,6 +6,7 @@ import { riskEnvShape, riskPhoneEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
 import { signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
+import { verifyEnvShape } from "@coss/verify/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
@@ -61,6 +62,11 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.url().optional()
         : z.url().default("http://localhost:3004"),
+    // Verify: coss.com's shared numbers, and coss.com's own email sender (codes for environments
+    // without a sender of their own). Each pair both or neither.
+    ...verifyEnvShape,
+    NOTIFICATIONS_ENVIRONMENT_ID: z.string().startsWith("env_").optional(),
+    NOTIFICATIONS_FROM: z.string().optional(),
     ...rateLimitEnvShape,
     // Keys what risk assessments remember (velocity, duplicates, fraud reports).
     RISK_HASH_KEY:

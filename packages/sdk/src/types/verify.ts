@@ -37,9 +37,14 @@ export interface StartVerificationParams {
   tags?: Tag[];
 }
 
-export type CheckVerificationParams =
-  | { verification_id: string; to?: never; code: string }
-  | { to: string; verification_id?: never; code: string };
+/** Name the verification (`verification_id`) or its destination (`to`), not both. */
+export interface CheckVerificationParams {
+  verification_id?: string;
+  /** The destination: checks its most recent verification. */
+  to?: string;
+  /** The code the end user typed. */
+  code: string;
+}
 
 export interface VerificationSend {
   channel: VerifyChannel;

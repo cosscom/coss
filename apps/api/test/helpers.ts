@@ -25,7 +25,7 @@ import type { ApiKeyContext } from "@coss/tenancy";
 import { LATEST_API_VERSION, type Versioning } from "@coss/versioning";
 import { decryptSecret } from "@coss/webhooks";
 import { TEST_SECRETS_KEYS, testManagementDeps } from "@coss/webhooks/testing";
-import { createApp } from "../src/app.ts";
+import { type CreateAppOptions, createApp } from "../src/app.ts";
 import type { ErrorEnvelopeBody } from "../src/errors.ts";
 
 export const REQUEST_ID = /^req_[0-7][0-9a-hjkmnp-tv-z]{25}$/;
@@ -48,6 +48,8 @@ export function createTestApp(
     /** Defaults to the fake document store; `null`: Sign unavailable. */
     signService?: SignService | null;
     signUrl?: string | null;
+    /** Verify's shared numbers and coss.com's email sender (none by default). */
+    verify?: CreateAppOptions["verify"];
     domainDeps?: DomainDeps;
     rateLimiter?: RateLimiter;
     clientIp?: ClientIpResolver;
@@ -105,6 +107,7 @@ export function createTestApp(
     smsService,
     signService: opts.signService,
     signUrl: opts.signUrl,
+    verify: opts.verify,
     domainDeps: opts.domainDeps ?? { identity, dns: null, tracking, plans: opts.plans },
     inbound,
     webhookDeps: { ...testManagementDeps, plans: opts.plans },

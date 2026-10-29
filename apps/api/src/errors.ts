@@ -11,6 +11,7 @@ import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { SignError } from "@coss/sign";
 import { SmsError } from "@coss/sms";
+import { VerifyError } from "@coss/verify";
 import { WebhookError } from "@coss/webhooks";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
@@ -337,6 +338,44 @@ function fromSignError(error: SignError): ApiError {
   }
 }
 
+function fromVerifyError(error: VerifyError): ApiError {
+  switch (error.code) {
+    case "request_in_progress":
+    case "idempotency_key_reused":
+      return fromIdempotencyError({ code: error.code, message: error.message });
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+        ...(error.param && { param: error.param }),
+      });
+    case "quota_exceeded": {
+      const retryAfterMs = error.decision?.retryAfterMs;
+      return new ApiError(
+        429,
+        { type: "rate_limit_error", code: error.code, message: error.message },
+        retryAfterMs === null || retryAfterMs === undefined
+          ? {}
+          : { "Retry-After": String(Math.max(1, Math.ceil(retryAfterMs / 1000))) },
+      );
+    }
+    case "shared_sender_unavailable":
+      return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
+    case "billing_hold":
+    case "budget_exceeded":
+      return new ApiError(402, { type: "billing_error", code: error.code, message: error.message });
+    case "account_suspended":
+      return new ApiError(403, {
+        type: "permission_error",
+        code: error.code,
+        message: error.message,
+      });
+    default:
+      return invalidRequest(error.code, error.message, error.param);
+  }
+}
+
 function invalidRequest(code: string, message: string, param?: string): ApiError {
   return new ApiError(422, {
     type: "invalid_request_error",
@@ -528,6 +567,7 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof RiskError) return fromRiskError(error);
   if (error instanceof SmsError) return fromSmsError(error);
   if (error instanceof SignError) return fromSignError(error);
+  if (error instanceof VerifyError) return fromVerifyError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;
