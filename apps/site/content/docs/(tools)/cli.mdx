@@ -336,6 +336,25 @@ virus, SPF, DKIM and DMARC verdicts, attachments and the text body (`--html` for
 it are left out of what's printed. `--raw > message.eml` saves the whole message as received
 (it refuses to write it to a terminal).
 
+## Inboxes
+
+```sh
+coss inboxes create --username support-agent --name "Acme Support"
+coss inboxes threads inbox_01k7c8m4q2f3e9v6t5r1n0p8yz
+coss inboxes thread inbox_01k7c8m4q2f3e9v6t5r1n0p8yz thread_01k7c8m4r0c2b8w9y3d5f6g7h8
+coss inboxes reply inbox_01k7c8m4q2f3e9v6t5r1n0p8yz imsg_01k7c8m4s1d3c9x0z4e6g7h8j9 --text "On it."
+```
+
+[Inboxes](/docs/inboxes) are email addresses for agents. `coss inboxes create` makes one
+(`--username`, `--domain` for one of the environment's receiving domains, `--name` for the name
+it sends with, `--client-id` for your own id: creating it again returns the same inbox), and
+`coss inboxes list` lists them (`--limit`). `coss inboxes threads <inbox>` lists its
+conversations, latest first, with ● on those whose latest message is inbound;
+`coss inboxes thread <inbox> <thread>` prints one, each message's own words without the quoted
+conversation (`--full` for all of it). `coss inboxes reply <inbox> <message> --text <text>` replies
+in the thread (`--all` replies to everyone on the message). Run `coss listen` to get each
+`inbox.message.received` event as it arrives.
+
 ## Domains
 
 ```sh

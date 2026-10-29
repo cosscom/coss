@@ -284,6 +284,33 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   `Domain.receiving`. The managed domain's SES identity is tagged `coss_inbound`, never `coss_managed` (the apps'
   IAM policies may delete those). The dashboard's **Send a test email** (`receiveFakeEmail`) is for sandbox
   environments, or any while the dashboard runs the fake provider, and only to the environment's own addresses.
+- **Inboxes** (`packages/email/src/{inboxes,inbox-send,inbox-text,inbox-schemas}.ts`, tables `inbox` (ids
+  `inbox_`), `inbox_thread` (`thread_`), `inbox_message` (`imsg_`); `/v1/inboxes`, `coss.inboxes`, permission
+  `inbox`): addresses for agents, `<username>@<domain>` (lower-cased, unique everywhere), the domain being the
+  environment's managed one (`inboundAddressFor`, kind `managed`) or one of **its** receiving domains (`domain`);
+  `username+tag@` reaches the inbox (`inboxAddressOf`). `client_id` (unique per environment) makes create return
+  the existing inbox (200); at most `MAX_INBOXES_PER_ENVIRONMENT`, counted under a per-environment advisory lock.
+  Receiving is `receiveEmail`'s: in its transaction, after `email.received`, `recordInboundInboxMessages` files the
+  row into every inbox of that environment among the **envelope** recipients (never parsed `To`) and enqueues
+  `inbox.message.received` (metadata only, like `email.received`; blocked messages never reach an inbox).
+  Threading (`findThread`): an `In-Reply-To`/`References` id matching an inbound message's stored `Message-ID`
+  (`rfc_message_id`, normalized `<id>` by `messageIdKey`) or an outbound email's `provider_message_id` (the local
+  part of SES's `Message-ID`), else the same `normalizeSubject` with the sender already a participant and
+  activity within `SUBJECT_MATCH_WINDOW_MS`, else a new thread; the thread row is locked (`FOR UPDATE`) while its
+  participants and `last_message_at` move. Sends and replies (`inbox-send.ts`) are `EmailService.send` with
+  `SendEmailInput.afterInsert`, which files the email in its insert transaction (never for a replay);
+  `Idempotency-Key`s are namespaced `inbox:<id>:<key>` so they never meet `POST /v1/emails`' keys; the API charges
+  `emailSendQuota` through `InboxSendQuota` once the reply's recipients are known (refunded on replays and
+  refusals). Inbox sends never track (no pixel, no rewritten links) and take no custom headers: replies set
+  `In-Reply-To` and `References` (`replyReferences`, one header line). **Live inboxes at the managed domain only
+  receive** (`canSend`: sandbox, or kind `domain`; live sending still needs `authorizeLiveSender` to pass) — sending
+  from coss.com's inbound domain would put every customer on one shared sender reputation. Messages hold no
+  content: they point at the `received_email` or `email` and cascade with it (retention, deletes);
+  `purgeEmptyInboxThreads` (the worker's retention loop) drops threads empty for a day, and organization deletion
+  deletes threads per environment after the emails. Deleting an inbox or thread keeps the emails. The API's
+  request log never copies `/v1/inboxes` responses (received content) and redacts send bodies like `/v1/emails`'
+  when content storage is `discard`. `extractReplyText` (a heuristic: attribution lines, `-----Original
+  Message-----`, Outlook separators, trailing `>` blocks, the `-- ` signature) is client-safe; the docs describe it.
 - **DMARC reports** (`packages/email/src/dmarc-{record,report-xml,reports,guidance,notifications,sample}.ts`; tables
   `dmarc_report` (ids `dmarcrep_`), `dmarc_report_record` (`dmarcrec_`), `dmarc_notification` (`dmarcntf_`), and
   `domain.dmarc_report_token`/`dmarc_record`/`dmarc_policy_changed_at`): each domain's `rua` address is

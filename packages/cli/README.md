@@ -50,6 +50,9 @@ ID and notarized by Apple (since 0.3.0), so one downloaded with a browser runs w
 | `coss logs tail` | New lines of the environment's log as they arrive: API requests, email events, webhook attempts. Filter with `--source`, `--level`, `--type`, `--status`, `-q`; `--since 15m` starts earlier; `--interval` sets the poll interval (2000 ms). |
 | `coss inbox` | The environment's inbound domain, then each email it receives as it arrives (`--since`, `--interval`). |
 | `coss inbox get <id>` | A received email: verdicts, attachments and its text (`--html`, `--headers`); `--raw > message.eml` saves the message as received. |
+| `coss inboxes list`, `coss inboxes create` | [Inboxes](https://coss.com/docs/inboxes): email addresses for agents (`--username`, `--domain`, `--name`, `--client-id`). |
+| `coss inboxes threads <inbox>`, `coss inboxes thread <inbox> <thread>` | An inbox's conversations (● awaits a reply), and one read message by message (`--full` keeps the quoted text). |
+| `coss inboxes reply <inbox> <message> --text <text>` | Replies in the message's thread from the inbox (`--all`: to everyone on it). |
 | `coss listen` | Receives the environment's webhook events and forwards each one to `--forward-to`, signed like coss.com signs real deliveries. Verify them with `verifyWebhook` from the `coss` SDK and the signing secret it prints (it stays the same for the profile). `--header "Name: value"` adds a header to forwarded requests. |
 | `coss trigger <event-type>` | A test event of that type, sent to the environment's subscribed endpoints and `coss listen` listeners like a real one (sandbox keys; every type but `domain.*`, `account.*`, `billing.*`). `--data '{…}'` and `-F name=value` (dotted names, JSON values) change its `data`. |
 | `coss webhooks list` | The environment's webhook endpoints: URL, state and event types. |

@@ -3,6 +3,7 @@
  * real app, in process. What a coding agent asks — "did my email get delivered?" — end to end.
  */
 import { describe, expect, test } from "bun:test";
+import { buildTestMessage, receiveFakeEmail } from "@coss/email";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { Coss } from "coss";
@@ -166,6 +167,50 @@ describe("coss-mcp against the API", () => {
     const removed = await call("remove_sms_suppression", { phone_number: "+14155550199" });
     expect(removed.data.removed).toHaveLength(1);
     expect((await call("list_sms_numbers")).data.numbers).toEqual([]);
+  });
+
+  test("an agent's inbox: create it, read the thread mail started, reply in it", async () => {
+    const tenant = await createTestTenant();
+    const { app, inbound } = createTestApp();
+    if (!inbound) throw new Error("receiving is on in tests");
+    const call = await connect(app, tenant.sandboxKey);
+
+    const created = await call("create_inbox", { username: "helper", client_id: "agent-7" });
+    expect(created.isError).toBe(false);
+    const { id, address } = created.data.inbox;
+    const raw = buildTestMessage({
+      from: "Ada <ada@example.com>",
+      to: [address],
+      subject: "Question",
+      text: "Is the API up?",
+    });
+    await receiveFakeEmail(
+      { raw, mailFrom: "ada@example.com", recipients: [address], subject: "Question" },
+      { store: inbound.store, managedDomain: inbound.managedDomain },
+    );
+
+    const threads = await call("list_inbox_threads", { inbox_id: id });
+    expect(threads.data.threads).toEqual([
+      expect.objectContaining({ subject: "Question", awaiting_reply: true }),
+    ]);
+    const thread = await call("get_inbox_thread", {
+      inbox_id: id,
+      thread_id: threads.data.threads[0].id,
+    });
+    const [question] = thread.data.thread.messages;
+    expect(question).toMatchObject({ direction: "inbound", text: "Is the API up?" });
+
+    const reply = await call("reply_to_inbox_message", {
+      inbox_id: id,
+      message_id: question.id,
+      text: "Yes, all green.",
+      idempotency_key: `reply-${question.id}`,
+    });
+    expect(reply.isError).toBe(false);
+    expect(reply.data.message).toMatchObject({ direction: "outbound", subject: "Re: Question" });
+    const after = await call("list_inbox_threads", { inbox_id: id });
+    expect(after.data.threads[0]).toMatchObject({ messages: 2 });
+    expect(after.data.threads[0]).not.toHaveProperty("awaiting_reply", true);
   });
 
   test("emails of another environment are not found, with a hint", async () => {

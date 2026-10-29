@@ -24,7 +24,7 @@ async function hooksClient(context: Context): Promise<Coss> {
   return clientFor(context.io, await resolveCredentials(context));
 }
 
-function limitOf(value: string | undefined): number | undefined {
+export function limitOf(value: string | undefined): number | undefined {
   if (value === undefined) return undefined;
   const limit = Number(value);
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
@@ -34,12 +34,12 @@ function limitOf(value: string | undefined): number | undefined {
 }
 
 /** `2026-10-15 12:00` */
-function when(iso: string | null): string {
+export function when(iso: string | null): string {
   return iso ? iso.slice(0, 16).replace("T", " ") : "";
 }
 
 /** One JSON object per item with --json, else a table under its headings (or `empty`). */
-function printList<T>(
+export function printList<T>(
   out: Output,
   page: List<T>,
   options: { headings: string[]; row: (item: T) => string[]; empty: string; more?: string },

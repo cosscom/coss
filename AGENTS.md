@@ -5,7 +5,8 @@ video, scheduling…). This repo holds the dashboard, the public API, shared pac
 Email delivery goes through the provider interface in `packages/email/src/provider.ts` (Amazon SES v2 with one SES
 tenant per organization, or the fake provider); sandbox environments always use the fake provider. Delivery events
 drive per-recipient status and signed customer webhooks. Environments also receive email (an SES receipt rule → S3 +
-SQS → the worker; see `packages/email/AGENTS.md`). A sample of live messages is screened by an AI decision model
+SQS → the worker; see `packages/email/AGENTS.md`), and **inboxes** give AI agents their own addresses there, with
+received mail kept as threads and replies sent from the address (`coss.inboxes`). A sample of live messages is screened by an AI decision model
 (`@coss/screening`) before it is sent. SMS (`@coss/sms`) goes through Twilio — Cal.com's ISV account, one subaccount
 per organization, US A2P 10DLC and toll-free registration of each organization's numbers — with status and inbound
 callbacks to the API (`/sms/twilio/*`); see `packages/sms/AGENTS.md`. Plans, contracts, metered usage, credits and invoices are `@coss/billing`
@@ -42,7 +43,7 @@ text it shows is a gist that must match `CLA.md`: change both together, as a new
 | `packages/signals` | `@coss/signals` | Stateless abuse signals shared by coss.com's sign-up and risk: `./email` (syntax, disposable domains, MX/null-MX/NXDOMAIN with a cache, canonical mailbox, role accounts, free providers, typo suggestions), `./ip` (bogons, subnets, CIDR range sets, `IpIntelligence`: Tor, cloud/hosting networks, ASN, country), `./datasets` (parsers for the public IP feeds and IPinfo Lite's MMDB), `./testing` (`buildTestMmdb`). No workspace deps, no database; server-only. |
 | `packages/auth` | `@coss/auth` | Better Auth options/instance (organization, admin, api-key, two-factor, passkey, sso, scim, captcha plugins), org permissions, slug rules, API key permissions (`./api-key-permissions`: the labelled catalog, access presets, validation; client-safe), the sign-up email guard (`src/email-guard.ts`, built on `@coss/signals/email`); `./social`: Google/GitHub sign-in (server-only); `./risk`: the injected sign-up risk assessor (coss.com Risk on coss.com's own sign-ups); `./sso`: SSO trust rules; `./scim`: directory sync rules (both server-only); `./emails`: the account email outbox; `./mobile`: the iOS app's sign-in (PKCE codes, bearer sessions; server-only). See `packages/auth/AGENTS.md`. |
 | `packages/tenancy` | `@coss/tenancy` | Projects, environments, environment-bound API keys (create/authenticate), memberships, organization SSO settings, directory sync (SCIM) connections and group roles, seed/admin scripts, test fixtures; `./admin`: suspensions, SSO/SCIM recovery, organization deletion, audit log and cross-org reads; `./deletion`: organization teardown (imports only `@coss/db`). See `packages/tenancy/AGENTS.md`. |
-| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS (with the BIMI check), custom tracking domains (Cloudflare for SaaS), dedicated IP pools (SES managed dedicated IPs, `dedicated-ips.ts`), receiving (received emails, receiving domains, managed inbound addresses, the content store), DMARC reports (ingestion, guidance to `p=reject`, owner notifications), templates (drafts, versions, locales, rendering at send), tenants, sweeps, contacts (custom properties, audiences, segments, topics, marketing settings; wire schemas in `./contact-schemas`), broadcasts (wire schemas in `./broadcast-schemas`); `./templates` (the template language: parse, check, render, variable validation; client-safe, no imports), `./domain-connect` (one-click DNS setup: discovery, the signed apply link, `domain-connect/coss.com.email.json`), `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. See `packages/email/AGENTS.md`. |
+| `packages/email` | `@coss/email` | Email product: wire schemas, providers (fake, SES under `./ses`), send/dispatch/read, recipients + event ingestion, domains/DNS (with the BIMI check), custom tracking domains (Cloudflare for SaaS), dedicated IP pools (SES managed dedicated IPs, `dedicated-ips.ts`), receiving (received emails, receiving domains, managed inbound addresses, the content store), inboxes for agents (`inboxes.ts`, `inbox-send.ts`: threads, sends and replies; wire schemas in `./inbox-schemas`), DMARC reports (ingestion, guidance to `p=reject`, owner notifications), templates (drafts, versions, locales, rendering at send), tenants, sweeps, contacts (custom properties, audiences, segments, topics, marketing settings; wire schemas in `./contact-schemas`), broadcasts (wire schemas in `./broadcast-schemas`); `./templates` (the template language: parse, check, render, variable validation; client-safe, no imports), `./domain-connect` (one-click DNS setup: discovery, the signed apply link, `domain-connect/coss.com.email.json`), `./dispatch` (pg-boss queue + worker handler), `./runtime` builds providers from env, `./admin` (the admin console's cross-org reads), `./env` (zod only), `./testing`. See `packages/email/AGENTS.md`. |
 | `packages/ratelimit` | `@coss/ratelimit` | Rate limits: bucket catalog, GCRA in Valkey (Lua) or memory, per-org overrides (`rate_limit_override`), client IP resolution; `./env` (zod only), `./testing`. `scripts/valkey-bootstrap.ts`, `scripts/set-override.ts`. |
 | `packages/webhooks` | `@coss/webhooks` | Product-agnostic webhooks: endpoints (secrets encrypted with a key ring, secret rolls), outbox, SSRF-safe signed delivery with retries, secret re-encryption, endpoint auto-disable and recovery; log drains (management, signed NDJSON batch delivery, retention); `./engine` (the delivery engine shared by every product: holds, lease fencing, retry outcomes, the HTTP attempt, endpoint health, a bounded runner); `./schemas`, `./env` (zod only). See `packages/webhooks/AGENTS.md`. |
 | `packages/reputation` | `@coss/reputation` | Reputation guard: per-org standing (`good`/`warning`/`suspended`), history, pluggable checks, the worker's evaluation scan, admin reinstatement, `account.*` webhooks, notification emails to owners/admins (outbox + `ReputationNotifier`); `./schemas` (zod only: policy, wire schemas, trigger labels). See `packages/reputation/AGENTS.md`. |
@@ -404,8 +405,9 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   permission; a restricted key's 403 hint points at `get_account_status`, which lists what it holds).
 - Answers stay small: lists drop content (`compact`, `emailListItem`), bodies are cut (`truncate`), API failures
   become `isError` results with a hint (`result.ts`; the API's `error.hint` wins over the local one). `get_setup`
-  (`tools/setup.ts`, `describeSetup` in the SDK) is the readiness answer. Risk, Hooks and template drafts have tools
-  that call only the public SDK. `publish_email_template` publishes the revision it just read.
+  (`tools/setup.ts`, `describeSetup` in the SDK) is the readiness answer. Risk, Hooks, inboxes
+  (`tools/inboxes.ts`: an agent's own address, its threads with each message's `extracted_text`, sends and
+  replies) and template drafts have tools that call only the public SDK. `publish_email_template` publishes the revision it just read.
   `create_webhook_endpoint` registers a URL once and writes `COSS_WEBHOOK_SECRET` into the project
   env file (the same file the CLI uses; a repeat for that URL does not create another endpoint).
   Third-party text (email content, received mail, bounce and
@@ -471,6 +473,8 @@ What an agent pointed at coss.com reads, all describing the same facts — chang
   marks it as a test. The SDK's `WEBHOOK_EVENT_TYPES`/`TEST_WEBHOOK_EVENT_TYPES` (completion) are hand mirrors of
   `@coss/email`'s, kept equal by `sdk-contract.test.ts`. `webhooks list|add|deliveries|retry` wrap the endpoint API.
   `webhooks add` writes the new endpoint's signing secret to the project env file as `COSS_WEBHOOK_SECRET`.
+- `inboxes list|create|threads|thread|reply` wrap `coss.inboxes` (`src/commands/inboxes.ts`; `thread` prints each
+  message's `extracted_text` unless `--full`); `inbox` (singular) follows every received email.
 - `logs tail` polls `GET /v1/logs` like the dashboard's live mode (re-reads from a minute before the newest line,
   prints unseen ids oldest first, `src/logs/tail.ts`); `emails send --simulate` uses the mailbox simulator addresses
   (`src/emails/simulate.ts`, must match `packages/email/src/providers/fake.ts`).
@@ -724,7 +728,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
 - **Client-safe modules** never import `@coss/db`: `@coss/risk/{schemas,env}`, `@coss/observability/*`, `@coss/auth/{permissions,slugs,constants,api-key-permissions,org-access}`, `@coss/push/schemas`, `@coss/email/schemas`,
-  `@coss/email/{broadcast-schemas,contact-schemas,test-event-schemas,env,templates}`, `@coss/sms/{schemas,segments,env}`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`, `@coss/migrate/templates`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch,domain-connect}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/sms` (root, `./twilio`, `./runtime`, `./dispatch`, `./admin`), `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
+  `@coss/email/{broadcast-schemas,contact-schemas,inbox-schemas,test-event-schemas,env,templates}`, `@coss/sms/{schemas,segments,env}`, `@coss/hooks/{schemas,env}`, `@coss/reputation/schemas`, `@coss/screening/env`, `@coss/webhooks/{schemas,env}`, `@coss/versioning`, `@coss/retention`, `@coss/logs/{schemas,query}`, `@coss/billing/{catalog,schemas,engine,money,env,gate,wire}` (`gate` is types only), `@coss/ui/*`, `@coss/ui/theme.css`, `@coss/companion`, `@coss/migrate/templates`. `@coss/webhooks`, `@coss/db/jobs`, `@coss/screening/{ai,runtime}`, `@coss/email/{runtime,ses,dispatch,domain-connect}`, `@coss/risk/{runtime,datasets}`, `@coss/signals/*`, `@coss/sms` (root, `./twilio`, `./runtime`, `./dispatch`, `./admin`), `@coss/push` (root, `./apns`) and `@coss/billing` (root, `./metering`, `./runtime`, `./stripe`) are server-only; only `./stripe` (and `./runtime`) import the Stripe SDK. Server-only web
   modules start with `import "server-only"`.
 - **Rate limits** (`@coss/ratelimit`): buckets are defined only in `BUCKETS` (`src/buckets.ts`); GCRA state is one
   key per bucket, `GCRA_SCRIPT` (Valkey) and `gcraStep` (memory) must stay in step (`test/store.test.ts` runs both).
@@ -757,7 +761,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   rendered into `/llms*.txt`) and the dashboard's settings card render them, and each owning package's purge
   enforces them: `purgeExpiredEmails`/`purgeEmptyEmailBatches`/`purgeExpiredReputationRollups`/`purgeExpiredDedicatedIpRollups`/
   `purgeExpiredReceivedEmails`/`purgeExpiredFakeInboundObjects`/`purgeExpiredInboundDropCounters`/
-  `purgeExpiredDmarcReports`/`purgeExpiredDmarcNotifications` (`@coss/email`;
+  `purgeExpiredDmarcReports`/`purgeExpiredDmarcNotifications`/`purgeEmptyInboxThreads` (`@coss/email`;
   received content in S3 expires by the bucket's lifecycle rule, retention + 1 day),
   `purgeExpiredWebhookMessages`/`purgeExpiredWebhookListeners` (`@coss/webhooks`), `purgeExpiredScreenings` (`@coss/screening`),
   `purgeExpiredReputationNotifications`/`purgeExpiredReputationEvents` (`@coss/reputation`),
@@ -827,11 +831,13 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   when you open files in its directory, so read it yourself when you work on the product from an app). The invariants
   that reach beyond them:
   - **Email** (`packages/email/AGENTS.md`: SES, suppressions, open/click tracking, one-click unsubscribe, custom
-    tracking domains, scheduled and batch sends, attachments, generated text parts, reads, templates, receiving): only the
+    tracking domains, scheduled and batch sends, attachments, generated text parts, reads, templates, receiving,
+    inboxes): only the
     `coss_email_id` tag is ever set on SES messages; `SendEmail` is not idempotent (only throttling is retried); coss.com
     keeps the only suppression list and does its own open/click tracking — never turn SES's on; `email.html` always
     keeps the original (only the provider's copy is instrumented); templates are rendered at send and the `email`
-    row stores the result.
+    row stores the result. Inbox messages only point at received emails and emails (no content of their own),
+    and live inboxes at the managed inbound domain never send.
   - **SMTP relay** (`apps/smtp/AGENTS.md`): never a raw MIME passthrough — every message goes through
     `EmailService.send` like `POST /v1/emails`; never move Bcc'd addresses into visible headers.
   - **Billing** (`packages/billing/AGENTS.md`): coss.com owns the catalog, contracts, rating and invoices; the provider
@@ -949,6 +955,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 Sign's archival timestamps in seals (PAdES B-LTA: renewing a document timestamp before its TSA certificate expires) and a standalone certificate download,
 a price for `sign.completed_requests`, Sign in the iOS app, the admin console, the MCP server and the CLI, and Sign
 in production (off until "Going live" in `packages/sign/AGENTS.md` is done),
+sending from inboxes at coss.com's managed inbound domain in live environments (they only receive), inbox
+labels, read state, drafts and per-inbox webhook filters, a plan limit or price for inboxes (a fixed 1,000 per
+environment), inboxes in the iOS app,
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 in the generated SDKs (`sdks/*`): auto-pagination, a `COSS_BASE_URL` default and typed events from webhook
