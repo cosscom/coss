@@ -74,11 +74,12 @@ const app = createApp({
   },
   // Velocity counters and customers' rate limit buckets share the rate limiter's Valkey
   // connection; classifications charge its `risk.classify*` buckets; captcha secrets are
-  // encrypted with the webhook key ring.
+  // encrypted with the webhook key ring; phone checks reserve capped plans' allowance.
   riskDeps: createRiskDeps(env, {
     valkey: rateLimits.valkey,
     limiter: rateLimits.limiter,
     secretsKeys,
+    usage,
   }),
   plans,
   publicUrl: env.API_PUBLIC_URL,

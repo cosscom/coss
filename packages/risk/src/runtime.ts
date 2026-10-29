@@ -3,6 +3,7 @@
  * limiter's Valkey connection (velocity, customers' buckets) and the limiter itself (the
  * classification budget); the dashboard only needs the hasher.
  */
+import type { UsageGate } from "@coss/billing/gate";
 import { MemoryStore, type RateLimiter, ValkeyStore } from "@coss/ratelimit";
 import {
   createClassifier,
@@ -65,6 +66,8 @@ export function createRiskDeps(
     secretsKeys: SecretsKeyRing;
     /** Charges the `risk.classify*` buckets before live classifications. */
     limiter?: RateLimiter;
+    /** Caps metered phone checks on capped plans (`createUsageGate`). */
+    usage?: UsageGate;
     production?: boolean;
   },
 ): RiskDeps {
@@ -99,5 +102,6 @@ export function createRiskDeps(
     limits: opts.valkey ? new ValkeyStore(opts.valkey) : new MemoryStore(),
     ipPrivacy: ipPrivacyFromEnv(env),
     phoneLookup: phoneLookupFromEnv(env),
+    usage: opts.usage,
   };
 }

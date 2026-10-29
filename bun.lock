@@ -645,6 +645,7 @@
       "name": "@coss/risk",
       "version": "0.0.0",
       "dependencies": {
+        "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/push": "workspace:*",

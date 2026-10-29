@@ -13,6 +13,7 @@ export type Meter =
   | "sms.numbers"
   | "sms.registrations"
   | "sign.completed_requests"
+  | "risk.phone_checks"
   | "video.participant_minutes"
   | "scheduling.bookings";
 

@@ -55,6 +55,7 @@ export {
   classifyContent,
   DEFAULT_CLASSIFY_TIMEOUT_MS,
   type LookupEnvironment,
+  type PhoneCheckEnvironment,
 } from "./lookups.ts";
 export {
   normalizePhone,

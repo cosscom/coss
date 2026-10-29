@@ -159,6 +159,29 @@ describe("POST /v1/risk/phone/check", () => {
     expect(await errorOf(unavailable)).toMatchObject({ code: "phone_lookup_unavailable" });
   });
 
+  test("a billing hold is a 402; checks the provider answered are metered", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const check = () =>
+      apiRequest(app, "POST", "/v1/risk/phone/check", {
+        key: tenant.liveKey,
+        body: { phone: "+14155550123" },
+      });
+    expect((await check()).status).toBe(200);
+    const usage = await pool.query<{ quantity: number }>(
+      "select sum(quantity)::int as quantity from billing_usage where organization_id = $1 and meter = 'risk.phone_checks'",
+      [tenant.organization.id],
+    );
+    expect(usage.rows[0]?.quantity).toBe(1);
+    await pool.query(
+      "insert into billing_hold (organization_id, reason) values ($1, 'delinquent')",
+      [tenant.organization.id],
+    );
+    const held = await check();
+    expect(held.status).toBe(402);
+    expect(await errorOf(held)).toMatchObject({ type: "billing_error", code: "billing_hold" });
+  });
+
   test("live checks are limited per organization; sandbox ones are free", async () => {
     const tenant = await createTestTenant();
     await setRateLimitOverride({

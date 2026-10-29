@@ -4,6 +4,7 @@
  * nothing about the person looked up. Each one is best-effort and bounded in time, except
  * classification, which a caller asked for explicitly and is told about when it fails.
  */
+import { isOnBillingHold, recordUsage } from "@coss/billing/metering";
 import { db, type Executor } from "@coss/db";
 import type { ContentClassifier } from "@coss/screening/classifier";
 import { MAX_TEXT_CHARS, prepareLinks, prepareText, urlsInText } from "@coss/screening/text";
@@ -47,6 +48,17 @@ export const DEFAULT_CLASSIFY_TIMEOUT_MS = 3000;
 
 /** What a lookup needs to know about the caller's environment. */
 export type LookupEnvironment = { organizationId: string; mode: "live" | "sandbox" };
+
+/** Phone checks are billed: who the usage comes from, as `recordUsage` attributes it. */
+export type PhoneCheckEnvironment = LookupEnvironment & {
+  environmentId: string;
+  projectId: string;
+  apiKeyId: string | null;
+  /** The member a personal key belongs to. */
+  userId: string | null;
+};
+
+const PHONE_METER = "risk.phone_checks";
 
 /** Resolves to `fallback` when `promise` takes longer than `ms` (the promise keeps running). */
 export function within<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
@@ -211,10 +223,14 @@ export async function checkIp(
  * `POST /v1/risk/phone/check`. Sandbox environments only get the fixtures (the provider is paid
  * per lookup, and sandbox keys are free); numbers that aren't E.164 are never sent. Throws
  * `RiskError("phone_lookup_unavailable")` when live environments have no provider.
+ *
+ * Live checks are metered (`risk.phone_checks`) when the provider answered about the number:
+ * the plan's cap is reserved before asking (`BillingError("usage_limit_exceeded")` beyond it, so
+ * a capped plan never costs a lookup it can't bill) and given back when the lookup fails.
  */
 export async function checkPhone(
   deps: RiskDeps,
-  environment: LookupEnvironment,
+  environment: PhoneCheckEnvironment,
   input: string,
 ): Promise<RiskPhoneCheckOutput> {
   const phone = normalizePhone(input);
@@ -239,14 +255,41 @@ export async function checkPhone(
       "Phone checks aren't available at the moment. Retry later.",
     );
   }
+  const { organizationId } = environment;
+  if (await isOnBillingHold(organizationId)) {
+    throw new RiskError(
+      "billing_hold",
+      "Live phone checks are paused for this organization: an invoice is overdue or its spend " +
+        "limit was reached. Sandbox keys still work. See the organization's billing settings.",
+    );
+  }
+  const usage = { organizationId, meter: PHONE_METER, quantity: 1 } as const;
+  const gate = deps.usage;
+  if (gate) await db.transaction((tx) => gate.reserve(tx, usage));
   const timeoutMs = deps.phoneLookupTimeoutMs ?? DEFAULT_PHONE_LOOKUP_TIMEOUT_MS;
+  let data: PhoneData | null = null;
   try {
-    return phoneCheck(phone, await deps.phoneLookup(phone, AbortSignal.timeout(timeoutMs)));
+    data = await deps.phoneLookup(phone, AbortSignal.timeout(timeoutMs));
   } catch (error) {
     // Never the number: only that the provider failed.
     console.warn("[risk] Phone lookup failed:", error instanceof Error ? error.name : "error");
-    return { ...unknown, degraded: ["phone_data"] };
   }
+  if (!data || data.missing.includes("line_type")) {
+    // Nothing to bill for: the reservation goes back.
+    if (gate?.release) {
+      const release = gate.release.bind(gate);
+      await db.transaction((tx) => release(tx, usage));
+    }
+    return data ? phoneCheck(phone, data) : { ...unknown, degraded: ["phone_data"] };
+  }
+  await recordUsage(db, {
+    ...usage,
+    environmentId: environment.environmentId,
+    projectId: environment.projectId,
+    apiKeyId: environment.apiKeyId,
+    userId: environment.userId,
+  });
+  return phoneCheck(phone, data);
 }
 
 function phoneCheck(phone: string, data: PhoneData): RiskPhoneCheckOutput {

@@ -7,6 +7,7 @@ export type RiskErrorCode =
   | "limit_bucket_name_taken"
   | "classification_unavailable"
   | "phone_lookup_unavailable"
+  | "billing_hold"
   | "idempotency_key_reused"
   | "request_in_progress";
 

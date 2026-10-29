@@ -1,6 +1,6 @@
 /** What coss.com meters: one meter per billable unit of a product. */
 
-export const PRODUCTS = ["email", "sms", "sign", "video", "scheduling"] as const;
+export const PRODUCTS = ["email", "sms", "sign", "risk", "video", "scheduling"] as const;
 export type Product = (typeof PRODUCTS)[number];
 
 export type MeterDefinition = {
@@ -85,6 +85,17 @@ export const METERS = {
     label: "Signature requests",
     unit: "completed request",
     units: "completed requests",
+    displayPer: 1,
+    dimensions: [],
+    requires: "plan",
+  },
+  // Risk: a live phone check that got an answer from the phone data provider (Twilio Lookup).
+  // Invalid numbers, failed lookups and sandbox checks are free.
+  "risk.phone_checks": {
+    product: "risk",
+    label: "Risk phone",
+    unit: "check",
+    units: "checks",
     displayPer: 1,
     dimensions: [],
     requires: "plan",

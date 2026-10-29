@@ -1,10 +1,14 @@
 import { describe, expect, test } from "bun:test";
+import { createUsageGate } from "@coss/billing";
+import { PLANS } from "@coss/billing/catalog";
+import { db, schema } from "@coss/db";
+import { and, eq } from "drizzle-orm";
+import type { RiskDeps } from "../src/assess.ts";
 import { checkPhone } from "../src/lookups.ts";
 import { fromTwilioLookup, normalizePhone, twilioPhoneLookup } from "../src/phone.ts";
 import { sandboxPhoneData } from "../src/sandbox.ts";
-import { fakePhoneLookup, testRiskDeps } from "../src/testing.ts";
-
-const live = { organizationId: "org_test", mode: "live" } as const;
+import { fakePhoneLookup } from "../src/testing.ts";
+import { setup } from "./helpers.ts";
 
 describe("normalizePhone", () => {
   test("accepts E.164 with separators, nothing else", () => {
@@ -161,13 +165,99 @@ describe("twilioPhoneLookup", () => {
 });
 
 describe("checkPhone", () => {
+  async function phoneSetup(overrides: Partial<RiskDeps> = {}) {
+    const { deps, live, organizationId } = await setup(overrides);
+    const environment = { ...live, apiKeyId: null, userId: null };
+    const usage = async () => {
+      const rows = await db
+        .select({ quantity: schema.billingUsage.quantity })
+        .from(schema.billingUsage)
+        .where(
+          and(
+            eq(schema.billingUsage.organizationId, organizationId),
+            eq(schema.billingUsage.meter, "risk.phone_checks"),
+          ),
+        );
+      return rows.reduce((sum, row) => sum + row.quantity, 0);
+    };
+    return { deps, environment, organizationId, usage };
+  }
+
+  test("meters live checks the provider answered, and nothing else", async () => {
+    const phoneLookup = fakePhoneLookup({
+      "+14155550124": "fail",
+      "+14155550125": { lineType: null, carrier: null, missing: ["line_type"] },
+      "+14155550126": { valid: false, country: null, lineType: null, carrier: null },
+    });
+    const { deps, environment, usage } = await phoneSetup({ phoneLookup });
+    expect(await checkPhone(deps, environment, "+14155550123")).toMatchObject({
+      line_type: "mobile",
+    });
+    // An answer that the number doesn't exist is still an answer.
+    expect(await checkPhone(deps, environment, "+14155550126")).toMatchObject({ valid: false });
+    expect(await usage()).toBe(2);
+
+    expect(await checkPhone(deps, environment, "+14155550124")).toMatchObject({
+      degraded: ["phone_data"],
+    });
+    expect(await checkPhone(deps, environment, "+14155550125")).toMatchObject({
+      degraded: ["phone_data"],
+    });
+    expect(await checkPhone(deps, environment, "not a number")).toMatchObject({ valid: false });
+    await checkPhone(deps, { ...environment, mode: "sandbox" }, "+12025550100");
+    expect(await usage()).toBe(2);
+  });
+
+  test("Free stops at its allowance; failed lookups give their reservation back", async () => {
+    const included = PLANS.free.includedUnits["risk.phone_checks"];
+    const phoneLookup = fakePhoneLookup({ "+14155550124": "fail" });
+    const { deps, environment, organizationId, usage } = await phoneSetup({
+      phoneLookup,
+      usage: createUsageGate(),
+    });
+    for (let i = 1; i < included; i++) await checkPhone(deps, environment, "+14155550123");
+    await checkPhone(deps, environment, "+14155550124");
+    await checkPhone(deps, environment, "+14155550123");
+    expect(await usage()).toBe(included);
+    const calls = phoneLookup.calls.length;
+    await expect(checkPhone(deps, environment, "+14155550123")).rejects.toMatchObject({
+      code: "usage_limit_exceeded",
+    });
+    // Refused before asking the provider.
+    expect(phoneLookup.calls).toHaveLength(calls);
+    expect(await usage()).toBe(included);
+    const [quota] = await db
+      .select({ reserved: schema.billingQuota.reserved })
+      .from(schema.billingQuota)
+      .where(
+        and(
+          eq(schema.billingQuota.organizationId, organizationId),
+          eq(schema.billingQuota.meter, "risk.phone_checks"),
+        ),
+      );
+    expect(quota?.reserved).toBe(included);
+  });
+
+  test("a billing hold pauses live checks, not sandbox ones", async () => {
+    const { deps, environment, organizationId } = await phoneSetup();
+    await db
+      .insert(schema.billingHold)
+      .values({ organizationId, reason: "delinquent", note: null });
+    await expect(checkPhone(deps, environment, "+14155550123")).rejects.toMatchObject({
+      code: "billing_hold",
+    });
+    expect(
+      await checkPhone(deps, { ...environment, mode: "sandbox" }, "+12025550100"),
+    ).toMatchObject({ line_type: "mobile" });
+  });
+
   test("reports a slow provider as degraded", async () => {
-    const deps = testRiskDeps({
+    const { deps, environment } = await phoneSetup({
       phoneLookup: (_phone, signal) =>
         new Promise((_, reject) => signal.addEventListener("abort", () => reject(signal.reason))),
       phoneLookupTimeoutMs: 10,
     });
-    expect(await checkPhone(deps, live, "+14155550123")).toMatchObject({
+    expect(await checkPhone(deps, environment, "+14155550123")).toMatchObject({
       valid: true,
       line_type: null,
       degraded: ["phone_data"],
@@ -175,10 +265,10 @@ describe("checkPhone", () => {
   });
 
   test("lists parts the provider had no answer for", async () => {
-    const deps = testRiskDeps({
+    const { deps, environment } = await phoneSetup({
       phoneLookup: fakePhoneLookup({ "+14155550123": { missing: ["sim_swap"] } }),
     });
-    expect(await checkPhone(deps, live, "+14155550123")).toMatchObject({
+    expect(await checkPhone(deps, environment, "+14155550123")).toMatchObject({
       line_type: "mobile",
       degraded: ["sim_swap"],
     });

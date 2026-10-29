@@ -9,6 +9,7 @@
  * IP privacy provider or an unreachable Valkey make the assessment go without it (listed in
  * `degraded`) rather than fail.
  */
+import type { UsageGate } from "@coss/billing/gate";
 import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { IDEMPOTENCY_KEY_TTL_MS, isReplayOf, requestHash } from "@coss/db/idempotency";
@@ -98,6 +99,8 @@ export type RiskDeps = {
   /** Line type, carrier and SIM swaps (a paid provider); `null`: phone checks are unavailable. */
   phoneLookup?: PhoneLookup | null;
   phoneLookupTimeoutMs?: number;
+  /** Caps metered phone checks on capped plans (Free's allowance); without it, nothing is capped. */
+  usage?: UsageGate;
 };
 
 /** The authenticated environment (from the API key). */
