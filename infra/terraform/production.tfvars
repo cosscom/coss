@@ -127,7 +127,8 @@ plain_env = {
     SIGN_PUBLIC_URL     = "https://cosssign.com"
     API_CORS_ORIGINS    = "https://coss.com"
     EMAIL_PROVIDER      = "ses"
-    # Twilio's callbacks are verified with each organization's subaccount token (in the database).
+    # Twilio's callbacks are verified with each organization's subaccount token (in the database);
+    # the parent account's credentials (in the secret) are risk's phone checks'.
     SMS_PROVIDER             = "twilio"
     AWS_REGION               = "us-east-2"
     SES_CONFIGURATION_SET    = "coss"
@@ -144,9 +145,13 @@ plain_env = {
     TRUSTED_PROXY_COUNT      = "2"
     # Risk's content classification: the worker's screening model through the AI Gateway
     # (AI_GATEWAY_API_KEY is in the secret). Per-address VPN data stays off (IPinfo isn't a subprocessor).
-    RISK_CLASSIFIER           = "ai"
-    SCREENING_MODEL           = "typesafe-ai/jev"
-    RISK_IP_PRIVACY           = "off"
+    RISK_CLASSIFIER = "ai"
+    SCREENING_MODEL = "typesafe-ai/jev"
+    RISK_IP_PRIVACY = "off"
+    # Risk's phone checks: Twilio Lookup's line type and carrier with the parent account
+    # (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are in the secret). SIM swaps wait for Twilio's
+    # carrier approval (RISK_PHONE_SIM_SWAP).
+    RISK_PHONE_LOOKUP         = "twilio"
     SENTRY_DSN                = "https://32c12dc572c854d73947e15894cd2713@o4512237982711808.ingest.de.sentry.io/4512245153398864"
     SENTRY_ENVIRONMENT        = "production"
     SENTRY_TRACES_SAMPLE_RATE = "0.1"

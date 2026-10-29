@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: What personal data Cal.com collects for coss.com, why, who we share it with, and your rights.
-lastUpdated: 2026-10-26
+lastUpdated: 2026-10-29
 ---
 
 This Privacy Policy explains how **Cal.com, Inc.** ("**Cal.com**", "**we**", "**us**") handles personal data in
@@ -95,6 +95,9 @@ used.
   identifier in the person's browser (local storage, no cookies) and reports it with the browser's time zone,
   languages, platform, screen size, touch support and whether the browser is automated; we keep the identifier only as
   a keyed hash.
+- **Phone checks:** when you ask us to check a phone number, we send the number to Twilio, which tells us whether it
+  is valid, its country, line type and carrier, and when its SIM last changed. We return that to you and don't store
+  the number or the answer (we hold the answer in memory for up to an hour, so a repeated check isn't sent again).
 - **Rate limiting for your service:** the keys you check against your own rate limit buckets (for example a user's
   email address) are kept only as keyed hashes, in our cache, until their bucket refills.
 - **Domains and webhooks:** the sending domains you verify and their DNS records; your webhook endpoint URLs and
@@ -157,8 +160,8 @@ We share personal data only as described here:
     SES).
   - **Vercel, Inc.** (United States) and the model providers available through its AI Gateway: AI content screening
     and the classification of content submitted for risk assessment, with zero data retention.
-  - **Twilio Inc.** (United States): SMS delivery and receiving, phone numbers, and carrier registration of the
-    business details organizations submit to send SMS.
+  - **Twilio Inc.** (United States): SMS delivery and receiving, phone numbers, carrier registration of the
+    business details organizations submit to send SMS, and lookups of phone numbers organizations check with Risk.
   - **Cloudflare, Inc.** (United States): DNS for coss.com.
   - **Functional Software, Inc. (Sentry)** (United States, with data stored in the European Union): error and crash
     reports from the dashboard, the API and the iOS app.
