@@ -84,6 +84,10 @@ plain_env = {
     CLIENT_IP_HEADER         = "x-forwarded-for"
     TRUSTED_PROXY_COUNT      = "2"
     BILLING_PROVIDER         = "stripe"
+    # Screens live hosted form pages published here, like the api (AI_GATEWAY_API_KEY is in the
+    # secret).
+    RISK_CLASSIFIER = "ai"
+    SCREENING_MODEL = "typesafe-ai/jev"
     # SMS through Cal.com's Twilio account (the ISV): one subaccount per organization, US brands
     # under its primary customer profile (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are in the secret).
     SMS_PROVIDER                        = "twilio"

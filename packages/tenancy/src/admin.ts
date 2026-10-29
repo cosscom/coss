@@ -91,10 +91,13 @@ export const ADMIN_ACTIONS = [
   "deploy.redeployed",
   // SMS: high-risk destination countries an organization may allow, target the organization.
   "sms.countries_unlocked",
+  // Forms: a form disabled for abuse (phishing, spam), or turned back on; target the form.
+  "form.disable",
+  "form.enable",
 ] as const;
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
 
-export type AdminTargetType = "user" | "organization" | "api_key" | "email" | "commit";
+export type AdminTargetType = "user" | "organization" | "api_key" | "email" | "commit" | "form";
 
 export type AdminAuditEvent = {
   id: string;

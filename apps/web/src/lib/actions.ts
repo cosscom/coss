@@ -8,6 +8,7 @@ import {
   InboxError,
   SubaccountError,
 } from "@coss/email";
+import { FormError } from "@coss/forms";
 import { HookError } from "@coss/hooks";
 import { ReputationError } from "@coss/reputation";
 import { TenancyError } from "@coss/tenancy";
@@ -55,7 +56,8 @@ function userFacingMessage(error: unknown): string {
     error instanceof InboxError ||
     error instanceof SubaccountError ||
     error instanceof BillingError ||
-    error instanceof HookError
+    error instanceof HookError ||
+    error instanceof FormError
   ) {
     return error.message;
   }

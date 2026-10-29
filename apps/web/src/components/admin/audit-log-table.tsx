@@ -27,6 +27,8 @@ const ACTION_LABELS: Record<string, { label: string; variant: "error" | "success
   "organization.suspend": { label: "Suspended organization", variant: "error" },
   "organization.unsuspend": { label: "Lifted suspension", variant: "success" },
   "organization.take_down": { label: "Took down organization", variant: "error" },
+  "form.disable": { label: "Disabled a form", variant: "error" },
+  "form.enable": { label: "Re-enabled a form", variant: "success" },
   "email.view_content": { label: "Viewed email content", variant: "info" },
   "reputation.suspended": { label: "Suspended live sending", variant: "error" },
   "reputation.reinstated": { label: "Reinstated live sending", variant: "success" },

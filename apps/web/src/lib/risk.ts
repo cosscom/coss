@@ -17,6 +17,17 @@ export function riskHasher(): RiskHasher {
 }
 
 let deps: RiskDeps | undefined;
+
+/** Risk's dependencies like the API's (velocity in Valkey, classifications charged), built once. */
+export function riskDeps(): RiskDeps {
+  const runtime = rateLimitRuntime();
+  deps ??= createRiskDeps(env, {
+    valkey: runtime.valkey,
+    limiter: runtime.limiter,
+    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
+  });
+  return deps;
+}
 let signUpEnvironment: Promise<RiskAssessEnvironment | null> | undefined;
 
 /** coss.com's own environment sign-ups are assessed in (`RISK_SIGNUP_ENVIRONMENT_ID`), looked up once. */
@@ -66,13 +77,8 @@ export const assessSignUp: SignUpRiskAssessor = async ({ email, headers }) => {
   const environment = await signUpRiskEnvironment(environmentId);
   if (!environment) return null;
   const runtime = rateLimitRuntime();
-  deps ??= createRiskDeps(env, {
-    valkey: runtime.valkey,
-    limiter: runtime.limiter,
-    secretsKeys: parseSecretsKeys(env.WEBHOOK_SECRETS_KEY),
-  });
   const ip = headers ? runtime.clientIp(headers) : null;
   const params = signUpRiskParams(email, ip, headers);
-  const { assessment } = await assessRisk(deps, { environment, params });
+  const { assessment } = await assessRisk(riskDeps(), { environment, params });
   return { decision: assessment.decision, assessmentId: assessment.id };
 };
