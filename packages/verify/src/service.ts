@@ -611,19 +611,13 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
             );
           return { verification: await current(row, sandbox), replayed: true };
         }
-        // The customer's holds count now: a recovered send is new spend.
-        if (!sandbox) await assertCanSpend(input);
+        // The send is still the spend of whoever asked for it (a retry can come with another key),
+        // and their holds count now: a recovered send is new spend.
+        const source = { apiKeyId: send.apiKeyId, apiKeyOwnerId: send.apiKeyOwnerId };
+        if (!sandbox) await assertCanSpend(input.environment, source);
         const settings = await getVerifySettings(input.environment);
         if (settings) {
-          await deliver(
-            input.environment,
-            sourceOf(input),
-            row,
-            send.route,
-            settings,
-            found.sequence,
-            true,
-          );
+          await deliver(input.environment, source, row, send.route, settings, found.sequence, true);
         }
       }
     }
@@ -634,8 +628,7 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
    * Refuses a live send while the organization is suspended for its sending reputation, on a
    * billing hold, or the source's budget is spent.
    */
-  async function assertCanSpend(input: StartVerificationInput): Promise<void> {
-    const env = input.environment;
+  async function assertCanSpend(env: VerifyEnvironment, source: SpendSource): Promise<void> {
     if (await isSuspended(env.organizationId)) {
       throw new VerifyError(
         "account_suspended",
@@ -651,8 +644,8 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
     const held = await budgetHoldFor({
       organizationId: env.organizationId,
       projectId: env.projectId,
-      apiKeyId: input.apiKeyId,
-      userId: input.apiKeyOwnerId,
+      apiKeyId: source.apiKeyId,
+      userId: source.apiKeyOwnerId,
     });
     if (held) throw new VerifyError("budget_exceeded", BUDGET_EXCEEDED_MESSAGES[held]);
   }
@@ -689,7 +682,7 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
     if (pending && pending.sends >= MAX_SENDS) throw tooManySends(pending);
     // Every live send is the customer's spend, whichever environment it goes out from (coss.com's
     // senders don't check the customer's holds).
-    if (!sandbox) await assertCanSpend(input);
+    if (!sandbox) await assertCanSpend(env, sourceOf(input));
 
     const riskInput = {
       destination: riskDestination(destination),
@@ -813,11 +806,17 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
           requestHash: null,
         });
         if (env.mode === "live" && opts.billing) {
-          await opts.billing.reserve(tx, {
+          // The plan must have room for one more approval, but nothing is held for it: only an
+          // approval uses the unit (most verifications are never approved: pumping, typos).
+          const unit = {
             organizationId: env.organizationId,
-            meter: "verify.verifications",
+            meter: "verify.verifications" as const,
             quantity: 1,
-          });
+          };
+          if (opts.billing.release) {
+            await opts.billing.reserve(tx, unit);
+            await opts.billing.release(tx, unit);
+          }
           await reserveSharedSms(tx, env, destination, route, settings);
         }
         return { kind: "send" as const, row: inserted, sequence: 1 };
@@ -975,6 +974,12 @@ export function createVerifyService(opts: VerifyServiceOptions): VerifyService {
           .returning();
         if (!approved) return { row, valid: false, approvedNow: false };
         if (env.mode === "live") {
+          // The approval is what uses a unit of a capped plan.
+          await opts.billing?.reserve(tx, {
+            organizationId: approved.organizationId,
+            meter: "verify.verifications",
+            quantity: 1,
+          });
           await recordUsage(tx, {
             organizationId: approved.organizationId,
             environmentId: approved.environmentId,

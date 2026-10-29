@@ -40,7 +40,7 @@ One-time codes as a service: `start` sends a code to a phone number (SMS) or an 
   shared-number SMS, `verify.shared_sms.day` (per organization, overridable); refunded unless the
   fraud guard blocked. Live starts, resends and recoveries first refuse a reputation suspension
   (`account_suspended`, 403), a billing hold (`billing_hold`) or a used-up budget of the project,
-  key or key owner (`budget_exceeded`), both 402: coss.com's
+  key or key owner (`budget_exceeded`), both 402 — a recovery checks the send's own key and owner: coss.com's
   senders send in coss.com's environment, so nothing downstream checks the customer's. A new
   verification runs `checkVerificationRisk` (`@coss/risk`: judged and counted in one step, so a
   concurrent burst can't all slip under a threshold) **before** anything is paid for; a start that
@@ -48,8 +48,10 @@ One-time codes as a service: `start` sends a code to a phone number (SMS) or an 
   error) takes back exactly what the check counted (`VerificationRisk.counted`; an allow-listed or
   degraded check counted nothing), so only new verifications count: a block stores the row `blocked` with its reasons (log line +
   `verification.blocked` webhook) and answers 422 `verification_blocked`; nothing is sent or
-  billed. Live: the insert transaction reserves `verify.verifications` (and `verify.sms` by
-  country for shared numbers) through the `UsageGate`. Every send is **claimed before it goes
+  billed. Live: the insert transaction checks the plan has room for `verify.verifications`
+  (reserve + release: nothing is held, since most verifications are never approved; the approval
+  reserves its unit) and reserves `verify.sms` by country for shared numbers, through the
+  `UsageGate`. Every send is **claimed before it goes
   out**, in the transaction that sets its code: `sends` moves by compare-and-set and a
   `verify_send` row takes its `sequence` (unique per verification), so concurrent starts never send
   two codes as one send. A resend's own `Idempotency-Key` and request hash live on its

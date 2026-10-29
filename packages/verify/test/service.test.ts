@@ -301,6 +301,31 @@ describe("live", () => {
     expect(verify.emails.sent).toHaveLength(0);
   });
 
+  test("only an approval uses a unit of a capped plan; a start only checks there is room", async () => {
+    const tenant = await createTestTenant();
+    const calls: string[] = [];
+    const billing = {
+      async reserve(_tx: unknown, input: { meter: string; quantity: number }) {
+        calls.push(`reserve ${input.meter} ${input.quantity}`);
+      },
+      async release(_tx: unknown, input: { meter: string; quantity: number }) {
+        calls.push(`release ${input.meter} ${input.quantity}`);
+      },
+    };
+    const verify = testVerifyService({ billing });
+    const environment = env(tenant.production);
+    const { verification } = await verify.start({
+      environment,
+      apiKeyId: null,
+      params: start({ to: "cap@example.com" }),
+    });
+    expect(calls).toEqual(["reserve verify.verifications 1", "release verify.verifications 1"]);
+    calls.length = 0;
+    const code = verify.lastEmailCode("cap@example.com");
+    await verify.check({ environment, params: check({ verification_id: verification.id, code }) });
+    expect(calls).toEqual(["reserve verify.verifications 1"]);
+  });
+
   test("a personal key's usage is its owner's spend", async () => {
     const tenant = await createTestTenant();
     const verify = testVerifyService();
@@ -565,7 +590,12 @@ describe("starting", () => {
     const environment = env(tenant.production);
     const to = testMobile();
     const params = start({ to });
-    const first = await verify.start({ environment, apiKeyId: null, params, idempotencyKey: "k1" });
+    const first = await verify.start({
+      environment,
+      apiKeyId: "key_first",
+      params,
+      idempotencyKey: "k1",
+    });
     const code = verify.lastSmsCode(to);
     // As if the process stopped after claiming the send, before anything went out.
     await db
@@ -576,13 +606,19 @@ describe("starting", () => {
     verify.sms.provider.sent.length = 0;
     const retried = await verify.start({
       environment,
-      apiKeyId: null,
+      apiKeyId: "key_retry",
       params,
       idempotencyKey: "k1",
     });
     expect(retried.replayed).toBe(true);
     expect(retried.verification.sends).toHaveLength(1);
     expect(verify.lastSmsCode(to)).toBe(code);
+    // Still the spend of the key that asked for it, not the retry's.
+    const [resent] = await db
+      .select({ apiKeyId: smsMessage.apiKeyId })
+      .from(smsMessage)
+      .where(eq(smsMessage.organizationId, tenant.organization.id));
+    expect(resent?.apiKeyId).toBe("key_first");
     const result = await verify.check({ environment, params: check({ to, code }) });
     expect(result.valid).toBe(true);
   });
