@@ -21409,7 +21409,7 @@
           "username": {
             "type": "string",
             "maxLength": 64,
-            "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$",
+            "pattern": "^(?!.*\\.\\.)[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$",
             "description": "The part before the @. Omit it for a random one. Mail to `username+anything@domain` reaches the inbox too.",
             "examples": [
               "support-agent"

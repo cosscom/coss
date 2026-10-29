@@ -10,7 +10,11 @@ import { InboxError } from "../src/errors.ts";
 import { receiveFakeEmail } from "../src/inbound.ts";
 import { buildTestMessage } from "../src/inbound-mime.ts";
 import { FakeInboundStore } from "../src/inbound-store.ts";
-import { InboxMessageReceivedWebhookEvent, InboxObject } from "../src/inbox-schemas.ts";
+import {
+  CreateInboxRequest,
+  InboxMessageReceivedWebhookEvent,
+  InboxObject,
+} from "../src/inbox-schemas.ts";
 import { replyReferences, replyToInboxMessage, sendInboxMessage } from "../src/inbox-send.ts";
 import { extractReplyText, normalizeSubject, replySubject } from "../src/inbox-text.ts";
 import {
@@ -26,11 +30,17 @@ import {
   purgeEmptyInboxThreads,
   updateInbox,
 } from "../src/inboxes.ts";
+import { DEVELOPMENT_LINK_KEYS } from "../src/link-tokens.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { deleteReceivedEmail } from "../src/received-emails.ts";
 import { createReceivingDomain } from "../src/receiving-domains.ts";
+import { createEmailService } from "../src/service.ts";
 import { updateStorageSettings } from "../src/storage-settings.ts";
-import { createVerifiedDomain, dispatchingEmailService } from "../src/testing.ts";
+import {
+  createVerifiedDomain,
+  dispatchingEmailService,
+  memoryDispatchQueue,
+} from "../src/testing.ts";
 
 const MANAGED = "inbound.coss.test";
 const store = new FakeInboundStore();
@@ -107,6 +117,8 @@ describe("inbox text", () => {
     expect(replySubject("Your order")).toBe("Re: Your order");
     expect(replySubject("RE: Your order")).toBe("RE: Your order");
     expect(replySubject(null)).toBe("Re:");
+    expect(CreateInboxRequest.safeParse({ username: "agent..one" }).success).toBe(false);
+    expect(CreateInboxRequest.safeParse({ username: "agent.one" }).success).toBe(true);
   });
 
   test("extracted text leaves out the quoted conversation and the signature", () => {
@@ -438,6 +450,49 @@ describe("inboxes", () => {
       }),
     );
     expect(invalid).toMatchObject({ code: "invalid_message", param: "html" });
+  });
+
+  test("a retried reply replays though what it was derived from changed since", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const queue = memoryDispatchQueue();
+    const queued = createEmailService({
+      liveProvider: new FakeEmailProvider({ log: false }),
+      sandboxProvider: new FakeEmailProvider({ log: false }),
+      queue,
+      linkKeys: DEVELOPMENT_LINK_KEYS,
+    });
+    const { inbox } = await createInbox(env, { username: "retry", displayName: "Bot" }, deps);
+    const base = { environment: env, apiKeyId: null, inboxId: inbox.id };
+    const { message: first } = await sendInboxMessage(queued, {
+      ...base,
+      request: { to: "jane@example.com", subject: "Hello", text: "Hi" },
+    });
+    const reply = () =>
+      replyToInboxMessage(queued, {
+        ...base,
+        idempotencyKey: "follow-up",
+        messageId: first.id,
+        request: { text: "Following up." },
+      });
+    // Sent while the first message is still queued: it has no Message-ID to reference yet.
+    const original = await reply();
+    expect(original.message.in_reply_to).toBeNull();
+    await queue.drain(queued);
+    await updateInbox({ ...env, id: inbox.id }, { displayName: "Renamed" });
+
+    const retried = await reply();
+    expect(retried).toMatchObject({ replayed: true, message: { id: original.message.id } });
+    const changed = await replyToInboxMessage(queued, {
+      ...base,
+      idempotencyKey: "follow-up",
+      messageId: first.id,
+      request: { text: "Something else." },
+    }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(changed).toMatchObject({ code: "idempotency_key_reused" });
   });
 
   test("without content storage, a sent message's thread keeps no copy of its subject", async () => {

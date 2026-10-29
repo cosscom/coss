@@ -299,7 +299,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   activity within `SUBJECT_MATCH_WINDOW_MS`, else a new thread; the thread row is locked (`FOR UPDATE`) while its
   participants and `last_message_at` move. Sends and replies (`inbox-send.ts`) are `EmailService.send` with
   `SendEmailInput.afterInsert`, which files the email in its insert transaction (never for a replay);
-  `Idempotency-Key`s are namespaced `inbox:<id>:<key>` so they never meet `POST /v1/emails`' keys; the API charges
+  `Idempotency-Key`s are namespaced `inbox:<id>:<key>` so they never meet `POST /v1/emails`' keys, and are
+  checked against the inbox request's own hash (`SendEmailInput.requestHash`), never the derived parameters
+  (a parent's `Message-ID` appears once it is dispatched, the display name can change); the API charges
   `emailSendQuota` through `InboxSendQuota` once the reply's recipients are known (refunded on replays and
   refusals). Inbox sends never track (no pixel, no rewritten links) and take no custom headers: replies set
   `In-Reply-To` and `References` (`replyReferences`, one header line); a follow-up to the inbox's own message

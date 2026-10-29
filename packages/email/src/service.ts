@@ -99,6 +99,11 @@ export type SendEmailInput = {
    * request stored it (never for a replay).
    */
   afterInsert?: (tx: Transaction, row: EmailRow) => Promise<void>;
+  /**
+   * Internal callers only (inboxes): the fingerprint an `idempotencyKey` is checked against,
+   * instead of `params`' (theirs hold values derived at send time, which a retry may not repeat).
+   */
+  requestHash?: string;
 };
 
 export type SendEmailBatchInput = {
@@ -1348,7 +1353,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const retentionMs = input.idempotencyRetentionMs ?? IDEMPOTENCY_KEY_TTL_MS;
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
-    const requestHash = idempotencyKey ? hashSendRequest(params) : null;
+    const requestHash = idempotencyKey ? (input.requestHash ?? hashSendRequest(params)) : null;
     let prepared: PreparedSend;
     try {
       prepared = await prepareSend(
@@ -1567,7 +1572,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     return findReplay(
       input.environment,
       input.idempotencyKey,
-      hashSendRequest(input.params),
+      input.requestHash ?? hashSendRequest(input.params),
       input.idempotencyRetentionMs,
     );
   }

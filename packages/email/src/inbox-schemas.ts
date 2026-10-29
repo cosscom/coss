@@ -23,8 +23,11 @@ export const MAX_THREAD_MESSAGES = 50;
 export const USERNAME_MAX_LENGTH = 64;
 export const INBOX_DISPLAY_NAME_MAX_LENGTH = 64;
 
-/** Lower-case letters, digits, `.`, `_` and `-`; starts and ends with a letter or digit. `+` is for subaddresses. */
-export const INBOX_USERNAME = /^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$/;
+/**
+ * Lower-case letters, digits, `.`, `_` and `-`; starts and ends with a letter or digit, no `..` (an
+ * address's local part can't have one). `+` is for subaddresses.
+ */
+export const INBOX_USERNAME = /^(?!.*\.\.)[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$/;
 const CLIENT_ID = /^[\x21-\x7e]{1,128}$/;
 
 const INBOX_ID_EXAMPLE = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz";
@@ -179,7 +182,7 @@ const Username = z
   .regex(
     INBOX_USERNAME,
     "Use lower-case letters, digits, dots, underscores or dashes, starting and ending with a " +
-      "letter or digit.",
+      "letter or digit, without two dots in a row.",
   );
 
 const DisplayName = z

@@ -9,6 +9,7 @@
  * want rewritten links.
  */
 import { db, schema } from "@coss/db";
+import { requestHash } from "@coss/db/idempotency";
 import { and, eq } from "drizzle-orm";
 import { InboxError } from "./errors.ts";
 import type {
@@ -110,7 +111,13 @@ async function requireSendingInbox(input: InboxSendInput): Promise<InboxRow> {
 
 async function send(
   emailService: EmailService,
-  input: InboxSendInput & { row: InboxRow; threadId: string | null; params: unknown },
+  input: InboxSendInput & {
+    row: InboxRow;
+    threadId: string | null;
+    params: unknown;
+    /** What the caller asked for: a retry repeats it, not the parameters derived from it. */
+    request: unknown;
+  },
 ): Promise<InboxSendResult> {
   const parsed = SendEmailRequest.safeParse(input.params);
   if (!parsed.success) {
@@ -127,6 +134,7 @@ async function send(
     params,
     // Inbox sends share the email table's keys: keep them apart from `POST /v1/emails`'.
     idempotencyKey: input.idempotencyKey ? `inbox:${input.row.id}:${input.idempotencyKey}` : null,
+    requestHash: requestHash(input.request),
     afterInsert: async (tx, row) => {
       await recordOutboundInboxMessage(tx, {
         row: input.row,
@@ -202,6 +210,7 @@ export async function sendInboxMessage(
     ...input,
     row,
     threadId: null,
+    request: { send: request },
     params: {
       from: fromHeader(row),
       to: request.to,
@@ -286,6 +295,7 @@ export async function replyToInboxMessage(
     ...input,
     row,
     threadId: parent.message.threadId,
+    request: { reply: input.messageId, ...request },
     params: {
       from: fromHeader(row),
       to: toList,

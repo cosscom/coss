@@ -32,7 +32,7 @@ import type {
 } from "./inbox-schemas.ts";
 import { MAX_THREAD_MESSAGES } from "./inbox-schemas.ts";
 import { extractReplyText, messagePreview, normalizeSubject } from "./inbox-text.ts";
-import { parseEmailAddress } from "./schemas.ts";
+import { emailAddressProblem, parseEmailAddress } from "./schemas.ts";
 
 const {
   email,
@@ -206,6 +206,10 @@ export async function createInbox(
   for (let attempt = 0; attempt < 3; attempt++) {
     const username = input.username ?? randomUsername();
     const address = `${username}@${target.domain}`;
+    // An inbox must be able to send from its address (`SendEmailRequest`'s rules).
+    const problem = emailAddressProblem(address);
+    if (problem)
+      throw new InboxError("invalid_address", `${address}: ${problem}`, { param: "username" });
     const inserted = await db.transaction(async (tx) => {
       // One creation at a time per environment, so the count holds.
       await tx.execute(
