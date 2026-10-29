@@ -296,8 +296,10 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   Threading (`findThread`): an `In-Reply-To`/`References` id matching an inbound message's stored `Message-ID`
   (`rfc_message_id`, normalized `<id>` by `messageIdKey`) or an outbound email's `provider_message_id` (the local
   part of SES's `Message-ID`), else the same `normalizeSubject` with the sender already a participant and
-  activity within `SUBJECT_MATCH_WINDOW_MS`, else a new thread; the thread row is locked (`FOR UPDATE`) while its
-  participants and `last_message_at` move. Sends and replies (`inbox-send.ts`) are `EmailService.send` with
+  activity within `SUBJECT_MATCH_WINDOW_MS`, else a new thread, under an inbox-scoped advisory lock taken in
+  inbox id order (two messages arriving together must not each start a thread); the thread row is locked
+  (`FOR UPDATE`) while its participants and `last_message_at` move. Reads left-join the received email and the
+  email: each projection leads with its non-null `id` (Drizzle nulls a joined object whose first column is null). Sends and replies (`inbox-send.ts`) are `EmailService.send` with
   `SendEmailInput.afterInsert`, which files the email in its insert transaction (never for a replay);
   `Idempotency-Key`s are namespaced `inbox:<id>:<key>` so they never meet `POST /v1/emails`' keys, and are
   checked against the inbox request's own hash (`SendEmailInput.requestHash`), never the derived parameters

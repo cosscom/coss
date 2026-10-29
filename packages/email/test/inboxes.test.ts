@@ -545,6 +545,44 @@ describe("inboxes", () => {
     });
   });
 
+  test("a message without a From header keeps its content and can be replied to", async () => {
+    const tenant = await createTestTenant();
+    const env = sandbox(tenant);
+    const { inbox } = await createInbox(env, { username: "nofrom" }, deps);
+    const raw = new TextEncoder().encode(
+      [
+        `To: ${inbox.address}`,
+        "Reply-To: answers@example.com",
+        "Subject: No sender",
+        `Message-ID: <nofrom-${uniqueSuffix()}@example.com>`,
+        "Content-Type: text/plain; charset=utf-8",
+        "",
+        "Who sent this?",
+        "",
+      ].join("\r\n"),
+    );
+    await receiveFakeEmail(
+      { raw, mailFrom: "", recipients: [inbox.address], subject: "No sender" },
+      deps,
+    );
+    const [summary] = (await listInboxMessages({ ...env, inboxId: inbox.id, limit: 1 })).data;
+    const message = await getInboxMessage({ ...env, inboxId: inbox.id, id: summary?.id ?? "" });
+    expect(message).toMatchObject({
+      from: null,
+      subject: "No sender",
+      extracted_text: "Who sent this?",
+      reply_to: ["answers@example.com"],
+    });
+    const { message: reply } = await replyToInboxMessage(service, {
+      environment: env,
+      apiKeyId: null,
+      inboxId: inbox.id,
+      messageId: message?.id ?? "",
+      request: { text: "Me." },
+    });
+    expect(reply.to).toEqual(["answers@example.com"]);
+  });
+
   test("deleting emails empties threads; the purge drops empty ones", async () => {
     const tenant = await createTestTenant();
     const env = sandbox(tenant);

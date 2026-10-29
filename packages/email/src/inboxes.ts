@@ -516,6 +516,9 @@ export async function recordInboundInboxMessages(
   const sender = bareAddress(message.from);
   const filed: { inboxId: string; threadId: string; messageId: string }[] = [];
   for (const row of inboxes) {
+    // One message at a time per inbox (in id order, so concurrent ones never deadlock): two
+    // replies arriving together must find the same thread, not create one each.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`inbox-thread:${row.id}`}))`);
     const found = await findThread(tx, {
       inboxId: row.id,
       organizationId: row.organizationId,
@@ -623,7 +626,9 @@ export async function recordOutboundInboxMessage(
 
 const messageColumns = (bodies: boolean) => ({
   message: inboxMessage,
+  // Drizzle nulls a left-joined object when its first column is null: lead with the id.
   inbound: {
+    id: receivedEmail.id,
     from: receivedEmail.from,
     to: receivedEmail.to,
     cc: receivedEmail.cc,
@@ -644,6 +649,7 @@ const messageColumns = (bodies: boolean) => ({
         >`case when ${receivedEmail.text} is null then left(${receivedEmail.html}, ${PREVIEW_SOURCE_LENGTH * 5}) end`,
   },
   outbound: {
+    id: email.id,
     from: email.from,
     to: email.to,
     cc: email.cc,
@@ -665,6 +671,7 @@ const messageColumns = (bodies: boolean) => ({
 type MessageRow = {
   message: typeof inboxMessage.$inferSelect;
   inbound: {
+    id: string;
     from: string | null;
     to: string[];
     cc: string[];
@@ -679,6 +686,7 @@ type MessageRow = {
     html: string | null;
   } | null;
   outbound: {
+    id: string;
     from: string;
     to: string[];
     cc: string[];
