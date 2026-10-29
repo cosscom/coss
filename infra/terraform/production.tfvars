@@ -10,6 +10,7 @@ dashboard_host     = "coss.com"
 api_host           = "api.coss.com"
 portal_host        = "portal.cosshooks.com"
 sign_host          = "cosssign.com"
+forms_host         = "cossforms.com"
 smtp_host          = "smtp.coss.com"
 external_origin_hosts = {
   ui     = "coss-com-ui.vercel.app"
@@ -65,6 +66,9 @@ plain_env = {
     TURNSTILE_SITE_KEY       = "0x4AAAAAAFU8QY0DX4ZJGoSK"
     PORTAL_PUBLIC_URL        = "https://portal.cosshooks.com"
     SIGN_PUBLIC_URL          = "https://cosssign.com"
+    # Forms (`/f/*` on its own domain, routed to the api) and its uploads bucket.
+    FORMS_PUBLIC_URL = "https://cossforms.com"
+    FORMS_FILES_BUCKET = "coss-production-forms-files-294417174674"
     GOOGLE_CLIENT_ID         = "204721091156-k33omqkstijuaari06eidtlefif81p9m.apps.googleusercontent.com"
     GITHUB_CLIENT_ID         = "Ov23liYEf7MwkA26M9Ul"
     DEPLOY_GITHUB_APP_ID     = "5340076"
@@ -129,6 +133,9 @@ plain_env = {
     TRACKING_PUBLIC_URL = "https://track.cosslinks.com"
     PORTAL_PUBLIC_URL   = "https://portal.cosshooks.com"
     SIGN_PUBLIC_URL     = "https://cosssign.com"
+    # Forms (`/f/*` on its own domain, routed to the api) and its uploads bucket.
+    FORMS_PUBLIC_URL = "https://cossforms.com"
+    FORMS_FILES_BUCKET = "coss-production-forms-files-294417174674"
     API_CORS_ORIGINS    = "https://coss.com"
     EMAIL_PROVIDER      = "ses"
     # Twilio's callbacks are verified with each organization's subaccount token (in the database);
@@ -172,6 +179,9 @@ plain_env = {
     API_PUBLIC_URL                      = "https://api.coss.com"
     TRACKING_PUBLIC_URL                 = "https://track.cosslinks.com"
     SIGN_PUBLIC_URL                     = "https://cosssign.com"
+    # Forms (`/f/*` on its own domain, routed to the api) and its uploads bucket.
+    FORMS_PUBLIC_URL = "https://cossforms.com"
+    FORMS_FILES_BUCKET = "coss-production-forms-files-294417174674"
     EMAIL_PROVIDER                      = "ses"
     AWS_REGION                          = "us-east-2"
     SES_CONFIGURATION_SET               = "coss"

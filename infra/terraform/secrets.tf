@@ -28,6 +28,11 @@ resource "random_password" "sign_origin_verify" {
   special = false
 }
 
+resource "random_password" "forms_origin_verify" {
+  length  = 48
+  special = false
+}
+
 resource "aws_secretsmanager_secret" "origin_verify" {
   name        = "coss/${var.stage}/origin-verify"
   description = "X-Origin-Verify: CloudFront's custom origin header, required by every ALB rule"
@@ -66,4 +71,14 @@ resource "aws_secretsmanager_secret" "sign_origin_verify" {
 resource "aws_secretsmanager_secret_version" "sign_origin_verify" {
   secret_id     = aws_secretsmanager_secret.sign_origin_verify.id
   secret_string = random_password.sign_origin_verify.result
+}
+
+resource "aws_secretsmanager_secret" "forms_origin_verify" {
+  name        = "coss/${var.stage}/forms-origin-verify"
+  description = "X-Forms-Origin-Verify: set by Cloudflare's transform rule on Forms' zone"
+}
+
+resource "aws_secretsmanager_secret_version" "forms_origin_verify" {
+  secret_id     = aws_secretsmanager_secret.forms_origin_verify.id
+  secret_string = random_password.forms_origin_verify.result
 }

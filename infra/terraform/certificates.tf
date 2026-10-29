@@ -59,6 +59,20 @@ resource "aws_acm_certificate_validation" "sign" {
   certificate_arn = aws_acm_certificate.sign.arn
 }
 
+# Forms' host (its own Cloudflare zone): validation CNAME from the
+# `forms_certificate_validation_records` output, added DNS-only in that zone.
+resource "aws_acm_certificate" "forms" {
+  domain_name       = var.forms_host
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_acm_certificate_validation" "forms" {
+  certificate_arn = aws_acm_certificate.forms.arn
+}
+
 # The SMTP relay terminates TLS itself (STARTTLS can't be offloaded), so its certificate must be
 # exportable: the relay exports it with a passphrase (SMTP_TLS_PASSPHRASE) at start and every 12
 # hours, which picks up ACM's renewals. Exportable certificates cost extra. Validation CNAME from

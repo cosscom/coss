@@ -53,6 +53,7 @@ locals {
     "<tracking-origin-verify-secret>" = random_password.tracking_origin_verify.result
     "<portal-origin-verify-secret>"   = random_password.portal_origin_verify.result
     "<sign-origin-verify-secret>"     = random_password.sign_origin_verify.result
+    "<forms-origin-verify-secret>"    = random_password.forms_origin_verify.result
   }
 }
 
@@ -107,4 +108,10 @@ resource "aws_lb_listener_certificate" "portal" {
 resource "aws_lb_listener_certificate" "sign" {
   listener_arn    = aws_lb_listener.https.arn
   certificate_arn = aws_acm_certificate_validation.sign.certificate_arn
+}
+
+# Forms' host (the api's `/f/*`), on the same listener (SNI) too.
+resource "aws_lb_listener_certificate" "forms" {
+  listener_arn    = aws_lb_listener.https.arn
+  certificate_arn = aws_acm_certificate_validation.forms.certificate_arn
 }

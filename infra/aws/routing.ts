@@ -66,6 +66,18 @@ export const SIGN_HOST = "cosssign.com";
 export const SIGN_ORIGIN_VERIFY_HEADER = "X-Sign-Origin-Verify";
 export const SIGN_ORIGIN_VERIFY_PLACEHOLDER = "<sign-origin-verify-secret>";
 
+/**
+ * Forms' public endpoint and hosted pages (`/f/*`, served by the api) live on a registrable domain
+ * of their own, so phishing reports about a form never land on coss.com. The same self-serve
+ * Cloudflare account and setup as Sign's (proxied apex record, the ALB's certificate for it, a
+ * header transform rule with its own secret); only `/f/*` reaches the api.
+ */
+export const FORMS_HOST = "cossforms.com";
+export const FORMS_ORIGIN_VERIFY_HEADER = "X-Forms-Origin-Verify";
+export const FORMS_ORIGIN_VERIFY_PLACEHOLDER = "<forms-origin-verify-secret>";
+/** The only paths the forms host serves. */
+export const FORMS_PATH_PATTERN = "/f/*";
+
 /** The API's open pixel and click redirect routes, the only paths custom hostnames serve. */
 export const TRACKING_PATH_PATTERN = "/t/*";
 
@@ -97,7 +109,8 @@ export type ListenerRule = {
  * a request without CloudFront's (or, for tracking, Cloudflare's) origin header matches no rule.
  * api.coss.com goes first, so the coss.com rules don't need a host condition; then the tracking
  * routes on any host (customer tracking domains, from Cloudflare), the Hooks portal and Sign's
- * signing app (also from Cloudflare, each with its own header); the dashboard (default zone) is last.
+ * signing app (also from Cloudflare, each with its own header); then the dashboard (default zone)
+ * and, after it, Forms' host (from Cloudflare, with its own header).
  */
 export function albListenerRules(): ListenerRule[] {
   const verified = {
@@ -170,6 +183,23 @@ export function albListenerRules(): ListenerRule[] {
     conditions: [
       { Field: "host-header", HostHeaderConfig: { Values: [DASHBOARD_HOST] } },
       verified,
+    ],
+  });
+  // After the dashboard, not with the other hosts: a rule inserted mid-list renumbers every rule
+  // after it, which Terraform rewrites one at a time under live traffic. Its host and header
+  // match nothing above, so its place changes nothing else.
+  rules.push({
+    targetGroup: "api",
+    conditions: [
+      { Field: "host-header", HostHeaderConfig: { Values: [FORMS_HOST] } },
+      { Field: "path-pattern", PathPatternConfig: { Values: [FORMS_PATH_PATTERN] } },
+      {
+        Field: "http-header",
+        HttpHeaderConfig: {
+          HttpHeaderName: FORMS_ORIGIN_VERIFY_HEADER,
+          Values: [FORMS_ORIGIN_VERIFY_PLACEHOLDER],
+        },
+      },
     ],
   });
   // Gaps of 10 leave room for manual rules (maintenance pages, …).

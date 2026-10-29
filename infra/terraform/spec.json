@@ -2092,6 +2092,37 @@
               }
             }
           ]
+        },
+        {
+          "priority": 140,
+          "targetGroup": "api",
+          "conditions": [
+            {
+              "Field": "host-header",
+              "HostHeaderConfig": {
+                "Values": [
+                  "cossforms.com"
+                ]
+              }
+            },
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/f/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Forms-Origin-Verify",
+                "Values": [
+                  "<forms-origin-verify-secret>"
+                ]
+              }
+            }
+          ]
         }
       ]
     },

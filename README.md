@@ -528,6 +528,8 @@ Cloudflare DNS (coss.com zone, DNS only)
   portal.cosshooks.com (Hooks portal) ──(X-Portal-Origin-Verify)──▶ ALB ─▶ portal (Next, :3003)
   Cloudflare DNS (cosssign.com zone, self-serve account, proxied)
   cosssign.com (Sign's signing app) ──(X-Sign-Origin-Verify)──▶ ALB ─▶ sign (Next, :3004)
+  Cloudflare DNS (cossforms.com zone, self-serve account, proxied)
+  cossforms.com/f/* (Forms' endpoints and hosted pages) ──(X-Forms-Origin-Verify)──▶ ALB ─▶ api
   Cloudflare DNS (coss.com zone, DNS only)
   smtp.coss.com ──(TCP 465/2465, 587/2587, client IP preserved)──▶ NLB ─▶ smtp (Bun, :2465 TLS, :2587 STARTTLS)
 ```
@@ -641,6 +643,14 @@ Cloudflare DNS (coss.com zone, DNS only)
   `coss/production/sign-origin-verify`) for `cosssign.com`. `www` (a proxied `100::`) only redirects to the apex.
   `SIGN_PUBLIC_URL=https://cosssign.com` (web, api, worker) makes signing links point there. Sign itself stays off
   until `SIGN_DOCUMENTS_BUCKET` is set (`packages/sign/AGENTS.md`, "Going live").
+- **Forms (`cossforms.com`, in the same self-serve Cloudflare account):**
+  the api serves `/f/*` (form endpoints, hosted pages, submitters' confirmation links) on it, set up like Sign's
+  apex: a **proxied** CNAME to the ALB, its own SNI listener certificate (validation CNAME from
+  `terraform output forms_certificate_validation_records`), SSL mode **Full (strict)**, and a transform rule
+  setting `X-Forms-Origin-Verify: <secret>` (Secrets Manager `coss/production/forms-origin-verify`). The ALB
+  forwards only `/f/*` on that host to the api. `FORMS_PUBLIC_URL=https://cossforms.com` and `FORMS_FILES_BUCKET`
+  (`terraform output forms_files_bucket`), both plain on web, api and worker, switch Forms on: the api serves
+  `/f/*` only on that host in production (`packages/forms/AGENTS.md`, "Production").
 
 ### Monitoring and cost guardrails
 

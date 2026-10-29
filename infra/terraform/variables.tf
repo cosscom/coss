@@ -50,6 +50,11 @@ variable "sign_host" {
   description = "Sign's signing app's host (SIGN_HOST in infra/aws/routing.ts)."
 }
 
+variable "forms_host" {
+  type        = string
+  description = "Forms' host, the api's `/f/*` (FORMS_HOST in infra/aws/routing.ts)."
+}
+
 variable "external_origin_hosts" {
   type        = map(string)
   description = "Production hostname of each external zone (spec.json cloudFront.origins other than alb): the coss ui and qnot repositories' Vercel projects."
