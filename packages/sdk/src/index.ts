@@ -75,6 +75,7 @@ export type {
   SmsSuppressionsResource,
 } from "./resources/sms.ts";
 export type { StorageResource } from "./resources/storage.ts";
+export type { SubaccountsResource } from "./resources/subaccounts.ts";
 export type { SuppressionResource } from "./resources/suppressions.ts";
 export type { TrackingResource } from "./resources/tracking.ts";
 export type { TrackingDomainsResource } from "./resources/tracking-domains.ts";
@@ -473,6 +474,17 @@ export type {
   SmsTag,
 } from "./types/sms.ts";
 export type { StorageSettings, UpdateStorageSettingsParams } from "./types/storage.ts";
+export type {
+  CreateSubaccountParams,
+  ListSubaccountsParams,
+  Subaccount,
+  SubaccountQuotas,
+  SubaccountQuotasParams,
+  SubaccountReputation,
+  SubaccountReputationStatus,
+  SubaccountStatus,
+  UpdateSubaccountParams,
+} from "./types/subaccount.ts";
 export type {
   CheckSuppressionParams,
   CreateSuppressionParams,

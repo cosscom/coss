@@ -231,6 +231,26 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "email.listLinks",
     args: (request) => [pathId(request)],
   },
+  "POST /v1/subaccounts": {
+    method: "email.subaccounts.create",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/subaccounts": {
+    method: "email.subaccounts.list",
+    args: (request) => [queryParams(request)],
+  },
+  "GET /v1/subaccounts/{subaccount}": {
+    method: "email.subaccounts.get",
+    args: (request) => [pathParam(request, "subaccount")],
+  },
+  "PATCH /v1/subaccounts/{subaccount}": {
+    method: "email.subaccounts.update",
+    args: (request) => [pathParam(request, "subaccount"), tsValue(request.body ?? {})],
+  },
+  "DELETE /v1/subaccounts/{subaccount}": {
+    method: "email.subaccounts.delete",
+    args: (request) => [pathParam(request, "subaccount")],
+  },
   "POST /v1/suppressions": {
     method: "email.suppressions.add",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],

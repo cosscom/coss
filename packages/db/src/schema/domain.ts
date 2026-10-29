@@ -119,6 +119,82 @@ export const environmentApiKey = pgTable(
   ],
 );
 
+/** `disabled`: the parent turned it off. `deleting`: the worker is releasing its domains and tenant. */
+export const emailSubaccountStatus = pgEnum("email_subaccount_status", [
+  "active",
+  "disabled",
+  "deleting",
+]);
+
+/** A sub-account's own sending standing; `paused` is lifted only by a reinstatement. */
+export const emailSubaccountReputation = pgEnum("email_subaccount_reputation", [
+  "good",
+  "warning",
+  "paused",
+]);
+
+/**
+ * Email for platforms: one of a customer's end users, with their own domains (and SES tenant),
+ * suppressions, quotas, reputation and screening sample. Addressed by its id or the customer's
+ * `uid`. The organization stays accountable: it is billed, its own standing counts every
+ * sub-account's sending, and its suspension stops them all.
+ */
+export const emailSubaccount = pgTable(
+  "email_subaccount",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => newId(ID_PREFIXES.emailSubaccount)),
+    organizationId: text("organization_id").notNull(),
+    projectId: text("project_id").notNull(),
+    environmentId: text("environment_id").notNull(),
+    // The customer's own id for it (e.g. their user id), unique per environment.
+    uid: text("uid"),
+    name: text("name").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, string>>().notNull().default({}),
+    status: emailSubaccountStatus("status").notNull().default("active"),
+    // Quotas the customer sets on it (recipients); `null`: only the organization's apply.
+    dailyRecipientLimit: integer("daily_recipient_limit"),
+    perSecondRecipientLimit: integer("per_second_recipient_limit"),
+    perSecondBurst: integer("per_second_burst"),
+    reputationStatus: emailSubaccountReputation("reputation_status").notNull().default("good"),
+    // The check (or `content_screening`) that last moved the standing.
+    reputationTrigger: text("reputation_trigger"),
+    reputationChangedAt: timestamp("reputation_changed_at", { withTimezone: true }),
+    // Rates are measured from here after a reinstatement.
+    reinstatedAt: timestamp("reinstated_at", { withTimezone: true }),
+    metrics: jsonb("metrics"),
+    // Bumped by every standing change: an evaluation that read an older one writes nothing.
+    revision: integer("revision").notNull().default(0),
+    nextEvaluationAt: timestamp("next_evaluation_at", { withTimezone: true }),
+    evaluationLeaseUntil: timestamp("evaluation_lease_until", { withTimezone: true }),
+    deletionLeaseUntil: timestamp("deletion_lease_until", { withTimezone: true }),
+    deletionAttempts: integer("deletion_attempts").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    foreignKey({
+      name: "email_subaccount_environment_fk",
+      columns: [t.environmentId, t.organizationId],
+      foreignColumns: [environment.id, environment.organizationId],
+    }).onDelete("cascade"),
+    unique("email_subaccount_environment_uid_unique").on(t.environmentId, t.uid),
+    unique("email_subaccount_id_organization_unique").on(t.id, t.organizationId),
+    index("email_subaccount_environment_created_at_idx").on(
+      t.environmentId,
+      t.createdAt.desc(),
+      t.id.desc(),
+    ),
+    index("email_subaccount_next_evaluation_idx")
+      .on(t.nextEvaluationAt)
+      .where(sql`${t.nextEvaluationAt} IS NOT NULL`),
+    index("email_subaccount_deleting_idx")
+      .on(t.deletionLeaseUntil)
+      .where(sql`${t.status} = 'deleting'`),
+  ],
+);
+
 export const emailStatus = pgEnum("email_status", [
   "queued",
   "sent",

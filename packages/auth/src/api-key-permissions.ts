@@ -89,6 +89,13 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
     description: "Manage broadcasts and send them.",
   },
   {
+    resource: "subaccount",
+    label: "Sub-accounts",
+    group: "Email",
+    description:
+      "Manage sub-accounts (your users' own domains, suppressions, quotas and reputation) and reinstate paused ones; read them and their stats.",
+  },
+  {
     resource: "reputation",
     label: "Reputation",
     group: "Email",

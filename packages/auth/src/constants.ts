@@ -27,6 +27,7 @@ export const API_KEY_PERMISSIONS: Record<string, string[]> = {
   suppression: ["create", "read", "delete"],
   contact: ["create", "read", "update", "delete"],
   broadcast: ["create", "read", "update", "delete", "send"],
+  subaccount: ["create", "read", "update", "delete"],
   reputation: ["read"],
   log: ["read"],
   // The organization's audit log. Personal keys hold it only while their owner may read it

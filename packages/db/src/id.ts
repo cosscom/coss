@@ -39,6 +39,8 @@ export const ID_PREFIXES = {
   emailAttachment: "att",
   emailEvent: "evt",
   emailSuppression: "sup",
+  // Email for platforms: a customer's end user (`<SES_TENANT_PREFIX>-sub_…` must fit SES's 64 characters).
+  emailSubaccount: "sub",
   emailTrackingRule: "etr",
   emailLink: "lnk",
   emailTemplate: "etpl",

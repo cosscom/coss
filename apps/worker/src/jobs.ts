@@ -33,6 +33,7 @@ import {
   releaseOrganizationEmailResources,
   runDueBroadcasts,
   runDueDmarcNotifications,
+  runDueSubaccountDeletions,
   sweepStaleClaims,
   sweepUnclaimedEmails,
 } from "@coss/email";
@@ -219,6 +220,7 @@ export const WORKER_LOOP_NAMES = [
   "stale-claims",
   "reputation",
   "organization-deletions",
+  "subaccount-deletions",
   "unclaimed",
   "retention",
   "partitions",
@@ -430,6 +432,16 @@ export function startJobs(deps: WorkerDeps): Loop[] {
               await finalizeOrganizationBilling(organizationId, { assertLease });
             },
           },
+        )) === DELETION_BATCH,
+    }),
+    start({
+      // Email sub-accounts being deleted: what they hold is released, then the rows go.
+      name: "subaccount-deletions",
+      intervalMs: 10_000,
+      run: async () =>
+        (await runDueSubaccountDeletions(
+          { release: async () => {} },
+          { limit: DELETION_BATCH },
         )) === DELETION_BATCH,
     }),
     start({

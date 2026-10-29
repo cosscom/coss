@@ -60,6 +60,7 @@ export const PLANS = {
         sso: false,
         scim: false,
         dedicatedIps: false,
+        subaccounts: false,
       },
       limits: {
         domains: 1,
@@ -68,6 +69,7 @@ export const PLANS = {
         contactsPerEnvironment: 1_000,
         smsNumbers: 0,
         inboxes: 3,
+        subaccounts: 0,
       },
       rateLimits: {
         "email.recipients.second": perSecond(2, 50),
@@ -100,6 +102,7 @@ export const PLANS = {
         sso: false,
         scim: false,
         dedicatedIps: false,
+        subaccounts: false,
       },
       limits: {
         domains: 10,
@@ -108,6 +111,7 @@ export const PLANS = {
         contactsPerEnvironment: 50_000,
         smsNumbers: 5,
         inboxes: 1_000,
+        subaccounts: 0,
       },
       rateLimits: {
         "email.recipients.second": perSecond(14, 100),
@@ -147,6 +151,7 @@ export const PLANS = {
         sso: true,
         scim: false,
         dedicatedIps: false,
+        subaccounts: true,
       },
       limits: {
         domains: 100,
@@ -155,6 +160,7 @@ export const PLANS = {
         contactsPerEnvironment: 250_000,
         smsNumbers: 50,
         inboxes: 10_000,
+        subaccounts: 1_000,
       },
       rateLimits: {
         "email.recipients.second": perSecond(50, 200),
@@ -193,6 +199,7 @@ export const PLANS = {
         sso: true,
         scim: true,
         dedicatedIps: false,
+        subaccounts: true,
       },
       limits: {
         domains: null,
@@ -201,6 +208,7 @@ export const PLANS = {
         contactsPerEnvironment: null,
         smsNumbers: null,
         inboxes: null,
+        subaccounts: null,
       },
       rateLimits: {
         "email.recipients.second": perSecond(100, 500),

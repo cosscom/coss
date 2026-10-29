@@ -307,6 +307,11 @@ export function openApiDocumentConfig(serverUrl: string) {
         description: "Addresses that sends skip, added by bounces, complaints or you.",
       },
       {
+        name: "Sub-accounts",
+        description:
+          "Your users, each with their own domains, suppressions, quotas and reputation (email for platforms).",
+      },
+      {
         name: "Tracking",
         description: "Which emails of the environment have their opens and clicks tracked.",
       },

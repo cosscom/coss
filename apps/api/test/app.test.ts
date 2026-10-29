@@ -293,6 +293,8 @@ describe("GET /openapi.json", () => {
       "/v1/sms/{id}/cancel",
       "/v1/sms/{id}/events",
       "/v1/storage_settings",
+      "/v1/subaccounts",
+      "/v1/subaccounts/{subaccount}",
       "/v1/suppressions",
       "/v1/suppressions/check",
       "/v1/suppressions/export",

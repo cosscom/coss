@@ -67,6 +67,14 @@ import {
   UpdateTrackingRuleRequest,
 } from "../src/schemas.ts";
 import {
+  CreateSubaccountRequest,
+  Subaccount,
+  SubaccountList,
+  SubaccountQuotas,
+  SubaccountReputation,
+  UpdateSubaccountRequest,
+} from "../src/subaccount-schemas.ts";
+import {
   CreateTestWebhookEventRequest,
   WebhookTestEventObject,
 } from "../src/test-event-schemas.ts";
@@ -134,6 +142,12 @@ const SCHEMAS: Record<string, z.ZodType> = {
   DeletedEmailTemplate,
   CreateTestWebhookEventRequest,
   WebhookTestEvent: WebhookTestEventObject,
+  CreateSubaccountRequest,
+  UpdateSubaccountRequest,
+  Subaccount,
+  SubaccountList,
+  SubaccountQuotas,
+  SubaccountReputation,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

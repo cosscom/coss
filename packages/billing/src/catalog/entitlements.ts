@@ -7,6 +7,7 @@ export const FEATURE_KEYS = [
   "sso",
   "scim",
   "dedicatedIps",
+  "subaccounts",
 ] as const;
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
 
@@ -17,6 +18,7 @@ export const LIMIT_KEYS = [
   "contactsPerEnvironment",
   "smsNumbers",
   "inboxes",
+  "subaccounts",
 ] as const;
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 
@@ -53,6 +55,7 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   sso: "Single sign-on (SAML, OIDC)",
   scim: "Directory sync (SCIM)",
   dedicatedIps: "Dedicated IPs",
+  subaccounts: "Email for platforms (sub-accounts)",
 };
 
 export const LIMIT_LABELS: Record<LimitKey, string> = {
@@ -62,6 +65,7 @@ export const LIMIT_LABELS: Record<LimitKey, string> = {
   contactsPerEnvironment: "Contacts per environment",
   smsNumbers: "SMS phone numbers",
   inboxes: "Inboxes",
+  subaccounts: "Email sub-accounts",
 };
 
 const SECOND = 1000;
