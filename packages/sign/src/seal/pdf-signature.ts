@@ -3,12 +3,15 @@
  * (`/SubFilter /ETSI.CAdES.detached`, PAdES) with a zero-filled `/Contents` placeholder. The file
  * is saved once without object streams, the placeholder's byte ranges are written in, everything
  * but the placeholder is hashed, and the CMS goes into the placeholder, so a viewer can tell the
- * whole file is unchanged since.
+ * whole file is unchanged since. Then the validation data of every certificate involved goes into
+ * a DSS after it (`ltv.ts`, `dss.ts`: PAdES B-LT), when there is any to find.
  */
 import { randomBytes } from "node:crypto";
 import { PDFArray, type PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from "pdf-lib";
 import { cadesSignature } from "./cms.ts";
-import { asn1js, sha256, toArrayBuffer } from "./crypto.ts";
+import { asn1js, parseCertificate, sha256, toArrayBuffer } from "./crypto.ts";
+import { appendDss } from "./dss.ts";
+import { certificatesOf, collectValidationData, hasRevocationData } from "./ltv.ts";
 import type { Sealer } from "./sealer.ts";
 import type { TimestampAuthority } from "./tsa.ts";
 
@@ -24,10 +27,22 @@ export type SealOptions = {
   location?: string;
   contactInfo?: string;
   signedAt: Date;
+  /** Fetches the validation data (OCSP, CRLs, missing issuers); default the global `fetch`. */
+  fetch?: typeof fetch;
 };
 
 /** Seals `document` (which this saves): returns the sealed file's bytes. */
 export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise<Uint8Array> {
+  await opts.sealer.prepare?.();
+  const [leaf] = opts.sealer.certificateChain;
+  if (!leaf) throw new Error("The sealer has no certificate.");
+  const certificate = parseCertificate(leaf);
+  if (opts.signedAt < certificate.notBefore.value || opts.signedAt > certificate.notAfter.value) {
+    // A seal nobody could validate: refused (and retried) rather than published.
+    throw new Error(
+      `The seal's certificate is valid from ${certificate.notBefore.value.toISOString()} to ${certificate.notAfter.value.toISOString()}.`,
+    );
+  }
   const { context } = document;
   // A name of this seal's own, so finding it can't land on anything in the uploaded documents.
   const rangeName = `ByteRange${randomBytes(8).toString("hex")}`;
@@ -62,7 +77,8 @@ export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise
     FT: "Sig",
     Rect: [0, 0, 0, 0],
     V: signatureRef,
-    T: PDFString.of("coss.com seal"),
+    // A partial field name: no periods (they separate the parts of a full name).
+    T: PDFString.of("coss-com-seal"),
     // Print + Locked: invisible, and not to be changed.
     F: 132,
     P: page.ref,
@@ -110,7 +126,12 @@ export async function sealPdf(document: PDFDocument, opts: SealOptions): Promise
     .toString("hex")
     .padEnd(SIGNATURE_PLACEHOLDER_BYTES * 2, "0");
   sealed.write(hex, contentsAt + 1, "latin1");
-  return new Uint8Array(sealed);
+  const validation = await collectValidationData(certificatesOf(cms), {
+    fetch: opts.fetch,
+    now: opts.signedAt,
+  });
+  if (!hasRevocationData(validation)) return new Uint8Array(sealed);
+  return appendDss(new Uint8Array(sealed), validation);
 }
 
 /** The sealed file's byte ranges and CMS (for checks and tests). */

@@ -165,14 +165,15 @@ const signPublicUrl: EnvVar = {
     "Origin of Sign's signing app (apps/sign, on a registrable domain of its own); signing session links point there. Unset: creating a signing session fails (503) until it is deployed.",
 };
 
-// Sign's seal (worker): a KMS key with a document-signing certificate, and a time-stamping authority.
+// Sign's seal (worker): a document-signing certificate whose key is in KMS or at the CA (CSC), and
+// a time-stamping authority.
 const signSeal: EnvVar[] = [
   {
     name: "SIGN_SEALER",
     kind: "plain",
     required: false,
     description:
-      "What seals Sign's completed documents: `kms` (SIGN_SEAL_KMS_KEY_ID + SIGN_SEAL_CERTIFICATE_CHAIN). Unset: completions wait (Sign is off in production until then).",
+      "What seals Sign's completed documents: `kms` (SIGN_SEAL_KMS_KEY_ID + SIGN_SEAL_CERTIFICATE_CHAIN) or `csc` (SIGN_CSC_*: the CA's cloud signing API). Unset: completions wait (Sign is off in production until then).",
   },
   {
     name: "SIGN_SEAL_KMS_KEY_ID",
@@ -188,10 +189,62 @@ const signSeal: EnvVar[] = [
       "The seal's document-signing certificate (on Adobe's trust list) and its intermediates, PEM, leaf first (`\\n` line breaks accepted).",
   },
   {
+    name: "SIGN_CSC_URL",
+    kind: "plain",
+    required: false,
+    description:
+      "With SIGN_SEALER=csc: the CA's Cloud Signature Consortium API, with its version (SSL.com eSigner: `https://cs.ssl.com/csc/v1`).",
+  },
+  {
+    name: "SIGN_CSC_TOKEN_URL",
+    kind: "plain",
+    required: false,
+    description: "Its OAuth 2.0 token endpoint (SSL.com: `https://login.ssl.com/oauth2/token`).",
+  },
+  {
+    name: "SIGN_CSC_CLIENT_ID",
+    kind: "plain",
+    required: false,
+    description: "The OAuth client registered with the CA for the password grant.",
+  },
+  {
+    name: "SIGN_CSC_CLIENT_SECRET",
+    kind: "secret",
+    required: false,
+    description: "That client's secret, when the CA's client is confidential.",
+  },
+  {
+    name: "SIGN_CSC_USERNAME",
+    kind: "plain",
+    required: false,
+    description: "The CA account the signing credential belongs to.",
+  },
+  {
+    name: "SIGN_CSC_PASSWORD",
+    kind: "secret",
+    required: false,
+    description: "That account's password.",
+  },
+  {
+    name: "SIGN_CSC_CREDENTIAL_ID",
+    kind: "plain",
+    required: false,
+    description:
+      "The signing credential (SSL.com eSealing: `credentials/list` with `clientData: DS_ESEAL`).",
+  },
+  {
+    name: "SIGN_CSC_TOTP_SECRET",
+    kind: "secret",
+    required: false,
+    description:
+      "Base64 TOTP secret, only for a credential that wants a one-time password per signature (an eSeal doesn't).",
+  },
+  {
     name: "SIGN_TSA_URL",
     kind: "plain",
     required: false,
-    description: "An RFC 3161 time-stamping authority: seals carry its timestamp (PAdES B-T).",
+    description:
+      "An RFC 3161 time-stamping authority: seals carry its timestamp (PAdES B-T), and the validation data of its chain (B-LT).",
   },
 ];
 

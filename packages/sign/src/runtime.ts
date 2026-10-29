@@ -1,19 +1,28 @@
 import { S3DocumentStore, signS3Api } from "./s3-store.ts";
 /**
  * Completion's sealer and TSA from the environment (`signSealEnvShape`): `null` when this
- * deployment can't seal yet (production without a KMS key and certificate), and the worker's
- * completion loop doesn't run.
+ * deployment can't seal yet (production without a certificate), and the worker's completion loop
+ * doesn't run.
  */
 import { certificatesFromPem } from "./seal/crypto.ts";
+import { CscSealer } from "./seal/csc.ts";
 import { KmsSealer, LocalSealer, type Sealer } from "./seal/sealer.ts";
 import { HttpTsa, type TimestampAuthority } from "./seal/tsa.ts";
 import { type DocumentStore, FakeDocumentStore } from "./store.ts";
 
 /** `signSealEnvShape`, parsed. */
 type SignSealEnv = {
-  SIGN_SEALER?: "kms" | "local";
+  SIGN_SEALER?: "kms" | "csc" | "local";
   SIGN_SEAL_KMS_KEY_ID?: string;
   SIGN_SEAL_CERTIFICATE_CHAIN?: string;
+  SIGN_CSC_URL?: string;
+  SIGN_CSC_TOKEN_URL?: string;
+  SIGN_CSC_CLIENT_ID?: string;
+  SIGN_CSC_CLIENT_SECRET?: string;
+  SIGN_CSC_USERNAME?: string;
+  SIGN_CSC_PASSWORD?: string;
+  SIGN_CSC_CREDENTIAL_ID?: string;
+  SIGN_CSC_TOTP_SECRET?: string;
   SIGN_TSA_URL?: string;
 };
 
@@ -32,6 +41,35 @@ export async function sealerFromEnv(
       sealer: new KmsSealer({
         keyId: env.SIGN_SEAL_KMS_KEY_ID,
         certificateChain: certificatesFromPem(env.SIGN_SEAL_CERTIFICATE_CHAIN),
+      }),
+      tsa,
+    };
+  }
+  if (env.SIGN_SEALER === "csc") {
+    const {
+      SIGN_CSC_URL: url,
+      SIGN_CSC_TOKEN_URL: tokenUrl,
+      SIGN_CSC_CLIENT_ID: clientId,
+      SIGN_CSC_USERNAME: username,
+      SIGN_CSC_PASSWORD: password,
+      SIGN_CSC_CREDENTIAL_ID: credentialId,
+    } = env;
+    if (!url || !tokenUrl || !clientId || !username || !password || !credentialId) {
+      throw new Error(
+        "SIGN_SEALER=csc needs SIGN_CSC_URL, SIGN_CSC_TOKEN_URL, SIGN_CSC_CLIENT_ID, SIGN_CSC_USERNAME, SIGN_CSC_PASSWORD and SIGN_CSC_CREDENTIAL_ID.",
+      );
+    }
+    return {
+      // The credential is read before the first seal, not here: the worker starts regardless.
+      sealer: new CscSealer({
+        url,
+        tokenUrl,
+        clientId,
+        clientSecret: env.SIGN_CSC_CLIENT_SECRET,
+        username,
+        password,
+        credentialId,
+        totpSecret: env.SIGN_CSC_TOTP_SECRET,
       }),
       tsa,
     };

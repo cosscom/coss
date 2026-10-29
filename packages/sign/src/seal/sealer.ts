@@ -1,7 +1,8 @@
 /**
  * What seals completed documents: a key that signs and the certificate chain that names it.
- * Production uses an AWS KMS key with a document-signing certificate from a CA on Adobe's trust
- * list (`KmsSealer`); development and tests a self-signed key made at start (`LocalSealer`).
+ * Production uses a document-signing certificate from a CA on Adobe's trust list, with its key in
+ * AWS KMS (`KmsSealer`) or at the CA behind a CSC API (`CscSealer`, `csc.ts`); development and
+ * tests a self-signed key made at start (`LocalSealer`).
  */
 import { webcrypto } from "node:crypto";
 import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
@@ -21,6 +22,8 @@ export interface Sealer {
   readonly certificateChain: readonly Uint8Array[];
   /** Signs `data` (hashing it with SHA-256 first): a PKCS #1 v1.5 or DER ECDSA signature. */
   sign(data: Uint8Array): Promise<Uint8Array>;
+  /** Loads what `certificateChain` needs, when that takes a network call (`CscSealer`). */
+  prepare?(): Promise<void>;
 }
 
 /** A self-signed certificate for `name`, made with a fresh key (development, tests). */
@@ -102,6 +105,11 @@ export class LocalSealer implements Sealer {
   static async create(name = "coss.com Sign (development)"): Promise<LocalSealer> {
     const { certificate, privateKey } = await selfSignedCertificate(name);
     return new LocalSealer([certificate], privateKey);
+  }
+
+  /** Seals with `privateKey`, whose certificate (and issuers) is `certificateChain` (tests). */
+  static fromKey(certificateChain: readonly Uint8Array[], privateKey: CryptoKey): LocalSealer {
+    return new LocalSealer(certificateChain, privateKey);
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {

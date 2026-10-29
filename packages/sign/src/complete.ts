@@ -37,6 +37,8 @@ export type SignCompletionDeps = {
   sealer: Sealer;
   /** Without one, seals carry no trusted timestamp (PAdES B-B instead of B-T). */
   tsa?: TimestampAuthority | null;
+  /** Fetches the seal's validation data (OCSP, CRLs); default the global `fetch`. */
+  fetch?: typeof fetch;
 };
 
 const LEASE_MS = 10 * 60_000;
@@ -205,6 +207,7 @@ async function seal(request: RequestRow, deps: SignCompletionDeps, now: Date): P
     location: "coss.com",
     contactInfo: "https://coss.com",
     signedAt: now,
+    fetch: deps.fetch,
   });
   const sha256 = createHash("sha256").update(bytes).digest("hex");
   const key = signedDocumentKey(request, sha256);
