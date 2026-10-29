@@ -3,7 +3,7 @@ import { pool } from "@coss/db";
 import { memoryLogWriter } from "@coss/logs/testing";
 import { cachedOverrides, setRateLimitOverride } from "@coss/ratelimit";
 import { memoryLimiter } from "@coss/ratelimit/testing";
-import { TEST_IPS, testRiskDeps } from "@coss/risk/testing";
+import { fakePhoneLookup, TEST_IPS, testRiskDeps } from "@coss/risk/testing";
 import { fakeClassifier } from "@coss/screening/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import {
@@ -55,12 +55,125 @@ describe("POST /v1/risk/email/check and /v1/risk/ip/check", () => {
     for (const [path, body] of [
       ["/v1/risk/email/check", { email: "a@example.com" }],
       ["/v1/risk/ip/check", { ip: "192.0.2.1" }],
+      ["/v1/risk/phone/check", { phone: "+12025550100" }],
       ["/v1/risk/content/classify", { text: "hi" }],
       ["/v1/risk/limits", { bucket: "b", key: "k" }],
     ] as const) {
       const res = await apiRequest(app, "POST", path, { key: tenant.sandboxKey, body });
       expect(res.status).toBe(403);
     }
+  });
+});
+
+describe("POST /v1/risk/phone/check", () => {
+  test("asks the provider about live numbers; the request log keeps neither number", async () => {
+    const tenant = await createTestTenant();
+    const writer = memoryLogWriter();
+    const phoneLookup = fakePhoneLookup({
+      "+14155550123": {
+        lineType: "non_fixed_voip",
+        carrier: { name: "Example Voice", mobileCountryCode: null, mobileNetworkCode: null },
+      },
+    });
+    const { app } = createTestApp({ logWriter: writer, riskDeps: testRiskDeps({ phoneLookup }) });
+    const res = await apiRequest(app, "POST", "/v1/risk/phone/check", {
+      key: tenant.liveKey,
+      body: { phone: "+1 (415) 555-0123" },
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      object: "risk_phone_check",
+      phone: "+14155550123",
+      valid: true,
+      country: "US",
+      line_type: "non_fixed_voip",
+      carrier: { name: "Example Voice", mobile_country_code: null, mobile_network_code: null },
+      sim_swap: null,
+      degraded: [],
+    });
+
+    // Not E.164: answered without asking anyone.
+    const invalid = await apiRequest(app, "POST", "/v1/risk/phone/check", {
+      key: tenant.liveKey,
+      body: { phone: "0415 555 0124" },
+    });
+    expect(await invalid.json()).toMatchObject({ phone: "0415 555 0124", valid: false });
+    expect(phoneLookup.calls).toEqual(["+14155550123"]);
+
+    await writer.flush();
+    expect(writer.entries.filter((entry) => entry.path === "/v1/risk/phone/check")).toHaveLength(2);
+    const logged = JSON.stringify(writer.entries);
+    expect(logged).not.toContain("5550123");
+    expect(logged).not.toContain("5550124");
+  });
+
+  test("sandbox keys see the fixtures, never the provider", async () => {
+    const tenant = await createTestTenant();
+    const phoneLookup = fakePhoneLookup();
+    const { app } = createTestApp({ riskDeps: testRiskDeps({ phoneLookup }) });
+    const check = async (phone: string) =>
+      (
+        await apiRequest(app, "POST", "/v1/risk/phone/check", {
+          key: tenant.sandboxKey,
+          body: { phone },
+        })
+      ).json();
+    expect(await check("+12025550102")).toMatchObject({
+      line_type: "non_fixed_voip",
+      sim_swap: null,
+    });
+    expect(await check("+12025550104")).toMatchObject({
+      line_type: "mobile",
+      sim_swap: { recent: true, period: "PT48H" },
+    });
+    expect(await check("+12025550199")).toMatchObject({ valid: false, line_type: null });
+    expect(await check("+447700900123")).toMatchObject({
+      valid: true,
+      line_type: null,
+      degraded: [],
+    });
+    expect(phoneLookup.calls).toEqual([]);
+  });
+
+  test("a failed lookup is degraded; no provider is a 503", async () => {
+    const tenant = await createTestTenant();
+    const failing = createTestApp({
+      riskDeps: testRiskDeps({ phoneLookup: fakePhoneLookup({ "+14155550123": "fail" }) }),
+    });
+    const degraded = await apiRequest(failing.app, "POST", "/v1/risk/phone/check", {
+      key: tenant.liveKey,
+      body: { phone: "+14155550123" },
+    });
+    expect(await degraded.json()).toMatchObject({
+      valid: true,
+      line_type: null,
+      degraded: ["phone_data"],
+    });
+
+    const { app } = createTestApp({ riskDeps: testRiskDeps({ phoneLookup: null }) });
+    const unavailable = await apiRequest(app, "POST", "/v1/risk/phone/check", {
+      key: tenant.liveKey,
+      body: { phone: "+14155550123" },
+    });
+    expect(unavailable.status).toBe(503);
+    expect(await errorOf(unavailable)).toMatchObject({ code: "phone_lookup_unavailable" });
+  });
+
+  test("live checks are limited per organization; sandbox ones are free", async () => {
+    const tenant = await createTestTenant();
+    await setRateLimitOverride({
+      organizationId: tenant.organization.id,
+      bucket: "risk.phone",
+      rule: { limit: 1, periodMs: 60_000, burst: 1 },
+    });
+    const { app } = createTestApp({ rateLimiter: memoryLimiter({ overrides: cachedOverrides() }) });
+    const check = (key: string) =>
+      apiRequest(app, "POST", "/v1/risk/phone/check", { key, body: { phone: "+12025550100" } });
+    expect((await check(tenant.liveKey)).status).toBe(200);
+    const limited = await check(tenant.liveKey);
+    expect(limited.status).toBe(429);
+    expect(await errorOf(limited)).toMatchObject({ code: "phone_check_rate_limited" });
+    expect((await check(tenant.sandboxKey)).status).toBe(200);
   });
 });
 

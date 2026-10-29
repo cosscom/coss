@@ -1451,6 +1451,111 @@ export const RiskIpCheck = RiskIpSignals.extend({
 });
 export type RiskIpCheckOutput = z.output<typeof RiskIpCheck>;
 
+/** Line types phone checks tell apart (Twilio's, in snake_case). */
+export const PHONE_LINE_TYPES = [
+  "mobile",
+  "landline",
+  "fixed_voip",
+  "non_fixed_voip",
+  "toll_free",
+  "premium",
+  "shared_cost",
+  "personal",
+  "uan",
+  "voicemail",
+  "pager",
+  "unknown",
+] as const;
+export type PhoneLineType = (typeof PHONE_LINE_TYPES)[number];
+
+export const RiskPhoneCheckRequest = z
+  .strictObject({
+    phone: z.string().min(1).max(32).meta({
+      description:
+        "The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.",
+    }),
+  })
+  .meta({ id: "RiskPhoneCheckRequest", examples: [{ phone: "+14155550123" }] });
+export type RiskPhoneCheckRequestOutput = z.output<typeof RiskPhoneCheckRequest>;
+
+export const RiskPhoneCheck = z
+  .object({
+    object: z.literal("risk_phone_check"),
+    phone: z.string().meta({ description: "The number in E.164, or as given when it isn't." }),
+    valid: z.boolean().meta({
+      description:
+        "A possible number in its country's numbering plan. When the lookup failed (`degraded`), only the E.164 syntax was checked.",
+    }),
+    country: z.string().nullable().meta({ description: "ISO 3166-1 alpha-2." }),
+    line_type: z.enum(PHONE_LINE_TYPES).nullable().meta({
+      description:
+        "`fixed_voip` numbers belong to an address (cable, business lines); `non_fixed_voip` ones can be had online in minutes (Google Voice, app numbers), the kind used for throwaway accounts. `null` when it couldn't be looked up.",
+    }),
+    carrier: z
+      .union([
+        z
+          .object({
+            name: z.string().nullable(),
+            mobile_country_code: z.string().nullable(),
+            mobile_network_code: z.string().nullable().meta({
+              description: "Only for mobile numbers.",
+            }),
+          })
+          .meta({ id: "RiskPhoneCarrier" }),
+        z.null(),
+      ])
+      .meta({
+        description:
+          "The network the number is on now (after any port). `null` when unknown, and for toll-free, premium and personal numbers.",
+      }),
+    sim_swap: z
+      .union([
+        z
+          .object({
+            recent: z.boolean().meta({
+              description:
+                "The SIM changed within `period`: someone may have taken the number over.",
+            }),
+            swapped_at: z.string().nullable().meta({
+              description: "The last SIM change, where the carrier tells the date.",
+            }),
+            period: z.string().nullable().meta({
+              description: "What `recent` means, as an ISO 8601 duration (`PT48H`).",
+            }),
+          })
+          .meta({ id: "RiskPhoneSimSwap" }),
+        z.null(),
+      ])
+      .meta({
+        description:
+          "The mobile number's last SIM change. `null` where coss.com doesn't have that data (not every country and carrier).",
+      }),
+    degraded: z.array(z.enum(["phone_data", "sim_swap"])).meta({
+      description:
+        "`phone_data` when the lookup failed or timed out (or had no line type for the number); `sim_swap` when the carrier didn't answer about the SIM.",
+    }),
+  })
+  .meta({
+    id: "RiskPhoneCheck",
+    examples: [
+      {
+        object: "risk_phone_check",
+        phone: "+14155550123",
+        valid: true,
+        country: "US",
+        line_type: "mobile",
+        carrier: {
+          name: "T-Mobile USA, Inc.",
+          mobile_country_code: "310",
+          mobile_network_code: "260",
+        },
+        sim_swap: null,
+        degraded: [],
+      },
+    ],
+  });
+export type RiskPhoneCheckOutput = z.output<typeof RiskPhoneCheck>;
+
 export const RiskContentClassifyRequest = z
   .strictObject({
     text: z.string().min(1).max(MAX_CONTENT_TEXT_CHARS).meta({

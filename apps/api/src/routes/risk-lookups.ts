@@ -1,8 +1,8 @@
 /**
- * Risk's building blocks: stateless lookups (email, IP) and content classification. Nothing about
- * the person looked up is stored or counted; the text classified is never stored or logged.
+ * Risk's building blocks: stateless lookups (email, IP, phone) and content classification. Nothing
+ * about the person looked up is stored or counted; the text classified is never stored or logged.
  */
-import { checkEmail, checkIp, classifyContent, type RiskDeps } from "@coss/risk";
+import { checkEmail, checkIp, checkPhone, classifyContent, type RiskDeps } from "@coss/risk";
 import {
   RiskContentClassification,
   RiskContentClassifyRequest,
@@ -10,6 +10,8 @@ import {
   RiskEmailCheckRequest,
   RiskIpCheck,
   RiskIpCheckRequest,
+  RiskPhoneCheck,
+  RiskPhoneCheckRequest,
 } from "@coss/risk/schemas";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import type { z } from "zod";
@@ -90,6 +92,45 @@ export const checkRiskIpRoute = createRoute({
   },
 });
 
+export const checkRiskPhoneRoute = createRoute({
+  method: "post",
+  path: "/risk/phone/check",
+  operationId: "checkRiskPhone",
+  tags: ["Risk"],
+  summary: "Check a phone number",
+  description:
+    "Phone intelligence on its own: whether the number exists in its country's numbering plan, " +
+    "its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the " +
+    "last SIM swap where carriers share it. Stateless. A failed lookup is reported in " +
+    "`degraded`. Limited per organization as well as per key. Sandbox keys see the fictional " +
+    "numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, " +
+    "`0104` a recent SIM swap, `0199` invalid, the rest mobile).",
+  security: [{ bearerAuth: [] }],
+  middleware: [
+    requireApiKey({ risk: ["assess"] }),
+    rateLimit("risk.assess"),
+    upgradeRequestBody("POST /v1/risk/phone/check"),
+  ] as const,
+  request: {
+    body: { required: true, content: { "application/json": { schema: RiskPhoneCheckRequest } } },
+  },
+  responses: {
+    200: json("What coss.com knows about the number.", RiskPhoneCheck),
+    ...jsonBodyErrors,
+    ...commonErrors,
+    429: errorDoc(
+      "Too many requests with this API key (`rate_limited`), too many phone checks for this " +
+        "organization (`phone_check_rate_limited`), or too many requests with invalid keys from " +
+        "this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds.",
+      { "Retry-After": retryAfterHeader },
+    ),
+    503: errorDoc(
+      "Phone checks aren't available at the moment (`phone_lookup_unavailable`), or the API key " +
+        "could not be verified right now (`service_unavailable`). Retry later.",
+    ),
+  },
+});
+
 export const classifyRiskContentRoute = createRoute({
   method: "post",
   path: "/risk/content/classify",
@@ -148,6 +189,28 @@ export function createRiskLookupRoutes(deps: RiskDeps): OpenAPIHono<AppEnv> {
     const { ip } = c.req.valid("json");
     const { organizationId, mode } = c.var.auth;
     return c.json(await checkIp(deps, { organizationId, mode }, ip), 200);
+  });
+
+  router.openapi(checkRiskPhoneRoute, async (c) => {
+    const { phone } = c.req.valid("json");
+    const { organizationId, mode } = c.var.auth;
+    // Every live check is a paid lookup: capped per organization. Sandbox ones are free.
+    if (mode === "live") {
+      const decision = await c.var.rateLimiter.consume({
+        buckets: ["risk.phone", "risk.phone.day"],
+        subject: organizationId,
+        organizationId,
+      });
+      if (!decision.allowed) {
+        setRateLimitHeaders(c, decision);
+        throw rateLimitError(decision, {
+          code: "phone_check_rate_limited",
+          message:
+            "Too many phone checks for this organization. Retry after `Retry-After` seconds.",
+        });
+      }
+    }
+    return c.json(await checkPhone(deps, { organizationId, mode }, phone), 200);
   });
 
   router.openapi(classifyRiskContentRoute, async (c) => {

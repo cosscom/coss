@@ -583,6 +583,67 @@ export interface RiskIpCheck extends RiskIpSignals {
   degraded: ("ip_data" | "ip_privacy")[];
 }
 
+/** Line types `coss.risk.checkPhone()` tells apart. */
+export type RiskPhoneLineType =
+  | "mobile"
+  | "landline"
+  | "fixed_voip"
+  | "non_fixed_voip"
+  | "toll_free"
+  | "premium"
+  | "shared_cost"
+  | "personal"
+  | "uan"
+  | "voicemail"
+  | "pager"
+  | "unknown";
+
+/** The network a number is on now (after any port). */
+export interface RiskPhoneCarrier {
+  name: string | null;
+  mobile_country_code: string | null;
+  /** Only for mobile numbers. */
+  mobile_network_code: string | null;
+}
+
+/** A mobile number's last SIM change. */
+export interface RiskPhoneSimSwap {
+  /** The SIM changed within `period`: someone may have taken the number over. */
+  recent: boolean;
+  /** The last SIM change, where the carrier tells the date. */
+  swapped_at: string | null;
+  /** What `recent` means, as an ISO 8601 duration (`PT48H`). */
+  period: string | null;
+}
+
+/** Result of `coss.risk.checkPhone()`. Nothing is stored. */
+export interface RiskPhoneCheck {
+  object: "risk_phone_check";
+  /** The number in E.164, or as given when it isn't. */
+  phone: string;
+  /**
+   * A possible number in its country's numbering plan. When the lookup failed (`degraded`), only
+   * the E.164 syntax was checked.
+   */
+  valid: boolean;
+  /** ISO 3166-1 alpha-2. */
+  country: string | null;
+  /**
+   * `non_fixed_voip` numbers can be had online in minutes (the kind used for throwaway accounts);
+   * `fixed_voip` ones belong to an address. `null` when it couldn't be looked up.
+   */
+  line_type: RiskPhoneLineType | null;
+  /** `null` when unknown, and for toll-free, premium and personal numbers. */
+  carrier: RiskPhoneCarrier | null;
+  /** `null` where coss.com doesn't have that data (not every country and carrier). */
+  sim_swap: RiskPhoneSimSwap | null;
+  /**
+   * `phone_data` when the lookup failed or timed out; `sim_swap` when the carrier didn't answer
+   * about the SIM.
+   */
+  degraded: ("phone_data" | "sim_swap")[];
+}
+
 /** Result of `coss.risk.classify()`: scores only, neither stored nor logged. */
 export interface RiskContentClassification {
   object: "risk_content_classification";

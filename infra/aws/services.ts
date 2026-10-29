@@ -408,6 +408,33 @@ const twilio: EnvVar[] = [
   },
 ];
 
+/**
+ * Risk's phone checks: Twilio Lookup with the parent account (`twilio` below). Off until Twilio's
+ * purpose in the DPA covers phone lookups; SIM swaps only once Twilio has approved coss.com with
+ * the carriers.
+ */
+const riskPhoneLookup: EnvVar[] = [
+  {
+    name: "RISK_PHONE_LOOKUP",
+    kind: "plain",
+    required: false,
+    value: "off",
+    description:
+      "Risk's phone checks in live environments (off|twilio): `twilio` sends each checked number to Twilio Lookup (Line Type Intelligence, paid per lookup). Update Twilio's purpose in the DPA's subprocessors before turning it on.",
+  },
+  {
+    name: "RISK_PHONE_SIM_SWAP",
+    kind: "plain",
+    required: false,
+    value: "false",
+    description:
+      "`true` also asks Twilio Lookup for the last SIM swap (a private beta: only after Twilio's carrier approval).",
+  },
+  ...twilio.filter(
+    (variable) => variable.name === "TWILIO_ACCOUNT_SID" || variable.name === "TWILIO_AUTH_TOKEN",
+  ),
+];
+
 const webhookKey: EnvVar = {
   name: "WEBHOOK_SECRETS_KEY",
   kind: "secret",
@@ -800,6 +827,7 @@ export const SERVICES: Service[] = [
       riskHashKey,
       ...riskClassifier,
       ...riskIpPrivacy,
+      ...riskPhoneLookup,
       ...sentry("api"),
       sentryRelease,
       { name: "NODE_ENV", kind: "image", required: true, value: "production", description: "" },

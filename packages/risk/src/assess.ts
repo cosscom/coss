@@ -37,6 +37,7 @@ import {
   isDisposable,
 } from "./lookups.ts";
 import { rememberUserNetwork, userNetworks } from "./networks.ts";
+import type { PhoneLookup } from "./phone.ts";
 import type { IpPrivacy, IpPrivacyLookup } from "./privacy.ts";
 import { type RiskAssessmentRow, type StoredSignals, toRiskAssessmentObject } from "./read.ts";
 import { firstMatchingRule, listRiskRuleRows, type RiskRuleRow, type RuleFacts } from "./rules.ts";
@@ -94,6 +95,9 @@ export type RiskDeps = {
   /** VPN, proxy and relay data per address (a paid provider); `null`: none (not degraded). */
   ipPrivacy?: IpPrivacyLookup | null;
   ipPrivacyTimeoutMs?: number;
+  /** Line type, carrier and SIM swaps (a paid provider); `null`: phone checks are unavailable. */
+  phoneLookup?: PhoneLookup | null;
+  phoneLookupTimeoutMs?: number;
 };
 
 /** The authenticated environment (from the API key). */

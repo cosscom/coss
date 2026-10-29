@@ -186,6 +186,8 @@ import type {
   RiskLimitBucketList,
   RiskListEntry,
   RiskListEntryList,
+  RiskPhoneCheck,
+  RiskPhoneCheckRequest,
   RiskRule,
   RiskRuleCondition,
   RiskRuleList,
@@ -367,6 +369,7 @@ import type {
   RiskLimit as SdkRiskLimit,
   RiskLimitBucket as SdkRiskLimitBucket,
   RiskListEntry as SdkRiskListEntry,
+  RiskPhoneCheck as SdkRiskPhoneCheck,
   RiskRule as SdkRiskRule,
   RiskRuleCondition as SdkRiskRuleCondition,
   RiskSettings as SdkRiskSettings,
@@ -818,11 +821,13 @@ export type Contract = [
   Assert<MutuallyAssignable<z.input<typeof CreateRiskRuleRequest>, CreateRiskRuleParams>>,
   Assert<MutuallyAssignable<z.input<typeof UpdateRiskRuleRequest>, UpdateRiskRuleParams>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedRiskRule>, SdkDeletedRiskRule>>,
-  // Risk building blocks (the SDK takes the email/IP/text as arguments) and rate limits.
+  // Risk building blocks (the SDK takes the email/IP/phone/text as arguments) and rate limits.
   Assert<MutuallyAssignable<z.input<typeof RiskEmailCheckRequest>, { email: string }>>,
   Assert<MutuallyAssignable<z.output<typeof RiskEmailCheck>, SdkRiskEmailCheck>>,
   Assert<MutuallyAssignable<z.input<typeof RiskIpCheckRequest>, { ip: string }>>,
   Assert<MutuallyAssignable<z.output<typeof RiskIpCheck>, SdkRiskIpCheck>>,
+  Assert<MutuallyAssignable<z.input<typeof RiskPhoneCheckRequest>, { phone: string }>>,
+  Assert<MutuallyAssignable<z.output<typeof RiskPhoneCheck>, SdkRiskPhoneCheck>>,
   Assert<MutuallyAssignable<z.input<typeof RiskContentClassifyRequest>, { text: string }>>,
   Assert<
     MutuallyAssignable<z.output<typeof RiskContentClassification>, SdkRiskContentClassification>

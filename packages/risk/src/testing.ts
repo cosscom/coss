@@ -18,6 +18,7 @@ import type { IpIntelligenceSource } from "./datasets.ts";
 import { DEVICE_TOKEN_PREFIX } from "./device.ts";
 import type { DomainAgeLookup } from "./domain-age.ts";
 import { riskHasher } from "./hash.ts";
+import type { PhoneData, PhoneLookup } from "./phone.ts";
 import type { IpPrivacy, IpPrivacyLookup } from "./privacy.ts";
 import { MemoryVelocityStore } from "./velocity.ts";
 
@@ -141,13 +142,39 @@ export function fakeIpPrivacy(
   return Object.assign(lookup, { calls });
 }
 
+/**
+ * Fake phone data provider: listed numbers get their answer over an ordinary US mobile, `"fail"`
+ * throws, others are ordinary US mobiles.
+ */
+export function fakePhoneLookup(
+  answers: Record<string, Partial<PhoneData> | "fail"> = {},
+): PhoneLookup & { calls: string[] } {
+  const calls: string[] = [];
+  const lookup = async (phone: string): Promise<PhoneData> => {
+    calls.push(phone);
+    const answer = answers[phone];
+    if (answer === "fail") throw new Error("provider unreachable");
+    return {
+      valid: true,
+      country: "US",
+      lineType: "mobile",
+      carrier: { name: "Test Wireless", mobileCountryCode: "001", mobileNetworkCode: "01" },
+      simSwap: null,
+      missing: [],
+      ...answer,
+    };
+  };
+  return Object.assign(lookup, { calls });
+}
+
 export const TEST_HASH_KEY: Uint8Array = new TextEncoder().encode(
   "coss-risk-test-hash-key-0123456789abcdef",
 );
 
 /**
  * Dependencies for tests: a fresh in-memory velocity store and rate limit store, its own key
- * prefix, and the fake classifier (`[coss-test:<category>]` markers, also in live environments).
+ * prefix, the fake classifier (`[coss-test:<category>]` markers, also in live environments) and
+ * the fake phone data provider.
  */
 export function testRiskDeps(
   overrides: Partial<RiskDeps> = {},
@@ -163,6 +190,7 @@ export function testRiskDeps(
     verifyCaptcha: fakeCaptcha(),
     classifier: fakeClassifier(),
     limits: new MemoryStore(),
+    phoneLookup: fakePhoneLookup(),
     ...overrides,
   } as RiskDeps & { velocity: MemoryVelocityStore | RiskDeps["velocity"] };
 }

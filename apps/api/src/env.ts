@@ -2,7 +2,7 @@ import { emailEnvShape, emailLinkEnvShape } from "@coss/email/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
-import { riskEnvShape } from "@coss/risk/env";
+import { riskEnvShape, riskPhoneEnvShape } from "@coss/risk/env";
 import { screeningEnvShape } from "@coss/screening/env";
 import { signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
@@ -44,7 +44,7 @@ export const env = createEnv({
     ...webhookEnvShape,
     ...emailEnvShape,
     // The live SMS provider's name (sends only enqueue here; Twilio's callbacks are verified with
-    // each subaccount's own token, so the API needs no Twilio credentials).
+    // each subaccount's own token, so SMS needs no Twilio credentials here: risk's phone checks do).
     SMS_PROVIDER: smsEnvShape.SMS_PROVIDER,
     // Marketing email's links (the preference center is served here). Required in production.
     EMAIL_LINK_KEYS:
@@ -72,6 +72,10 @@ export const env = createEnv({
     // VPN, proxy and relay data per address (`ipinfo`: IPinfo's privacy detection, a paid plan).
     RISK_IP_PRIVACY: riskEnvShape.RISK_IP_PRIVACY,
     IPINFO_PRIVACY_TOKEN: riskEnvShape.IPINFO_PRIVACY_TOKEN,
+    // Line type, carrier and SIM swaps per number (`twilio`: Twilio Lookup with the parent account).
+    ...riskPhoneEnvShape,
+    TWILIO_ACCOUNT_SID: smsEnvShape.TWILIO_ACCOUNT_SID,
+    TWILIO_AUTH_TOKEN: smsEnvShape.TWILIO_AUTH_TOKEN,
     SCREENING_MODEL: screeningEnvShape.SCREENING_MODEL,
     AI_GATEWAY_API_KEY: screeningEnvShape.AI_GATEWAY_API_KEY,
     // Error and performance monitoring; read by src/instrument.ts before this schema runs.

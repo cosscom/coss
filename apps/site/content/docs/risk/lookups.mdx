@@ -1,12 +1,13 @@
 ---
-title: Email and IP checks
-description: Look up an email or IP address on its own, without an assessment.
+title: Email, IP and phone checks
+description: Look up an email address, IP address or phone number on its own, without an assessment.
 ---
 
 The signals behind assessments are also available alone, for when you want a fact rather than a
-decision: checking an address as someone types it, or enriching your own records. Checks are
-stateless: coss.com stores and counts nothing about the address, so they never say an address was seen
-before (assessments do, through velocity and duplicates).
+decision: checking an address or a number as someone types it, or enriching your own records. Checks are
+stateless: coss.com stores and counts nothing about the address or number, so they never say one was
+seen before (assessments do, through velocity and duplicates). Request logs keep neither the input
+nor the answer.
 
 ## Email
 
@@ -58,5 +59,40 @@ const { data } = await coss.risk.checkIp("185.220.101.1");
 - `degraded: ["ip_data"]` means some IP data is unavailable at the moment; `ip_privacy`, that the
   privacy data provider failed or took longer than 500 ms.
 
-Both checks count against the same per-key limit as assessments (100 per second, bursts of 200), and
+## Phone
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.risk.checkPhone("+1 415 555 0123");
+// {
+//   phone: "+14155550123", valid: true, country: "US",
+//   line_type: "non_fixed_voip",
+//   carrier: { name: "…", mobile_country_code: "…", mobile_network_code: "…" },
+//   sim_swap: null, degraded: []
+// }
+```
+
+- Numbers are E.164 (`+` and the country code); spaces, dashes, dots and brackets are ignored.
+  Anything else is `valid: false` and isn't looked up. `valid` says whether the number exists in its
+  country's numbering plan.
+- `line_type` is `mobile`, `landline`, `fixed_voip` (VoIP tied to an address: cable and business
+  lines), `non_fixed_voip` (numbers anyone can get online in minutes, such as Google Voice and app
+  numbers: the usual kind for throwaway accounts), `toll_free`, `premium`, `shared_cost`, `personal`,
+  `uan`, `voicemail`, `pager` or `unknown`.
+- `carrier` is the network the number is on now, so a number ported to another carrier shows its new
+  one. It is `null` for toll-free, premium and personal numbers.
+- `sim_swap` says when a mobile number's SIM last changed, and whether that was `recent` (within
+  `period`, an ISO 8601 duration such as `PT48H`). A SIM changed just before a login or a password
+  reset is how phone numbers get taken over. Carriers share this only in some countries, so it is
+  `null` where coss.com doesn't have it.
+- Phone data comes from Twilio, which coss.com sends only the number. `degraded: ["phone_data"]`
+  means the lookup failed or took longer than 2 seconds (`valid` then only checks the syntax);
+  `sim_swap`, that the carrier didn't answer about the SIM.
+- Every live phone check is a paid lookup, so they are also limited per organization: 5 per second
+  (bursts of 10) and 1,000 per day. Over that, `checkPhone` returns a `429`
+  (`phone_check_rate_limited`). Sandbox checks don't count.
+
+All checks count against the same per-key limit as assessments (100 per second, bursts of 200), and
 sandbox keys see the [test inputs](/docs/risk/testing).

@@ -35,6 +35,23 @@ export const riskEnvShape = {
   IPINFO_PRIVACY_TOKEN: z.string().min(1).optional(),
 };
 
+/** Values of `RISK_PHONE_LOOKUP`: `twilio` asks Twilio Lookup about each checked number. */
+export const RISK_PHONE_LOOKUP_PROVIDERS = ["off", "twilio"] as const;
+
+/**
+ * Phone checks (the API only). Twilio uses the parent account's `TWILIO_ACCOUNT_SID` and
+ * `TWILIO_AUTH_TOKEN` (SMS's, from `@coss/sms/env`).
+ */
+export const riskPhoneEnvShape = {
+  // Line type and carrier per number (Twilio Lookup's Line Type Intelligence, paid per lookup).
+  RISK_PHONE_LOOKUP: z.enum(RISK_PHONE_LOOKUP_PROVIDERS).default("off"),
+  // Also asks for the last SIM swap: only once Twilio has approved coss.com with the carriers.
+  RISK_PHONE_SIM_SWAP: z
+    .enum(["true", "false", "1", "0"])
+    .transform((value) => value === "true" || value === "1")
+    .default(false),
+};
+
 /** The worker downloads IP datasets; without a token there is no ASN or country data. */
 export const riskDatasetEnvShape = {
   IPINFO_TOKEN: z.string().min(1).optional(),
@@ -45,5 +62,9 @@ export type RiskEnv = {
   RISK_CLASSIFIER?: RiskClassifierName | undefined;
   RISK_IP_PRIVACY?: (typeof RISK_IP_PRIVACY_PROVIDERS)[number] | undefined;
   IPINFO_PRIVACY_TOKEN?: string | undefined;
+  RISK_PHONE_LOOKUP?: (typeof RISK_PHONE_LOOKUP_PROVIDERS)[number] | undefined;
+  RISK_PHONE_SIM_SWAP?: boolean | undefined;
+  TWILIO_ACCOUNT_SID?: string | undefined;
+  TWILIO_AUTH_TOKEN?: string | undefined;
 };
 export type RiskDatasetEnv = { IPINFO_TOKEN?: string | undefined };

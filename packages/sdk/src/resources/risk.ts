@@ -25,6 +25,7 @@ import type {
   RiskListEntry,
   RiskListEntryType,
   RiskListEntryValue,
+  RiskPhoneCheck,
   RiskRule,
   RiskSettings,
   UpdateRiskLimitBucketParams,
@@ -433,6 +434,19 @@ export class RiskResource {
       method: "POST",
       path: "/v1/risk/ip/check",
       body: { ip },
+      signal: options?.signal,
+    });
+  }
+
+  /**
+   * Checks a phone number (E.164) on its own: whether it exists, its line type (mobile, landline,
+   * VoIP…) and carrier, and a recent SIM swap where carriers share it. Nothing is stored.
+   */
+  checkPhone(phone: string, options?: ReadOptions): Promise<CossResult<RiskPhoneCheck>> {
+    return this.#http.request<RiskPhoneCheck>({
+      method: "POST",
+      path: "/v1/risk/phone/check",
+      body: { phone },
       signal: options?.signal,
     });
   }

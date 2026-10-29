@@ -25,12 +25,19 @@ these test inputs (documentation addresses and `.test` domains, which never belo
 | Any other content           | Scores 0.01 in every category (no model call)        |
 | Device token `test-device:<name>` | An ordinary browser whose id is `<name>` (the same name again: `duplicate.device`) |
 | Device token `test-device-automated` | An automated browser (`device.automation`) |
+| Phone `+12025550101`        | A landline                                           |
+| Phone `+12025550102`        | A non-fixed VoIP number (`line_type: "non_fixed_voip"`) |
+| Phone `+12025550103`        | A fixed VoIP number                                  |
+| Phone `+12025550104`        | A mobile whose SIM changed 6 hours ago (`sim_swap.recent`) |
+| Phone `+12025550199`        | A number that doesn't exist (`valid: false`)         |
+| Any other `+120255501xx`    | An ordinary US mobile                                |
 
 The captcha test tokens work without a captcha provider in the settings, content markers
 without any model, and the `192.0.2.x` addresses always have VPN, proxy and relay data (`privacy`; other addresses
 have none in sandboxes);
 real tokens from [`coss/device`](/docs/risk/devices) work too; sandbox classifications don't count against the organization's limit.
-[Email and IP checks](/docs/risk/lookups) see the same test addresses. Typos (`@gmail.con`), role
+[Email, IP and phone checks](/docs/risk/lookups) see the same test addresses; phone checks in sandboxes
+know only the numbers above (others are just checked for syntax) and never count against the organization's limit. Typos (`@gmail.con`), role
 accounts (`info@`), velocity, duplicates, login history, feedback, lists, rules and settings work as
 in live environments.
 

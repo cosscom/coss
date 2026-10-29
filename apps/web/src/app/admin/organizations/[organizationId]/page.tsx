@@ -87,6 +87,8 @@ const BUCKET_LABELS: Partial<Record<BucketName, string>> = {
   "risk.assess": "Risk assessments and lookups, per key",
   "risk.classify": "Risk content classifications per second, per organization",
   "risk.classify.day": "Risk content classifications per day, per organization",
+  "risk.phone": "Risk phone checks per second, per organization",
+  "risk.phone.day": "Risk phone checks per day, per organization",
   "risk.limit": "Risk rate limit checks, per key",
   "email.recipients.second": "Live recipients per second, per organization",
   "email.recipients.day": "Live recipients per day, per organization",

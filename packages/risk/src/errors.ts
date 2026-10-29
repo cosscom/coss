@@ -6,6 +6,7 @@ export type RiskErrorCode =
   | "too_many_limit_buckets"
   | "limit_bucket_name_taken"
   | "classification_unavailable"
+  | "phone_lookup_unavailable"
   | "idempotency_key_reused"
   | "request_in_progress";
 

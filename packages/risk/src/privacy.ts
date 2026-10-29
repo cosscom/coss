@@ -7,6 +7,7 @@
  */
 import { isBlockedAddress } from "@coss/signals/ip";
 import { z } from "zod";
+import { AnswerCache } from "./answer-cache.ts";
 
 export type IpPrivacy = { vpn: boolean; proxy: boolean; relay: boolean; service: string | null };
 
@@ -19,34 +20,6 @@ const IpinfoPrivacyResponse = z.object({
   relay: z.boolean().optional(),
   service: z.string().optional(),
 });
-
-/** A small LRU of answers (failures are never cached). */
-class AnswerCache {
-  readonly #entries = new Map<string, { value: IpPrivacy | null; expiresAt: number }>();
-  constructor(
-    private readonly maxEntries: number,
-    private readonly ttlMs: number,
-  ) {}
-
-  get(key: string, now: number): { value: IpPrivacy | null } | undefined {
-    const entry = this.#entries.get(key);
-    if (!entry) return undefined;
-    this.#entries.delete(key);
-    if (entry.expiresAt <= now) return undefined;
-    this.#entries.set(key, entry);
-    return { value: entry.value };
-  }
-
-  set(key: string, value: IpPrivacy | null, now: number): void {
-    this.#entries.delete(key);
-    this.#entries.set(key, { value, expiresAt: now + this.ttlMs });
-    while (this.#entries.size > this.maxEntries) {
-      const oldest = this.#entries.keys().next().value;
-      if (oldest === undefined) break;
-      this.#entries.delete(oldest);
-    }
-  }
-}
 
 /**
  * IPinfo's privacy detection (`https://ipinfo.io/<ip>/privacy`, a paid plan's token). Private and
@@ -62,7 +35,10 @@ export function ipinfoPrivacyLookup(opts: {
 }): IpPrivacyLookup {
   const fetcher = opts.fetch ?? fetch;
   const now = opts.now ?? Date.now;
-  const cache = new AnswerCache(opts.maxEntries ?? 50_000, opts.ttlMs ?? 6 * 60 * 60_000);
+  const cache = new AnswerCache<IpPrivacy | null>(
+    opts.maxEntries ?? 50_000,
+    opts.ttlMs ?? 6 * 60 * 60_000,
+  );
   return async (ip, signal) => {
     if (isBlockedAddress(ip)) return null;
     const cached = cache.get(ip, now());
