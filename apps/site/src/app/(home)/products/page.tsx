@@ -12,6 +12,7 @@ export const metadata = pageMetadata({
   title: "Products: one API for email, SMS, inboxes, signatures and more · coss.com",
   description: DESCRIPTION,
   path: PRODUCTS_ROUTE,
+  ownImage: true,
 });
 
 export default function ProductsPage() {

@@ -6,7 +6,7 @@ import { DocsSections } from "@/components/docs-sections";
 import { JsonLd } from "@/components/json-ld";
 import { getMDXComponents } from "@/components/mdx";
 import { neighbours, sectionsOf } from "@/lib/docs-tree";
-import { articleSchema, breadcrumbSchema } from "@/lib/seo";
+import { articleSchema, breadcrumbSchema, DEFAULT_IMAGE } from "@/lib/seo";
 import { SITE_NAME } from "@/lib/site";
 import { type DocsPage, markdownUrl, pageMarkdown, source } from "@/lib/source";
 
@@ -110,6 +110,7 @@ export async function generateMetadata({
       siteName: SITE_NAME,
       title: page.data.title,
       description: page.data.description,
+      images: [DEFAULT_IMAGE],
     },
   };
 }
