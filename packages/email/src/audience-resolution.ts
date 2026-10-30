@@ -62,11 +62,13 @@ async function eligibleSql(
   topic: string | null | undefined,
 ): Promise<SQL> {
   const scopes = [ALL_CATEGORIES, MARKETING_STREAM_SCOPE, ...(topic ? [topic] : [])];
+  // The environment's own list: a sub-account's suppressions are about its mail only.
   const unsuppressed = sql`not exists (
     select 1 from ${emailSuppression}
     where ${emailSuppression.environmentId} = ${contact.environmentId}
       and ${emailSuppression.organizationId} = ${contact.organizationId}
       and ${emailSuppression.address} = ${contact.address}
+      and ${emailSuppression.subaccountId} is null
       and ${emailSuppression.scope} in (${sql.join(
         scopes.map((scope) => sql`${scope}`),
         sql`, `,

@@ -63,8 +63,10 @@ export async function migrateSesSuppressions(
             emailId,
           })
           .onConflictDoNothing({
+            // The environment's own list (`subaccount_id` null: unique, nulls not distinct).
             target: [
               emailSuppression.environmentId,
+              emailSuppression.subaccountId,
               emailSuppression.address,
               emailSuppression.scope,
             ],
