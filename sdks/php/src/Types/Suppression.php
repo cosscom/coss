@@ -46,6 +46,12 @@ class Suppression extends JsonSerializableType
     public ?string $emailId;
 
     /**
+     * @var ?string $subaccountId The sub-account whose list it is on; `null` for the environment's own list.
+     */
+    #[JsonProperty('subaccount_id')]
+    public ?string $subaccountId;
+
+    /**
      * @var DateTime $createdAt
      */
     #[JsonProperty('created_at'), Date(Date::TYPE_DATETIME)]
@@ -60,6 +66,7 @@ class Suppression extends JsonSerializableType
      *   reason: value-of<SuppressionReason>,
      *   createdAt: DateTime,
      *   emailId?: ?string,
+     *   subaccountId?: ?string,
      * } $values
      */
     public function __construct(
@@ -73,6 +80,10 @@ class Suppression extends JsonSerializableType
         $this->emailId = $values['emailId'] ?? null;
         if (array_key_exists('emailId', $values)) {
             $this->_setField('emailId');
+        }
+        $this->subaccountId = $values['subaccountId'] ?? null;
+        if (array_key_exists('subaccountId', $values)) {
+            $this->_setField('subaccountId');
         }
         $this->createdAt = $values['createdAt'];
     }

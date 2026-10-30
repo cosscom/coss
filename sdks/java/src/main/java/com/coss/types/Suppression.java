@@ -37,6 +37,8 @@ public final class Suppression {
 
     private final OptionalNullable<String> emailId;
 
+    private final OptionalNullable<String> subaccountId;
+
     private final OffsetDateTime createdAt;
 
     private final Map<String, Object> additionalProperties;
@@ -48,6 +50,7 @@ public final class Suppression {
             String scope,
             SuppressionReason reason,
             OptionalNullable<String> emailId,
+            OptionalNullable<String> subaccountId,
             OffsetDateTime createdAt,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -56,6 +59,7 @@ public final class Suppression {
         this.scope = scope;
         this.reason = reason;
         this.emailId = emailId;
+        this.subaccountId = subaccountId;
         this.createdAt = createdAt;
         this.additionalProperties = additionalProperties;
     }
@@ -106,6 +110,18 @@ public final class Suppression {
         return emailId;
     }
 
+    /**
+     * @return The sub-account whose list it is on; <code>null</code> for the environment's own list.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    public OptionalNullable<String> getSubaccountId() {
+        if (subaccountId == null) {
+            return OptionalNullable.absent();
+        }
+        return subaccountId;
+    }
+
     @JsonProperty("created_at")
     public OffsetDateTime getCreatedAt() {
         return createdAt;
@@ -115,6 +131,12 @@ public final class Suppression {
     @JsonProperty("email_id")
     private OptionalNullable<String> _getEmailId() {
         return emailId;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    private OptionalNullable<String> _getSubaccountId() {
+        return subaccountId;
     }
 
     @java.lang.Override
@@ -135,12 +157,21 @@ public final class Suppression {
                 && scope.equals(other.scope)
                 && reason.equals(other.reason)
                 && emailId.equals(other.emailId)
+                && subaccountId.equals(other.subaccountId)
                 && createdAt.equals(other.createdAt);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.object, this.id, this.address, this.scope, this.reason, this.emailId, this.createdAt);
+        return Objects.hash(
+                this.object,
+                this.id,
+                this.address,
+                this.scope,
+                this.reason,
+                this.emailId,
+                this.subaccountId,
+                this.createdAt);
     }
 
     @java.lang.Override
@@ -204,6 +235,17 @@ public final class Suppression {
         _FinalStage emailId(Optional<String> emailId);
 
         _FinalStage emailId(Nullable<String> emailId);
+
+        /**
+         * <p>The sub-account whose list it is on; <code>null</code> for the environment's own list.</p>
+         */
+        _FinalStage subaccountId(OptionalNullable<String> subaccountId);
+
+        _FinalStage subaccountId(String subaccountId);
+
+        _FinalStage subaccountId(Optional<String> subaccountId);
+
+        _FinalStage subaccountId(Nullable<String> subaccountId);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -221,6 +263,8 @@ public final class Suppression {
 
         private OffsetDateTime createdAt;
 
+        private OptionalNullable<String> subaccountId = OptionalNullable.absent();
+
         private OptionalNullable<String> emailId = OptionalNullable.absent();
 
         @JsonAnySetter
@@ -236,6 +280,7 @@ public final class Suppression {
             scope(other.getScope());
             reason(other.getReason());
             emailId(other.getEmailId());
+            subaccountId(other.getSubaccountId());
             createdAt(other.getCreatedAt());
             return this;
         }
@@ -295,6 +340,56 @@ public final class Suppression {
         }
 
         /**
+         * <p>The sub-account whose list it is on; <code>null</code> for the environment's own list.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Nullable<String> subaccountId) {
+            if (subaccountId.isNull()) {
+                this.subaccountId = OptionalNullable.ofNull();
+            } else if (subaccountId.isEmpty()) {
+                this.subaccountId = OptionalNullable.absent();
+            } else {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account whose list it is on; <code>null</code> for the environment's own list.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Optional<String> subaccountId) {
+            if (subaccountId.isPresent()) {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            } else {
+                this.subaccountId = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account whose list it is on; <code>null</code> for the environment's own list.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(String subaccountId) {
+            this.subaccountId = OptionalNullable.of(subaccountId);
+            return this;
+        }
+
+        /**
+         * <p>The sub-account whose list it is on; <code>null</code> for the environment's own list.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount_id", nulls = Nulls.SKIP)
+        public _FinalStage subaccountId(OptionalNullable<String> subaccountId) {
+            this.subaccountId = subaccountId;
+            return this;
+        }
+
+        /**
          * <p>The email whose bounce or complaint added this entry.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
@@ -346,7 +441,8 @@ public final class Suppression {
 
         @java.lang.Override
         public Suppression build() {
-            return new Suppression(object, id, address, scope, reason, emailId, createdAt, additionalProperties);
+            return new Suppression(
+                    object, id, address, scope, reason, emailId, subaccountId, createdAt, additionalProperties);
         }
 
         @java.lang.Override

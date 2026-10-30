@@ -10,6 +10,11 @@ use Coss\Email\Suppressions\Types\ExportSuppressionsRequestReason;
 class ExportSuppressionsRequest extends JsonSerializableType
 {
     /**
+     * @var ?string $subaccount Export a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    public ?string $subaccount;
+
+    /**
      * @var (
      *    value-of<ExportSuppressionsRequestScopeZero>
      *   |value-of<ExportSuppressionsRequestScopeOne>
@@ -25,6 +30,7 @@ class ExportSuppressionsRequest extends JsonSerializableType
 
     /**
      * @param array{
+     *   subaccount?: ?string,
      *   scope?: (
      *    value-of<ExportSuppressionsRequestScopeZero>
      *   |value-of<ExportSuppressionsRequestScopeOne>
@@ -36,6 +42,10 @@ class ExportSuppressionsRequest extends JsonSerializableType
     public function __construct(
         array $values = [],
     ) {
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
+        }
         $this->scope = $values['scope'] ?? null;
         if (array_key_exists('scope', $values)) {
             $this->_setField('scope');

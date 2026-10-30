@@ -7,7 +7,7 @@ public partial interface IRiskClient
     public IAssessmentsClient Assessments { get; }
     public IListsClient Lists { get; }
     public IUsersClient Users { get; }
-    public ISettingsClient Settings { get; }
+    public Coss.Risk.ISettingsClient Settings { get; }
     public IRulesClient Rules { get; }
     public ILimitBucketsClient LimitBuckets { get; }
 
@@ -51,6 +51,15 @@ public partial interface IRiskClient
     /// </summary>
     WithRawResponseTask<RiskIpCheck> CheckIpAsync(
         RiskIpCheckRequest request,
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+    /// </summary>
+    WithRawResponseTask<RiskPhoneCheck> CheckPhoneAsync(
+        RiskPhoneCheckRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

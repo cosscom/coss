@@ -32,6 +32,7 @@ if typing.TYPE_CHECKING:
     from .resources.received.client import AsyncReceivedClient, ReceivedClient
     from .resources.segments.client import AsyncSegmentsClient, SegmentsClient
     from .resources.storage.client import AsyncStorageClient, StorageClient
+    from .resources.subaccounts.client import AsyncSubaccountsClient, SubaccountsClient
     from .resources.suppressions.client import AsyncSuppressionsClient, SuppressionsClient
     from .resources.templates.client import AsyncTemplatesClient, TemplatesClient
     from .resources.topics.client import AsyncTopicsClient, TopicsClient
@@ -47,6 +48,7 @@ class EmailClient:
         self._templates: typing.Optional[TemplatesClient] = None
         self._dedicated_ips: typing.Optional[DedicatedIpsClient] = None
         self._suppressions: typing.Optional[SuppressionsClient] = None
+        self._subaccounts: typing.Optional[SubaccountsClient] = None
         self._tracking: typing.Optional[TrackingClient] = None
         self._storage: typing.Optional[StorageClient] = None
         self._contacts: typing.Optional[ContactsClient] = None
@@ -77,6 +79,7 @@ class EmailClient:
         q: typing.Optional[str] = None,
         category: typing.Optional[str] = None,
         batch_id: typing.Optional[str] = None,
+        subaccount: typing.Optional[str] = None,
         created_after: typing.Optional[dt.datetime] = None,
         created_before: typing.Optional[dt.datetime] = None,
         limit: typing.Optional[int] = None,
@@ -105,6 +108,9 @@ class EmailClient:
 
         batch_id : typing.Optional[str]
             Only the emails of this batch.
+
+        subaccount : typing.Optional[str]
+            Only the emails sent for this sub-account (its id or your uid).
 
         created_after : typing.Optional[dt.datetime]
             Only emails created at or after this time.
@@ -145,6 +151,7 @@ class EmailClient:
             q=q,
             category=category,
             batch_id=batch_id,
+            subaccount=subaccount,
             created_after=created_after,
             created_before=created_before,
             limit=limit,
@@ -176,6 +183,7 @@ class EmailClient:
         attachments: typing.Optional[typing.Sequence[SendEmailAttachment]] = OMIT,
         tracking: typing.Optional[TrackingOptions] = OMIT,
         stream: typing.Optional[SendEmailRequestStream] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Email:
         """
@@ -237,6 +245,9 @@ class EmailClient:
         stream : typing.Optional[SendEmailRequestStream]
             `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
 
+        subaccount : typing.Optional[str]
+            Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -289,6 +300,7 @@ class EmailClient:
             attachments=attachments,
             tracking=tracking,
             stream=stream,
+            subaccount=subaccount,
             request_options=request_options,
         )
         return _response.data
@@ -579,6 +591,14 @@ class EmailClient:
         return self._suppressions
 
     @property
+    def subaccounts(self):
+        if self._subaccounts is None:
+            from .resources.subaccounts.client import SubaccountsClient  # noqa: E402
+
+            self._subaccounts = SubaccountsClient(client_wrapper=self._client_wrapper)
+        return self._subaccounts
+
+    @property
     def tracking(self):
         if self._tracking is None:
             from .resources.tracking.client import TrackingClient  # noqa: E402
@@ -658,6 +678,7 @@ class AsyncEmailClient:
         self._templates: typing.Optional[AsyncTemplatesClient] = None
         self._dedicated_ips: typing.Optional[AsyncDedicatedIpsClient] = None
         self._suppressions: typing.Optional[AsyncSuppressionsClient] = None
+        self._subaccounts: typing.Optional[AsyncSubaccountsClient] = None
         self._tracking: typing.Optional[AsyncTrackingClient] = None
         self._storage: typing.Optional[AsyncStorageClient] = None
         self._contacts: typing.Optional[AsyncContactsClient] = None
@@ -688,6 +709,7 @@ class AsyncEmailClient:
         q: typing.Optional[str] = None,
         category: typing.Optional[str] = None,
         batch_id: typing.Optional[str] = None,
+        subaccount: typing.Optional[str] = None,
         created_after: typing.Optional[dt.datetime] = None,
         created_before: typing.Optional[dt.datetime] = None,
         limit: typing.Optional[int] = None,
@@ -716,6 +738,9 @@ class AsyncEmailClient:
 
         batch_id : typing.Optional[str]
             Only the emails of this batch.
+
+        subaccount : typing.Optional[str]
+            Only the emails sent for this sub-account (its id or your uid).
 
         created_after : typing.Optional[dt.datetime]
             Only emails created at or after this time.
@@ -764,6 +789,7 @@ class AsyncEmailClient:
             q=q,
             category=category,
             batch_id=batch_id,
+            subaccount=subaccount,
             created_after=created_after,
             created_before=created_before,
             limit=limit,
@@ -795,6 +821,7 @@ class AsyncEmailClient:
         attachments: typing.Optional[typing.Sequence[SendEmailAttachment]] = OMIT,
         tracking: typing.Optional[TrackingOptions] = OMIT,
         stream: typing.Optional[SendEmailRequestStream] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Email:
         """
@@ -856,6 +883,9 @@ class AsyncEmailClient:
         stream : typing.Optional[SendEmailRequestStream]
             `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
 
+        subaccount : typing.Optional[str]
+            Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -916,6 +946,7 @@ class AsyncEmailClient:
             attachments=attachments,
             tracking=tracking,
             stream=stream,
+            subaccount=subaccount,
             request_options=request_options,
         )
         return _response.data
@@ -1259,6 +1290,14 @@ class AsyncEmailClient:
 
             self._suppressions = AsyncSuppressionsClient(client_wrapper=self._client_wrapper)
         return self._suppressions
+
+    @property
+    def subaccounts(self):
+        if self._subaccounts is None:
+            from .resources.subaccounts.client import AsyncSubaccountsClient  # noqa: E402
+
+            self._subaccounts = AsyncSubaccountsClient(client_wrapper=self._client_wrapper)
+        return self._subaccounts
 
     @property
     def tracking(self):

@@ -833,6 +833,9 @@ const (
 	LogSourceRisk    LogSource = "risk"
 	LogSourceSMTP    LogSource = "smtp"
 	LogSourceSms     LogSource = "sms"
+	LogSourceSign    LogSource = "sign"
+	LogSourceVerify  LogSource = "verify"
+	LogSourceForms   LogSource = "forms"
 )
 
 func NewLogSourceFromString(s string) (LogSource, error) {
@@ -849,6 +852,12 @@ func NewLogSourceFromString(s string) (LogSource, error) {
 		return LogSourceSMTP, nil
 	case "sms":
 		return LogSourceSms, nil
+	case "sign":
+		return LogSourceSign, nil
+	case "verify":
+		return LogSourceVerify, nil
+	case "forms":
+		return LogSourceForms, nil
 	}
 	var t LogSource
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

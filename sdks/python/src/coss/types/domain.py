@@ -51,6 +51,15 @@ class Domain(UniversalBaseModel):
     tracking: typing.Optional[TrackingDomain] = None
     receiving: typing.Optional[ReceivingDomain] = None
     bimi: DomainBimi
+    subaccount_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own.
+    """
+
+    shared_with_subaccounts: bool = pydantic.Field()
+    """
+    An organization's domain its sub-accounts may send from too.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

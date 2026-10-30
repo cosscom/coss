@@ -40,6 +40,8 @@ module Coss
       field :recipient, -> { String }, optional: false, nullable: true
 
       field :occurred_at, -> { String }, optional: false, nullable: false
+
+      field :subaccount_id, -> { String }, optional: true, nullable: false
     end
   end
 end

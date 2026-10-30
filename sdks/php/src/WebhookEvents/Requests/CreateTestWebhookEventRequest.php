@@ -10,7 +10,7 @@ use Coss\Core\Types\ArrayType;
 class CreateTestWebhookEventRequest extends JsonSerializableType
 {
     /**
-     * @var value-of<CreateTestWebhookEventRequestType> $type The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+     * @var value-of<CreateTestWebhookEventRequestType> $type The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
      */
     #[JsonProperty('type')]
     public string $type;

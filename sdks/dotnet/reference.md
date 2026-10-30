@@ -620,7 +620,7 @@ await client.Email.ListLinksAsync(
 </details>
 
 ## Domains
-<details><summary><code>client.Domains.<a href="/src/Coss/Domains/DomainsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;DomainList&gt;</code></summary>
+<details><summary><code>client.Domains.<a href="/src/Coss/Domains/DomainsClient.cs">ListAsync</a>(ListDomainsRequest { ... }) -> WithRawResponseTask&lt;DomainList&gt;</code></summary>
 <dl>
 <dd>
 
@@ -647,8 +647,23 @@ Every domain of the organization, ordered by name. Domains belong to the organiz
 <dd>
 
 ```csharp
-await client.Domains.ListAsync();
+await client.Domains.ListAsync(new ListDomainsRequest());
 ```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListDomainsRequest` 
+    
 </dd>
 </dl>
 </dd>
@@ -812,6 +827,62 @@ await client.Domains.DeleteAsync(
 <dd>
 
 **request:** `DeleteDomainsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Domains.<a href="/src/Coss/Domains/DomainsClient.cs">UpdateAsync</a>(UpdateDomainRequest { ... }) -> WithRawResponseTask&lt;Domain&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Domains.UpdateAsync(
+    new UpdateDomainRequest { Id = "dom_01k7c8m4q2f3e9v6t5r1n0p8yz", SharedWithSubaccounts = true }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateDomainRequest` 
     
 </dd>
 </dl>
@@ -1796,6 +1867,552 @@ await client.Sms.CancelAsync(new CancelSmsRequest { Id = "sms_01k7c8m4q2f3e9v6t5
 </dl>
 </details>
 
+## Verify
+<details><summary><code>client.Verify.<a href="/src/Coss/Verify/VerifyClient.cs">ListAsync</a>(ListVerifyRequest { ... }) -> WithRawResponseTask&lt;VerificationList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Verifications of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Verify.ListAsync(new ListVerifyRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListVerifyRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.<a href="/src/Coss/Verify/VerifyClient.cs">StartAsync</a>(StartVerificationRequest { ... }) -> WithRawResponseTask&lt;Verification&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a one-time code to a phone number (SMS) or an email address and returns the verification, `pending` until you check the code the end user typed (`POST /v1/verifications/check`). Starting again for the same destination while it is pending sends a new code (the earlier one stops working), up to 5 times. Before a new verification costs anything, the fraud guard checks it (your Risk lists, premium-rate numbers, Tor, and velocity per IP, user, number range and country, with how often their codes are entered): a blocked one is stored with its `reasons` and nothing is sent. Pass the end user's `ip` (and your `user_id`) so it can tell them apart. SMS codes come from coss.com's shared numbers unless the environment's Verify settings name one of your own; email codes from your sender, else coss.com's. Sandbox (`coss_test_…`) keys deliver nothing and the code is always zeros.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Verify.StartAsync(
+    new StartVerificationRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        To = "+14155550199",
+        Ip = "203.0.113.7",
+        UserId = "user_42",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `StartVerificationRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.<a href="/src/Coss/Verify/VerifyClient.cs">CheckAsync</a>(CheckVerificationRequest { ... }) -> WithRawResponseTask&lt;VerificationCheck&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Checks the code the end user typed, by the verification's id or by the destination (its latest verification). `valid: true` approves it (`verification.approved`, billed once); a wrong code spends an attempt, and the last one fails it. Checking an approved verification again with its code stays valid until it expires, without being billed again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Verify.CheckAsync(
+    new CheckVerificationRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        To = "+14155550199",
+        Code = "482913",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CheckVerificationRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.<a href="/src/Coss/Verify/VerifyClient.cs">GetAsync</a>(GetVerifyRequest { ... }) -> WithRawResponseTask&lt;Verification&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Verify.GetAsync(new GetVerifyRequest { Id = "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetVerifyRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.<a href="/src/Coss/Verify/VerifyClient.cs">CancelAsync</a>(CancelVerifyRequest { ... }) -> WithRawResponseTask&lt;Verification&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a pending verification: its code stops working. Canceling it again returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Verify.CancelAsync(new CancelVerifyRequest { Id = "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CancelVerifyRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Forms
+<details><summary><code>client.Forms.<a href="/src/Coss/Forms/FormsClient.cs">ListAsync</a>(ListFormsRequest { ... }) -> WithRawResponseTask&lt;FormList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's forms, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.ListAsync(new ListFormsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListFormsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.<a href="/src/Coss/Forms/FormsClient.cs">CreateAsync</a>(CreateFormRequest { ... }) -> WithRawResponseTask&lt;Form&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A hosted form endpoint: point an HTML `<form action>` (or `coss/forms`) at its `endpoint`. Every submission is screened by Risk (the honeypot, captcha, email, IP, device, velocity and content) and accepted ones go to webhooks (`form.submission.received`), notification emails and contacts. Without `fields`, any field is accepted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.CreateAsync(
+    new CreateFormRequest
+    {
+        Name = "Contact us",
+        AllowedOrigins = new List<string>() { "https://www.example.com" },
+        Notifications = new CreateFormRequestNotifications
+        {
+            Recipients = new List<string>() { "support@example.com" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateFormRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.<a href="/src/Coss/Forms/FormsClient.cs">GetAsync</a>(GetFormsRequest { ... }) -> WithRawResponseTask&lt;Form&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.GetAsync(new GetFormsRequest { Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetFormsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.<a href="/src/Coss/Forms/FormsClient.cs">RemoveAsync</a>(RemoveFormsRequest { ... }) -> WithRawResponseTask&lt;DeletedForm&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the form with every submission and uploaded file. Its endpoint answers 404 from then on.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.RemoveAsync(new RemoveFormsRequest { Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveFormsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.<a href="/src/Coss/Forms/FormsClient.cs">UpdateAsync</a>(UpdateFormRequest { ... }) -> WithRawResponseTask&lt;Form&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Only the fields given change, within each group (`spam`, `contacts`, …) too.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.UpdateAsync(
+    new UpdateFormRequest
+    {
+        Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+        Spam = new UpdateFormRequestSpam { Captcha = UpdateFormRequestSpamCaptcha.Required },
+        Contacts = new UpdateFormRequestContacts { Enabled = true },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateFormRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Reputation
 <details><summary><code>client.Reputation.<a href="/src/Coss/Reputation/ReputationClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;Reputation&gt;</code></summary>
 <dl>
@@ -2391,6 +3008,280 @@ await client.LogDrains.UpdateAsync(
 </dl>
 </details>
 
+## Inboxes
+<details><summary><code>client.Inboxes.<a href="/src/Coss/Inboxes/InboxesClient.cs">ListAsync</a>(ListInboxesRequest { ... }) -> WithRawResponseTask&lt;InboxList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's inboxes, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.ListAsync(new ListInboxesRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListInboxesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.<a href="/src/Coss/Inboxes/InboxesClient.cs">CreateAsync</a>(CreateInboxRequest { ... }) -> WithRawResponseTask&lt;Inbox&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives an agent (or anyone) its own email address in the API key's environment: `username@<the environment's inbound domain>`, which needs no DNS setup, or an address at one of the environment's receiving domains (`domain`). Mail to it is kept as threads, and each message that arrives sends an `inbox.message.received` webhook. With a `client_id` that already has an inbox, that inbox is returned (200) instead of a new one.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.CreateAsync(
+    new CreateInboxRequest
+    {
+        Username = "support-agent",
+        DisplayName = "Acme Support",
+        ClientId = "agent-42",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateInboxRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.<a href="/src/Coss/Inboxes/InboxesClient.cs">GetAsync</a>(GetInboxesRequest { ... }) -> WithRawResponseTask&lt;Inbox&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.GetAsync(
+    new GetInboxesRequest { InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetInboxesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.<a href="/src/Coss/Inboxes/InboxesClient.cs">DeleteAsync</a>(DeleteInboxesRequest { ... }) -> WithRawResponseTask&lt;DeletedInbox&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the inbox and its threads. The received emails and emails they held stay in the environment until their retention ends, and mail to the address is still received by the environment (without a thread or `inbox.message.received` webhook).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.DeleteAsync(
+    new DeleteInboxesRequest { InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteInboxesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.<a href="/src/Coss/Inboxes/InboxesClient.cs">UpdateAsync</a>(UpdateInboxRequest { ... }) -> WithRawResponseTask&lt;Inbox&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name messages from the inbox are sent with. Its address never changes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.UpdateAsync(
+    new UpdateInboxRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        DisplayName = "Acme Help",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateInboxRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Risk
 <details><summary><code>client.Risk.<a href="/src/Coss/Risk/RiskClient.cs">AssessAsync</a>(CreateRiskAssessmentRequest { ... }) -> WithRawResponseTask&lt;RiskAssessment&gt;</code></summary>
 <dl>
@@ -2651,6 +3542,60 @@ await client.Risk.CheckIpAsync(new RiskIpCheckRequest { Ip = "185.220.101.1" });
 <dd>
 
 **request:** `RiskIpCheckRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Risk.<a href="/src/Coss/Risk/RiskClient.cs">CheckPhoneAsync</a>(RiskPhoneCheckRequest { ... }) -> WithRawResponseTask&lt;RiskPhoneCheck&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Risk.CheckPhoneAsync(new RiskPhoneCheckRequest { Phone = "+14155550123" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RiskPhoneCheckRequest` 
     
 </dd>
 </dl>
@@ -3382,7 +4327,7 @@ The environment's templates, newest first. Pass the last `id` as `after` to get 
 <dd>
 
 ```csharp
-await client.Email.Templates.ListAsync(new ListTemplatesRequest());
+await client.Email.Templates.ListAsync(new Coss.Email.ListTemplatesRequest());
 ```
 </dd>
 </dl>
@@ -3523,7 +4468,7 @@ A template by id or alias. Its content is in its draft and versions.
 
 ```csharp
 await client.Email.Templates.GetAsync(
-    new GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    new Coss.Email.GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
 );
 ```
 </dd>
@@ -3994,7 +4939,9 @@ The suppression list of the API key's environment, newest first. Pass the last `
 <dd>
 
 ```csharp
-await client.Email.Suppressions.ListAsync(new Coss.Email.ListSuppressionsRequest());
+await client.Email.Suppressions.ListAsync(
+    new Coss.Email.ListSuppressionsRequest { Subaccount = "user_8812" }
+);
 ```
 </dd>
 </dl>
@@ -4341,6 +5288,411 @@ await client.Email.Suppressions.RemoveAsync(
 <dd>
 
 **request:** `RemoveSuppressionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Subaccounts
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">ListAsync</a>(ListSubaccountsRequest { ... }) -> WithRawResponseTask&lt;SubaccountList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's sub-accounts, newest first. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.ListAsync(
+    new ListSubaccountsRequest { After = "sub_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListSubaccountsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">CreateAsync</a>(CreateSubaccountRequest { ... }) -> WithRawResponseTask&lt;Subaccount&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a sub-account: one of your users, who gets their own domains, suppressions, quotas and reputation. Give it a `uid` (e.g. your user's id) to address it by in every path and send. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.CreateAsync(
+    new CreateSubaccountRequest
+    {
+        Name = "Acme Bakery",
+        Uid = "user_8812",
+        Quotas = new CreateSubaccountRequestQuotas { RecipientsPerDay = 5000 },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSubaccountRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">GetAsync</a>(GetSubaccountsRequest { ... }) -> WithRawResponseTask&lt;Subaccount&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A sub-account of the API key's environment, by its id or uid, with its quotas and reputation.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.GetAsync(new GetSubaccountsRequest { Subaccount = "user_8812" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetSubaccountsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">DeleteAsync</a>(DeleteSubaccountsRequest { ... }) -> WithRawResponseTask&lt;Subaccount&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts deleting the sub-account: its sends are refused at once, then its domains are released and it is removed with its suppressions (`status` is `deleting` until then). Its emails stay, with its id. Repeating the call returns it as it is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.DeleteAsync(
+    new DeleteSubaccountsRequest { Subaccount = "user_8812" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteSubaccountsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">UpdateAsync</a>(UpdateSubaccountRequest { ... }) -> WithRawResponseTask&lt;Subaccount&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name, uid, metadata, status or quotas. Fields left out keep their value; `status: "disabled"` refuses its sends until it is `active` again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.UpdateAsync(
+    new UpdateSubaccountRequest
+    {
+        Subaccount = "user_8812",
+        Status = UpdateSubaccountRequestStatus.Disabled,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateSubaccountRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">ReinstateAsync</a>(ReinstateSubaccountsRequest { ... }) -> WithRawResponseTask&lt;Subaccount&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its rates are measured again from now on. A pause is never lifted on its own. Repeating the call returns it as it is. Your organization's own reputation still counts its sending.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.ReinstateAsync(
+    new ReinstateSubaccountsRequest { Subaccount = "user_8812" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ReinstateSubaccountsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.<a href="/src/Coss/Email/Subaccounts/SubaccountsClient.cs">StatsAsync</a>(StatsSubaccountsRequest { ... }) -> WithRawResponseTask&lt;SubaccountStats&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, failed and suppressed, counted from its emails as they are now (a later bounce moves its day's numbers). Emails are kept 45 days, so earlier days are left out.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Email.Subaccounts.StatsAsync(
+    new StatsSubaccountsRequest
+    {
+        Subaccount = "user_8812",
+        From = new DateOnly(2026, 10, 1),
+        To = new DateOnly(2026, 10, 15),
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `StatsSubaccountsRequest` 
     
 </dd>
 </dl>
@@ -7828,6 +9180,290 @@ await client.Email.Templates.Versions.RestoreAsync(
 </dl>
 </details>
 
+## Forms Submissions
+<details><summary><code>client.Forms.Submissions.<a href="/src/Coss/Forms/Submissions/SubmissionsClient.cs">ListAsync</a>(ListSubmissionsRequest { ... }) -> WithRawResponseTask&lt;FormSubmissionList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. `status` narrows them: `accepted` (delivered), `held` (Risk asked for a review), `spam` and `pending_confirmation` (waiting for the submitter's email link).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.Submissions.ListAsync(
+    new ListSubmissionsRequest { Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListSubmissionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.<a href="/src/Coss/Forms/Submissions/SubmissionsClient.cs">GetAsync</a>(GetSubmissionsRequest { ... }) -> WithRawResponseTask&lt;FormSubmission&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.Submissions.GetAsync(
+    new GetSubmissionsRequest
+    {
+        Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+        SubmissionId = "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetSubmissionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.<a href="/src/Coss/Forms/Submissions/SubmissionsClient.cs">RemoveAsync</a>(RemoveSubmissionsRequest { ... }) -> WithRawResponseTask&lt;DeletedFormSubmission&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the submission and its files.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.Submissions.RemoveAsync(
+    new RemoveSubmissionsRequest
+    {
+        Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+        SubmissionId = "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveSubmissionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.<a href="/src/Coss/Forms/Submissions/SubmissionsClient.cs">ReleaseAsync</a>(ReleaseSubmissionsRequest { ... }) -> WithRawResponseTask&lt;FormSubmission&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Not spam: a `held` or `spam` submission becomes `accepted` and is delivered (webhooks, notifications, contacts), and Risk records its assessment as `legitimate`. Releasing an accepted submission returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.Submissions.ReleaseAsync(
+    new ReleaseSubmissionsRequest
+    {
+        Id = "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+        SubmissionId = "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ReleaseSubmissionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.<a href="/src/Coss/Forms/Submissions/SubmissionsClient.cs">FileAsync</a>(FileSubmissionsRequest { ... }) -> WithRawResponseTask&lt;Stream&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A file uploaded with the submission, as `application/octet-stream`: whatever its type, treat it as untrusted (a submitter chose it).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Forms.Submissions.FileAsync(
+    new FileSubmissionsRequest
+    {
+        Id = "id",
+        SubmissionId = "submission_id",
+        FileId = "file_id",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `FileSubmissionsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Hooks EventTypes
 <details><summary><code>client.Hooks.EventTypes.<a href="/src/Coss/Hooks/EventTypes/EventTypesClient.cs">ListAsync</a>(ListEventTypesRequest { ... }) -> WithRawResponseTask&lt;HookEventTypeList&gt;</code></summary>
 <dl>
@@ -9089,7 +10725,9 @@ The application's messages, newest first (kept for 30 days).
 <dd>
 
 ```csharp
-await client.Hooks.Messages.ListAsync(new ListMessagesRequest { Application = "customer_8812" });
+await client.Hooks.Messages.ListAsync(
+    new Coss.Hooks.ListMessagesRequest { Application = "customer_8812" }
+);
 ```
 </dd>
 </dl>
@@ -9211,7 +10849,7 @@ A message of the application, with its payload.
 
 ```csharp
 await client.Hooks.Messages.GetAsync(
-    new GetMessagesRequest
+    new Coss.Hooks.GetMessagesRequest
     {
         Application = "customer_8812",
         MessageId = "hmsg_01k7c8m4q2f3e9v6t5r1n0p8yz",
@@ -9530,6 +11168,486 @@ await client.Hooks.Portal.CreateSessionAsync(
 <dd>
 
 **request:** `CreateHookPortalSessionRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inboxes Threads
+<details><summary><code>client.Inboxes.Threads.<a href="/src/Coss/Inboxes/Threads/ThreadsClient.cs">ListAsync</a>(ListThreadsRequest { ... }) -> WithRawResponseTask&lt;InboxThreadList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The inbox's conversations, the one with the latest message first, with a preview of that message. A thread whose `last_inbound_at` equals its `last_message_at` awaits a reply. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Threads.ListAsync(
+    new ListThreadsRequest { InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListThreadsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Threads.<a href="/src/Coss/Inboxes/Threads/ThreadsClient.cs">GetAsync</a>(GetThreadsRequest { ... }) -> WithRawResponseTask&lt;InboxThread&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The conversation with its latest messages, oldest first, each with its text and `extracted_text` (its own words, without the quoted conversation): what an agent reads before it replies. HTML is the sender's: sanitize it before showing it to anyone.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Threads.GetAsync(
+    new GetThreadsRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        ThreadId = "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetThreadsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Threads.<a href="/src/Coss/Inboxes/Threads/ThreadsClient.cs">DeleteAsync</a>(DeleteThreadsRequest { ... }) -> WithRawResponseTask&lt;DeletedInboxThread&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Removes the conversation from the inbox. Its received emails and emails stay in the environment until their retention ends; a later reply starts a new thread.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Threads.DeleteAsync(
+    new DeleteThreadsRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        ThreadId = "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteThreadsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inboxes Messages
+<details><summary><code>client.Inboxes.Messages.<a href="/src/Coss/Inboxes/Messages/MessagesClient.cs">ListAsync</a>(ListMessagesRequest { ... }) -> WithRawResponseTask&lt;InboxMessageList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages of every thread, newest first, with a preview instead of their bodies (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Messages.ListAsync(
+    new Coss.Inboxes.ListMessagesRequest { InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListMessagesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.<a href="/src/Coss/Inboxes/Messages/MessagesClient.cs">SendAsync</a>(SendInboxMessageRequest { ... }) -> WithRawResponseTask&lt;InboxMessage&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts a thread with a message from the inbox's address, sent like any email (its `email_id` has its delivery events and webhooks; never tracked). Replies to it arrive in the same thread. Live inboxes send only from receiving domains under one of the organization's verified domains (`can_send`); sandbox ones always can, and deliver nothing. Recipients count against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Messages.SendAsync(
+    new SendInboxMessageRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        IdempotencyKey = "welcome-user-123",
+        To = "jane@example.com",
+        Subject = "Your order",
+        Text = "Hi Jane, your order has shipped.",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `SendInboxMessageRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.<a href="/src/Coss/Inboxes/Messages/MessagesClient.cs">GetAsync</a>(GetMessagesRequest { ... }) -> WithRawResponseTask&lt;InboxMessage&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The message with its text, HTML and `extracted_text`. An outbound message's delivery is its email's (`email_id`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Messages.GetAsync(
+    new Coss.Inboxes.GetMessagesRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        MessageId = "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetMessagesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.<a href="/src/Coss/Inboxes/Messages/MessagesClient.cs">GetAttachmentAsync</a>(GetAttachmentMessagesRequest { ... }) -> WithRawResponseTask&lt;Stream&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An inbound message's attachment, always as `application/octet-stream` (its declared type is the attachment's `content_type`): treat it as untrusted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Messages.GetAttachmentAsync(
+    new GetAttachmentMessagesRequest
+    {
+        InboxId = "inbox_id",
+        MessageId = "message_id",
+        AttachmentId = "attachment_id",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetAttachmentMessagesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.<a href="/src/Coss/Inboxes/Messages/MessagesClient.cs">ReplyAsync</a>(ReplyInboxMessageRequest { ... }) -> WithRawResponseTask&lt;InboxMessage&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replies in the message's thread from the inbox's address: to its sender (its `Reply-To` first), or to an outbound message's recipients again for a follow-up; `reply_all` adds everyone else on it. The subject gets `Re:`, and `In-Reply-To`/`References` let the recipient's mail client thread it. Sent like any email, counted against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Inboxes.Messages.ReplyAsync(
+    new ReplyInboxMessageRequest
+    {
+        InboxId = "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        MessageId = "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+        IdempotencyKey = "welcome-user-123",
+        Text = "Sorry about that, Jane! A new one is on its way.",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ReplyInboxMessageRequest` 
     
 </dd>
 </dl>
@@ -10631,6 +12749,1366 @@ await client.Risk.LimitBuckets.UpdateAsync(
 <dd>
 
 **request:** `UpdateRiskLimitBucketRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Documents
+<details><summary><code>client.Sign.Documents.<a href="/src/Coss/Sign/Documents/DocumentsClient.cs">ListAsync</a>(ListDocumentsRequest { ... }) -> WithRawResponseTask&lt;SignDocumentList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents uploaded to the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Documents.ListAsync(new ListDocumentsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListDocumentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.<a href="/src/Coss/Sign/Documents/DocumentsClient.cs">UploadAsync</a>(UploadSignDocumentRequest { ... }) -> WithRawResponseTask&lt;SignDocument&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads a PDF (base64, at most 25 MB and 500 pages, not password-protected) for signature requests to use. The response lists each page's size and the text anchors found in it (`{{signature:signer_1}}`), which fields can be placed by. Requests can also take PDFs inline.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Documents.UploadAsync(
+    new UploadSignDocumentRequest
+    {
+        Filename = "agreement.pdf",
+        Content =
+            "JVBERi0xLjcKJYGBgYEKCjEgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFsgNCAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagoKMyAwIG9iago8PAovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovSGVsdmV0aWNhLTcwOTg0ODA3ODkgMyAwIFIKPj4KL1hPYmplY3QgPDwKPj4KL0V4dEdTdGF0ZSA8PAo+Pgo+PgovTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdCi9Bbm5vdHMgWyBdCi9Db250ZW50cyBbIDUgMCBSIF0KPj4KZW5kb2JqCgo1IDAgb2JqCjw8Ci9GaWx0ZXIgL0ZsYXRlRGVjb2RlCi9MZW5ndGggMTIwCj4+CnN0cmVhbQp4nG2KMQrCQBBF+znF1II4O7s7fxckYEjEwkaYC4hEiWgREc9vtLCSV/3330Stk/CHx4VWu+H2Gp7j6biE1JKKoFQOyn4mTex7Ct80MJQhwn6ndY5WDdZbQEKGWo4bFbQzf56fm3fexoAOXcN+JV9Q73SgN3RWIBIKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE2IDAwMDAwIG4gCjAwMDAwMDAwNzYgMDAwMDAgbiAKMDAwMDAwMDEyNiAwMDAwMCBuIAowMDAwMDAwMjI0IDAwMDAwIG4gCjAwMDAwMDA0MTkgMDAwMDAgbiAKCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAyIDAgUgo+PgoKc3RhcnR4cmVmCjYxMgolJUVPRg==",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UploadSignDocumentRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.<a href="/src/Coss/Sign/Documents/DocumentsClient.cs">GetAsync</a>(GetDocumentsRequest { ... }) -> WithRawResponseTask&lt;SignDocument&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Documents.GetAsync(
+    new GetDocumentsRequest { Id = "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetDocumentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.<a href="/src/Coss/Sign/Documents/DocumentsClient.cs">RemoveAsync</a>(RemoveDocumentsRequest { ... }) -> WithRawResponseTask&lt;DeletedSignDocument&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes an uploaded document and its file. Documents a request uses can't be deleted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Documents.RemoveAsync(
+    new RemoveDocumentsRequest { Id = "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveDocumentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Requests
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">ListAsync</a>(ListRequestsRequest { ... }) -> WithRawResponseTask&lt;SignRequestList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Signature requests of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.ListAsync(new ListRequestsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">CreateAsync</a>(CreateSignRequestRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Asks one or more signers to sign one or more PDFs. Give documents by id (uploaded) or inline, and each signer's fields by position (`page`, `x`, `y`, `width`, `height` in PDF points from the page's top left) or by text anchor (`{{signature:signer_1}}`). Every signer needs a `signature` field. Sent at once unless `send` is `false` (a `draft`). Each signer signs by email (`delivery: "email"`, the default) or in your app (`"embedded"`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.CreateAsync(
+    new CreateSignRequestRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        Title = "Services agreement",
+        Documents = new List<
+            OneOf<
+                CreateSignRequestRequestDocumentsItemDocumentId,
+                CreateSignRequestRequestDocumentsItemContent
+            >
+        >()
+        {
+            new CreateSignRequestRequestDocumentsItemDocumentId
+            {
+                DocumentId = "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            },
+        },
+        Signers = new List<CreateSignRequestRequestSignersItem>()
+        {
+            new CreateSignRequestRequestSignersItem
+            {
+                Name = "Ada Lovelace",
+                Email = "ada@example.com",
+                Fields = new List<OneOf<SignFieldInputDocument, SignFieldInputAnchor>>()
+                {
+                    new SignFieldInputAnchor
+                    {
+                        Type = SignFieldInputAnchorType.Signature,
+                        Anchor = "{{signature:signer_1}}",
+                    },
+                    new SignFieldInputDocument
+                    {
+                        Type = SignFieldInputDocumentType.DateSigned,
+                        Page = 2,
+                        X = 320,
+                        Y = 640,
+                        Width = 120,
+                        Height = 18,
+                    },
+                },
+            },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSignRequestRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">GetAsync</a>(GetRequestsRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.GetAsync(
+    new GetRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">RemoveAsync</a>(RemoveRequestsRequest { ... }) -> WithRawResponseTask&lt;DeletedSignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit trail, signatures and signed document, for good. Its documents stay (delete them on their own). Keep the signed document first if you need it: it is your record.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.RemoveAsync(
+    new RemoveRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">SendAsync</a>(SendRequestsRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a `draft`. An already sent request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.SendAsync(
+    new SendRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `SendRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">CancelAsync</a>(CancelRequestsRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a `draft` or `sent` request: its signers can no longer sign. An already canceled request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.CancelAsync(
+    new CancelRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CancelRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">AuditTrailAsync</a>(AuditTrailRequestsRequest { ... }) -> WithRawResponseTask&lt;SignEventList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the request, oldest first: who did it, from which address, the documents' SHA-256 when it mattered, and a hash chain (`previous_hash`, `hash`) that shows the trail is complete and unchanged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.AuditTrailAsync(
+    new AuditTrailRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `AuditTrailRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">RemindAsync</a>(RemindRequestsRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't signed and whose turn it is, unless they were emailed in the last hour. Embedded signers are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.RemindAsync(
+    new RemindRequestsRequest { Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemindRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.<a href="/src/Coss/Sign/Requests/RequestsClient.cs">SignedDocumentAsync</a>(SignedDocumentRequestsRequest { ... }) -> WithRawResponseTask&lt;Stream&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The completed request's sealed PDF: every document with the signatures and values filled in, then a certificate of completion (signers, how they were identified, what they agreed to, the documents' SHA-256 and the audit trail). coss.com's seal makes any later change visible in PDF viewers. Ready once `signed_document` is set, which the `sign_request.completed` webhook announces.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Requests.SignedDocumentAsync(new SignedDocumentRequestsRequest { Id = "id" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `SignedDocumentRequestsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Sessions
+<details><summary><code>client.Sign.Sessions.<a href="/src/Coss/Sign/Sessions/SessionsClient.cs">CreateAsync</a>(CreateSignSessionRequest { ... }) -> WithRawResponseTask&lt;SignSession&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the signing page for one `embedded` signer of a sent request. Your app vouches for who the signer is (the audit trail records `customer_asserted`), so create it only for that signed-in user, when they open the page that shows it. Embed the `url` in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from `coss/sign` does it), or redirect to it. Each call creates a new session.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Sessions.CreateAsync(
+    new CreateSignSessionRequest
+    {
+        Id = "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        SignerId = "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        ExpiresIn = 3600,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSignSessionRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Settings
+<details><summary><code>client.Sign.Settings.<a href="/src/Coss/Sign/Settings/SettingsClient.cs">GetAsync</a>() -> WithRawResponseTask&lt;SignSettings&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The API key's environment's settings: which sites may embed the signing page, how it looks, and the consent text signers accept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Settings.GetAsync();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Settings.<a href="/src/Coss/Sign/Settings/SettingsClient.cs">UpdateAsync</a>(UpdateSignSettingsRequest { ... }) -> WithRawResponseTask&lt;SignSettings&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given; the others keep their values.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Settings.UpdateAsync(
+    new UpdateSignSettingsRequest
+    {
+        AllowedOrigins = new List<string>() { "https://app.example.com" },
+        DisplayName = "Acme",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateSignSettingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Templates
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">ListAsync</a>(ListTemplatesRequest { ... }) -> WithRawResponseTask&lt;SignTemplateList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. Pass the last `id` as `after` while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.ListAsync(new Coss.Sign.ListTemplatesRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListTemplatesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">CreateAsync</a>(CreateSignTemplateRequest { ... }) -> WithRawResponseTask&lt;SignTemplate&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents with fields for roles (`client`, `company`) instead of named signers, made into requests by naming a signer per role. Fields by position or text anchor (resolved now). Can start empty and be built in the embedded builder (create a builder session).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.CreateAsync(
+    new CreateSignTemplateRequest
+    {
+        Name = "Mutual NDA",
+        Documents = new List<
+            OneOf<
+                CreateSignTemplateRequestDocumentsItemDocumentId,
+                CreateSignTemplateRequestDocumentsItemContent
+            >
+        >()
+        {
+            new CreateSignTemplateRequestDocumentsItemDocumentId
+            {
+                DocumentId = "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            },
+        },
+        Roles = new List<CreateSignTemplateRequestRolesItem>()
+        {
+            new CreateSignTemplateRequestRolesItem { Key = "client", Name = "Client" },
+            new CreateSignTemplateRequestRolesItem { Key = "company", Name = "Company" },
+        },
+        Fields = new List<
+            OneOf<
+                CreateSignTemplateRequestFieldsItemDocument,
+                CreateSignTemplateRequestFieldsItemAnchor
+            >
+        >()
+        {
+            new CreateSignTemplateRequestFieldsItemAnchor
+            {
+                Type = CreateSignTemplateRequestFieldsItemAnchorType.Signature,
+                Anchor = "{{signature:client}}",
+                Role = "client",
+            },
+            new CreateSignTemplateRequestFieldsItemDocument
+            {
+                Type = CreateSignTemplateRequestFieldsItemDocumentType.Text,
+                Page = 1,
+                X = 72,
+                Y = 140,
+                Width = 200,
+                Height = 18,
+                Role = "client",
+                MergeKey = "client_company",
+            },
+            new CreateSignTemplateRequestFieldsItemAnchor
+            {
+                Type = CreateSignTemplateRequestFieldsItemAnchorType.Signature,
+                Anchor = "{{signature:company}}",
+                Role = "company",
+            },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSignTemplateRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">GetAsync</a>(GetTemplatesRequest { ... }) -> WithRawResponseTask&lt;SignTemplate&gt;</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.GetAsync(
+    new Coss.Sign.GetTemplatesRequest { Id = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetTemplatesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">RemoveAsync</a>(RemoveTemplatesRequest { ... }) -> WithRawResponseTask&lt;DeletedSignTemplate&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Requests made from it, and its documents, stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.RemoveAsync(
+    new RemoveTemplatesRequest { Id = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveTemplatesRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">UpdateAsync</a>(UpdateSignTemplateRequest { ... }) -> WithRawResponseTask&lt;SignTemplate&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given. `documents`, `roles` and `fields` each replace the whole list. Requests already made from it don't change.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.UpdateAsync(
+    new UpdateSignTemplateRequest
+    {
+        Id = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        Name = "Mutual NDA (2026)",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateSignTemplateRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">CreateRequestAsync</a>(CreateSignRequestFromTemplateRequest { ... }) -> WithRawResponseTask&lt;SignRequest&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A signature request with the template's documents and fields: name one signer for each role, and give its merge fields' values. Like creating a request, it is sent at once unless `send` is `false`, and an `Idempotency-Key` makes retries safe.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.CreateRequestAsync(
+    new CreateSignRequestFromTemplateRequest
+    {
+        Id = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        IdempotencyKey = "welcome-user-123",
+        Signers = new List<CreateSignRequestFromTemplateRequestSignersItem>()
+        {
+            new CreateSignRequestFromTemplateRequestSignersItem
+            {
+                Role = "client",
+                Name = "Ada Lovelace",
+                Email = "ada@example.com",
+            },
+            new CreateSignRequestFromTemplateRequestSignersItem
+            {
+                Role = "company",
+                Name = "Grace Hopper",
+                Email = "grace@acme.com",
+                Delivery = CreateSignRequestFromTemplateRequestSignersItemDelivery.Embedded,
+            },
+        },
+        MergeFields = new Dictionary<string, string>()
+        {
+            { "client_company", "Analytical Engines Ltd" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSignRequestFromTemplateRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.<a href="/src/Coss/Sign/Templates/TemplatesClient.cs">CreateBuilderSessionAsync</a>(CreateSignBuilderSessionRequest { ... }) -> WithRawResponseTask&lt;SignBuilderSession&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the embedded builder for this template: upload documents, add roles, and drag fields onto pages. Embed it with `mountBuilder` from `coss/sign` (from an origin in your Sign settings' `allowed_origins`) for whoever edits the template.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Sign.Templates.CreateBuilderSessionAsync(
+    new CreateSignBuilderSessionRequest { Id = "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz", ExpiresIn = 3600 }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSignBuilderSessionRequest` 
     
 </dd>
 </dl>

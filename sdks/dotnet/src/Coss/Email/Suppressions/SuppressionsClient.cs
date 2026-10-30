@@ -19,7 +19,8 @@ public partial class SuppressionsClient : ISuppressionsClient
         CancellationToken cancellationToken = default
     )
     {
-        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 4)
+        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 5)
+            .Add("subaccount", request.Subaccount)
             .Add("address", request.Address)
             .AddDeepObject("scope", request.Scope)
             .Add("limit", request.Limit)
@@ -114,6 +115,18 @@ public partial class SuppressionsClient : ISuppressionsClient
                         );
                     case 403:
                         throw new ForbiddenError(
+                            JsonUtils.Deserialize<ErrorResponse>(responseBody),
+                            rawResponse: new Coss.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 404:
+                        throw new NotFoundError(
                             JsonUtils.Deserialize<ErrorResponse>(responseBody),
                             rawResponse: new Coss.RawResponse()
                             {
@@ -302,6 +315,18 @@ public partial class SuppressionsClient : ISuppressionsClient
                                 Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
                             }
                         );
+                    case 404:
+                        throw new NotFoundError(
+                            JsonUtils.Deserialize<ErrorResponse>(responseBody),
+                            rawResponse: new Coss.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 413:
                         throw new ContentTooLargeError(
                             JsonUtils.Deserialize<ErrorResponse>(responseBody),
@@ -400,10 +425,11 @@ public partial class SuppressionsClient : ISuppressionsClient
         CancellationToken cancellationToken = default
     )
     {
-        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 3)
+        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 4)
             .Add("address", request.Address)
             .Add("category", request.Category)
             .Add("stream", request.Stream)
+            .Add("subaccount", request.Subaccount)
             .MergeAdditional(options?.AdditionalQueryParameters)
             .Build();
         var _headers = await new Coss.Core.HeadersBuilder.Builder()
@@ -494,6 +520,18 @@ public partial class SuppressionsClient : ISuppressionsClient
                         );
                     case 403:
                         throw new ForbiddenError(
+                            JsonUtils.Deserialize<ErrorResponse>(responseBody),
+                            rawResponse: new Coss.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 404:
+                        throw new NotFoundError(
                             JsonUtils.Deserialize<ErrorResponse>(responseBody),
                             rawResponse: new Coss.RawResponse()
                             {
@@ -682,6 +720,18 @@ public partial class SuppressionsClient : ISuppressionsClient
                                 Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
                             }
                         );
+                    case 404:
+                        throw new NotFoundError(
+                            JsonUtils.Deserialize<ErrorResponse>(responseBody),
+                            rawResponse: new Coss.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 413:
                         throw new ContentTooLargeError(
                             JsonUtils.Deserialize<ErrorResponse>(responseBody),
@@ -780,7 +830,8 @@ public partial class SuppressionsClient : ISuppressionsClient
         CancellationToken cancellationToken = default
     )
     {
-        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 2)
+        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 3)
+            .Add("subaccount", request.Subaccount)
             .AddDeepObject("scope", request.Scope)
             .Add("reason", request.Reason)
             .MergeAdditional(options?.AdditionalQueryParameters)
@@ -854,6 +905,18 @@ public partial class SuppressionsClient : ISuppressionsClient
                         );
                     case 403:
                         throw new ForbiddenError(
+                            JsonUtils.Deserialize<ErrorResponse>(responseBody),
+                            rawResponse: new Coss.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
+                    case 404:
+                        throw new NotFoundError(
                             JsonUtils.Deserialize<ErrorResponse>(responseBody),
                             rawResponse: new Coss.RawResponse()
                             {
@@ -1292,7 +1355,9 @@ public partial class SuppressionsClient : ISuppressionsClient
     /// The suppression list of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
     /// </summary>
     /// <example><code>
-    /// await client.Email.Suppressions.ListAsync(new Coss.Email.ListSuppressionsRequest());
+    /// await client.Email.Suppressions.ListAsync(
+    ///     new Coss.Email.ListSuppressionsRequest { Subaccount = "user_8812" }
+    /// );
     /// </code></example>
     public WithRawResponseTask<SuppressionList> ListAsync(
         ListSuppressionsRequest request,

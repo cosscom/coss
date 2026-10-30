@@ -10,5 +10,8 @@ enum LogDrainSource: string
     case Risk = "risk";
     case Smtp = "smtp";
     case Sms = "sms";
+    case Sign = "sign";
+    case Verify = "verify";
+    case Forms = "forms";
     case Audit = "audit";
 }

@@ -15,6 +15,7 @@ import com.coss.resources.risk.requests.CreateRiskFeedbackRequest;
 import com.coss.resources.risk.requests.RiskContentClassifyRequest;
 import com.coss.resources.risk.requests.RiskEmailCheckRequest;
 import com.coss.resources.risk.requests.RiskIpCheckRequest;
+import com.coss.resources.risk.requests.RiskPhoneCheckRequest;
 import com.coss.resources.risk.rules.RulesClient;
 import com.coss.resources.risk.settings.SettingsClient;
 import com.coss.resources.risk.users.UsersClient;
@@ -24,6 +25,7 @@ import com.coss.types.RiskContentClassification;
 import com.coss.types.RiskEmailCheck;
 import com.coss.types.RiskIpCheck;
 import com.coss.types.RiskLimit;
+import com.coss.types.RiskPhoneCheck;
 import java.util.function.Supplier;
 
 public class RiskClient {
@@ -129,6 +131,20 @@ public class RiskClient {
      */
     public RiskIpCheck checkIp(RiskIpCheckRequest request, RequestOptions requestOptions) {
         return this.rawClient.checkIp(request, requestOptions).body();
+    }
+
+    /**
+     * Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in <code>degraded</code>. Each live check that gets an answer is billed (<code>risk.phone_checks</code>; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers <code>+1 202 555 01xx</code> (<code>0101</code> landline, <code>0102</code> non-fixed VoIP, <code>0103</code> fixed VoIP, <code>0104</code> a recent SIM swap, <code>0199</code> invalid, the rest mobile).
+     */
+    public RiskPhoneCheck checkPhone(RiskPhoneCheckRequest request) {
+        return this.rawClient.checkPhone(request).body();
+    }
+
+    /**
+     * Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in <code>degraded</code>. Each live check that gets an answer is billed (<code>risk.phone_checks</code>; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers <code>+1 202 555 01xx</code> (<code>0101</code> landline, <code>0102</code> non-fixed VoIP, <code>0103</code> fixed VoIP, <code>0104</code> a recent SIM swap, <code>0199</code> invalid, the rest mobile).
+     */
+    public RiskPhoneCheck checkPhone(RiskPhoneCheckRequest request, RequestOptions requestOptions) {
+        return this.rawClient.checkPhone(request, requestOptions).body();
     }
 
     /**

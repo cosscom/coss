@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	createSuppressionRequestFieldAddress = big.NewInt(1 << 0)
-	createSuppressionRequestFieldScope   = big.NewInt(1 << 1)
+	createSuppressionRequestFieldAddress    = big.NewInt(1 << 0)
+	createSuppressionRequestFieldScope      = big.NewInt(1 << 1)
+	createSuppressionRequestFieldSubaccount = big.NewInt(1 << 2)
 )
 
 type CreateSuppressionRequest struct {
@@ -20,6 +21,8 @@ type CreateSuppressionRequest struct {
 	Address string `json:"address" url:"-"`
 	// Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
 	Scope *CreateSuppressionRequestScope `json:"scope,omitempty" url:"-"`
+	// Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+	Subaccount *string `json:"subaccount,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -48,6 +51,13 @@ func (c *CreateSuppressionRequest) SetScope(scope *CreateSuppressionRequestScope
 	c.require(createSuppressionRequestFieldScope)
 }
 
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateSuppressionRequest) SetSubaccount(subaccount *string) {
+	c.Subaccount = subaccount
+	c.require(createSuppressionRequestFieldSubaccount)
+}
+
 func (c *CreateSuppressionRequest) UnmarshalJSON(data []byte) error {
 	type unmarshaler CreateSuppressionRequest
 	var body unmarshaler
@@ -70,9 +80,10 @@ func (c *CreateSuppressionRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	checkSuppressionsRequestFieldAddress  = big.NewInt(1 << 0)
-	checkSuppressionsRequestFieldCategory = big.NewInt(1 << 1)
-	checkSuppressionsRequestFieldStream   = big.NewInt(1 << 2)
+	checkSuppressionsRequestFieldAddress    = big.NewInt(1 << 0)
+	checkSuppressionsRequestFieldCategory   = big.NewInt(1 << 1)
+	checkSuppressionsRequestFieldStream     = big.NewInt(1 << 2)
+	checkSuppressionsRequestFieldSubaccount = big.NewInt(1 << 3)
 )
 
 type CheckSuppressionsRequest struct {
@@ -82,6 +93,8 @@ type CheckSuppressionsRequest struct {
 	Category *string `json:"-" url:"category,omitempty"`
 	// The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.
 	Stream *CheckSuppressionsRequestStream `json:"-" url:"stream,omitempty"`
+	// The sub-account you plan to send for (its id or your uid): its own entries count too.
+	Subaccount *string `json:"-" url:"subaccount,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -117,12 +130,22 @@ func (c *CheckSuppressionsRequest) SetStream(stream *CheckSuppressionsRequestStr
 	c.require(checkSuppressionsRequestFieldStream)
 }
 
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CheckSuppressionsRequest) SetSubaccount(subaccount *string) {
+	c.Subaccount = subaccount
+	c.require(checkSuppressionsRequestFieldSubaccount)
+}
+
 var (
-	exportSuppressionsRequestFieldScope  = big.NewInt(1 << 0)
-	exportSuppressionsRequestFieldReason = big.NewInt(1 << 1)
+	exportSuppressionsRequestFieldSubaccount = big.NewInt(1 << 0)
+	exportSuppressionsRequestFieldScope      = big.NewInt(1 << 1)
+	exportSuppressionsRequestFieldReason     = big.NewInt(1 << 2)
 )
 
 type ExportSuppressionsRequest struct {
+	// Export a sub-account's own list (its id or your uid) instead of the environment's.
+	Subaccount *string `json:"-" url:"subaccount,omitempty"`
 	// Only entries with this scope.
 	Scope *cossgo.ExportSuppressionsRequestScope `json:"-" url:"scope,omitempty"`
 	// Only entries with this reason.
@@ -139,6 +162,13 @@ func (e *ExportSuppressionsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	e.explicitFields = next
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *ExportSuppressionsRequest) SetSubaccount(subaccount *string) {
+	e.Subaccount = subaccount
+	e.require(exportSuppressionsRequestFieldSubaccount)
 }
 
 // SetScope sets the Scope field and marks it as non-optional;
@@ -184,10 +214,13 @@ func (g *GetSuppressionsRequest) SetID(id string) {
 }
 
 var (
-	importSuppressionsRequestFieldSuppressions = big.NewInt(1 << 0)
+	importSuppressionsRequestFieldSubaccount   = big.NewInt(1 << 0)
+	importSuppressionsRequestFieldSuppressions = big.NewInt(1 << 1)
 )
 
 type ImportSuppressionsRequest struct {
+	// Import into a sub-account's own list (its id or your uid) instead of the environment's.
+	Subaccount *string `json:"subaccount,omitempty" url:"-"`
 	// 1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
 	Suppressions []*ImportSuppressionsRequestSuppressionsItem `json:"suppressions" url:"-"`
 
@@ -202,6 +235,13 @@ func (i *ImportSuppressionsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	i.explicitFields = next
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *ImportSuppressionsRequest) SetSubaccount(subaccount *string) {
+	i.Subaccount = subaccount
+	i.require(importSuppressionsRequestFieldSubaccount)
 }
 
 // SetSuppressions sets the Suppressions field and marks it as non-optional;
@@ -233,13 +273,16 @@ func (i *ImportSuppressionsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	listSuppressionsRequestFieldAddress = big.NewInt(1 << 0)
-	listSuppressionsRequestFieldScope   = big.NewInt(1 << 1)
-	listSuppressionsRequestFieldLimit   = big.NewInt(1 << 2)
-	listSuppressionsRequestFieldAfter   = big.NewInt(1 << 3)
+	listSuppressionsRequestFieldSubaccount = big.NewInt(1 << 0)
+	listSuppressionsRequestFieldAddress    = big.NewInt(1 << 1)
+	listSuppressionsRequestFieldScope      = big.NewInt(1 << 2)
+	listSuppressionsRequestFieldLimit      = big.NewInt(1 << 3)
+	listSuppressionsRequestFieldAfter      = big.NewInt(1 << 4)
 )
 
 type ListSuppressionsRequest struct {
+	// List a sub-account's own list (its id or your uid) instead of the environment's.
+	Subaccount *string `json:"-" url:"subaccount,omitempty"`
 	// Only entries for this address.
 	Address *string `json:"-" url:"address,omitempty"`
 	// Only entries with this scope.
@@ -260,6 +303,13 @@ func (l *ListSuppressionsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListSuppressionsRequest) SetSubaccount(subaccount *string) {
+	l.Subaccount = subaccount
+	l.require(listSuppressionsRequestFieldSubaccount)
 }
 
 // SetAddress sets the Address field and marks it as non-optional;

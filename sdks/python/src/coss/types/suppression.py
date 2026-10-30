@@ -32,6 +32,11 @@ class Suppression(UniversalBaseModel):
     The email whose bounce or complaint added this entry.
     """
 
+    subaccount_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The sub-account whose list it is on; `null` for the environment's own list.
+    """
+
     created_at: dt.datetime
 
     if IS_PYDANTIC_V2:

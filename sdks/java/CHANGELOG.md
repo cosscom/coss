@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Regenerated from the API's OpenAPI document at 9051e32f1f00. What changed in the API: the
+  [API changelog](https://coss.com/docs/api-reference/changelog).
+
 ## 0.1.0
 
 - First release: every endpoint of the coss.com API (version `2026-10-10`), generated from its

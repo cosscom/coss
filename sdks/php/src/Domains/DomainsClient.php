@@ -7,6 +7,7 @@ use Coss\Domains\Receiving\ReceivingClient;
 use Coss\Domains\Dmarc\DmarcClient;
 use Psr\Http\Client\ClientInterface;
 use Coss\Core\Client\RawClient;
+use Coss\Domains\Requests\ListDomainsRequest;
 use Coss\Types\DomainList;
 use Coss\Exceptions\CossException;
 use Coss\Exceptions\CossApiException;
@@ -19,6 +20,7 @@ use Coss\Domains\Requests\CreateDomainRequest;
 use Coss\Types\Domain;
 use Coss\Core\Client\IdempotencyKey;
 use Coss\Types\DeletedDomain;
+use Coss\Domains\Requests\UpdateDomainRequest;
 
 class DomainsClient
 {
@@ -79,9 +81,12 @@ class DomainsClient
      *
      * Example:
      * ```php
-     * $client->domains->list();
+     * $client->domains->list(
+     *     new ListDomainsRequest([]),
+     * );
      * ```
      *
+     * @param ListDomainsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -94,15 +99,20 @@ class DomainsClient
      * @throws CossException
      * @throws CossApiException
      */
-    public function list(?array $options = null): ?DomainList
+    public function list(ListDomainsRequest $request = new ListDomainsRequest(), ?array $options = null): ?DomainList
     {
         $options = array_merge($this->options, $options ?? []);
+        $query = [];
+        if ($request->subaccount != null) {
+            $query['subaccount'] = $request->subaccount;
+        }
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
                     path: "v1/domains",
                     method: HttpMethod::GET,
+                    query: $query,
                 ),
                 $options,
             );
@@ -284,6 +294,66 @@ class DomainsClient
                     return null;
                 }
                 return DeletedDomain::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+     *
+     * Example:
+     * ```php
+     * $client->domains->update(
+     *     'dom_01k7c8m4q2f3e9v6t5r1n0p8yz',
+     *     new UpdateDomainRequest([
+     *         'sharedWithSubaccounts' => true,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $id The domain's id.
+     * @param UpdateDomainRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?Domain
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function update(string $id, UpdateDomainRequest $request, ?array $options = null): ?Domain
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/domains/" . RawClient::encodePathParam($id),
+                    method: HttpMethod::PATCH,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return Domain::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

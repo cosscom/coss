@@ -78,7 +78,7 @@ public class E2eTests
         await _coss.Billing.GetAsync();
         await _coss.Logs.ListAsync(new ListLogsRequest());
         await _coss.AuditEvents.ListAsync(new ListAuditEventsRequest());
-        await _coss.Domains.ListAsync();
+        await _coss.Domains.ListAsync(new ListDomainsRequest());
         await _coss.WebhookEndpoints.ListAsync();
         await _coss.Email.Suppressions.ListAsync(new ListSuppressionsRequest());
         await _coss.Email.Templates.ListAsync(new ListTemplatesRequest());

@@ -1,3 +1,4 @@
+using Coss;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -109,7 +110,9 @@ public class ListTest : BaseMockServerTest
                         "message": "message"
                       }
                     ]
-                  }
+                  },
+                  "subaccount_id": "subaccount_id",
+                  "shared_with_subaccounts": true
                 },
                 {
                   "object": "domain",
@@ -205,7 +208,9 @@ public class ListTest : BaseMockServerTest
                         "message": "message"
                       }
                     ]
-                  }
+                  },
+                  "subaccount_id": "subaccount_id",
+                  "shared_with_subaccounts": true
                 }
               ],
               "has_more": true
@@ -221,7 +226,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Domains.ListAsync();
+        var response = await Client.Domains.ListAsync(new ListDomainsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -327,7 +332,9 @@ public class ListTest : BaseMockServerTest
                         "message": "message"
                       }
                     ]
-                  }
+                  },
+                  "subaccount_id": null,
+                  "shared_with_subaccounts": false
                 }
               ],
               "has_more": false
@@ -343,7 +350,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Domains.ListAsync();
+        var response = await Client.Domains.ListAsync(new ListDomainsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

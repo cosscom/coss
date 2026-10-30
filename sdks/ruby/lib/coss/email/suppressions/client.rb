@@ -21,18 +21,20 @@ module Coss
         # @option request_options [Hash{String => Object}] :additional_query_parameters
         # @option request_options [Hash{String => Object}] :additional_body_parameters
         # @option request_options [Integer] :timeout_in_seconds
+        # @option params [String, nil] :subaccount
         # @option params [String, nil] :address
         # @option params [Coss::Types::ListSuppressionsRequestScope, nil] :scope
         # @option params [Integer, nil] :limit
         # @option params [String, nil] :after
         #
         # @example
-        #   client.email.suppressions.list
+        #   client.email.suppressions.list(subaccount: "user_8812")
         #
         # @return [Coss::Types::SuppressionList]
         def list(request_options: {}, **params)
           params = Coss::Internal::Types::Utils.normalize_keys(params)
           query_params = {}
+          query_params["subaccount"] = params[:subaccount] if params.key?(:subaccount)
           query_params["address"] = params[:address] if params.key?(:address)
           query_params["scope"] = params[:scope] if params.key?(:scope)
           query_params["limit"] = params[:limit] if params.key?(:limit)
@@ -116,6 +118,7 @@ module Coss
         # @option params [String] :address
         # @option params [String, nil] :category
         # @option params [Coss::Email::Suppressions::Types::CheckSuppressionsRequestStream, nil] :stream
+        # @option params [String, nil] :subaccount
         #
         # @example
         #   client.email.suppressions.check(address: "user@example.com")
@@ -127,6 +130,7 @@ module Coss
           query_params["address"] = params[:address] if params.key?(:address)
           query_params["category"] = params[:category] if params.key?(:category)
           query_params["stream"] = params[:stream] if params.key?(:stream)
+          query_params["subaccount"] = params[:subaccount] if params.key?(:subaccount)
 
           request = Coss::Internal::JSON::Request.new(
             base_url: request_options[:base_url],
@@ -206,6 +210,7 @@ module Coss
         # @option request_options [Hash{String => Object}] :additional_query_parameters
         # @option request_options [Hash{String => Object}] :additional_body_parameters
         # @option request_options [Integer] :timeout_in_seconds
+        # @option params [String, nil] :subaccount
         # @option params [Coss::Types::ExportSuppressionsRequestScope, nil] :scope
         # @option params [Coss::Email::Suppressions::Types::ExportSuppressionsRequestReason, nil] :reason
         #
@@ -216,6 +221,7 @@ module Coss
         def export(request_options: {}, **params)
           params = Coss::Internal::Types::Utils.normalize_keys(params)
           query_params = {}
+          query_params["subaccount"] = params[:subaccount] if params.key?(:subaccount)
           query_params["scope"] = params[:scope] if params.key?(:scope)
           query_params["reason"] = params[:reason] if params.key?(:reason)
 

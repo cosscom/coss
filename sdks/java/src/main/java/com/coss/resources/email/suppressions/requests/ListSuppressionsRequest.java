@@ -21,6 +21,8 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ListSuppressionsRequest.Builder.class)
 public final class ListSuppressionsRequest {
+    private final Optional<String> subaccount;
+
     private final Optional<String> address;
 
     private final Optional<ListSuppressionsRequestScope> scope;
@@ -32,16 +34,26 @@ public final class ListSuppressionsRequest {
     private final Map<String, Object> additionalProperties;
 
     private ListSuppressionsRequest(
+            Optional<String> subaccount,
             Optional<String> address,
             Optional<ListSuppressionsRequestScope> scope,
             Optional<Integer> limit,
             Optional<String> after,
             Map<String, Object> additionalProperties) {
+        this.subaccount = subaccount;
         this.address = address;
         this.scope = scope;
         this.limit = limit;
         this.after = after;
         this.additionalProperties = additionalProperties;
+    }
+
+    /**
+     * @return List a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
     }
 
     /**
@@ -88,7 +100,8 @@ public final class ListSuppressionsRequest {
     }
 
     private boolean equalTo(ListSuppressionsRequest other) {
-        return address.equals(other.address)
+        return subaccount.equals(other.subaccount)
+                && address.equals(other.address)
                 && scope.equals(other.scope)
                 && limit.equals(other.limit)
                 && after.equals(other.after);
@@ -96,7 +109,7 @@ public final class ListSuppressionsRequest {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.address, this.scope, this.limit, this.after);
+        return Objects.hash(this.subaccount, this.address, this.scope, this.limit, this.after);
     }
 
     @java.lang.Override
@@ -110,6 +123,8 @@ public final class ListSuppressionsRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
+        private Optional<String> subaccount = Optional.empty();
+
         private Optional<String> address = Optional.empty();
 
         private Optional<ListSuppressionsRequestScope> scope = Optional.empty();
@@ -124,10 +139,25 @@ public final class ListSuppressionsRequest {
         private Builder() {}
 
         public Builder from(ListSuppressionsRequest other) {
+            subaccount(other.getSubaccount());
             address(other.getAddress());
             scope(other.getScope());
             limit(other.getLimit());
             after(other.getAfter());
+            return this;
+        }
+
+        /**
+         * <p>List a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         */
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public Builder subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
+            return this;
+        }
+
+        public Builder subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
             return this;
         }
 
@@ -188,7 +218,7 @@ public final class ListSuppressionsRequest {
         }
 
         public ListSuppressionsRequest build() {
-            return new ListSuppressionsRequest(address, scope, limit, after, additionalProperties);
+            return new ListSuppressionsRequest(subaccount, address, scope, limit, after, additionalProperties);
         }
 
         public Builder additionalProperty(String key, Object value) {

@@ -65,7 +65,9 @@ class SuppressionsClient
      * Example:
      * ```php
      * $client->email->suppressions->list(
-     *     new ListSuppressionsRequest([]),
+     *     new ListSuppressionsRequest([
+     *         'subaccount' => 'user_8812',
+     *     ]),
      * );
      * ```
      *
@@ -86,6 +88,9 @@ class SuppressionsClient
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
+        if ($request->subaccount != null) {
+            $query['subaccount'] = $request->subaccount;
+        }
         if ($request->address != null) {
             $query['address'] = $request->address;
         }
@@ -226,6 +231,9 @@ class SuppressionsClient
         if ($request->stream != null) {
             $query['stream'] = $request->stream;
         }
+        if ($request->subaccount != null) {
+            $query['subaccount'] = $request->subaccount;
+        }
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
@@ -352,6 +360,9 @@ class SuppressionsClient
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
+        if ($request->subaccount != null) {
+            $query['subaccount'] = $request->subaccount;
+        }
         if ($request->scope != null) {
             $query['scope'] = $request->scope;
         }

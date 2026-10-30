@@ -242,6 +242,55 @@ func (r *RiskIPCheckRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	riskPhoneCheckRequestFieldPhone = big.NewInt(1 << 0)
+)
+
+type RiskPhoneCheckRequest struct {
+	// The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
+	Phone string `json:"phone" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (r *RiskPhoneCheckRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetPhone sets the Phone field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheckRequest) SetPhone(phone string) {
+	r.Phone = phone
+	r.require(riskPhoneCheckRequestFieldPhone)
+}
+
+func (r *RiskPhoneCheckRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler RiskPhoneCheckRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*r = RiskPhoneCheckRequest(body)
+	return nil
+}
+
+func (r *RiskPhoneCheckRequest) MarshalJSON() ([]byte, error) {
+	type embed RiskPhoneCheckRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	riskContentClassifyRequestFieldText = big.NewInt(1 << 0)
 )
 
@@ -2572,6 +2621,587 @@ func NewRiskLimitObjectFromString(s string) (RiskLimitObject, error) {
 
 func (r RiskLimitObject) Ptr() *RiskLimitObject {
 	return &r
+}
+
+var (
+	riskPhoneCarrierFieldName              = big.NewInt(1 << 0)
+	riskPhoneCarrierFieldMobileCountryCode = big.NewInt(1 << 1)
+	riskPhoneCarrierFieldMobileNetworkCode = big.NewInt(1 << 2)
+)
+
+// riskPhoneCarrierNullableFields maps the wire names of RiskPhoneCarrier's nullable fields (required or optional) to their field bits.
+var riskPhoneCarrierNullableFields = map[string]*big.Int{
+	"name":                riskPhoneCarrierFieldName,
+	"mobile_country_code": riskPhoneCarrierFieldMobileCountryCode,
+	"mobile_network_code": riskPhoneCarrierFieldMobileNetworkCode,
+}
+
+type RiskPhoneCarrier struct {
+	Name              *string `json:"name,omitempty" url:"name,omitempty"`
+	MobileCountryCode *string `json:"mobile_country_code,omitempty" url:"mobile_country_code,omitempty"`
+	// Only for mobile numbers.
+	MobileNetworkCode *string `json:"mobile_network_code,omitempty" url:"mobile_network_code,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *RiskPhoneCarrier) GetName() *string {
+	if r == nil {
+		return nil
+	}
+	return r.Name
+}
+
+func (r *RiskPhoneCarrier) GetMobileCountryCode() *string {
+	if r == nil {
+		return nil
+	}
+	return r.MobileCountryCode
+}
+
+func (r *RiskPhoneCarrier) GetMobileNetworkCode() *string {
+	if r == nil {
+		return nil
+	}
+	return r.MobileNetworkCode
+}
+
+func (r *RiskPhoneCarrier) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *RiskPhoneCarrier) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCarrier) SetName(name *string) {
+	r.Name = name
+	r.require(riskPhoneCarrierFieldName)
+}
+
+// SetMobileCountryCode sets the MobileCountryCode field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCarrier) SetMobileCountryCode(mobileCountryCode *string) {
+	r.MobileCountryCode = mobileCountryCode
+	r.require(riskPhoneCarrierFieldMobileCountryCode)
+}
+
+// SetMobileNetworkCode sets the MobileNetworkCode field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCarrier) SetMobileNetworkCode(mobileNetworkCode *string) {
+	r.MobileNetworkCode = mobileNetworkCode
+	r.require(riskPhoneCarrierFieldMobileNetworkCode)
+}
+
+func (r *RiskPhoneCarrier) UnmarshalJSON(data []byte) error {
+	type unmarshaler RiskPhoneCarrier
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = RiskPhoneCarrier(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, riskPhoneCarrierNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		r.require(presentFields)
+	}
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *RiskPhoneCarrier) MarshalJSON() ([]byte, error) {
+	type embed RiskPhoneCarrier
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *RiskPhoneCarrier) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
+}
+
+var (
+	riskPhoneCheckFieldObject   = big.NewInt(1 << 0)
+	riskPhoneCheckFieldPhone    = big.NewInt(1 << 1)
+	riskPhoneCheckFieldValid    = big.NewInt(1 << 2)
+	riskPhoneCheckFieldCountry  = big.NewInt(1 << 3)
+	riskPhoneCheckFieldLineType = big.NewInt(1 << 4)
+	riskPhoneCheckFieldCarrier  = big.NewInt(1 << 5)
+	riskPhoneCheckFieldSimSwap  = big.NewInt(1 << 6)
+	riskPhoneCheckFieldDegraded = big.NewInt(1 << 7)
+)
+
+// riskPhoneCheckNullableFields maps the wire names of RiskPhoneCheck's nullable fields (required or optional) to their field bits.
+var riskPhoneCheckNullableFields = map[string]*big.Int{
+	"country":   riskPhoneCheckFieldCountry,
+	"line_type": riskPhoneCheckFieldLineType,
+	"carrier":   riskPhoneCheckFieldCarrier,
+	"sim_swap":  riskPhoneCheckFieldSimSwap,
+}
+
+type RiskPhoneCheck struct {
+	Object RiskPhoneCheckObject `json:"object" url:"object"`
+	// The number in E.164, or as given when it isn't.
+	Phone string `json:"phone" url:"phone"`
+	// A possible number in its country's numbering plan. When the lookup failed (`degraded`), only the E.164 syntax was checked.
+	Valid bool `json:"valid" url:"valid"`
+	// ISO 3166-1 alpha-2.
+	Country *string `json:"country,omitempty" url:"country,omitempty"`
+	// `fixed_voip` numbers belong to an address (cable, business lines); `non_fixed_voip` ones can be had online in minutes (Google Voice, app numbers), the kind used for throwaway accounts. `null` when it couldn't be looked up.
+	LineType *RiskPhoneCheckLineType `json:"line_type,omitempty" url:"line_type,omitempty"`
+	// The network the number is on now (after any port). `null` when unknown, and for toll-free, premium and personal numbers.
+	Carrier *RiskPhoneCarrier `json:"carrier,omitempty" url:"carrier,omitempty"`
+	// The mobile number's last SIM change. `null` where coss.com doesn't have that data (not every country and carrier).
+	SimSwap *RiskPhoneSimSwap `json:"sim_swap,omitempty" url:"sim_swap,omitempty"`
+	// `phone_data` when the lookup failed or timed out (or had no line type for the number); `sim_swap` when the carrier didn't answer about the SIM.
+	Degraded []RiskPhoneCheckDegradedItem `json:"degraded" url:"degraded"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *RiskPhoneCheck) GetObject() RiskPhoneCheckObject {
+	if r == nil {
+		return ""
+	}
+	return r.Object
+}
+
+func (r *RiskPhoneCheck) GetPhone() string {
+	if r == nil {
+		return ""
+	}
+	return r.Phone
+}
+
+func (r *RiskPhoneCheck) GetValid() bool {
+	if r == nil {
+		return false
+	}
+	return r.Valid
+}
+
+func (r *RiskPhoneCheck) GetCountry() *string {
+	if r == nil {
+		return nil
+	}
+	return r.Country
+}
+
+func (r *RiskPhoneCheck) GetLineType() *RiskPhoneCheckLineType {
+	if r == nil {
+		return nil
+	}
+	return r.LineType
+}
+
+func (r *RiskPhoneCheck) GetCarrier() *RiskPhoneCarrier {
+	if r == nil {
+		return nil
+	}
+	return r.Carrier
+}
+
+func (r *RiskPhoneCheck) GetSimSwap() *RiskPhoneSimSwap {
+	if r == nil {
+		return nil
+	}
+	return r.SimSwap
+}
+
+func (r *RiskPhoneCheck) GetDegraded() []RiskPhoneCheckDegradedItem {
+	if r == nil {
+		return nil
+	}
+	return r.Degraded
+}
+
+func (r *RiskPhoneCheck) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *RiskPhoneCheck) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetObject(object RiskPhoneCheckObject) {
+	r.Object = object
+	r.require(riskPhoneCheckFieldObject)
+}
+
+// SetPhone sets the Phone field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetPhone(phone string) {
+	r.Phone = phone
+	r.require(riskPhoneCheckFieldPhone)
+}
+
+// SetValid sets the Valid field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetValid(valid bool) {
+	r.Valid = valid
+	r.require(riskPhoneCheckFieldValid)
+}
+
+// SetCountry sets the Country field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetCountry(country *string) {
+	r.Country = country
+	r.require(riskPhoneCheckFieldCountry)
+}
+
+// SetLineType sets the LineType field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetLineType(lineType *RiskPhoneCheckLineType) {
+	r.LineType = lineType
+	r.require(riskPhoneCheckFieldLineType)
+}
+
+// SetCarrier sets the Carrier field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetCarrier(carrier *RiskPhoneCarrier) {
+	r.Carrier = carrier
+	r.require(riskPhoneCheckFieldCarrier)
+}
+
+// SetSimSwap sets the SimSwap field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetSimSwap(simSwap *RiskPhoneSimSwap) {
+	r.SimSwap = simSwap
+	r.require(riskPhoneCheckFieldSimSwap)
+}
+
+// SetDegraded sets the Degraded field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneCheck) SetDegraded(degraded []RiskPhoneCheckDegradedItem) {
+	r.Degraded = degraded
+	r.require(riskPhoneCheckFieldDegraded)
+}
+
+func (r *RiskPhoneCheck) UnmarshalJSON(data []byte) error {
+	type unmarshaler RiskPhoneCheck
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = RiskPhoneCheck(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, riskPhoneCheckNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		r.require(presentFields)
+	}
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *RiskPhoneCheck) MarshalJSON() ([]byte, error) {
+	type embed RiskPhoneCheck
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *RiskPhoneCheck) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
+}
+
+type RiskPhoneCheckDegradedItem string
+
+const (
+	RiskPhoneCheckDegradedItemPhoneData RiskPhoneCheckDegradedItem = "phone_data"
+	RiskPhoneCheckDegradedItemSimSwap   RiskPhoneCheckDegradedItem = "sim_swap"
+)
+
+func NewRiskPhoneCheckDegradedItemFromString(s string) (RiskPhoneCheckDegradedItem, error) {
+	switch s {
+	case "phone_data":
+		return RiskPhoneCheckDegradedItemPhoneData, nil
+	case "sim_swap":
+		return RiskPhoneCheckDegradedItemSimSwap, nil
+	}
+	var t RiskPhoneCheckDegradedItem
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r RiskPhoneCheckDegradedItem) Ptr() *RiskPhoneCheckDegradedItem {
+	return &r
+}
+
+// `fixed_voip` numbers belong to an address (cable, business lines); `non_fixed_voip` ones can be had online in minutes (Google Voice, app numbers), the kind used for throwaway accounts. `null` when it couldn't be looked up.
+type RiskPhoneCheckLineType string
+
+const (
+	RiskPhoneCheckLineTypeMobile       RiskPhoneCheckLineType = "mobile"
+	RiskPhoneCheckLineTypeLandline     RiskPhoneCheckLineType = "landline"
+	RiskPhoneCheckLineTypeFixedVoip    RiskPhoneCheckLineType = "fixed_voip"
+	RiskPhoneCheckLineTypeNonFixedVoip RiskPhoneCheckLineType = "non_fixed_voip"
+	RiskPhoneCheckLineTypeTollFree     RiskPhoneCheckLineType = "toll_free"
+	RiskPhoneCheckLineTypePremium      RiskPhoneCheckLineType = "premium"
+	RiskPhoneCheckLineTypeSharedCost   RiskPhoneCheckLineType = "shared_cost"
+	RiskPhoneCheckLineTypePersonal     RiskPhoneCheckLineType = "personal"
+	RiskPhoneCheckLineTypeUan          RiskPhoneCheckLineType = "uan"
+	RiskPhoneCheckLineTypeVoicemail    RiskPhoneCheckLineType = "voicemail"
+	RiskPhoneCheckLineTypePager        RiskPhoneCheckLineType = "pager"
+	RiskPhoneCheckLineTypeUnknown      RiskPhoneCheckLineType = "unknown"
+)
+
+func NewRiskPhoneCheckLineTypeFromString(s string) (RiskPhoneCheckLineType, error) {
+	switch s {
+	case "mobile":
+		return RiskPhoneCheckLineTypeMobile, nil
+	case "landline":
+		return RiskPhoneCheckLineTypeLandline, nil
+	case "fixed_voip":
+		return RiskPhoneCheckLineTypeFixedVoip, nil
+	case "non_fixed_voip":
+		return RiskPhoneCheckLineTypeNonFixedVoip, nil
+	case "toll_free":
+		return RiskPhoneCheckLineTypeTollFree, nil
+	case "premium":
+		return RiskPhoneCheckLineTypePremium, nil
+	case "shared_cost":
+		return RiskPhoneCheckLineTypeSharedCost, nil
+	case "personal":
+		return RiskPhoneCheckLineTypePersonal, nil
+	case "uan":
+		return RiskPhoneCheckLineTypeUan, nil
+	case "voicemail":
+		return RiskPhoneCheckLineTypeVoicemail, nil
+	case "pager":
+		return RiskPhoneCheckLineTypePager, nil
+	case "unknown":
+		return RiskPhoneCheckLineTypeUnknown, nil
+	}
+	var t RiskPhoneCheckLineType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r RiskPhoneCheckLineType) Ptr() *RiskPhoneCheckLineType {
+	return &r
+}
+
+type RiskPhoneCheckObject string
+
+const (
+	RiskPhoneCheckObjectRiskPhoneCheck RiskPhoneCheckObject = "risk_phone_check"
+)
+
+func NewRiskPhoneCheckObjectFromString(s string) (RiskPhoneCheckObject, error) {
+	switch s {
+	case "risk_phone_check":
+		return RiskPhoneCheckObjectRiskPhoneCheck, nil
+	}
+	var t RiskPhoneCheckObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r RiskPhoneCheckObject) Ptr() *RiskPhoneCheckObject {
+	return &r
+}
+
+var (
+	riskPhoneSimSwapFieldRecent    = big.NewInt(1 << 0)
+	riskPhoneSimSwapFieldSwappedAt = big.NewInt(1 << 1)
+	riskPhoneSimSwapFieldPeriod    = big.NewInt(1 << 2)
+)
+
+// riskPhoneSimSwapNullableFields maps the wire names of RiskPhoneSimSwap's nullable fields (required or optional) to their field bits.
+var riskPhoneSimSwapNullableFields = map[string]*big.Int{
+	"swapped_at": riskPhoneSimSwapFieldSwappedAt,
+	"period":     riskPhoneSimSwapFieldPeriod,
+}
+
+type RiskPhoneSimSwap struct {
+	// The SIM changed within `period`: someone may have taken the number over.
+	Recent bool `json:"recent" url:"recent"`
+	// The last SIM change, where the carrier tells the date.
+	SwappedAt *string `json:"swapped_at,omitempty" url:"swapped_at,omitempty"`
+	// What `recent` means, as an ISO 8601 duration (`PT48H`).
+	Period *string `json:"period,omitempty" url:"period,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *RiskPhoneSimSwap) GetRecent() bool {
+	if r == nil {
+		return false
+	}
+	return r.Recent
+}
+
+func (r *RiskPhoneSimSwap) GetSwappedAt() *string {
+	if r == nil {
+		return nil
+	}
+	return r.SwappedAt
+}
+
+func (r *RiskPhoneSimSwap) GetPeriod() *string {
+	if r == nil {
+		return nil
+	}
+	return r.Period
+}
+
+func (r *RiskPhoneSimSwap) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *RiskPhoneSimSwap) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetRecent sets the Recent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneSimSwap) SetRecent(recent bool) {
+	r.Recent = recent
+	r.require(riskPhoneSimSwapFieldRecent)
+}
+
+// SetSwappedAt sets the SwappedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneSimSwap) SetSwappedAt(swappedAt *string) {
+	r.SwappedAt = swappedAt
+	r.require(riskPhoneSimSwapFieldSwappedAt)
+}
+
+// SetPeriod sets the Period field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *RiskPhoneSimSwap) SetPeriod(period *string) {
+	r.Period = period
+	r.require(riskPhoneSimSwapFieldPeriod)
+}
+
+func (r *RiskPhoneSimSwap) UnmarshalJSON(data []byte) error {
+	type unmarshaler RiskPhoneSimSwap
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = RiskPhoneSimSwap(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, riskPhoneSimSwapNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		r.require(presentFields)
+	}
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *RiskPhoneSimSwap) MarshalJSON() ([]byte, error) {
+	type embed RiskPhoneSimSwap
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *RiskPhoneSimSwap) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
 }
 
 var (

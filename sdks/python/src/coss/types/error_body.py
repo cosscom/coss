@@ -30,6 +30,11 @@ class ErrorBody(UniversalBaseModel):
     Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`).
     """
 
+    hint: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    What to try next. Present when coss.com can name a fix, and often includes a docs URL.
+    """
+
     request_id: str
 
     if IS_PYDANTIC_V2:

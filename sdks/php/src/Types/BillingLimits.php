@@ -35,11 +35,18 @@ class BillingLimits extends JsonSerializableType
     public ?int $contactsPerEnvironment;
 
     /**
+     * @var ?int $inboxes
+     */
+    #[JsonProperty('inboxes')]
+    public ?int $inboxes;
+
+    /**
      * @param array{
      *   domains?: ?int,
      *   members?: ?int,
      *   webhookEndpointsPerEnvironment?: ?int,
      *   contactsPerEnvironment?: ?int,
+     *   inboxes?: ?int,
      * } $values
      */
     public function __construct(
@@ -60,6 +67,10 @@ class BillingLimits extends JsonSerializableType
         $this->contactsPerEnvironment = $values['contactsPerEnvironment'] ?? null;
         if (array_key_exists('contactsPerEnvironment', $values)) {
             $this->_setField('contactsPerEnvironment');
+        }
+        $this->inboxes = $values['inboxes'] ?? null;
+        if (array_key_exists('inboxes', $values)) {
+            $this->_setField('inboxes');
         }
     }
 

@@ -2,4 +2,4 @@
 
 import typing
 
-ContactSource = typing.Union[typing.Literal["api", "dashboard", "import", "preference_center"], typing.Any]
+ContactSource = typing.Union[typing.Literal["api", "dashboard", "import", "preference_center", "form"], typing.Any]

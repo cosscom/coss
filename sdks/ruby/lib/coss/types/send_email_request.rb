@@ -40,6 +40,8 @@ module Coss
       field :tracking, -> { Coss::Types::TrackingOptions }, optional: true, nullable: false
 
       field :stream, -> { Coss::Types::SendEmailRequestStream }, optional: true, nullable: false
+
+      field :subaccount, -> { String }, optional: true, nullable: false
     end
   end
 end

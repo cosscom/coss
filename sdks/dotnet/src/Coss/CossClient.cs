@@ -1,5 +1,6 @@
 using Coss.Core;
 using Coss.Hooks;
+using Coss.Sign;
 
 namespace Coss;
 
@@ -24,7 +25,7 @@ public partial class CossClient : ICossClient
                 { "X-Fern-Language", "C#" },
                 { "X-Fern-SDK-Name", "Coss" },
                 { "X-Fern-SDK-Version", global::Coss.Version.Current },
-                { "User-Agent", "coss-dotnet/0.1.0" },
+                { "User-Agent", "coss-dotnet/0.2.0" },
             }
         );
         foreach (var header in platformHeaders)
@@ -55,13 +56,17 @@ public partial class CossClient : ICossClient
         WebhookListeners = new WebhookListenersClient(_client);
         WebhookEvents = new WebhookEventsClient(_client);
         Sms = new SmsClient(_client);
+        Verify = new VerifyClient(_client);
+        Forms = new FormsClient(_client);
         Reputation = new ReputationClient(_client);
         Logs = new LogsClient(_client);
         AuditEvents = new AuditEventsClient(_client);
         Billing = new BillingClient(_client);
         LogDrains = new LogDrainsClient(_client);
+        Inboxes = new InboxesClient(_client);
         Risk = new RiskClient(_client);
         Hooks = new HooksClient(_client);
+        Sign = new SignClient(_client);
     }
 
     public IEnvironmentClient Environment { get; }
@@ -80,6 +85,10 @@ public partial class CossClient : ICossClient
 
     public ISmsClient Sms { get; }
 
+    public IVerifyClient Verify { get; }
+
+    public IFormsClient Forms { get; }
+
     public IReputationClient Reputation { get; }
 
     public ILogsClient Logs { get; }
@@ -90,9 +99,13 @@ public partial class CossClient : ICossClient
 
     public ILogDrainsClient LogDrains { get; }
 
+    public IInboxesClient Inboxes { get; }
+
     public IRiskClient Risk { get; }
 
     public IHooksClient Hooks { get; }
+
+    public ISignClient Sign { get; }
 
     private static string GetFromEnvironmentOrThrow(string env, string message)
     {

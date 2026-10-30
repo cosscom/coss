@@ -11,6 +11,8 @@ import com.coss.resources.domains.receiving.AsyncReceivingClient;
 import com.coss.resources.domains.requests.CreateDomainRequest;
 import com.coss.resources.domains.requests.DeleteDomainsRequest;
 import com.coss.resources.domains.requests.GetDomainsRequest;
+import com.coss.resources.domains.requests.ListDomainsRequest;
+import com.coss.resources.domains.requests.UpdateDomainRequest;
 import com.coss.resources.domains.requests.VerifyDomainsRequest;
 import com.coss.resources.domains.tracking.AsyncTrackingClient;
 import com.coss.types.DeletedDomain;
@@ -57,6 +59,20 @@ public class AsyncDomainsClient {
      */
     public CompletableFuture<DomainList> list(RequestOptions requestOptions) {
         return this.rawClient.list(requestOptions).thenApply(response -> response.body());
+    }
+
+    /**
+     * Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
+     */
+    public CompletableFuture<DomainList> list(ListDomainsRequest request) {
+        return this.rawClient.list(request).thenApply(response -> response.body());
+    }
+
+    /**
+     * Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
+     */
+    public CompletableFuture<DomainList> list(ListDomainsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).thenApply(response -> response.body());
     }
 
     /**
@@ -128,6 +144,20 @@ public class AsyncDomainsClient {
     public CompletableFuture<DeletedDomain> delete(
             String id, DeleteDomainsRequest request, RequestOptions requestOptions) {
         return this.rawClient.delete(id, request, requestOptions).thenApply(response -> response.body());
+    }
+
+    /**
+     * Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+     */
+    public CompletableFuture<Domain> update(String id, UpdateDomainRequest request) {
+        return this.rawClient.update(id, request).thenApply(response -> response.body());
+    }
+
+    /**
+     * Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+     */
+    public CompletableFuture<Domain> update(String id, UpdateDomainRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(id, request, requestOptions).thenApply(response -> response.body());
     }
 
     /**

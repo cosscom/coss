@@ -45,9 +45,17 @@ public final class WebhookTestEventEvent {
         } else if (this.type == 5) {
             return visitor.visit((BroadcastWebhookEvent) this.value);
         } else if (this.type == 6) {
-            return visitor.visit((SmsWebhookEvent) this.value);
+            return visitor.visit((InboxMessageReceivedWebhookEvent) this.value);
         } else if (this.type == 7) {
+            return visitor.visit((SmsWebhookEvent) this.value);
+        } else if (this.type == 8) {
             return visitor.visit((ReceivedSmsWebhookEvent) this.value);
+        } else if (this.type == 9) {
+            return visitor.visit((SignRequestWebhookEvent) this.value);
+        } else if (this.type == 10) {
+            return visitor.visit((VerificationWebhookEvent) this.value);
+        } else if (this.type == 11) {
+            return visitor.visit((FormSubmissionWebhookEvent) this.value);
         }
         throw new IllegalStateException("Failed to visit value. This should never happen.");
     }
@@ -96,12 +104,28 @@ public final class WebhookTestEventEvent {
         return new WebhookTestEventEvent(value, 5);
     }
 
-    public static WebhookTestEventEvent of(SmsWebhookEvent value) {
+    public static WebhookTestEventEvent of(InboxMessageReceivedWebhookEvent value) {
         return new WebhookTestEventEvent(value, 6);
     }
 
-    public static WebhookTestEventEvent of(ReceivedSmsWebhookEvent value) {
+    public static WebhookTestEventEvent of(SmsWebhookEvent value) {
         return new WebhookTestEventEvent(value, 7);
+    }
+
+    public static WebhookTestEventEvent of(ReceivedSmsWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 8);
+    }
+
+    public static WebhookTestEventEvent of(SignRequestWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 9);
+    }
+
+    public static WebhookTestEventEvent of(VerificationWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 10);
+    }
+
+    public static WebhookTestEventEvent of(FormSubmissionWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 11);
     }
 
     public interface Visitor<T> {
@@ -117,9 +141,17 @@ public final class WebhookTestEventEvent {
 
         T visit(BroadcastWebhookEvent value);
 
+        T visit(InboxMessageReceivedWebhookEvent value);
+
         T visit(SmsWebhookEvent value);
 
         T visit(ReceivedSmsWebhookEvent value);
+
+        T visit(SignRequestWebhookEvent value);
+
+        T visit(VerificationWebhookEvent value);
+
+        T visit(FormSubmissionWebhookEvent value);
     }
 
     static final class Deserializer extends StdDeserializer<WebhookTestEventEvent> {
@@ -210,6 +242,18 @@ public final class WebhookTestEventEvent {
                     && ((Map<?, ?>) value).containsKey("created_at")
                     && ((Map<?, ?>) value).containsKey("data")) {
                 try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, InboxMessageReceivedWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
                     return of(ObjectMappers.JSON_MAPPER.convertValue(value, SmsWebhookEvent.class));
                 } catch (RuntimeException e) {
                 }
@@ -223,6 +267,42 @@ public final class WebhookTestEventEvent {
                     && ((Map<?, ?>) value).containsKey("data")) {
                 try {
                     return of(ObjectMappers.JSON_MAPPER.convertValue(value, ReceivedSmsWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SignRequestWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, VerificationWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, FormSubmissionWebhookEvent.class));
                 } catch (RuntimeException e) {
                 }
             }

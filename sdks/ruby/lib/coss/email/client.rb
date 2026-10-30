@@ -27,6 +27,7 @@ module Coss
       # @option params [String, nil] :q
       # @option params [String, nil] :category
       # @option params [String, nil] :batch_id
+      # @option params [String, nil] :subaccount
       # @option params [String, nil] :created_after
       # @option params [String, nil] :created_before
       # @option params [Integer, nil] :limit
@@ -45,6 +46,7 @@ module Coss
         query_params["q"] = params[:q] if params.key?(:q)
         query_params["category"] = params[:category] if params.key?(:category)
         query_params["batch_id"] = params[:batch_id] if params.key?(:batch_id)
+        query_params["subaccount"] = params[:subaccount] if params.key?(:subaccount)
         query_params["created_after"] = params[:created_after] if params.key?(:created_after)
         query_params["created_before"] = params[:created_before] if params.key?(:created_before)
         query_params["limit"] = params[:limit] if params.key?(:limit)
@@ -458,6 +460,11 @@ module Coss
       # @return [Coss::Suppressions::Client]
       def suppressions
         @suppressions ||= Coss::Email::Suppressions::Client.new(client: @client)
+      end
+
+      # @return [Coss::Subaccounts::Client]
+      def subaccounts
+        @subaccounts ||= Coss::Email::Subaccounts::Client.new(client: @client)
       end
 
       # @return [Coss::Tracking::Client]

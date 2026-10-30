@@ -10,13 +10,17 @@ use Coss\WebhookEndpoints\WebhookEndpointsClient;
 use Coss\WebhookListeners\WebhookListenersClient;
 use Coss\WebhookEvents\WebhookEventsClient;
 use Coss\Sms\SmsClient;
+use Coss\Verify\VerifyClient;
+use Coss\Forms\FormsClient;
 use Coss\Reputation\ReputationClient;
 use Coss\Logs\LogsClient;
 use Coss\AuditEvents\AuditEventsClient;
 use Coss\Billing\BillingClient;
 use Coss\LogDrains\LogDrainsClient;
+use Coss\Inboxes\InboxesClient;
 use Coss\Risk\RiskClient;
 use Coss\Hooks\HooksClient;
+use Coss\Sign\SignClient;
 use Psr\Http\Client\ClientInterface;
 use Coss\Core\Client\RawClient;
 use Exception;
@@ -64,6 +68,16 @@ class Coss
     public SmsClient $sms;
 
     /**
+     * @var VerifyClient $verify
+     */
+    public VerifyClient $verify;
+
+    /**
+     * @var FormsClient $forms
+     */
+    public FormsClient $forms;
+
+    /**
      * @var ReputationClient $reputation
      */
     public ReputationClient $reputation;
@@ -89,6 +103,11 @@ class Coss
     public LogDrainsClient $logDrains;
 
     /**
+     * @var InboxesClient $inboxes
+     */
+    public InboxesClient $inboxes;
+
+    /**
      * @var RiskClient $risk
      */
     public RiskClient $risk;
@@ -97,6 +116,11 @@ class Coss
      * @var HooksClient $hooks
      */
     public HooksClient $hooks;
+
+    /**
+     * @var SignClient $sign
+     */
+    public SignClient $sign;
 
     /**
      * @var array{
@@ -136,8 +160,8 @@ class Coss
             'Authorization' => "Bearer $apiKey",
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Coss',
-            'X-Fern-SDK-Version' => '0.1.0',
-            'User-Agent' => 'coss-php/0.1.0',
+            'X-Fern-SDK-Version' => '0.2.0',
+            'User-Agent' => 'coss-php/0.2.0',
         ];
         if ($apiVersion != null) {
             $defaultHeaders['Coss-Version'] = $apiVersion;
@@ -162,13 +186,17 @@ class Coss
         $this->webhookListeners = new WebhookListenersClient($this->client, $this->options);
         $this->webhookEvents = new WebhookEventsClient($this->client, $this->options);
         $this->sms = new SmsClient($this->client, $this->options);
+        $this->verify = new VerifyClient($this->client, $this->options);
+        $this->forms = new FormsClient($this->client, $this->options);
         $this->reputation = new ReputationClient($this->client, $this->options);
         $this->logs = new LogsClient($this->client, $this->options);
         $this->auditEvents = new AuditEventsClient($this->client, $this->options);
         $this->billing = new BillingClient($this->client, $this->options);
         $this->logDrains = new LogDrainsClient($this->client, $this->options);
+        $this->inboxes = new InboxesClient($this->client, $this->options);
         $this->risk = new RiskClient($this->client, $this->options);
         $this->hooks = new HooksClient($this->client, $this->options);
+        $this->sign = new SignClient($this->client, $this->options);
     }
 
     /**

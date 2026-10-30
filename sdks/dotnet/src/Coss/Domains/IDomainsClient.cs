@@ -12,6 +12,7 @@ public partial interface IDomainsClient
     /// Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
     /// </summary>
     WithRawResponseTask<DomainList> ListAsync(
+        ListDomainsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -39,6 +40,15 @@ public partial interface IDomainsClient
     /// </summary>
     WithRawResponseTask<DeletedDomain> DeleteAsync(
         DeleteDomainsRequest request,
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+    /// </summary>
+    WithRawResponseTask<Domain> UpdateAsync(
+        UpdateDomainRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

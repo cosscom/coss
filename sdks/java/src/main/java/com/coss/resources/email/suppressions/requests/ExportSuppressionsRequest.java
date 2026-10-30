@@ -22,6 +22,8 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ExportSuppressionsRequest.Builder.class)
 public final class ExportSuppressionsRequest {
+    private final Optional<String> subaccount;
+
     private final Optional<ExportSuppressionsRequestScope> scope;
 
     private final Optional<ExportSuppressionsRequestReason> reason;
@@ -29,12 +31,22 @@ public final class ExportSuppressionsRequest {
     private final Map<String, Object> additionalProperties;
 
     private ExportSuppressionsRequest(
+            Optional<String> subaccount,
             Optional<ExportSuppressionsRequestScope> scope,
             Optional<ExportSuppressionsRequestReason> reason,
             Map<String, Object> additionalProperties) {
+        this.subaccount = subaccount;
         this.scope = scope;
         this.reason = reason;
         this.additionalProperties = additionalProperties;
+    }
+
+    /**
+     * @return Export a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
     }
 
     /**
@@ -65,12 +77,12 @@ public final class ExportSuppressionsRequest {
     }
 
     private boolean equalTo(ExportSuppressionsRequest other) {
-        return scope.equals(other.scope) && reason.equals(other.reason);
+        return subaccount.equals(other.subaccount) && scope.equals(other.scope) && reason.equals(other.reason);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.scope, this.reason);
+        return Objects.hash(this.subaccount, this.scope, this.reason);
     }
 
     @java.lang.Override
@@ -84,6 +96,8 @@ public final class ExportSuppressionsRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
+        private Optional<String> subaccount = Optional.empty();
+
         private Optional<ExportSuppressionsRequestScope> scope = Optional.empty();
 
         private Optional<ExportSuppressionsRequestReason> reason = Optional.empty();
@@ -94,8 +108,23 @@ public final class ExportSuppressionsRequest {
         private Builder() {}
 
         public Builder from(ExportSuppressionsRequest other) {
+            subaccount(other.getSubaccount());
             scope(other.getScope());
             reason(other.getReason());
+            return this;
+        }
+
+        /**
+         * <p>Export a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         */
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public Builder subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
+            return this;
+        }
+
+        public Builder subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
             return this;
         }
 
@@ -128,7 +157,7 @@ public final class ExportSuppressionsRequest {
         }
 
         public ExportSuppressionsRequest build() {
-            return new ExportSuppressionsRequest(scope, reason, additionalProperties);
+            return new ExportSuppressionsRequest(subaccount, scope, reason, additionalProperties);
         }
 
         public Builder additionalProperty(String key, Object value) {

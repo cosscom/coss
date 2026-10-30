@@ -3,5 +3,5 @@
 import typing
 
 ContactWebhookEventDataSource = typing.Union[
-    typing.Literal["api", "dashboard", "import", "preference_center"], typing.Any
+    typing.Literal["api", "dashboard", "import", "preference_center", "form"], typing.Any
 ]

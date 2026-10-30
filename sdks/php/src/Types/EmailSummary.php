@@ -146,6 +146,12 @@ class EmailSummary extends JsonSerializableType
     public ?string $broadcastId;
 
     /**
+     * @var ?string $subaccountId The sub-account the email was sent for; `null` if it was sent for none.
+     */
+    #[JsonProperty('subaccount_id')]
+    public ?string $subaccountId;
+
+    /**
      * @var EmailContentStorage $contentStorage
      */
     #[JsonProperty('content_storage')]
@@ -176,6 +182,7 @@ class EmailSummary extends JsonSerializableType
      *   batchId?: ?string,
      *   template?: ?EmailTemplateReference,
      *   broadcastId?: ?string,
+     *   subaccountId?: ?string,
      * } $values
      */
     public function __construct(
@@ -223,6 +230,10 @@ class EmailSummary extends JsonSerializableType
         $this->broadcastId = $values['broadcastId'] ?? null;
         if (array_key_exists('broadcastId', $values)) {
             $this->_setField('broadcastId');
+        }
+        $this->subaccountId = $values['subaccountId'] ?? null;
+        if (array_key_exists('subaccountId', $values)) {
+            $this->_setField('subaccountId');
         }
         $this->contentStorage = $values['contentStorage'];
     }

@@ -55,15 +55,19 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
+//	request := &coss.ListDomainsRequest{}
 //	client.Domains.List(
 //	    context.TODO(),
+//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
+	request *coss.ListDomainsRequest,
 	opts ...option.RequestOption,
 ) (*coss.DomainList, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
+		request,
 		opts...,
 	)
 	if err != nil {
@@ -143,6 +147,34 @@ func (c *Client) Delete(
 	opts ...option.RequestOption,
 ) (*coss.DeletedDomain, error) {
 	response, err := c.WithRawResponse.Delete(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+//
+// Example:
+//
+//	request := &coss.UpdateDomainRequest{
+//	    ID: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+//	    SharedWithSubaccounts: true,
+//	}
+//	client.Domains.Update(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) Update(
+	ctx context.Context,
+	request *coss.UpdateDomainRequest,
+	opts ...option.RequestOption,
+) (*coss.Domain, error) {
+	response, err := c.WithRawResponse.Update(
 		ctx,
 		request,
 		opts...,

@@ -18,6 +18,8 @@ public readonly record struct ContactWebhookEventDataSource : IStringEnum
         Values.PreferenceCenter
     );
 
+    public static readonly ContactWebhookEventDataSource Form = new(Values.Form);
+
     public ContactWebhookEventDataSource(string value)
     {
         Value = value;
@@ -122,5 +124,7 @@ public readonly record struct ContactWebhookEventDataSource : IStringEnum
         public const string Import = "import";
 
         public const string PreferenceCenter = "preference_center";
+
+        public const string Form = "form";
     }
 }

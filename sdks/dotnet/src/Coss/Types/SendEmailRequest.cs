@@ -125,6 +125,13 @@ public record SendEmailRequest : IJsonOnDeserialized
     [JsonPropertyName("stream")]
     public SendEmailRequestStream? Stream { get; set; }
 
+    /// <summary>
+    /// Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("subaccount")]
+    public string? Subaccount { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

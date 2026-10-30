@@ -1802,7 +1802,7 @@ public partial class TemplatesClient : ITemplatesClient
     /// The environment's templates, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
     /// </summary>
     /// <example><code>
-    /// await client.Email.Templates.ListAsync(new ListTemplatesRequest());
+    /// await client.Email.Templates.ListAsync(new Coss.Email.ListTemplatesRequest());
     /// </code></example>
     public WithRawResponseTask<EmailTemplateList> ListAsync(
         ListTemplatesRequest request,
@@ -1869,7 +1869,7 @@ public partial class TemplatesClient : ITemplatesClient
     /// </summary>
     /// <example><code>
     /// await client.Email.Templates.GetAsync(
-    ///     new GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+    ///     new Coss.Email.GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
     /// );
     /// </code></example>
     public WithRawResponseTask<EmailTemplate> GetAsync(

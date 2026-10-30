@@ -80,6 +80,19 @@ public record Domain : IJsonOnDeserialized
     [JsonPropertyName("bimi")]
     public required DomainBimi Bimi { get; set; }
 
+    /// <summary>
+    /// The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("subaccount_id")]
+    public string? SubaccountId { get; set; }
+
+    /// <summary>
+    /// An organization's domain its sub-accounts may send from too.
+    /// </summary>
+    [JsonPropertyName("shared_with_subaccounts")]
+    public required bool SharedWithSubaccounts { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

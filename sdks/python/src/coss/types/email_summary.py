@@ -73,6 +73,11 @@ class EmailSummary(UniversalBaseModel):
     The broadcast the email is part of; `null` for any other email.
     """
 
+    subaccount_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The sub-account the email was sent for; `null` if it was sent for none.
+    """
+
     content_storage: EmailContentStorage
 
     if IS_PYDANTIC_V2:

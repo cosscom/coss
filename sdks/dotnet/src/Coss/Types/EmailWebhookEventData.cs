@@ -96,6 +96,13 @@ public record EmailWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("occurred_at")]
     public required DateTime OccurredAt { get; set; }
 
+    /// <summary>
+    /// Only for an email sent for a sub-account: its id.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("subaccount_id")]
+    public string? SubaccountId { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

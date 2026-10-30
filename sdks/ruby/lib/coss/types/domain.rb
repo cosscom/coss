@@ -34,6 +34,10 @@ module Coss
       field :receiving, -> { Coss::Types::ReceivingDomain }, optional: false, nullable: true
 
       field :bimi, -> { Coss::Types::DomainBimi }, optional: false, nullable: false
+
+      field :subaccount_id, -> { String }, optional: false, nullable: true
+
+      field :shared_with_subaccounts, -> { Internal::Types::Boolean }, optional: false, nullable: false
     end
   end
 end

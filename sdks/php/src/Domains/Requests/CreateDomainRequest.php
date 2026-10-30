@@ -14,13 +14,24 @@ class CreateDomainRequest extends JsonSerializableType
     public string $name;
 
     /**
+     * @var ?string $subaccount Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
+     */
+    #[JsonProperty('subaccount')]
+    public ?string $subaccount;
+
+    /**
      * @param array{
      *   name: string,
+     *   subaccount?: ?string,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
         $this->name = $values['name'];
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
+        }
     }
 }

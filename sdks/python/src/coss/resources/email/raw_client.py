@@ -60,6 +60,7 @@ class RawEmailClient:
         q: typing.Optional[str] = None,
         category: typing.Optional[str] = None,
         batch_id: typing.Optional[str] = None,
+        subaccount: typing.Optional[str] = None,
         created_after: typing.Optional[dt.datetime] = None,
         created_before: typing.Optional[dt.datetime] = None,
         limit: typing.Optional[int] = None,
@@ -88,6 +89,9 @@ class RawEmailClient:
 
         batch_id : typing.Optional[str]
             Only the emails of this batch.
+
+        subaccount : typing.Optional[str]
+            Only the emails sent for this sub-account (its id or your uid).
 
         created_after : typing.Optional[dt.datetime]
             Only emails created at or after this time.
@@ -119,6 +123,7 @@ class RawEmailClient:
                 "q": q,
                 "category": category,
                 "batch_id": batch_id,
+                "subaccount": subaccount,
                 "created_after": serialize_datetime(created_after) if created_after is not None else None,
                 "created_before": serialize_datetime(created_before) if created_before is not None else None,
                 "limit": limit,
@@ -245,6 +250,7 @@ class RawEmailClient:
         attachments: typing.Optional[typing.Sequence[SendEmailAttachment]] = OMIT,
         tracking: typing.Optional[TrackingOptions] = OMIT,
         stream: typing.Optional[SendEmailRequestStream] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Email]:
         """
@@ -306,6 +312,9 @@ class RawEmailClient:
         stream : typing.Optional[SendEmailRequestStream]
             `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
 
+        subaccount : typing.Optional[str]
+            Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -351,6 +360,7 @@ class RawEmailClient:
                     object_=tracking, annotation=TrackingOptions, direction="write"
                 ),
                 "stream": stream,
+                "subaccount": subaccount,
             },
             headers={
                 "content-type": "application/json",
@@ -1457,6 +1467,7 @@ class AsyncRawEmailClient:
         q: typing.Optional[str] = None,
         category: typing.Optional[str] = None,
         batch_id: typing.Optional[str] = None,
+        subaccount: typing.Optional[str] = None,
         created_after: typing.Optional[dt.datetime] = None,
         created_before: typing.Optional[dt.datetime] = None,
         limit: typing.Optional[int] = None,
@@ -1485,6 +1496,9 @@ class AsyncRawEmailClient:
 
         batch_id : typing.Optional[str]
             Only the emails of this batch.
+
+        subaccount : typing.Optional[str]
+            Only the emails sent for this sub-account (its id or your uid).
 
         created_after : typing.Optional[dt.datetime]
             Only emails created at or after this time.
@@ -1516,6 +1530,7 @@ class AsyncRawEmailClient:
                 "q": q,
                 "category": category,
                 "batch_id": batch_id,
+                "subaccount": subaccount,
                 "created_after": serialize_datetime(created_after) if created_after is not None else None,
                 "created_before": serialize_datetime(created_before) if created_before is not None else None,
                 "limit": limit,
@@ -1642,6 +1657,7 @@ class AsyncRawEmailClient:
         attachments: typing.Optional[typing.Sequence[SendEmailAttachment]] = OMIT,
         tracking: typing.Optional[TrackingOptions] = OMIT,
         stream: typing.Optional[SendEmailRequestStream] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Email]:
         """
@@ -1703,6 +1719,9 @@ class AsyncRawEmailClient:
         stream : typing.Optional[SendEmailRequestStream]
             `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
 
+        subaccount : typing.Optional[str]
+            Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1748,6 +1767,7 @@ class AsyncRawEmailClient:
                     object_=tracking, annotation=TrackingOptions, direction="write"
                 ),
                 "stream": stream,
+                "subaccount": subaccount,
             },
             headers={
                 "content-type": "application/json",

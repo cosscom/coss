@@ -38,12 +38,17 @@ class DomainsClient:
         """
         return self._raw_client
 
-    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> DomainList:
+    def list(
+        self, *, subaccount: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+    ) -> DomainList:
         """
         Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Only this sub-account's domains (its id or your uid).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -62,10 +67,16 @@ class DomainsClient:
         )
         client.domains.list()
         """
-        _response = self._raw_client.list(request_options=request_options)
+        _response = self._raw_client.list(subaccount=subaccount, request_options=request_options)
         return _response.data
 
-    def create(self, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> Domain:
+    def create(
+        self,
+        *,
+        name: str,
+        subaccount: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Domain:
         """
         Claims the domain for the organization and returns the DNS records to publish. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains. The records are checked repeatedly in the background and verification gives up after 72 hours; until the domain is `verified`, live keys cannot send from it.
 
@@ -73,6 +84,9 @@ class DomainsClient:
         ----------
         name : str
             The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
+
+        subaccount : typing.Optional[str]
+            Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -94,7 +108,7 @@ class DomainsClient:
             name="acme.com",
         )
         """
-        _response = self._raw_client.create(name=name, request_options=request_options)
+        _response = self._raw_client.create(name=name, subaccount=subaccount, request_options=request_options)
         return _response.data
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Domain:
@@ -159,6 +173,46 @@ class DomainsClient:
         )
         """
         _response = self._raw_client.delete(id, request_options=request_options)
+        return _response.data
+
+    def update(
+        self, id: str, *, shared_with_subaccounts: bool, request_options: typing.Optional[RequestOptions] = None
+    ) -> Domain:
+        """
+        Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+
+        Parameters
+        ----------
+        id : str
+            The domain's id.
+
+        shared_with_subaccounts : bool
+            Let your sub-accounts send from this domain of yours (through your organization's reputation).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Domain
+            The domain.
+
+        Examples
+        --------
+        from coss import Coss
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.domains.update(
+            id="dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            shared_with_subaccounts=True,
+        )
+        """
+        _response = self._raw_client.update(
+            id, shared_with_subaccounts=shared_with_subaccounts, request_options=request_options
+        )
         return _response.data
 
     def verify(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Domain:
@@ -237,12 +291,17 @@ class AsyncDomainsClient:
         """
         return self._raw_client
 
-    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> DomainList:
+    async def list(
+        self, *, subaccount: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+    ) -> DomainList:
         """
         Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Only this sub-account's domains (its id or your uid).
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -269,10 +328,16 @@ class AsyncDomainsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(request_options=request_options)
+        _response = await self._raw_client.list(subaccount=subaccount, request_options=request_options)
         return _response.data
 
-    async def create(self, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> Domain:
+    async def create(
+        self,
+        *,
+        name: str,
+        subaccount: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Domain:
         """
         Claims the domain for the organization and returns the DNS records to publish. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains. The records are checked repeatedly in the background and verification gives up after 72 hours; until the domain is `verified`, live keys cannot send from it.
 
@@ -280,6 +345,9 @@ class AsyncDomainsClient:
         ----------
         name : str
             The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
+
+        subaccount : typing.Optional[str]
+            Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -309,7 +377,7 @@ class AsyncDomainsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create(name=name, request_options=request_options)
+        _response = await self._raw_client.create(name=name, subaccount=subaccount, request_options=request_options)
         return _response.data
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Domain:
@@ -390,6 +458,54 @@ class AsyncDomainsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.delete(id, request_options=request_options)
+        return _response.data
+
+    async def update(
+        self, id: str, *, shared_with_subaccounts: bool, request_options: typing.Optional[RequestOptions] = None
+    ) -> Domain:
+        """
+        Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+
+        Parameters
+        ----------
+        id : str
+            The domain's id.
+
+        shared_with_subaccounts : bool
+            Let your sub-accounts send from this domain of yours (through your organization's reputation).
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Domain
+            The domain.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.domains.update(
+                id="dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+                shared_with_subaccounts=True,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.update(
+            id, shared_with_subaccounts=shared_with_subaccounts, request_options=request_options
+        )
         return _response.data
 
     async def verify(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Domain:

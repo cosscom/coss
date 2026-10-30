@@ -39,6 +39,7 @@ class SuppressionsClient:
     def list(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         address: typing.Optional[str] = None,
         scope: typing.Optional[ListSuppressionsRequestScope] = None,
         limit: typing.Optional[int] = None,
@@ -50,6 +51,9 @@ class SuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            List a sub-account's own list (its id or your uid) instead of the environment's.
+
         address : typing.Optional[str]
             Only entries for this address.
 
@@ -78,10 +82,17 @@ class SuppressionsClient:
             "2026-10-10",
             api_key="YOUR_API_KEY",
         )
-        client.email.suppressions.list()
+        client.email.suppressions.list(
+            subaccount="user_8812",
+        )
         """
         _response = self._raw_client.list(
-            address=address, scope=scope, limit=limit, after=after, request_options=request_options
+            subaccount=subaccount,
+            address=address,
+            scope=scope,
+            limit=limit,
+            after=after,
+            request_options=request_options,
         )
         return _response.data
 
@@ -90,6 +101,7 @@ class SuppressionsClient:
         *,
         address: str,
         scope: typing.Optional[CreateSuppressionRequestScope] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Suppression:
         """
@@ -102,6 +114,9 @@ class SuppressionsClient:
 
         scope : typing.Optional[CreateSuppressionRequestScope]
             Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
+
+        subaccount : typing.Optional[str]
+            Add it to a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -124,7 +139,9 @@ class SuppressionsClient:
             scope="marketing",
         )
         """
-        _response = self._raw_client.add(address=address, scope=scope, request_options=request_options)
+        _response = self._raw_client.add(
+            address=address, scope=scope, subaccount=subaccount, request_options=request_options
+        )
         return _response.data
 
     def check(
@@ -133,6 +150,7 @@ class SuppressionsClient:
         address: str,
         category: typing.Optional[str] = None,
         stream: typing.Optional[CheckSuppressionsRequestStream] = None,
+        subaccount: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuppressionCheck:
         """
@@ -148,6 +166,9 @@ class SuppressionsClient:
 
         stream : typing.Optional[CheckSuppressionsRequestStream]
             The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.
+
+        subaccount : typing.Optional[str]
+            The sub-account you plan to send for (its id or your uid): its own entries count too.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -170,7 +191,7 @@ class SuppressionsClient:
         )
         """
         _response = self._raw_client.check(
-            address=address, category=category, stream=stream, request_options=request_options
+            address=address, category=category, stream=stream, subaccount=subaccount, request_options=request_options
         )
         return _response.data
 
@@ -178,6 +199,7 @@ class SuppressionsClient:
         self,
         *,
         suppressions: typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuppressionImport:
         """
@@ -187,6 +209,9 @@ class SuppressionsClient:
         ----------
         suppressions : typing.Sequence[ImportSuppressionsRequestSuppressionsItem]
             1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
+
+        subaccount : typing.Optional[str]
+            Import into a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -219,12 +244,15 @@ class SuppressionsClient:
             ],
         )
         """
-        _response = self._raw_client.import_(suppressions=suppressions, request_options=request_options)
+        _response = self._raw_client.import_(
+            suppressions=suppressions, subaccount=subaccount, request_options=request_options
+        )
         return _response.data
 
     def export(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         scope: typing.Optional[ExportSuppressionsRequestScope] = None,
         reason: typing.Optional[ExportSuppressionsRequestReason] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -234,6 +262,9 @@ class SuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Export a sub-account's own list (its id or your uid) instead of the environment's.
+
         scope : typing.Optional[ExportSuppressionsRequestScope]
             Only entries with this scope.
 
@@ -258,7 +289,9 @@ class SuppressionsClient:
         )
         client.email.suppressions.export()
         """
-        _response = self._raw_client.export(scope=scope, reason=reason, request_options=request_options)
+        _response = self._raw_client.export(
+            subaccount=subaccount, scope=scope, reason=reason, request_options=request_options
+        )
         return _response.data
 
     def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Suppression:
@@ -342,6 +375,7 @@ class AsyncSuppressionsClient:
     async def list(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         address: typing.Optional[str] = None,
         scope: typing.Optional[ListSuppressionsRequestScope] = None,
         limit: typing.Optional[int] = None,
@@ -353,6 +387,9 @@ class AsyncSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            List a sub-account's own list (its id or your uid) instead of the environment's.
+
         address : typing.Optional[str]
             Only entries for this address.
 
@@ -386,13 +423,20 @@ class AsyncSuppressionsClient:
 
 
         async def main() -> None:
-            await client.email.suppressions.list()
+            await client.email.suppressions.list(
+                subaccount="user_8812",
+            )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            address=address, scope=scope, limit=limit, after=after, request_options=request_options
+            subaccount=subaccount,
+            address=address,
+            scope=scope,
+            limit=limit,
+            after=after,
+            request_options=request_options,
         )
         return _response.data
 
@@ -401,6 +445,7 @@ class AsyncSuppressionsClient:
         *,
         address: str,
         scope: typing.Optional[CreateSuppressionRequestScope] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Suppression:
         """
@@ -413,6 +458,9 @@ class AsyncSuppressionsClient:
 
         scope : typing.Optional[CreateSuppressionRequestScope]
             Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
+
+        subaccount : typing.Optional[str]
+            Add it to a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -443,7 +491,9 @@ class AsyncSuppressionsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.add(address=address, scope=scope, request_options=request_options)
+        _response = await self._raw_client.add(
+            address=address, scope=scope, subaccount=subaccount, request_options=request_options
+        )
         return _response.data
 
     async def check(
@@ -452,6 +502,7 @@ class AsyncSuppressionsClient:
         address: str,
         category: typing.Optional[str] = None,
         stream: typing.Optional[CheckSuppressionsRequestStream] = None,
+        subaccount: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuppressionCheck:
         """
@@ -467,6 +518,9 @@ class AsyncSuppressionsClient:
 
         stream : typing.Optional[CheckSuppressionsRequestStream]
             The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.
+
+        subaccount : typing.Optional[str]
+            The sub-account you plan to send for (its id or your uid): its own entries count too.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -497,7 +551,7 @@ class AsyncSuppressionsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.check(
-            address=address, category=category, stream=stream, request_options=request_options
+            address=address, category=category, stream=stream, subaccount=subaccount, request_options=request_options
         )
         return _response.data
 
@@ -505,6 +559,7 @@ class AsyncSuppressionsClient:
         self,
         *,
         suppressions: typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> SuppressionImport:
         """
@@ -514,6 +569,9 @@ class AsyncSuppressionsClient:
         ----------
         suppressions : typing.Sequence[ImportSuppressionsRequestSuppressionsItem]
             1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
+
+        subaccount : typing.Optional[str]
+            Import into a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -554,12 +612,15 @@ class AsyncSuppressionsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.import_(suppressions=suppressions, request_options=request_options)
+        _response = await self._raw_client.import_(
+            suppressions=suppressions, subaccount=subaccount, request_options=request_options
+        )
         return _response.data
 
     async def export(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         scope: typing.Optional[ExportSuppressionsRequestScope] = None,
         reason: typing.Optional[ExportSuppressionsRequestReason] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -569,6 +630,9 @@ class AsyncSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Export a sub-account's own list (its id or your uid) instead of the environment's.
+
         scope : typing.Optional[ExportSuppressionsRequestScope]
             Only entries with this scope.
 
@@ -601,7 +665,9 @@ class AsyncSuppressionsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.export(scope=scope, reason=reason, request_options=request_options)
+        _response = await self._raw_client.export(
+            subaccount=subaccount, scope=scope, reason=reason, request_options=request_options
+        )
         return _response.data
 
     async def get(self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Suppression:

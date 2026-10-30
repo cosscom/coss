@@ -65,6 +65,8 @@ public final class EmailWebhookEventData {
 
     private final OffsetDateTime occurredAt;
 
+    private final Optional<String> subaccountId;
+
     private final Map<String, Object> additionalProperties;
 
     private EmailWebhookEventData(
@@ -87,6 +89,7 @@ public final class EmailWebhookEventData {
             boolean sandbox,
             OptionalNullable<String> recipient,
             OffsetDateTime occurredAt,
+            Optional<String> subaccountId,
             Map<String, Object> additionalProperties) {
         this.bounce = bounce;
         this.complaint = complaint;
@@ -107,6 +110,7 @@ public final class EmailWebhookEventData {
         this.sandbox = sandbox;
         this.recipient = recipient;
         this.occurredAt = occurredAt;
+        this.subaccountId = subaccountId;
         this.additionalProperties = additionalProperties;
     }
 
@@ -228,6 +232,14 @@ public final class EmailWebhookEventData {
         return occurredAt;
     }
 
+    /**
+     * @return Only for an email sent for a sub-account: its id.
+     */
+    @JsonProperty("subaccount_id")
+    public Optional<String> getSubaccountId() {
+        return subaccountId;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("category")
     private OptionalNullable<String> _getCategory() {
@@ -270,7 +282,8 @@ public final class EmailWebhookEventData {
                 && category.equals(other.category)
                 && sandbox == other.sandbox
                 && recipient.equals(other.recipient)
-                && occurredAt.equals(other.occurredAt);
+                && occurredAt.equals(other.occurredAt)
+                && subaccountId.equals(other.subaccountId);
     }
 
     @java.lang.Override
@@ -294,7 +307,8 @@ public final class EmailWebhookEventData {
                 this.category,
                 this.sandbox,
                 this.recipient,
-                this.occurredAt);
+                this.occurredAt,
+                this.subaccountId);
     }
 
     @java.lang.Override
@@ -417,6 +431,13 @@ public final class EmailWebhookEventData {
         _FinalStage recipient(Optional<String> recipient);
 
         _FinalStage recipient(Nullable<String> recipient);
+
+        /**
+         * <p>Only for an email sent for a sub-account: its id.</p>
+         */
+        _FinalStage subaccountId(Optional<String> subaccountId);
+
+        _FinalStage subaccountId(String subaccountId);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -431,6 +452,8 @@ public final class EmailWebhookEventData {
         private boolean sandbox;
 
         private OffsetDateTime occurredAt;
+
+        private Optional<String> subaccountId = Optional.empty();
 
         private OptionalNullable<String> recipient = OptionalNullable.absent();
 
@@ -486,6 +509,7 @@ public final class EmailWebhookEventData {
             sandbox(other.getSandbox());
             recipient(other.getRecipient());
             occurredAt(other.getOccurredAt());
+            subaccountId(other.getSubaccountId());
             return this;
         }
 
@@ -521,6 +545,26 @@ public final class EmailWebhookEventData {
         @JsonSetter("occurred_at")
         public _FinalStage occurredAt(@NotNull OffsetDateTime occurredAt) {
             this.occurredAt = Objects.requireNonNull(occurredAt, "occurredAt must not be null");
+            return this;
+        }
+
+        /**
+         * <p>Only for an email sent for a sub-account: its id.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(String subaccountId) {
+            this.subaccountId = Optional.ofNullable(subaccountId);
+            return this;
+        }
+
+        /**
+         * <p>Only for an email sent for a sub-account: its id.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount_id", nulls = Nulls.SKIP)
+        public _FinalStage subaccountId(Optional<String> subaccountId) {
+            this.subaccountId = subaccountId;
             return this;
         }
 
@@ -829,6 +873,7 @@ public final class EmailWebhookEventData {
                     sandbox,
                     recipient,
                     occurredAt,
+                    subaccountId,
                     additionalProperties);
         }
 

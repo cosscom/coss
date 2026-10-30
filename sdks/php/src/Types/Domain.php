@@ -107,6 +107,18 @@ class Domain extends JsonSerializableType
     public DomainBimi $bimi;
 
     /**
+     * @var ?string $subaccountId The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own.
+     */
+    #[JsonProperty('subaccount_id')]
+    public ?string $subaccountId;
+
+    /**
+     * @var bool $sharedWithSubaccounts An organization's domain its sub-accounts may send from too.
+     */
+    #[JsonProperty('shared_with_subaccounts')]
+    public bool $sharedWithSubaccounts;
+
+    /**
      * @param array{
      *   object: value-of<DomainObject>,
      *   id: string,
@@ -118,12 +130,14 @@ class Domain extends JsonSerializableType
      *   records: array<DomainRecord>,
      *   createdAt: DateTime,
      *   bimi: DomainBimi,
+     *   sharedWithSubaccounts: bool,
      *   region?: ?string,
      *   lastCheckedAt?: ?DateTime,
      *   verifiedAt?: ?DateTime,
      *   failedAt?: ?DateTime,
      *   tracking?: ?TrackingDomain,
      *   receiving?: ?ReceivingDomain,
+     *   subaccountId?: ?string,
      * } $values
      */
     public function __construct(
@@ -163,6 +177,11 @@ class Domain extends JsonSerializableType
             $this->_setField('receiving');
         }
         $this->bimi = $values['bimi'];
+        $this->subaccountId = $values['subaccountId'] ?? null;
+        if (array_key_exists('subaccountId', $values)) {
+            $this->_setField('subaccountId');
+        }
+        $this->sharedWithSubaccounts = $values['sharedWithSubaccounts'];
     }
 
     /**

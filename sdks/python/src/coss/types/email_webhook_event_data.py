@@ -60,6 +60,10 @@ class EmailWebhookEventData(UniversalBaseModel):
     sandbox: bool
     recipient: typing.Optional[str] = None
     occurred_at: dt.datetime
+    subaccount_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Only for an email sent for a sub-account: its id.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

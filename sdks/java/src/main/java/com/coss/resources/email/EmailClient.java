@@ -23,6 +23,7 @@ import com.coss.resources.email.requests.SendEmailBatchRequest;
 import com.coss.resources.email.requests.SendEmailBody;
 import com.coss.resources.email.segments.SegmentsClient;
 import com.coss.resources.email.storage.StorageClient;
+import com.coss.resources.email.subaccounts.SubaccountsClient;
 import com.coss.resources.email.suppressions.SuppressionsClient;
 import com.coss.resources.email.templates.TemplatesClient;
 import com.coss.resources.email.topics.TopicsClient;
@@ -45,6 +46,8 @@ public class EmailClient {
     protected final Supplier<DedicatedIpsClient> dedicatedIpsClient;
 
     protected final Supplier<SuppressionsClient> suppressionsClient;
+
+    protected final Supplier<SubaccountsClient> subaccountsClient;
 
     protected final Supplier<TrackingClient> trackingClient;
 
@@ -70,6 +73,7 @@ public class EmailClient {
         this.templatesClient = Suppliers.memoize(() -> new TemplatesClient(clientOptions));
         this.dedicatedIpsClient = Suppliers.memoize(() -> new DedicatedIpsClient(clientOptions));
         this.suppressionsClient = Suppliers.memoize(() -> new SuppressionsClient(clientOptions));
+        this.subaccountsClient = Suppliers.memoize(() -> new SubaccountsClient(clientOptions));
         this.trackingClient = Suppliers.memoize(() -> new TrackingClient(clientOptions));
         this.storageClient = Suppliers.memoize(() -> new StorageClient(clientOptions));
         this.contactsClient = Suppliers.memoize(() -> new ContactsClient(clientOptions));
@@ -322,6 +326,10 @@ public class EmailClient {
 
     public SuppressionsClient suppressions() {
         return this.suppressionsClient.get();
+    }
+
+    public SubaccountsClient subaccounts() {
+        return this.subaccountsClient.get();
     }
 
     public TrackingClient tracking() {

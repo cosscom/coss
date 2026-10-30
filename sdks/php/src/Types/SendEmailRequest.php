@@ -138,6 +138,12 @@ class SendEmailRequest extends JsonSerializableType
     public ?string $stream;
 
     /**
+     * @var ?string $subaccount Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+     */
+    #[JsonProperty('subaccount')]
+    public ?string $subaccount;
+
+    /**
      * @param array{
      *   from: string,
      *   to: (
@@ -170,6 +176,7 @@ class SendEmailRequest extends JsonSerializableType
      *   attachments?: ?array<SendEmailAttachment>,
      *   tracking?: ?TrackingOptions,
      *   stream?: ?value-of<SendEmailRequestStream>,
+     *   subaccount?: ?string,
      * } $values
      */
     public function __construct(
@@ -244,6 +251,10 @@ class SendEmailRequest extends JsonSerializableType
         $this->stream = $values['stream'] ?? null;
         if (array_key_exists('stream', $values)) {
             $this->_setField('stream');
+        }
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
         }
     }
 

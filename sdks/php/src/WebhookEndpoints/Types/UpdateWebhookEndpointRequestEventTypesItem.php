@@ -25,6 +25,10 @@ enum UpdateWebhookEndpointRequestEventTypesItem: string
     case AccountReinstated = "account.reinstated";
     case AccountMarketingPaused = "account.marketing_paused";
     case AccountMarketingReinstated = "account.marketing_reinstated";
+    case SubaccountReputationWarning = "subaccount.reputation_warning";
+    case SubaccountReputationRecovered = "subaccount.reputation_recovered";
+    case SubaccountPaused = "subaccount.paused";
+    case SubaccountReinstated = "subaccount.reinstated";
     case HookEndpointDisabled = "hook_endpoint.disabled";
     case BillingInvoiceFinalized = "billing.invoice_finalized";
     case BillingInvoicePaid = "billing.invoice_paid";
@@ -50,6 +54,7 @@ enum UpdateWebhookEndpointRequestEventTypesItem: string
     case BroadcastPaused = "broadcast.paused";
     case BroadcastCanceled = "broadcast.canceled";
     case BroadcastFailed = "broadcast.failed";
+    case InboxMessageReceived = "inbox.message.received";
     case SmsScheduled = "sms.scheduled";
     case SmsSent = "sms.sent";
     case SmsDelivered = "sms.delivered";
@@ -60,4 +65,16 @@ enum UpdateWebhookEndpointRequestEventTypesItem: string
     case SmsReceived = "sms.received";
     case SmsOptedOut = "sms.opted_out";
     case SmsOptedIn = "sms.opted_in";
+    case SignRequestSent = "sign_request.sent";
+    case SignRequestViewed = "sign_request.viewed";
+    case SignRequestSignerSigned = "sign_request.signer_signed";
+    case SignRequestDeclined = "sign_request.declined";
+    case SignRequestCompleted = "sign_request.completed";
+    case SignRequestCanceled = "sign_request.canceled";
+    case SignRequestExpired = "sign_request.expired";
+    case VerificationApproved = "verification.approved";
+    case VerificationFailed = "verification.failed";
+    case VerificationBlocked = "verification.blocked";
+    case FormSubmissionReceived = "form.submission.received";
+    case FormSubmissionFlagged = "form.submission.flagged";
 }

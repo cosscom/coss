@@ -38,7 +38,7 @@ public final class CreateTestWebhookEventRequest {
     }
 
     /**
-     * @return The event type. <code>domain.*</code>, <code>account.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.
+     * @return The event type. <code>domain.*</code>, <code>account.*</code>, <code>subaccount.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.
      */
     @JsonProperty("type")
     public CreateTestWebhookEventRequestType getType() {
@@ -84,7 +84,7 @@ public final class CreateTestWebhookEventRequest {
 
     public interface TypeStage {
         /**
-         * <p>The event type. <code>domain.*</code>, <code>account.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.</p>
+         * <p>The event type. <code>domain.*</code>, <code>account.*</code>, <code>subaccount.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.</p>
          */
         _FinalStage type(@NotNull CreateTestWebhookEventRequestType type);
 
@@ -125,7 +125,7 @@ public final class CreateTestWebhookEventRequest {
         }
 
         /**
-         * <p>The event type. <code>domain.*</code>, <code>account.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.</p>
+         * <p>The event type. <code>domain.*</code>, <code>account.*</code>, <code>subaccount.*</code> and <code>billing.*</code> events only reach live environments, so they can't be tested in a sandbox one.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override

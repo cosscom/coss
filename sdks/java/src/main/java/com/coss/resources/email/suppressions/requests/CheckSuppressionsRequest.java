@@ -28,16 +28,20 @@ public final class CheckSuppressionsRequest {
 
     private final Optional<CheckSuppressionsRequestStream> stream;
 
+    private final Optional<String> subaccount;
+
     private final Map<String, Object> additionalProperties;
 
     private CheckSuppressionsRequest(
             String address,
             Optional<String> category,
             Optional<CheckSuppressionsRequestStream> stream,
+            Optional<String> subaccount,
             Map<String, Object> additionalProperties) {
         this.address = address;
         this.category = category;
         this.stream = stream;
+        this.subaccount = subaccount;
         this.additionalProperties = additionalProperties;
     }
 
@@ -65,6 +69,14 @@ public final class CheckSuppressionsRequest {
         return stream;
     }
 
+    /**
+     * @return The sub-account you plan to send for (its id or your uid): its own entries count too.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -77,12 +89,15 @@ public final class CheckSuppressionsRequest {
     }
 
     private boolean equalTo(CheckSuppressionsRequest other) {
-        return address.equals(other.address) && category.equals(other.category) && stream.equals(other.stream);
+        return address.equals(other.address)
+                && category.equals(other.category)
+                && stream.equals(other.stream)
+                && subaccount.equals(other.subaccount);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.address, this.category, this.stream);
+        return Objects.hash(this.address, this.category, this.stream, this.subaccount);
     }
 
     @java.lang.Override
@@ -123,11 +138,20 @@ public final class CheckSuppressionsRequest {
         _FinalStage stream(Optional<CheckSuppressionsRequestStream> stream);
 
         _FinalStage stream(CheckSuppressionsRequestStream stream);
+
+        /**
+         * <p>The sub-account you plan to send for (its id or your uid): its own entries count too.</p>
+         */
+        _FinalStage subaccount(Optional<String> subaccount);
+
+        _FinalStage subaccount(String subaccount);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements AddressStage, _FinalStage {
         private String address;
+
+        private Optional<String> subaccount = Optional.empty();
 
         private Optional<CheckSuppressionsRequestStream> stream = Optional.empty();
 
@@ -143,6 +167,7 @@ public final class CheckSuppressionsRequest {
             address(other.getAddress());
             category(other.getCategory());
             stream(other.getStream());
+            subaccount(other.getSubaccount());
             return this;
         }
 
@@ -154,6 +179,26 @@ public final class CheckSuppressionsRequest {
         @JsonSetter("address")
         public _FinalStage address(@NotNull String address) {
             this.address = Objects.requireNonNull(address, "address must not be null");
+            return this;
+        }
+
+        /**
+         * <p>The sub-account you plan to send for (its id or your uid): its own entries count too.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
+            return this;
+        }
+
+        /**
+         * <p>The sub-account you plan to send for (its id or your uid): its own entries count too.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public _FinalStage subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
             return this;
         }
 
@@ -199,7 +244,7 @@ public final class CheckSuppressionsRequest {
 
         @java.lang.Override
         public CheckSuppressionsRequest build() {
-            return new CheckSuppressionsRequest(address, category, stream, additionalProperties);
+            return new CheckSuppressionsRequest(address, category, stream, subaccount, additionalProperties);
         }
 
         @java.lang.Override

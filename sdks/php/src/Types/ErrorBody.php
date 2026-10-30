@@ -39,6 +39,12 @@ class ErrorBody extends JsonSerializableType
     public ?array $issues;
 
     /**
+     * @var ?string $hint What to try next. Present when coss.com can name a fix, and often includes a docs URL.
+     */
+    #[JsonProperty('hint')]
+    public ?string $hint;
+
+    /**
      * @var string $requestId
      */
     #[JsonProperty('request_id')]
@@ -52,6 +58,7 @@ class ErrorBody extends JsonSerializableType
      *   requestId: string,
      *   param?: ?string,
      *   issues?: ?array<ErrorBodyIssuesItem>,
+     *   hint?: ?string,
      * } $values
      */
     public function __construct(
@@ -67,6 +74,10 @@ class ErrorBody extends JsonSerializableType
         $this->issues = $values['issues'] ?? null;
         if (array_key_exists('issues', $values)) {
             $this->_setField('issues');
+        }
+        $this->hint = $values['hint'] ?? null;
+        if (array_key_exists('hint', $values)) {
+            $this->_setField('hint');
         }
         $this->requestId = $values['requestId'];
     }

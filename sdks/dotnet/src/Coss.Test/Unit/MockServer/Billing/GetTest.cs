@@ -97,7 +97,8 @@ public class GetTest : BaseMockServerTest
                 "domains": 1000000,
                 "members": 1000000,
                 "webhook_endpoints_per_environment": 1000000,
-                "contacts_per_environment": 1000000
+                "contacts_per_environment": 1000000,
+                "inboxes": 1000000
               }
             }
             """;
@@ -185,7 +186,8 @@ public class GetTest : BaseMockServerTest
                 "domains": 10,
                 "members": 10,
                 "webhook_endpoints_per_environment": 10,
-                "contacts_per_environment": 50000
+                "contacts_per_environment": 50000,
+                "inboxes": 1000
               }
             }
             """;

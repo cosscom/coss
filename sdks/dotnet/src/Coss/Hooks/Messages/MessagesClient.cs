@@ -786,7 +786,9 @@ public partial class MessagesClient : IMessagesClient
     /// The application's messages, newest first (kept for 30 days).
     /// </summary>
     /// <example><code>
-    /// await client.Hooks.Messages.ListAsync(new ListMessagesRequest { Application = "customer_8812" });
+    /// await client.Hooks.Messages.ListAsync(
+    ///     new Coss.Hooks.ListMessagesRequest { Application = "customer_8812" }
+    /// );
     /// </code></example>
     public WithRawResponseTask<HookMessageList> ListAsync(
         ListMessagesRequest request,
@@ -834,7 +836,7 @@ public partial class MessagesClient : IMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.Hooks.Messages.GetAsync(
-    ///     new GetMessagesRequest
+    ///     new Coss.Hooks.GetMessagesRequest
     ///     {
     ///         Application = "customer_8812",
     ///         MessageId = "hmsg_01k7c8m4q2f3e9v6t5r1n0p8yz",

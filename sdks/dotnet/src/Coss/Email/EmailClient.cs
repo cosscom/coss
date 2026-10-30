@@ -11,9 +11,10 @@ public partial class EmailClient : IEmailClient
     internal EmailClient(RawClient client)
     {
         _client = client;
-        Templates = new TemplatesClient(_client);
+        Templates = new Coss.Email.TemplatesClient(_client);
         DedicatedIps = new DedicatedIpsClient(_client);
         Suppressions = new Coss.Email.SuppressionsClient(_client);
+        Subaccounts = new SubaccountsClient(_client);
         Tracking = new Coss.Email.TrackingClient(_client);
         Storage = new StorageClient(_client);
         Contacts = new ContactsClient(_client);
@@ -25,11 +26,13 @@ public partial class EmailClient : IEmailClient
         Received = new Coss.Email.ReceivedClient(_client);
     }
 
-    public ITemplatesClient Templates { get; }
+    public Coss.Email.ITemplatesClient Templates { get; }
 
     public IDedicatedIpsClient DedicatedIps { get; }
 
     public Coss.Email.ISuppressionsClient Suppressions { get; }
+
+    public ISubaccountsClient Subaccounts { get; }
 
     public Coss.Email.ITrackingClient Tracking { get; }
 
@@ -55,13 +58,14 @@ public partial class EmailClient : IEmailClient
         CancellationToken cancellationToken = default
     )
     {
-        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 10)
+        var _queryString = new Coss.Core.QueryStringBuilder.Builder(capacity: 11)
             .Add("to", request.To)
             .Add("recipient_status", request.RecipientStatus)
             .Add("status", request.Status)
             .Add("q", request.Q)
             .Add("category", request.Category)
             .Add("batch_id", request.BatchId)
+            .Add("subaccount", request.Subaccount)
             .Add("created_after", request.CreatedAfter)
             .Add("created_before", request.CreatedBefore)
             .Add("limit", request.Limit)

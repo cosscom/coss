@@ -61,6 +61,8 @@ public final class SendEmailRequest {
 
     private final Optional<SendEmailRequestStream> stream;
 
+    private final Optional<String> subaccount;
+
     private final Map<String, Object> additionalProperties;
 
     private SendEmailRequest(
@@ -83,6 +85,7 @@ public final class SendEmailRequest {
             Optional<List<SendEmailAttachment>> attachments,
             Optional<TrackingOptions> tracking,
             Optional<SendEmailRequestStream> stream,
+            Optional<String> subaccount,
             Map<String, Object> additionalProperties) {
         this.from = from;
         this.to = to;
@@ -103,6 +106,7 @@ public final class SendEmailRequest {
         this.attachments = attachments;
         this.tracking = tracking;
         this.stream = stream;
+        this.subaccount = subaccount;
         this.additionalProperties = additionalProperties;
     }
 
@@ -240,6 +244,14 @@ public final class SendEmailRequest {
         return stream;
     }
 
+    /**
+     * @return Send for one of your sub-accounts (email for platforms): its id (<code>sub_…</code>) or your <code>uid</code> for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -270,7 +282,8 @@ public final class SendEmailRequest {
                 && scheduledAt.equals(other.scheduledAt)
                 && attachments.equals(other.attachments)
                 && tracking.equals(other.tracking)
-                && stream.equals(other.stream);
+                && stream.equals(other.stream)
+                && subaccount.equals(other.subaccount);
     }
 
     @java.lang.Override
@@ -294,7 +307,8 @@ public final class SendEmailRequest {
                 this.scheduledAt,
                 this.attachments,
                 this.tracking,
-                this.stream);
+                this.stream,
+                this.subaccount);
     }
 
     @java.lang.Override
@@ -429,6 +443,13 @@ public final class SendEmailRequest {
         _FinalStage stream(Optional<SendEmailRequestStream> stream);
 
         _FinalStage stream(SendEmailRequestStream stream);
+
+        /**
+         * <p>Send for one of your sub-accounts (email for platforms): its id (<code>sub_…</code>) or your <code>uid</code> for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.</p>
+         */
+        _FinalStage subaccount(Optional<String> subaccount);
+
+        _FinalStage subaccount(String subaccount);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -436,6 +457,8 @@ public final class SendEmailRequest {
         private String from;
 
         private SendEmailRequestTo to;
+
+        private Optional<String> subaccount = Optional.empty();
 
         private Optional<SendEmailRequestStream> stream = Optional.empty();
 
@@ -497,6 +520,7 @@ public final class SendEmailRequest {
             attachments(other.getAttachments());
             tracking(other.getTracking());
             stream(other.getStream());
+            subaccount(other.getSubaccount());
             return this;
         }
 
@@ -515,6 +539,26 @@ public final class SendEmailRequest {
         @JsonSetter("to")
         public _FinalStage to(@NotNull SendEmailRequestTo to) {
             this.to = Objects.requireNonNull(to, "to must not be null");
+            return this;
+        }
+
+        /**
+         * <p>Send for one of your sub-accounts (email for platforms): its id (<code>sub_…</code>) or your <code>uid</code> for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
+            return this;
+        }
+
+        /**
+         * <p>Send for one of your sub-accounts (email for platforms): its id (<code>sub_…</code>) or your <code>uid</code> for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public _FinalStage subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
             return this;
         }
 
@@ -845,6 +889,7 @@ public final class SendEmailRequest {
                     attachments,
                     tracking,
                     stream,
+                    subaccount,
                     additionalProperties);
         }
 

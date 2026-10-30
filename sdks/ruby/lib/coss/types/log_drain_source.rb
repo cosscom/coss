@@ -11,6 +11,9 @@ module Coss
       RISK = "risk"
       SMTP = "smtp"
       SMS = "sms"
+      SIGN = "sign"
+      VERIFY = "verify"
+      FORMS = "forms"
       AUDIT = "audit"
     end
   end

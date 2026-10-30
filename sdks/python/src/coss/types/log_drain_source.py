@@ -2,4 +2,6 @@
 
 import typing
 
-LogDrainSource = typing.Union[typing.Literal["api", "email", "webhook", "risk", "smtp", "sms", "audit"], typing.Any]
+LogDrainSource = typing.Union[
+    typing.Literal["api", "email", "webhook", "risk", "smtp", "sms", "sign", "verify", "forms", "audit"], typing.Any
+]

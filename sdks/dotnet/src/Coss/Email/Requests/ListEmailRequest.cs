@@ -43,6 +43,12 @@ public record ListEmailRequest
     public string? BatchId { get; set; }
 
     /// <summary>
+    /// Only the emails sent for this sub-account (its id or your uid).
+    /// </summary>
+    [JsonIgnore]
+    public string? Subaccount { get; set; }
+
+    /// <summary>
     /// Only emails created at or after this time.
     /// </summary>
     [JsonIgnore]

@@ -11,6 +11,8 @@ import com.coss.resources.domains.receiving.ReceivingClient;
 import com.coss.resources.domains.requests.CreateDomainRequest;
 import com.coss.resources.domains.requests.DeleteDomainsRequest;
 import com.coss.resources.domains.requests.GetDomainsRequest;
+import com.coss.resources.domains.requests.ListDomainsRequest;
+import com.coss.resources.domains.requests.UpdateDomainRequest;
 import com.coss.resources.domains.requests.VerifyDomainsRequest;
 import com.coss.resources.domains.tracking.TrackingClient;
 import com.coss.types.DeletedDomain;
@@ -56,6 +58,20 @@ public class DomainsClient {
      */
     public DomainList list(RequestOptions requestOptions) {
         return this.rawClient.list(requestOptions).body();
+    }
+
+    /**
+     * Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
+     */
+    public DomainList list(ListDomainsRequest request) {
+        return this.rawClient.list(request).body();
+    }
+
+    /**
+     * Every domain of the organization, ordered by name. Domains belong to the organization, not to one environment, so every API key of the organization sees the same domains.
+     */
+    public DomainList list(ListDomainsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
@@ -126,6 +142,20 @@ public class DomainsClient {
      */
     public DeletedDomain delete(String id, DeleteDomainsRequest request, RequestOptions requestOptions) {
         return this.rawClient.delete(id, request, requestOptions).body();
+    }
+
+    /**
+     * Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+     */
+    public Domain update(String id, UpdateDomainRequest request) {
+        return this.rawClient.update(id, request).body();
+    }
+
+    /**
+     * Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+     */
+    public Domain update(String id, UpdateDomainRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(id, request, requestOptions).body();
     }
 
     /**

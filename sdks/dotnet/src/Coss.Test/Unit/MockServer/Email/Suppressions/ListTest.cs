@@ -22,6 +22,7 @@ public class ListTest : BaseMockServerTest
                   "scope": "scope",
                   "reason": "bounce",
                   "email_id": "email_id",
+                  "subaccount_id": "subaccount_id",
                   "created_at": "2024-01-15T09:30:00.000Z"
                 },
                 {
@@ -31,6 +32,7 @@ public class ListTest : BaseMockServerTest
                   "scope": "scope",
                   "reason": "bounce",
                   "email_id": "email_id",
+                  "subaccount_id": "subaccount_id",
                   "created_at": "2024-01-15T09:30:00.000Z"
                 }
               ],
@@ -69,6 +71,7 @@ public class ListTest : BaseMockServerTest
                   "scope": "marketing",
                   "reason": "manual",
                   "email_id": null,
+                  "subaccount_id": null,
                   "created_at": "2026-01-15T09:30:00.000Z"
                 }
               ],
@@ -78,7 +81,11 @@ public class ListTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock.RequestBuilders.Request.Create().WithPath("/v1/suppressions").UsingGet()
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/v1/suppressions")
+                    .WithParam("subaccount", "user_8812")
+                    .UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -88,7 +95,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.ListAsync(
-            new Coss.Email.ListSuppressionsRequest()
+            new Coss.Email.ListSuppressionsRequest { Subaccount = "user_8812" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

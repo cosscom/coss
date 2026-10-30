@@ -18,6 +18,14 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
         Values.EmailDedicatedIp
     );
 
+    public static readonly BillingWebhookEventThreeDataMeter EmailReceived = new(
+        Values.EmailReceived
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter EmailInboxes = new(
+        Values.EmailInboxes
+    );
+
     public static readonly BillingWebhookEventThreeDataMeter SmsSegments = new(Values.SmsSegments);
 
     public static readonly BillingWebhookEventThreeDataMeter SmsReceivedSegments = new(
@@ -28,6 +36,24 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
 
     public static readonly BillingWebhookEventThreeDataMeter SmsRegistrations = new(
         Values.SmsRegistrations
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter SignCompletedRequests = new(
+        Values.SignCompletedRequests
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter RiskPhoneChecks = new(
+        Values.RiskPhoneChecks
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter VerifyVerifications = new(
+        Values.VerifyVerifications
+    );
+
+    public static readonly BillingWebhookEventThreeDataMeter VerifySms = new(Values.VerifySms);
+
+    public static readonly BillingWebhookEventThreeDataMeter FormsSubmissions = new(
+        Values.FormsSubmissions
     );
 
     public static readonly BillingWebhookEventThreeDataMeter VideoParticipantMinutes = new(
@@ -139,6 +165,10 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
 
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
+        public const string EmailReceived = "email.received";
+
+        public const string EmailInboxes = "email.inboxes";
+
         public const string SmsSegments = "sms.segments";
 
         public const string SmsReceivedSegments = "sms.received_segments";
@@ -146,6 +176,16 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
         public const string SmsNumbers = "sms.numbers";
 
         public const string SmsRegistrations = "sms.registrations";
+
+        public const string SignCompletedRequests = "sign.completed_requests";
+
+        public const string RiskPhoneChecks = "risk.phone_checks";
+
+        public const string VerifyVerifications = "verify.verifications";
+
+        public const string VerifySms = "verify.sms";
+
+        public const string FormsSubmissions = "forms.submissions";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

@@ -8,6 +8,8 @@ module Coss
           field :address, -> { String }, optional: false, nullable: false
 
           field :scope, -> { Coss::Email::Suppressions::Types::CreateSuppressionRequestScope }, optional: true, nullable: false
+
+          field :subaccount, -> { String }, optional: true, nullable: false
         end
       end
     end

@@ -112,6 +112,7 @@ public class GetBatchTest : BaseMockServerTest
                     "locale": "locale"
                   },
                   "broadcast_id": "broadcast_id",
+                  "subaccount_id": "subaccount_id",
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": "2024-01-15T09:30:00.000Z"
@@ -212,6 +213,7 @@ public class GetBatchTest : BaseMockServerTest
                     "locale": "locale"
                   },
                   "broadcast_id": "broadcast_id",
+                  "subaccount_id": "subaccount_id",
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": "2024-01-15T09:30:00.000Z"
@@ -312,6 +314,7 @@ public class GetBatchTest : BaseMockServerTest
                   "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
                   "template": null,
                   "broadcast_id": null,
+                  "subaccount_id": null,
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": null

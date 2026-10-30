@@ -9,6 +9,11 @@ use Coss\Types\ListSuppressionsRequestScopeOne;
 class ListSuppressionsRequest extends JsonSerializableType
 {
     /**
+     * @var ?string $subaccount List a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    public ?string $subaccount;
+
+    /**
      * @var ?string $address Only entries for this address.
      */
     public ?string $address;
@@ -34,6 +39,7 @@ class ListSuppressionsRequest extends JsonSerializableType
 
     /**
      * @param array{
+     *   subaccount?: ?string,
      *   address?: ?string,
      *   scope?: (
      *    value-of<ListSuppressionsRequestScopeZero>
@@ -47,6 +53,10 @@ class ListSuppressionsRequest extends JsonSerializableType
     public function __construct(
         array $values = [],
     ) {
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
+        }
         $this->address = $values['address'] ?? null;
         if (array_key_exists('address', $values)) {
             $this->_setField('address');

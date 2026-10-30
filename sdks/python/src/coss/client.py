@@ -18,12 +18,16 @@ if typing.TYPE_CHECKING:
     from .resources.domains.client import AsyncDomainsClient, DomainsClient
     from .resources.email.client import AsyncEmailClient, EmailClient
     from .resources.environment.client import AsyncEnvironmentClient, EnvironmentClient
+    from .resources.forms.client import AsyncFormsClient, FormsClient
     from .resources.hooks.client import AsyncHooksClient, HooksClient
+    from .resources.inboxes.client import AsyncInboxesClient, InboxesClient
     from .resources.log_drains.client import AsyncLogDrainsClient, LogDrainsClient
     from .resources.logs.client import AsyncLogsClient, LogsClient
     from .resources.reputation.client import AsyncReputationClient, ReputationClient
     from .resources.risk.client import AsyncRiskClient, RiskClient
+    from .resources.sign.client import AsyncSignClient, SignClient
     from .resources.sms.client import AsyncSmsClient, SmsClient
+    from .resources.verify.client import AsyncVerifyClient, VerifyClient
     from .resources.webhook_endpoints.client import AsyncWebhookEndpointsClient, WebhookEndpointsClient
     from .resources.webhook_events.client import AsyncWebhookEventsClient, WebhookEventsClient
     from .resources.webhook_listeners.client import AsyncWebhookListenersClient, WebhookListenersClient
@@ -127,13 +131,17 @@ class Coss:
         self._webhook_listeners: typing.Optional[WebhookListenersClient] = None
         self._webhook_events: typing.Optional[WebhookEventsClient] = None
         self._sms: typing.Optional[SmsClient] = None
+        self._verify: typing.Optional[VerifyClient] = None
+        self._forms: typing.Optional[FormsClient] = None
         self._reputation: typing.Optional[ReputationClient] = None
         self._logs: typing.Optional[LogsClient] = None
         self._audit_events: typing.Optional[AuditEventsClient] = None
         self._billing: typing.Optional[BillingClient] = None
         self._log_drains: typing.Optional[LogDrainsClient] = None
+        self._inboxes: typing.Optional[InboxesClient] = None
         self._risk: typing.Optional[RiskClient] = None
         self._hooks: typing.Optional[HooksClient] = None
+        self._sign: typing.Optional[SignClient] = None
 
     @property
     def environment(self):
@@ -200,6 +208,22 @@ class Coss:
         return self._sms
 
     @property
+    def verify(self):
+        if self._verify is None:
+            from .resources.verify.client import VerifyClient  # noqa: E402
+
+            self._verify = VerifyClient(client_wrapper=self._client_wrapper)
+        return self._verify
+
+    @property
+    def forms(self):
+        if self._forms is None:
+            from .resources.forms.client import FormsClient  # noqa: E402
+
+            self._forms = FormsClient(client_wrapper=self._client_wrapper)
+        return self._forms
+
+    @property
     def reputation(self):
         if self._reputation is None:
             from .resources.reputation.client import ReputationClient  # noqa: E402
@@ -240,6 +264,14 @@ class Coss:
         return self._log_drains
 
     @property
+    def inboxes(self):
+        if self._inboxes is None:
+            from .resources.inboxes.client import InboxesClient  # noqa: E402
+
+            self._inboxes = InboxesClient(client_wrapper=self._client_wrapper)
+        return self._inboxes
+
+    @property
     def risk(self):
         if self._risk is None:
             from .resources.risk.client import RiskClient  # noqa: E402
@@ -254,6 +286,14 @@ class Coss:
 
             self._hooks = HooksClient(client_wrapper=self._client_wrapper)
         return self._hooks
+
+    @property
+    def sign(self):
+        if self._sign is None:
+            from .resources.sign.client import SignClient  # noqa: E402
+
+            self._sign = SignClient(client_wrapper=self._client_wrapper)
+        return self._sign
 
 
 def _make_default_async_client(
@@ -375,13 +415,17 @@ class AsyncCoss:
         self._webhook_listeners: typing.Optional[AsyncWebhookListenersClient] = None
         self._webhook_events: typing.Optional[AsyncWebhookEventsClient] = None
         self._sms: typing.Optional[AsyncSmsClient] = None
+        self._verify: typing.Optional[AsyncVerifyClient] = None
+        self._forms: typing.Optional[AsyncFormsClient] = None
         self._reputation: typing.Optional[AsyncReputationClient] = None
         self._logs: typing.Optional[AsyncLogsClient] = None
         self._audit_events: typing.Optional[AsyncAuditEventsClient] = None
         self._billing: typing.Optional[AsyncBillingClient] = None
         self._log_drains: typing.Optional[AsyncLogDrainsClient] = None
+        self._inboxes: typing.Optional[AsyncInboxesClient] = None
         self._risk: typing.Optional[AsyncRiskClient] = None
         self._hooks: typing.Optional[AsyncHooksClient] = None
+        self._sign: typing.Optional[AsyncSignClient] = None
 
     @property
     def environment(self):
@@ -448,6 +492,22 @@ class AsyncCoss:
         return self._sms
 
     @property
+    def verify(self):
+        if self._verify is None:
+            from .resources.verify.client import AsyncVerifyClient  # noqa: E402
+
+            self._verify = AsyncVerifyClient(client_wrapper=self._client_wrapper)
+        return self._verify
+
+    @property
+    def forms(self):
+        if self._forms is None:
+            from .resources.forms.client import AsyncFormsClient  # noqa: E402
+
+            self._forms = AsyncFormsClient(client_wrapper=self._client_wrapper)
+        return self._forms
+
+    @property
     def reputation(self):
         if self._reputation is None:
             from .resources.reputation.client import AsyncReputationClient  # noqa: E402
@@ -488,6 +548,14 @@ class AsyncCoss:
         return self._log_drains
 
     @property
+    def inboxes(self):
+        if self._inboxes is None:
+            from .resources.inboxes.client import AsyncInboxesClient  # noqa: E402
+
+            self._inboxes = AsyncInboxesClient(client_wrapper=self._client_wrapper)
+        return self._inboxes
+
+    @property
     def risk(self):
         if self._risk is None:
             from .resources.risk.client import AsyncRiskClient  # noqa: E402
@@ -502,6 +570,14 @@ class AsyncCoss:
 
             self._hooks = AsyncHooksClient(client_wrapper=self._client_wrapper)
         return self._hooks
+
+    @property
+    def sign(self):
+        if self._sign is None:
+            from .resources.sign.client import AsyncSignClient  # noqa: E402
+
+            self._sign = AsyncSignClient(client_wrapper=self._client_wrapper)
+        return self._sign
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: CossEnvironment) -> str:

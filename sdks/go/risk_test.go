@@ -495,6 +495,51 @@ func TestSettersMarkExplicitRiskIPCheckRequest(t *testing.T) {
 
 }
 
+func TestSettersRiskPhoneCheckRequest(t *testing.T) {
+	t.Run("SetPhone", func(t *testing.T) {
+		obj := &RiskPhoneCheckRequest{}
+		var fernTestValuePhone string
+		obj.SetPhone(fernTestValuePhone)
+		assert.Equal(t, fernTestValuePhone, obj.Phone)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestSettersMarkExplicitRiskPhoneCheckRequest(t *testing.T) {
+	t.Run("SetPhone_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheckRequest{}
+		var fernTestValuePhone string
+
+		// Act
+		obj.SetPhone(fernTestValuePhone)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersRiskContentClassifyRequest(t *testing.T) {
 	t.Run("SetText", func(t *testing.T) {
 		obj := &RiskContentClassifyRequest{}
@@ -5124,6 +5169,1001 @@ func TestSettersMarkExplicitRiskLimit(t *testing.T) {
 
 }
 
+func TestSettersRiskPhoneCarrier(t *testing.T) {
+	t.Run("SetName", func(t *testing.T) {
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueName *string
+		obj.SetName(fernTestValueName)
+		assert.Equal(t, fernTestValueName, obj.Name)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMobileCountryCode", func(t *testing.T) {
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueMobileCountryCode *string
+		obj.SetMobileCountryCode(fernTestValueMobileCountryCode)
+		assert.Equal(t, fernTestValueMobileCountryCode, obj.MobileCountryCode)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMobileNetworkCode", func(t *testing.T) {
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueMobileNetworkCode *string
+		obj.SetMobileNetworkCode(fernTestValueMobileNetworkCode)
+		assert.Equal(t, fernTestValueMobileNetworkCode, obj.MobileNetworkCode)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersRiskPhoneCarrier(t *testing.T) {
+	t.Run("GetName", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var expected *string
+		obj.Name = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetName(), "getter should return the property value")
+	})
+
+	t.Run("GetName_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		obj.Name = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetName(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetName_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCarrier
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetName() // Should return zero value
+	})
+
+	t.Run("GetMobileCountryCode", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var expected *string
+		obj.MobileCountryCode = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMobileCountryCode(), "getter should return the property value")
+	})
+
+	t.Run("GetMobileCountryCode_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		obj.MobileCountryCode = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMobileCountryCode(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMobileCountryCode_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCarrier
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMobileCountryCode() // Should return zero value
+	})
+
+	t.Run("GetMobileNetworkCode", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var expected *string
+		obj.MobileNetworkCode = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMobileNetworkCode(), "getter should return the property value")
+	})
+
+	t.Run("GetMobileNetworkCode_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		obj.MobileNetworkCode = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMobileNetworkCode(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMobileNetworkCode_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCarrier
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMobileNetworkCode() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitRiskPhoneCarrier(t *testing.T) {
+	t.Run("SetName_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueName *string
+
+		// Act
+		obj.SetName(fernTestValueName)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMobileCountryCode_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueMobileCountryCode *string
+
+		// Act
+		obj.SetMobileCountryCode(fernTestValueMobileCountryCode)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMobileNetworkCode_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+		var fernTestValueMobileNetworkCode *string
+
+		// Act
+		obj.SetMobileNetworkCode(fernTestValueMobileNetworkCode)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersRiskPhoneCheck(t *testing.T) {
+	t.Run("SetObject", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueObject RiskPhoneCheckObject
+		obj.SetObject(fernTestValueObject)
+		assert.Equal(t, fernTestValueObject, obj.Object)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPhone", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValuePhone string
+		obj.SetPhone(fernTestValuePhone)
+		assert.Equal(t, fernTestValuePhone, obj.Phone)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetValid", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueValid bool
+		obj.SetValid(fernTestValueValid)
+		assert.Equal(t, fernTestValueValid, obj.Valid)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetCountry", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueCountry *string
+		obj.SetCountry(fernTestValueCountry)
+		assert.Equal(t, fernTestValueCountry, obj.Country)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetLineType", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueLineType *RiskPhoneCheckLineType
+		obj.SetLineType(fernTestValueLineType)
+		assert.Equal(t, fernTestValueLineType, obj.LineType)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetCarrier", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueCarrier *RiskPhoneCarrier
+		obj.SetCarrier(fernTestValueCarrier)
+		assert.Equal(t, fernTestValueCarrier, obj.Carrier)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetSimSwap", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueSimSwap *RiskPhoneSimSwap
+		obj.SetSimSwap(fernTestValueSimSwap)
+		assert.Equal(t, fernTestValueSimSwap, obj.SimSwap)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetDegraded", func(t *testing.T) {
+		obj := &RiskPhoneCheck{}
+		var fernTestValueDegraded []RiskPhoneCheckDegradedItem
+		obj.SetDegraded(fernTestValueDegraded)
+		assert.Equal(t, fernTestValueDegraded, obj.Degraded)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersRiskPhoneCheck(t *testing.T) {
+	t.Run("GetObject", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected RiskPhoneCheckObject
+		obj.Object = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetObject(), "getter should return the property value")
+	})
+
+	t.Run("GetObject_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetObject() // Should return zero value
+	})
+
+	t.Run("GetPhone", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected string
+		obj.Phone = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPhone(), "getter should return the property value")
+	})
+
+	t.Run("GetPhone_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPhone() // Should return zero value
+	})
+
+	t.Run("GetValid", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected bool
+		obj.Valid = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetValid(), "getter should return the property value")
+	})
+
+	t.Run("GetValid_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetValid() // Should return zero value
+	})
+
+	t.Run("GetCountry", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected *string
+		obj.Country = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetCountry(), "getter should return the property value")
+	})
+
+	t.Run("GetCountry_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		obj.Country = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetCountry(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetCountry_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetCountry() // Should return zero value
+	})
+
+	t.Run("GetLineType", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected *RiskPhoneCheckLineType
+		obj.LineType = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetLineType(), "getter should return the property value")
+	})
+
+	t.Run("GetLineType_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		obj.LineType = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetLineType(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetLineType_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetLineType() // Should return zero value
+	})
+
+	t.Run("GetCarrier", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected *RiskPhoneCarrier
+		obj.Carrier = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetCarrier(), "getter should return the property value")
+	})
+
+	t.Run("GetCarrier_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		obj.Carrier = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetCarrier(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetCarrier_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetCarrier() // Should return zero value
+	})
+
+	t.Run("GetSimSwap", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected *RiskPhoneSimSwap
+		obj.SimSwap = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSimSwap(), "getter should return the property value")
+	})
+
+	t.Run("GetSimSwap_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		obj.SimSwap = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSimSwap(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSimSwap_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSimSwap() // Should return zero value
+	})
+
+	t.Run("GetDegraded", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var expected []RiskPhoneCheckDegradedItem
+		obj.Degraded = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetDegraded(), "getter should return the property value")
+	})
+
+	t.Run("GetDegraded_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		obj.Degraded = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetDegraded(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetDegraded_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetDegraded() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitRiskPhoneCheck(t *testing.T) {
+	t.Run("SetObject_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueObject RiskPhoneCheckObject
+
+		// Act
+		obj.SetObject(fernTestValueObject)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPhone_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValuePhone string
+
+		// Act
+		obj.SetPhone(fernTestValuePhone)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetValid_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueValid bool
+
+		// Act
+		obj.SetValid(fernTestValueValid)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetCountry_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueCountry *string
+
+		// Act
+		obj.SetCountry(fernTestValueCountry)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetLineType_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueLineType *RiskPhoneCheckLineType
+
+		// Act
+		obj.SetLineType(fernTestValueLineType)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetCarrier_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueCarrier *RiskPhoneCarrier
+
+		// Act
+		obj.SetCarrier(fernTestValueCarrier)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetSimSwap_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueSimSwap *RiskPhoneSimSwap
+
+		// Act
+		obj.SetSimSwap(fernTestValueSimSwap)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetDegraded_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+		var fernTestValueDegraded []RiskPhoneCheckDegradedItem
+
+		// Act
+		obj.SetDegraded(fernTestValueDegraded)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersRiskPhoneSimSwap(t *testing.T) {
+	t.Run("SetRecent", func(t *testing.T) {
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValueRecent bool
+		obj.SetRecent(fernTestValueRecent)
+		assert.Equal(t, fernTestValueRecent, obj.Recent)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetSwappedAt", func(t *testing.T) {
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValueSwappedAt *string
+		obj.SetSwappedAt(fernTestValueSwappedAt)
+		assert.Equal(t, fernTestValueSwappedAt, obj.SwappedAt)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPeriod", func(t *testing.T) {
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValuePeriod *string
+		obj.SetPeriod(fernTestValuePeriod)
+		assert.Equal(t, fernTestValuePeriod, obj.Period)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersRiskPhoneSimSwap(t *testing.T) {
+	t.Run("GetRecent", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var expected bool
+		obj.Recent = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetRecent(), "getter should return the property value")
+	})
+
+	t.Run("GetRecent_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneSimSwap
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetRecent() // Should return zero value
+	})
+
+	t.Run("GetSwappedAt", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var expected *string
+		obj.SwappedAt = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSwappedAt(), "getter should return the property value")
+	})
+
+	t.Run("GetSwappedAt_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		obj.SwappedAt = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSwappedAt(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSwappedAt_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneSimSwap
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSwappedAt() // Should return zero value
+	})
+
+	t.Run("GetPeriod", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var expected *string
+		obj.Period = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPeriod(), "getter should return the property value")
+	})
+
+	t.Run("GetPeriod_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		obj.Period = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPeriod(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPeriod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneSimSwap
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPeriod() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitRiskPhoneSimSwap(t *testing.T) {
+	t.Run("SetRecent_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValueRecent bool
+
+		// Act
+		obj.SetRecent(fernTestValueRecent)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetSwappedAt_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValueSwappedAt *string
+
+		// Act
+		obj.SetSwappedAt(fernTestValueSwappedAt)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPeriod_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+		var fernTestValuePeriod *string
+
+		// Act
+		obj.SetPeriod(fernTestValuePeriod)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersCreateRiskAssessmentRequestCaptcha(t *testing.T) {
 	t.Run("SetToken", func(t *testing.T) {
 		obj := &CreateRiskAssessmentRequestCaptcha{}
@@ -5919,6 +6959,105 @@ func TestJSONMarshalingRiskLimit(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingRiskPhoneCarrier(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCarrier{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled RiskPhoneCarrier
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCarrier
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCarrier
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingRiskPhoneCheck(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneCheck{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled RiskPhoneCheck
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCheck
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCheck
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingRiskPhoneSimSwap(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &RiskPhoneSimSwap{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled RiskPhoneSimSwap
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneSimSwap
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneSimSwap
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestRequiredNullableRoundTripRiskCalibrationReason(t *testing.T) {
 	requiredNullableKeys := []string{
 		"precision",
@@ -6143,6 +7282,141 @@ func TestRequiredNullableRoundTripRiskLimit(t *testing.T) {
 	})
 }
 
+func TestRequiredNullableRoundTripRiskPhoneCarrier(t *testing.T) {
+	requiredNullableKeys := []string{
+		"name",
+		"mobile_country_code",
+		"mobile_network_code",
+	}
+	marshalToMap := func(t *testing.T, obj *RiskPhoneCarrier) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCarrier
+		require.NoError(t, json.Unmarshal([]byte(`{"name":null,"mobile_country_code":null,"mobile_network_code":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCarrier
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &RiskPhoneCarrier{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
+func TestRequiredNullableRoundTripRiskPhoneCheck(t *testing.T) {
+	requiredNullableKeys := []string{
+		"country",
+		"line_type",
+		"carrier",
+		"sim_swap",
+	}
+	marshalToMap := func(t *testing.T, obj *RiskPhoneCheck) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCheck
+		require.NoError(t, json.Unmarshal([]byte(`{"country":null,"line_type":null,"carrier":null,"sim_swap":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneCheck
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &RiskPhoneCheck{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
+func TestRequiredNullableRoundTripRiskPhoneSimSwap(t *testing.T) {
+	requiredNullableKeys := []string{
+		"swapped_at",
+		"period",
+	}
+	marshalToMap := func(t *testing.T, obj *RiskPhoneSimSwap) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneSimSwap
+		require.NoError(t, json.Unmarshal([]byte(`{"swapped_at":null,"period":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj RiskPhoneSimSwap
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &RiskPhoneSimSwap{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
 func TestStringCreateRiskAssessmentRequestCaptcha(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -6346,6 +7620,54 @@ func TestStringRiskLimit(t *testing.T) {
 	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *RiskLimit
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringRiskPhoneCarrier(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneCarrier{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCarrier
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringRiskPhoneCheck(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneCheck{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringRiskPhoneSimSwap(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneSimSwap{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneSimSwap
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
 	})
@@ -6978,6 +8300,156 @@ func TestEnumRiskLimitObject(t *testing.T) {
 	})
 }
 
+func TestEnumRiskPhoneCheckDegradedItem(t *testing.T) {
+	t.Run("NewFromString_phone_data", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckDegradedItemFromString("phone_data")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckDegradedItem("phone_data"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_sim_swap", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckDegradedItemFromString("sim_swap")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckDegradedItem("sim_swap"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewRiskPhoneCheckDegradedItemFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewRiskPhoneCheckDegradedItemFromString("phone_data")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumRiskPhoneCheckLineType(t *testing.T) {
+	t.Run("NewFromString_mobile", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("mobile")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("mobile"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_landline", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("landline")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("landline"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_fixed_voip", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("fixed_voip")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("fixed_voip"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_non_fixed_voip", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("non_fixed_voip")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("non_fixed_voip"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_toll_free", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("toll_free")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("toll_free"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_premium", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("premium")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("premium"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_shared_cost", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("shared_cost")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("shared_cost"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_personal", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("personal")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("personal"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_uan", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("uan")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("uan"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_voicemail", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("voicemail")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("voicemail"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_pager", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("pager")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("pager"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_unknown", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckLineTypeFromString("unknown")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckLineType("unknown"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewRiskPhoneCheckLineTypeFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewRiskPhoneCheckLineTypeFromString("mobile")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumRiskPhoneCheckObject(t *testing.T) {
+	t.Run("NewFromString_risk_phone_check", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewRiskPhoneCheckObjectFromString("risk_phone_check")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, RiskPhoneCheckObject("risk_phone_check"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewRiskPhoneCheckObjectFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewRiskPhoneCheckObjectFromString("risk_phone_check")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
 func TestExtraPropertiesCreateRiskAssessmentRequestCaptcha(t *testing.T) {
 	t.Run("GetExtraProperties", func(t *testing.T) {
 		t.Parallel()
@@ -7272,6 +8744,75 @@ func TestExtraPropertiesRiskLimit(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *RiskLimit
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesRiskPhoneCarrier(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneCarrier{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCarrier
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesRiskPhoneCheck(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneCheck{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneCheck
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesRiskPhoneSimSwap(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &RiskPhoneSimSwap{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *RiskPhoneSimSwap
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

@@ -90,6 +90,20 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
     public static readonly CreateWebhookListenerRequestEventTypesItem AccountMarketingReinstated =
         new(Values.AccountMarketingReinstated);
 
+    public static readonly CreateWebhookListenerRequestEventTypesItem SubaccountReputationWarning =
+        new(Values.SubaccountReputationWarning);
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SubaccountReputationRecovered =
+        new(Values.SubaccountReputationRecovered);
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SubaccountPaused = new(
+        Values.SubaccountPaused
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SubaccountReinstated = new(
+        Values.SubaccountReinstated
+    );
+
     public static readonly CreateWebhookListenerRequestEventTypesItem HookEndpointDisabled = new(
         Values.HookEndpointDisabled
     );
@@ -187,6 +201,10 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
         Values.BroadcastFailed
     );
 
+    public static readonly CreateWebhookListenerRequestEventTypesItem InboxMessageReceived = new(
+        Values.InboxMessageReceived
+    );
+
     public static readonly CreateWebhookListenerRequestEventTypesItem SmsScheduled = new(
         Values.SmsScheduled
     );
@@ -223,6 +241,54 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
 
     public static readonly CreateWebhookListenerRequestEventTypesItem SmsOptedIn = new(
         Values.SmsOptedIn
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestSent = new(
+        Values.SignRequestSent
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestViewed = new(
+        Values.SignRequestViewed
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestSignerSigned = new(
+        Values.SignRequestSignerSigned
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestDeclined = new(
+        Values.SignRequestDeclined
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestCompleted = new(
+        Values.SignRequestCompleted
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestCanceled = new(
+        Values.SignRequestCanceled
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem SignRequestExpired = new(
+        Values.SignRequestExpired
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem VerificationApproved = new(
+        Values.VerificationApproved
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem VerificationFailed = new(
+        Values.VerificationFailed
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem VerificationBlocked = new(
+        Values.VerificationBlocked
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem FormSubmissionReceived = new(
+        Values.FormSubmissionReceived
+    );
+
+    public static readonly CreateWebhookListenerRequestEventTypesItem FormSubmissionFlagged = new(
+        Values.FormSubmissionFlagged
     );
 
     public CreateWebhookListenerRequestEventTypesItem(string value)
@@ -370,6 +436,14 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
 
         public const string AccountMarketingReinstated = "account.marketing_reinstated";
 
+        public const string SubaccountReputationWarning = "subaccount.reputation_warning";
+
+        public const string SubaccountReputationRecovered = "subaccount.reputation_recovered";
+
+        public const string SubaccountPaused = "subaccount.paused";
+
+        public const string SubaccountReinstated = "subaccount.reinstated";
+
         public const string HookEndpointDisabled = "hook_endpoint.disabled";
 
         public const string BillingInvoiceFinalized = "billing.invoice_finalized";
@@ -420,6 +494,8 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
 
         public const string BroadcastFailed = "broadcast.failed";
 
+        public const string InboxMessageReceived = "inbox.message.received";
+
         public const string SmsScheduled = "sms.scheduled";
 
         public const string SmsSent = "sms.sent";
@@ -439,5 +515,29 @@ public readonly record struct CreateWebhookListenerRequestEventTypesItem : IStri
         public const string SmsOptedOut = "sms.opted_out";
 
         public const string SmsOptedIn = "sms.opted_in";
+
+        public const string SignRequestSent = "sign_request.sent";
+
+        public const string SignRequestViewed = "sign_request.viewed";
+
+        public const string SignRequestSignerSigned = "sign_request.signer_signed";
+
+        public const string SignRequestDeclined = "sign_request.declined";
+
+        public const string SignRequestCompleted = "sign_request.completed";
+
+        public const string SignRequestCanceled = "sign_request.canceled";
+
+        public const string SignRequestExpired = "sign_request.expired";
+
+        public const string VerificationApproved = "verification.approved";
+
+        public const string VerificationFailed = "verification.failed";
+
+        public const string VerificationBlocked = "verification.blocked";
+
+        public const string FormSubmissionReceived = "form.submission.received";
+
+        public const string FormSubmissionFlagged = "form.submission.flagged";
     }
 }

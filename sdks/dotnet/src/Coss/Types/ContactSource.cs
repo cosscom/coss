@@ -16,6 +16,8 @@ public readonly record struct ContactSource : IStringEnum
 
     public static readonly ContactSource PreferenceCenter = new(Values.PreferenceCenter);
 
+    public static readonly ContactSource Form = new(Values.Form);
+
     public ContactSource(string value)
     {
         Value = value;
@@ -119,5 +121,7 @@ public readonly record struct ContactSource : IStringEnum
         public const string Import = "import";
 
         public const string PreferenceCenter = "preference_center";
+
+        public const string Form = "form";
     }
 }

@@ -8,4 +8,5 @@ enum ContactSource: string
     case Dashboard = "dashboard";
     case Import = "import";
     case PreferenceCenter = "preference_center";
+    case Form = "form";
 }

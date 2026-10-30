@@ -24,6 +24,13 @@ public record CreateSuppressionRequest
         string
     >? Scope { get; set; }
 
+    /// <summary>
+    /// Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("subaccount")]
+    public string? Subaccount { get; set; }
+
     /// <inheritdoc />
     public override string ToString()
     {

@@ -18,18 +18,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ImportSuppressionsRequest.Builder.class)
 public final class ImportSuppressionsRequest {
+    private final Optional<String> subaccount;
+
     private final List<ImportSuppressionsRequestSuppressionsItem> suppressions;
 
     private final Map<String, Object> additionalProperties;
 
     private ImportSuppressionsRequest(
-            List<ImportSuppressionsRequestSuppressionsItem> suppressions, Map<String, Object> additionalProperties) {
+            Optional<String> subaccount,
+            List<ImportSuppressionsRequestSuppressionsItem> suppressions,
+            Map<String, Object> additionalProperties) {
+        this.subaccount = subaccount;
         this.suppressions = suppressions;
         this.additionalProperties = additionalProperties;
+    }
+
+    /**
+     * @return Import into a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
     }
 
     /**
@@ -52,12 +66,12 @@ public final class ImportSuppressionsRequest {
     }
 
     private boolean equalTo(ImportSuppressionsRequest other) {
-        return suppressions.equals(other.suppressions);
+        return subaccount.equals(other.subaccount) && suppressions.equals(other.suppressions);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.suppressions);
+        return Objects.hash(this.subaccount, this.suppressions);
     }
 
     @java.lang.Override
@@ -71,6 +85,8 @@ public final class ImportSuppressionsRequest {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder {
+        private Optional<String> subaccount = Optional.empty();
+
         private List<ImportSuppressionsRequestSuppressionsItem> suppressions = new ArrayList<>();
 
         @JsonAnySetter
@@ -79,7 +95,22 @@ public final class ImportSuppressionsRequest {
         private Builder() {}
 
         public Builder from(ImportSuppressionsRequest other) {
+            subaccount(other.getSubaccount());
             suppressions(other.getSuppressions());
+            return this;
+        }
+
+        /**
+         * <p>Import into a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         */
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public Builder subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
+            return this;
+        }
+
+        public Builder subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
             return this;
         }
 
@@ -108,7 +139,7 @@ public final class ImportSuppressionsRequest {
         }
 
         public ImportSuppressionsRequest build() {
-            return new ImportSuppressionsRequest(suppressions, additionalProperties);
+            return new ImportSuppressionsRequest(subaccount, suppressions, additionalProperties);
         }
 
         public Builder additionalProperty(String key, Object value) {

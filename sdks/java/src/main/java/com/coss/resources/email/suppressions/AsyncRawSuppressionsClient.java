@@ -86,6 +86,10 @@ public class AsyncRawSuppressionsClient {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/suppressions");
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (request.getAddress().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "address", request.getAddress().get(), false);
@@ -152,6 +156,11 @@ public class AsyncRawSuppressionsClient {
                                 return;
                             case 403:
                                 future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;
@@ -275,6 +284,11 @@ public class AsyncRawSuppressionsClient {
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
                             case 413:
                                 future.completeExceptionally(new ContentTooLargeError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
@@ -353,6 +367,10 @@ public class AsyncRawSuppressionsClient {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "stream", request.getStream().get(), false);
         }
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -403,6 +421,11 @@ public class AsyncRawSuppressionsClient {
                                 return;
                             case 403:
                                 future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;
@@ -527,6 +550,11 @@ public class AsyncRawSuppressionsClient {
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
                             case 413:
                                 future.completeExceptionally(new ContentTooLargeError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
@@ -610,6 +638,10 @@ public class AsyncRawSuppressionsClient {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/suppressions/export");
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (request.getScope().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "scope", request.getScope().get(), false);
@@ -666,6 +698,11 @@ public class AsyncRawSuppressionsClient {
                                 return;
                             case 403:
                                 future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;

@@ -14,22 +14,28 @@ module Coss
       # so every API key of the organization sees the same domains.
       #
       # @param request_options [Hash]
-      # @param _params [Hash]
+      # @param params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String, nil] :subaccount
       #
       # @example
       #   client.domains.list
       #
       # @return [Coss::Types::DomainList]
-      def list(request_options: {}, **_params)
+      def list(request_options: {}, **params)
+        params = Coss::Internal::Types::Utils.normalize_keys(params)
+        query_params = {}
+        query_params["subaccount"] = params[:subaccount] if params.key?(:subaccount)
+
         request = Coss::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
           path: "v1/domains",
+          query: query_params,
           request_options: request_options
         )
         begin
@@ -157,6 +163,52 @@ module Coss
         code = response.code.to_i
         if code.between?(200, 299)
           (response.body.to_s.empty? ? nil : Coss::Types::DeletedDomain.load(response.body))
+        else
+          error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+          raise error_class.new(response.body, code: code)
+        end
+      end
+
+      # Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the
+      # organization's reputation), or stops sharing it.
+      #
+      # @param request_options [Hash]
+      # @param params [Coss::Domains::Types::UpdateDomainRequest]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :id
+      #
+      # @example
+      #   client.domains.update(
+      #     id: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+      #     shared_with_subaccounts: true
+      #   )
+      #
+      # @return [Coss::Types::Domain]
+      def update(request_options: {}, **params)
+        params = Coss::Internal::Types::Utils.normalize_keys(params)
+        request_data = Coss::Domains::Types::UpdateDomainRequest.new(params).to_h
+        non_body_param_names = %w[id]
+        body = request_data.except(*non_body_param_names)
+
+        request = Coss::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "PATCH",
+          path: "v1/domains/#{URI.encode_uri_component(params[:id].to_s)}",
+          body: body,
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Coss::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Coss::Types::Domain.load(response.body))
         else
           error_class = Coss::Errors::ResponseError.subclass_for_code(code)
           raise error_class.new(response.body, code: code)

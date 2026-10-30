@@ -115,6 +115,7 @@ public class SendTest : BaseMockServerTest
                 "locale": "locale"
               },
               "broadcast_id": "broadcast_id",
+              "subaccount_id": "subaccount_id",
               "content_storage": {
                 "mode": "store",
                 "discarded_at": "2024-01-15T09:30:00.000Z"
@@ -162,6 +163,7 @@ public class SendTest : BaseMockServerTest
                     Attachments = null,
                     Tracking = null,
                     Stream = null,
+                    Subaccount = null,
                 },
             }
         );
@@ -255,6 +257,7 @@ public class SendTest : BaseMockServerTest
               "batch_id": null,
               "template": null,
               "broadcast_id": null,
+              "subaccount_id": null,
               "content_storage": {
                 "mode": "store",
                 "discarded_at": null

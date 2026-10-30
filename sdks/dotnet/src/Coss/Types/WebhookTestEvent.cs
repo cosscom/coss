@@ -26,8 +26,12 @@ public record WebhookTestEvent : IJsonOnDeserialized
         RiskWebhookEvent,
         ContactWebhookEvent,
         BroadcastWebhookEvent,
+        InboxMessageReceivedWebhookEvent,
         SmsWebhookEvent,
-        ReceivedSmsWebhookEvent
+        ReceivedSmsWebhookEvent,
+        SignRequestWebhookEvent,
+        VerificationWebhookEvent,
+        FormSubmissionWebhookEvent
     > Event { get; set; }
 
     /// <summary>

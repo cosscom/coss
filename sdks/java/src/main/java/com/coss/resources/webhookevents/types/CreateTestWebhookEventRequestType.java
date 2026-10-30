@@ -16,17 +16,32 @@ public final class CreateTestWebhookEventRequestType {
     public static final CreateTestWebhookEventRequestType SMS_SUPPRESSED =
             new CreateTestWebhookEventRequestType(Value.SMS_SUPPRESSED, "sms.suppressed");
 
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_SENT =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_SENT, "sign_request.sent");
+
     public static final CreateTestWebhookEventRequestType EMAIL_BOUNCED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_BOUNCED, "email.bounced");
 
     public static final CreateTestWebhookEventRequestType SMS_OPTED_OUT =
             new CreateTestWebhookEventRequestType(Value.SMS_OPTED_OUT, "sms.opted_out");
 
+    public static final CreateTestWebhookEventRequestType VERIFICATION_BLOCKED =
+            new CreateTestWebhookEventRequestType(Value.VERIFICATION_BLOCKED, "verification.blocked");
+
     public static final CreateTestWebhookEventRequestType CONTACT_CREATED =
             new CreateTestWebhookEventRequestType(Value.CONTACT_CREATED, "contact.created");
 
     public static final CreateTestWebhookEventRequestType SMS_CANCELED =
             new CreateTestWebhookEventRequestType(Value.SMS_CANCELED, "sms.canceled");
+
+    public static final CreateTestWebhookEventRequestType SUBACCOUNT_REINSTATED =
+            new CreateTestWebhookEventRequestType(Value.SUBACCOUNT_REINSTATED, "subaccount.reinstated");
+
+    public static final CreateTestWebhookEventRequestType VERIFICATION_FAILED =
+            new CreateTestWebhookEventRequestType(Value.VERIFICATION_FAILED, "verification.failed");
+
+    public static final CreateTestWebhookEventRequestType FORM_SUBMISSION_RECEIVED =
+            new CreateTestWebhookEventRequestType(Value.FORM_SUBMISSION_RECEIVED, "form.submission.received");
 
     public static final CreateTestWebhookEventRequestType ACCOUNT_REPUTATION_RECOVERED =
             new CreateTestWebhookEventRequestType(Value.ACCOUNT_REPUTATION_RECOVERED, "account.reputation_recovered");
@@ -40,6 +55,9 @@ public final class CreateTestWebhookEventRequestType {
     public static final CreateTestWebhookEventRequestType EMAIL_DELIVERY_DELAYED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_DELIVERY_DELAYED, "email.delivery_delayed");
 
+    public static final CreateTestWebhookEventRequestType INBOX_MESSAGE_RECEIVED =
+            new CreateTestWebhookEventRequestType(Value.INBOX_MESSAGE_RECEIVED, "inbox.message.received");
+
     public static final CreateTestWebhookEventRequestType BILLING_BUDGET_HOLD_PLACED =
             new CreateTestWebhookEventRequestType(Value.BILLING_BUDGET_HOLD_PLACED, "billing.budget_hold_placed");
 
@@ -51,6 +69,9 @@ public final class CreateTestWebhookEventRequestType {
 
     public static final CreateTestWebhookEventRequestType SMS_RECEIVED =
             new CreateTestWebhookEventRequestType(Value.SMS_RECEIVED, "sms.received");
+
+    public static final CreateTestWebhookEventRequestType SUBACCOUNT_REPUTATION_WARNING =
+            new CreateTestWebhookEventRequestType(Value.SUBACCOUNT_REPUTATION_WARNING, "subaccount.reputation_warning");
 
     public static final CreateTestWebhookEventRequestType SMS_UNDELIVERED =
             new CreateTestWebhookEventRequestType(Value.SMS_UNDELIVERED, "sms.undelivered");
@@ -68,6 +89,9 @@ public final class CreateTestWebhookEventRequestType {
             new CreateTestWebhookEventRequestType(
                     Value.BILLING_INVOICE_PAYMENT_FAILED, "billing.invoice_payment_failed");
 
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_DECLINED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_DECLINED, "sign_request.declined");
+
     public static final CreateTestWebhookEventRequestType EMAIL_RESCHEDULED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_RESCHEDULED, "email.rescheduled");
 
@@ -76,6 +100,10 @@ public final class CreateTestWebhookEventRequestType {
 
     public static final CreateTestWebhookEventRequestType EMAIL_CLICKED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_CLICKED, "email.clicked");
+
+    public static final CreateTestWebhookEventRequestType SUBACCOUNT_REPUTATION_RECOVERED =
+            new CreateTestWebhookEventRequestType(
+                    Value.SUBACCOUNT_REPUTATION_RECOVERED, "subaccount.reputation_recovered");
 
     public static final CreateTestWebhookEventRequestType BILLING_BUDGET_THRESHOLD_REACHED =
             new CreateTestWebhookEventRequestType(
@@ -86,6 +114,15 @@ public final class CreateTestWebhookEventRequestType {
 
     public static final CreateTestWebhookEventRequestType BROADCAST_SENT =
             new CreateTestWebhookEventRequestType(Value.BROADCAST_SENT, "broadcast.sent");
+
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_CANCELED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_CANCELED, "sign_request.canceled");
+
+    public static final CreateTestWebhookEventRequestType VERIFICATION_APPROVED =
+            new CreateTestWebhookEventRequestType(Value.VERIFICATION_APPROVED, "verification.approved");
+
+    public static final CreateTestWebhookEventRequestType FORM_SUBMISSION_FLAGGED =
+            new CreateTestWebhookEventRequestType(Value.FORM_SUBMISSION_FLAGGED, "form.submission.flagged");
 
     public static final CreateTestWebhookEventRequestType CONTACT_CONFIRMED =
             new CreateTestWebhookEventRequestType(Value.CONTACT_CONFIRMED, "contact.confirmed");
@@ -108,6 +145,9 @@ public final class CreateTestWebhookEventRequestType {
     public static final CreateTestWebhookEventRequestType BILLING_USAGE_THRESHOLD_REACHED =
             new CreateTestWebhookEventRequestType(
                     Value.BILLING_USAGE_THRESHOLD_REACHED, "billing.usage_threshold_reached");
+
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_EXPIRED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_EXPIRED, "sign_request.expired");
 
     public static final CreateTestWebhookEventRequestType ACCOUNT_MARKETING_PAUSED =
             new CreateTestWebhookEventRequestType(Value.ACCOUNT_MARKETING_PAUSED, "account.marketing_paused");
@@ -142,14 +182,26 @@ public final class CreateTestWebhookEventRequestType {
     public static final CreateTestWebhookEventRequestType EMAIL_OPENED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_OPENED, "email.opened");
 
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_SIGNER_SIGNED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_SIGNER_SIGNED, "sign_request.signer_signed");
+
     public static final CreateTestWebhookEventRequestType EMAIL_CANCELED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_CANCELED, "email.canceled");
 
     public static final CreateTestWebhookEventRequestType SMS_DELIVERED =
             new CreateTestWebhookEventRequestType(Value.SMS_DELIVERED, "sms.delivered");
 
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_VIEWED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_VIEWED, "sign_request.viewed");
+
     public static final CreateTestWebhookEventRequestType EMAIL_UNSUBSCRIBED =
             new CreateTestWebhookEventRequestType(Value.EMAIL_UNSUBSCRIBED, "email.unsubscribed");
+
+    public static final CreateTestWebhookEventRequestType SUBACCOUNT_PAUSED =
+            new CreateTestWebhookEventRequestType(Value.SUBACCOUNT_PAUSED, "subaccount.paused");
+
+    public static final CreateTestWebhookEventRequestType SIGN_REQUEST_COMPLETED =
+            new CreateTestWebhookEventRequestType(Value.SIGN_REQUEST_COMPLETED, "sign_request.completed");
 
     public static final CreateTestWebhookEventRequestType RISK_ASSESSMENT_REVIEW =
             new CreateTestWebhookEventRequestType(Value.RISK_ASSESSMENT_REVIEW, "risk.assessment.review");
@@ -217,14 +269,24 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitBillingInvoiceVoided();
             case SMS_SUPPRESSED:
                 return visitor.visitSmsSuppressed();
+            case SIGN_REQUEST_SENT:
+                return visitor.visitSignRequestSent();
             case EMAIL_BOUNCED:
                 return visitor.visitEmailBounced();
             case SMS_OPTED_OUT:
                 return visitor.visitSmsOptedOut();
+            case VERIFICATION_BLOCKED:
+                return visitor.visitVerificationBlocked();
             case CONTACT_CREATED:
                 return visitor.visitContactCreated();
             case SMS_CANCELED:
                 return visitor.visitSmsCanceled();
+            case SUBACCOUNT_REINSTATED:
+                return visitor.visitSubaccountReinstated();
+            case VERIFICATION_FAILED:
+                return visitor.visitVerificationFailed();
+            case FORM_SUBMISSION_RECEIVED:
+                return visitor.visitFormSubmissionReceived();
             case ACCOUNT_REPUTATION_RECOVERED:
                 return visitor.visitAccountReputationRecovered();
             case DOMAIN_DMARC_REPORT_RECEIVED:
@@ -233,6 +295,8 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitContactUpdated();
             case EMAIL_DELIVERY_DELAYED:
                 return visitor.visitEmailDeliveryDelayed();
+            case INBOX_MESSAGE_RECEIVED:
+                return visitor.visitInboxMessageReceived();
             case BILLING_BUDGET_HOLD_PLACED:
                 return visitor.visitBillingBudgetHoldPlaced();
             case BROADCAST_SENDING:
@@ -241,6 +305,8 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitSmsFailed();
             case SMS_RECEIVED:
                 return visitor.visitSmsReceived();
+            case SUBACCOUNT_REPUTATION_WARNING:
+                return visitor.visitSubaccountReputationWarning();
             case SMS_UNDELIVERED:
                 return visitor.visitSmsUndelivered();
             case BILLING_INVOICE_FINALIZED:
@@ -251,18 +317,28 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitSmsScheduled();
             case BILLING_INVOICE_PAYMENT_FAILED:
                 return visitor.visitBillingInvoicePaymentFailed();
+            case SIGN_REQUEST_DECLINED:
+                return visitor.visitSignRequestDeclined();
             case EMAIL_RESCHEDULED:
                 return visitor.visitEmailRescheduled();
             case BROADCAST_PAUSED:
                 return visitor.visitBroadcastPaused();
             case EMAIL_CLICKED:
                 return visitor.visitEmailClicked();
+            case SUBACCOUNT_REPUTATION_RECOVERED:
+                return visitor.visitSubaccountReputationRecovered();
             case BILLING_BUDGET_THRESHOLD_REACHED:
                 return visitor.visitBillingBudgetThresholdReached();
             case EMAIL_SENT:
                 return visitor.visitEmailSent();
             case BROADCAST_SENT:
                 return visitor.visitBroadcastSent();
+            case SIGN_REQUEST_CANCELED:
+                return visitor.visitSignRequestCanceled();
+            case VERIFICATION_APPROVED:
+                return visitor.visitVerificationApproved();
+            case FORM_SUBMISSION_FLAGGED:
+                return visitor.visitFormSubmissionFlagged();
             case CONTACT_CONFIRMED:
                 return visitor.visitContactConfirmed();
             case BILLING_INVOICE_PAID:
@@ -277,6 +353,8 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitEmailComplained();
             case BILLING_USAGE_THRESHOLD_REACHED:
                 return visitor.visitBillingUsageThresholdReached();
+            case SIGN_REQUEST_EXPIRED:
+                return visitor.visitSignRequestExpired();
             case ACCOUNT_MARKETING_PAUSED:
                 return visitor.visitAccountMarketingPaused();
             case ACCOUNT_REPUTATION_WARNING:
@@ -299,12 +377,20 @@ public final class CreateTestWebhookEventRequestType {
                 return visitor.visitAccountReinstated();
             case EMAIL_OPENED:
                 return visitor.visitEmailOpened();
+            case SIGN_REQUEST_SIGNER_SIGNED:
+                return visitor.visitSignRequestSignerSigned();
             case EMAIL_CANCELED:
                 return visitor.visitEmailCanceled();
             case SMS_DELIVERED:
                 return visitor.visitSmsDelivered();
+            case SIGN_REQUEST_VIEWED:
+                return visitor.visitSignRequestViewed();
             case EMAIL_UNSUBSCRIBED:
                 return visitor.visitEmailUnsubscribed();
+            case SUBACCOUNT_PAUSED:
+                return visitor.visitSubaccountPaused();
+            case SIGN_REQUEST_COMPLETED:
+                return visitor.visitSignRequestCompleted();
             case RISK_ASSESSMENT_REVIEW:
                 return visitor.visitRiskAssessmentReview();
             case EMAIL_SCHEDULED:
@@ -338,14 +424,24 @@ public final class CreateTestWebhookEventRequestType {
                 return BILLING_INVOICE_VOIDED;
             case "sms.suppressed":
                 return SMS_SUPPRESSED;
+            case "sign_request.sent":
+                return SIGN_REQUEST_SENT;
             case "email.bounced":
                 return EMAIL_BOUNCED;
             case "sms.opted_out":
                 return SMS_OPTED_OUT;
+            case "verification.blocked":
+                return VERIFICATION_BLOCKED;
             case "contact.created":
                 return CONTACT_CREATED;
             case "sms.canceled":
                 return SMS_CANCELED;
+            case "subaccount.reinstated":
+                return SUBACCOUNT_REINSTATED;
+            case "verification.failed":
+                return VERIFICATION_FAILED;
+            case "form.submission.received":
+                return FORM_SUBMISSION_RECEIVED;
             case "account.reputation_recovered":
                 return ACCOUNT_REPUTATION_RECOVERED;
             case "domain.dmarc_report_received":
@@ -354,6 +450,8 @@ public final class CreateTestWebhookEventRequestType {
                 return CONTACT_UPDATED;
             case "email.delivery_delayed":
                 return EMAIL_DELIVERY_DELAYED;
+            case "inbox.message.received":
+                return INBOX_MESSAGE_RECEIVED;
             case "billing.budget_hold_placed":
                 return BILLING_BUDGET_HOLD_PLACED;
             case "broadcast.sending":
@@ -362,6 +460,8 @@ public final class CreateTestWebhookEventRequestType {
                 return SMS_FAILED;
             case "sms.received":
                 return SMS_RECEIVED;
+            case "subaccount.reputation_warning":
+                return SUBACCOUNT_REPUTATION_WARNING;
             case "sms.undelivered":
                 return SMS_UNDELIVERED;
             case "billing.invoice_finalized":
@@ -372,18 +472,28 @@ public final class CreateTestWebhookEventRequestType {
                 return SMS_SCHEDULED;
             case "billing.invoice_payment_failed":
                 return BILLING_INVOICE_PAYMENT_FAILED;
+            case "sign_request.declined":
+                return SIGN_REQUEST_DECLINED;
             case "email.rescheduled":
                 return EMAIL_RESCHEDULED;
             case "broadcast.paused":
                 return BROADCAST_PAUSED;
             case "email.clicked":
                 return EMAIL_CLICKED;
+            case "subaccount.reputation_recovered":
+                return SUBACCOUNT_REPUTATION_RECOVERED;
             case "billing.budget_threshold_reached":
                 return BILLING_BUDGET_THRESHOLD_REACHED;
             case "email.sent":
                 return EMAIL_SENT;
             case "broadcast.sent":
                 return BROADCAST_SENT;
+            case "sign_request.canceled":
+                return SIGN_REQUEST_CANCELED;
+            case "verification.approved":
+                return VERIFICATION_APPROVED;
+            case "form.submission.flagged":
+                return FORM_SUBMISSION_FLAGGED;
             case "contact.confirmed":
                 return CONTACT_CONFIRMED;
             case "billing.invoice_paid":
@@ -398,6 +508,8 @@ public final class CreateTestWebhookEventRequestType {
                 return EMAIL_COMPLAINED;
             case "billing.usage_threshold_reached":
                 return BILLING_USAGE_THRESHOLD_REACHED;
+            case "sign_request.expired":
+                return SIGN_REQUEST_EXPIRED;
             case "account.marketing_paused":
                 return ACCOUNT_MARKETING_PAUSED;
             case "account.reputation_warning":
@@ -420,12 +532,20 @@ public final class CreateTestWebhookEventRequestType {
                 return ACCOUNT_REINSTATED;
             case "email.opened":
                 return EMAIL_OPENED;
+            case "sign_request.signer_signed":
+                return SIGN_REQUEST_SIGNER_SIGNED;
             case "email.canceled":
                 return EMAIL_CANCELED;
             case "sms.delivered":
                 return SMS_DELIVERED;
+            case "sign_request.viewed":
+                return SIGN_REQUEST_VIEWED;
             case "email.unsubscribed":
                 return EMAIL_UNSUBSCRIBED;
+            case "subaccount.paused":
+                return SUBACCOUNT_PAUSED;
+            case "sign_request.completed":
+                return SIGN_REQUEST_COMPLETED;
             case "risk.assessment.review":
                 return RISK_ASSESSMENT_REVIEW;
             case "email.scheduled":
@@ -492,6 +612,14 @@ public final class CreateTestWebhookEventRequestType {
 
         ACCOUNT_MARKETING_REINSTATED,
 
+        SUBACCOUNT_REPUTATION_WARNING,
+
+        SUBACCOUNT_REPUTATION_RECOVERED,
+
+        SUBACCOUNT_PAUSED,
+
+        SUBACCOUNT_REINSTATED,
+
         HOOK_ENDPOINT_DISABLED,
 
         BILLING_INVOICE_FINALIZED,
@@ -542,6 +670,8 @@ public final class CreateTestWebhookEventRequestType {
 
         BROADCAST_FAILED,
 
+        INBOX_MESSAGE_RECEIVED,
+
         SMS_SCHEDULED,
 
         SMS_SENT,
@@ -561,6 +691,30 @@ public final class CreateTestWebhookEventRequestType {
         SMS_OPTED_OUT,
 
         SMS_OPTED_IN,
+
+        SIGN_REQUEST_SENT,
+
+        SIGN_REQUEST_VIEWED,
+
+        SIGN_REQUEST_SIGNER_SIGNED,
+
+        SIGN_REQUEST_DECLINED,
+
+        SIGN_REQUEST_COMPLETED,
+
+        SIGN_REQUEST_CANCELED,
+
+        SIGN_REQUEST_EXPIRED,
+
+        VERIFICATION_APPROVED,
+
+        VERIFICATION_FAILED,
+
+        VERIFICATION_BLOCKED,
+
+        FORM_SUBMISSION_RECEIVED,
+
+        FORM_SUBMISSION_FLAGGED,
 
         UNKNOWN
     }
@@ -607,6 +761,14 @@ public final class CreateTestWebhookEventRequestType {
         T visitAccountMarketingPaused();
 
         T visitAccountMarketingReinstated();
+
+        T visitSubaccountReputationWarning();
+
+        T visitSubaccountReputationRecovered();
+
+        T visitSubaccountPaused();
+
+        T visitSubaccountReinstated();
 
         T visitHookEndpointDisabled();
 
@@ -658,6 +820,8 @@ public final class CreateTestWebhookEventRequestType {
 
         T visitBroadcastFailed();
 
+        T visitInboxMessageReceived();
+
         T visitSmsScheduled();
 
         T visitSmsSent();
@@ -677,6 +841,30 @@ public final class CreateTestWebhookEventRequestType {
         T visitSmsOptedOut();
 
         T visitSmsOptedIn();
+
+        T visitSignRequestSent();
+
+        T visitSignRequestViewed();
+
+        T visitSignRequestSignerSigned();
+
+        T visitSignRequestDeclined();
+
+        T visitSignRequestCompleted();
+
+        T visitSignRequestCanceled();
+
+        T visitSignRequestExpired();
+
+        T visitVerificationApproved();
+
+        T visitVerificationFailed();
+
+        T visitVerificationBlocked();
+
+        T visitFormSubmissionReceived();
+
+        T visitFormSubmissionFlagged();
 
         T visitUnknown(String unknownType);
     }

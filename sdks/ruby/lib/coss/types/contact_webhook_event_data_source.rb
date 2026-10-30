@@ -9,6 +9,7 @@ module Coss
       DASHBOARD = "dashboard"
       IMPORT = "import"
       PREFERENCE_CENTER = "preference_center"
+      FORM = "form"
     end
   end
 end

@@ -27,6 +27,12 @@ class CreateSuppressionRequest extends JsonSerializableType
     public string|null $scope;
 
     /**
+     * @var ?string $subaccount Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    #[JsonProperty('subaccount')]
+    public ?string $subaccount;
+
+    /**
      * @param array{
      *   address: string,
      *   scope?: (
@@ -34,6 +40,7 @@ class CreateSuppressionRequest extends JsonSerializableType
      *   |value-of<CreateSuppressionRequestScopeOne>
      *   |string
      * )|null,
+     *   subaccount?: ?string,
      * } $values
      */
     public function __construct(
@@ -43,6 +50,10 @@ class CreateSuppressionRequest extends JsonSerializableType
         $this->scope = $values['scope'] ?? null;
         if (array_key_exists('scope', $values)) {
             $this->_setField('scope');
+        }
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
         }
     }
 }

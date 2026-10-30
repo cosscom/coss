@@ -113,7 +113,9 @@ public class CreateTest : BaseMockServerTest
                     "message": "message"
                   }
                 ]
-              }
+              },
+              "subaccount_id": "subaccount_id",
+              "shared_with_subaccounts": true
             }
             """;
 
@@ -133,7 +135,9 @@ public class CreateTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Domains.CreateAsync(new CreateDomainRequest { Name = "x" });
+        var response = await Client.Domains.CreateAsync(
+            new CreateDomainRequest { Name = "x", Subaccount = null }
+        );
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -242,7 +246,9 @@ public class CreateTest : BaseMockServerTest
                     "message": "message"
                   }
                 ]
-              }
+              },
+              "subaccount_id": null,
+              "shared_with_subaccounts": false
             }
             """;
 

@@ -229,6 +229,14 @@ client.email.list(
 <dl>
 <dd>
 
+**subaccount:** `typing.Optional[str]` — Only the emails sent for this sub-account (its id or your uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **created_after:** `typing.Optional[datetime.datetime]` — Only emails created at or after this time.
     
 </dd>
@@ -911,7 +919,7 @@ client.email.list_links(
 </details>
 
 ## Domains
-<details><summary><code>client.domains.<a href="src/coss/domains/client.py">list</a>() -> DomainList</code></summary>
+<details><summary><code>client.domains.<a href="src/coss/domains/client.py">list</a>(...) -> DomainList</code></summary>
 <dl>
 <dd>
 
@@ -958,6 +966,14 @@ client.domains.list()
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `typing.Optional[str]` — Only this sub-account's domains (its id or your uid).
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -1028,6 +1044,14 @@ client.domains.create(
 <dd>
 
 **name:** `str` — The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subaccount:** `typing.Optional[str]` — Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
     
 </dd>
 </dl>
@@ -1174,6 +1198,88 @@ client.domains.delete(
 <dd>
 
 **id:** `str` — The domain's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.domains.<a href="src/coss/domains/client.py">update</a>(...) -> Domain</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.domains.update(
+    id="dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    shared_with_subaccounts=True,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The domain's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**shared_with_subaccounts:** `bool` — Let your sub-accounts send from this domain of yours (through your organization's reputation).
     
 </dd>
 </dl>
@@ -2188,7 +2294,7 @@ client.webhook_events.test(
 <dl>
 <dd>
 
-**type:** `CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+**type:** `CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
     
 </dd>
 </dl>
@@ -2637,6 +2743,1007 @@ client.sms.cancel(
 <dd>
 
 **id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Verify
+<details><summary><code>client.verify.<a href="src/coss/verify/client.py">list</a>(...) -> VerificationList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Verifications of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.verify.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[str]` — Only verifications to this destination.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[ListVerifyRequestStatus]` — Only verifications in this status.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.<a href="src/coss/verify/client.py">start</a>(...) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a one-time code to a phone number (SMS) or an email address and returns the verification, `pending` until you check the code the end user typed (`POST /v1/verifications/check`). Starting again for the same destination while it is pending sends a new code (the earlier one stops working), up to 5 times. Before a new verification costs anything, the fraud guard checks it (your Risk lists, premium-rate numbers, Tor, and velocity per IP, user, number range and country, with how often their codes are entered): a blocked one is stored with its `reasons` and nothing is sent. Pass the end user's `ip` (and your `user_id`) so it can tell them apart. SMS codes come from coss.com's shared numbers unless the environment's Verify settings name one of your own; email codes from your sender, else coss.com's. Sandbox (`coss_test_…`) keys deliver nothing and the code is always zeros.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.verify.start(
+    idempotency_key="welcome-user-123",
+    to="+14155550199",
+    ip="203.0.113.7",
+    user_id="user_42",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `str` — Where the code goes: a mobile number in E.164 form, or an email address. A pending verification to the same destination and channel is reused: its code is sent again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated request with the same key and body returns the original verification instead of sending another code, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**channel:** `typing.Optional[StartVerificationRequestChannel]` — `sms` or `email`. Default: `sms` for a phone number, `email` for an address.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ip:** `typing.Optional[str]` — The end user's IP address. The fraud guard uses it (velocity, Tor); recommended.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**user_id:** `typing.Optional[str]` — Your id for the end user, for the fraud guard's velocity and your Risk lists.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.List[StartVerificationRequestTagsItem]]` — Up to 10 tags.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.<a href="src/coss/verify/client.py">check</a>(...) -> VerificationCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Checks the code the end user typed, by the verification's id or by the destination (its latest verification). `valid: true` approves it (`verification.approved`, billed once); a wrong code spends an attempt, and the last one fails it. Checking an approved verification again with its code stays valid until it expires, without being billed again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.verify.check(
+    idempotency_key="welcome-user-123",
+    to="+14155550199",
+    code="482913",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**code:** `str` — The code the end user entered.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated check with the same key returns the same answer without spending another attempt. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**verification_id:** `typing.Optional[str]` — The verification to check. Give this or `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[str]` — The destination the code was sent to: checks its most recent verification. Give this or `verification_id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.<a href="src/coss/verify/client.py">get</a>(...) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.verify.get(
+    id="vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The verification's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.<a href="src/coss/verify/client.py">cancel</a>(...) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a pending verification: its code stops working. Canceling it again returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.verify.cancel(
+    id="vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The verification's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Forms
+<details><summary><code>client.forms.<a href="src/coss/forms/client.py">list</a>(...) -> FormList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's forms, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/coss/forms/client.py">create</a>(...) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A hosted form endpoint: point an HTML `<form action>` (or `coss/forms`) at its `endpoint`. Every submission is screened by Risk (the honeypot, captcha, email, IP, device, velocity and content) and accepted ones go to webhooks (`form.submission.received`), notification emails and contacts. Without `fields`, any field is accepted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.forms import CreateFormRequestNotifications
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.create(
+    name="Contact us",
+    allowed_origins=[
+        "https://www.example.com"
+    ],
+    notifications=CreateFormRequestNotifications(
+        recipients=[
+            "support@example.com"
+        ],
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `typing.Optional[bool]` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `typing.Optional[typing.List[FormFieldInput]]` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strict_fields:** `typing.Optional[bool]` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowed_origins:** `typing.Optional[typing.List[str]]` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_url:** `typing.Optional[str]` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `typing.Optional[CreateFormRequestSpam]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `typing.Optional[CreateFormRequestSubmitter]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `typing.Optional[CreateFormRequestNotifications]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `typing.Optional[CreateFormRequestContacts]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `typing.Optional[CreateFormRequestFiles]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `typing.Optional[CreateFormRequestHosted]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/coss/forms/client.py">get</a>(...) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.get(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/coss/forms/client.py">remove</a>(...) -> DeletedForm</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the form with every submission and uploaded file. Its endpoint answers 404 from then on.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.remove(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.<a href="src/coss/forms/client.py">update</a>(...) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Only the fields given change, within each group (`spam`, `contacts`, …) too.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.forms import UpdateFormRequestSpam, UpdateFormRequestContacts
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.update(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    spam=UpdateFormRequestSpam(
+        captcha="required",
+    ),
+    contacts=UpdateFormRequestContacts(
+        enabled=True,
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `typing.Optional[bool]` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `typing.Optional[typing.List[FormFieldInput]]` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strict_fields:** `typing.Optional[bool]` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowed_origins:** `typing.Optional[typing.List[str]]` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_url:** `typing.Optional[str]` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `typing.Optional[UpdateFormRequestSpam]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `typing.Optional[UpdateFormRequestSubmitter]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `typing.Optional[UpdateFormRequestNotifications]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `typing.Optional[UpdateFormRequestContacts]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `typing.Optional[UpdateFormRequestFiles]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `typing.Optional[UpdateFormRequestHosted]` 
     
 </dd>
 </dl>
@@ -3727,6 +4834,399 @@ client.log_drains.update(
 </dl>
 </details>
 
+## Inboxes
+<details><summary><code>client.inboxes.<a href="src/coss/inboxes/client.py">list</a>(...) -> InboxList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's inboxes, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.<a href="src/coss/inboxes/client.py">create</a>(...) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives an agent (or anyone) its own email address in the API key's environment: `username@<the environment's inbound domain>`, which needs no DNS setup, or an address at one of the environment's receiving domains (`domain`). Mail to it is kept as threads, and each message that arrives sends an `inbox.message.received` webhook. With a `client_id` that already has an inbox, that inbox is returned (200) instead of a new one.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.create(
+    username="support-agent",
+    display_name="Acme Support",
+    client_id="agent-42",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**username:** `typing.Optional[str]` — The part before the @. Omit it for a random one. Mail to `username+anything@domain` reaches the inbox too.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**domain:** `typing.Optional[str]` — One of the environment's receiving domains (its hostname). Omit it for the environment's own domain under coss.com's inbound domain, which needs no DNS setup.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` — The name messages from the inbox are sent with.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_id:** `typing.Optional[str]` — Your own id for the inbox (unique per environment). Creating an inbox with a `client_id` that already has one returns that inbox instead (200), so retries and "one inbox per user" need no bookkeeping.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.<a href="src/coss/inboxes/client.py">get</a>(...) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.get(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.<a href="src/coss/inboxes/client.py">delete</a>(...) -> DeletedInbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the inbox and its threads. The received emails and emails they held stay in the environment until their retention ends, and mail to the address is still received by the environment (without a thread or `inbox.message.received` webhook).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.delete(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.<a href="src/coss/inboxes/client.py">update</a>(...) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name messages from the inbox are sent with. Its address never changes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.update(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    display_name="Acme Help",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` — The name messages are sent with; `null` sends with the bare address.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Risk
 <details><summary><code>client.risk.<a href="src/coss/risk/client.py">assess</a>(...) -> RiskAssessment</code></summary>
 <dl>
@@ -4160,6 +5660,79 @@ client.risk.check_ip(
 <dd>
 
 **ip:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.risk.<a href="src/coss/risk/client.py">check_phone</a>(...) -> RiskPhoneCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.risk.check_phone(
+    phone="+14155550123",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone:** `str` — The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
     
 </dd>
 </dl>
@@ -6120,7 +7693,9 @@ client = Coss(
     environment=CossEnvironment.DEFAULT,
 )
 
-client.email.suppressions.list()
+client.email.suppressions.list(
+    subaccount="user_8812",
+)
 
 ```
 </dd>
@@ -6132,6 +7707,14 @@ client.email.suppressions.list()
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `typing.Optional[str]` — List a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -6250,6 +7833,14 @@ client.email.suppressions.add(
 <dl>
 <dd>
 
+**subaccount:** `typing.Optional[str]` — Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -6339,6 +7930,14 @@ client.email.suppressions.check(
 <dl>
 <dd>
 
+**subaccount:** `typing.Optional[str]` — The sub-account you plan to send for (its id or your uid): its own entries count too.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -6421,6 +8020,14 @@ client.email.suppressions.import_(
 <dl>
 <dd>
 
+**subaccount:** `typing.Optional[str]` — Import into a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>
@@ -6480,6 +8087,14 @@ client.email.suppressions.export()
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `typing.Optional[str]` — Export a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -6625,6 +8240,615 @@ client.email.suppressions.remove(
 <dd>
 
 **id:** `str` — The suppression's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Subaccounts
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">list</a>(...) -> SubaccountList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's sub-accounts, newest first. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.list(
+    after="sub_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 50.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — The last `id` of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">create</a>(...) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a sub-account: one of your users, who gets their own domains, suppressions, quotas and reputation. Give it a `uid` (e.g. your user's id) to address it by in every path and send. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.email.subaccounts import CreateSubaccountRequestQuotas
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.create(
+    name="Acme Bakery",
+    uid="user_8812",
+    quotas=CreateSubaccountRequestQuotas(
+        recipients_per_day=5000,
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` — A name for your own reference.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `typing.Optional[str]` — Your own id for it, to address it by instead of its `id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs (at most 16; keys up to 40 characters, values up to 500).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `typing.Optional[CreateSubaccountRequestQuotas]` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">get</a>(...) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A sub-account of the API key's environment, by its id or uid, with its quotas and reputation.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.get(
+    subaccount="user_8812",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `str` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">delete</a>(...) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts deleting the sub-account: its sends are refused at once, then its domains are released and it is removed with its suppressions (`status` is `deleting` until then). Its emails stay, with its id. Repeating the call returns it as it is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.delete(
+    subaccount="user_8812",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `str` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">update</a>(...) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name, uid, metadata, status or quotas. Fields left out keep their value; `status: "disabled"` refuses its sends until it is `active` again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.update(
+    subaccount="user_8812",
+    status="disabled",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `str` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `typing.Optional[str]` — `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Replaces the metadata.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[UpdateSubaccountRequestStatus]` — `disabled` refuses its sends until it is `active` again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `typing.Optional[UpdateSubaccountRequestQuotas]` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">reinstate</a>(...) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its rates are measured again from now on. A pause is never lifted on its own. Repeating the call returns it as it is. Your organization's own reputation still counts its sending.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.reinstate(
+    subaccount="user_8812",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `str` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.<a href="src/coss/email/subaccounts/client.py">stats</a>(...) -> SubaccountStats</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, failed and suppressed, counted from its emails as they are now (a later bounce moves its day's numbers). Emails are kept 45 days, so earlier days are left out.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+import datetime
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.email.subaccounts.stats(
+    subaccount="user_8812",
+    from_=datetime.date.fromisoformat("2026-10-01"),
+    to=datetime.date.fromisoformat("2026-10-15"),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `str` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `typing.Optional[datetime.date]` — First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `typing.Optional[datetime.date]` — Last day (UTC, `YYYY-MM-DD`), included; default today.
     
 </dd>
 </dl>
@@ -11923,6 +14147,427 @@ client.email.templates.versions.restore(
 </dl>
 </details>
 
+## Forms Submissions
+<details><summary><code>client.forms.submissions.<a href="src/coss/forms/submissions/client.py">list</a>(...) -> FormSubmissionList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. `status` narrows them: `accepted` (delivered), `held` (Risk asked for a review), `spam` and `pending_confirmation` (waiting for the submitter's email link).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.submissions.list(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[str]` — Only submissions in these statuses, comma-separated: `held,spam`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.<a href="src/coss/forms/submissions/client.py">get</a>(...) -> FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.submissions.get(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    submission_id="fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submission_id:** `str` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.<a href="src/coss/forms/submissions/client.py">remove</a>(...) -> DeletedFormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the submission and its files.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.submissions.remove(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    submission_id="fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submission_id:** `str` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.<a href="src/coss/forms/submissions/client.py">release</a>(...) -> FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Not spam: a `held` or `spam` submission becomes `accepted` and is delivered (webhooks, notifications, contacts), and Risk records its assessment as `legitimate`. Releasing an accepted submission returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.submissions.release(
+    id="form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    submission_id="fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submission_id:** `str` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.<a href="src/coss/forms/submissions/client.py">file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A file uploaded with the submission, as `application/octet-stream`: whatever its type, treat it as untrusted (a submitter chose it).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.forms.submissions.file(
+    id="id",
+    submission_id="submission_id",
+    file_id="file_id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submission_id:** `str` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file_id:** `str` — The file's id (`files[].id` of the submission).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Hooks EventTypes
 <details><summary><code>client.hooks.event_types.<a href="src/coss/hooks/event_types/client.py">list</a>(...) -> HookEventTypeList</code></summary>
 <dl>
@@ -14552,6 +17197,828 @@ client.hooks.portal.create_session(
 </dl>
 </details>
 
+## Inboxes Threads
+<details><summary><code>client.inboxes.threads.<a href="src/coss/inboxes/threads/client.py">list</a>(...) -> InboxThreadList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The inbox's conversations, the one with the latest message first, with a preview of that message. A thread whose `last_inbound_at` equals its `last_message_at` awaits a reply. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.threads.list(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.threads.<a href="src/coss/inboxes/threads/client.py">get</a>(...) -> InboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The conversation with its latest messages, oldest first, each with its text and `extracted_text` (its own words, without the quoted conversation): what an agent reads before it replies. HTML is the sender's: sanitize it before showing it to anyone.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.threads.get(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    thread_id="thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**thread_id:** `str` — The thread's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.threads.<a href="src/coss/inboxes/threads/client.py">delete</a>(...) -> DeletedInboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Removes the conversation from the inbox. Its received emails and emails stay in the environment until their retention ends; a later reply starts a new thread.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.threads.delete(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    thread_id="thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**thread_id:** `str` — The thread's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inboxes Messages
+<details><summary><code>client.inboxes.messages.<a href="src/coss/inboxes/messages/client.py">list</a>(...) -> InboxMessageList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages of every thread, newest first, with a preview instead of their bodies (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.messages.list(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**direction:** `typing.Optional[ListMessagesRequestDirection]` — Only inbound (received) or outbound (sent) messages.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.<a href="src/coss/inboxes/messages/client.py">send</a>(...) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts a thread with a message from the inbox's address, sent like any email (its `email_id` has its delivery events and webhooks; never tracked). Replies to it arrive in the same thread. Live inboxes send only from receiving domains under one of the organization's verified domains (`can_send`); sandbox ones always can, and deliver nothing. Recipients count against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.messages.send(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    idempotency_key="welcome-user-123",
+    to="jane@example.com",
+    subject="Your order",
+    text="Hi Jane, your order has shipped.",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `SendInboxMessageRequestTo` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subject:** `str` — The new thread's subject.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `typing.Optional[SendInboxMessageRequestCc]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `typing.Optional[SendInboxMessageRequestBcc]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `typing.Optional[str]` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `typing.Optional[str]` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `typing.Optional[typing.List[SendEmailAttachment]]` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.List[SendInboxMessageRequestTagsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.<a href="src/coss/inboxes/messages/client.py">get</a>(...) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The message with its text, HTML and `extracted_text`. An outbound message's delivery is its email's (`email_id`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.messages.get(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    message_id="imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message_id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.<a href="src/coss/inboxes/messages/client.py">get_attachment</a>(...) -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An inbound message's attachment, always as `application/octet-stream` (its declared type is the attachment's `content_type`): treat it as untrusted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.messages.get_attachment(
+    inbox_id="inbox_id",
+    message_id="message_id",
+    attachment_id="attachment_id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message_id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachment_id:** `str` — The attachment's id (from the message's `attachments`).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.<a href="src/coss/inboxes/messages/client.py">reply</a>(...) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replies in the message's thread from the inbox's address: to its sender (its `Reply-To` first), or to an outbound message's recipients again for a follow-up; `reply_all` adds everyone else on it. The subject gets `Re:`, and `In-Reply-To`/`References` let the recipient's mail client thread it. Sent like any email, counted against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.inboxes.messages.reply(
+    inbox_id="inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    message_id="imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+    idempotency_key="welcome-user-123",
+    text="Sorry about that, Jane! A new one is on its way.",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inbox_id:** `str` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message_id:** `str` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reply_all:** `typing.Optional[bool]` — Also reply to everyone else on the message (its `to` and `cc`, but the inbox). Default `false`: only the sender (its `Reply-To`, when it has one).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `typing.Optional[ReplyInboxMessageRequestCc]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `typing.Optional[ReplyInboxMessageRequestBcc]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `typing.Optional[str]` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `typing.Optional[str]` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `typing.Optional[typing.List[SendEmailAttachment]]` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.List[ReplyInboxMessageRequestTagsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## LogDrains Batches
 <details><summary><code>client.log_drains.batches.<a href="src/coss/log_drains/batches/client.py">list</a>(...) -> LogDrainBatchList</code></summary>
 <dl>
@@ -16336,6 +19803,2091 @@ client.risk.limit_buckets.update(
 <dd>
 
 **on_failure:** `typing.Optional[UpdateRiskLimitBucketRequestOnFailure]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Documents
+<details><summary><code>client.sign.documents.<a href="src/coss/sign/documents/client.py">list</a>(...) -> SignDocumentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents uploaded to the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.documents.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.<a href="src/coss/sign/documents/client.py">upload</a>(...) -> SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads a PDF (base64, at most 25 MB and 500 pages, not password-protected) for signature requests to use. The response lists each page's size and the text anchors found in it (`{{signature:signer_1}}`), which fields can be placed by. Requests can also take PDFs inline.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.documents.upload(
+    filename="agreement.pdf",
+    content="JVBERi0xLjcKJYGBgYEKCjEgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFsgNCAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagoKMyAwIG9iago8PAovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovSGVsdmV0aWNhLTcwOTg0ODA3ODkgMyAwIFIKPj4KL1hPYmplY3QgPDwKPj4KL0V4dEdTdGF0ZSA8PAo+Pgo+PgovTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdCi9Bbm5vdHMgWyBdCi9Db250ZW50cyBbIDUgMCBSIF0KPj4KZW5kb2JqCgo1IDAgb2JqCjw8Ci9GaWx0ZXIgL0ZsYXRlRGVjb2RlCi9MZW5ndGggMTIwCj4+CnN0cmVhbQp4nG2KMQrCQBBF+znF1II4O7s7fxckYEjEwkaYC4hEiWgREc9vtLCSV/3330Stk/CHx4VWu+H2Gp7j6biE1JKKoFQOyn4mTex7Ct80MJQhwn6ndY5WDdZbQEKGWo4bFbQzf56fm3fexoAOXcN+JV9Q73SgN3RWIBIKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE2IDAwMDAwIG4gCjAwMDAwMDAwNzYgMDAwMDAgbiAKMDAwMDAwMDEyNiAwMDAwMCBuIAowMDAwMDAwMjI0IDAwMDAwIG4gCjAwMDAwMDA0MTkgMDAwMDAgbiAKCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAyIDAgUgo+PgoKc3RhcnR4cmVmCjYxMgolJUVPRg==",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**filename:** `str` — The file's name, ending in `.pdf`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content:** `str` — The PDF's bytes, base64-encoded (at most 25 MB decoded).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.<a href="src/coss/sign/documents/client.py">get</a>(...) -> SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.documents.get(
+    id="sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The document's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.<a href="src/coss/sign/documents/client.py">remove</a>(...) -> DeletedSignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes an uploaded document and its file. Documents a request uses can't be deleted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.documents.remove(
+    id="sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The document's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Requests
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">list</a>(...) -> SignRequestList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Signature requests of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[str]` — Only requests in these statuses, comma-separated: `sent,draft`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">create</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Asks one or more signers to sign one or more PDFs. Give documents by id (uploaded) or inline, and each signer's fields by position (`page`, `x`, `y`, `width`, `height` in PDF points from the page's top left) or by text anchor (`{{signature:signer_1}}`). Every signer needs a `signature` field. Sent at once unless `send` is `false` (a `draft`). Each signer signs by email (`delivery: "email"`, the default) or in your app (`"embedded"`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SignFieldInputAnchor, SignFieldInputDocument
+from coss.environment import CossEnvironment
+from coss.sign.requests import CreateSignRequestRequestDocumentsItemDocumentId, CreateSignRequestRequestSignersItem
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.create(
+    idempotency_key="welcome-user-123",
+    title="Services agreement",
+    documents=[
+        CreateSignRequestRequestDocumentsItemDocumentId(
+            document_id="sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        )
+    ],
+    signers=[
+        CreateSignRequestRequestSignersItem(
+            name="Ada Lovelace",
+            email="ada@example.com",
+            fields=[
+                SignFieldInputAnchor(
+                    type="signature",
+                    anchor="{{signature:signer_1}}",
+                ),
+                SignFieldInputDocument(
+                    type="date_signed",
+                    page=2,
+                    x=320,
+                    y=640,
+                    width=120,
+                    height=18,
+                )
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**title:** `str` — Shown to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `typing.List[CreateSignRequestRequestDocumentsItem]` — Uploaded documents by id, or PDFs inline (base64).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `typing.List[CreateSignRequestRequestSignersItem]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `typing.Optional[str]` — A note to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_order:** `typing.Optional[CreateSignRequestRequestSigningOrder]` — `parallel` (default): everyone at once. `sequential`: in each signer's `order`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expires_at:** `typing.Optional[datetime.datetime]` — When unsigned requests expire (at most 365 days ahead).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminder_interval_days:** `typing.Optional[int]` — Email signers who haven't signed get a reminder every this many days (up to 3). Default: your Sign settings' `reminder_interval_days`; `null`: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `typing.Optional[bool]` — Default `true`: send at once. `false` keeps a `draft` to send later.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">get</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.get(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">remove</a>(...) -> DeletedSignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit trail, signatures and signed document, for good. Its documents stay (delete them on their own). Keep the signed document first if you need it: it is your record.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.remove(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">send</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a `draft`. An already sent request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.send(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">cancel</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a `draft` or `sent` request: its signers can no longer sign. An already canceled request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.cancel(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">audit_trail</a>(...) -> SignEventList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the request, oldest first: who did it, from which address, the documents' SHA-256 when it mattered, and a hash chain (`previous_hash`, `hash`) that shows the trail is complete and unchanged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.audit_trail(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">remind</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't signed and whose turn it is, unless they were emailed in the last hour. Embedded signers are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.remind(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.<a href="src/coss/sign/requests/client.py">signed_document</a>(...) -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The completed request's sealed PDF: every document with the signatures and values filled in, then a certificate of completion (signers, how they were identified, what they agreed to, the documents' SHA-256 and the audit trail). coss.com's seal makes any later change visible in PDF viewers. Ready once `signed_document` is set, which the `sign_request.completed` webhook announces.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.requests.signed_document(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Sessions
+<details><summary><code>client.sign.sessions.<a href="src/coss/sign/sessions/client.py">create</a>(...) -> SignSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the signing page for one `embedded` signer of a sent request. Your app vouches for who the signer is (the audit trail records `customer_asserted`), so create it only for that signed-in user, when they open the page that shows it. Embed the `url` in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from `coss/sign` does it), or redirect to it. Each call creates a new session.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.sessions.create(
+    id="sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    signer_id="ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    expires_in=3600,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signer_id:** `str` — The signer's id (`signers[].id` of the request).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expires_in:** `typing.Optional[int]` — Seconds until the link expires: default 3600, at most 86400. Mint one when your user opens the page that shows it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Settings
+<details><summary><code>client.sign.settings.<a href="src/coss/sign/settings/client.py">get</a>() -> SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The API key's environment's settings: which sites may embed the signing page, how it looks, and the consent text signers accept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.settings.get()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.settings.<a href="src/coss/sign/settings/client.py">update</a>(...) -> SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given; the others keep their values.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.settings.update(
+    allowed_origins=[
+        "https://app.example.com"
+    ],
+    display_name="Acme",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**allowed_origins:** `typing.Optional[typing.List[str]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**display_name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**accent_color:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**theme:** `typing.Optional[UpdateSignSettingsRequestTheme]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**disclosure:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**email_from:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminder_interval_days:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Templates
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">list</a>(...) -> SignTemplateList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. Pass the last `id` as `after` while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">create</a>(...) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents with fields for roles (`client`, `company`) instead of named signers, made into requests by naming a signer per role. Fields by position or text anchor (resolved now). Can start empty and be built in the embedded builder (create a builder session).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.sign.templates import CreateSignTemplateRequestDocumentsItemDocumentId, CreateSignTemplateRequestRolesItem, CreateSignTemplateRequestFieldsItemAnchor, CreateSignTemplateRequestFieldsItemDocument
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.create(
+    name="Mutual NDA",
+    documents=[
+        CreateSignTemplateRequestDocumentsItemDocumentId(
+            document_id="sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+        )
+    ],
+    roles=[
+        CreateSignTemplateRequestRolesItem(
+            key="client",
+            name="Client",
+        ),
+        CreateSignTemplateRequestRolesItem(
+            key="company",
+            name="Company",
+        )
+    ],
+    fields=[
+        CreateSignTemplateRequestFieldsItemAnchor(
+            type="signature",
+            anchor="{{signature:client}}",
+            role="client",
+        ),
+        CreateSignTemplateRequestFieldsItemDocument(
+            type="text",
+            page=1,
+            x=72,
+            y=140,
+            width=200,
+            height=18,
+            role="client",
+            merge_key="client_company",
+        ),
+        CreateSignTemplateRequestFieldsItemAnchor(
+            type="signature",
+            anchor="{{signature:company}}",
+            role="company",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `typing.Optional[str]` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `typing.Optional[str]` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_order:** `typing.Optional[CreateSignTemplateRequestSigningOrder]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `typing.Optional[typing.List[CreateSignTemplateRequestDocumentsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `typing.Optional[typing.List[CreateSignTemplateRequestRolesItem]]` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `typing.Optional[typing.List[CreateSignTemplateRequestFieldsItem]]` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">get</a>(...) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.get(
+    id="stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">remove</a>(...) -> DeletedSignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Requests made from it, and its documents, stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.remove(
+    id="stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">update</a>(...) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given. `documents`, `roles` and `fields` each replace the whole list. Requests already made from it don't change.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.update(
+    id="stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    name="Mutual NDA (2026)",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `typing.Optional[str]` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `typing.Optional[str]` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_order:** `typing.Optional[UpdateSignTemplateRequestSigningOrder]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `typing.Optional[typing.List[UpdateSignTemplateRequestDocumentsItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `typing.Optional[typing.List[UpdateSignTemplateRequestRolesItem]]` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `typing.Optional[typing.List[UpdateSignTemplateRequestFieldsItem]]` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">create_request</a>(...) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A signature request with the template's documents and fields: name one signer for each role, and give its merge fields' values. Like creating a request, it is sent at once unless `send` is `false`, and an `Idempotency-Key` makes retries safe.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.sign.templates import CreateSignRequestFromTemplateRequestSignersItem
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.create_request(
+    id="stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    idempotency_key="welcome-user-123",
+    signers=[
+        CreateSignRequestFromTemplateRequestSignersItem(
+            role="client",
+            name="Ada Lovelace",
+            email="ada@example.com",
+        ),
+        CreateSignRequestFromTemplateRequestSignersItem(
+            role="company",
+            name="Grace Hopper",
+            email="grace@acme.com",
+            delivery="embedded",
+        )
+    ],
+    merge_fields={
+        "client_company": "Analytical Engines Ltd"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `typing.List[CreateSignRequestFromTemplateRequestSignersItem]` — One signer for each of the template's roles.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `typing.Optional[str]` — Default: the template's title (else its name).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**merge_fields:** `typing.Optional[typing.Dict[str, str]]` — Values of the template's merge fields, by `merge_key`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signing_order:** `typing.Optional[CreateSignRequestFromTemplateRequestSigningOrder]` — Default: the template's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expires_at:** `typing.Optional[datetime.datetime]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminder_interval_days:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `typing.Optional[bool]` — Default `true`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.<a href="src/coss/sign/templates/client.py">create_builder_session</a>(...) -> SignBuilderSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the embedded builder for this template: upload documents, add roles, and drag fields onto pages. Embed it with `mountBuilder` from `coss/sign` (from an origin in your Sign settings' `allowed_origins`) for whoever edits the template.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.sign.templates.create_builder_session(
+    id="stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    expires_in=3600,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expires_in:** `typing.Optional[int]` — Seconds until the link expires: default 3600, at most 86400.
     
 </dd>
 </dl>

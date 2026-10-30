@@ -11,12 +11,16 @@ import com.coss.resources.billing.AsyncBillingClient;
 import com.coss.resources.domains.AsyncDomainsClient;
 import com.coss.resources.email.AsyncEmailClient;
 import com.coss.resources.environment.AsyncEnvironmentClient;
+import com.coss.resources.forms.AsyncFormsClient;
 import com.coss.resources.hooks.AsyncHooksClient;
+import com.coss.resources.inboxes.AsyncInboxesClient;
 import com.coss.resources.logdrains.AsyncLogDrainsClient;
 import com.coss.resources.logs.AsyncLogsClient;
 import com.coss.resources.reputation.AsyncReputationClient;
 import com.coss.resources.risk.AsyncRiskClient;
+import com.coss.resources.sign.AsyncSignClient;
 import com.coss.resources.sms.AsyncSmsClient;
+import com.coss.resources.verify.AsyncVerifyClient;
 import com.coss.resources.webhookendpoints.AsyncWebhookEndpointsClient;
 import com.coss.resources.webhookevents.AsyncWebhookEventsClient;
 import com.coss.resources.webhooklisteners.AsyncWebhookListenersClient;
@@ -41,6 +45,10 @@ public class AsyncCoss implements AutoCloseable {
 
     protected final Supplier<AsyncSmsClient> smsClient;
 
+    protected final Supplier<AsyncVerifyClient> verifyClient;
+
+    protected final Supplier<AsyncFormsClient> formsClient;
+
     protected final Supplier<AsyncReputationClient> reputationClient;
 
     protected final Supplier<AsyncLogsClient> logsClient;
@@ -51,9 +59,13 @@ public class AsyncCoss implements AutoCloseable {
 
     protected final Supplier<AsyncLogDrainsClient> logDrainsClient;
 
+    protected final Supplier<AsyncInboxesClient> inboxesClient;
+
     protected final Supplier<AsyncRiskClient> riskClient;
 
     protected final Supplier<AsyncHooksClient> hooksClient;
+
+    protected final Supplier<AsyncSignClient> signClient;
 
     public AsyncCoss(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
@@ -65,13 +77,17 @@ public class AsyncCoss implements AutoCloseable {
         this.webhookListenersClient = Suppliers.memoize(() -> new AsyncWebhookListenersClient(clientOptions));
         this.webhookEventsClient = Suppliers.memoize(() -> new AsyncWebhookEventsClient(clientOptions));
         this.smsClient = Suppliers.memoize(() -> new AsyncSmsClient(clientOptions));
+        this.verifyClient = Suppliers.memoize(() -> new AsyncVerifyClient(clientOptions));
+        this.formsClient = Suppliers.memoize(() -> new AsyncFormsClient(clientOptions));
         this.reputationClient = Suppliers.memoize(() -> new AsyncReputationClient(clientOptions));
         this.logsClient = Suppliers.memoize(() -> new AsyncLogsClient(clientOptions));
         this.auditEventsClient = Suppliers.memoize(() -> new AsyncAuditEventsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new AsyncBillingClient(clientOptions));
         this.logDrainsClient = Suppliers.memoize(() -> new AsyncLogDrainsClient(clientOptions));
+        this.inboxesClient = Suppliers.memoize(() -> new AsyncInboxesClient(clientOptions));
         this.riskClient = Suppliers.memoize(() -> new AsyncRiskClient(clientOptions));
         this.hooksClient = Suppliers.memoize(() -> new AsyncHooksClient(clientOptions));
+        this.signClient = Suppliers.memoize(() -> new AsyncSignClient(clientOptions));
     }
 
     public AsyncEnvironmentClient environment() {
@@ -106,6 +122,14 @@ public class AsyncCoss implements AutoCloseable {
         return this.smsClient.get();
     }
 
+    public AsyncVerifyClient verify() {
+        return this.verifyClient.get();
+    }
+
+    public AsyncFormsClient forms() {
+        return this.formsClient.get();
+    }
+
     public AsyncReputationClient reputation() {
         return this.reputationClient.get();
     }
@@ -126,12 +150,20 @@ public class AsyncCoss implements AutoCloseable {
         return this.logDrainsClient.get();
     }
 
+    public AsyncInboxesClient inboxes() {
+        return this.inboxesClient.get();
+    }
+
     public AsyncRiskClient risk() {
         return this.riskClient.get();
     }
 
     public AsyncHooksClient hooks() {
         return this.hooksClient.get();
+    }
+
+    public AsyncSignClient sign() {
+        return this.signClient.get();
     }
 
     /**

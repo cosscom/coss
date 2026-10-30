@@ -15,6 +15,8 @@ module Coss
 
       field :email_id, -> { String }, optional: false, nullable: true
 
+      field :subaccount_id, -> { String }, optional: false, nullable: true
+
       field :created_at, -> { String }, optional: false, nullable: false
     end
   end
