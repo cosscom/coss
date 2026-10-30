@@ -1,7 +1,8 @@
 name: Deploy
 
-# Production deploys (README, "Deploying to AWS"): builds the seven images, migrates, rolls out all
-# seven services at once and invalidates the coss.com CDN. Jobs that touch AWS run on CodeBuild-hosted
+# Production deploys (README, "Deploying to AWS"): builds the seven images, migrates once the Bun
+# images are built (while the Next.js apps still build), rolls out all seven services at once and
+# invalidates the coss.com CDN. Jobs that touch AWS run on CodeBuild-hosted
 # runners whose role holds the credentials (infra/terraform/deploy.tf); nothing AWS-related is stored
 # in GitHub. Pushes to main ship in batches (the `gate` job); run it by hand to deploy main at once,
 # to redeploy (e.g. after a Terraform environment change) or, with `image_tag`, to roll back to an
@@ -114,6 +115,7 @@ jobs:
             sleep 60
           done
 
+  # The Next.js apps, one job each. The Bun images are `build-services`, which migrating waits for.
   build:
     needs: [prepare, gate]
     if: >-
@@ -125,91 +127,78 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # The Bun images take seconds to build and CodeBuild bills each job by the started minute,
-        # so they share one job; the Next apps get one each.
-        images: [web, site, portal, sign, api worker smtp]
+        images: [web, site, portal, sign]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.prepare.outputs.tag }}
       - name: Build and push ${{ matrix.images }}
         env:
-          SERVICES: ${{ matrix.images }}
           TAG: ${{ needs.prepare.outputs.tag }}
           # Uploads the Next.js apps' source maps to Sentry (a BuildKit secret, never in a layer).
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-        run: |
-          aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
-          # Base images never come from Docker Hub here: CodeBuild's shared addresses keep running
-          # out of its anonymous pulls. Node is on ECR Public; Bun is copied into our ECR once per
-          # version (this pull is the only one, and is retried until Docker Hub allows it). Every
-          # Dockerfile has the same Bun version (infra/test).
-          bun_version="$(sed -n 's/^ARG BUN_VERSION=//p' "apps/${SERVICES%% *}/Dockerfile")"
-          bun_image="$REGISTRY/coss/base/bun"
-          if ! aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null 2>&1; then
-            for attempt in 1 2 3 4 5 6; do
-              docker pull --platform linux/arm64 "oven/bun:$bun_version-slim" && break
-              [ "$attempt" = 6 ] && exit 1
-              sleep $((attempt * 30))
-            done
-            docker tag "oven/bun:$bun_version-slim" "$bun_image:$bun_version-slim"
-            # Another matrix job may have pushed it first (the tag is immutable).
-            docker push "$bun_image:$bun_version-slim" \
-              || aws ecr describe-images --repository-name coss/base/bun --image-ids "imageTag=$bun_version-slim" >/dev/null
-          fi
-          docker buildx create --use --driver docker-container >/dev/null
+        run: infra/scripts/build-images.sh ${{ matrix.images }}
 
-          build() {
-            local service="$1" image="$REGISTRY/coss/$1" release_arg deps cache cache_to=()
-            if aws ecr describe-images --repository-name "coss/$service" --image-ids "imageTag=$TAG" >/dev/null 2>&1; then
-              echo "$image:$TAG already exists"
-              return 0
-            fi
-            case "$service" in
-              web | site | portal | sign) release_arg="NEXT_DEPLOYMENT_ID=$TAG" ;;
-              *) release_arg="SENTRY_RELEASE=$TAG" ;;
-            esac
-            # Only the dependency layers are reusable (the build layer depends on the commit), so the
-            # layer cache is keyed by what they're built from and exported only when that changes:
-            # exporting it took longer than the build itself.
-            deps="$({ cat bun.lock "apps/$service/Dockerfile"; git ls-files -z '*package.json' | xargs -0 cat; } | sha256sum | cut -c1-16)"
-            cache="$image:buildcache-$deps"
-            if ! aws ecr describe-images --repository-name "coss/$service" --image-ids "imageTag=buildcache-$deps" >/dev/null 2>&1; then
-              cache_to=(--cache-to "type=registry,ref=$cache,mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true")
-            fi
-            docker buildx build . \
-              --file "apps/$service/Dockerfile" \
-              --platform linux/arm64 \
-              --build-arg "$release_arg" \
-              --build-arg "BUN_IMAGE=$bun_image" \
-              --build-arg NODE_IMAGE=public.ecr.aws/docker/library/node \
-              --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN \
-              --cache-from "type=registry,ref=$cache" \
-              "${cache_to[@]}" \
-              --provenance=false \
-              --tag "$image:$TAG" \
-              --push
-          }
+  # The Bun images take seconds to build and CodeBuild bills each job by the started minute, so they
+  # share one job. Named like the matrix's jobs (the admin console's deploys page reads `build (…)`).
+  build-services:
+    name: build (api worker smtp)
+    needs: [prepare, gate]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' && needs.prepare.outputs.build == 'true' &&
+      (needs.gate.result == 'skipped' || (needs.gate.result == 'success' && needs.gate.outputs.deploy == 'true'))
+    environment: production
+    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+      - name: Build and push api worker smtp
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: infra/scripts/build-images.sh api worker smtp
 
-          # In parallel, each line prefixed with its service. A step without `shell:` runs `bash -e`
-          # alone: without pipefail a failed build would pass for sed's success.
-          set -o pipefail
-          pids=()
-          for service in $SERVICES; do
-            build "$service" 2>&1 | sed -u "s/^/[$service] /" &
-            pids+=("$!")
-          done
-          for pid in "${pids[@]}"; do
-            wait "$pid"
-          done
+  # As soon as the worker's image exists, while the Next.js apps still build:
+  # migrations must be backward compatible with the running code anyway, so the commit's
+  # migrations may land before its code (a failed build later leaves them unused, never broken).
+  migrate:
+    needs: [prepare, gate, build-services]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' &&
+      (needs.build-services.result == 'success' || needs.build-services.result == 'skipped') &&
+      (needs.gate.result == 'skipped' || (needs.gate.result == 'success' && needs.gate.outputs.deploy == 'true'))
+    # Never two migrations at once.
+    concurrency:
+      group: migrate-production
+      cancel-in-progress: false
+    environment: production
+    runs-on: codebuild-coss-production-deploy-${{ github.run_id }}-${{ github.run_attempt }}-arm-3.0-small
+    timeout-minutes: 30
+    env:
+      TAG: ${{ needs.prepare.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Check production doesn't run a newer commit
+        id: latest
+        env:
+          EVENT: ${{ github.event_name }}
+        run: infra/scripts/newer-deployed.sh
+      - name: Migrate
+        if: steps.latest.outputs.deploy == 'true'
+        run: infra/scripts/ecs-task.sh --image-tag "$TAG" worker -- bun packages/db/src/migrate.ts
 
   deploy:
-    needs: [prepare, gate, build]
+    needs: [prepare, gate, build, build-services, migrate]
     if: >-
       !cancelled() && needs.prepare.result == 'success' &&
       (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      needs.migrate.result == 'success' &&
       (needs.gate.result == 'skipped' || (needs.gate.result == 'success' && needs.gate.outputs.deploy == 'true'))
-    # Never two migrations or rollouts at once (builds may overlap).
+    # Never two rollouts at once (builds and another run's migration may overlap).
     concurrency:
       group: deploy-production
       cancel-in-progress: false
@@ -224,28 +213,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      # This job may have waited for another deploy: never roll production back to an older commit
-      # because their turns came out of order (a dispatch deploys what it's given). The same commit
-      # deploys again, so re-running a job that failed after its rollout finishes the later steps.
+      # This job may have waited for another run's (infra/scripts/newer-deployed.sh).
       - name: Check production doesn't run a newer commit
         id: latest
         env:
           EVENT: ${{ github.event_name }}
-        run: |
-          deployed="$(aws ssm get-parameter --name "/coss/$STAGE/image-tag" --query Parameter.Value --output text)"
-          if [ "$EVENT" = push ] && [ "$deployed" != "$TAG" ] && git merge-base --is-ancestor "$TAG" "$deployed" 2>/dev/null; then
-            echo "::notice::Production already runs $deployed, which includes this commit. Skipping."
-            echo "deploy=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "deploy=true" >> "$GITHUB_OUTPUT"
-          fi
-      # Migrations must be backward compatible with the running code; never two at once (the
-      # job's concurrency group).
-      - name: Migrate
-        if: steps.latest.outputs.deploy == 'true'
-        run: infra/scripts/ecs-task.sh --image-tag "$TAG" worker -- bun packages/db/src/migrate.ts
-      # All at once: every rollout keeps old and new tasks side by side anyway, so ordering them
-      # bought no compatibility, only time.
+        run: infra/scripts/newer-deployed.sh
       - name: Roll out
         if: steps.latest.outputs.deploy == 'true'
         run: infra/scripts/ecs-deploy.sh "$TAG" api worker web site portal sign smtp

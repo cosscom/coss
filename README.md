@@ -737,15 +737,18 @@ hand from the admin console's Deploys page or the Actions tab (`gh workflow run 
 with `image_tag` it redeploys an earlier commit's images, e.g. a rollback. A deploy job whose commit production already includes (a newer deploy went first)
 skips, so production never goes back to an older commit unless you dispatch one:
 
-1. Build and push the seven images, tagged with the commit (`docker buildx build --platform linux/arm64 -f
+1. Build and push the seven images, tagged with the commit (`infra/scripts/build-images.sh <services…>`: `docker buildx build --platform linux/arm64 -f
    apps/web/Dockerfile --build-arg NEXT_DEPLOYMENT_ID=<sha> --secret id=sentry_auth_token,env=SENTRY_AUTH_TOKEN .`
    for the Next apps; `--build-arg SENTRY_RELEASE=<sha>` for the API, worker and SMTP relay), skipping images that exist. Base
    images never come from Docker Hub there (CodeBuild's shared addresses exhaust its anonymous pull limit): Node from
    ECR Public (`NODE_IMAGE`), Bun from `coss/base/bun` in our ECR (`BUN_IMAGE`), which the workflow fills from Docker
-   Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults).
+   Hub once per Bun version. Local builds keep Docker Hub (the Dockerfiles' defaults). Our layers are pushed
+   zstd-compressed (faster to build and for Fargate to unpack). The Next apps build one per job; the API, worker
+   and SMTP relay share one.
 2. Run migrations as a one-off task from the new worker image (`infra/scripts/ecs-task.sh --image-tag <sha> worker --
-   bun packages/db/src/migrate.ts`; never two at once, the deploy job's concurrency group). Migrations must be
-   backward compatible with the running code.
+   bun packages/db/src/migrate.ts`; the `migrate` job, never two at once) as soon as that image is built, while
+   the Next apps still build. Migrations must be backward compatible with the running code (they may
+   land before the commit's code does, or without it if a later build fails).
 3. Roll out all seven services at once (`infra/scripts/ecs-deploy.sh <sha> <services…>`): each gets a new revision
    of its latest task definition with the new image, and the script fails if the circuit breaker rolled it back. A
    service behind the load balancer counts as deployed once its new tasks passed their health checks and the old
@@ -772,7 +775,8 @@ workflow's latest runs (waiting for their batch, building, deploying with the st
 itself while the tab is open (every 10 s while a run moves, else every 30 s). Each run has its own page
 (`/admin/deploys/<run id>`): the merges it ships (or, for a redeploy, takes back out) against the deploy before it,
 its jobs on a timeline, the deploy job's steps and the end of each failed job's log.
-**Deploy now** dispatches the workflow for main (skipping the batch wait) and cancels the push runs still waiting;
+**Deploy now** dispatches the workflow for main (skipping the batch wait) and cancels the push runs that haven't
+started migrating or rolling out;
 **Redeploy** on an earlier run's commit dispatches it with `image_tag` (production stays there until main is
 deployed again; migrations aren't undone). Both record an admin audit event with the admin and their reason.
 

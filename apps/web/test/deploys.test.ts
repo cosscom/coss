@@ -68,6 +68,38 @@ describe("deployRunPhase", () => {
       "building",
     ],
     [
+      "migrating while the Next.js apps still build",
+      { status: "in_progress" },
+      [
+        job("gate", "completed", "success"),
+        job("build (web)", "in_progress"),
+        job("build (api worker smtp)", "completed", "success"),
+        job("migrate", "in_progress"),
+      ],
+      "deploying",
+    ],
+    [
+      "migrated while a Next.js app still builds",
+      { status: "in_progress" },
+      [
+        job("gate", "completed", "success"),
+        job("build (site)", "in_progress"),
+        job("build (api worker smtp)", "completed", "success"),
+        job("migrate", "completed", "success"),
+      ],
+      "deploying",
+    ],
+    [
+      "built, migration waiting for its runner",
+      { status: "in_progress" },
+      [
+        job("gate", "completed", "success"),
+        job("build (web)", "completed", "success"),
+        job("migrate", "queued"),
+      ],
+      "queued",
+    ],
+    [
       "deploy job waiting for its turn",
       { status: "in_progress" },
       [
@@ -201,9 +233,16 @@ describe("batch timing", () => {
       latestProductionJobAt([
         { ...job("gate", "completed", "success"), started_at: "2026-10-15T11:00:00Z" },
         { ...job("build (web)", "completed", "success"), started_at: "2026-10-15T11:10:00Z" },
+        { ...job("migrate", "completed", "success"), started_at: "2026-10-15T11:12:00Z" },
         { ...job("deploy", "completed", "success"), started_at: "2026-10-15T11:15:00Z" },
       ])?.toISOString(),
     ).toBe("2026-10-15T11:15:00.000Z");
+    expect(
+      latestProductionJobAt([
+        { ...job("build (web)", "in_progress"), started_at: "2026-10-15T11:10:00Z" },
+        { ...job("migrate", "in_progress"), started_at: "2026-10-15T11:12:00Z" },
+      ])?.toISOString(),
+    ).toBe("2026-10-15T11:12:00.000Z");
     expect(
       latestProductionJobAt([
         { ...job("build", "completed", "skipped"), started_at: "2026-10-15T11:10:00Z" },

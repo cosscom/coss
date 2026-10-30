@@ -820,9 +820,10 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   actor and already-banned users are kept), each step audited on its own, so it can be re-run.
   **Deploys** (`/admin/deploys`, `src/lib/deploys.ts`; pure parts in `deploy-runs.ts`) reads GitHub only through
   the coss.com Deploy app's installation token (Actions write, Contents read — never widen it): "Deploy now"
-  dispatches `deploy.yml` for main and cancels push runs still before their deploy job; "Redeploy" dispatches
-  `image_tag` for a commit a recent run deployed (re-checked server-side). It parses the runs' job names (`gate`,
-  `build (…)`, `deploy`, its `Roll out` step) and the `run-name` of `image_tag` dispatches: change them together.
+  dispatches `deploy.yml` for main and cancels push runs still before their migrate and deploy jobs; "Redeploy"
+  dispatches `image_tag` for a commit a recent run deployed (re-checked server-side). It parses the runs' job names
+  (`gate`, `build (…)`, `migrate`, `deploy`, its `Roll out` step) and the `run-name` of `image_tag`
+  dispatches: change them together.
   The pages poll GitHub (`DEPLOY_REFRESH_SECONDS`): GETs are conditional (ETags; a 304 doesn't count against the
   token's 5,000 requests an hour) and the overview is shared for a few seconds, so keep new reads behind `github()`.
   A run's page (`[runId]`) also downloads failed jobs' logs (only their last 256 KB, excerpted by
