@@ -493,8 +493,9 @@ async function provision(
   deps: DomainDeps,
   onFailure: "delete" | "fail",
 ): Promise<DomainRow> {
+  let tenants: ProviderTenant[] = [];
   try {
-    const tenants = row.subaccountId
+    tenants = row.subaccountId
       ? [await ensureSubaccountTenant(row.organizationId, row.subaccountId, deps.identity)]
       : await ensureOrgTenants(row.organizationId, deps.identity, { provisioning: row.name });
     const identity = await deps.identity.createDomainIdentity({
@@ -518,12 +519,18 @@ async function provision(
     return updated;
   } catch (error) {
     const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
-    if (onFailure === "delete") await db.delete(domain).where(scope);
-    else {
-      await db
-        .update(domain)
-        .set({ status: "failed", failedAt: new Date(), nextCheckAt: null })
-        .where(scope);
+    const [kept] =
+      onFailure === "delete"
+        ? await db.delete(domain).where(scope).returning({ id: domain.id })
+        : await db
+            .update(domain)
+            .set({ status: "failed", failedAt: new Date(), nextCheckAt: null })
+            .where(scope)
+            .returning({ id: domain.id });
+    // The claim was gone already (its owner's teardown ran meanwhile, before the identity
+    // existed): no cleanup would ever find an identity made for it, so it goes now.
+    if (!kept && !(error instanceof IdentityTakenError)) {
+      await releaseUnclaimedIdentity(row.name, tenants, deps.identity);
     }
     if (error instanceof DomainError) throw error;
     if (error instanceof IdentityTakenError) {
@@ -532,6 +539,23 @@ async function provision(
     console.error(`[email:domains] provisioning ${row.name} failed:`, error);
     throw new DomainError("provider_error", "The domain could not be set up. Try again shortly.");
   }
+}
+
+/** Deletes the identity of a name nobody claims (any more), best effort. */
+async function releaseUnclaimedIdentity(
+  name: string,
+  tenants: ProviderTenant[],
+  identity: IdentityProvider,
+): Promise<void> {
+  const [claimed] = await db
+    .select({ id: domain.id })
+    .from(domain)
+    .where(eq(domain.name, name))
+    .limit(1);
+  if (claimed) return;
+  await identity.deleteDomainIdentity({ tenants, domain: name }).catch((cleanup) => {
+    console.error(`[email:domains] releasing the unclaimed identity ${name} failed:`, cleanup);
+  });
 }
 
 /** Domains one sub-account may have (failed ones aside), and awaiting verification at once. */

@@ -127,6 +127,35 @@ describe("sub-account domains", () => {
     expect(released).toEqual([`fake-${a.id}`]);
   });
 
+  test("an identity made while its sub-account's teardown removed the domain is released", async () => {
+    const { organizationId, a } = await setup();
+    const name = uniqueName();
+    const released: string[] = [];
+    class TornDown extends FakeIdentityProvider {
+      override async createDomainIdentity(
+        input: Parameters<FakeIdentityProvider["createDomainIdentity"]>[0],
+      ) {
+        // The teardown runs in between: the claim is gone before the identity exists.
+        await db.delete(schema.domain).where(eq(schema.domain.name, name));
+        return super.createDomainIdentity(input);
+      }
+      override async deleteDomainIdentity(input: { tenants: ProviderTenant[]; domain: string }) {
+        released.push(input.domain);
+        return super.deleteDomainIdentity(input);
+      }
+    }
+    const identity = new TornDown();
+    expect(
+      await refusal(
+        createDomain(
+          { organizationId, name, userId: null, subaccountId: a.id },
+          { ...deps(), identity },
+        ),
+      ),
+    ).toMatchObject({ code: "not_found" });
+    expect(released).toEqual([name]);
+  });
+
   test("only its sub-account sends from a sub-account's domain", async () => {
     const { a, verified, send } = await setup();
     const domain = await verified(a.id);
