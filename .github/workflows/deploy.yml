@@ -71,6 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
+      actions: read # this run's own start (when it was pushed)
       contents: read
       deployments: read
     outputs:
