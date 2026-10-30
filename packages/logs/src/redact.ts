@@ -120,6 +120,7 @@ const REQUEST_HEADERS = [
   "idempotency-key",
   "origin",
   "accept",
+  "traceparent",
 ] as const;
 
 /** Response headers a log keeps. */

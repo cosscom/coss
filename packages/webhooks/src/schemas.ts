@@ -9,6 +9,7 @@ import { API_VERSIONS, LATEST_API_VERSION } from "@coss/versioning";
 import { z } from "zod";
 
 export * from "./log-drain-schemas.ts";
+export { parseTraceparent, TRACEPARENT_PATTERN } from "./trace-context.ts";
 
 export const WEBHOOK_URL_MAX_LENGTH = 2048;
 export const DESCRIPTION_MAX_LENGTH = 256;

@@ -1,6 +1,7 @@
 import { API_VERSION, type ApiVersion } from "./api-version.ts";
 import { type CossResult, clientError } from "./core/errors.ts";
 import { type FetchLike, HttpClient, type RequestOptions } from "./core/http.ts";
+import { loadOpenTelemetry } from "./core/tracing.ts";
 import { ApiKeyResource } from "./resources/api-key.ts";
 import { AuditEventsResource } from "./resources/audit-events.ts";
 import { BillingResource } from "./resources/billing.ts";
@@ -43,6 +44,13 @@ export interface CossOptions {
    * to a browser exposes it to anyone who opens the page.
    */
   dangerouslyAllowBrowser?: boolean;
+  /**
+   * OpenTelemetry. Default `true`: when `@opentelemetry/api` is installed, every call gets a client
+   * span and sends its context as `traceparent`, which the API stores on the emails and text
+   * messages the call sends and echoes in their log lines and webhooks (`data.traceparent`, and the
+   * webhook request's `traceparent` header). `false`: no spans, no trace headers.
+   */
+  tracing?: boolean;
 }
 
 export type CossRequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -187,6 +195,7 @@ export class Coss {
       maxRetries: retries(options.maxRetries),
       apiVersion: options.apiVersion?.trim() || API_VERSION,
       integration: (options as { [INTEGRATION]?: string })[INTEGRATION],
+      tracing: options.tracing === false ? null : loadOpenTelemetry,
     });
     this.#http = http;
     this.email = new EmailResource(http);

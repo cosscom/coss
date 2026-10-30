@@ -39,6 +39,11 @@ export interface EmailWebhookEventData extends EmailEventData {
   occurred_at: string;
   /** Only for an email sent for a sub-account: its id. */
   subaccount_id?: string;
+  /**
+   * Only for an email sent with a W3C `traceparent` header (the SDK sends its OpenTelemetry span's):
+   * that trace context, also sent as the webhook request's `traceparent` header.
+   */
+  traceparent?: string;
 }
 
 /** An email event. `id` equals the `webhook-id` header and `EmailEvent.id`. */
@@ -425,6 +430,11 @@ export interface SmsWebhookEventData extends SmsEventData {
   tags: SmsTag[];
   sandbox: boolean;
   occurred_at: string;
+  /**
+   * Only for a message sent with a W3C `traceparent` header (the SDK sends its OpenTelemetry
+   * span's): that trace context, also sent as the webhook request's `traceparent` header.
+   */
+  traceparent?: string;
 }
 
 export interface SmsWebhookEvent {

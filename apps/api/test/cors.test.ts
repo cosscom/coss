@@ -23,7 +23,7 @@ describe("CORS", () => {
     expect(res.status).toBe(204);
     expect(res.headers.get("access-control-allow-origin")).toBe(DOCS);
     expect(res.headers.get("access-control-allow-headers")).toBe(
-      "Authorization,Content-Type,Idempotency-Key,Coss-Version",
+      "Authorization,Content-Type,Idempotency-Key,Coss-Version,traceparent,tracestate",
     );
     expect(res.headers.get("access-control-allow-methods")).toContain("POST");
     // Bearer keys only: browsers must never send cookies along.

@@ -5,7 +5,8 @@ repository root.
 
 - **Webhooks:** deliver only through `createWebhookSender` (every resolved address must be public; the socket is pinned
   to the checked address; no redirects; 10 s timeout for coss.com's own webhooks and log drains, 15 s for Hooks; 1 KB response excerpt). `allowPrivateNetworks`/insecure URLs are
-  for non-production only. Payloads never include bodies, headers, cc or bcc (email's); Forms' `form.submission.*` carry the submitted fields by design (the product's point), never uploaded files' bytes. Secrets are AES-256-GCM encrypted with
+  for non-production only. A payload whose `data.traceparent` is set (emails and text messages sent with one) is
+  delivered with that `traceparent` header too (`traceparentOf`, `trace-context.ts`), and its attempt log line names it. Payloads never include bodies, headers, cc or bcc (email's); Forms' `form.submission.*` carry the submitted fields by design (the product's point), never uploaded files' bytes. Secrets are AES-256-GCM encrypted with
   `WEBHOOK_SECRETS_KEY`, a key ring (`parseSecretsKeys`): stored as `v2:<key id>:<iv>:<ciphertext>:<tag>` (the
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
   one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites

@@ -324,6 +324,12 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   on SIGTERM before draining, so they never hold a deploy up. They aren't request-logged (`request-log.ts`) or
   traced (`@coss/observability`). `GET /v1/environment` and `DELETE /v1/api_key` take any valid key
   (`requireApiKey({})`): a key can always describe and revoke itself.
+- **Trace context**: `traceContext` (`src/middleware/trace-context.ts`, on `/v1/*`) reads the W3C `traceparent`
+  (`parseTraceparent` from `@coss/webhooks/schemas`: invalid ones ignored, never refused; stored as version 00) into
+  `c.var.traceparent`. Sends pass it to the service (`SendEmailInput`/`SendEmailBatchInput`/`InboxSendInput`/
+  `SendSmsInput.traceparent`, never part of the request hash), which stores it on `email.traceparent` /
+  `sms_message.traceparent`; event log lines and webhook payloads echo it (`data.traceparent`, only when set), and
+  webhook delivery sends it as a `traceparent` header (`traceparentOf`).
 - CORS: only `/v1/*`, only `API_CORS_ORIGINS`, never `credentials` — the API authenticates with bearer keys and must
   never accept the dashboard's session cookie (that would need CSRF protection on every endpoint).
 
@@ -359,6 +365,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   `verifyWebhook` by `packages/sdk/test/webhooks-conformance.test.ts`) (generated from `src/core/mime.ts`'s behaviour: change the
   README, the JSON, the SDK and all three drivers together). Each keeps `Coss-Version` and the reserved-header list as
   hand mirrors of `API_VERSION` and `RESERVED_HEADERS`. Releases: `.github/workflows/release-integrations.yml` (below).
+- **Tracing** (`src/core/tracing.ts`): `@opentelemetry/api` is an optional peer loaded like React Email's renderer
+  (literal `import()` in try/catch, described structurally; `test/integration-types.ts` checks the real API fits).
+  One client span per call, retries included, named `<METHOD> <path template>` (`pathTemplate`: ids become `{id}`;
+  no `url.full`, its query and path can name people); its context goes out through the app's propagator and never
+  replaces one of the SDK's own headers. `tracing: false` turns it off.
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
   `API_ERROR_TYPES` (`packages/sdk/src/core/errors.ts`).
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run
@@ -485,8 +496,8 @@ What an agent pointed at coss.com reads, all describing the same facts — chang
   no SDK retries), forwards each body byte for byte to `--forward-to`, signed with `COSS_WEBHOOK_SECRET` from the
   project env file (an existing valid secret is kept; otherwise the profile's `listen_secret`, otherwise a new
   `whsec_` from `src/listen/sign.ts`, Standard Webhooks). It writes that secret into the env file, and into the
-  profile when the CLI key came from the profile. `webhook-id` = the event id,
-  and acks results in the next poll; Ctrl-C acks what was forwarded and deletes the listener. Live environments
+  profile when the CLI key came from the profile. `webhook-id` = the event id
+  (and `traceparent` = the body's `data.traceparent`, like the real delivery), and acks results in the next poll; Ctrl-C acks what was forwarded and deletes the listener. Live environments
   need `--live`.
 - `trigger <type>`: `POST /v1/webhook_events/test` (`coss.webhookEvents.test`; `sendTestWebhookEvent` in
   `packages/email/src/test-events.ts`): a sample event built from the type's schema example, fresh ids, `data`

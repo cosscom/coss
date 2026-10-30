@@ -628,6 +628,7 @@ export function createInboxRoutes(deps: {
     apiKeyOwnerId: c.var.auth.ownerUserId,
     inboxId,
     idempotencyKey,
+    traceparent: c.var.traceparent,
     quota: sendQuota(c),
   });
 

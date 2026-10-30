@@ -170,3 +170,4 @@ export {
   WebhookUrlError,
 } from "./sender.ts";
 export { generateSigningSecret, signatureHeaders, signPayload } from "./signing.ts";
+export { parseTraceparent, TRACEPARENT_PATTERN, traceparentOf } from "./trace-context.ts";

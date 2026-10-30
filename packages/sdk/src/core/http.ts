@@ -1,5 +1,6 @@
 import { VERSION } from "../version.ts";
 import { type CossError, type CossResult, clientError, errorFromResponse } from "./errors.ts";
+import { type TracedOutcome, type TracingLoader, traced } from "./tracing.ts";
 
 /** Any WHATWG-compatible `fetch` (global fetch, undici, a test double, `app.fetch` adapters …). */
 export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -28,6 +29,11 @@ export interface HttpClientOptions {
   integration?: string;
   /** Waits between retries; must resolve early when `signal` aborts. Overridable for tests. */
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
+  /**
+   * Loads `@opentelemetry/api` for a client span per call (`loadOpenTelemetry`); `null` or
+   * omitted: no spans and no trace headers.
+   */
+  tracing?: TracingLoader | null;
 }
 
 export interface ApiRequest {
@@ -58,6 +64,9 @@ interface Attempt<T> {
   result: CossResult<T>;
   retry: boolean;
   retryAfterMs: number | null;
+  /** The response's status and `X-Request-Id`; `null` when none came back. */
+  status?: number;
+  requestId?: string | null;
 }
 
 /** Exponential backoff (500ms, 1s, 2s … capped at 8s) minus up to 25% random jitter. */
@@ -122,6 +131,7 @@ export class HttpClient {
   readonly #apiVersion: string;
   readonly #userAgent: string;
   readonly #sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
+  readonly #tracing: TracingLoader | null;
 
   constructor(options: HttpClientOptions) {
     this.#apiKey = options.apiKey;
@@ -134,6 +144,7 @@ export class HttpClient {
       ? `coss-typescript/${VERSION} (${options.integration})`
       : `coss-typescript/${VERSION}`;
     this.#sleep = options.sleep ?? sleep;
+    this.#tracing = options.tracing ?? null;
   }
 
   async request<T>(request: ApiRequest): Promise<CossResult<T>> {
@@ -170,18 +181,43 @@ export class HttpClient {
       const message = `Invalid request header: ${describe(cause)}`;
       return { data: null, error: clientError("invalid_request_error", "invalid_header", message) };
     }
-    const init: RequestInit = { method: request.method, headers, body };
 
-    for (let retry = 0; ; retry++) {
-      if (request.signal?.aborted) return { data: null, error: abortedError() };
-      const attempt = await this.#attempt<T>(url, init, request.signal, request.responseType);
-      if (request.retry === false || !attempt.retry || retry >= this.#maxRetries) {
-        return attempt.result;
+    // One span for the whole call, retries included: every attempt carries the same `traceparent`,
+    // so whichever one the API stores names this call.
+    const target = {
+      method: request.method,
+      path: request.path,
+      url,
+      version: VERSION,
+    };
+    return traced(this.#tracing, target, async (trace) => {
+      const init: RequestInit = {
+        method: request.method,
+        headers: withTrace(headers, trace),
+        body,
+      };
+      const outcome: TracedOutcome = { status: null, resends: 0, requestId: null, error: null };
+      const done = (attempt: Attempt<T>) => {
+        outcome.status = attempt.status ?? null;
+        outcome.requestId = attempt.requestId ?? null;
+        outcome.error = attempt.result.error;
+        return { value: attempt.result, outcome };
+      };
+      for (let retry = 0; ; retry++) {
+        if (request.signal?.aborted) {
+          const result: CossResult<T> = { data: null, error: abortedError() };
+          return done({ result, retry: false, retryAfterMs: null });
+        }
+        outcome.resends = retry;
+        const attempt = await this.#attempt<T>(url, init, request.signal, request.responseType);
+        if (request.retry === false || !attempt.retry || retry >= this.#maxRetries) {
+          return done(attempt);
+        }
+        const delay = attempt.retryAfterMs ?? backoffDelay(retry);
+        if (delay > MAX_RETRY_AFTER_MS) return done(attempt);
+        await this.#sleep(delay, request.signal);
       }
-      const delay = attempt.retryAfterMs ?? backoffDelay(retry);
-      if (delay > MAX_RETRY_AFTER_MS) return attempt.result;
-      await this.#sleep(delay, request.signal);
-    }
+    });
   }
 
   async #attempt<T>(
@@ -223,24 +259,31 @@ export class HttpClient {
     }
 
     const requestId = response.headers.get("x-request-id");
+    const status = response.status;
     if (!response.ok) {
       return {
         result: failed(errorFromResponse(response.status, response.statusText, text, requestId)),
         retry: isRetryableStatus(response.status),
         retryAfterMs: parseRetryAfter(response.headers.get("retry-after")),
+        status,
+        requestId,
       };
     }
     if (responseType === "text") {
-      return { result: { data: text as T, error: null }, retry: false, retryAfterMs: null };
+      const result: CossResult<T> = { data: text as T, error: null };
+      return { result, retry: false, retryAfterMs: null, status, requestId };
     }
     if (responseType === "bytes") {
-      return { result: { data: bytes as T, error: null }, retry: false, retryAfterMs: null };
+      const result: CossResult<T> = { data: bytes as T, error: null };
+      return { result, retry: false, retryAfterMs: null, status, requestId };
     }
     try {
       return {
         result: { data: JSON.parse(text) as T, error: null },
         retry: false,
         retryAfterMs: null,
+        status,
+        requestId,
       };
     } catch {
       const error: CossError = {
@@ -250,9 +293,33 @@ export class HttpClient {
         status: response.status,
         request_id: requestId,
       };
-      return { result: failed(error), retry: false, retryAfterMs: null };
+      return { result: failed(error), retry: false, retryAfterMs: null, status, requestId };
     }
   }
+}
+
+/**
+ * The request's headers plus what the tracing propagator wrote, which never replaces one of the
+ * SDK's own and is dropped when it isn't a valid header (a broken propagator must not fail calls).
+ */
+function withTrace(
+  headers: Record<string, string>,
+  trace: Record<string, string>,
+): Record<string, string> {
+  const entries = Object.entries(trace);
+  if (entries.length === 0) return headers;
+  const out = { ...headers };
+  const taken = new Set(Object.keys(headers).map((name) => name.toLowerCase()));
+  for (const [name, value] of entries) {
+    if (typeof value !== "string" || taken.has(name.toLowerCase())) continue;
+    try {
+      new Headers({ [name]: value });
+    } catch {
+      continue;
+    }
+    out[name] = value;
+  }
+  return out;
 }
 
 function failed<T>(error: CossError): CossResult<T> {

@@ -401,6 +401,7 @@ export function createSmsRoutes(smsService: SmsService): OpenAPIHono<AppEnv> {
         apiKeyOwnerId: ownerUserId,
         params,
         idempotencyKey,
+        traceparent: c.var.traceparent,
       };
       // Counted as the service counts them (toll-free numbers' segments are smaller).
       const segments = countSegments(params.body, { tollFree: isTollFreeNumber(params.from) });

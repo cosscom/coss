@@ -28,6 +28,7 @@ import { WebhookError } from "./errors.ts";
 import type { SecretsKeyRing } from "./secrets.ts";
 import { DEFAULT_TIMEOUT_MS, type WebhookSender } from "./sender.ts";
 import { signatureHeaders } from "./signing.ts";
+import { traceparentOf } from "./trace-context.ts";
 
 const { webhookAttempt, webhookDelivery, webhookEndpoint, webhookMessage } = schema;
 
@@ -161,14 +162,20 @@ async function attempt(delivery: Claimed, now: Date, deps: WebhookDeliveryDeps):
   const body = JSON.stringify(
     renderWebhookPayload(target.payload, target.endpoint.apiVersion, deps.versioning),
   );
+  // An event about something sent with a `traceparent` carries it as a header too, so the
+  // receiver's own tracing continues the sender's trace without reading the body.
+  const traceparent = traceparentOf(target.payload);
   const result = await sendAttempt(deps.send, {
     url: target.endpoint.url,
-    headers: signatureHeaders({
-      secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
-      id: delivery.messageId,
-      timestamp: Math.floor(now.getTime() / 1000),
-      body,
-    }),
+    headers: {
+      ...signatureHeaders({
+        secrets: signingSecrets(target.endpoint, deps.secretsKeys, now),
+        id: delivery.messageId,
+        timestamp: Math.floor(now.getTime() / 1000),
+        body,
+      }),
+      ...(traceparent ? { traceparent } : {}),
+    },
     body,
     timeoutMs: deps.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   });
@@ -298,7 +305,7 @@ function attemptLogEntry(input: {
   delivery: Claimed;
   endpoint: WebhookEndpointRow;
   type: string;
-  payload: unknown;
+  payload: Record<string, unknown> | null;
   now: Date;
   attempt: number;
   result: AttemptResult;
@@ -310,6 +317,7 @@ function attemptLogEntry(input: {
   const data = (input.payload as { data?: { email_id?: unknown } } | null)?.data;
   const emailId = typeof data?.email_id === "string" ? data.email_id : null;
   const status = result.statusCode ?? result.error ?? "no response";
+  const traceparent = input.payload ? traceparentOf(input.payload) : null;
   return {
     organizationId: delivery.organizationId,
     projectId: endpoint.projectId,
@@ -336,6 +344,7 @@ function attemptLogEntry(input: {
       next_attempt_at: input.outcome.nextAttemptAt?.toISOString() ?? null,
       error: result.error,
       response_excerpt: result.responseExcerpt,
+      ...(traceparent ? { traceparent } : {}),
     },
   };
 }

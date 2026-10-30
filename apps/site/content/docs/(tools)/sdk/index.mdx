@@ -47,6 +47,7 @@ const coss = new Coss({
 | `maxRetries`              | `2`                                             | Retries for network errors, timeouts, 409, 429 and 5xx     |
 | `fetch`                   | global `fetch`                                  | A custom `fetch` implementation                            |
 | `dangerouslyAllowBrowser` | `false`                                         | Allow running where `document` exists (exposes your key)   |
+| `tracing`                 | `true`                                          | An OpenTelemetry span per call, when `@opentelemetry/api` is installed ([Tracing](/docs/api-reference/tracing)) |
 
 The constructor throws only for programmer errors: a missing API key, or running in a browser
 without `dangerouslyAllowBrowser`.

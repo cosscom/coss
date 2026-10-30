@@ -84,6 +84,11 @@ export type SendEmailInput = {
   apiKeyOwnerId?: string | null;
   params: SendEmailRequestOutput;
   idempotencyKey?: string | null;
+  /**
+   * The request's W3C `traceparent` (`parseTraceparent`), stored on the email and echoed in its
+   * log lines and webhooks. Not part of the request hash: a retry may carry another one.
+   */
+  traceparent?: string | null;
   /** Internal callers only: use the same retention on every retry; Infinity never expires. */
   idempotencyRetentionMs?: number;
   /**
@@ -115,6 +120,8 @@ export type SendEmailBatchInput = {
   apiKeyOwnerId?: string | null;
   emails: SendEmailRequestOutput[];
   idempotencyKey?: string | null;
+  /** The request's W3C `traceparent`, stored on every email of the batch. */
+  traceparent?: string | null;
 };
 
 export type EmailService = {
@@ -1364,7 +1371,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     prepared: PreparedSend,
     extra: Pick<
       typeof email.$inferInsert,
-      "idempotencyKey" | "requestHash" | "batchId" | "batchIndex"
+      "idempotencyKey" | "requestHash" | "batchId" | "batchIndex" | "traceparent"
     >,
   ): Promise<{ row: EmailRow; billable: number } | undefined> {
     const tracked =
@@ -1481,6 +1488,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       const inserted = await insertPrepared(tx, environment, prepared, {
         idempotencyKey,
         requestHash,
+        traceparent: input.traceparent ?? null,
       });
       if (!inserted) return undefined;
       await input.afterInsert?.(tx, inserted.row);
@@ -1613,6 +1621,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         const inserted = await insertPrepared(tx, environment, item, {
           batchId: batch.id,
           batchIndex,
+          traceparent: input.traceparent ?? null,
         });
         if (!inserted) throw new Error("Batch email insert returned no row.");
         billable += inserted.billable;

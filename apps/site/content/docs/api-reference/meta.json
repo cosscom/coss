@@ -10,6 +10,7 @@
     "errors",
     "rate-limits",
     "idempotency",
+    "tracing",
     "---Email---",
     "emails",
     "email-templates",

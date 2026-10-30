@@ -96,6 +96,7 @@ export async function recordSmsEvent(
       toCountry: smsMessage.toCountry,
       segments: smsMessage.segments,
       tags: smsMessage.tags,
+      traceparent: smsMessage.traceparent,
       mode: environment.mode,
     })
     .from(smsMessage)
@@ -224,6 +225,7 @@ export async function recordSmsEvent(
         tags: target.tags,
         sandbox: !live,
         occurred_at: row.occurredAt.toISOString(),
+        ...(target.traceparent ? { traceparent: target.traceparent } : {}),
         ...row.details,
       },
     };

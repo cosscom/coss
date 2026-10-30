@@ -66,6 +66,8 @@ export type InboxSendInput = {
   apiKeyOwnerId?: string | null;
   inboxId: string;
   idempotencyKey?: string | null;
+  /** The request's W3C `traceparent`, stored on the email (`SendEmailInput.traceparent`). */
+  traceparent?: string | null;
   quota?: InboxSendQuota;
 };
 
@@ -136,6 +138,7 @@ async function send(
     // Inbox sends share the email table's keys: keep them apart from `POST /v1/emails`'.
     idempotencyKey: input.idempotencyKey ? `inbox:${input.row.id}:${input.idempotencyKey}` : null,
     requestHash: requestHash(input.request),
+    traceparent: input.traceparent ?? null,
     afterInsert: async (tx, row) => {
       await recordOutboundInboxMessage(tx, {
         row: input.row,

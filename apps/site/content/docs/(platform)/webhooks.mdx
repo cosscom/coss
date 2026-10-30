@@ -207,6 +207,8 @@ a roll: if the response is lost, roll again and deploy that secret.
 - Failed deliveries are retried 7 times over about 28 hours (5 s, 5 min, 30 min, 2 h, 5 h, 10 h, 10 h).
 - Events can arrive out of order: sort by `data.occurred_at` (every event has it).
 - An event can arrive more than once: deduplicate by `id` (equal to the `webhook-id` header).
+- Events about an email or text message sent with a `traceparent` header carry it in
+  `data.traceparent` and as the request's own `traceparent` header (see [Tracing](/docs/api-reference/tracing)).
 
 ## Delivery logs
 
