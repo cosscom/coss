@@ -1,5 +1,28 @@
 # coss-cli
 
+## 0.5.0
+
+### Minor Changes
+
+- daf97ff: Inboxes: the MCP server gains `create_inbox`, `list_inboxes`, `list_inbox_threads`, `get_inbox_thread`, `send_inbox_message` and `reply_to_inbox_message`; the CLI gains `coss inboxes list|create|threads|thread|reply`.
+
+### Patch Changes
+
+- Updated dependencies [0464e77]
+- Updated dependencies [e97dd14]
+- Updated dependencies [80a9c6f]
+- Updated dependencies [62cdc89]
+- Updated dependencies [fbdc39f]
+- Updated dependencies [9d4c942]
+- Updated dependencies [f9f26a4]
+- Updated dependencies [d55a308]
+- Updated dependencies [7e77a8e]
+- Updated dependencies [0718160]
+- Updated dependencies [c0e5c69]
+- Updated dependencies [a85e735]
+- Updated dependencies [a4e2b6a]
+  - coss@0.10.0
+
 ## 0.4.0
 
 ### Minor Changes
