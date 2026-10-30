@@ -232,6 +232,7 @@ describe("messageToSendRequest", () => {
           "X-Coss-Tracking": "clicks",
           "X-Coss-Scheduled-At": scheduled,
           "X-Coss-Idempotency-Key": "welcome-123",
+          "X-Coss-Subaccount": "user_8812",
           "X-Entity-Ref-ID": "abc",
         },
       }),
@@ -240,6 +241,7 @@ describe("messageToSendRequest", () => {
     expect(ok.ok).toBe(true);
     if (!ok.ok) return;
     expect(ok.params).toMatchObject({
+      subaccount: "user_8812",
       category: "onboarding",
       tags: [
         { name: "template", value: "welcome" },

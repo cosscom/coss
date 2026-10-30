@@ -9,6 +9,7 @@ import {
   apiKeyIdForEnvironment,
   apiRequest,
   createTestApp,
+  emailBody,
   errorOf,
   setKeyPermissions,
 } from "./helpers.ts";
@@ -307,5 +308,61 @@ describe("sub-accounts API", () => {
       where: (row, { eq }) => eq(row.id, created.id),
     });
     expect(rows).toEqual([]);
+  });
+
+  test("sends count toward the sub-account's own quotas, refunded when one denies", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const key = tenant.sandboxKey;
+    for (const uid of ["capped", "free"]) {
+      await json(
+        await apiRequest(app, "POST", "/v1/subaccounts", {
+          key,
+          body: { name: uid, uid, quotas: uid === "capped" ? { recipients_per_day: 2 } : {} },
+        }),
+      );
+    }
+    const send = (subaccount: string, to: string[]) =>
+      apiRequest(app, "POST", "/v1/emails", { key, body: emailBody({ to, subaccount }) });
+
+    expect((await send("capped", ["a@example.com", "b@example.com"])).status).toBe(202);
+    const over = await send("capped", ["c@example.com"]);
+    expect(over.status).toBe(429);
+    expect(await errorOf(over)).toMatchObject({ code: "quota_exceeded" });
+    expect((await send("free", ["c@example.com"])).status).toBe(202);
+
+    // A batch is charged per sub-account it names, all or nothing.
+    const batch = await apiRequest(app, "POST", "/v1/emails/batch", {
+      key,
+      body: {
+        emails: [
+          emailBody({ to: "d@example.com", subaccount: "free" }),
+          emailBody({ to: "e@example.com", subaccount: "capped" }),
+        ],
+      },
+    });
+    expect(batch.status).toBe(429);
+  });
+
+  test("a send names a sub-account of its environment, transactional only", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const unknown = await apiRequest(app, "POST", "/v1/emails", {
+      key: tenant.sandboxKey,
+      body: emailBody({ subaccount: "nobody" }),
+    });
+    expect(unknown.status).toBe(422);
+    expect(await errorOf(unknown)).toMatchObject({
+      code: "subaccount_not_found",
+      param: "subaccount",
+    });
+    const marketing = await apiRequest(app, "POST", "/v1/emails", {
+      key: tenant.sandboxKey,
+      body: emailBody({ subaccount: "nobody", stream: "marketing" }),
+    });
+    expect(marketing.status).toBe(422);
+    expect((await errorOf(marketing)).issues).toEqual(
+      expect.arrayContaining([expect.objectContaining({ path: "subaccount" })]),
+    );
   });
 });

@@ -380,6 +380,9 @@ export const EmailSubject = z
 const TEMPLATE_PROVIDED = ["subject", "html", "text"] as const;
 const TEMPLATE_ONLY = ["template_version", "locale", "variables"] as const;
 
+/** A sub-account a request names: its id (`sub_…`) or the customer's `uid` for it. */
+export const SubaccountRef = z.string().min(1).max(256);
+
 /** The fields of a send request (inboxes pick theirs from it). */
 export const SendEmailRequestFields = z.strictObject({
   from: EmailAddress,
@@ -553,6 +556,14 @@ export const SendEmailRequestFields = z.strictObject({
         "address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, " +
         "`{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.",
     }),
+  subaccount: SubaccountRef.optional().meta({
+    description:
+      "Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` " +
+      "for it. The email then counts toward its quotas and reputation, skips its suppressions " +
+      "(and the environment's), and must come from one of its domains or a domain you share " +
+      "with sub-accounts. Transactional email only.",
+    examples: ["user_8812"],
+  }),
 });
 
 export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) => {
@@ -639,6 +650,13 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
       });
     }
   }
+  if (value.subaccount !== undefined && value.stream === "marketing") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["subaccount"],
+      message: "Sub-accounts send transactional email only.",
+    });
+  }
   if (value.stream === "marketing") {
     // Unsubscribe links are personal: one recipient per marketing email.
     if (withinFieldLimits && unique.size !== 1) {
@@ -713,6 +731,8 @@ export const SendEmailRequest = SendEmailRequestFields.superRefine((value, ctx) 
       : {}),
     // Absent when not given (transactional), for the same reason.
     ...(value.stream === undefined ? {} : { stream: value.stream }),
+    // Absent when not given, for the same reason.
+    ...(value.subaccount === undefined ? {} : { subaccount: value.subaccount }),
     // Absent when not given, for the same reason.
     ...(value.tracking === undefined
       ? {}
@@ -1104,6 +1124,9 @@ export const EmailWebhookEvent = z
       sandbox: z.boolean(),
       recipient: z.string().nullable(),
       occurred_at: z.iso.datetime(),
+      subaccount_id: z.string().optional().meta({
+        description: "Only for an email sent for a sub-account: its id.",
+      }),
     }),
   })
   .meta({
@@ -1316,6 +1339,9 @@ export const EmailObject = z
       .string()
       .nullable()
       .meta({ description: "The broadcast the email is part of; `null` for any other email." }),
+    subaccount_id: z.string().nullable().meta({
+      description: "The sub-account the email was sent for; `null` if it was sent for none.",
+    }),
     content_storage: EmailContentStorage,
   })
   .meta({
@@ -1348,6 +1374,7 @@ export const EmailObject = z
         batch_id: null,
         template: null,
         broadcast_id: null,
+        subaccount_id: null,
         content_storage: CONTENT_STORAGE_EXAMPLE,
       },
     ],
@@ -1376,6 +1403,7 @@ const SUMMARY_EXAMPLE = {
   scheduled_at: null,
   batch_id: null,
   template: null,
+  subaccount_id: null,
   content_storage: CONTENT_STORAGE_EXAMPLE,
 };
 
@@ -1460,6 +1488,9 @@ export const ListEmailsQuery = z
       .meta({ description: "Free text, matched against the subject and the `to` addresses." }),
     category: Category.optional().meta({ description: "Only emails of this category." }),
     batch_id: z.string().max(64).optional().meta({ description: "Only the emails of this batch." }),
+    subaccount: SubaccountRef.optional().meta({
+      description: "Only the emails sent for this sub-account (its id or your uid).",
+    }),
     created_after: z.iso
       .datetime({ offset: true })
       .optional()
@@ -1532,6 +1563,7 @@ export const EmailBatchObject = z
             batch_id: BATCH_EXAMPLE_ID,
             template: null,
             broadcast_id: null,
+            subaccount_id: null,
             content_storage: CONTENT_STORAGE_EXAMPLE,
           },
         ],
@@ -2019,6 +2051,12 @@ export const SuppressionAddress = z
   })
   .transform(addressKey);
 
+const suppressionListRef = (action: string) =>
+  SubaccountRef.optional().meta({
+    description: `${action} a sub-account's own list (its id or your uid) instead of the environment's.`,
+    examples: ["user_8812"],
+  });
+
 export const CreateSuppressionRequest = z
   .strictObject({
     address: SuppressionAddress.meta({
@@ -2029,8 +2067,13 @@ export const CreateSuppressionRequest = z
       description:
         'Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.',
     }),
+    subaccount: suppressionListRef("Add it to"),
   })
-  .transform((value) => ({ address: value.address, scope: value.scope ?? ALL_CATEGORIES }))
+  .transform((value) => ({
+    address: value.address,
+    scope: value.scope ?? ALL_CATEGORIES,
+    ...(value.subaccount === undefined ? {} : { subaccount: value.subaccount }),
+  }))
   .meta({
     id: "CreateSuppressionRequest",
     examples: [{ address: "user@example.com", scope: "marketing" }],
@@ -2043,6 +2086,7 @@ export const DEFAULT_SUPPRESSION_LIST_LIMIT = 50;
 export const MAX_SUPPRESSION_LIST_LIMIT = 100;
 
 export const ListSuppressionsQuery = z.strictObject({
+  subaccount: suppressionListRef("List"),
   address: SuppressionAddress.optional().meta({ description: "Only entries for this address." }),
   scope: SuppressionScope.optional().meta({ description: "Only entries with this scope." }),
   limit: z.coerce
@@ -2078,6 +2122,10 @@ export const CheckSuppressionQuery = z.strictObject({
         "The stream of the email you plan to send (default `transactional`). `marketing` also " +
         "counts `stream:marketing` entries.",
     }),
+  subaccount: SubaccountRef.optional().meta({
+    description:
+      "The sub-account you plan to send for (its id or your uid): its own entries count too.",
+  }),
 });
 
 export type CheckSuppressionQueryOutput = z.output<typeof CheckSuppressionQuery>;
@@ -2090,6 +2138,7 @@ const SUPPRESSION_EXAMPLE = {
   scope: "marketing",
   reason: "manual",
   email_id: null,
+  subaccount_id: null,
   created_at: "2026-01-15T09:30:00.000Z",
 } as const;
 
@@ -2104,6 +2153,9 @@ export const Suppression = z
       .string()
       .nullable()
       .meta({ description: "The email whose bounce or complaint added this entry." }),
+    subaccount_id: z.string().nullable().meta({
+      description: "The sub-account whose list it is on; `null` for the environment's own list.",
+    }),
     created_at: z.iso.datetime(),
   })
   .meta({ id: "Suppression", examples: [SUPPRESSION_EXAMPLE] });
@@ -2345,6 +2397,7 @@ export const MAX_SUPPRESSION_IMPORT_ENTRIES = 1000;
 
 export const ImportSuppressionsRequest = z
   .strictObject({
+    subaccount: suppressionListRef("Import into"),
     suppressions: z
       .array(
         z.strictObject({
@@ -2411,6 +2464,7 @@ export const SuppressionImport = z
 export type SuppressionImportOutput = z.output<typeof SuppressionImport>;
 
 export const ExportSuppressionsQuery = z.strictObject({
+  subaccount: suppressionListRef("Export"),
   scope: SuppressionScope.optional().meta({ description: "Only entries with this scope." }),
   reason: SuppressionReasonEnum.optional().meta({
     description: "Only entries with this reason.",

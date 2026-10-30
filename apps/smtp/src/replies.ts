@@ -38,6 +38,8 @@ export function sendErrorReply(error: unknown): SmtpOutcome | null {
       case "sending_paused":
       case "billing_hold":
       case "budget_exceeded":
+      case "subaccount_disabled":
+      case "subaccount_paused":
         return reply(550, "5.7.1", error.message, error.code);
       default:
         return reply(554, "5.0.0", error.message, error.code);

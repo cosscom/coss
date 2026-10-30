@@ -5,6 +5,8 @@ import type {
   CreateSubaccountParams,
   ListSubaccountsParams,
   Subaccount,
+  SubaccountStats,
+  SubaccountStatsParams,
   UpdateSubaccountParams,
 } from "../types/subaccount.ts";
 import { listQuery } from "./list-query.ts";
@@ -84,6 +86,20 @@ export class SubaccountsResource {
     return this.#http.request<Subaccount>({
       method: "DELETE",
       path: subaccountPath(subaccount),
+      signal: options?.signal,
+    });
+  }
+
+  /** Its sending per UTC day (at most the last 45 days, the emails' retention). */
+  stats(
+    subaccount: string,
+    params: SubaccountStatsParams = {},
+    options?: ReadOptions,
+  ): Promise<CossResult<SubaccountStats>> {
+    return this.#http.request<SubaccountStats>({
+      method: "GET",
+      path: `${subaccountPath(subaccount)}/stats`,
+      query: { ...params },
       signal: options?.signal,
     });
   }

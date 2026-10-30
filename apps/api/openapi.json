@@ -465,6 +465,10 @@
               "occurred_at": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "subaccount_id": {
+                "type": "string",
+                "description": "Only for an email sent for a sub-account: its id."
               }
             },
             "required": [
@@ -3708,6 +3712,13 @@
             ],
             "description": "The broadcast the email is part of; `null` for any other email."
           },
+          "subaccount_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sub-account the email was sent for; `null` if it was sent for none."
+          },
           "content_storage": {
             "$ref": "#/components/schemas/EmailContentStorage"
           }
@@ -3739,6 +3750,7 @@
           "batch_id",
           "template",
           "broadcast_id",
+          "subaccount_id",
           "content_storage"
         ],
         "examples": [
@@ -3793,6 +3805,7 @@
             "batch_id": null,
             "template": null,
             "broadcast_id": null,
+            "subaccount_id": null,
             "content_storage": {
               "mode": "store",
               "discarded_at": null
@@ -4228,6 +4241,15 @@
               "marketing"
             ],
             "description": "`transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped."
+          },
+          "subaccount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.",
+            "examples": [
+              "user_8812"
+            ]
           }
         },
         "required": [
@@ -4393,6 +4415,7 @@
                 "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
                 "template": null,
                 "broadcast_id": null,
+                "subaccount_id": null,
                 "content_storage": {
                   "mode": "store",
                   "discarded_at": null
@@ -4514,6 +4537,7 @@
                 "scheduled_at": null,
                 "batch_id": null,
                 "template": null,
+                "subaccount_id": null,
                 "content_storage": {
                   "mode": "store",
                   "discarded_at": null
@@ -4679,6 +4703,13 @@
             ],
             "description": "The broadcast the email is part of; `null` for any other email."
           },
+          "subaccount_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sub-account the email was sent for; `null` if it was sent for none."
+          },
           "content_storage": {
             "$ref": "#/components/schemas/EmailContentStorage"
           }
@@ -4706,6 +4737,7 @@
           "batch_id",
           "template",
           "broadcast_id",
+          "subaccount_id",
           "content_storage"
         ],
         "description": "An email without its content. Retrieve the email for `html`, `text`, `headers` and `attachments`.",
@@ -4755,6 +4787,7 @@
             "scheduled_at": null,
             "batch_id": null,
             "template": null,
+            "subaccount_id": null,
             "content_storage": {
               "mode": "store",
               "discarded_at": null
@@ -10168,6 +10201,13 @@
             ],
             "description": "The email whose bounce or complaint added this entry."
           },
+          "subaccount_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sub-account whose list it is on; `null` for the environment's own list."
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -10180,6 +10220,7 @@
           "scope",
           "reason",
           "email_id",
+          "subaccount_id",
           "created_at"
         ],
         "examples": [
@@ -10190,6 +10231,7 @@
             "scope": "marketing",
             "reason": "manual",
             "email_id": null,
+            "subaccount_id": null,
             "created_at": "2026-01-15T09:30:00.000Z"
           }
         ]
@@ -10221,6 +10263,15 @@
               }
             ],
             "description": "Defaults to `*` (every email). Pass a category, e.g. \"marketing\", to only skip those."
+          },
+          "subaccount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Add it to a sub-account's own list (its id or your uid) instead of the environment's.",
+            "examples": [
+              "user_8812"
+            ]
           }
         },
         "required": [
@@ -10269,6 +10320,7 @@
                 "scope": "marketing",
                 "reason": "manual",
                 "email_id": null,
+                "subaccount_id": null,
                 "created_at": "2026-01-15T09:30:00.000Z"
               }
             ],
@@ -10319,6 +10371,7 @@
                 "scope": "marketing",
                 "reason": "manual",
                 "email_id": null,
+                "subaccount_id": null,
                 "created_at": "2026-01-15T09:30:00.000Z"
               }
             ]
@@ -10385,6 +10438,15 @@
       "ImportSuppressionsRequest": {
         "type": "object",
         "properties": {
+          "subaccount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Import into a sub-account's own list (its id or your uid) instead of the environment's.",
+            "examples": [
+              "user_8812"
+            ]
+          },
           "suppressions": {
             "type": "array",
             "items": {
@@ -10783,6 +10845,117 @@
               }
             ],
             "has_more": false
+          }
+        ]
+      },
+      "SubaccountStats": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "subaccount_stats"
+            ]
+          },
+          "subaccount_id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubaccountStatsDay"
+            },
+            "description": "One entry per day with sends, oldest first; recipients count by their current status."
+          }
+        },
+        "required": [
+          "object",
+          "subaccount_id",
+          "from",
+          "to",
+          "data"
+        ],
+        "examples": [
+          {
+            "object": "subaccount_stats",
+            "subaccount_id": "sub_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "from": "2026-10-15",
+            "to": "2026-10-15",
+            "data": [
+              {
+                "date": "2026-10-15",
+                "recipients": 120,
+                "sent": 118,
+                "delivered": 115,
+                "bounced": 2,
+                "complained": 0,
+                "failed": 0,
+                "suppressed": 2
+              }
+            ]
+          }
+        ]
+      },
+      "SubaccountStatsDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "recipients": {
+            "type": "integer",
+            "description": "Recipients of the emails sent that day."
+          },
+          "sent": {
+            "type": "integer",
+            "description": "Handed to the provider (delivered or not)."
+          },
+          "delivered": {
+            "type": "integer"
+          },
+          "bounced": {
+            "type": "integer"
+          },
+          "complained": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "suppressed": {
+            "type": "integer",
+            "description": "Skipped: on a suppression list."
+          }
+        },
+        "required": [
+          "date",
+          "recipients",
+          "sent",
+          "delivered",
+          "bounced",
+          "complained",
+          "failed",
+          "suppressed"
+        ],
+        "examples": [
+          {
+            "date": "2026-10-15",
+            "recipients": 120,
+            "sent": 118,
+            "delivered": 115,
+            "bounced": 2,
+            "complained": 0,
+            "failed": 0,
+            "suppressed": 2
           }
         ]
       },
@@ -28105,6 +28278,18 @@
           {
             "schema": {
               "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Only the emails sent for this sub-account (its id or your uid)."
+            },
+            "required": false,
+            "description": "Only the emails sent for this sub-account (its id or your uid).",
+            "name": "subaccount",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
               "format": "date-time",
               "description": "Only emails created at or after this time."
             },
@@ -39940,6 +40125,27 @@
               }
             }
           },
+          "404": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "413": {
             "description": "The request body is larger than 5 MB (`payload_too_large`).",
             "headers": {
@@ -40095,6 +40301,21 @@
           {
             "schema": {
               "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "List a sub-account's own list (its id or your uid) instead of the environment's.",
+              "examples": [
+                "user_8812"
+              ]
+            },
+            "required": false,
+            "description": "List a sub-account's own list (its id or your uid) instead of the environment's.",
+            "name": "subaccount",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
               "description": "Only entries for this address."
             },
             "required": false,
@@ -40230,6 +40451,27 @@
           },
           "403": {
             "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -40395,6 +40637,18 @@
             "in": "query"
           },
           {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The sub-account you plan to send for (its id or your uid): its own entries count too."
+            },
+            "required": false,
+            "description": "The sub-account you plan to send for (its id or your uid): its own entries count too.",
+            "name": "subaccount",
+            "in": "query"
+          },
+          {
             "$ref": "#/components/parameters/CossVersion"
           }
         ],
@@ -40473,6 +40727,27 @@
           },
           "403": {
             "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -40702,6 +40977,27 @@
               }
             }
           },
+          "404": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "413": {
             "description": "The request body is larger than 5 MB (`payload_too_large`).",
             "headers": {
@@ -40858,6 +41154,21 @@
         "parameters": [
           {
             "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Export a sub-account's own list (its id or your uid) instead of the environment's.",
+              "examples": [
+                "user_8812"
+              ]
+            },
+            "required": false,
+            "description": "Export a sub-account's own list (its id or your uid) instead of the environment's.",
+            "name": "subaccount",
+            "in": "query"
+          },
+          {
+            "schema": {
               "anyOf": [
                 {
                   "type": "string",
@@ -40982,6 +41293,27 @@
           },
           "403": {
             "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -42644,6 +42976,273 @@
           },
           "404": {
             "description": "No sub-account with this id or uid exists in the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subaccounts/{subaccount}/stats": {
+      "get": {
+        "operationId": "getSubaccountStats",
+        "tags": [
+          "Sub-accounts"
+        ],
+        "summary": "Retrieve a sub-account's stats",
+        "description": "The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, failed and suppressed, counted from its emails as they are now (a later bounce moves its day's numbers). Emails are kept 45 days, so earlier days are left out.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The sub-account's `id` (`sub_…`) or your `uid` for it.",
+              "examples": [
+                "user_8812"
+              ]
+            },
+            "required": true,
+            "description": "The sub-account's `id` (`sub_…`) or your `uid` for it.",
+            "name": "subaccount",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.",
+              "examples": [
+                "2026-10-01"
+              ]
+            },
+            "required": false,
+            "description": "First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Last day (UTC, `YYYY-MM-DD`), included; default today.",
+              "examples": [
+                "2026-10-15"
+              ]
+            },
+            "required": false,
+            "description": "Last day (UTC, `YYYY-MM-DD`), included; default today.",
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The sub-account's stats.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubaccountStats"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No sub-account with this id or uid exists in the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A query parameter failed validation (`validation_error`), or `from` is after `to` (`invalid_range`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

@@ -13,6 +13,7 @@ const entry: SuppressionOutput = {
   scope: "*",
   reason: "bounce",
   email_id: "email_01k5f9yq8re8vb6q2wmz0tb2xe",
+  subaccount_id: null,
   created_at: "2026-10-09T12:00:00.000Z",
 };
 

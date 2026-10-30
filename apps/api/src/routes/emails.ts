@@ -5,6 +5,7 @@ import {
   listEmailEvents,
   listEmailLinks,
   listEmailSummariesPage,
+  requireSubaccount,
 } from "@coss/email";
 import {
   DEFAULT_EMAIL_LIST_LIMIT,
@@ -18,9 +19,8 @@ import {
   RescheduleEmailRequest,
   SendEmailBatchRequest,
   SendEmailRequest,
-  uniqueRecipientCount,
 } from "@coss/email/schemas";
-import { emailSendQuota } from "@coss/ratelimit";
+import { consumeAll, refundAll } from "@coss/ratelimit";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
@@ -32,6 +32,7 @@ import { rateLimit, rateLimitError } from "../middleware/rate-limit.ts";
 import { markEmailContent } from "../middleware/request-log.ts";
 import type { AppEnv } from "../types.ts";
 import { billingErrorDoc, commonErrors, errorDoc, jsonDoc, requestIdHeader } from "./docs.ts";
+import { sendQuotaRequests } from "./email-quota.ts";
 import {
   IDEMPOTENCY_KEY_MAX_LENGTH,
   idempotencyHeaders,
@@ -415,9 +416,9 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         params,
         idempotencyKey,
       };
-      const quota = emailSendQuota(c.var.auth, uniqueRecipientCount(params));
-      const decision = await c.var.rateLimiter.consume(quota);
-      if (!decision.allowed) {
+      const quota = await sendQuotaRequests(c.var.auth, [params]);
+      const decision = await consumeAll(c.var.rateLimiter, quota);
+      if (decision) {
         // A matching replay (queued or completed) needs no quota. This lookup cannot create or dispatch a send.
         const replay = await emailService.replay(input);
         if (replay) {
@@ -438,14 +439,14 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         result = await emailService.send(input);
       } catch (error) {
         // Rejected before anything was sent (validation, domain, idempotency conflicts).
-        await c.var.rateLimiter.refund(quota);
+        await refundAll(c.var.rateLimiter, quota);
         throw error;
       }
       const { email, replayed } = result;
       markEmailContent(c, [email]);
       // A replay sent nothing new (an SDK retry reuses its Idempotency-Key).
       if (replayed) {
-        await c.var.rateLimiter.refund(quota);
+        await refundAll(c.var.rateLimiter, quota);
         c.header("Idempotent-Replayed", "true");
       }
       return c.json(email, 202);
@@ -470,10 +471,9 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         idempotencyKey,
       };
       // Charged as one: the batch is accepted or refused as a whole.
-      const recipients = emails.reduce((sum, params) => sum + uniqueRecipientCount(params), 0);
-      const quota = emailSendQuota(c.var.auth, recipients);
-      const decision = await c.var.rateLimiter.consume(quota);
-      if (!decision.allowed) {
+      const quota = await sendQuotaRequests(c.var.auth, emails);
+      const decision = await consumeAll(c.var.rateLimiter, quota);
+      if (decision) {
         const replay = await emailService.replayBatch(input);
         if (replay) {
           markEmailContent(c, replay.data);
@@ -492,13 +492,13 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       try {
         result = await emailService.sendBatch(input);
       } catch (error) {
-        await c.var.rateLimiter.refund(quota);
+        await refundAll(c.var.rateLimiter, quota);
         throw error;
       }
       const { batch, replayed } = result;
       markEmailContent(c, batch.data);
       if (replayed) {
-        await c.var.rateLimiter.refund(quota);
+        await refundAll(c.var.rateLimiter, quota);
         c.header("Idempotent-Replayed", "true");
       }
       return c.json(batch, 202);
@@ -530,6 +530,15 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
   router.openapi(listEmailsRoute, async (c) => {
     const query = c.req.valid("query");
     const { organizationId, environmentId } = c.var.auth;
+    const subaccount =
+      query.subaccount === undefined
+        ? undefined
+        : await requireSubaccount({
+            organizationId,
+            environmentId,
+            ref: query.subaccount,
+            param: "subaccount",
+          });
     const page = await listEmailSummariesPage({
       organizationId,
       environmentId,
@@ -540,6 +549,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
       query: query.q,
       category: query.category,
       batchId: query.batch_id,
+      subaccountId: subaccount?.id,
       createdAfter: query.created_after ? new Date(query.created_after) : undefined,
       createdBefore: query.created_before ? new Date(query.created_before) : undefined,
       before: query.after,

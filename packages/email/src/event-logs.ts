@@ -63,6 +63,7 @@ export function emailEventLogEntries(
     from: string;
     subject: string;
     category: string | null;
+    subaccountId?: string | null;
   },
   provider: { provider: string; providerEventType: string },
   rows: readonly {
@@ -94,6 +95,7 @@ export function emailEventLogEntries(
       from: target.from,
       subject: target.subject,
       ...(target.category ? { category: target.category } : {}),
+      ...(target.subaccountId ? { subaccount_id: target.subaccountId } : {}),
       ...row.details,
     },
   }));

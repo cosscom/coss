@@ -63,6 +63,7 @@ export const COSS_HEADERS = {
   scheduledAt: "x-coss-scheduled-at",
   tracking: "x-coss-tracking",
   idempotencyKey: "x-coss-idempotency-key",
+  subaccount: "x-coss-subaccount",
 } as const;
 
 const COSS_HEADER_NAMES: ReadonlySet<string> = new Set(Object.values(COSS_HEADERS));
@@ -318,6 +319,8 @@ export async function messageToSendRequest(input: {
   };
   const category = headerOf(COSS_HEADERS.category);
   if (category !== undefined) request.category = unfold(category);
+  const subaccount = headerOf(COSS_HEADERS.subaccount);
+  if (subaccount !== undefined) request.subaccount = unfold(subaccount).trim();
   const tags = headerOf(COSS_HEADERS.tags);
   if (tags !== undefined) {
     const parsed = parseTags(unfold(tags));

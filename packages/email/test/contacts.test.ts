@@ -43,6 +43,7 @@ import {
 import { ContactError } from "../src/errors.ts";
 import { getMarketingSettings, updateMarketingSettings } from "../src/marketing-settings.ts";
 import { createSegment, deleteSegment, previewSegmentContacts } from "../src/segments.ts";
+import { createSubaccount } from "../src/subaccounts.ts";
 import { addSuppression } from "../src/suppressions.ts";
 import { createTopic, deleteTopic } from "../src/topics.ts";
 
@@ -761,6 +762,12 @@ describe("recipient resolution", () => {
     await addSuppression(env, { address: "bounced@example.com", scope: "*" });
     await addSuppression(env, { address: "complained@example.com", scope: "stream:marketing" });
     await addSuppression(env, { address: "category@example.com", scope: "news" });
+    // A sub-account's list is about its own mail: the environment's audience still has them.
+    const subaccount = await createSubaccount({ ...env, name: "A" });
+    await addSuppression(
+      { ...env, subaccountId: subaccount.id },
+      { address: "ok3@example.com", scope: "*" },
+    );
     const target = { audienceId: audience.id };
     const local = (list: { address: string }[]) => list.map((r) => r.address.split("@")[0]).sort();
 

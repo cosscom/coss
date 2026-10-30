@@ -253,6 +253,8 @@ function fromEmailError(error: EmailError): ApiError {
     case "account_suspended":
     case "marketing_paused":
     case "sandbox_only":
+    case "subaccount_disabled":
+    case "subaccount_paused":
       return new ApiError(error.status, {
         type: "permission_error",
         code: error.code,
@@ -290,6 +292,8 @@ function fromEmailError(error: EmailError): ApiError {
       });
     case "mailing_address_required":
       return invalidRequest(error.code, error.message, error.param ?? "stream");
+    case "subaccount_not_found":
+      return invalidRequest(error.code, error.message, error.param ?? "subaccount");
   }
 }
 

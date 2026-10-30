@@ -232,6 +232,7 @@ describe("coss-mcp server", () => {
           scope: "*",
           reason: "bounce",
           email_id: "email_new",
+          subaccount_id: null,
           created_at: NOW.toISOString(),
         },
       ]),

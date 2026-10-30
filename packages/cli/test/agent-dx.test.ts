@@ -58,6 +58,7 @@ function email(): Email {
     batch_id: null,
     template: null,
     broadcast_id: null,
+    subaccount_id: null,
     content_storage: { mode: "store", discarded_at: null },
   };
 }

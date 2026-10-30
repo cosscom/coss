@@ -210,6 +210,11 @@ export interface SendEmailBaseParams {
    * `{{{preferences_url}}}` and `{{{mailing_address}}}`).
    */
   stream?: EmailStream;
+  /**
+   * Send for one of your sub-accounts (email for platforms): its id or your `uid` for it. The email
+   * counts toward its quotas and reputation and skips its suppressions. Transactional only.
+   */
+  subaccount?: string;
 }
 
 /** A send with its own subject and body. */
@@ -362,6 +367,8 @@ export interface Email {
   template: EmailTemplateReference | null;
   /** The broadcast the email is part of; `null` for any other email. */
   broadcast_id: string | null;
+  /** The sub-account the email was sent for; `null` if it was sent for none. */
+  subaccount_id: string | null;
   content_storage: EmailContentStorage;
 }
 
@@ -382,6 +389,8 @@ export interface ListEmailsParams {
   category?: string;
   /** Only the emails of this batch. */
   batch_id?: string;
+  /** Only the emails sent for this sub-account (its id or your uid). */
+  subaccount?: string;
   /** Only emails created at or after this time. */
   created_after?: Date | string;
   /** Only emails created before this time. */

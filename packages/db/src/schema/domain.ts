@@ -323,6 +323,12 @@ export const email = pgTable(
     // Handed to the provider through the organization's dedicated IP pool (set at claim): metered
     // as `email.dedicated_ip` too, and its deliveries counted per sending IP.
     dedicatedPool: boolean("dedicated_pool").notNull().default(false),
+    // Email for platforms: the sub-account it was sent for (its quotas, suppressions and
+    // reputation). No FK, like `api_key_id`: emails outlive a deleted sub-account.
+    subaccountId: text("subaccount_id"),
+    // Handed to the provider through the sub-account's own tenant (set at claim: the From domain
+    // was the sub-account's); else the organization's.
+    subaccountTenant: boolean("subaccount_tenant").notNull().default(false),
   },
   (t) => [
     foreignKey({
@@ -352,6 +358,10 @@ export const email = pgTable(
       t.organizationId,
       sql`coalesce(${t.sentAt}, ${t.createdAt})`,
     ),
+    // The same scan per sub-account (its reputation), and its emails newest first.
+    index("email_subaccount_send_time_idx")
+      .on(t.subaccountId, sql`coalesce(${t.sentAt}, ${t.createdAt})`)
+      .where(sql`${t.subaccountId} is not null`),
     // Due-scan for scheduled sends (`dispatchDue`, every 5 s): only rows still waiting, so the
     // scan never walks emails already sent or immediate sends with a past time.
     index("email_scheduled_due_idx").on(t.scheduledAt).where(sql`${t.status} = 'scheduled'`),
@@ -524,7 +534,9 @@ export type EmailSuppressionReason = (typeof emailSuppressionReason.enumValues)[
 
 /**
  * An environment's suppression list: sends skip a recipient whose address has an entry with scope
- * `*` or with the email's category. Permanent bounces and complaints add `*` entries.
+ * `*` or with the email's category. Permanent bounces and complaints add `*` entries. Each
+ * sub-account has its own list (`subaccount_id`): its sends skip its entries and the
+ * environment's own (`subaccount_id` NULL), and its bounces and complaints go on its list only.
  */
 export const emailSuppression = pgTable(
   "email_suppression",
@@ -543,6 +555,7 @@ export const emailSuppression = pgTable(
     reason: emailSuppressionReason("reason").notNull(),
     // The email whose bounce or complaint added the entry. No FK: the entry outlives the email.
     emailId: text("email_id"),
+    subaccountId: text("subaccount_id"),
     createdAt: createdAt(),
   },
   (t) => [
@@ -551,11 +564,17 @@ export const emailSuppression = pgTable(
       columns: [t.environmentId, t.organizationId],
       foreignColumns: [environment.id, environment.organizationId],
     }).onDelete("cascade"),
-    unique("email_suppression_environment_address_scope_unique").on(
-      t.environmentId,
-      t.address,
-      t.scope,
-    ),
+    foreignKey({
+      name: "email_suppression_subaccount_fk",
+      columns: [t.subaccountId, t.organizationId],
+      foreignColumns: [emailSubaccount.id, emailSubaccount.organizationId],
+    }).onDelete("cascade"),
+    unique("email_suppression_environment_subaccount_address_scope_unique")
+      .on(t.environmentId, t.subaccountId, t.address, t.scope)
+      .nullsNotDistinct(),
+    index("email_suppression_subaccount_sequence_idx")
+      .on(t.subaccountId, t.createdAt.desc(), t.sequence.desc())
+      .where(sql`${t.subaccountId} is not null`),
     index("email_suppression_environment_sequence_idx").on(
       t.environmentId,
       t.createdAt.desc(),

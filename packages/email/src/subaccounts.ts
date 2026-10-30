@@ -7,16 +7,17 @@ import type { PlanGate } from "@coss/billing/gate";
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
 import { and, asc, count, desc, eq, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
-import { isUniqueViolation } from "./domains.ts";
-import { SubaccountError } from "./errors.ts";
+import { EmailError, SubaccountError } from "./errors.ts";
 import {
   DEFAULT_SUBACCOUNT_LIST_LIMIT,
   MAX_SUBACCOUNT_LIST_LIMIT,
+  MAX_SUBACCOUNT_STATS_DAYS,
   type SubaccountOutput,
+  type SubaccountStatsOutput,
   subaccountUidProblem,
 } from "./subaccount-schemas.ts";
 
-const { emailSubaccount, environment } = schema;
+const { email, emailRecipient, emailSubaccount, environment } = schema;
 
 export type SubaccountRow = typeof emailSubaccount.$inferSelect;
 
@@ -56,6 +57,11 @@ export function toSubaccountObject(row: SubaccountRow): SubaccountOutput {
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
   };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string } }).cause;
+  return (error as { code?: string }).code === "23505" || cause?.code === "23505";
 }
 
 function assertUid(uid: string | null | undefined): void {
@@ -464,6 +470,128 @@ export async function runDueSubaccountDeletions(
     }
   }
   return deleted;
+}
+
+/** Refuses sends of a sub-account its customer turned off or its reputation paused. */
+export function assertSubaccountSends(row: SubaccountRow): void {
+  if (row.status === "deleting") {
+    throw new EmailError("subaccount_not_found", "Sub-account not found.");
+  }
+  if (row.status === "disabled") {
+    throw new EmailError(
+      "subaccount_disabled",
+      'This sub-account is disabled: turn it back on (`status: "active"`) to send for it.',
+    );
+  }
+  if (row.reputationStatus === "paused") {
+    throw new EmailError(
+      "subaccount_paused",
+      "Live sending is paused for this sub-account because of its sending reputation " +
+        `(${row.reputationTrigger ?? "reputation"}). Reinstate it once the cause is fixed.`,
+    );
+  }
+}
+
+/**
+ * The sub-account a send names (`ref`: an id or a uid of the environment), if it may send. A
+ * missing one is a field at fault (`subaccount_not_found`, 422), not a missing resource.
+ */
+export async function sendingSubaccount(
+  input: { organizationId: string; environmentId: string; ref: string; param?: string },
+  executor: Executor = db,
+): Promise<SubaccountRow> {
+  const row = await findSubaccount(input, executor);
+  if (!row || row.status === "deleting") {
+    throw new EmailError(
+      "subaccount_not_found",
+      `No sub-account "${input.ref}" exists in this environment.`,
+      { param: input.param ?? "subaccount" },
+    );
+  }
+  assertSubaccountSends(row);
+  return row;
+}
+
+/** At a scheduled send's claim: the sub-account it was accepted for may still send. */
+export async function assertSubaccountStillSends(
+  organizationId: string,
+  subaccountId: string,
+): Promise<void> {
+  const row = await getSubaccount({ organizationId, id: subaccountId });
+  if (!row) throw new EmailError("subaccount_not_found", "The sub-account no longer exists.");
+  assertSubaccountSends(row);
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * The sub-account's sending per UTC day (by when each email was sent, else created), counted from
+ * its emails' recipients as they are now, so a later bounce moves its day's numbers. Emails are
+ * kept `MAX_SUBACCOUNT_STATS_DAYS` days, so the range is cut to that.
+ */
+export async function subaccountStats(input: {
+  organizationId: string;
+  subaccountId: string;
+  from?: string;
+  to?: string;
+  now?: Date;
+}): Promise<SubaccountStatsOutput> {
+  const now = input.now ?? new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const to = Math.min(input.to ? Date.parse(`${input.to}T00:00:00Z`) : today, today);
+  const earliest = today - (MAX_SUBACCOUNT_STATS_DAYS - 1) * DAY_MS;
+  const from = Math.max(
+    input.from ? Date.parse(`${input.from}T00:00:00Z`) : to - 29 * DAY_MS,
+    earliest,
+  );
+  const day = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  if (from > to) {
+    throw new SubaccountError("invalid_range", "`from` must not be after `to`.", {
+      param: "from",
+    });
+  }
+  const sendTime = sql`coalesce(${email.sentAt}, ${email.createdAt})`;
+  const counted = (statuses: string[]) =>
+    sql<number>`count(*) filter (where ${emailRecipient.status} in (${sql.join(
+      statuses.map((status) => sql`${status}`),
+      sql`, `,
+    )}))::int`;
+  const rows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${sendTime}, 'UTC'), 'YYYY-MM-DD')`,
+      recipients: sql<number>`count(*)::int`,
+      sent: counted(["sent", "delivery_delayed", "delivered", "bounced", "complained"]),
+      delivered: counted(["delivered", "complained"]),
+      bounced: counted(["bounced"]),
+      complained: counted(["complained"]),
+      failed: counted(["failed"]),
+      suppressed: counted(["suppressed"]),
+    })
+    .from(email)
+    .innerJoin(
+      emailRecipient,
+      and(
+        eq(emailRecipient.emailId, email.id),
+        eq(emailRecipient.organizationId, email.organizationId),
+      ),
+    )
+    .where(
+      and(
+        eq(email.subaccountId, input.subaccountId),
+        eq(email.organizationId, input.organizationId),
+        sql`${sendTime} >= ${new Date(from).toISOString()}::timestamptz`,
+        sql`${sendTime} < ${new Date(to + DAY_MS).toISOString()}::timestamptz`,
+      ),
+    )
+    .groupBy(sql`1`)
+    .orderBy(sql`1`);
+  return {
+    object: "subaccount_stats",
+    subaccount_id: input.subaccountId,
+    from: day(from),
+    to: day(to),
+    data: rows,
+  };
 }
 
 /** Whether the organization has live sub-accounts (not being deleted): what the plan pays for. */

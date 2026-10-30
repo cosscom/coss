@@ -147,6 +147,8 @@ import type {
   ListSubaccountsQuery,
   Subaccount,
   SubaccountList,
+  SubaccountStats,
+  SubaccountStatsQuery,
   UpdateSubaccountRequest,
 } from "@coss/email/subaccount-schemas";
 import type {
@@ -388,6 +390,7 @@ import type {
   Segment as SdkSegment,
   StorageSettings as SdkStorageSettings,
   Subaccount as SdkSubaccount,
+  SubaccountStats as SdkSubaccountStats,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -406,6 +409,7 @@ import type {
   SendEmailContentParams,
   SendEmailTemplateParams,
   SendTestWebhookEventParams,
+  SubaccountStatsParams,
   TestBroadcastParams,
   TrackingOptions,
   UpdateBroadcastParams,
@@ -950,6 +954,8 @@ export type BroadcastContract = [
 ];
 
 export type SubaccountContract = [
+  Assert<MutuallyAssignable<z.output<typeof SubaccountStats>, SdkSubaccountStats>>,
+  Assert<MutuallyAssignable<z.output<typeof SubaccountStatsQuery>, SubaccountStatsParams>>,
   Assert<MutuallyAssignable<z.output<typeof Subaccount>, SdkSubaccount>>,
   Assert<MutuallyAssignable<z.output<typeof SubaccountList>, List<SdkSubaccount>>>,
   Assert<MutuallyAssignable<z.input<typeof CreateSubaccountRequest>, CreateSubaccountParams>>,

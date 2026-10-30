@@ -6,6 +6,8 @@
  * - Transactional email: suppressions (`*`, the category), plus contacts who explicitly opted
  *   out of the topic whose key is the email's category. A contact's overall `unsubscribed` status
  *   is about marketing and never stops a password reset.
+ * - Email sent for a sub-account: its suppressions and the environment's, never contacts (they
+ *   are the environment's own audience).
  * - Marketing email: suppressions (`*`, `stream:marketing`, the category), plus contacts that
  *   aren't `subscribed` and contacts the topic doesn't reach (no opt-out of an opt-in topic; an
  *   opt-in to an opt-out topic). Addresses that are no contact are sent (the sender vouches for
@@ -45,7 +47,9 @@ export async function skippedRecipients(
     skips.set(address, { kind: "suppressed", entry });
   }
   const remaining = addresses.filter((address) => !skips.has(address));
-  if (remaining.length === 0) return skips;
+  // Contacts are the environment's own audience: a sub-account's mail answers only to its
+  // suppressions (and the environment's).
+  if (remaining.length === 0 || env.subaccountId) return skips;
   const marketing = opts.stream === "marketing";
   const [topicRow] = opts.category
     ? await tx

@@ -295,6 +295,7 @@ describe("GET /openapi.json", () => {
       "/v1/storage_settings",
       "/v1/subaccounts",
       "/v1/subaccounts/{subaccount}",
+      "/v1/subaccounts/{subaccount}/stats",
       "/v1/suppressions",
       "/v1/suppressions/check",
       "/v1/suppressions/export",

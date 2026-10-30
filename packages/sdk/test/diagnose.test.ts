@@ -52,6 +52,7 @@ describe("diagnoseEmail", () => {
               scope: "*",
               reason: "bounce",
               email_id: "email_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              subaccount_id: null,
               created_at: "2026-10-15T11:59:03.000Z",
             },
           ],

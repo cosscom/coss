@@ -623,6 +623,8 @@ export {
   type SubaccountQuotasInput,
   type SubaccountRow,
   searchSubaccounts,
+  sendingSubaccount,
+  subaccountStats,
   toSubaccountObject,
   updateSubaccount,
 } from "./subaccounts.ts";

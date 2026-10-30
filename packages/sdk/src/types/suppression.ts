@@ -21,6 +21,8 @@ export interface Suppression {
   reason: SuppressionReason;
   /** The email whose bounce or complaint added this entry. */
   email_id: string | null;
+  /** The sub-account whose list it is on; `null` for the environment's own list. */
+  subaccount_id: string | null;
   /** ISO 8601 timestamp. */
   created_at: string;
 }
@@ -31,10 +33,14 @@ export interface CreateSuppressionParams {
   address: string;
   /** `"*"` (the default) suppresses every email; a category only suppresses those emails. */
   scope?: string;
+  /** A sub-account's own list (its id or your uid) instead of the environment's. */
+  subaccount?: string;
 }
 
 /** Query of `GET /v1/suppressions`. */
 export interface ListSuppressionsParams {
+  /** A sub-account's own list (its id or your uid) instead of the environment's. */
+  subaccount?: string;
   address?: string;
   scope?: string;
   /** 1-100, default 50. */
@@ -50,6 +56,8 @@ export interface CheckSuppressionParams {
   category?: string;
   /** The stream of the email you plan to send; `marketing` also counts `"stream:marketing"`. */
   stream?: "transactional" | "marketing";
+  /** The sub-account you plan to send for (its id or your uid): its own entries count too. */
+  subaccount?: string;
 }
 
 /** Whether a send would skip an address. */
@@ -77,6 +85,8 @@ export interface ImportSuppressionEntry {
 
 /** Input of `coss.email.suppressions.import()`; the SDK sends 1,000 entries per request. */
 export interface ImportSuppressionsParams {
+  /** A sub-account's own list (its id or your uid) instead of the environment's. */
+  subaccount?: string;
   suppressions: ImportSuppressionEntry[];
 }
 
@@ -93,6 +103,8 @@ export interface SuppressionImport {
 
 /** Query of `GET /v1/suppressions/export`. */
 export interface ExportSuppressionsParams {
+  /** A sub-account's own list (its id or your uid) instead of the environment's. */
+  subaccount?: string;
   scope?: string;
   reason?: SuppressionReason;
 }
