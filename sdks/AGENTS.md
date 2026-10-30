@@ -17,7 +17,9 @@ run locally (`fern generate --local`: Docker, no Fern account). MIT licensed (ea
 
 End to end: `bun run --cwd apps/api serve:test` prints `{ base_url, sandbox_key, … }`; each SDK's
 e2e test reads it from `COSS_E2E` (that JSON) and is skipped without it, like the drivers'.
-CI's `sdks` job runs all of this on the oldest and newest runtime of each.
+CI's `sdks` job runs all of this on the oldest and newest runtime of each: for an SDK whose directory, the
+API's contract (`apps/api/openapi.json`, `apps/api/test/serve.ts`) or `integrations/conformance/webhooks.json`
+changed, and for all of them nightly.
 
 ## How they're made
 
