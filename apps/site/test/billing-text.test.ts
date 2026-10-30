@@ -17,7 +17,7 @@ describe("renderBillingComponents", () => {
     expect(text).toContain(
       "| Email | $0.40 per 1,000 recipients for the first 1,000,000; $0.30 per 1,000 recipients from 1,000,001 to 10,000,000; $0.22 per 1,000 recipients beyond 10,000,000 | |",
     );
-    expect(text).toContain("| SMS (US) | $0.0135 per segment | |");
+    expect(text).toContain("| SMS (US) | $0.0142 per segment | |");
     expect(text).toContain(
       "| SMS (other countries) | $0.0208 to $0.1134 per segment | By country: coss.com/pricing#sms |",
     );
@@ -45,7 +45,7 @@ describe("renderBillingComponents", () => {
 
   test("renders one product's rates", () => {
     const text = renderBillingComponents('<UsageRates product="sms" />');
-    expect(text).toContain("| SMS (US) | $0.0135 per segment | |");
+    expect(text).toContain("| SMS (US) | $0.0142 per segment | |");
     expect(text).toContain("| SMS phone numbers (toll-free) | $2.15 per number-month | |");
     expect(text).not.toContain("| Email |");
     expect(text).not.toContain("<UsageRates");

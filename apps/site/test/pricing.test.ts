@@ -77,7 +77,7 @@ test("rateTables lists every product's list rates", () => {
   expect(tables.find((table) => table.meter === "sms.segments")).toMatchObject({
     scope: "United States",
     per: "per segment",
-    bands: [{ range: "All usage", price: "$0.0135" }],
+    bands: [{ range: "All usage", price: "$0.0142" }],
     note: "Other countries in the SMS rates below",
   });
   expect(tables.filter((table) => table.meter === "sms.segments")).toHaveLength(1);
@@ -106,7 +106,7 @@ test("smsRates lists every priced country by name", () => {
     inbound: null,
   });
   expect(rates.find((rate) => rate.code === "US")).toMatchObject({
-    outbound: "$0.0135",
+    outbound: "$0.0142",
     inbound: "$0.0148",
   });
 });
