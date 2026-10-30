@@ -696,6 +696,21 @@ export const SMS_USE_CASE_LABELS: Record<(typeof SMS_USE_CASES)[number], string>
   LOW_VOLUME: "Low volume mixed (under 2,000 segments a day)",
 };
 
+/** Toll-free verification's `MessageVolume`: Twilio accepts only these, written exactly so. */
+export const SMS_MONTHLY_VOLUMES = [
+  "10",
+  "100",
+  "1,000",
+  "10,000",
+  "100,000",
+  "250,000",
+  "500,000",
+  "750,000",
+  "1,000,000",
+  "5,000,000",
+  "10,000,000+",
+] as const;
+
 export const SMS_COMPANY_TYPES = ["PRIVATE_PROFIT", "PUBLIC_PROFIT", "NON_PROFIT"] as const;
 
 const Text = (max: number) => z.string().trim().min(1, "Required.").max(max);
@@ -743,7 +758,7 @@ export const SmsCampaignInput = z.object({
   hasEmbeddedLinks: z.boolean(),
   hasEmbeddedPhone: z.boolean(),
   optInProofUrl: z.url().nullish(),
-  monthlyVolume: z.string().trim().max(32).nullish(),
+  monthlyVolume: z.enum(SMS_MONTHLY_VOLUMES).nullish(),
 });
 
 export const SmsRegistrationInput = z
