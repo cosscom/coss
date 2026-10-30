@@ -220,16 +220,22 @@ type RunWithJobs = { run: GitHubRun; jobs: GitHubJob[]; phase: DeployPhase };
 
 /**
  * Jobs read, by run id and attempt. A finished run's never change, and the page refreshes itself
- * while a run is active (an installation token gets 5,000 requests an hour); an active run's last
- * read stands in when GitHub doesn't answer the next one, so one failed read doesn't blank the page.
+ * while a run is active (an installation token gets 5,000 requests an hour); for the pages, an
+ * active run's last read stands in when GitHub doesn't answer the next one, so one failed read
+ * doesn't blank them.
  */
 const readJobs = new Map<string, { jobs: GitHubJob[]; finished: boolean }>();
 
 /**
  * A run's jobs and what it is doing: its latest attempt's, or an earlier `attempt`'s (finished,
- * so cached; its phase is then read against the latest attempt's status).
+ * so cached; its phase is then read against the latest attempt's status). `fresh`: never an
+ * active run's previous read (what decides a cancellation must not be out of date).
  */
-async function withJobs(run: GitHubRun, attempt?: number): Promise<RunWithJobs> {
+async function withJobs(
+  run: GitHubRun,
+  attempt?: number,
+  { fresh = false }: { fresh?: boolean } = {},
+): Promise<RunWithJobs> {
   const latest = run.run_attempt ?? 1;
   const key = `${run.id}:${attempt ?? latest}`;
   const known = readJobs.get(key);
@@ -242,7 +248,7 @@ async function withJobs(run: GitHubRun, attempt?: number): Promise<RunWithJobs> 
         : `${REPO}/actions/runs/${run.id}/attempts/${attempt}/jobs?per_page=30`,
     ));
   } catch (error) {
-    if (!known || !(error instanceof GitHubError)) throw error;
+    if (fresh || !known || !(error instanceof GitHubError)) throw error;
     console.warn(`[web] Showing deploy run ${run.id}'s previous jobs:`, error.message);
     return { run, jobs: known.jobs, phase: deployRunPhase(run, known.jobs) };
   }
@@ -255,11 +261,11 @@ async function withJobs(run: GitHubRun, attempt?: number): Promise<RunWithJobs> 
   return { run, jobs, phase: deployRunPhase(run, jobs) };
 }
 
-async function recentRuns(): Promise<RunWithJobs[]> {
+async function recentRuns(options?: { fresh?: boolean }): Promise<RunWithJobs[]> {
   const { workflow_runs: runs } = await github<{ workflow_runs: GitHubRun[] }>(
     `${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&per_page=${RUNS_SHOWN}`,
   );
-  return Promise.all(runs.map((run) => withJobs(run)));
+  return Promise.all(runs.map((run) => withJobs(run, undefined, options)));
 }
 
 async function mainSha(): Promise<string> {
@@ -405,10 +411,10 @@ async function readDeployOverview(): Promise<DeployOverview> {
   };
 }
 
-/** Push runs that haven't reached their deploy job. */
+/** Push runs that haven't reached their deploy job, by jobs read now (never a previous read). */
 async function pendingPushRuns(): Promise<Set<number>> {
   return new Set(
-    (await recentRuns())
+    (await recentRuns({ fresh: true }))
       .filter(({ run, phase }) => run.event === "push" && CANCELABLE_PHASES.includes(phase))
       .map(({ run }) => run.id),
   );
