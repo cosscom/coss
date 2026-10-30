@@ -99,7 +99,7 @@ func TestE2EReads(t *testing.T) {
 		"billing.get":           func() error { _, err := client.Billing.Get(ctx); return err },
 		"logs.list":             func() error { _, err := client.Logs.List(ctx, &coss.ListLogsRequest{}); return err },
 		"auditEvents.list":      func() error { _, err := client.AuditEvents.List(ctx, &coss.ListAuditEventsRequest{}); return err },
-		"domains.list":          func() error { _, err := client.Domains.List(ctx); return err },
+		"domains.list":          func() error { _, err := client.Domains.List(ctx, &coss.ListDomainsRequest{}); return err },
 		"webhookEndpoints.list": func() error { _, err := client.WebhookEndpoints.List(ctx); return err },
 		"email.tracking.get":    func() error { _, err := client.Email.Tracking.Get(ctx); return err },
 		"risk.settings.get":     func() error { _, err := client.Risk.Settings.Get(ctx); return err },
