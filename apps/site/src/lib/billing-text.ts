@@ -25,7 +25,10 @@ function includedText(meter: MeterKey, n: number): string {
   if (meter === "email.inboxes") return `${Math.floor(n / 31).toLocaleString("en-US")} inboxes`;
   if (meter === "email.received") return `${n.toLocaleString("en-US")} received emails a month`;
   const { label, units } = METERS[meter];
-  return `${n.toLocaleString("en-US")} ${label.toLowerCase()} ${units} a month`;
+  // A label that already names the unit ("Form submissions") isn't followed by it again.
+  const name = label.toLowerCase();
+  const thing = name.endsWith(units) ? name : `${name} ${units}`;
+  return `${n.toLocaleString("en-US")} ${thing} a month`;
 }
 
 /** The plans and their features, as rows (shared by the MDX table and the Markdown for /llms*.txt). */

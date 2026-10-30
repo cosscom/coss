@@ -8,6 +8,10 @@ describe("renderBillingComponents", () => {
     expect(text).toContain(
       "| Price | Free | $25/month | $250/month | From $2,000/month, annual commitment |",
     );
+    // A label that names its unit isn't followed by it again.
+    expect(text).toContain("1,000 form submissions a month");
+    expect(text).not.toContain("submissions submissions");
+    expect(text).toContain("| Form submissions | $1.00 per 1,000 submissions | |");
     expect(text).toContain(
       "| Sending rate | 2 emails a second, 3,000 a day | 14 emails a second, 100,000 a day | 50 emails a second, 1,000,000 a day | Custom |",
     );
