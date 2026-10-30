@@ -157,6 +157,14 @@ const formsFilesBucket: EnvVar = {
     "Forms' bucket of uploaded files (Terraform output forms_files_bucket), with AWS_REGION. Unset: forms refuse uploads in production.",
 };
 
+const formsPublicUrl: EnvVar = {
+  name: "FORMS_PUBLIC_URL",
+  kind: "plain",
+  required: false,
+  description:
+    "Origin forms are served on (a registrable domain of its own, routed to the api service); endpoints are <FORMS_PUBLIC_URL>/f/<id>. Unset: Forms is off.",
+};
+
 const awsRegion: EnvVar = {
   name: "AWS_REGION",
   kind: "plain",
@@ -865,6 +873,8 @@ export const SERVICES: Service[] = [
       notificationsEnvironment,
       notificationsFrom,
       ...verifySms,
+      formsPublicUrl,
+      formsFilesBucket,
       riskHashKey,
       ...riskClassifier,
       ...riskIpPrivacy,

@@ -3388,6 +3388,189 @@
           }
         ]
       },
+      "FormSubmissionWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "form.submission.received",
+              "form.submission.flagged"
+            ],
+            "description": "`received`: a submission was accepted (at once, after the submitter confirmed, or released from review). `flagged`: Risk held it for review or refused it (honeypot catches send nothing)."
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version the payload is rendered in (your endpoint's version).",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "form_id": {
+                "type": "string"
+              },
+              "form_name": {
+                "type": "string"
+              },
+              "submission_id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending_confirmation",
+                  "accepted",
+                  "held",
+                  "spam"
+                ]
+              },
+              "data": {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                },
+                "description": "Field name → value; a field posted several times has an array."
+              },
+              "submitter_email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FormSubmissionFile"
+                },
+                "description": "Uploaded files (download them with the API; never their bytes here)."
+              },
+              "spam_reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "honeypot",
+                  "risk_block",
+                  "risk_review",
+                  "content",
+                  null
+                ]
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "form_id",
+              "form_name",
+              "submission_id",
+              "status",
+              "data",
+              "submitter_email",
+              "files",
+              "spam_reason",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01kd2m9a0b1c2d3e4f5g6h7j8p",
+            "object": "event",
+            "type": "form.submission.received",
+            "api_version": "2026-10-10",
+            "created_at": "2026-10-29T10:00:00.100Z",
+            "data": {
+              "form_id": "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+              "form_name": "Contact us",
+              "submission_id": "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+              "status": "accepted",
+              "data": {
+                "name": "Ada Lovelace",
+                "email": "ada@example.com",
+                "message": "Hello!"
+              },
+              "submitter_email": "ada@example.com",
+              "files": [],
+              "spam_reason": null,
+              "sandbox": false,
+              "occurred_at": "2026-10-29T10:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "FormSubmissionFile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "examples": [
+              "ffile_01kd2m9a0b1c2d3e4f5g6h7j8m"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Bytes."
+          }
+        },
+        "required": [
+          "id",
+          "field",
+          "filename",
+          "content_type",
+          "size"
+        ]
+      },
       "Environment": {
         "type": "object",
         "properties": {
@@ -8727,10 +8910,12 @@
                 "sign_request.expired",
                 "verification.approved",
                 "verification.failed",
-                "verification.blocked"
+                "verification.blocked",
+                "form.submission.received",
+                "form.submission.flagged"
               ]
             },
-            "maxItems": 71,
+            "maxItems": 73,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -9027,10 +9212,12 @@
                 "sign_request.expired",
                 "verification.approved",
                 "verification.failed",
-                "verification.blocked"
+                "verification.blocked",
+                "form.submission.received",
+                "form.submission.flagged"
               ]
             },
-            "maxItems": 71,
+            "maxItems": 73,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -9576,10 +9763,12 @@
                 "sign_request.expired",
                 "verification.approved",
                 "verification.failed",
-                "verification.blocked"
+                "verification.blocked",
+                "form.submission.received",
+                "form.submission.flagged"
               ]
             },
-            "maxItems": 71,
+            "maxItems": 73,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -9896,6 +10085,9 @@
               },
               {
                 "$ref": "#/components/schemas/VerificationWebhookEvent"
+              },
+              {
+                "$ref": "#/components/schemas/FormSubmissionWebhookEvent"
               }
             ],
             "description": "The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`."
@@ -10328,7 +10520,9 @@
               "sign_request.expired",
               "verification.approved",
               "verification.failed",
-              "verification.blocked"
+              "verification.blocked",
+              "form.submission.received",
+              "form.submission.flagged"
             ],
             "description": "The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },

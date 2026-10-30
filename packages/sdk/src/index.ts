@@ -265,6 +265,33 @@ export type {
 } from "./types/email-template.ts";
 export type { DeletedApiKey, Environment, NamedResource } from "./types/environment.ts";
 export type {
+  CreateFormParams,
+  DeletedForm,
+  DeletedFormSubmission,
+  Form,
+  FormCaptchaMode,
+  FormContactSettings,
+  FormField,
+  FormFieldInput,
+  FormFieldType,
+  FormFileSettings,
+  FormHostedSettings,
+  FormNotificationSettings,
+  FormOnReview,
+  FormSpamReason,
+  FormSpamSettings,
+  FormSubmission,
+  FormSubmissionFile,
+  FormSubmissionStatus,
+  FormSubmissionWebhookEvent,
+  FormSubmissionWebhookEventData,
+  FormSubmitterSettings,
+  FormWebhookEventType,
+  ListFormSubmissionsParams,
+  ListFormsParams,
+  UpdateFormParams,
+} from "./types/forms.ts";
+export type {
   CreateHookApplicationParams,
   CreateHookEndpointParams,
   CreateHookEventTypeParams,

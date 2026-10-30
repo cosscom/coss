@@ -897,6 +897,18 @@
           "description": "coss.com's shared numbers, comma-separated E.164, registered for one-time codes."
         },
         {
+          "name": "FORMS_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin forms are served on (a registrable domain of its own, routed to the api service); endpoints are <FORMS_PUBLIC_URL>/f/<id>. Unset: Forms is off."
+        },
+        {
+          "name": "FORMS_FILES_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Forms' bucket of uploaded files (Terraform output forms_files_bucket), with AWS_REGION. Unset: forms refuse uploads in production."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,

@@ -30,11 +30,15 @@ const OWN_LIMIT_PATCH = /^\/v1\/sign\/templates\/[^/]+$/;
 /** Inboxes' sends and replies, with attachments like `/v1/emails`. */
 const OWN_LIMIT_POST = /^\/v1\/inboxes\/[^/]+\/messages(\/[^/]+\/reply)?$/;
 
-/** The send and upload routes enforce their own, larger limit after authenticating the caller. */
+/**
+ * The send and upload routes enforce their own, larger limit after authenticating the caller;
+ * Forms' public endpoint (`/f/*`) its own too, answered with text rather than the envelope.
+ */
 export function hasOwnBodyLimit(c: Context): boolean {
   return (
     (c.req.method === "POST" &&
       (OWN_LIMIT_PATHS.has(c.req.path) || OWN_LIMIT_POST.test(c.req.path))) ||
+    c.req.path.startsWith("/f/") ||
     (c.req.method === "PATCH" && OWN_LIMIT_PATCH.test(c.req.path))
   );
 }

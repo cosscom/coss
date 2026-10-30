@@ -4,6 +4,7 @@
  */
 import type { ApiVersion } from "../api-version.ts";
 import type { EmailEventType } from "./email.ts";
+import type { FormWebhookEventType } from "./forms.ts";
 import type { InboxEventType } from "./inbox.ts";
 import type { SignWebhookEventType } from "./sign.ts";
 import type { ReceivedSmsEventType, SmsEventType } from "./sms.ts";
@@ -41,7 +42,8 @@ export type WebhookEventType =
   | SmsEventType
   | ReceivedSmsEventType
   | SignWebhookEventType
-  | VerifyWebhookEventType;
+  | VerifyWebhookEventType
+  | FormWebhookEventType;
 
 /** Why an endpoint is disabled. */
 export type WebhookEndpointDisabledReason = "manual" | "failing";

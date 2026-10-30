@@ -282,6 +282,17 @@ export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): Store
       sandbox: true,
       occurred_at: at,
     };
+  } else if (type.startsWith("form.")) {
+    const flagged = type === "form.submission.flagged";
+    data = {
+      ...base,
+      form_id: newId(ID_PREFIXES.form),
+      submission_id: newId(ID_PREFIXES.formSubmission),
+      status: flagged ? "held" : "accepted",
+      spam_reason: flagged ? "risk_review" : null,
+      sandbox: true,
+      occurred_at: at,
+    };
   } else if (type.startsWith("sms.")) {
     data = {
       ...base,
