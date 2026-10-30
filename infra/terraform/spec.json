@@ -171,11 +171,43 @@
           "description": "Sign's documents bucket (Terraform output sign_documents_bucket), with AWS_REGION. Unset: Sign is off in production."
         },
         {
+          "name": "FORMS_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin forms are served on (a registrable domain of its own, routed to the api service); endpoints are <FORMS_PUBLIC_URL>/f/<id>. Unset: Forms is off."
+        },
+        {
+          "name": "FORMS_FILES_BUCKET",
+          "kind": "plain",
+          "required": false,
+          "description": "Forms' bucket of uploaded files (Terraform output forms_files_bucket), with AWS_REGION. Unset: forms refuse uploads in production."
+        },
+        {
           "name": "RISK_HASH_KEY",
           "kind": "secret",
           "required": true,
           "value": "openssl rand -base64 32 (one per stage; changing it resets what risk remembers)",
           "description": "Keys the hashes behind risk's velocity, duplicate detection and fraud memory. Same value for web and api."
+        },
+        {
+          "name": "RISK_CLASSIFIER",
+          "kind": "plain",
+          "required": true,
+          "value": "ai",
+          "description": "Risk's content classification in live environments (off|fake|ai): SCREENING_MODEL through the AI Gateway."
+        },
+        {
+          "name": "SCREENING_MODEL",
+          "kind": "plain",
+          "required": false,
+          "value": "typesafe-ai/jev",
+          "description": "Vercel AI Gateway decision model id; any Gateway decision model works."
+        },
+        {
+          "name": "AI_GATEWAY_API_KEY",
+          "kind": "secret",
+          "required": true,
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening), api (risk's content classification) and web (screening hosted form pages)."
         },
         {
           "name": "NOTIFICATIONS_ENVIRONMENT_ID",
@@ -933,7 +965,7 @@
           "name": "AI_GATEWAY_API_KEY",
           "kind": "secret",
           "required": true,
-          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening) and api (risk's content classification)."
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening), api (risk's content classification) and web (screening hosted form pages)."
         },
         {
           "name": "RISK_IP_PRIVACY",
@@ -1300,7 +1332,7 @@
           "name": "AI_GATEWAY_API_KEY",
           "kind": "secret",
           "required": true,
-          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening) and api (risk's content classification)."
+          "description": "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker (content screening), api (risk's content classification) and web (screening hosted form pages)."
         },
         {
           "name": "WEBHOOK_SECRETS_KEY",

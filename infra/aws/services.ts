@@ -323,7 +323,7 @@ const screening: EnvVar[] = [
     required: true,
     description:
       "Vercel AI Gateway key (zero data retention on: needs a Pro or Enterprise team). Worker " +
-      "(content screening) and api (risk's content classification).",
+      "(content screening), api (risk's content classification) and web (screening hosted form pages).",
   },
 ];
 
@@ -623,7 +623,11 @@ export const SERVICES: Service[] = [
       portalPublicUrl,
       signPublicUrl,
       signDocumentsBucket,
+      formsPublicUrl,
+      formsFilesBucket,
       riskHashKey,
+      // Screens live hosted form pages published from the dashboard.
+      ...riskClassifier,
       notificationsEnvironment,
       {
         name: "SMTP_PUBLIC_HOST",

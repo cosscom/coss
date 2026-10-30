@@ -1,9 +1,11 @@
 import { billingEnvShape } from "@coss/billing/env";
 import { emailEnvShape } from "@coss/email/env";
+import { formsPublicEnvShape, formsStoreEnvShape } from "@coss/forms/env";
 import { hookEnvShape } from "@coss/hooks/env";
 import { sentryEnvShape } from "@coss/observability/env";
 import { rateLimitEnvShape } from "@coss/ratelimit/env";
 import { riskEnvShape } from "@coss/risk/env";
+import { screeningEnvShape } from "@coss/screening/env";
 import { signStoreEnvShape } from "@coss/sign/env";
 import { smsEnvShape } from "@coss/sms/env";
 import { webhookEnvShape } from "@coss/webhooks/env";
@@ -49,9 +51,17 @@ export const env = createEnv({
         ? z.url().optional()
         : z.url().default("http://localhost:3004"),
     SIGN_DOCUMENTS_BUCKET: signStoreEnvShape.SIGN_DOCUMENTS_BUCKET,
+    // Forms: where forms are served (endpoints, hosted pages; unset in production: Forms is off)
+    // and their uploads (S3, with AWS_REGION).
+    ...formsPublicEnvShape,
+    FORMS_FILES_BUCKET: formsStoreEnvShape.FORMS_FILES_BUCKET,
     // Keys risk's memory; the dashboard hashes identifiers when it records feedback. Required in
     // production (src/instrumentation.ts).
     ...riskEnvShape,
+    // With RISK_CLASSIFIER=ai, live hosted form pages are screened when published here too
+    // (SCREENING_MODEL through the AI Gateway), as through the API.
+    SCREENING_MODEL: screeningEnvShape.SCREENING_MODEL,
+    AI_GATEWAY_API_KEY: screeningEnvShape.AI_GATEWAY_API_KEY,
     // Payment provider of new billing accounts (`fake` or `stripe`), Checkout and the Customer
     // Portal; the Stripe webhook route verifies signatures with STRIPE_WEBHOOK_SECRET.
     ...billingEnvShape,

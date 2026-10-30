@@ -1,3 +1,4 @@
+export * from "./admin.ts";
 export * from "./deliveries.ts";
 export * from "./emails.ts";
 export * from "./errors.ts";

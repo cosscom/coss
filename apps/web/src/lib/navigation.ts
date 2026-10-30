@@ -5,6 +5,7 @@ import {
   BoxesIcon,
   BuildingIcon,
   CableIcon,
+  ClipboardListIcon,
   ContactRoundIcon,
   CreditCardIcon,
   DatabaseIcon,
@@ -107,6 +108,10 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
     ],
   },
   {
+    label: "Forms",
+    items: [{ label: "Forms", path: "/forms", icon: ClipboardListIcon }],
+  },
+  {
     label: "Marketing",
     items: [
       { label: "Broadcasts", path: "/broadcasts", icon: SendIcon },
@@ -198,6 +203,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: "Emails", path: "/emails", icon: MailIcon },
   { label: "SMS", path: "/sms", icon: MessageSquareIcon },
   { label: "Screening", path: "/screening", icon: ScanSearchIcon },
+  { label: "Forms", path: "/forms", icon: ClipboardListIcon },
   { label: "Audit log", path: "/audit", icon: HistoryIcon },
   { label: "Reputation", path: "/reputation", icon: GaugeIcon },
   { label: "Billing", path: "/billing", icon: CreditCardIcon },
@@ -243,6 +249,9 @@ export function segmentLabel(segment: string): string | undefined {
 const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
   sms: "SMS",
+  forms: "Forms",
+  builder: "Fields and page",
+  submissions: "Submissions",
   sign: "Sign",
   verify: "Verify",
   register: "Register",
