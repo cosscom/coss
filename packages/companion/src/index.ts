@@ -367,7 +367,7 @@ export type MobileReceivedSms = {
 
 export type ReceivedSmsListResponse = Page<MobileReceivedSms>;
 
-export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "sign";
+export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "sign" | "verify";
 export type LogLevel = "info" | "warning" | "error";
 export type LogRange = "1h" | "24h" | "7d";
 
@@ -719,6 +719,7 @@ export type LogDrainSource =
   | "smtp"
   | "sms"
   | "sign"
+  | "verify"
   | "audit";
 
 export type LogDrain = {

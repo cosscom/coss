@@ -68,6 +68,8 @@ export const RETENTION_DAYS = {
   hookPortalSessions: 1,
   /** Sign's signing and builder sessions, counted from their expiry. */
   signSessions: 7,
+  /** Verify's verification requests: the phone number or email address and what happened. */
+  verifications: 30,
   /** Finished Hooks endpoint recoveries. */
   hookRecoveries: 7,
   /** Contacts that never confirmed a double opt-in, counted from when it was requested. */
@@ -132,6 +134,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     description:
       "Replies and other messages sent to your phone numbers: the text and the sender's number.",
     period: { days: RETENTION_DAYS.receivedSms, after: "creation" },
+  },
+  {
+    id: "verifications",
+    label: "Verifications",
+    description:
+      "One-time code requests: the phone number or email address, the channel, the status, attempts and why one was blocked. Codes are never stored, only a keyed hash until they expire.",
+    period: { days: RETENTION_DAYS.verifications, after: "creation" },
   },
   {
     id: "dmarc_reports",

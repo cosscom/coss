@@ -29,6 +29,10 @@ describe("hashSendRequest", () => {
     });
     expect(hashSendRequest(a)).toBe(hashSendRequest(b));
     expect(hashSendRequest(a)).toMatch(/^[0-9a-f]{64}$/);
+    // A discarded body (a one-time code) never enters the fingerprint.
+    expect(hashSendRequest({ ...a, text: "123456" }, { discardBody: true })).toBe(
+      hashSendRequest({ ...a, text: "654321" }, { discardBody: true }),
+    );
     expect(hashSendRequest({ ...a, subject: "Hi!" })).not.toBe(hashSendRequest(a));
     expect(hashSendRequest({ ...a, category: "news" })).not.toBe(hashSendRequest(a));
     expect(hashSendRequest({ ...a, scheduled_at: "2026-10-11T09:00:00.000Z" })).not.toBe(

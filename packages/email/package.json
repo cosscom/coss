@@ -37,6 +37,7 @@
     "@coss/screening": "workspace:*",
     "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
+    "@coss/verify": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "drizzle-orm": "catalog:",

@@ -73,5 +73,8 @@ repository root.
   `@coss/ratelimit`'s `RateLimitStore` (the API's Valkey connection) with the bucket's own rule read on every
   check; keys are HMACs (`limit_key`), store keys `<prefix>:risk:l:{<bucket id>:<hash>}` (an `Idempotency-Key`
   caches an allowed answer for an hour under the same hash tag); a store failure answers with the bucket's
-  `on_failure` (`degraded: true`). Buckets need `risk:read`/`risk:update`; checks `risk:assess` and the
-  `risk.limit` bucket (fails open, so the customer's own `on_failure` decides).
+  `on_failure` (`degraded: true`). **Verify's fraud guard** (`verification.ts`,
+  `checkVerificationRisk` (counts as it judges; `uncountVerificationStart` takes a start back)/`recordVerificationApproval`; `VERIFICATION_REASONS`, `VERIFICATION_THRESHOLDS`):
+  the environment's lists, line types, Tor and velocity (IP, user, number prefix and country with their
+  approval rates, kind `phone_prefix`), no assessment row, fails open; `packages/verify/AGENTS.md`.
+  Limit buckets need `risk:read`/`risk:update`; checks `risk:assess` and the `risk.limit` bucket (fails open, so the customer's own `on_failure` decides).

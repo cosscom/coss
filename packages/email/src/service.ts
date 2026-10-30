@@ -1353,7 +1353,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     const retentionMs = input.idempotencyRetentionMs ?? IDEMPOTENCY_KEY_TTL_MS;
     const sandbox = environment.mode === "sandbox";
     const idempotencyKey = input.idempotencyKey || null;
-    const requestHash = idempotencyKey ? (input.requestHash ?? hashSendRequest(params)) : null;
+    const requestHash = idempotencyKey
+      ? (input.requestHash ?? hashSendRequest(params, { discardBody: input.discardBody }))
+      : null;
     let prepared: PreparedSend;
     try {
       prepared = await prepareSend(
@@ -1572,7 +1574,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     return findReplay(
       input.environment,
       input.idempotencyKey,
-      input.requestHash ?? hashSendRequest(input.params),
+      input.requestHash ?? hashSendRequest(input.params, { discardBody: input.discardBody }),
       input.idempotencyRetentionMs,
     );
   }

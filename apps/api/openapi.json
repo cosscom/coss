@@ -1392,6 +1392,8 @@
                       "sms.registrations",
                       "sign.completed_requests",
                       "risk.phone_checks",
+                      "verify.verifications",
+                      "verify.sms",
                       "video.participant_minutes",
                       "scheduling.bookings",
                       null
@@ -2022,6 +2024,8 @@
               "sms.registrations",
               "sign.completed_requests",
               "risk.phone_checks",
+              "verify.verifications",
+              "verify.sms",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -2044,6 +2048,8 @@
                 "sms.registrations",
                 "sign.completed_requests",
                 "risk.phone_checks",
+                "verify.verifications",
+                "verify.sms",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],
@@ -8492,10 +8498,13 @@
                 "sign_request.declined",
                 "sign_request.completed",
                 "sign_request.canceled",
-                "sign_request.expired"
+                "sign_request.expired",
+                "verification.approved",
+                "verification.failed",
+                "verification.blocked"
               ]
             },
-            "maxItems": 64,
+            "maxItems": 67,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -8785,10 +8794,13 @@
                 "sign_request.declined",
                 "sign_request.completed",
                 "sign_request.canceled",
-                "sign_request.expired"
+                "sign_request.expired",
+                "verification.approved",
+                "verification.failed",
+                "verification.blocked"
               ]
             },
-            "maxItems": 64,
+            "maxItems": 67,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -9327,10 +9339,13 @@
                 "sign_request.declined",
                 "sign_request.completed",
                 "sign_request.canceled",
-                "sign_request.expired"
+                "sign_request.expired",
+                "verification.approved",
+                "verification.failed",
+                "verification.blocked"
               ]
             },
-            "maxItems": 64,
+            "maxItems": 67,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -9644,6 +9659,9 @@
               },
               {
                 "$ref": "#/components/schemas/SignRequestWebhookEvent"
+              },
+              {
+                "$ref": "#/components/schemas/VerificationWebhookEvent"
               }
             ],
             "description": "The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`."
@@ -9838,6 +9856,168 @@
           }
         ]
       },
+      "VerificationWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "verification.approved",
+              "verification.failed",
+              "verification.blocked"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version the payload is rendered in (your endpoint's version).",
+            "examples": [
+              "2026-10-10"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "verification_id": {
+                "type": "string"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "sms",
+                  "email"
+                ]
+              },
+              "to": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "approved",
+                  "expired",
+                  "canceled",
+                  "failed",
+                  "blocked"
+                ]
+              },
+              "failure": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ]
+              },
+              "reasons": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ],
+                  "description": "A fraud guard reason (see the docs' list)."
+                }
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "value"
+                  ]
+                }
+              },
+              "sandbox": {
+                "type": "boolean"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "verification_id",
+              "channel",
+              "to",
+              "status",
+              "failure",
+              "reasons",
+              "tags",
+              "sandbox",
+              "occurred_at"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k8e2m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "verification.approved",
+            "api_version": "2026-10-10",
+            "created_at": "2026-11-10T12:00:41.100Z",
+            "data": {
+              "verification_id": "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+              "channel": "sms",
+              "to": "+14155550199",
+              "status": "approved",
+              "failure": null,
+              "reasons": [],
+              "tags": [],
+              "sandbox": false,
+              "occurred_at": "2026-11-10T12:00:41.000Z"
+            }
+          }
+        ]
+      },
       "CreateTestWebhookEventRequest": {
         "type": "object",
         "properties": {
@@ -9907,7 +10087,10 @@
               "sign_request.declined",
               "sign_request.completed",
               "sign_request.canceled",
-              "sign_request.expired"
+              "sign_request.expired",
+              "verification.approved",
+              "verification.failed",
+              "verification.blocked"
             ],
             "description": "The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },
@@ -17241,7 +17424,8 @@
           "risk",
           "smtp",
           "sms",
-          "sign"
+          "sign",
+          "verify"
         ],
         "description": "`api`: a request to the API. `email`: an email event. `webhook`: a delivery attempt. `risk`: a risk assessment or its feedback. `smtp`: a message submitted to the SMTP relay. `sms`: an SMS event."
       },
@@ -17617,6 +17801,8 @@
                     "sms.registrations",
                     "sign.completed_requests",
                     "risk.phone_checks",
+                    "verify.verifications",
+                    "verify.sms",
                     "video.participant_minutes",
                     "scheduling.bookings"
                   ],
@@ -17961,6 +18147,8 @@
               "sms.registrations",
               "sign.completed_requests",
               "risk.phone_checks",
+              "verify.verifications",
+              "verify.sms",
               "video.participant_minutes",
               "scheduling.bookings"
             ],
@@ -18357,6 +18545,8 @@
               "sms.registrations",
               "sign.completed_requests",
               "risk.phone_checks",
+              "verify.verifications",
+              "verify.sms",
               "video.participant_minutes",
               "scheduling.bookings",
               null
@@ -18607,6 +18797,7 @@
           "smtp",
           "sms",
           "sign",
+          "verify",
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
@@ -18636,7 +18827,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 8,
+            "maxItems": 9,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
           }
         },
@@ -18824,7 +19015,7 @@
             "items": {
               "$ref": "#/components/schemas/LogDrainSource"
             },
-            "maxItems": 8,
+            "maxItems": 9,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
           "enabled": {
@@ -64207,6 +64398,8 @@
                 "sms.registrations",
                 "sign.completed_requests",
                 "risk.phone_checks",
+                "verify.verifications",
+                "verify.sms",
                 "video.participant_minutes",
                 "scheduling.bookings"
               ],

@@ -377,6 +377,7 @@ export {
   type EmailRow,
   emailActivity,
   emailFailure,
+  emailIdForIdempotencyKey,
   environmentsWithSentEmail,
   exportEmailPages,
   getEmail,

@@ -1,6 +1,6 @@
 /** What coss.com meters: one meter per billable unit of a product. */
 
-export const PRODUCTS = ["email", "sms", "sign", "risk", "video", "scheduling"] as const;
+export const PRODUCTS = ["email", "sms", "sign", "risk", "verify", "video", "scheduling"] as const;
 export type Product = (typeof PRODUCTS)[number];
 
 export type MeterDefinition = {
@@ -98,6 +98,28 @@ export const METERS = {
     units: "checks",
     displayPer: 1,
     dimensions: [],
+    requires: "plan",
+  },
+  // Verify: a verification whose code was checked correctly (failed, blocked and expired ones are
+  // free). The channel's own cost is billed on its own meter.
+  "verify.verifications": {
+    product: "verify",
+    label: "Verifications",
+    unit: "verification",
+    units: "verifications",
+    displayPer: 1,
+    dimensions: [],
+    requires: "plan",
+  },
+  // Verify's codes sent from coss.com's shared numbers, priced like SMS by destination country (an
+  // organization's own numbers bill `sms.segments` instead).
+  "verify.sms": {
+    product: "verify",
+    label: "Verification SMS",
+    unit: "segment",
+    units: "segments",
+    displayPer: 1,
+    dimensions: ["country"],
     requires: "plan",
   },
   "video.participant_minutes": {

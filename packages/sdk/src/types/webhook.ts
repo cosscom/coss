@@ -20,6 +20,7 @@ import type {
   SmsKeyword,
   SmsTag,
 } from "./sms.ts";
+import type { VerificationWebhookEvent } from "./verify.ts";
 
 /** What a webhook says about the email; never its content, cc or bcc. */
 export interface EmailWebhookEventData extends EmailEventData {
@@ -432,4 +433,5 @@ export type WebhookEvent =
   | InboxMessageReceivedWebhookEvent
   | SmsWebhookEvent
   | ReceivedSmsWebhookEvent
-  | SignRequestWebhookEvent;
+  | SignRequestWebhookEvent
+  | VerificationWebhookEvent;

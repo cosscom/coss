@@ -15,15 +15,26 @@ const KEY_TTL_MS = 25 * 60 * 60_000;
 
 export type VelocityCounts = Record<VelocityWindow, number>;
 
+/** A key's totals, and the 5-minute bucket the call counted in (where a take-back must go). */
+export type CountedVelocity = VelocityCounts & { bucket: number };
+
+export type VelocityIncrementOptions = {
+  /** 1 (default) counts an event, 0 only reads, -1 takes back one counted moments ago. */
+  by?: -1 | 0 | 1;
+  /** Per key, the bucket to change instead of the current one (a take-back: the event's own). */
+  buckets?: readonly number[];
+};
+
 /** Where counters live. Implementations throw on failure; assessments then go without velocity. */
 export interface VelocityStore {
   /** Counts this event under every key and returns each key's totals (this event included). */
-  increment(keys: readonly string[]): Promise<VelocityCounts[]>;
+  increment(keys: readonly string[], opts?: VelocityIncrementOptions): Promise<CountedVelocity[]>;
 }
 
 /**
- * KEYS[1]: the counter. ARGV: bucket size (ms), buckets per hour, buckets per day, TTL (ms).
- * Returns { last hour, last day }.
+ * KEYS[1]: the counter. ARGV: bucket size (ms), buckets per hour, buckets per day, TTL (ms), how
+ * much to add (0: only read; -1: take one back) and the bucket to change ('': the current one).
+ * Returns { last hour, last day, the bucket changed }.
  */
 export const VELOCITY_SCRIPT = `
 local time = redis.call('TIME')
@@ -32,7 +43,10 @@ local size = tonumber(ARGV[1])
 local hour = tonumber(ARGV[2])
 local day = tonumber(ARGV[3])
 local bucket = math.floor(now / size)
-redis.call('HINCRBY', KEYS[1], bucket, 1)
+local by = tonumber(ARGV[5])
+local target = bucket
+if ARGV[6] ~= '' then target = tonumber(ARGV[6]) end
+if by ~= 0 then redis.call('HINCRBY', KEYS[1], target, by) end
 local fields = redis.call('HGETALL', KEYS[1])
 local last_hour = 0
 local last_day = 0
@@ -46,8 +60,8 @@ for i = 1, #fields, 2 do
     if b > bucket - hour then last_hour = last_hour + count end
   end
 end
-redis.call('PEXPIRE', KEYS[1], ARGV[4])
-return { last_hour, last_day }
+if by > 0 then redis.call('PEXPIRE', KEYS[1], ARGV[4]) end
+return { last_hour, last_day, target }
 `;
 
 const SCRIPT_SHA = createHash("sha1").update(VELOCITY_SCRIPT).digest("hex");
@@ -66,23 +80,29 @@ export class ValkeyVelocityStore implements VelocityStore {
     this.#client = client;
   }
 
-  async increment(keys: readonly string[]): Promise<VelocityCounts[]> {
-    return Promise.all(keys.map((key) => this.#incrementOne(key)));
+  async increment(
+    keys: readonly string[],
+    opts: VelocityIncrementOptions = {},
+  ): Promise<CountedVelocity[]> {
+    const by = String(opts.by ?? 1);
+    return Promise.all(
+      keys.map((key, index) => this.#incrementOne(key, by, String(opts.buckets?.[index] ?? ""))),
+    );
   }
 
-  async #incrementOne(key: string): Promise<VelocityCounts> {
+  async #incrementOne(key: string, by: string, bucket: string): Promise<CountedVelocity> {
     let reply: unknown;
     try {
-      reply = await this.#client.evalsha(SCRIPT_SHA, 1, key, ...SCRIPT_ARGS);
+      reply = await this.#client.evalsha(SCRIPT_SHA, 1, key, ...SCRIPT_ARGS, by, bucket);
     } catch (error) {
       // First call on a node (or after a restart/failover): the script is not cached yet.
       if (!(error instanceof Error) || !error.message.startsWith("NOSCRIPT")) throw error;
-      reply = await this.#client.eval(VELOCITY_SCRIPT, 1, key, ...SCRIPT_ARGS);
+      reply = await this.#client.eval(VELOCITY_SCRIPT, 1, key, ...SCRIPT_ARGS, by, bucket);
     }
-    if (!Array.isArray(reply) || reply.length !== 2) {
+    if (!Array.isArray(reply) || reply.length !== 3) {
       throw new Error("Unexpected reply from the velocity script.");
     }
-    return { "1h": Number(reply[0]), "24h": Number(reply[1]) };
+    return { "1h": Number(reply[0]), "24h": Number(reply[1]), bucket: Number(reply[2]) };
   }
 }
 
@@ -98,13 +118,20 @@ export class MemoryVelocityStore implements VelocityStore {
     this.#now = opts.now ?? Date.now;
   }
 
-  async increment(keys: readonly string[]): Promise<VelocityCounts[]> {
+  async increment(
+    keys: readonly string[],
+    opts: VelocityIncrementOptions = {},
+  ): Promise<CountedVelocity[]> {
+    const by = opts.by ?? 1;
     const bucket = Math.floor(this.#now() / VELOCITY_BUCKET_MS);
     if (this.#counters.size > 50_000) this.#counters.clear();
-    return keys.map((key) => {
+    return keys.map((key, index) => {
       const buckets = this.#counters.get(key) ?? new Map<number, number>();
-      this.#counters.set(key, buckets);
-      buckets.set(bucket, (buckets.get(bucket) ?? 0) + 1);
+      const target = opts.buckets?.[index] ?? bucket;
+      if (by !== 0) {
+        this.#counters.set(key, buckets);
+        buckets.set(target, (buckets.get(target) ?? 0) + by);
+      }
       let hour = 0;
       let day = 0;
       for (const [b, count] of buckets) {
@@ -115,7 +142,7 @@ export class MemoryVelocityStore implements VelocityStore {
         day += count;
         if (b > bucket - BUCKETS_PER_HOUR) hour += count;
       }
-      return { "1h": hour, "24h": day };
+      return { "1h": hour, "24h": day, bucket: target };
     });
   }
 }

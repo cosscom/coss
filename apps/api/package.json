@@ -28,6 +28,7 @@
     "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
     "@coss/tenancy": "workspace:*",
+    "@coss/verify": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@hono/zod-openapi": "catalog:",

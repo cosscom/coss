@@ -10,7 +10,7 @@ import { isId } from "@coss/db/id";
 import { appendLogEntries } from "@coss/logs";
 import { markReputationDue } from "@coss/reputation";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { smsEventLogEntries } from "./event-logs.ts";
 import type { SmsProviderEvent } from "./provider.ts";
 import type { SmsEventType, SmsStatus, StoredSmsWebhookEvent } from "./schemas.ts";
@@ -20,6 +20,27 @@ import { recordSmsUsage } from "./usage.ts";
 const { environment, smsEvent, smsMessage } = schema;
 
 export type SmsEventRow = typeof smsEvent.$inferSelect;
+
+/**
+ * Clears the text of a message sent with `discardBody` (a one-time code): once it is sent, failed
+ * or canceled, nothing needs it again.
+ */
+export async function discardSmsBody(
+  executor: Executor,
+  row: { id: string; organizationId: string },
+): Promise<void> {
+  await executor
+    .update(smsMessage)
+    .set({ body: "" })
+    .where(
+      and(
+        eq(smsMessage.id, row.id),
+        eq(smsMessage.organizationId, row.organizationId),
+        eq(smsMessage.discardBody, true),
+        ne(smsMessage.body, ""),
+      ),
+    );
+}
 
 /** Events coss.com itself records (a refused send, a suppression) rather than a provider. */
 export const COSS_SMS_EVENT_SOURCE = "coss";
@@ -123,6 +144,8 @@ export async function recordSmsEvent(
     .returning();
   if (inserted.length === 0) return [];
   await appendLogEntries(tx, smsEventLogEntries(target, event, inserted));
+  // Every event but `sms.scheduled` comes after the message stopped waiting to be sent.
+  if (event.type !== "sms.scheduled") await discardSmsBody(tx, target);
 
   const live = target.mode === "live";
   const thisMessage = and(

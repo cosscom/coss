@@ -7,6 +7,7 @@ import type { EmailEventType } from "./email.ts";
 import type { InboxEventType } from "./inbox.ts";
 import type { SignWebhookEventType } from "./sign.ts";
 import type { ReceivedSmsEventType, SmsEventType } from "./sms.ts";
+import type { VerifyWebhookEventType } from "./verify.ts";
 import type {
   AccountEventType,
   AccountWebhookEvent,
@@ -36,7 +37,8 @@ export type WebhookEventType =
   | InboxEventType
   | SmsEventType
   | ReceivedSmsEventType
-  | SignWebhookEventType;
+  | SignWebhookEventType
+  | VerifyWebhookEventType;
 
 /** Why an endpoint is disabled. */
 export type WebhookEndpointDisabledReason = "manual" | "failing";

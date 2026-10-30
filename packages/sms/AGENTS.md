@@ -26,7 +26,11 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   dimension through the injected `UsageGate` as its last statement (refuses unpriced countries and
   plans without SMS). `Idempotency-Key` through `withIdempotencyKey`; sender and parse failures
   still replay a request that already succeeded. Sandbox environments always use the fake provider
-  and skip the sender, country and billing checks.
+  and skip the sender, country and billing checks. Internal callers (Verify's one-time codes) send
+  with `discardBody`: the text is cleared (`discardSmsBody`) when the message is sent or by its first
+  event after waiting (failed, suppressed, canceled…), and never enters the request hash
+  (`hashSendSmsRequest`). `phoneNumberType` tells a number's line type
+  (libphonenumber's full metadata) for the fraud guard.
 - **Dispatch**: claim = compare-and-set `queued` + `provider IS NULL` → `provider`, and in the same
   transaction the suppression list again (a STOP while it waited fails it `suppressed`); live messages
   are screened (`product: "sms"`, a hold re-enqueues after 60 s, the unclaimed sweep fails it after

@@ -65,6 +65,8 @@ export const orgStatements = {
   sign: ["create", "read", "update", "delete", "send"],
   // Inboxes (for agents): create, rename and delete them, read their threads, send and reply.
   inbox: ["create", "read", "update", "delete", "send"],
+  // Verify (one-time codes): start, check and cancel verifications, read them; `update`: settings.
+  verify: ["send", "check", "read", "update"],
 } as const;
 
 export const orgAc = createAccessControl(orgStatements);
@@ -93,6 +95,7 @@ const fullCossAccess = {
   smsSender: ["create", "read", "update", "delete"],
   sign: ["create", "read", "update", "delete", "send"],
   inbox: ["create", "read", "update", "delete", "send"],
+  verify: ["send", "check", "read", "update"],
 } as const;
 
 const readOnlyCossAccess = {
@@ -118,6 +121,7 @@ const readOnlyCossAccess = {
   smsSender: ["read"],
   sign: ["read"],
   inbox: ["read"],
+  verify: ["read"],
 } as const;
 
 export const orgRoles = {

@@ -268,6 +268,20 @@ export function sampleWebhookEvent(type: TestWebhookEventType, now: Date): Store
       sandbox: true,
       occurred_at: at,
     };
+  } else if (type.startsWith("verification.")) {
+    const failed = type === "verification.failed";
+    const blocked = type === "verification.blocked";
+    data = {
+      ...base,
+      verification_id: newId(ID_PREFIXES.verifyRequest),
+      status: failed ? "failed" : blocked ? "blocked" : "approved",
+      failure: failed
+        ? { code: "max_attempts", message: "Too many wrong codes were checked." }
+        : null,
+      reasons: blocked ? [{ code: "verify.prefix_velocity", value: 42 }] : [],
+      sandbox: true,
+      occurred_at: at,
+    };
   } else if (type.startsWith("sms.")) {
     data = {
       ...base,

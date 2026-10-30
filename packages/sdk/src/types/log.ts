@@ -4,7 +4,7 @@
  * `api`: a request to the API. `email`: an email event. `webhook`: a webhook delivery attempt.
  * `risk`: a risk assessment or its feedback.
  */
-export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "sign";
+export type LogSource = "api" | "email" | "webhook" | "risk" | "smtp" | "sms" | "sign" | "verify";
 
 /**
  * `error`: 5xx responses, bounces, complaints, failures. `warning`: 4xx responses, delays,

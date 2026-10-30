@@ -12,6 +12,7 @@ import {
   SMS_EVENT_TYPES,
   SmsWebhookEvent,
 } from "@coss/sms/schemas";
+import { VERIFY_WEBHOOK_EVENT_TYPES, VerificationWebhookEvent } from "@coss/verify/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { HOOK_OPERATIONAL_EVENT_TYPES, HookEndpointWebhookEvent } from "@coss/webhooks/schemas";
 import { z } from "zod";
@@ -51,6 +52,7 @@ export const TEST_WEBHOOK_EVENT_TYPES = [
   ...SMS_EVENT_TYPES,
   ...RECEIVED_SMS_EVENT_TYPES,
   ...SIGN_WEBHOOK_EVENT_TYPES,
+  ...VERIFY_WEBHOOK_EVENT_TYPES,
 ] as const;
 
 export type TestWebhookEventType = (typeof TEST_WEBHOOK_EVENT_TYPES)[number];
@@ -68,6 +70,7 @@ export function webhookEventSchema(type: TestWebhookEventType): z.ZodType {
   }
   if (type.startsWith("sms.")) return SmsWebhookEvent;
   if (type.startsWith("sign_request.")) return SignRequestWebhookEvent;
+  if (type.startsWith("verification.")) return VerificationWebhookEvent;
   return BroadcastWebhookEvent;
 }
 
@@ -134,6 +137,7 @@ export const WebhookTestEventObject = z
         SmsWebhookEvent,
         ReceivedSmsWebhookEvent,
         SignRequestWebhookEvent,
+        VerificationWebhookEvent,
       ])
       .meta({
         description:
