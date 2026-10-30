@@ -67,6 +67,7 @@ const CAMPAIGN = {
   hasEmbeddedLinks: false,
   hasEmbeddedPhone: false,
   optInProofUrl: "https://acme.test/opt-in.png",
+  privacyPolicyUrl: "https://acme.test/privacy",
 };
 
 async function buy(org: string, kind: "local" | "toll_free", d: SmsSenderDeps) {

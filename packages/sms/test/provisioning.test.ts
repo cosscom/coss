@@ -313,7 +313,11 @@ test("toll-free: a number is verified, then sends to the US and Canada only", as
         kind: "toll_free",
         numberId: number.id,
         profile: PROFILE,
-        campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+        campaign: {
+          ...CAMPAIGN,
+          optInProofUrl: "https://acme.test/opt-in.png",
+          privacyPolicyUrl: "https://acme.test/privacy",
+        },
       }),
       d,
     ),
@@ -676,7 +680,11 @@ test("a toll-free verification whose answer was lost is followed, not submitted 
       kind: "toll_free",
       numberId: number.id,
       profile: PROFILE,
-      campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+      campaign: {
+        ...CAMPAIGN,
+        optInProofUrl: "https://acme.test/opt-in.png",
+        privacyPolicyUrl: "https://acme.test/privacy",
+      },
     }),
     d,
   );
@@ -705,21 +713,27 @@ test("a rejected toll-free verification is resubmitted with the corrected detail
         kind: "toll_free",
         numberId: number.id,
         profile: { ...PROFILE, legalName },
-        campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+        campaign: {
+          ...CAMPAIGN,
+          optInProofUrl: "https://acme.test/opt-in.png",
+          privacyPolicyUrl: "https://acme.test/privacy",
+        },
       }),
       d,
     );
   await register("[reject] Acme, Inc.");
-  expect((await advanceUntilSettled(org, d))[0]?.status).toBe("rejected");
+  const [rejected] = await advanceUntilSettled(org, d);
+  expect(rejected?.status).toBe("rejected");
   await register("Acme, Inc.");
   const registrations = await advanceUntilSettled(org, d);
-  expect(registrations.map((row) => row.status)).toEqual(["rejected", "approved"]);
+  // The rejected attempt it replaced is no longer listed.
+  expect(registrations.map((row) => row.status)).toEqual(["approved"]);
   const methods = d.twilio.calls.map((call) => call.method);
   expect(methods.filter((method) => method === "createTollFreeVerification")).toHaveLength(1);
   expect(methods.filter((method) => method === "resubmitTollFreeVerification")).toHaveLength(1);
   // The number stays in the one messaging service it can belong to.
   expect(methods.filter((method) => method === "createMessagingService")).toHaveLength(1);
-  expect(registrations[1]?.messagingServiceSid).toBe(registrations[0]?.messagingServiceSid);
+  expect(registrations[0]?.messagingServiceSid).toBe(rejected?.messagingServiceSid);
 });
 
 test("releasing a purchase still under way waits for its outcome", async () => {
@@ -786,7 +800,11 @@ test("a toll-free number still being bought can't be registered yet", async () =
         kind: "toll_free",
         numberId: intent.id,
         profile: PROFILE,
-        campaign: { ...CAMPAIGN, optInProofUrl: "https://acme.test/opt-in.png" },
+        campaign: {
+          ...CAMPAIGN,
+          optInProofUrl: "https://acme.test/opt-in.png",
+          privacyPolicyUrl: "https://acme.test/privacy",
+        },
       }),
       d,
     ),

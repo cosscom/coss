@@ -212,6 +212,8 @@ function tollFreeForm({
     OptInImageUrls: campaign.optInProofUrl ? [campaign.optInProofUrl] : [],
     OptInType: "WEB_FORM",
     MessageVolume: messageVolume(campaign.monthlyVolume),
+    ...(campaign.privacyPolicyUrl ? { PrivacyPolicyUrl: campaign.privacyPolicyUrl } : {}),
+    ...(campaign.termsUrl ? { TermsAndConditionsUrl: campaign.termsUrl } : {}),
     AdditionalInformation: campaign.messageFlow,
     BusinessStreetAddress: profile.street,
     BusinessCity: profile.city,

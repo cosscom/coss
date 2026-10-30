@@ -177,12 +177,28 @@ async function recordFee(
 // Registrations
 // ---------------------------------------------------------------------------------------------
 
+/**
+ * The organization's registrations, oldest first, without the rejected or failed ones a later
+ * registration replaced (of the same toll-free number, or another 10DLC registration): fixing a
+ * rejection means registering again, and the old attempt is only noise.
+ */
 export async function listSmsRegistrations(organizationId: string): Promise<SmsRegistrationRow[]> {
-  return db
+  const rows = await db
     .select()
     .from(smsRegistration)
     .where(eq(smsRegistration.organizationId, organizationId))
     .orderBy(asc(smsRegistration.createdAt));
+  return rows.filter(
+    (row, index) =>
+      (row.status !== "rejected" && row.status !== "failed") ||
+      !rows
+        .slice(index + 1)
+        .some((later) =>
+          row.kind === "toll_free"
+            ? later.kind === "toll_free" && later.numberId === row.numberId
+            : later.kind === "us_10dlc",
+        ),
+  );
 }
 
 /**

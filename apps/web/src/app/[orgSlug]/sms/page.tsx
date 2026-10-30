@@ -373,9 +373,17 @@ export default async function OrganizationSmsPage({
                     <div className="flex flex-col gap-1">
                       <RegistrationStatusDot status={row.status} />
                       {row.rejectionReason ? (
-                        <span className="max-w-96 text-muted-foreground text-xs">
+                        <span className="max-w-96 whitespace-normal text-muted-foreground text-xs">
                           {row.rejectionReason}
                         </span>
+                      ) : null}
+                      {canCreate && (row.status === "rejected" || row.status === "failed") ? (
+                        <Link
+                          className="text-xs underline underline-offset-2"
+                          href={`/${organization.slug}/sms/register?from=${row.id}`}
+                        >
+                          Fix and resubmit
+                        </Link>
                       ) : null}
                     </div>
                   </TableCell>

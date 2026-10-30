@@ -8,7 +8,7 @@ import { eq } from "drizzle-orm";
 import { handleInboundCallback, handleStatusCallback } from "../src/callbacks.ts";
 import { SmsRejectedError, UncertainSendError } from "../src/provider.ts";
 import { getSms } from "../src/read.ts";
-import { SendSmsRequest, SmsCampaignInput } from "../src/schemas.ts";
+import { SendSmsRequest, SmsCampaignInput, SmsRegistrationInput } from "../src/schemas.ts";
 import { createSmsService } from "../src/service.ts";
 import { checkSmsSuppression } from "../src/suppressions.ts";
 import { createTestSmsNumber, memorySmsDispatchQueue, testPhoneNumber } from "../src/testing.ts";
@@ -194,6 +194,28 @@ describe("TwilioSmsProvider", () => {
   });
 });
 
+const PROFILE_FOR_FORM = {
+  legalName: "Acme, Inc.",
+  companyType: "PRIVATE_PROFIT",
+  taxId: "12-3456789",
+  taxIdType: "EIN",
+  industry: "TECHNOLOGY",
+  website: "https://acme.com",
+  street: "1 Main St",
+  city: "San Francisco",
+  region: "CA",
+  postalCode: "94105",
+  country: "US",
+  contact: {
+    firstName: "Ada",
+    lastName: "Lovelace",
+    email: "ada@acme.com",
+    phone: "+14155550123",
+    title: "CTO",
+    jobPosition: "CEO",
+  },
+};
+
 describe("toll-free message volume", () => {
   const campaign = {
     useCase: "2FA",
@@ -207,6 +229,63 @@ describe("toll-free message volume", () => {
   test("the form takes only Twilio's MessageVolume values", () => {
     expect(SmsCampaignInput.safeParse({ ...campaign, monthlyVolume: "10,000" }).success).toBe(true);
     expect(SmsCampaignInput.safeParse({ ...campaign, monthlyVolume: "1000" }).success).toBe(false);
+  });
+
+  test("toll-free verification needs a privacy policy, sent to Twilio with the terms", async () => {
+    const tollFree = (campaignFields: Record<string, unknown>) =>
+      SmsRegistrationInput.safeParse({
+        kind: "toll_free",
+        numberId: "num_1",
+        profile: {
+          legalName: "Acme, Inc.",
+          companyType: "PRIVATE_PROFIT",
+          taxId: "12-3456789",
+          industry: "TECHNOLOGY",
+          website: "https://acme.com",
+          street: "1 Main St",
+          city: "San Francisco",
+          region: "CA",
+          postalCode: "94105",
+          country: "US",
+          contact: {
+            firstName: "Ada",
+            lastName: "Lovelace",
+            email: "ada@acme.com",
+            phone: "+14155550123",
+            title: "CTO",
+            jobPosition: "CEO",
+          },
+        },
+        campaign: { ...campaign, optInProofUrl: "https://acme.com/opt-in.png", ...campaignFields },
+      }).success;
+    expect(tollFree({})).toBe(false);
+    expect(tollFree({ privacyPolicyUrl: "https://acme.com/privacy" })).toBe(true);
+
+    const { fetcher, requests } = fakeFetch(() => Response.json({ sid: "HH1" }, { status: 201 }));
+    const api = createTwilioApi(
+      createTwilioClient({
+        credentials: { accountSid: "ACparent", authToken: "t" },
+        fetch: fetcher,
+      }),
+      { primaryCustomerProfileSid: null },
+    );
+    await api.createTollFreeVerification(
+      { accountSid: "ACsub", authToken: "s" },
+      {
+        numberSid: "PN1",
+        profile: { ...PROFILE_FOR_FORM },
+        campaign: {
+          ...campaign,
+          optInProofUrl: "https://acme.com/opt-in.png",
+          privacyPolicyUrl: "https://acme.com/privacy",
+          termsUrl: "https://acme.com/terms",
+        },
+      },
+    );
+    const form = new URLSearchParams(await requests[0]?.text());
+    expect(form.get("PrivacyPolicyUrl")).toBe("https://acme.com/privacy");
+    expect(form.get("TermsAndConditionsUrl")).toBe("https://acme.com/terms");
+    expect(form.get("MessageVolume")).toBe("1,000");
   });
 
   test("stored free text becomes the smallest listed volume covering it", () => {
