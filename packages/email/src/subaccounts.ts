@@ -13,6 +13,7 @@ import {
   DEFAULT_SUBACCOUNT_LIST_LIMIT,
   MAX_SUBACCOUNT_LIST_LIMIT,
   type SubaccountOutput,
+  subaccountUidProblem,
 } from "./subaccount-schemas.ts";
 
 const { emailSubaccount, environment } = schema;
@@ -55,6 +56,11 @@ export function toSubaccountObject(row: SubaccountRow): SubaccountOutput {
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
   };
+}
+
+function assertUid(uid: string | null | undefined): void {
+  const problem = uid == null ? null : subaccountUidProblem(uid);
+  if (problem) throw new SubaccountError("invalid_uid", problem, { param: "uid" });
 }
 
 function uidTaken(uid: string): SubaccountError {
@@ -121,70 +127,85 @@ export async function createSubaccount(input: {
   quotas?: SubaccountQuotasInput;
   plans?: PlanGate;
 }): Promise<SubaccountRow> {
+  assertUid(input.uid);
   const env = await environmentOf(input.organizationId, input.environmentId);
-  if (env.mode === "live") {
-    await input.plans?.requireFeature(input.organizationId, "subaccounts");
-    if (input.plans) {
-      const [existing] = await db
-        .select({ value: count() })
-        .from(emailSubaccount)
-        .innerJoin(
-          environment,
-          and(
-            eq(environment.id, emailSubaccount.environmentId),
-            eq(environment.organizationId, emailSubaccount.organizationId),
-          ),
-        )
-        .where(
-          and(
-            eq(emailSubaccount.organizationId, input.organizationId),
-            eq(environment.mode, "live"),
-          ),
-        );
-      await input.plans.requireCapacity(input.organizationId, "subaccounts", existing?.value ?? 0);
-    }
-  } else {
-    const [existing] = await db
-      .select({ value: count() })
-      .from(emailSubaccount)
-      .where(
-        and(
-          eq(emailSubaccount.organizationId, input.organizationId),
-          eq(emailSubaccount.environmentId, input.environmentId),
-        ),
-      );
-    if ((existing?.value ?? 0) >= MAX_SANDBOX_SUBACCOUNTS) {
-      throw new SubaccountError(
-        "too_many_subaccounts",
-        `A sandbox environment can have at most ${MAX_SANDBOX_SUBACCOUNTS} sub-accounts.`,
-      );
-    }
-  }
+  const live = env.mode === "live";
+  if (live) await input.plans?.requireFeature(input.organizationId, "subaccounts");
+  // Read before the transaction, so it never waits on a second pool connection.
+  const limit = live
+    ? ((await input.plans?.limit(input.organizationId, "subaccounts")) ?? null)
+    : MAX_SANDBOX_SUBACCOUNTS;
   const quotas = {
     dailyRecipientLimit: input.quotas?.recipients_per_day ?? null,
     perSecondRecipientLimit: input.quotas?.recipients_per_second ?? null,
     perSecondBurst: input.quotas?.burst ?? null,
   };
   assertQuotas(quotas);
+  let result: { row: SubaccountRow } | { over: number };
   try {
-    const [row] = await db
-      .insert(emailSubaccount)
-      .values({
-        organizationId: input.organizationId,
-        projectId: env.projectId,
-        environmentId: input.environmentId,
-        name: input.name.trim(),
-        uid: input.uid ?? null,
-        metadata: input.metadata ?? {},
-        ...quotas,
-      })
-      .returning();
-    if (!row) throw new Error("Sub-account insert returned no row.");
-    return row;
+    result = await db.transaction(async (tx) => {
+      if (limit !== null) {
+        // One creation at a time per count (the organization's live ones, else the environment's),
+        // so concurrent creates can't all see room for one more.
+        const scope = live ? input.organizationId : input.environmentId;
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`subaccount:${scope}`}))`);
+        const [existing] = live
+          ? await tx
+              .select({ value: count() })
+              .from(emailSubaccount)
+              .innerJoin(
+                environment,
+                and(
+                  eq(environment.id, emailSubaccount.environmentId),
+                  eq(environment.organizationId, emailSubaccount.organizationId),
+                ),
+              )
+              .where(
+                and(
+                  eq(emailSubaccount.organizationId, input.organizationId),
+                  eq(environment.mode, "live"),
+                ),
+              )
+          : await tx
+              .select({ value: count() })
+              .from(emailSubaccount)
+              .where(
+                and(
+                  eq(emailSubaccount.organizationId, input.organizationId),
+                  eq(emailSubaccount.environmentId, input.environmentId),
+                ),
+              );
+        const current = existing?.value ?? 0;
+        if (current >= limit) return { over: current };
+      }
+      const [row] = await tx
+        .insert(emailSubaccount)
+        .values({
+          organizationId: input.organizationId,
+          projectId: env.projectId,
+          environmentId: input.environmentId,
+          name: input.name.trim(),
+          uid: input.uid ?? null,
+          metadata: input.metadata ?? {},
+          ...quotas,
+        })
+        .returning();
+      if (!row) throw new Error("Sub-account insert returned no row.");
+      return { row };
+    });
   } catch (error) {
     if (input.uid && isUniqueViolation(error)) throw uidTaken(input.uid);
     throw error;
   }
+  if ("row" in result) return result.row;
+  // The plan's own error (the limit and how to raise it) for live sub-accounts.
+  if (live) await input.plans?.requireCapacity(input.organizationId, "subaccounts", result.over);
+  throw new SubaccountError(
+    "too_many_subaccounts",
+    live
+      ? "Your plan's sub-account limit is reached."
+      : `A sandbox environment can have at most ${MAX_SANDBOX_SUBACCOUNTS} sub-accounts.`,
+  );
 }
 
 /** The sub-account `ref` (an id, else a uid) names in the environment; `null` when there is none. */
@@ -316,6 +337,7 @@ export async function updateSubaccount(input: {
       if (current.status === "deleting") {
         throw new SubaccountError("subaccount_deleting", "The sub-account is being deleted.");
       }
+      assertUid(input.uid);
       const changes = {
         ...(input.name !== undefined && { name: input.name.trim() }),
         ...(input.uid !== undefined && { uid: input.uid }),
@@ -442,4 +464,27 @@ export async function runDueSubaccountDeletions(
     }
   }
   return deleted;
+}
+
+/** Whether the organization has live sub-accounts (not being deleted): what the plan pays for. */
+export async function hasLiveSubaccounts(organizationId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: emailSubaccount.id })
+    .from(emailSubaccount)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, emailSubaccount.environmentId),
+        eq(environment.organizationId, emailSubaccount.organizationId),
+      ),
+    )
+    .where(
+      and(
+        eq(emailSubaccount.organizationId, organizationId),
+        eq(environment.mode, "live"),
+        ne(emailSubaccount.status, "deleting"),
+      ),
+    )
+    .limit(1);
+  return Boolean(row);
 }

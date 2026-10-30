@@ -33,8 +33,17 @@ const Metadata = z
     examples: [{ plan: "pro" }],
   });
 
-const SubaccountUid = z.string().regex(SUBACCOUNT_UID, {
-  message: "Use 1-256 letters, digits and . _ : @ | -",
+/** Why `uid` can't name a sub-account, or `null` when it can. */
+export function subaccountUidProblem(uid: string): string | null {
+  if (!SUBACCOUNT_UID.test(uid)) return "Use 1-256 letters, digits and . _ : @ | -";
+  // Calls take an id or a uid, and a `sub_…` reference is looked up as an id.
+  if (uid.startsWith("sub_")) return "A uid can't start with `sub_`: sub-account ids do.";
+  return null;
+}
+
+const SubaccountUid = z.string().superRefine((value, ctx) => {
+  const problem = subaccountUidProblem(value);
+  if (problem) ctx.addIssue({ code: "custom", message: problem });
 });
 
 const QuotaValue = z.number().int().min(1).max(MAX_SUBACCOUNT_QUOTA);

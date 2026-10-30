@@ -614,6 +614,7 @@ export {
   deleteSubaccount,
   findSubaccount,
   getSubaccount,
+  hasLiveSubaccounts,
   MAX_SANDBOX_SUBACCOUNTS,
   pageSubaccounts,
   requireSubaccount,

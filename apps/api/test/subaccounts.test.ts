@@ -181,6 +181,48 @@ describe("sub-accounts API", () => {
     expect((await errorOf(full)).code).toBe("plan_limit_reached");
   });
 
+  test("concurrent creates can't go past the plan's limit", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp({ plans: createPlanGate() });
+    await createTestContract(
+      tenant.organization.id,
+      { version: 1, plan: "scale", entitlements: { limits: { subaccounts: 2 } } },
+      { effectiveFrom: new Date("2026-01-01T00:00:00Z") },
+    );
+    const responses = await Promise.all(
+      Array.from({ length: 6 }, (_, i) =>
+        apiRequest(app, "POST", "/v1/subaccounts", {
+          key: tenant.liveKey,
+          body: { name: `A${i}` },
+        }),
+      ),
+    );
+    expect(responses.map((response) => response.status).sort()).toEqual([
+      200, 200, 402, 402, 402, 402,
+    ]);
+  });
+
+  test("a uid can't look like a sub-account id", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const created = await apiRequest(app, "POST", "/v1/subaccounts", {
+      key: tenant.sandboxKey,
+      body: { name: "A", uid: "sub_01k0000000000000000000000" },
+    });
+    expect(created.status).toBe(422);
+    const { id } = await json<SubaccountOutput>(
+      await apiRequest(app, "POST", "/v1/subaccounts", {
+        key: tenant.sandboxKey,
+        body: { name: "A" },
+      }),
+    );
+    const updated = await apiRequest(app, "PATCH", `/v1/subaccounts/${id}`, {
+      key: tenant.sandboxKey,
+      body: { uid: "sub_custom" },
+    });
+    expect(updated.status).toBe(422);
+  });
+
   test("keys need the subaccount permission", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();
