@@ -94,7 +94,7 @@ one to your local server, exactly as an [endpoint](/docs/webhooks) would receive
 coss listen --forward-to localhost:3000/webhooks
 # Ready! Listening to Acme / Default / Development (sandbox), forwarding to http://localhost:3000/webhooks.
 # COSS_WEBHOOK_SECRET=whsec_…
-# Saved COSS_WEBHOOK_SECRET in .env.local (API version 2026-10-01)
+# Saved COSS_WEBHOOK_SECRET in .env.local (API version 2026-10-10)
 ```
 
 Requests are signed with that secret. An existing `COSS_WEBHOOK_SECRET` in the project's env file
@@ -451,7 +451,7 @@ coss api suppressions -f reason=bounce --paginate | jq -r .address
 - **Lists**: `--paginate` reads every page and prints each item as one JSON object per line.
 - **Other bodies**: `--raw` prints a response that isn't JSON as it is, such as a CSV export or a
   received email's raw message (`coss api received_emails/<id>/raw --raw > message.eml`).
-- **Versions**: requests use the API version the CLI was built for; `--api-version 2026-10-01`
+- **Versions**: requests use the API version the CLI was built for; `--api-version 2026-10-10`
   asks for another. `--json` prints JSON on one line instead of indented.
 
 A failed call prints the error (`{ "error": { "type", "code", "message", … } }`) on stdout too,

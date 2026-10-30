@@ -1,0 +1,110 @@
+---
+title: Security
+description: coss.com security covers who gets in and what is kept. SSO, SCIM, two-factor and passkeys, roles, an audit log, abuse screening and a retention policy.
+seoTitle: "SSO, SCIM, audit log and data retention · coss.com"
+headline: Built to be trusted with your users' data.
+call: coss.com
+mark: security
+docs: /docs/audit-log
+group: Platform
+features:
+  - SSO with OIDC or SAML, and required SSO
+  - SCIM directory sync
+  - Two-factor and passkeys, required per organization
+  - Owner, admin and member roles
+  - An audit log of every change
+  - Reputation guard and content screening
+  - A published data retention policy
+related:
+  - platform
+  - risk
+  - email
+  - agents
+faq:
+  - question: Does coss.com support single sign-on?
+    answer: Yes. An organization connects one OIDC or SAML identity provider for addresses on its verified domains, and owners can require SSO for every member. Owners keep break-glass access with their password. The pricing page lists the plans that include SSO.
+  - question: Does coss.com support SCIM provisioning?
+    answer: Yes. Directory sync adds, removes and promotes members from your identity provider, mapping groups to the admin or member role. It needs an SSO provider, and owners are never changed by the directory.
+  - question: Can I require two-factor authentication for my team?
+    answer: Yes. An organization can require two-factor authentication (an authenticator app with backup codes) for every member, and members without it are sent to set it up before they can continue. A session from the organization's own SSO provider also satisfies it, since the identity provider owns MFA.
+  - question: How long does coss.com keep my data?
+    answer: Each kind of data has a published period. Sent emails are kept for 45 days and received emails for 30, attachment bytes are deleted once a message is sent, and the worker deletes everything past its period. The data retention page lists every rule.
+  - question: Is there an audit log?
+    answer: Yes. The organization's audit log records every change made by members in the dashboard, by API keys and by coss.com support, with the target and the request id. Owners and admins filter and export it, and it can be read through the API.
+  - question: Does coss.com have a data processing agreement?
+    answer: Yes. The Data Processing Addendum is part of the Terms and is published at coss.com/legal/dpa, with its security measures and the list of subprocessors.
+---
+
+<Section title="Sign-in your IT team can manage" lede="Organizations decide how their members sign in, and coss.com enforces it on every page of the dashboard.">
+
+<Features>
+
+<Feature title="Single sign-on">
+Connect one OIDC or SAML identity provider for addresses on your verified domains. Owners can require SSO: members whose session didn't come from your provider are sent to sign in through it. Available on <PlansWith feature="sso" />. [Single sign-on](/docs/sso).
+</Feature>
+
+<Feature title="Directory sync">
+SCIM adds and removes members as your directory changes and maps groups to the admin or member role. Deactivating a user removes them and ends their SSO sessions; owners are never changed. Available on <PlansWith feature="scim" />. [Directory sync](/docs/scim).
+</Feature>
+
+<Feature title="Two-factor and passkeys">
+Members protect password sign-in with an authenticator app and backup codes, or sign in with a passkey that verifies the user. An organization can require two-factor for everyone, and sign-in forms are protected by Cloudflare Turnstile. [Two-factor](/docs/two-factor).
+</Feature>
+
+<Feature title="Roles">
+Members are owners, admins or members. Only owners change billing and require SSO; admins manage everything else. Members are read-only in the dashboard and create personal API keys where an owner or admin allows them. [Members and roles](/docs/members-and-roles).
+</Feature>
+
+<Feature title="Scoped API keys">
+Keys are bound to one environment with full, sending, read-only or custom permissions. Personal keys stop working when their member leaves, including when the directory removes them. [API keys](/docs/environments#api-keys).
+</Feature>
+
+<Feature title="An audit log">
+Every change by a member, an API key or coss.com support, with its target, environment and request id. Filter and export it, read it with `coss.auditEvents.list()`, or stream it with a log drain. Available on <PlansWith feature="auditLog" />. [Audit log](/docs/audit-log).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Protecting every sender" lede="Abuse by one sender hurts the deliverability of all of them. coss.com watches for it before mailbox providers and carriers do.">
+
+**Reputation guard.** Each organization has a standing, `good`, `warning` or `suspended`, measured from the bounce and complaint rates of its live email (and its SMS opt-outs and filtering) over a rolling window, with thresholds stricter than Amazon SES's. Owners and admins are emailed at a warning, and `account.*` webhooks tell your systems. A suspension stops live sending only, and is never lifted automatically: a person reviews it. [Reputation](/docs/reputation).
+
+**Content screening.** A sample of live emails and text messages is screened for spam, phishing, malware and fraud right before it is sent. Which messages are sampled can't be predicted, a sample that can't be screened is held rather than sent unscreened, and verdicts never store the content. [Content screening](/docs/content-screening).
+
+**Risk for your own product.** The same signals protect your sign-ups and logins: [Risk](/products/risk) scores them and answers allow, review or block.
+
+</Section>
+
+<Section title="Data handling" lede="What coss.com keeps, for how long, and how it is protected.">
+
+Every kind of data has a published retention period, enforced by the worker's purges and listed on the [data retention](/docs/data-retention) page. A few of them:
+
+<Specs>
+<Spec label="Sent emails">kept <RetentionPeriod of="emails" /></Spec>
+<Spec label="Attachment bytes">kept <RetentionPeriod of="attachment_content" /></Spec>
+<Spec label="Received emails">kept <RetentionPeriod of="received_emails" /></Spec>
+<Spec label="Webhook deliveries">kept <RetentionPeriod of="webhook_deliveries" /></Spec>
+<Spec label="Risk emails and IP addresses">kept <RetentionPeriod of="risk_personal_data" /></Spec>
+<Spec label="Content screening verdicts">kept <RetentionPeriod of="content_screenings" /></Spec>
+</Specs>
+
+- **Encryption**: data is encrypted in transit with TLS and at rest; webhook signing secrets and SMS provider credentials are also encrypted with AES-256-GCM, and passwords and API keys are stored only as hashes.
+- **Less to keep**: an environment can [discard email content](/docs/email/content-storage) once it is sent. Risk remembers identifiers only as keyed hashes, and rate limit keys are stored hashed.
+- **Clean logs**: request logs never keep the `Authorization` header, secrets or attachment bytes, and error reports are scrubbed of bodies, IP addresses, cookies and query strings.
+- **Isolation**: every query is scoped to its organization, API keys are bound to one environment, and outbound webhooks reach public addresses only.
+
+</Section>
+
+<Section title="Legal" lede="The documents your security review asks for, published.">
+
+The [Data Processing Addendum](/legal/dpa) is part of the [Terms](/legal/terms): it covers the security measures above, the subprocessors and their locations, and transfers under the EU-U.S. Data Privacy Framework and the Standard Contractual Clauses. The [Privacy Policy](/legal/privacy) and the Acceptable Use Policy say what coss.com collects and what it allows. Vulnerabilities can be reported through the responsible disclosure program at [cal.com/security](https://cal.com/security).
+
+</Section>
+
+<Section title="Plans" lede="Which plans include the organization features.">
+
+Single sign-on is included in <PlansWith feature="sso" />; directory sync in <PlansWith feature="scim" />; the audit log in <PlansWith feature="auditLog" />; log drains in <PlansWith feature="logDrains" />. Two-factor, passkeys, roles, scoped keys, the reputation guard and the retention policy apply to every plan. See [pricing](/pricing).
+
+</Section>

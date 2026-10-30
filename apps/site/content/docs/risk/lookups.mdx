@@ -90,8 +90,9 @@ const { data } = await coss.risk.checkPhone("+1 415 555 0123");
 - Phone data comes from Twilio, which coss.com sends only the number. `degraded: ["phone_data"]`
   means the lookup failed or took longer than 2 seconds (`valid` then only checks the syntax);
   `sim_swap`, that the carrier didn't answer about the SIM.
-- Live phone checks cost $0.01 each, and every plan includes 100 a month (the Free plan stops there:
-  beyond it, `checkPhone` returns a `402`, `usage_limit_exceeded`). Only checks that got an answer
+- Live phone checks cost <Rate meter="risk.phone_checks" />, and every plan includes
+  <Included meter="risk.phone_checks" /> (the Free plan stops there: beyond it, `checkPhone`
+  returns a `402`, `usage_limit_exceeded`). Only checks that got an answer
   count; numbers that aren't E.164, failed lookups and sandbox checks are free. See
   [billing](/docs/billing) for the rates.
 - They are also limited per organization: 5 per second (bursts of 10) and 1,000 per day. Over that,

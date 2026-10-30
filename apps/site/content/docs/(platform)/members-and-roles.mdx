@@ -1,0 +1,93 @@
+---
+title: Members and roles
+description: Owners, admins and members, invitations, organization and personal API keys, leaving, and deleting an organization or an account.
+icon: Users
+---
+
+Everyone who works in an organization is a **member** with one of three roles:
+
+| Role       | Can                                                                                                                         |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Owner**  | Everything an admin can, plus: manage billing (plan, payment methods, add-ons) and [budgets](/docs/spend), require single sign-on, make or remove owners, delete the organization |
+| **Admin**  | Use and configure every product in every project: domains, templates, webhooks, API keys, contacts, Risk rules, Hooks, SMS senders and so on. Invite and remove members and admins, change organization settings, set up [single sign-on](/docs/sso) and [directory sync](/docs/scim), read the [audit log](/docs/audit-log) and billing |
+| **Member** | Read every project and environment in the dashboard (never webhook signing secrets), and create [personal API keys](/docs/environments#personal-keys) in the environments an owner or admin opened to them |
+
+Members can't change anything in the dashboard: what they do, they do through their personal keys.
+An organization has at least one owner at all times: the last owner can't leave, be removed or step
+down until someone else is an owner.
+
+The plan sets how many members an organization can have (Free: <Limit of="members" plan="free" />,
+Pro: <Limit of="members" plan="pro" />, Scale: <Limit of="members" plan="scale" />; see
+[plans and billing](/docs/billing)). One person can own up to 5 organizations, and belong to
+any number.
+
+## Invitations
+
+Owners and admins invite people from the dashboard's **Members** page, as an admin or a member. Nobody is
+invited as an owner: invite them, then make them an owner once they've joined.
+
+- The invitation is emailed to the address you enter and expires after 48 hours; you can resend or
+  cancel it until then. The invitee accepts it signed in with the invited address, once it's verified.
+- Inviting needs a verified email address on your own account. Disposable addresses can't be invited.
+- An organization has at most 50 pending invitations at a time, and invitations sent each day are
+  rate limited.
+- An invitation lasts only as long as its inviter may invite: when they leave, are removed or lose
+  the admin role, their pending invitations are canceled.
+
+With [directory sync](/docs/scim) your identity provider adds and removes members instead, and
+people at your [SSO](/docs/sso) domains join as members the first time they sign in.
+
+## Changing roles and removing members
+
+Owners and admins change roles and remove members on the **Members** page. Only owners can
+change an owner's role, remove an owner, or make someone an owner. Members added by directory sync
+are managed in your identity provider: their role comes from its groups, and removing them there
+removes them here (making one an owner is still possible in the dashboard).
+
+Every change is recorded in the [audit log](/docs/audit-log). While an organization is suspended,
+invitations and member changes are refused.
+
+## API keys
+
+Each API key belongs to one environment, and is either an **organization key** (servers, shared
+jobs) or a **personal key** of one member, whose usage counts as that member's
+[spend](/docs/spend):
+
+- Owners and admins create both, and can assign a personal key to any member.
+- Members create personal keys for themselves where an owner or admin has opened the environment to
+  them. `coss login` and `coss init` create personal keys of the member who approves them.
+- A personal key stops working when its owner leaves or is removed, and its organization-wide
+  permissions (domains, billing, the audit log) follow its owner's current role.
+- Every key has full access or a restricted set of permissions (sending only, read only, or the
+  permissions you pick).
+
+[Environments and API keys](/docs/environments#api-keys) has the details and the full permissions
+table.
+
+## Leaving an organization
+
+Leave from the organization's **Settings** page (**Leave organization**). Your personal API keys in it are revoked, the
+invitations you sent that are still pending are canceled, and you need a new invitation to come
+back. The only owner has to make another member an owner first.
+
+## Deleting an organization
+
+Owners delete an organization from its **Settings** page (**Delete organization**), by typing its slug. Settle
+any open invoices first, and a suspended organization can only be deleted by coss.com support.
+
+Deletion takes effect at once: every API key and directory sync token stops working, the SSO
+provider is removed, members and pending invitations are removed, scheduled emails never go out and
+webhook deliveries stop. coss.com then deletes the organization's data in the background: its
+projects and environments, emails, domains (also at the email provider), received mail, contacts,
+logs, the audit log and everything else it holds. It can't be undone.
+
+## Deleting your account
+
+Delete your account from your account settings (**Delete account**). It deletes your profile, sign-in
+methods (password, passkeys, connected Google or GitHub accounts, two-factor) and personal API keys,
+signs you out everywhere and removes you from every organization. Organizations where you are the
+only member are deleted with it.
+
+It is refused while you are the only owner of an organization that has other members (make someone
+else an owner, or delete the organization, first), while one of your organizations is suspended,
+and while an organization that would be deleted has open invoices.

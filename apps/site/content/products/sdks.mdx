@@ -1,0 +1,146 @@
+---
+title: SDKs and tools
+description: coss.com SDKs and tools cover every language you ship in. A zero-dependency TypeScript SDK, six generated SDKs, framework drivers, a CLI and OpenAPI 3.1.
+seoTitle: "SDKs for TypeScript, Python, Go, Ruby and more · coss.com"
+headline: Every product, in the language you already use.
+call: coss
+mark: sdks
+docs: /docs/sdk
+group: Developers
+features:
+  - A TypeScript SDK with zero dependencies
+  - SDKs for Python, Go, Ruby, PHP, Java and .NET
+  - Drop-ins for Nodemailer, Better Auth and Auth.js
+  - Mail drivers for Laravel, Rails and Django
+  - The coss CLI, with standalone binaries
+  - An OpenAPI 3.1 document
+related:
+  - agents
+  - platform
+  - email
+  - smtp
+faq:
+  - question: Which languages does coss.com have SDKs for?
+    answer: TypeScript and JavaScript (the coss package on npm), plus Python, Go, Ruby, PHP, Java and .NET, generated from the API's OpenAPI document, so every endpoint is in every SDK. Each endpoint's page in the API reference shows its call in every language.
+  - question: Does the coss TypeScript SDK work on Cloudflare Workers, Bun and Deno?
+    answer: Yes. The coss package has zero dependencies and runs unchanged on Node.js 22 and later, Bun, Deno and Cloudflare Workers.
+  - question: Does the SDK retry failed requests?
+    answer: Yes. It retries network errors, timeouts, 409, 429 and 5xx responses up to twice by default, honoring Retry-After. Every POST carries an Idempotency-Key that its retries reuse, so a retried send never goes out twice.
+  - question: Can I use coss.com with Nodemailer, Laravel, Rails or Django without rewriting my code?
+    answer: Yes. coss/nodemailer is a Nodemailer transport, and the Laravel, Rails and Django drivers replace the framework's mail transport through configuration. Better Auth and Auth.js have drop-ins for their email callbacks too.
+  - question: How do I install the coss CLI?
+    answer: With Homebrew (brew install cosscom/tap/coss), the install script, or npm install -g coss-cli. Homebrew and the install script install a standalone executable that needs no Node.js, for macOS, Linux and Windows.
+  - question: Is there an OpenAPI spec for the coss.com API?
+    answer: Yes. The API publishes an OpenAPI 3.1 document at api.coss.com/openapi.json. The API reference and the generated SDKs are built from it.
+---
+
+<Section title="How it works" lede="One client covers every product. Methods return results instead of throwing, and retries are safe by default.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+declare const request: Request;
+// ---cut---
+const coss = new Coss(); // reads COSS_API_KEY
+
+// Email, SMS and every other product on the same client.
+const { data, error } = await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  subject: "Your receipt",
+  text: "Thanks for your order.",
+});
+if (error) console.error(error.type, error.code, error.request_id);
+
+// The one function that throws: a failed signature check must not be ignorable.
+const event = await verifyWebhook(
+  await request.text(),
+  request.headers,
+  process.env.COSS_WEBHOOK_SECRET!,
+);
+```
+
+Checking `error` narrows `data`, so TypeScript knows which one you have. The [SDK guide](/docs/sdk) covers the client's options, [errors and retries](/docs/sdk/errors) and [verifying webhooks](/docs/sdk/webhooks).
+
+</Section>
+
+<Section title="One toolkit, many runtimes" lede="Pick the SDK for your language, keep your mail library, or work from the terminal.">
+
+<Features>
+
+<Feature title="The TypeScript SDK">
+`coss` on npm: zero dependencies, fully typed, ESM, and the same code on Node.js, Bun, Deno and Cloudflare Workers. It refuses to run in a browser unless you opt in, so your key stays on the server.
+</Feature>
+
+<Feature title="Retries that never send twice">
+Network errors, timeouts, 409, 429 and 5xx responses are retried, honoring `Retry-After`. Every `POST` carries an `Idempotency-Key` reused across retries, and calls the API can't deduplicate are never retried.
+</Feature>
+
+<Feature title="React Email">
+Pass a React Email component as `react` and the SDK renders it into `html` and `text`. `@react-email/render` is an optional peer, so nobody else pays for it. [Sending](/docs/email/sending).
+</Feature>
+
+<Feature title="Six more languages">
+Python, Go, Ruby, PHP, Java and .NET SDKs are generated from the OpenAPI document, so every endpoint is in every SDK, typed, with webhook verification in each. [SDKs](/docs/sdks).
+</Feature>
+
+<Feature title="Keep your mail library">
+`coss/nodemailer`, `coss/better-auth` and `coss/authjs` ship in the `coss` package. Laravel, Rails and Django get mail drivers of their own, switched on in configuration. [Integrations](/docs/integrations).
+</Feature>
+
+<Feature title="The coss CLI">
+Sign in, set a project up, send, follow logs and forward webhooks to `localhost`. Homebrew and the install script install a standalone, notarized executable that needs no Node.js. [CLI](/docs/cli).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Install" lede="Every package, by language and tool.">
+
+| Language or tool | Package | Install |
+| --- | --- | --- |
+| TypeScript | `coss` (npm) | `npm install coss` |
+| [Python](/docs/sdks/python) | `cosscom` (PyPI), imported as `coss` | `pip install cosscom` |
+| [Go](/docs/sdks/go) | `github.com/cosscom/coss-go` | `go get github.com/cosscom/coss-go` |
+| [Ruby](/docs/sdks/ruby) | `coss` (RubyGems) | `gem install coss` |
+| [PHP](/docs/sdks/php) | `coss/coss` (Packagist) | `composer require coss/coss` |
+| [Java](/docs/sdks/java) | `com.coss:coss` (Maven Central) | Gradle or Maven |
+| [.NET](/docs/sdks/dotnet) | `Coss` (NuGet) | `dotnet add package Coss` |
+| [Laravel](/docs/integrations/laravel) | `coss/laravel` (Composer) | `composer require coss/laravel` |
+| [Rails](/docs/integrations/rails) | `coss-rails` (gem) | `gem "coss-rails"` in the Gemfile |
+| [Django](/docs/integrations/django) | `coss-django` (pip) | `pip install coss-django` |
+| [CLI](/docs/cli) | `coss-cli` | `brew install cosscom/tap/coss` |
+
+The SDKs, the drivers and the CLI are MIT licensed, so you can bundle them with anything. The [OpenAPI 3.1 document](https://api.coss.com/openapi.json) describes the same API for any other client or code generator.
+
+</Section>
+
+<Section title="The CLI" lede="coss is a command-line tool for the same API, built on the published SDK.">
+
+```sh
+coss login                                      # a personal key, approved in the browser
+coss init                                       # a development key for this project
+coss emails send --simulate bounced            # try a bounce with the mailbox simulator
+coss logs tail --source email --level error     # follow an environment's log
+coss listen --forward-to localhost:3000/webhooks
+```
+
+`--json` prints one object per line for scripts and agents. Executables are built for macOS, Linux (glibc and musl) and Windows on arm64 and x64, each release with its `SHA256SUMS`; macOS builds are signed and notarized by Apple.
+
+</Section>
+
+<Section title="Specifications" lede="The numbers your code can rely on.">
+
+<Specs>
+<Spec label="SDK dependencies">0</Spec>
+<Spec label="SDK runtimes">Node.js 22+, Bun, Deno, Workers</Spec>
+<Spec label="SDK retries">2, honoring Retry-After</Spec>
+<Spec label="SDK timeout">30 s per attempt</Spec>
+<Spec label="Generated SDKs">Python, Go, Ruby, PHP, Java, .NET</Spec>
+<Spec label="Framework drivers">Laravel, Rails, Django</Spec>
+<Spec label="API description">OpenAPI 3.1</Spec>
+<Spec label="Webhook signatures">Standard Webhooks</Spec>
+<Spec label="License">MIT</Spec>
+</Specs>
+
+</Section>

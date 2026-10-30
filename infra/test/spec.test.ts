@@ -180,6 +180,10 @@ describe("routing", () => {
       expect(rule.conditions.some((condition) => condition.Field === "http-header")).toBe(true);
     }
     expect(new Set(rules.map((rule) => rule.priority)).size).toBe(rules.length);
+    // The ALB evaluates rules by priority, so priorities follow the rules' order.
+    expect(rules.map((rule) => rule.priority)).toEqual(
+      [...rules.map((rule) => rule.priority)].sort((a, b) => a - b),
+    );
   });
 
   test("the API host first, the dashboard last, site paths in between", () => {

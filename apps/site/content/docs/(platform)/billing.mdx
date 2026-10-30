@@ -33,9 +33,8 @@ Usage is counted per product and billed at these rates:
   received messages by the receiving number's country. Phone numbers and US carrier registration
   fees are passed through at cost. SMS needs a paid plan: see
   [countries and pricing](/docs/sms/countries-and-pricing).
-- **Volume pricing is graduated**: each band is priced at its own rate, so there's no cliff. With
-  2,000,000 emails in a month, the first 1,000,000 cost $0.40 per 1,000 and the next 1,000,000
-  $0.30 per 1,000: $700.
+- **Volume pricing is graduated**: each band is priced at its own rate, so there's no cliff.
+  <GraduatedExample />
 - Usage is counted in calendar months (UTC), and the bands start over each month.
 
 ## How a month is billed
@@ -44,16 +43,7 @@ Your plan's fee is charged at the start of each month, and becomes that month's 
 end of the month, its usage is rated, the credit is applied, and anything beyond it is charged
 on the next month's invoice with the next fee.
 
-For example, on Pro with 2,000,000 emails in October:
-
-| | |
-| --- | --- |
-| October fee (charged October 1) | $25.00 |
-| October usage | $700.00 |
-| October credit | -$25.00 |
-| **Charged November 1** (with November's $25 fee) | **$675.00** |
-
-Over the month you paid $700: the larger of the fee and the usage.
+<BillingExample />
 
 ## Add-ons
 

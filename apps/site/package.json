@@ -17,6 +17,8 @@
     "@coss/auth": "workspace:*",
     "@coss/billing": "workspace:*",
     "@coss/observability": "workspace:*",
+    "@coss/ratelimit": "workspace:*",
+    "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/risk": "workspace:*",
     "@coss/sdkgen": "workspace:*",

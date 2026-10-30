@@ -4,21 +4,24 @@ import { Card, CardPanel } from "@coss/ui/components/card";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { JsonLd } from "@/components/json-ld";
 import { EmailEstimator } from "@/components/pricing/email-estimator";
 import { PlanCards } from "@/components/pricing/plan-cards";
 import { PlanComparison } from "@/components/pricing/plan-comparison";
-import { PricingFaq } from "@/components/pricing/pricing-faq";
+import { PricingFaq, pricingFaq } from "@/components/pricing/pricing-faq";
 import { SmsRateTable } from "@/components/pricing/sms-rates";
 import { UsageRateCards } from "@/components/pricing/usage-rates";
 import { formatPrice, smsRates } from "@/lib/pricing";
+import { faqSchema, pageMetadata } from "@/lib/seo";
 import { SALES_EMAIL } from "@/lib/site";
 
 const FREE_EMAILS = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocaleString("en-US");
 
-export const metadata: Metadata = {
-  title: "Pricing",
+export const metadata: Metadata = pageMetadata({
+  title: "Pricing · coss.com",
   description: `Start free with ${FREE_EMAILS} emails a month. Paid plans turn their monthly fee into credit for usage of any coss.com product.`,
-};
+  path: "/pricing",
+});
 
 function Section({
   id,
@@ -47,6 +50,7 @@ function Section({
 export default function PricingPage() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-20 px-4 py-16 sm:py-24">
+      <JsonLd data={faqSchema(pricingFaq())} />
       <div className="flex flex-col gap-12">
         <header className="flex max-w-2xl flex-col gap-4">
           <h1 className="font-semibold text-4xl tracking-tight sm:text-5xl">Pricing</h1>

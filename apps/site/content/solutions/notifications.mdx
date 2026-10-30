@@ -1,0 +1,126 @@
+---
+title: Notifications
+description: coss.com sends product notifications by email and SMS on one API key, with templates, scheduled sends, signed delivery webhooks and one log across both.
+seoTitle: "Product notifications by email and SMS, one API · coss.com"
+headline: Product notifications across email and SMS.
+mark: email
+products:
+  - email
+  - sms
+  - platform
+  - smtp
+faq:
+  - question: Can I send email and SMS with the same API key?
+    answer: Yes. coss.email.send() and coss.sms.send() use the same key, SDK, webhook endpoints, logs and sandbox environments. A development key simulates both, and a production key sends both for real.
+  - question: How do I schedule a notification?
+    answer: Pass scheduled_at, an ISO 8601 timestamp with a time zone offset up to 30 days ahead, to an email or SMS send. Scheduled emails can be rescheduled or canceled until dispatch starts, and the sender and suppression list are checked again at send time.
+  - question: How do I know a notification was delivered?
+    answer: Subscribe a webhook endpoint to events such as email.delivered, email.bounced, sms.delivered and sms.undelivered. Every webhook is signed with the endpoint's own secret and retried on failure, and every event also appears in the environment's log.
+  - question: Does coss.com honor unsubscribes and SMS opt-outs?
+    answer: Yes. Permanent bounces, complaints and one-click unsubscribes add suppression entries that later sends skip, and an SMS reply of STOP suppresses the sender in every live environment until they reply START.
+  - question: Can I keep notification copy out of my code?
+    answer: Yes. Email templates hold the subject, HTML and text in every language you send, with typed variables. You publish a draft as a numbered version and send it by id or alias with the values for its variables.
+  - question: Can my app send notifications over SMTP instead of the API?
+    answer: Yes. Use smtp.coss.com on port 465 or 587 with the username coss and an API key as the password. Each message gets the same sender checks, suppressions, quotas, webhooks and logs as the API.
+---
+
+<Section title="The problem" lede="Notifications go out on several channels, and each channel usually means another provider, another key and another log.">
+
+Order confirmations, password resets, shipping updates and reminders go out by email and, increasingly, by SMS. With one provider per channel, each has its own API key, its own webhook format, its own suppression list and its own dashboard, and answering "did the customer get it?" means checking several places.
+
+coss.com sends [email](/products/email) and [SMS](/products/sms) through one SDK and one API key. Both report delivery through the same signed webhooks and the same [log](/docs/logs), both honor unsubscribes and opt-outs, and apps that only speak SMTP send through the [SMTP relay](/products/smtp).
+
+</Section>
+
+<Section title="How it works" lede="Send by email and SMS with one client, then follow both through the same webhook endpoint.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const secret: string;
+declare const request: Request;
+declare function markDelivered(id: string): Promise<void>;
+// ---cut---
+// An email from a published template, with its variables.
+await coss.email.send(
+  {
+    from: "Acme <orders@acme.com>",
+    to: "ada@example.com",
+    template_id: "order-shipped",
+    variables: { first_name: "Ada", tracking_url: "https://acme.com/t/1042" },
+  },
+  { idempotencyKey: "order-1042-shipped" },
+);
+
+// An SMS reminder tomorrow morning, from the same client.
+await coss.sms.send({
+  from: "+14155550123",
+  to: "+14155550199",
+  body: "Acme: your order 1042 arrives today.",
+  scheduled_at: "2026-11-11T09:00:00Z",
+});
+
+// One webhook endpoint for both channels.
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "email.delivered") await markDelivered(event.data.email_id);
+if (event.type === "sms.delivered") await markDelivered(event.data.sms_id);
+```
+
+Read more in [sending email](/docs/email/sending), [templates](/docs/email/templates), [sending SMS](/docs/sms/sending) and [webhooks](/docs/webhooks).
+
+</Section>
+
+<Section title="What you get" lede="Two channels on one platform, with the delivery record in one place.">
+
+<Features>
+
+<Feature title="Email and SMS on one key">
+`coss.email.send()` and `coss.sms.send()` share the API key, SDK, webhook endpoints, logs and sandbox environments. Sends return `202` at once and a background worker hands them to the provider or carrier.
+</Feature>
+
+<Feature title="Templates">
+[Templates](/docs/email/templates) keep subjects and bodies in coss.com, versioned and localized, with typed variables. Every email records which template, version and locale it was rendered from.
+</Feature>
+
+<Feature title="Scheduled sends">
+Pass `scheduled_at` up to 30 days ahead. Scheduled emails can be rescheduled or canceled, and the sender and suppression list are checked again when the time comes.
+</Feature>
+
+<Feature title="Signed delivery webhooks">
+`email.delivered`, `email.bounced`, `sms.delivered`, `sms.undelivered` and the rest arrive signed with each endpoint's own secret, retried 7 times over about 28 hours.
+</Feature>
+
+<Feature title="One log across products">
+Every API request, email and SMS event and webhook attempt of an environment is in one [log](/docs/logs), searchable in the dashboard, readable with `coss.logs.list()` and streamable to your own tools through log drains.
+</Feature>
+
+<Feature title="Opt-outs honored">
+Bounces, complaints and one-click unsubscribes add [suppressions](/docs/email/suppressions) that later sends skip. An SMS reply of STOP suppresses the sender in every live environment.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Specifications" lede="The limits of each channel. The docs list each one in context.">
+
+<Specs>
+<Spec label="Scheduling window">up to 30 days ahead, email and SMS</Spec>
+<Spec label="Emails per batch request">100</Spec>
+<Spec label="Custom headers per email">15</Spec>
+<Spec label="Tags per email">50</Spec>
+<Spec label="Idempotency window">24 hours</Spec>
+<Spec label="Webhook retries">7 over about 28 hours</Spec>
+<Spec label="Log query range">up to 31 days</Spec>
+<Spec label="SMTP ports">465 (TLS), 587 (STARTTLS)</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Pricing" lede="Email is billed per recipient and SMS per segment, by country. Sandbox sends are free.">
+
+<UsageRates meters="email.recipients,sms.segments" />
+
+The Free plan includes <Included meter="email.recipients" />. Live SMS is available on paid plans. See [pricing](/pricing) for the plans.
+
+</Section>

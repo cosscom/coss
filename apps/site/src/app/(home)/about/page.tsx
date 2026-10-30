@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { PRODUCTS } from "@/components/home/parts";
 import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
+import { pageMetadata } from "@/lib/seo";
 import { SHIPYARD } from "@/lib/shipyard";
 
 /** Products of the platform beyond the catalog's four parts, in the same shape. */
@@ -28,10 +29,11 @@ const MORE_PRODUCTS = [
 const DESCRIPTION =
   "Supabase made the database something you get by signing up. coss.com does the same for the application layer: email, SMS, video, scheduling, behind one API key and one SDK.";
 
-export const metadata: Metadata = {
-  title: "About",
+export const metadata: Metadata = pageMetadata({
+  title: "About · coss.com",
   description: DESCRIPTION,
-};
+  path: "/about",
+});
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (

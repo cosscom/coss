@@ -1,4 +1,6 @@
 import "server-only";
+import { COMPARE_ROUTE, COMPETITORS, compareMarkdown } from "./compare";
+import { marketingMarkdown, productPages, solutionPages } from "./marketing";
 import { SITE_URL } from "./site";
 import { type DocsPage, docsLlms, markdownUrl, operationOf, pageMarkdown, source } from "./source";
 
@@ -47,15 +49,44 @@ export async function llmsIndex(): Promise<string> {
       const description = (descriptions.get(url) ?? "").replace(/\s*\n\s*/g, " ").trim();
       return `](${link(url)})${description ? `: ${description}` : ""}`;
     });
-  return `${AGENT_BRIEF}## Docs\n\n${tree}\n`;
+  return `${AGENT_BRIEF}## Docs\n\n${tree}\n\n${marketingIndex()}`;
+}
+
+/**
+ * The product, solution and comparison pages, after the docs: what each product is for and how it
+ * compares, for agents asked to choose rather than to build.
+ */
+function marketingIndex(): string {
+  const entry = (title: string, url: string, description = "") =>
+    `- [${title}](${SITE_URL}${url}.md)${description ? `: ${description}` : ""}`;
+  return [
+    "## Products",
+    "",
+    ...productPages().map((page) => entry(page.data.title, page.url, page.data.description)),
+    "",
+    "## Solutions",
+    "",
+    ...solutionPages().map((page) => entry(page.data.title, page.url, page.data.description)),
+    "",
+    "## Comparisons",
+    "",
+    ...COMPETITORS.map((c) =>
+      entry(`coss.com vs ${c.name}`, `${COMPARE_ROUTE}/${c.slug}`, c.verdict),
+    ),
+    "",
+  ].join("\n");
 }
 
 /** /llms-full.txt: the brief, then every page (API operations as one short entry each). */
 export async function llmsFull(): Promise<string> {
-  const pages = await Promise.all(
-    source.getPages().map((page) => pageMarkdown(page, { compact: true })),
+  const pages = await Promise.all([
+    ...source.getPages().map((page) => pageMarkdown(page, { compact: true })),
+    ...[...productPages(), ...solutionPages()].map((page) => marketingMarkdown(page)),
+  ]);
+  const comparisons = COMPETITORS.map((c) =>
+    compareMarkdown(c, `${SITE_URL}${COMPARE_ROUTE}/${c.slug}`),
   );
-  return `${AGENT_BRIEF}${pages.join("\n\n")}\n`;
+  return `${AGENT_BRIEF}${[...pages, ...comparisons].join("\n\n")}\n`;
 }
 
 /** A docs page's `.md` (src/app/docs/md). */

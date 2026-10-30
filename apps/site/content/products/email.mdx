@@ -1,0 +1,178 @@
+---
+title: Email
+description: coss.com Email is a transactional email API. Send single, batch and scheduled email from your domains, with templates, tracking and per-recipient webhooks.
+seoTitle: "Transactional email API for developers · coss.com"
+headline: Transactional email, from your own domain.
+call: coss.email
+mark: email
+docs: /docs/email/sending
+group: Email
+features:
+  - Single, batch and scheduled sends
+  - Versioned, localized templates
+  - Per-recipient status and webhooks
+  - Open and click tracking on your own domain
+  - DKIM, SPF and DMARC with one-click DNS setup
+  - Dedicated IPs, warmed up for you
+related:
+  - marketing-email
+  - smtp
+  - inbound-email
+  - subaccounts
+faq:
+  - question: What is the coss.com email API?
+    answer: A REST API and TypeScript SDK for sending transactional email such as sign-in links, receipts and password resets from your own verified domains. Each email is tracked per recipient, and every delivery event can be sent to your webhook endpoint.
+  - question: How do I send an email with coss.com in Node.js or TypeScript?
+    answer: Install the coss package, set COSS_API_KEY, and call coss.email.send() with from, to, subject and html or text. The call returns { data, error } instead of throwing, and the SDK retries failed requests under the same Idempotency-Key so an email is never sent twice.
+  - question: Can I send emails in bulk or in batches?
+    answer: Yes. coss.email.sendBatch() sends up to 100 emails in one request, each with its own sender, recipients and content. A batch is all or nothing, so if one email is invalid nothing is sent, and one idempotency key covers the whole batch.
+  - question: Can I schedule an email to send later?
+    answer: Yes. Pass scheduled_at as an ISO 8601 time up to 30 days ahead. Until it is sent, you can move it with coss.email.reschedule() or cancel it with coss.email.cancel().
+  - question: How do I set up DKIM, SPF and DMARC for my domain?
+    answer: Add the domain in the dashboard or with coss.domains.create() and publish the records it returns, three DKIM CNAMEs, a MAIL FROM MX and SPF record, and a recommended DMARC record. If your DNS provider supports Domain Connect, the dashboard adds them for you in one click.
+  - question: Does coss.com offer dedicated IP addresses?
+    answer: Yes, as the Dedicated IPs add-on. They are Amazon SES managed dedicated IPs, warmed up automatically per mailbox provider, and while they warm up the mail they can't take yet leaves from shared IPs. The pricing page lists the plans it can be added to.
+  - question: How much does sending email cost?
+    answer: Email is billed per recipient, with a monthly allowance on the Free plan and volume tiers on paid plans. Sandbox environments send nothing and are free. The pricing page lists the current rates.
+---
+
+<Section title="How it works" lede="One call sends an email. coss.com queues it, hands it to the mail provider and reports what happens to each recipient.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const invoicePdf: string; // the file's bytes, base64-encoded
+// ---cut---
+// An email with an attachment, safe to retry under your own key.
+const { data: email, error } = await coss.email.send(
+  {
+    from: "Acme <billing@acme.com>",
+    to: "ada@example.com",
+    subject: "Your October invoice",
+    html: "<p>Your invoice is attached.</p>",
+    attachments: [{ filename: "invoice.pdf", content: invoicePdf }],
+    category: "billing",
+  },
+  { idempotencyKey: "invoice-2026-10-ada" },
+);
+
+// A published template, rendered at send in the recipient's language, sent later.
+await coss.email.send({
+  from: "Acme <hello@acme.com>",
+  to: "grace@example.com",
+  template_id: "welcome",
+  locale: "de",
+  variables: { first_name: "Grace" },
+  scheduled_at: "2026-11-02T09:00:00Z",
+});
+
+// Up to 100 emails in one request, all or nothing.
+await coss.email.sendBatch([
+  { from: "Acme <digest@acme.com>", to: "ada@example.com", subject: "Your week", html: "<p>Hi Ada</p>" },
+  { from: "Acme <digest@acme.com>", to: "linus@example.com", subject: "Your week", html: "<p>Hi Linus</p>" },
+]);
+```
+
+Sends return `202` with `status: "queued"` (or `scheduled`). Follow each recipient with
+`coss.email.get()` or the `email.delivered`, `email.bounced` and other [webhooks](/docs/webhooks).
+The [API reference](/docs/api-reference/emails/send-email) lists every field.
+
+</Section>
+
+<Section title="Sending" lede="Everything a product needs to send its own email: content in code or in coss.com, at once or later, retried without duplicates.">
+
+<Features>
+
+<Feature title="Single, batch and scheduled">
+`coss.email.send()` sends one email, `sendBatch()` up to 100 in one all-or-nothing request. `scheduled_at` sends up to 30 days ahead, and a scheduled email can be [rescheduled or canceled](/docs/email/sending#scheduling-rescheduling-and-cancellation) until it leaves.
+</Feature>
+
+<Feature title="Idempotent by default">
+The SDK puts an `Idempotency-Key` on every send and reuses it across its retries. Pass your own, such as an invoice id, and a repeat within 24 hours returns the first email instead of sending a second. See [idempotency](/docs/api-reference/idempotency).
+</Feature>
+
+<Feature title="Templates">
+Keep subjects and bodies in coss.com: edit a draft, publish numbered versions, hold one subject, HTML and text per locale, and declare typed variables. [Templates](/docs/email/templates) are rendered at send, so later publishes never change an email already sent or scheduled.
+</Feature>
+
+<Feature title="React Email and text parts">
+Pass a [React Email](https://react.email) component as `react` and the SDK renders it to HTML and text. Send only HTML and coss.com adds a plain-text part generated from it, with links written out.
+</Feature>
+
+<Feature title="Attachments">
+Base64 files, inline images by `content_id`, up to 20 per email. The bytes are deleted once the email is sent, fails or is canceled; reads and webhooks only ever show their metadata.
+</Feature>
+
+<Feature title="Per-recipient events">
+Each recipient has its own status, from `queued` to `delivered`, `bounced` or `complained`. Every change is an [event](/docs/email/delivery) on the email and a signed webhook, with your tags and category, never the content.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Deliverability" lede="The parts of email that decide whether it reaches the inbox, set up and watched for you.">
+
+<Features>
+
+<Feature title="Domains with Domain Connect">
+Each [domain](/docs/email/domains) gets three DKIM keys, a MAIL FROM subdomain with SPF, and a recommended DMARC record. With a DNS provider that supports Domain Connect, the dashboard adds the missing records in one click.
+</Feature>
+
+<Feature title="DMARC reports and BIMI">
+coss.com receives your domains' [DMARC](/docs/email/dmarc) aggregate reports, shows every source sending as you, and tells you when it is safe to move from `p=none` to `p=reject`. Each domain also gets a [BIMI](/docs/email/bimi) record check.
+</Feature>
+
+<Feature title="Tracking on your domain">
+[Open and click tracking](/docs/email/tracking) per environment, category or send. A custom tracking domain such as `links.acme.com` serves the links from your own brand, with a certificate coss.com issues.
+</Feature>
+
+<Feature title="Suppressions">
+Permanent bounces and complaints are suppressed automatically, and [one-click unsubscribe](/docs/email/unsubscribe) suppresses per category. One [list](/docs/email/suppressions) per environment, managed, imported and exported through the API.
+</Feature>
+
+<Feature title="Two streams">
+[Transactional and marketing](/docs/email/streams) email leave on separate sending configurations with separate reputations, so a newsletter's complaints never hold up a password reset.
+</Feature>
+
+<Feature title="Dedicated IPs">
+With the add-on, live email leaves from your own Amazon SES managed [dedicated IPs](/docs/email/dedicated-ips), warmed up per mailbox provider. What they can't take yet goes out on shared IPs, so warm-up never delays a send.
+</Feature>
+
+</Features>
+
+Sensitive content can skip storage: with [content storage](/docs/email/content-storage) set to
+`discard`, coss.com keeps an email's subject and bodies only until it is sent.
+
+</Section>
+
+<Section title="Specifications" lede="The limits a send is checked against. The docs list each one in context.">
+
+<Specs>
+<Spec label="Emails per batch">100, all or nothing</Spec>
+<Spec label="Recipients per field">50</Spec>
+<Spec label="Scheduling">up to 30 days ahead</Spec>
+<Spec label="Attachments">20 files, 25 MB combined</Spec>
+<Spec label="Request size">40 MB</Spec>
+<Spec label="Custom headers">15</Spec>
+<Spec label="Tags per email">50</Spec>
+<Spec label="Idempotency window">24 hours</Spec>
+<Spec label="Locales per template version">30</Spec>
+<Spec label="Email retention"><RetentionPeriod of="emails" /></Spec>
+<Spec label="Custom tracking domains"><PlansWith feature="trackingDomains" /></Spec>
+<Spec label="Dedicated IPs add-on"><PlansWith feature="dedicatedIps" /></Spec>
+</Specs>
+
+</Section>
+
+<Section title="Pricing" lede="Email is billed per recipient. Sandbox environments send nothing and are free.">
+
+<UsageRates meters="email.recipients,email.dedicated_ip" />
+
+Free includes <Included meter="email.recipients" />. Dedicated IPs are an add-on:
+
+<AddOns />
+
+See [pricing](/pricing) for the plans.
+
+</Section>

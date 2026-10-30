@@ -2055,7 +2055,58 @@
               "Field": "path-pattern",
               "PathPatternConfig": {
                 "Values": [
-                  "/.well-known/*"
+                  "/.well-known/*",
+                  "/products",
+                  "/products/*"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 121,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/compare",
+                  "/compare/*",
+                  "/solutions"
+                ]
+              }
+            },
+            {
+              "Field": "http-header",
+              "HttpHeaderConfig": {
+                "HttpHeaderName": "X-Origin-Verify",
+                "Values": [
+                  "<origin-verify-secret>"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "priority": 122,
+          "targetGroup": "site",
+          "conditions": [
+            {
+              "Field": "path-pattern",
+              "PathPatternConfig": {
+                "Values": [
+                  "/solutions/*",
+                  "/opengraph-image"
                 ]
               }
             },
@@ -2301,6 +2352,48 @@
             "reason": "site zone (/.well-known)"
           },
           {
+            "pathPattern": "/products",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/products)"
+          },
+          {
+            "pathPattern": "/products/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/products)"
+          },
+          {
+            "pathPattern": "/compare",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/compare)"
+          },
+          {
+            "pathPattern": "/compare/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/compare)"
+          },
+          {
+            "pathPattern": "/solutions",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/solutions)"
+          },
+          {
+            "pathPattern": "/solutions/*",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/solutions)"
+          },
+          {
+            "pathPattern": "/opengraph-image",
+            "origin": "alb",
+            "cache": "origin",
+            "reason": "site zone (/opengraph-image)"
+          },
+          {
             "pathPattern": "/ui",
             "origin": "ui",
             "cache": "origin",
@@ -2356,7 +2449,11 @@
       "/favicon.ico",
       "/robots.txt",
       "/sitemap.xml",
-      "/.well-known*"
+      "/.well-known*",
+      "/products*",
+      "/compare*",
+      "/solutions*",
+      "/opengraph-image*"
     ]
   }
 }

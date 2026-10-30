@@ -1,0 +1,108 @@
+---
+title: Reputation
+description: How coss.com measures your organization's bounces, complaints and opt-outs, and when it warns or suspends live sending.
+icon: Gauge
+---
+
+Your organization has one **standing**, measured from what its live environments send:
+
+| Status      | Meaning                                                                                  |
+| ----------- | ---------------------------------------------------------------------------------------- |
+| `good`      | Every check is within its thresholds                                                     |
+| `warning`   | A check crossed its warning threshold. Nothing is refused; fix the cause before it grows |
+| `suspended` | Live sending is refused until coss.com support reinstates the organization               |
+
+Sandbox environments are never measured, and keep working while an organization is suspended.
+
+## What is measured
+
+Rates are counted per recipient over a rolling window of <ReputationWindow /> (never reaching back
+before the organization's last reinstatement). Suppressed, failed, queued and canceled recipients
+don't count, and neither do the [mailbox simulator's](/docs/environments#sandbox-behaviour)
+addresses. A rate is only acted on once the window holds enough volume to make it meaningful; below
+that, it is reported but never warns. The default thresholds:
+
+<ReputationThresholds />
+
+These are stricter than most mailbox providers' own, so coss.com acts before they do. coss.com
+can set different thresholds for an organization: [`GET /v1/reputation`](#reading-your-standing)
+returns the ones that apply to yours, check by check.
+
+- **Email** is measured per [stream](/docs/email/streams#reputation). Transactional bounces and
+  complaints decide the standing. Marketing bounces and complaints never suspend the organization:
+  at their higher threshold **marketing email is paused** (broadcasts and `stream: "marketing"`
+  sends are refused with `403` `marketing_paused`) while transactional email keeps going.
+- **SMS** is measured by the share of numbers that replied STOP and of messages carriers filtered
+  as spam (see [opt-outs and reputation](/docs/sms/receiving#opt-outs-and-reputation)).
+- **Hooks** deliveries that failed every attempt only warn: they usually mean your customers'
+  endpoints no longer exist (see [Hooks delivery](/docs/hooks/delivery#reputation)).
+- **Content screening** blocks a message it is confident is abusive and suspends live sending at
+  once; messages it flags warn. See [content screening](/docs/content-screening).
+- A [sub-account](/docs/email/subaccounts#reputation) has its own standing: its rates pause that
+  sub-account alone, while your organization's standing still counts everything it sends.
+
+coss.com re-evaluates an organization as soon as a new live bounce or complaint arrives, and every
+hour while it is warned. A warning clears by itself once every check is back within its thresholds.
+
+## When live sending is suspended
+
+- Live emails and SMS are refused with `403` `permission_error` (`account_suspended`). Sends coss.com
+  had already accepted may still go out; scheduled sends wait until the suspension is lifted.
+- New live API keys can't be created. Sandbox keys and environments keep working, and so does
+  everything that isn't a send.
+- **A suspension is never lifted automatically.** Contact coss.com support: a person reviews the
+  account and reinstates it, and rates are measured afresh from then on. A marketing pause works the
+  same way.
+
+## Notifications
+
+Every change of standing is sent to the `account.*` [webhooks](/docs/webhooks#organization-events)
+of each live environment:
+
+| Type                           | Sent when                                     |
+| ------------------------------ | --------------------------------------------- |
+| `account.reputation_warning`   | A check crossed its warning threshold         |
+| `account.reputation_recovered` | The warning cleared                           |
+| `account.suspended`            | Live sending was suspended                    |
+| `account.reinstated`           | coss.com support lifted the suspension        |
+| `account.marketing_paused`     | Marketing email was paused                    |
+| `account.marketing_reinstated` | coss.com support lifted the marketing pause   |
+
+Warnings, suspensions and marketing pauses are also emailed to the organization's owners and admins
+(those with a verified address), with the checks behind them and what to do. Recoveries and
+reinstatements aren't emailed. The dashboard shows a banner, and its **Reputation** page lists the
+checks and the history of the standing.
+
+## Reading your standing
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: reputation } = await coss.reputation.get();
+
+if (reputation && reputation.status !== "good") {
+  for (const check of reputation.checks) {
+    if (check.severity !== "ok") console.log(check.trigger, check.rate, check.message);
+  }
+}
+if (reputation?.marketing.status === "paused") {
+  console.log("Marketing email is paused:", reputation.marketing.reason);
+}
+```
+
+Any key with `reputation:read` reads it ([`GET /v1/reputation`](/docs/api-reference/reputation/get-reputation)).
+Each check carries its `rate`, `count` and `volume` over the `window`, and the `warning_threshold`,
+`suspend_threshold` and `minimum_volume` that apply to your organization.
+
+## Keeping a good standing
+
+- Send only to people who asked for your messages, and remove addresses that bounce: coss.com
+  [suppresses](/docs/email/suppressions) them for you after a permanent bounce or a complaint.
+- Make unsubscribing easy: marketing email gets [one-click unsubscribe](/docs/email/unsubscribe).
+- Keep marketing on the marketing stream, so a campaign's complaints never hold up password resets.
+- Test with a sandbox key and the simulator's addresses, never by sending to made-up addresses from
+  a live environment.
+
+The [Acceptable Use Policy](/legal/acceptable-use#3-bounce-complaint-and-opt-out-rates) is the
+policy behind these thresholds.

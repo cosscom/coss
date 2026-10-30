@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { JsonLd } from "@/components/calendar/seo/json-ld";
 import { QuickAddParser } from "@/components/calendar/tools/quick-add-parser";
 import { ToolShell } from "@/components/calendar/tools/tool-shell";
+import { JsonLd } from "@/components/json-ld";
 import { abs, canonical } from "@/lib/calendar/site";
 import { toolSchema } from "@/lib/calendar/structured-data";
 import { toolOf } from "@/lib/calendar/tools";

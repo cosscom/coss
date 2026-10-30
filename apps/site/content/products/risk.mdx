@@ -1,0 +1,146 @@
+---
+title: Risk
+description: coss.com Risk is a fraud and abuse API. It scores sign-ups, logins, checkouts and messages and answers allow, review or block, with the reasons why.
+seoTitle: "Fraud detection API for sign-ups and logins · coss.com"
+headline: Stop fake sign-ups before they cost you.
+call: coss.risk
+mark: risk
+docs: /docs/risk
+group: Trust
+features:
+  - Allow, review or block, with reasons
+  - Email, IP, device and content signals
+  - Velocity and duplicate accounts
+  - Allow and block lists, and your own rules
+  - A review queue with webhooks
+  - Weights calibrated from your feedback
+  - Email, IP and phone checks on their own
+related:
+  - rate-limiting
+  - verify
+  - email
+  - security
+faq:
+  - question: How do I detect fake sign-ups?
+    answer: Call coss.risk.assess() from your server with the event (signup), the email address, the client's IP address and user agent, and optionally a device token from coss/device. coss.com answers allow, review or block with a score and the reasons, such as a disposable domain, a Tor exit node or a mailbox that already has an account.
+  - question: How does coss.com decide between allow, review and block?
+    answer: In order, your allow list, your block list, the first of your rules that matches, then the score. The score combines the weight of every reason that fired, and your review and block thresholds turn it into a decision.
+  - question: What happens if a signal is slow or unavailable?
+    answer: The assessment is made without it. Each signal fails open on its own time budget, such as 800 milliseconds for DNS, and the missing groups are listed in degraded. An assessment never fails because one signal did.
+  - question: Does coss.com Risk store my users' email and IP addresses?
+    answer: Assessments keep the email address, IP address and user agent for 90 days, then only keyed hashes of them. What an environment remembers for velocity, duplicates and fraud reports is only ever HMACs. Content is never stored, only its scores, and coss.risk.users.forget() deletes everything that identifies a user.
+  - question: Can I check an email address or IP address without an assessment?
+    answer: Yes. coss.risk.checkEmail(), checkIp(), checkPhone() and classify() return the same signals on their own. They store and count nothing about the address, number or text.
+  - question: How much does coss.com Risk cost?
+    answer: Live phone checks are billed per lookup that got an answer, and every plan includes a monthly allowance of them. Sandbox checks are free. The pricing page lists the current rates.
+---
+
+<Section title="How it works" lede="Assess the event when it happens, act on the decision, and tell coss.com later what the user turned out to be.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const body: { email: string; device: string };
+declare const request: { ip: string; userAgent: string };
+declare function createAccount(email: string): Promise<{ id: string }>;
+// ---cut---
+const { data: assessment, error } = await coss.risk.assess({
+  event: "signup",
+  user: { email: body.email },
+  ip: request.ip,
+  user_agent: request.userAgent,
+  device: { token: body.device }, // collectDevice() from coss/device, in the browser
+});
+
+// Fail open: an outage on our side must never lock your users out.
+if (error) console.error(error);
+if (assessment?.decision === "block") throw new Error("We couldn't create your account.");
+
+const account = await createAccount(body.email);
+
+// Weeks later, after a chargeback: the same mailbox, card or browser is flagged next time.
+if (assessment) await coss.risk.feedback(assessment.id, { outcome: "fraud" });
+```
+
+Every assessment returns a `decision`, a `score` between 0 and 1 and its `reasons`, each with a code such as `email.disposable` or `duplicate.canonical_mailbox`. Other events are `login`, `message`, [`checkout`](/docs/risk/checkout) and `custom`. The [guide](/docs/risk) covers each one, and [reasons](/docs/risk/reasons) lists every code.
+
+</Section>
+
+<Section title="Signals you would otherwise build" lede="One call collects every signal in parallel. Each fails open on its own time budget, so a slow lookup never fails the assessment.">
+
+<Features>
+
+<Feature title="Email and IP">
+Syntax, disposable domains, domains that can't receive mail, role accounts, typos (`gmail.con`) and new domains. Tor exits, cloud and hosting networks, VPN networks, the ASN and the country.
+</Feature>
+
+<Feature title="What your environment has seen">
+How often the same IP address, subnet, domain, mailbox, user, card or browser came by in the last hour and day, whether the mailbox or browser already has an account, and identifiers you reported as fraud.
+</Feature>
+
+<Feature title="The browser">
+`coss/device` gives the browser a random id kept in `localStorage`, with its time zone, languages and automation markers. No cookies, no canvas or font fingerprinting. [Devices](/docs/risk/devices).
+</Feature>
+
+<Feature title="Content">
+Pass what the user wrote (a bio, a message, a listing) and it is scored for spam, phishing, malware and fraud by an AI model. The text is never stored, and `content.*` reasons fire only at thresholds you set. [Content](/docs/risk/content).
+</Feature>
+
+<Feature title="Your lists and rules">
+Allow and block lists match emails, domains, IP ranges, networks, countries and user ids. Rules like "block disposable email from a data center" decide specific cases before the score. [Rules](/docs/risk/rules).
+</Feature>
+
+<Feature title="A review queue">
+`review` decisions wait in the dashboard's review queue and fire `risk.assessment.review`. Resolving one sends `risk.assessment.reviewed`, so a queue you keep elsewhere closes too. [Reviews](/docs/risk/lists-and-feedback#reviews).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="How a decision is made" lede="Decisions follow a fixed order, so a case you decided yourself is never overruled by the score.">
+
+1. **Allow list**, then **block list**: a match decides at once (`list.allowed`, `list.blocked`).
+2. **Rules**: the first enabled rule whose conditions match decides (`rule.matched`, naming the rule).
+3. **Score**: every reason that fired adds its weight, combined as `1 − Π(1 − weight)`. By default a score of <RiskThreshold of="review" /> or more is `review` and <RiskThreshold of="block" /> or more is `block`; both thresholds are [settings](/docs/risk/settings) of each environment.
+
+Your feedback (`fraud`, `abuse` or `legitimate`) feeds [calibration](/docs/risk/calibration): over 90 days, the precision of every reason and rule on your own traffic and a suggested weight for each reason. coss.com only suggests; you choose which weights to apply.
+
+</Section>
+
+<Section title="Building blocks" lede="Each signal is also available on its own, without an assessment and without storing anything.">
+
+- [`coss.risk.checkEmail()`](/docs/risk/lookups#email): deliverability, disposable, role account, free provider, typo suggestion, canonical mailbox and domain age.
+- [`coss.risk.checkIp()`](/docs/risk/lookups#ip): Tor, hosting kind, ASN, country and VPN, proxy or relay data where coss.com has it.
+- [`coss.risk.checkPhone()`](/docs/risk/lookups#phone): validity, line type (spotting online-only VoIP numbers), current carrier and recent SIM swaps.
+- [`coss.risk.classify()`](/docs/risk/content): spam, phishing, malware and fraud scores for any text.
+- [`coss.risk.limit()`](/products/rate-limiting): rate limiting for your own endpoints, with buckets you define.
+
+</Section>
+
+<Section title="Specifications" lede="Time budgets and limits from the code. Every one fails open: a missing signal is listed in degraded.">
+
+<Specs>
+<Spec label="Decisions">allow, review, block</Spec>
+<Spec label="Events">signup, login, message, checkout, custom</Spec>
+<Spec label="DNS lookups">800 ms budget</Spec>
+<Spec label="Content classification">3 s budget, 50,000 characters</Spec>
+<Spec label="Phone lookups">2 s budget, E.164</Spec>
+<Spec label="Rules per environment">50</Spec>
+<Spec label="Assessments per API key">100 per second, bursts of 200</Spec>
+<Spec label="Personal data kept"><RetentionPeriod of="risk_personal_data" /></Spec>
+<Spec label="Decisions and reasons kept"><RetentionPeriod of="risk_assessments" /></Spec>
+<Spec label="Memory">keyed HMACs only</Spec>
+</Specs>
+
+Sandbox keys see fixed [test inputs](/docs/risk/testing) (`192.0.2.x` addresses, `@disposable.test`, captcha tokens `test-pass` and `test-fail`), so every decision can be tested without real traffic. When you delete one of your users, `coss.risk.users.forget()` removes everything that identifies them.
+
+</Section>
+
+<Section title="Pricing" lede="Assessments, email, IP and content checks are part of your plan. Live phone checks are billed per lookup that got an answer.">
+
+<UsageRates meters="risk.phone_checks" />
+
+Every plan includes <Included meter="risk.phone_checks" />. Numbers that aren't E.164, failed lookups and sandbox checks are free. See [pricing](/pricing) for the plans.
+
+</Section>

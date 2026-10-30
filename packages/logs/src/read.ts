@@ -1,6 +1,6 @@
 import { db, schema } from "@coss/db";
 import { idTimestamp, isId } from "@coss/db/id";
-import { and, desc, eq, gte, inArray, lt, notInArray, or, type SQL, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, lt, notInArray, or, type SQL, sql } from "drizzle-orm";
 import { type LogEntryRow, toLogObject } from "./entries.ts";
 import { type LogFilters, statusRange } from "./query.ts";
 import {

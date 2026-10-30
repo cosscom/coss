@@ -1,0 +1,126 @@
+---
+title: Coding agents
+description: coss.com for coding agents is a one-line setup for Claude Code, Cursor and Codex. Markdown docs, a sandbox key, an MCP server and an Agent Skill.
+seoTitle: "Email and SMS API for coding agents, with MCP · coss.com"
+headline: Built for the agent writing your code.
+call: coss-mcp
+mark: agents
+docs: /docs/agents
+group: Developers
+features:
+  - A one-line prompt for any coding agent
+  - npx coss-cli init for a sandbox key
+  - llms.txt and Markdown for every page
+  - An MCP server that diagnoses delivery
+  - A Claude Code plugin and Agent Skill
+  - Typed results that never throw
+related:
+  - sdks
+  - inboxes
+  - platform
+  - email
+faq:
+  - question: How do I add coss.com to a project with a coding agent?
+    answer: Give the agent one prompt. It tells the agent to read coss.com/llms.txt, get a development key with npx coss-cli init --agents, and build and test with it. You approve the key in your browser, and nothing the agent sends is delivered until you switch to a production key yourself.
+  - question: Does coss.com have an MCP server?
+    answer: Yes. coss-mcp runs locally through npx and gives agents tools to search the docs, find emails and SMS and explain why one wasn't delivered, send, manage suppressions, domains and webhooks, read logs, inboxes and received mail. The docs tools work without an API key.
+  - question: Does coss.com have an llms.txt?
+    answer: Yes. coss.com/llms.txt opens with a short brief for agents and lists every docs page, and llms-full.txt has every guide in one file. Every docs page is also Markdown at its URL plus .md.
+  - question: Is there a Claude Code plugin for coss.com?
+    answer: Yes. Install it with /plugin install coss --marketplace cosscom/coss. It adds a skill for building with coss.com and the MCP server. The same skill installs into Cursor, Codex and other agents with npx skills add cosscom/coss.
+  - question: Can an agent test its code without sending real email?
+    answer: Yes. The development key coss-cli init writes works with every API and delivers nothing. Emails and SMS get simulated outcomes, events and webhooks, and coss listen forwards those webhooks to the agent's local handler.
+  - question: Can an AI agent have its own email address?
+    answer: Yes. Inboxes give an agent its own address, keep the mail it receives as threads and send its replies from the same address. The MCP server has tools to create inboxes, read threads and reply.
+---
+
+<Section title="One prompt" lede="Paste this into Claude Code, Cursor, Codex or any coding agent. It reads the docs, gets a sandbox key and tests what it builds.">
+
+```text
+Add coss.com to this project: read https://coss.com/llms.txt, get a development key with `npx coss-cli init --agents`, and build and test with it.
+```
+
+From there the agent asks you to approve a development key in your browser, installs the SDK and runs its code against that key. Development keys deliver nothing: emails and SMS get simulated outcomes, events and webhooks. [Coding agents](/docs/agents) has the details.
+
+</Section>
+
+<Section title="What the agent gets" lede="Every surface an agent touches is written for it: the docs, the key, the tools and the SDK's results.">
+
+<Features>
+
+<Feature title="Docs as Markdown">
+[/llms.txt](/llms.txt) starts with a brief (getting a key, how the SDK reports errors, testing webhooks) and lists every page. Every docs page is Markdown at its URL plus `.md`, and [/llms-full.txt](/llms-full.txt) has every guide in one file.
+</Feature>
+
+<Feature title="A key without copy and paste">
+`npx coss-cli init` opens the dashboard, you approve a key for that project (sandbox environments only), and it writes `COSS_API_KEY` to `.env.local` or `.env` and installs `coss`. Over SSH it prints a link and waits for a code. [CLI](/docs/cli#set-a-project-up).
+</Feature>
+
+<Feature title="Notes for later sessions">
+`init` adds a short coss.com section to the project's `AGENTS.md` (or `CLAUDE.md`), so the next session knows where the docs are and how to test. It detects Nodemailer, Better Auth, Auth.js, Laravel, Rails and Django and prints that drop-in.
+</Feature>
+
+<Feature title="An MCP server">
+`coss-mcp` searches and reads the docs, finds emails and SMS, explains why one wasn't delivered, reads logs, and manages domains, suppressions, webhooks, templates, inboxes and Risk. [MCP server](/docs/mcp).
+</Feature>
+
+<Feature title="A plugin and an Agent Skill">
+The Claude Code plugin adds a skill that loads when a task involves coss.com, and the MCP server. The same skill installs into Cursor, Codex, GitHub Copilot and Windsurf with `npx skills add cosscom/coss`.
+</Feature>
+
+<Feature title="Results agents can read">
+Every SDK method returns `{ data, error }` and never throws for API or network failures. Errors carry a `type`, a `code`, the field's `issues` and often a `hint` with a docs URL, so the agent fixes its own request.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="The MCP server" lede="coss-mcp is a Model Context Protocol server that runs locally through npx and calls coss.com with your API key.">
+
+```sh
+claude mcp add coss -e COSS_API_KEY=coss_test_… -- npx -y coss-mcp
+```
+
+Ask it "did the welcome email to jane@example.com get delivered?" and `diagnose_email` answers with a verdict, what happened to each recipient and why, problems with the account and what to do next. `get_setup` is its first call before writing send code: the key's mode, a from address that will succeed, missing DNS records and one next step.
+
+- **Docs**, with no key: `search_docs`, `read_docs`.
+- **Email**: `diagnose_email`, `find_emails`, `get_email`, `send_email`, suppressions, domains and templates.
+- **SMS**: `diagnose_sms`, `find_sms`, `send_sms`, numbers and suppressions.
+- **Webhooks and logs**: `list_webhook_deliveries`, `retry_webhook_delivery`, `create_webhook_endpoint`, `search_logs`.
+- **Inboxes and receiving**: `create_inbox`, `get_inbox_thread`, `reply_to_inbox_message`, `list_received_emails`.
+- **Hooks, Forms and Risk**: `send_hook_message`, `list_form_submissions`, `assess_risk`.
+
+Email content, received mail, bounce messages and webhook responses are written by other people: the server labels them untrusted and tells the agent to treat them as data, never as instructions. Without `COSS_API_KEY` it reads only a development key from the project's env file, never a `coss_live_` one.
+
+</Section>
+
+<Section title="Safe to retry, safe to test" lede="Agents retry and run code repeatedly. coss.com makes both harmless.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const user: { id: string; email: string };
+// ---cut---
+const { data, error } = await coss.email.send(
+  {
+    from: "Acme <hello@acme.com>",
+    to: user.email,
+    subject: "Welcome to Acme",
+    text: "Thanks for signing up.",
+  },
+  { idempotencyKey: `welcome-${user.id}` }, // a rerun sends nothing twice
+);
+
+if (error) console.error(error.code, error.hint); // what to change, not a stack trace
+```
+
+The SDK sends an `Idempotency-Key` with every `POST` and reuses it when it retries, so a retried send goes out once. `coss listen` forwards sandbox webhooks to `localhost`, and `coss trigger` sends a sample event of any type, so an agent can test its webhook handler end to end.
+
+</Section>
+
+<Section title="Email for the agents you build" lede="Coding agents build with coss.com; the agents you ship can use it too.">
+
+[Inboxes](/products/inboxes) give an AI agent its own email address: mail arrives as threads with a webhook for each message, and the agent replies from the same address. [Risk](/products/risk) can classify what a message says before your agent acts on it.
+
+</Section>

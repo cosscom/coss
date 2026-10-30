@@ -193,7 +193,7 @@ function AgentFeature() {
       closeOnClick
       render={<Link href="/#agents" />}
     >
-      {email && <PartDrawing className="mx-auto w-28" product={email} />}
+      {email && <PartDrawing call={email.call} className="mx-auto w-28" part={email.id} />}
       <span className="flex flex-col gap-1">
         <span className="font-medium text-sm">Set up coss.com with your agent</span>
         <span className="text-muted-foreground text-xs leading-snug">

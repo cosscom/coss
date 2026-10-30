@@ -1,0 +1,161 @@
+---
+title: Marketing email
+description: coss.com Marketing email sends newsletters and announcements to your contacts as broadcasts, with audiences, segments, topics and a hosted preference center.
+seoTitle: "Newsletter and broadcast email API · coss.com"
+headline: Newsletters from the same API as your receipts.
+call: coss.email.broadcasts
+mark: marketing
+docs: /docs/email/broadcasts
+group: Email
+features:
+  - Contacts with typed custom properties
+  - Audiences and live segments
+  - Topics contacts subscribe to
+  - Broadcasts you can schedule, pause and resume
+  - A hosted preference center and one-click unsubscribe
+  - Its own sending stream and reputation
+  - Imports from Resend, SendGrid and Postmark
+related:
+  - email
+  - subaccounts
+  - inbound-email
+  - smtp
+faq:
+  - question: What is a broadcast in coss.com?
+    answer: One marketing email sent to every eligible contact of an audience or a segment. Each contact gets their own email, filled in with their values, with an unsubscribe link and your postal address, and the broadcast counts what happened to every one of them.
+  - question: Can I send newsletters and transactional email with the same API key?
+    answer: Yes. Broadcasts and marketing sends use the same API key and SDK as transactional email, but go out on a separate stream with its own sending configuration and reputation, so newsletter complaints never hold up password resets.
+  - question: How does unsubscribing work?
+    answer: Every marketing email carries List-Unsubscribe and List-Unsubscribe-Post headers, so mail clients show their own unsubscribe button, and links to a preference center coss.com hosts. Recipients can leave one topic or all marketing email there, and the contact's status changes at once.
+  - question: Does coss.com support double opt-in?
+    answer: Yes. With double opt-in on, a new contact stays pending until they click the link in a confirmation email, which expires after 7 days. You can turn it on for every contact created through the API or per request.
+  - question: What is the difference between an audience and a segment?
+    answer: An audience is a list you manage by adding and removing contacts. A segment is a filter over contact properties, audiences, topics, addresses and sign-up dates, evaluated every time it is used, so it always matches your contacts as they are now.
+  - question: Can I import my contacts from Resend, SendGrid or Postmark?
+    answer: Yes. The dashboard's import reads your old account through its API and brings over domains, templates, contacts and lists, suppressions and webhook endpoints, as each provider allows. Nothing changes in your old account.
+  - question: How is marketing email billed?
+    answer: Every email a broadcast makes is billed per recipient like any other email, and how many contacts an environment can keep depends on the plan. The pricing page lists the rates and the contact limits.
+---
+
+<Section title="How it works" lede="Keep your contacts in coss.com, pick who gets an email with an audience or a segment, and send it as a broadcast.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// 1. Keep a contact up to date, with your own properties.
+await coss.email.contacts.upsert({
+  email: "ada@example.com",
+  first_name: "Ada",
+  properties: { plan: "pro" },
+});
+
+// 2. A segment that is always current.
+const { data: segment } = await coss.email.segments.create({
+  name: "Pro customers",
+  filter: {
+    version: 1,
+    match: "all",
+    conditions: [{ field: "property", key: "plan", op: "eq", value: "pro" }],
+  },
+});
+
+// 3. One email to all of it, personalized and paced, next Tuesday at 9:00.
+const { data: broadcast } = await coss.email.broadcasts.create({
+  name: "October newsletter",
+  segment_id: segment?.id,
+  topic: "newsletter",
+  from: "Acme <news@acme.com>",
+  subject: "What's new, {{{contact.first_name|there}}}",
+  html: "<p>Hi {{{contact.first_name|there}}}, here is what we shipped.</p>",
+  scheduled_at: "2026-11-03T09:00:00Z",
+});
+```
+
+Contacts who unsubscribed, opted out of the topic or are on the suppression list are skipped.
+The [API reference](/docs/api-reference/broadcasts/create-broadcast) lists every field.
+
+</Section>
+
+<Section title="Everything a newsletter needs" lede="Contacts, consent and broadcasts, built on the same sending, tracking and webhooks as transactional email.">
+
+<Features>
+
+<Feature title="Contacts and properties">
+One [contact](/docs/email/contacts) per address and environment, with a name and typed custom properties: `string`, `number`, `boolean` or `date`. Import any number through the API, or a CSV in the dashboard, and export them again.
+</Feature>
+
+<Feature title="Audiences and segments">
+[Audiences](/docs/email/audiences-and-segments) are lists you manage. Segments filter on properties, audiences, topics, addresses and sign-up dates, and are evaluated at every use. The dashboard shows a live count as you build one.
+</Feature>
+
+<Feature title="Topics">
+A [topic](/docs/email/topics-and-preferences) is something contacts subscribe to, such as a newsletter. Its key is also a send's category, so transactional email about a topic respects the contact's choice too.
+</Feature>
+
+<Feature title="Broadcasts with a lifecycle">
+`draft`, `scheduled`, `sending`, `paused`, `sent`. Test it on yourself, schedule it up to 30 days ahead, pace it with `rate_per_second`, pause and resume where it stopped. [Stats](/docs/email/broadcasts#statuses-and-stats) count sent, delivered, bounced, opened, clicked and unsubscribed.
+</Feature>
+
+<Feature title="Preference center and one-click unsubscribe">
+Every marketing email carries RFC 8058 [one-click unsubscribe](/docs/email/unsubscribe) headers and links to a preference center coss.com hosts on your tracking domain. Your postal address goes in the footer, as CAN-SPAM requires.
+</Feature>
+
+<Feature title="Double opt-in">
+New contacts can stay `pending` until they confirm from a [confirmation email](/docs/email/topics-and-preferences#double-opt-in) sent from your domain. Contacts that never confirm are deleted after <RetentionPeriod of="pending_contacts" />.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="A separate stream and reputation" lede="Marketing email goes out on its own stream, so a campaign that draws complaints never holds up a password reset.">
+
+coss.com sends [transactional and marketing email](/docs/email/streams) on separate sending
+configurations and measures their bounce and complaint rates apart. When marketing email crosses
+its thresholds, only marketing email is paused, with an `account.marketing_paused` webhook, and
+receipts and sign-in links keep going. A complaint about a marketing email suppresses that address
+for marketing email only.
+
+Consent lives on the contact and deliverability in the [suppression list](/docs/email/suppressions):
+unsubscribing never adds a suppression, and re-subscribing a contact never removes one, so an
+address that bounced stays protected. In production environments, a broadcast's content is
+screened once before it starts.
+
+</Section>
+
+<Section title="Specifications" lede="The numbers behind contacts and broadcasts. The docs list each one in context.">
+
+<Specs>
+<Spec label="Contacts per environment on Free"><Limit of="contactsPerEnvironment" plan="free" /></Spec>
+<Spec label="Contacts per environment on Pro"><Limit of="contactsPerEnvironment" plan="pro" /></Spec>
+<Spec label="Contacts per environment on Scale"><Limit of="contactsPerEnvironment" plan="scale" /></Spec>
+<Spec label="Custom properties">50 per environment</Spec>
+<Spec label="Topics">100 per environment</Spec>
+<Spec label="Segment conditions">20, grouped one level deep</Spec>
+<Spec label="Broadcast scheduling">up to 30 days ahead</Spec>
+<Spec label="Test sends">5 addresses at a time</Spec>
+<Spec label="Confirmation links">expire after 7 days</Spec>
+<Spec label="Dashboard CSV import">10,000 rows</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Moving from another provider" lede="Bring your account over without rebuilding it by hand.">
+
+The dashboard's [import](/docs/migrate) reads your old account from
+[Resend](/docs/migrate/resend), [SendGrid](/docs/migrate/sendgrid) or
+[Postmark](/docs/migrate/postmark) through its API and brings what you choose into an environment:
+domains, templates, contacts and their lists, suppressions and webhook endpoints, as each provider
+allows. Nothing changes in your old account, and the provider's key is deleted when the import ends.
+
+</Section>
+
+<Section title="Pricing" lede="Every email a broadcast makes is billed per recipient, like any other email.">
+
+<UsageRates meters="email.recipients" />
+
+Free includes <Included meter="email.recipients" />. How many contacts an environment keeps, and
+how fast broadcasts send, depend on the plan. See [pricing](/pricing) for the plans.
+
+</Section>

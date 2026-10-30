@@ -67,7 +67,7 @@ export default function Compare() {
               {all.map((c) => (
                 <Link
                   key={c.slug}
-                  href={`/compare/${c.slug}`}
+                  href={`/kloq/compare/${c.slug}`}
                   className="group flex h-full flex-col gap-4 bg-card p-6 outline-none transition-colors hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <Mono>

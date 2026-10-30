@@ -57,13 +57,7 @@ function Hidden(props: EnvTarget & { requestId?: string; templateId?: string }) 
  */
 function BuilderLink({ url }: { url: string }) {
   return (
-    <Button
-      render={
-        // biome-ignore lint/a11y/useAnchorContent: the button renders the text.
-        <a href={url} rel="noopener noreferrer" target="_blank" />
-      }
-      size="sm"
-    >
+    <Button render={<a href={url} rel="noopener noreferrer" target="_blank" />} size="sm">
       Open the builder
     </Button>
   );

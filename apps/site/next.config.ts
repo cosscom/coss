@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
     "@coss/risk",
     "@coss/billing",
     "@coss/observability",
+    "@coss/ratelimit",
+    "@coss/reputation",
     "kloq",
   ],
   // Twoslash drives the TypeScript compiler while MDX compiles; it must not be bundled.
@@ -49,6 +51,10 @@ const nextConfig: NextConfig = {
       // `/docs/index.md` for the docs home. Checked before the docs' catch-all page.
       { source: "/docs/index.md", destination: "/docs/md" },
       { source: "/docs/:path+.md", destination: "/docs/md/:path+" },
+      // The product, solution and comparison pages too (/llms.txt lists them).
+      { source: "/products/:slug.md", destination: "/products/md/:slug" },
+      { source: "/solutions/:slug.md", destination: "/solutions/md/:slug" },
+      { source: "/compare/:slug.md", destination: "/compare/md/:slug" },
       // In production the dashboard's zone serves /api/auth and browser monitoring on the same origin.
       ...(dev
         ? [

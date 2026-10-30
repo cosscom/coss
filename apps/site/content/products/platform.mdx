@@ -1,0 +1,141 @@
+---
+title: Platform
+description: The coss.com platform is what every product shares. Environments and scoped keys, signed webhooks, searchable logs, dated API versions and one bill.
+seoTitle: "One API platform for email, SMS and more · coss.com"
+headline: One key, one log, one bill.
+call: coss.com
+mark: platform
+docs: /docs/environments
+group: Platform
+features:
+  - Live and sandbox environments
+  - Scoped API keys and personal keys
+  - Signed webhooks with retries
+  - Searchable logs and log drains
+  - Dated API versions
+  - Idempotent requests
+  - Usage credit, budgets and one invoice
+related:
+  - security
+  - sdks
+  - agents
+  - hooks
+faq:
+  - question: How do I test without sending real email or SMS?
+    answer: Use a sandbox key (coss_test_). Every project has a development environment whose keys accept any sender and deliver nothing, while delivery events are simulated, including bounces and complaints from the mailbox simulator's addresses. Sandbox sends are never billed.
+  - question: Can I restrict what an API key can do?
+    answer: Yes. Keys are created with full access, sending access only, read-only access or a custom set of permissions. A restricted key keeps exactly the permissions it was created with, and a request it isn't allowed to make fails with 403 and names the permission it needed.
+  - question: How are coss.com webhooks signed?
+    answer: With Standard Webhooks headers (webhook-id, webhook-timestamp and webhook-signature) and an HMAC-SHA256 over the raw body with the endpoint's whsec_ secret. verifyWebhook in the coss package checks them, and any Standard Webhooks library works.
+  - question: How long are logs kept?
+    answer: Each environment's log is kept for 30 days, and one query covers at most 31 days. To keep logs longer or search them next to your own, stream them to your logging stack with a log drain.
+  - question: Will API changes break my integration?
+    answer: No. Breaking changes ship as a new dated API version, and your organization stays pinned to its version until you upgrade it in the dashboard. Additive changes, such as new fields and endpoints, reach every version.
+  - question: How does coss.com billing work?
+    answer: A paid plan's monthly fee becomes usage credit that pays for any product, so a month costs the larger of the fee and your usage. Every product is on one invoice, and owners can set a spend limit, budgets per member, project or API key, and usage alerts. The pricing page lists the plans.
+---
+
+<Section title="How it works" lede="Every product sits on the same environments, keys, webhooks, logs and bill. Learn them once and every new product works the same way.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss(); // COSS_API_KEY: one key for every product
+// ---cut---
+// What this key is, and what it may do.
+const { data: environment } = await coss.environment.get();
+console.log(environment?.mode, environment?.api_key.permissions);
+
+// Get told when something happens, signed and retried.
+const { data: endpoint } = await coss.webhookEndpoints.create({
+  url: "https://example.com/webhooks/coss",
+  event_types: ["email.bounced", "sms.failed"],
+});
+
+// Every request, event and webhook attempt, in one log.
+const { data: logs } = await coss.logs.list({
+  from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+  level: ["warning", "error"],
+});
+```
+
+</Section>
+
+<Section title="What every product shares" lede="The parts of an API platform you would otherwise rebuild for each provider.">
+
+<Features>
+
+<Feature title="Environments and sandbox keys">
+Each project has a live `production` environment and a sandbox `development` one. Sandbox keys (`coss_test_…`) deliver nothing and simulate delivery events, bounces and complaints included. [Environments](/docs/environments).
+</Feature>
+
+<Feature title="Scoped and personal keys">
+Keys have full, sending, read-only or custom access, and a restricted key never gains new permissions. Personal keys belong to one member, so their usage is that member's spend. [API keys](/docs/environments#api-keys).
+</Feature>
+
+<Feature title="Signed webhooks">
+Endpoints are signed with Standard Webhooks, retried 7 times over about 28 hours, disabled after 5 days of failures and recoverable afterwards. Secret rolls sign with both secrets for a grace period. [Webhooks](/docs/webhooks).
+</Feature>
+
+<Feature title="Webhooks on localhost">
+`coss listen --forward-to localhost:3000/webhooks` pulls events to your machine and signs them for your local receiver, and `coss trigger` sends a sample event of any type in sandbox. [Testing locally](/docs/webhooks#testing-locally).
+</Feature>
+
+<Feature title="Logs">
+Every API request, email event and webhook attempt of an environment, searchable with filters like `status:5xx` or `resource:email_…`, with facets, a histogram and CSV or NDJSON export. `coss logs tail` follows them live. [Logs](/docs/logs).
+</Feature>
+
+<Feature title="Log drains">
+Stream logs and audit events to your own logging stack as signed NDJSON batches, usually within seconds. Available on <PlansWith feature="logDrains" />. [Log drains](/docs/log-drains).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="An API that holds still" lede="Integrations keep working: breaking changes are versioned, and retries never act twice.">
+
+**Dated versions.** Breaking changes ship as a new API version named after its release date and selected with the `Coss-Version` header. Without it, a request uses your organization's version, pinned on its first request and changed only when you upgrade it in the dashboard. Webhook endpoints keep their own version. Additive changes reach every version. [Versioning](/docs/api-reference/versioning).
+
+**Idempotency.** Sends accept an `Idempotency-Key`: for 24 hours a repeat with the same body returns the first result, and a different body fails with `422 idempotency_key_reused`. The SDK sends a key on every `POST` and reuses it across its retries. [Idempotency](/docs/api-reference/idempotency).
+
+**One error shape.** Every error is the same envelope with a `type`, a `code`, a message and a request id, in every version. [Errors](/docs/api-reference/errors).
+
+</Section>
+
+<Section title="Billing you can control" lede="One plan covers every product, rated by coss.com and paid on one invoice.">
+
+A paid plan's monthly fee is usage credit: it is spent on any product, so a month costs the larger of the fee and your usage. Volume pricing is graduated, so there is no cliff between bands.
+
+- **Spend limit**: live sending pauses once usage beyond your credit reaches it.
+- **Budgets**: monthly caps per member's personal keys, per project or per API key; over one, only its live sending pauses.
+- **Usage alerts**: at 80% and 100% of your credit by default, by email and as `billing.*` webhooks.
+- **Spend by source**: the Spend page splits each month's charges by project, environment, key and member.
+
+[Plans and billing](/docs/billing) and [spend and budgets](/docs/spend) have the details.
+
+</Section>
+
+<Section title="Plans" lede="Plans differ in usage credit, sending rates, limits and organization features. Sandbox sends are never billed.">
+
+<PlanTable />
+
+See [pricing](/pricing) for every rate.
+
+</Section>
+
+<Section title="Specifications" lede="Platform numbers from the code and the docs.">
+
+<Specs>
+<Spec label="Environments per project">2, live and sandbox</Spec>
+<Spec label="Webhook signatures">Standard Webhooks, HMAC-SHA256</Spec>
+<Spec label="Webhook retries">7, over about 28 hours</Spec>
+<Spec label="Webhook response window">10 seconds, any 2xx</Spec>
+<Spec label="Endpoint auto-disable">after 5 days of failures</Spec>
+<Spec label="Secret roll grace period">a day by default, up to a week</Spec>
+<Spec label="Log range per query">31 days</Spec>
+<Spec label="Log drains per environment">5</Spec>
+<Spec label="Idempotency window">24 hours</Spec>
+<Spec label="Webhook deliveries kept"><RetentionPeriod of="webhook_deliveries" /></Spec>
+</Specs>
+
+</Section>

@@ -1,0 +1,134 @@
+---
+title: Inbound email
+description: coss.com Inbound email receives mail at your domain or at an address coss.com gives each environment, and calls your webhook with every message, parsed.
+seoTitle: "Inbound email API and parse webhook · coss.com"
+headline: Receive email with a webhook.
+call: coss.email.received
+mark: inbound
+docs: /docs/email/receiving
+group: Email
+features:
+  - An inbound address per environment, no DNS needed
+  - Receiving on your own domain or subdomain
+  - Routing by envelope recipient
+  - Spam, virus, SPF, DKIM and DMARC verdicts
+  - Parsed bodies, attachments and the raw .eml
+  - A signed email.received webhook
+related:
+  - inboxes
+  - email
+  - subaccounts
+  - smtp
+faq:
+  - question: What is an inbound email API?
+    answer: A service that receives email for you and hands each message to your code. coss.com accepts mail for your addresses, scans it, stores its headers, bodies and attachments, and sends an email.received webhook so your app can fetch and act on the message.
+  - question: Do I need to change DNS to receive email?
+    answer: No. Every environment has its own domain under coss.com's inbound domain, and mail to any address at it is received straight away. To receive at your own domain or a subdomain such as inbound.example.com, publish the MX record coss.com lists for it.
+  - question: How do I get the content of a received email?
+    answer: The email.received webhook carries the sender, recipients, subject and spam verdict, never the content. Fetch the message with coss.email.received.get() for its headers and bodies, getAttachment() for each attachment, and getRaw() for the whole message as received.
+  - question: Does coss.com filter spam and viruses on inbound mail?
+    answer: Yes. Every message is scanned for spam and viruses and checked for SPF, DKIM and DMARC. Spam is still delivered with spam set to true so your handler decides, while a message with a virus is blocked, its content never stored and no webhook sent.
+  - question: What happens to mail sent to an address nobody receives at?
+    answer: It is dropped without a bounce, so coss.com never sends backscatter to forged senders. Mail over the organization's daily inbound limit is dropped too, and counted on the Received emails page.
+  - question: How much does receiving email cost?
+    answer: Received email is billed per message and environment it is stored in, and the Free plan includes a monthly allowance. Mail flagged as spam or carrying a virus is free. The pricing page lists the current rates.
+---
+
+<Section title="How it works" lede="Mail arrives, coss.com stores and scans it, and your endpoint gets a signed webhook. Fetch what you need from the API.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+declare const domainId: string;
+// ---cut---
+// Receive at your own subdomain (or use the environment's inbound address, no DNS needed).
+const { data: domain } = await coss.domains.receiving.create(domainId, {
+  hostname: "inbound.acme.com",
+});
+
+// In your webhook handler: fetch the message, then its attachments.
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "email.received" && !event.data.spam) {
+  const id = event.data.received_email_id;
+  const { data: email } = await coss.email.received.get(id);
+
+  for (const attachment of email?.attachments ?? []) {
+    const { data: bytes } = await coss.email.received.getAttachment(id, attachment.id);
+  }
+}
+```
+
+The [API reference](/docs/api-reference/receiving/get-received-email) lists every field of a
+received email.
+
+</Section>
+
+<Section title="Built for parsing mail" lede="Everything a support desk, a reply-by-email feature or an agent needs from a message, without running a mail server.">
+
+<Features>
+
+<Feature title="An address per environment">
+Every environment has its own domain under coss.com's inbound domain, such as `k3j9x2m7qp4l.inbound.coss.com`. Mail to any address at it is received, with no DNS setup. `coss.email.received.address()` returns it.
+</Feature>
+
+<Feature title="Your own domain">
+Set up [receiving](/docs/email/receiving#addresses) on one of your verified domains, at the domain itself or a subdomain such as `inbound.acme.com`, and publish one MX record. The environment of the key that set it up receives the mail.
+</Feature>
+
+<Feature title="Routed by envelope">
+Messages are routed by their envelope recipients, Bcc'd addresses included. When one message reaches several environments, each gets its own copy that names only its own recipients.
+</Feature>
+
+<Feature title="Verdicts on every message">
+Each message is scanned for spam and viruses and checked for SPF, DKIM and DMARC. Spam and authentication failures are flagged for your handler to decide; a message with a virus is blocked and its content never stored.
+</Feature>
+
+<Feature title="Bodies, attachments, raw">
+Headers, `text` and `html`, attachments by id, and `getRaw()` for the whole message as `message/rfc822`. Attachments are always served as `application/octet-stream`, whatever they claim to be.
+</Feature>
+
+<Feature title="A webhook per message">
+`email.received` names the sender, recipients, subject and spam verdict, never the content. Signed like every coss.com [webhook](/docs/webhooks), retried until your endpoint takes it, and forwarded to localhost by `coss listen`.
+</Feature>
+
+</Features>
+
+Received mail can be deleted at once with `coss.email.received.delete()`, content included. For
+email addresses that keep conversations as threads and reply from the same address, see
+[Inboxes](/products/inboxes).
+
+</Section>
+
+<Section title="Specifications" lede="The limits on received mail. The docs list each one in context.">
+
+<Specs>
+<Spec label="Message size">40 MB</Spec>
+<Spec label="Text and HTML kept">2 MB each</Spec>
+<Spec label="Headers kept">64 KB</Spec>
+<Spec label="Raw message">kept whole</Spec>
+<Spec label="Daily inbound limit">10,000 emails per organization</Spec>
+<Spec label="Unroutable mail">dropped, never bounced</Spec>
+<Spec label="Retention"><RetentionPeriod of="received_emails" /></Spec>
+<Spec label="Sandbox environments">receive real mail</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Testing" lede="Try every verdict without sending a real email.">
+
+In a sandbox environment, **Send a test email** on the dashboard's **Received emails** page receives
+a message without sending one, free. Put `[coss-test:spam]`, `[coss-test:virus]`,
+`[coss-test:spf-fail]`, `[coss-test:dkim-fail]` or `[coss-test:dmarc-fail]` in its subject to try
+each verdict, and use `coss listen` to forward the webhook to your local handler.
+
+</Section>
+
+<Section title="Pricing" lede="Received email is billed per message and environment it is stored in. Spam and viruses are free.">
+
+<UsageRates meters="email.received" />
+
+Free includes <Included meter="email.received" />. See [pricing](/pricing) for the plans.
+
+</Section>

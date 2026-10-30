@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./buckets": "./src/buckets.ts",
     "./env": "./src/env.ts",
     "./testing": "./src/testing.ts"
   },

@@ -1,5 +1,6 @@
 import { cn } from "@coss/ui/lib/utils";
 import Link from "next/link";
+import { FOOTER_COLUMNS } from "@/lib/nav";
 
 export const LEGAL_LINKS = [
   { text: "Terms", url: "/legal/terms" },
@@ -38,10 +39,38 @@ function Colophon({ className }: { className?: string }) {
   );
 }
 
-/** Footer of the landing page, the pricing page and the legal pages (full width, below the rails). */
+/**
+ * Footer of the landing page, the product, solution, comparison, pricing and legal pages (full
+ * width, below the rails): the site's link columns, then the colophon.
+ */
 export function SiteFooter() {
   return (
     <footer className="relative mt-8 py-8 text-muted-foreground before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-border/64">
+      <nav
+        aria-label="Site"
+        className="container grid w-full grid-cols-2 gap-x-6 gap-y-8 px-4 pt-4 pb-10 sm:grid-cols-3 sm:px-6 lg:grid-cols-5"
+      >
+        {FOOTER_COLUMNS.map((column) => (
+          <div className="flex flex-col gap-3" key={column.title}>
+            <p className="font-medium text-foreground text-sm">{column.title}</p>
+            <ul className="flex flex-col gap-2 text-sm">
+              {column.links.map(([label, href]) => (
+                <li key={href}>
+                  {href.endsWith(".txt") ? (
+                    <a className="hover:text-foreground" href={href}>
+                      {label}
+                    </a>
+                  ) : (
+                    <Link className="hover:text-foreground" href={href}>
+                      {label}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
       <div className="container flex w-full flex-col gap-4 px-4 sm:flex-row sm:items-end sm:justify-between sm:px-6">
         <Colophon />
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">

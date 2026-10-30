@@ -14,6 +14,8 @@ import {
   type OpenApiDocument,
   type ReferencedOperation,
 } from "./operation-markdown";
+import { renderRateLimitComponents } from "./rate-limits-text";
+import { renderReputationComponents } from "./reputation-text";
 import { renderRetentionComponents } from "./retention-text";
 import { renderRiskComponents } from "./risk-text";
 import { DOCS_ROUTE, SITE_URL } from "./site";
@@ -119,9 +121,21 @@ export async function pageMarkdown(
     "<DocsSections />",
     sectionsMarkdown(sectionsOf(source.getPageTree())),
   );
-  return `${heading}\n\n${renderApiKeyComponents(
-    renderRiskComponents(renderBillingComponents(renderRetentionComponents(body))),
-  )}`;
+  return `${heading}\n\n${renderTableComponents(body)}`;
+}
+
+/**
+ * The generated tables (plans, rates, retention, risk reasons, key permissions, reputation
+ * thresholds, API rate limits) as Markdown.
+ */
+export function renderTableComponents(markdown: string): string {
+  return renderRateLimitComponents(
+    renderReputationComponents(
+      renderApiKeyComponents(
+        renderRiskComponents(renderBillingComponents(renderRetentionComponents(markdown))),
+      ),
+    ),
+  );
 }
 
 /** /llms.txt's page tree (src/lib/llms.ts adds the rest). */

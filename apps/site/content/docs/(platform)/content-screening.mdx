@@ -1,0 +1,71 @@
+---
+title: Content screening
+description: How coss.com screens a sample of live emails and text messages for spam, phishing, malware and fraud before they are sent.
+icon: ScanSearch
+---
+
+coss.com screens a sample of the messages your **live** environments send, right before they are
+handed to the email provider or the carrier, for spam, phishing, malware and fraud. It protects the
+people who receive them and the deliverability of every sender on coss.com. Sandbox messages are
+never screened.
+
+## Which messages are screened
+
+Screening applies to live [emails](/docs/email/sending) (sub-accounts' and inboxes' included) and
+live [SMS](/docs/sms/sending). Each organization is sampled on its own: every one of its first
+messages, more as its volume grows, and after that a share of messages chosen at random. Which
+messages are sampled is never announced and can't be predicted, so a sender can't save the abuse
+for the messages it expects to be unscreened. A [sub-account](/docs/email/subaccounts) is sampled
+on its own too, so its first messages are always screened.
+
+## Verdicts
+
+An AI model scores the message for each category, and the highest score decides:
+
+| Verdict   | What happens                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------- |
+| Allowed   | The message is sent                                                                                           |
+| Flagged   | The model thinks it may be abusive. It is sent, and your organization's [standing](/docs/reputation) becomes `warning` |
+| Blocked   | The model is confident it is abusive. It isn't sent, and live sending is suspended                            |
+
+A blocked email fails with `content_rejected` (an `email.failed` webhook); a blocked SMS fails the
+same way (`sms.failed`). Live sending is then suspended for the whole organization (an
+`account.suspended` webhook, an email to owners and admins) until coss.com support has reviewed
+it, as for any [suspension](/docs/reputation#when-live-sending-is-suspended). When the blocked email
+belongs to a sub-account, only that sub-account is paused (`subaccount.paused`, with
+`data.trigger` `content_screening`), not your organization.
+
+Flags expire with the reputation window: once no flagged message is left in it, the warning clears
+by itself.
+
+## When screening is unavailable
+
+A message sampled for screening is never sent unscreened. If the model doesn't answer in time, the
+message is held: it stays `queued`, and coss.com tries again a minute later, and again until it gets
+a verdict. A message still not screened an hour after it was due fails with
+`content_screening_unavailable`. Messages that weren't sampled are sent as usual.
+
+## Privacy
+
+- **What the model sees**: for an email, the sender address, the subject, up to 8,000 characters of
+  its readable text and the host and path of its links (query strings removed); for an SMS, the
+  sending number, the text and its links' hosts and paths. Never recipients' addresses or numbers,
+  and never attachments.
+- **Who processes it**: the model runs through Vercel's AI Gateway with zero data retention: the
+  model providers may not keep the content or train on it.
+- **What coss.com keeps**: the verdict, never the message's content. Verdicts are kept for
+  <RetentionPeriod of="content_screenings" /> (see [data retention](/docs/data-retention)).
+- **Scores stay internal**: the API, webhooks and dashboard show `content_rejected` and your
+  standing, never a message's scores. Screening is not a spam checker you can test content against.
+
+The model's instructions treat the message as untrusted data, but text written to manipulate it can
+still lower its scores; screening is one safeguard among several (bounce, complaint and opt-out
+rates, and coss.com's own review).
+
+## If a decision is wrong
+
+Contact coss.com support: a person reviews every suspension, and reinstates the organization when
+the message wasn't abusive. To have a person review an automated decision and explain your point of
+view, write to [legal@cal.com](mailto:legal@cal.com). See the
+[Acceptable Use Policy](/legal/acceptable-use#4-content-screening) and the
+[Privacy Policy](/legal/privacy#4-automated-content-screening).

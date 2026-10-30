@@ -9,6 +9,8 @@ export interface Product {
   call: string;
   summary: string;
   features: readonly string[];
+  /** Its product page (`/products/<slug>`), once it has one. */
+  href?: string;
 }
 
 export const PRODUCTS: readonly Product[] = [
@@ -17,6 +19,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "Email",
     call: "coss.email",
     summary: "Transactional email from your own domains, tracked to every recipient.",
+    href: "/products/email",
     features: [
       "Single, batch and scheduled sends",
       "Per-recipient delivery events",
@@ -28,6 +31,7 @@ export const PRODUCTS: readonly Product[] = [
     name: "SMS",
     call: "coss.sms",
     summary: "Text messages worldwide, on the same key, events and logs as email.",
+    href: "/products/sms",
     features: ["Send and receive", "Delivery events on your webhooks", "Suppressions and logs"],
   },
   {

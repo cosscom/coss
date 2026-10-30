@@ -3,7 +3,12 @@
   "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "extends": "//",
   "files": {
-    "includes": ["**", "!!public/shipyard/assets"]
+    "includes": [
+      "**",
+      "!!public/shipyard/assets",
+      "!!src/lib/calendar/registry/generated.json",
+      "!!src/components/calendar/registry/what-lands.json"
+    ]
   },
   "linter": {
     "domains": {

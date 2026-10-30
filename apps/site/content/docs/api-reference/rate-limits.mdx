@@ -1,0 +1,65 @@
+---
+title: Rate limits
+description: How many API requests each key can make, the send quotas behind them, and what a 429 means.
+---
+
+The API limits requests per API key, by kind of request. Each limit is a bucket: it holds up to
+**burst** requests, which can arrive at once, and refills at its **rate**. A key that keeps under
+the rate never waits; a short spike up to the burst is fine too.
+
+<ApiRateLimits />
+
+Every key has its own buckets, so a busy production key never slows down another environment's.
+Requests with an invalid key never reach a route's bucket: they count against the authentication
+buckets and their client address's allowance of failures, and an address that keeps failing is
+refused for a while.
+
+## Rate limit headers
+
+Responses carry the state of the bucket the request counted against:
+
+| Header                | Meaning                                              |
+| --------------------- | ---------------------------------------------------- |
+| `RateLimit-Limit`     | The bucket's size (its burst)                        |
+| `RateLimit-Remaining` | Requests left in it right now                        |
+| `RateLimit-Reset`     | Seconds until it is full again                       |
+
+## When you're limited
+
+A limited request gets a `429` with the usual [error envelope](/docs/api-reference/errors)
+(`type: "rate_limit_error"`) and a `Retry-After` header with the seconds to wait. Nothing was done:
+retry it after that long. The [SDK](/docs/sdk/errors#automatic-retries) does this for you, waiting
+exactly `Retry-After` (up to 60 seconds) before each of its retries; its `POST` requests reuse
+their `Idempotency-Key`, so a retried send is never sent twice.
+
+| `error.code`                      | Why                                                                     |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `rate_limited`                    | The key went over its bucket for this kind of request                   |
+| `quota_exceeded`                  | The send is over the organization's send quota (below)                  |
+| `too_many_authentications`        | Too many requests authenticating, for one key or from one address       |
+| `too_many_failed_authentications` | Too many requests with invalid keys from your address                   |
+
+A `quota_exceeded` without `Retry-After` can never succeed as it is: the email or batch has more
+recipients than the quota allows at once, so split it.
+
+## Send quotas
+
+On top of the per-key limits, what an organization sends across all of its keys is limited by its
+plan: email recipients per second and per day, and SMS segments per second and per day.
+
+<PlanTable />
+
+- Quotas are charged when a send is accepted (a scheduled send when it is scheduled), per recipient
+  for email and per segment for SMS, and refunded when the send is refused or replayed.
+- Marketing email has a slower pace of its own within the email quota, so a broadcast never takes
+  the whole rate from transactional mail.
+- Sandbox environments have their own, smaller daily quotas, per environment.
+- [Sub-accounts](/docs/email/subaccounts) can have quotas you set, within the organization's.
+- [Hooks](/docs/hooks/delivery), [Verify](/docs/verify) and [Risk](/docs/risk/lookups) have limits of
+  their own, described with each product.
+
+## Higher limits
+
+The per-key buckets (`api.read`, `api.write`, `api.send`, `risk.assess`, `risk.limit`) and the send
+quotas can be raised for an organization; the authentication buckets can't. Contact coss.com support
+with your organization ID and the traffic you expect. Enterprise contracts set their own send rates.

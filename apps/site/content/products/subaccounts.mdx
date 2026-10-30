@@ -1,0 +1,133 @@
+---
+title: Email for platforms
+description: coss.com Email for platforms gives each of your users a sub-account with its own domains, sending reputation, quotas and suppression list, all on your API key.
+seoTitle: "Multi-tenant email API for SaaS platforms · coss.com"
+headline: Email for every user of your platform.
+call: coss.email.subaccounts
+mark: subaccounts
+docs: /docs/email/subaccounts
+group: Email
+features:
+  - A sub-account per user, by id or your own uid
+  - Your users' own domains and SES tenant
+  - Domains you share with every sub-account
+  - Quotas per sub-account
+  - Reputation that pauses only that sub-account
+  - Separate suppression lists and stats
+related:
+  - email
+  - smtp
+  - inbound-email
+  - marketing-email
+faq:
+  - question: What is a sub-account?
+    answer: One of your platform's users, inside your coss.com environment. It has its own sending domains, its own reputation at the mail provider and at coss.com, quotas you set, its own suppression list and stats, and you send for it with the same API key by naming it on each send.
+  - question: How do I send email on behalf of my customers?
+    answer: Create a sub-account per customer with coss.email.subaccounts.create(), giving it your own id for that customer as uid. Then pass subaccount on each send, or the X-Coss-Subaccount header over SMTP, and the email counts toward that customer's quotas, reputation and suppressions.
+  - question: Can my users send from their own domains?
+    answer: Yes. Add a domain with subaccount set and the user publishes its DNS records like any domain. Only that sub-account can send from it, through its own Amazon SES tenant, so a pause there stops only that user. Users without a domain can send from one of yours that you share with sub-accounts.
+  - question: What happens when one of my users sends spam?
+    answer: coss.com measures each live sub-account's bounce and complaint rates on its own. Past the warning threshold its reputation becomes warning; past the suspension threshold, or when content screening blocks one of its emails, it is paused and only its sends are refused. Your other users keep sending, and you reinstate it once you've dealt with the cause.
+  - question: Which plans include sub-accounts?
+    answer: Live sub-accounts need a plan with Email for platforms, and each plan sets how many you can have. Sandbox sub-accounts are free on every plan, so you can build the integration first. The pricing page lists the plans.
+  - question: Is my organization still responsible for its sub-accounts?
+    answer: Yes. Sub-accounts are billed to you, your own reputation still counts everything they send, and if your organization is suspended all of them stop.
+---
+
+<Section title="How it works" lede="Create a sub-account per user, give it a domain, and name it on each send. coss.com keeps its reputation, quotas and suppressions apart from everyone else's.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// 1. One sub-account per user, addressed by your own id.
+await coss.email.subaccounts.create({
+  name: "Acme Bakery",
+  uid: "user_8812",
+  quotas: { recipients_per_day: 5000 },
+});
+
+// 2. The user's own domain: only this sub-account can send from it.
+const { data: domain } = await coss.domains.create({
+  name: "acmebakery.com",
+  subaccount: "user_8812",
+});
+
+// 3. Send for the user.
+await coss.email.send({
+  subaccount: "user_8812",
+  from: "Acme Bakery <orders@acmebakery.com>",
+  to: "customer@example.com",
+  subject: "Your order is ready",
+  html: "<p>Come and pick it up.</p>",
+});
+```
+
+The email's `subaccount_id`, and the one in its webhook events and log lines, tell you which user
+it was for. The [API reference](/docs/api-reference/sub-accounts/create-subaccount) lists every field.
+
+</Section>
+
+<Section title="Built for multi-tenant sending" lede="One user's bounces, complaints or bad content never stop another's email.">
+
+<Features>
+
+<Feature title="A sub-account per user">
+Create one per customer of your platform and address it by its `sub_…` id or your own `uid`. Sub-accounts belong to an environment: sandbox keys see sandbox ones, live keys live ones.
+</Feature>
+
+<Feature title="Their own domains and tenant">
+A sub-account's [domains](/docs/email/subaccounts#domains) send through its own Amazon SES tenant, so its sending reputation at the mail provider is its own. They don't count toward your plan's domain limit.
+</Feature>
+
+<Feature title="Shared domains">
+Users without a domain of their own send from one of yours that you mark `shared_with_subaccounts`, through your organization's reputation and your dedicated IPs if you have them.
+</Feature>
+
+<Feature title="Quotas">
+Set recipients per day, per second, or both on each sub-account. A send over one is refused with `429` `quota_exceeded`, and your other sub-accounts go on sending.
+</Feature>
+
+<Feature title="Reputation per sub-account">
+Bounce and complaint rates are measured per live sub-account. Past your thresholds, or when screening blocks one of its emails, only that sub-account is `paused`, with `subaccount.paused` and `subaccount.reputation_warning` [webhooks](/docs/webhooks).
+</Feature>
+
+<Feature title="Suppressions and stats">
+Its bounces, complaints and unsubscribes go on its own suppression list only. `coss.email.subaccounts.stats()` returns its recipients per day: sent, delivered, bounced, complained, failed and suppressed.
+</Feature>
+
+</Features>
+
+Every new sub-account's first emails are screened for spam and phishing, so a bad actor who signs up
+to your platform is caught early. Over [SMTP](/products/smtp), name the sub-account with the
+`X-Coss-Subaccount` header; in a batch, each email can name its own.
+
+</Section>
+
+<Section title="Specifications" lede="The limits of a sub-account. The docs list each one in context.">
+
+<Specs>
+<Spec label="Plans with live sub-accounts"><PlansWith feature="subaccounts" /></Spec>
+<Spec label="Live sub-accounts on Scale"><Limit of="subaccounts" plan="scale" /></Spec>
+<Spec label="Live sub-accounts on Enterprise"><Limit of="subaccounts" plan="enterprise" /></Spec>
+<Spec label="Sandbox sub-accounts">100 per environment, free</Spec>
+<Spec label="Domains per sub-account">10</Spec>
+<Spec label="Domains awaiting verification">5 at once</Spec>
+<Spec label="Stats history">45 days</Spec>
+<Spec label="Streams">transactional email</Spec>
+<Spec label="Addressed by">id or your uid</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Plans" lede="Live sub-accounts are part of the larger plans. Sandbox ones are free everywhere.">
+
+Email for platforms is included on <PlansWith feature="subaccounts" />, with up to
+<Limit of="subaccounts" plan="scale" /> live sub-accounts on Scale. Email your sub-accounts send is
+billed to your organization per recipient, like any email.
+
+<UsageRates meters="email.recipients" />
+
+See [pricing](/pricing) for the plans.
+
+</Section>

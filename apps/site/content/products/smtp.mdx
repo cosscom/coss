@@ -1,0 +1,125 @@
+---
+title: SMTP relay
+description: coss.com's SMTP relay sends email from anything that speaks SMTP, with an API key as the password and the same checks, tracking and webhooks as the API.
+seoTitle: "SMTP relay service with an API key login · coss.com"
+headline: SMTP for everything that can't call an API.
+call: smtp.coss.com
+mark: smtp
+docs: /docs/email/smtp
+group: Email
+features:
+  - smtp.coss.com on 465 and 587
+  - An API key as the password
+  - The same pipeline as POST /v1/emails
+  - X-Coss-* headers for categories, tags and tracking
+  - Bcc'd addresses never made visible
+  - Recipes for Supabase, WordPress, Rails, Laravel and Django
+related:
+  - email
+  - subaccounts
+  - sdks
+  - inbound-email
+faq:
+  - question: What are coss.com's SMTP settings?
+    answer: Host smtp.coss.com, port 465 for TLS from the first byte or 587 for STARTTLS, username coss, and an API key as the password. If your host blocks outgoing 465 and 587, ports 2465 and 2587 work too.
+  - question: Is email sent over SMTP treated differently from the API?
+    answer: No. Each message becomes the same request as POST /v1/emails, so it gets the same sender checks, suppressions, quotas, tracking, webhooks and logs, and shares its API key's rate limit and the organization's send quotas with API sends.
+  - question: How do I use coss.com as the SMTP server for Supabase Auth?
+    answer: In the Supabase dashboard, open Authentication, then Emails, then SMTP Settings, and turn on custom SMTP with host smtp.coss.com, port 465, username coss, a live API key as the password, and a sender address on your verified domain.
+  - question: Can I set a category, tags or a schedule over SMTP?
+    answer: Yes. The X-Coss-Category, X-Coss-Tags, X-Coss-Tracking, X-Coss-Scheduled-At, X-Coss-Idempotency-Key and X-Coss-Subaccount headers set the API's fields. coss.com reads them and never sends them on.
+  - question: Does the SMTP relay support Bcc?
+    answer: Yes. The envelope decides who receives a message, and envelope recipients not named in the To or Cc headers become Bcc. coss.com never moves a Bcc'd address into a visible header, so a message with no To recipient is refused.
+  - question: Can I send without TLS?
+    answer: No. Authentication is refused before TLS, so use port 465 for implicit TLS or 587 with STARTTLS.
+---
+
+<Section title="How it works" lede="Point your app's mail settings at smtp.coss.com and log in with an API key. Each message becomes an API send.">
+
+| Setting  | Value                                                        |
+| -------- | ------------------------------------------------------------ |
+| Host     | `smtp.coss.com`                                              |
+| Port     | `465` (TLS) or `587` (STARTTLS); `2465` and `2587` also work |
+| Username | `coss`                                                       |
+| Password | An API key (`coss_live_…` or `coss_test_…`)                  |
+
+```ts
+import nodemailer from "nodemailer";
+
+const transport = nodemailer.createTransport({
+  host: "smtp.coss.com",
+  port: 465,
+  secure: true,
+  auth: { user: "coss", pass: process.env.COSS_API_KEY },
+});
+
+await transport.sendMail({
+  from: "Acme <hello@acme.com>",
+  to: "ada@example.com",
+  subject: "Welcome",
+  html: "<p>Thanks for signing up.</p>",
+  headers: { "X-Coss-Category": "onboarding", "X-Coss-Idempotency-Key": "welcome-user-123" },
+});
+```
+
+The key decides where the email goes, exactly as with the API: a sandbox key sends nothing out of
+coss.com, a live key sends from a [verified domain](/docs/email/domains). A `250` reply names the
+email's id (`250 2.0.0 OK queued as email_01…`), which `coss.email.get()` looks up.
+
+</Section>
+
+<Section title="One pipeline, two protocols" lede="The relay is never a raw passthrough. Every message goes through the same send path as the API.">
+
+<Features>
+
+<Feature title="Same checks as the API">
+Each message becomes a [`POST /v1/emails`](/docs/api-reference/emails/send-email) request: sender authorization, suppressions, quotas, content screening, tracking, webhooks and billing all apply. Messages appear in the environment's [logs](/docs/logs) with source `smtp`, without addresses or content.
+</Feature>
+
+<Feature title="API keys, not passwords">
+Log in as `coss` with an API key that can send email. The key is checked again on every message, so revoking it or suspending the organization stops even a connection held open for hours.
+</Feature>
+
+<Feature title="X-Coss-* headers">
+[Headers](/docs/email/smtp#cosscom-headers) set the API's fields: `X-Coss-Category`, `X-Coss-Tags`, `X-Coss-Tracking`, `X-Coss-Scheduled-At`, `X-Coss-Idempotency-Key` and `X-Coss-Subaccount`. coss.com reads them and never sends them on.
+</Feature>
+
+<Feature title="Bcc stays private">
+The envelope decides who receives a message. `To` and `Cc` headers stay visible, every other envelope recipient becomes `bcc`, and coss.com never moves a Bcc'd address into a visible header.
+</Feature>
+
+<Feature title="Replies that say what to do">
+`4xx` replies where a retry can help, such as a used-up quota; `5xx` where it can't, such as an unverified sender. With `X-Coss-Idempotency-Key`, a client's retry after a dropped connection gets the first email back.
+</Feature>
+
+<Feature title="Framework recipes">
+Settings for [nodemailer, Better Auth, Supabase, WordPress, Rails, Laravel and Django](/docs/email/smtp#frameworks). Rails, Laravel and Django can also send over HTTPS with coss.com's own [drivers](/docs/integrations).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Specifications" lede="What the relay accepts. The docs list each one in context.">
+
+<Specs>
+<Spec label="Host">smtp.coss.com</Spec>
+<Spec label="Implicit TLS">465, or 2465</Spec>
+<Spec label="STARTTLS">587, or 2587</Spec>
+<Spec label="Authentication">PLAIN or LOGIN, after TLS only</Spec>
+<Spec label="Username">coss</Spec>
+<Spec label="Recipients per message">50</Spec>
+<Spec label="Message size">40 MB</Spec>
+<Spec label="Custom headers sent on">15</Spec>
+<Spec label="Attachments">20 files, 25 MB combined</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Pricing" lede="Email sent over SMTP is billed per recipient, like any email.">
+
+<UsageRates meters="email.recipients" />
+
+Free includes <Included meter="email.recipients" />. See [pricing](/pricing) for the plans.
+
+</Section>

@@ -1,6 +1,6 @@
 {
   "title": "Platform",
-  "description": "What every product shares: webhooks, logs, the audit log, billing and retention.",
+  "description": "What every product shares: webhooks, logs, members and sign-in, reputation, billing and retention.",
   "root": true,
   "icon": "Layers",
   "pages": [
@@ -9,6 +9,14 @@
     "logs",
     "log-drains",
     "audit-log",
+    "---Team and sign-in---",
+    "members-and-roles",
+    "sso",
+    "scim",
+    "two-factor",
+    "---Reputation---",
+    "reputation",
+    "content-screening",
     "---Account---",
     "billing",
     "spend",

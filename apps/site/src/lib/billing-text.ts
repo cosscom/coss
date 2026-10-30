@@ -5,20 +5,23 @@ import {
   addOnGranting,
   FEATURE_KEYS,
   FEATURE_LABELS,
+  type FeatureKey,
   formatDimension,
   LIMIT_KEYS,
   LIMIT_LABELS,
+  type LimitKey,
   METER_KEYS,
   METERS,
   type MeterKey,
   PLAN_KEYS,
   PLANS,
+  type PlanKey,
   type Product,
   RATE_CARDS,
   type Rate,
 } from "@coss/billing/catalog";
-import { formatUnitPrice } from "@coss/billing/money";
-import { formatPrice, METER_NOTES } from "./pricing";
+import { formatCents, formatUnitPrice } from "@coss/billing/money";
+import { emailTierCharges, formatPrice, METER_NOTES } from "./pricing";
 
 /** "3,000 email recipients a month"; inbox-days read as the inboxes they cover. */
 function includedText(meter: MeterKey, n: number): string {
@@ -241,7 +244,7 @@ export function renderBillingComponents(markdown: string): string {
       (row) => `| ${row.name} | ${row.price} | ${row.plans} | ${row.description} |`,
     ),
   ].join("\n");
-  return markdown
+  return renderInlineBillingComponents(markdown)
     .replaceAll("<PlanTable />", planTable)
     .replaceAll("<UsageRates />", rateTable())
     .replace(/<UsageRates product="([a-z]+)" \/>/g, (_, product: Product) => rateTable(product))
@@ -249,4 +252,124 @@ export function renderBillingComponents(markdown: string): string {
       rateTable(meters.split(",") as MeterKey[]),
     )
     .replaceAll("<AddOns />", addOnTable);
+}
+
+/*
+ * Inline facts for prose (the product, solution and comparison pages, and their MDX components
+ * in src/components/billing.tsx): a price or a limit is always read from the catalog, never typed.
+ */
+
+/** "Scale and Enterprise", or "Pro, Scale and Enterprise": the plans with a feature (or its add-on). */
+export function plansWithText(feature: FeatureKey): string {
+  const names = PLAN_KEYS.filter(
+    (key) =>
+      PLANS[key].entitlements.features[feature] || addOnGranting(feature)?.plans.includes(key),
+  ).map((key) => PLANS[key].name);
+  return names.length > 1
+    ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`
+    : (names[0] ?? "");
+}
+
+/** A meter's current list rate in one line ("$0.40 per 1,000 emails for the first 1,000,000; …"). */
+export function rateText(meter: MeterKey): string {
+  return rateRows([meter])
+    .map((row) => (rateRows([meter]).length > 1 ? `${row.product}: ${row.rate}` : row.rate))
+    .join("; ");
+}
+
+/** What a plan includes of a meter every month ("3,000 email recipients a month"), or "". */
+export function includedUnitsText(meter: MeterKey, plan: PlanKey = "free"): string {
+  const n: number | undefined = (PLANS[plan].includedUnits as Partial<Record<MeterKey, number>>)[
+    meter
+  ];
+  return n ? includedText(meter, n) : "";
+}
+
+/** A plan's limit ("1,000", "Unlimited"). */
+export function limitText(limit: LimitKey, plan: PlanKey): string {
+  return PLANS[plan].entitlements.limits[limit]?.toLocaleString("en-US") ?? "Unlimited";
+}
+
+/** A plan's monthly fee ("$25/month", "Free"). */
+export function planPriceText(plan: PlanKey): string {
+  const { feeCents } = PLANS[plan];
+  return feeCents === 0n ? "Free" : `${formatPrice(feeCents)}/month`;
+}
+
+/*
+ * The billing guide's worked example (`<GraduatedExample />`, `<BillingExample />`): a month of
+ * email on Pro, priced by the rating engine's tier math at the current list rates.
+ */
+
+const EXAMPLE_EMAILS = 2_000_000;
+const EXAMPLE_PLAN: PlanKey = "pro";
+
+function exampleUsageCents(): bigint {
+  return emailTierCharges(EXAMPLE_EMAILS).reduce((sum, tier) => sum + tier.amountCents, 0n);
+}
+
+/** "With 2,000,000 emails in a month, the first 1,000,000 cost $0.40 per 1,000 and …: $700." */
+export function graduatedExampleText(): string {
+  const per = METERS["email.recipients"].displayPer.toLocaleString("en-US");
+  const bands = emailTierCharges(EXAMPLE_EMAILS).map((tier, index) => {
+    const count = (tier.last - tier.first + 1).toLocaleString("en-US");
+    return index === 0
+      ? `the first ${count} cost ${tier.pricePerThousand} per ${per}`
+      : `the next ${count} ${tier.pricePerThousand} per ${per}`;
+  });
+  const list =
+    bands.length > 1 ? `${bands.slice(0, -1).join(", ")} and ${bands.at(-1)}` : (bands[0] ?? "");
+  return `With ${EXAMPLE_EMAILS.toLocaleString("en-US")} emails in a month, ${list}: ${formatPrice(exampleUsageCents())}.`;
+}
+
+/** The example month on Pro: what is charged when, and what the month cost in the end. */
+export function billingExample(): {
+  intro: string;
+  rows: { label: string; amount: string; total?: boolean }[];
+  summary: string;
+} {
+  const plan = PLANS[EXAMPLE_PLAN];
+  const fee = plan.feeCents;
+  const usage = exampleUsageCents();
+  const credit = usage < fee ? usage : fee;
+  return {
+    intro: `For example, on ${plan.name} with ${EXAMPLE_EMAILS.toLocaleString("en-US")} emails in October:`,
+    rows: [
+      { label: "October fee (charged October 1)", amount: formatCents(fee) },
+      { label: "October usage", amount: formatCents(usage) },
+      { label: "October credit", amount: formatCents(-credit) },
+      {
+        label: `Charged November 1 (with November's ${formatPrice(fee)} fee)`,
+        amount: formatCents(usage - credit),
+        total: true,
+      },
+    ],
+    summary: `Over the month you paid ${formatPrice(usage > fee ? usage : fee)}: the larger of the fee and the usage.`,
+  };
+}
+
+function billingExampleMarkdown(): string {
+  const { intro, rows, summary } = billingExample();
+  const table = rows.map(({ label, amount, total }) =>
+    total ? `| **${label}** | **${amount}** |` : `| ${label} | ${amount} |`,
+  );
+  return [intro, "", "| | |", "| --- | --- |", ...table, "", summary].join("\n");
+}
+
+/** The inline billing components (`<Rate meter>`, `<PlansWith feature>`, …) as Markdown text. */
+export function renderInlineBillingComponents(markdown: string): string {
+  return markdown
+    .replace(/<Rate meter="([a-z_.]+)" \/>/g, (_, meter: MeterKey) => rateText(meter))
+    .replace(/<PlansWith feature="([a-zA-Z]+)" \/>/g, (_, feature: FeatureKey) =>
+      plansWithText(feature),
+    )
+    .replace(/<Included meter="([a-z_.]+)"(?: plan="([a-z]+)")? \/>/g, (_, meter, plan) =>
+      includedUnitsText(meter as MeterKey, (plan as PlanKey | undefined) ?? "free"),
+    )
+    .replace(/<Limit of="([a-zA-Z]+)" plan="([a-z]+)" \/>/g, (_, limit, plan) =>
+      limitText(limit as LimitKey, plan as PlanKey),
+    )
+    .replace(/<PlanPrice plan="([a-z]+)" \/>/g, (_, plan) => planPriceText(plan as PlanKey))
+    .replaceAll("<GraduatedExample />", graduatedExampleText())
+    .replaceAll("<BillingExample />", billingExampleMarkdown());
 }
