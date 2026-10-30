@@ -62,10 +62,16 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
   const { runId } = await params;
   if (!/^\d{1,16}$/.test(runId) || !deploysConfigured()) notFound();
 
+  // The overview only says whether the run's commit is live and can be redeployed: without it
+  // the run is still shown.
+  const overviewRead = getDeployOverview().catch((error: unknown) => {
+    if (!(error instanceof GitHubError)) throw error;
+    return null;
+  });
   let detail: DeployRunDetail | null;
-  let overview: DeployOverview;
+  let overview: DeployOverview | null;
   try {
-    [detail, overview] = await Promise.all([getDeployRun(Number(runId)), getDeployOverview()]);
+    [detail, overview] = await Promise.all([getDeployRun(Number(runId)), overviewRead]);
   } catch (error) {
     if (!(error instanceof GitHubError)) throw error;
     return (
@@ -97,7 +103,8 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
   const now = new Date();
   const { run } = detail;
   const active = DEPLOY_PHASES[run.phase].active;
-  const redeployable = run.commit !== null && redeployableCommits(overview).has(run.commit);
+  const redeployable =
+    run.commit !== null && overview !== null && redeployableCommits(overview).has(run.commit);
   const deployJob = detail.jobs.find((job) => job.name === "deploy" && job.state !== "skipped");
   const failed = detail.jobs.filter((job) => job.state === "failure");
   const builds = detail.jobs.filter(
@@ -135,7 +142,9 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
               {TRIGGER[run.trigger]}
               {run.actor ? ` by ${run.actor}` : ""} ·{" "}
               {run.commit ? <CommitLink sha={run.commit} /> : "an earlier commit"}
-              {run.commit === overview.live ? " · running in production now" : ""}
+              {run.commit !== null && run.commit === overview?.live
+                ? " · running in production now"
+                : ""}
               {detail.attempt > 1 ? ` · attempt ${detail.attempt}` : ""}
             </span>
           </>
@@ -161,9 +170,7 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
           value={run.durationMs === null ? "—" : formatElapsed(run.durationMs)}
         />
         <Stat
-          detail={
-            detail.changes.kind === "unknown" ? undefined : `since ${shortSha(detail.changes.base)}`
-          }
+          detail={"base" in detail.changes ? `since ${shortSha(detail.changes.base)}` : undefined}
           label={detail.changes.kind === "rolls_back" ? "Changes rolled back" : "Changes"}
           value={changeCount(detail.changes)}
         />
@@ -209,6 +216,15 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
               <EmptyState compact icon={GitCommitHorizontalIcon} title="No merges to list" />
             </PanelBody>
           )
+        ) : detail.changes.kind === "unreadable" ? (
+          <PanelBody flush>
+            <EmptyState
+              compact
+              description={detail.changes.message}
+              icon={TriangleAlertIcon}
+              title="Couldn't read the changes from GitHub"
+            />
+          </PanelBody>
         ) : (
           <PanelBody flush>
             <EmptyState
@@ -229,13 +245,13 @@ export default async function AdminDeployRunPage({ params }: PageProps<"/admin/d
 }
 
 function changeCount(changes: DeployChanges): string {
-  if (changes.kind === "unknown") return "—";
+  if (changes.kind === "unknown" || changes.kind === "unreadable") return "—";
   if (changes.kind === "same") return "0";
   return `${changes.commits.length}${changes.truncated ? "+" : ""}`;
 }
 
 function changesDescription(changes: DeployChanges, phase: DeployPhase): string {
-  if (changes.kind === "unknown" || changes.kind === "same") {
+  if (changes.kind === "unknown" || changes.kind === "unreadable" || changes.kind === "same") {
     return "What this run changes in production, against the deploy before it.";
   }
   const base = shortSha(changes.base);

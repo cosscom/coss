@@ -68,6 +68,24 @@ let installationToken: { value: string; expiresAt: number } | undefined;
 const conditional = new Map<string, { etag: string; body: unknown }>();
 const CONDITIONAL_ENTRIES = 300;
 
+/**
+ * `fetch` with a timeout, asked once more for a GET that GitHub doesn't answer in time or answers
+ * with a 5xx: when Actions is degraded, some reads (a run's jobs) stall for ten seconds and end in
+ * a 502, and the same read asked again usually answers within a few seconds.
+ */
+async function send(url: string, init: RequestInit): Promise<Response> {
+  const attempt = () => fetch(url, { ...init, signal: AbortSignal.timeout(10_000) });
+  if ((init.method ?? "GET") !== "GET") return attempt();
+  try {
+    const response = await attempt();
+    if (response.status < 500) return response;
+    await response.body?.cancel();
+  } catch {
+    // Timed out or no connection: asked again below.
+  }
+  return attempt();
+}
+
 async function call<T>(
   path: string,
   token: string,
@@ -77,7 +95,7 @@ async function call<T>(
   const cached = method === "GET" ? conditional.get(path) : undefined;
   let response: Response;
   try {
-    response = await fetch(`${API}${path}`, {
+    response = await send(`${API}${path}`, {
       method,
       headers: {
         accept: "application/vnd.github+json",
@@ -89,7 +107,6 @@ async function call<T>(
       },
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
       cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
     });
   } catch (error) {
     throw new GitHubError(`GitHub didn't answer (${(error as Error).message}).`);
@@ -202,40 +219,53 @@ function ciState(run: GitHubRun | undefined): CiState {
 type RunWithJobs = { run: GitHubRun; jobs: GitHubJob[]; phase: DeployPhase };
 
 /**
- * Jobs of finished runs, by run id and attempt: they never change, and the page refreshes itself
- * while a run is active (an installation token gets 5,000 requests an hour).
+ * Jobs read, by run id and attempt. A finished run's never change, and the page refreshes itself
+ * while a run is active (an installation token gets 5,000 requests an hour); for the pages, an
+ * active run's last read stands in when GitHub doesn't answer the next one, so one failed read
+ * doesn't blank them.
  */
-const finishedJobs = new Map<string, GitHubJob[]>();
+const readJobs = new Map<string, { jobs: GitHubJob[]; finished: boolean }>();
 
 /**
  * A run's jobs and what it is doing: its latest attempt's, or an earlier `attempt`'s (finished,
- * so cached; its phase is then read against the latest attempt's status).
+ * so cached; its phase is then read against the latest attempt's status). `fresh`: never an
+ * active run's previous read (what decides a cancellation must not be out of date).
  */
-async function withJobs(run: GitHubRun, attempt?: number): Promise<RunWithJobs> {
+async function withJobs(
+  run: GitHubRun,
+  attempt?: number,
+  { fresh = false }: { fresh?: boolean } = {},
+): Promise<RunWithJobs> {
   const latest = run.run_attempt ?? 1;
   const key = `${run.id}:${attempt ?? latest}`;
-  let jobs = finishedJobs.get(key);
-  if (!jobs) {
+  const known = readJobs.get(key);
+  if (known?.finished) return { run, jobs: known.jobs, phase: deployRunPhase(run, known.jobs) };
+  let jobs: GitHubJob[];
+  try {
     ({ jobs } = await github<{ jobs: GitHubJob[] }>(
       attempt === undefined
         ? `${REPO}/actions/runs/${run.id}/jobs?per_page=30`
         : `${REPO}/actions/runs/${run.id}/attempts/${attempt}/jobs?per_page=30`,
     ));
-    if (run.status === "completed" || (attempt !== undefined && attempt < latest)) {
-      finishedJobs.set(key, jobs);
-      if (finishedJobs.size > 100) {
-        finishedJobs.delete(finishedJobs.keys().next().value as string);
-      }
-    }
+  } catch (error) {
+    if (fresh || !known || !(error instanceof GitHubError)) throw error;
+    console.warn(`[web] Showing deploy run ${run.id}'s previous jobs:`, error.message);
+    return { run, jobs: known.jobs, phase: deployRunPhase(run, known.jobs) };
   }
+  readJobs.delete(key);
+  readJobs.set(key, {
+    jobs,
+    finished: run.status === "completed" || (attempt !== undefined && attempt < latest),
+  });
+  if (readJobs.size > 100) readJobs.delete(readJobs.keys().next().value as string);
   return { run, jobs, phase: deployRunPhase(run, jobs) };
 }
 
-async function recentRuns(): Promise<RunWithJobs[]> {
+async function recentRuns(options?: { fresh?: boolean }): Promise<RunWithJobs[]> {
   const { workflow_runs: runs } = await github<{ workflow_runs: GitHubRun[] }>(
     `${REPO}/actions/workflows/${DEPLOY_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&per_page=${RUNS_SHOWN}`,
   );
-  return Promise.all(runs.map((run) => withJobs(run)));
+  return Promise.all(runs.map((run) => withJobs(run, undefined, options)));
 }
 
 async function mainSha(): Promise<string> {
@@ -381,10 +411,10 @@ async function readDeployOverview(): Promise<DeployOverview> {
   };
 }
 
-/** Push runs that haven't reached their deploy job. */
+/** Push runs that haven't reached their deploy job, by jobs read now (never a previous read). */
 async function pendingPushRuns(): Promise<Set<number>> {
   return new Set(
-    (await recentRuns())
+    (await recentRuns({ fresh: true }))
       .filter(({ run, phase }) => run.event === "push" && CANCELABLE_PHASES.includes(phase))
       .map(({ run }) => run.id),
   );
@@ -501,12 +531,13 @@ export type DeployJob = {
  * What a run changes in production, against the commit production ran before it (the previous
  * run that rolled out): main's commits it ships, or those it takes back out (a redeploy of an
  * earlier commit). `unknown`: no earlier rollout among the runs read, or a run that doesn't say
- * which commit it ships.
+ * which commit it ships. `unreadable`: GitHub failed to answer while they were worked out.
  */
 export type DeployChanges =
   | { kind: "ships" | "rolls_back"; base: string; commits: MainCommit[]; truncated: boolean }
   | { kind: "same"; base: string }
-  | { kind: "unknown" };
+  | { kind: "unknown" }
+  | { kind: "unreadable"; message: string };
 
 export type DeployRunDetail = {
   run: DeployRun;
@@ -564,10 +595,19 @@ export async function getDeployRun(id: number): Promise<DeployRunDetail | null> 
       };
     }),
   );
-  const earlier = await previousRollout(entry, now);
-  const detail = deployRun(entry, earlier.lastDeployAt, now);
+  // The run itself is what the page is for: a failed search for what it changes leaves it shown.
+  let lastDeployAt: Date | null = null;
+  let changes: DeployChanges;
+  try {
+    const earlier = await previousRollout(entry, now);
+    lastDeployAt = earlier.lastDeployAt;
+    changes = await runChanges(earlier.commit, deployedCommit(run, entry.jobs), ciBySha);
+  } catch (error) {
+    if (!(error instanceof GitHubError)) throw error;
+    changes = { kind: "unreadable", message: error.message };
+  }
+  const detail = deployRun(entry, lastDeployAt, now);
   const active = DEPLOY_PHASES[entry.phase].active;
-  const changes = await runChanges(earlier.commit, detail.commit, ciBySha);
 
   return {
     run: detail,
@@ -655,7 +695,7 @@ async function failureLog(jobId: number): Promise<LogLine[] | null> {
   if (cached) return cached;
   try {
     // GitHub answers with a redirect to a short-lived download URL, fetched without the token.
-    const redirect = await fetch(`${API}${REPO}/actions/jobs/${jobId}/logs`, {
+    const redirect = await send(`${API}${REPO}/actions/jobs/${jobId}/logs`, {
       headers: {
         accept: "application/vnd.github+json",
         authorization: `Bearer ${await token()}`,
@@ -664,7 +704,6 @@ async function failureLog(jobId: number): Promise<LogLine[] | null> {
       },
       redirect: "manual",
       cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
     });
     const location = redirect.headers.get("location");
     if (!location) return null;
