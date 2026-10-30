@@ -12,10 +12,13 @@
 import { randomBytes } from "node:crypto";
 import type { UsageGate } from "@coss/billing/gate";
 import {
+  confirmationPage,
+  confirmFormSubmission,
   errorsPage,
   type FieldError,
   type FormFileStore,
   type FormLinks,
+  findConfirmation,
   type SubmitFormResult,
   type SubmittedFile,
   submitForm,
@@ -140,6 +143,35 @@ async function allowed(c: Context<AppEnv>, formId: string): Promise<boolean> {
   return byForm.allowed;
 }
 
+/** Verification links: per client IP (a token is 256 random bits; guessing one is hopeless). */
+async function confirmAllowed(c: Context<AppEnv>): Promise<boolean> {
+  return (
+    await c.var.rateLimiter.consume({
+      buckets: ["forms.submit.ip"],
+      subject: c.var.clientIp ?? "unattributed",
+    })
+  ).allowed;
+}
+
+function tooMany(c: Context<AppEnv>) {
+  return c.text("Too many requests. Try again in a moment.", 429, {
+    "Cache-Control": NO_STORE,
+    "Retry-After": "1",
+  });
+}
+
+function linkGone(c: Context<AppEnv>) {
+  const nonce = randomBytes(16).toString("base64");
+  return c.body(
+    unavailablePage({
+      message: "This link has expired or was already replaced by a newer one.",
+      nonce,
+    }),
+    404,
+    pageHeaders(nonce),
+  );
+}
+
 /** What the submitter is told: spam and held look accepted, and pending when the form verifies. */
 function publicStatus(result: Extract<SubmitFormResult, { submissionId: string }>) {
   return result.outcome === "pending_confirmation" ||
@@ -171,6 +203,56 @@ export function createFormRoutes(opts: FormRoutesOptions): Hono<AppEnv> {
       ? multipartLimit(c, next)
       : textLimit(c, next),
   );
+
+  // The submitter's verification link (`verify_submitter`). Mail scanners fetch every link, so the
+  // GET only shows a button; the POST confirms.
+  router.get("/c/:token", async (c) => {
+    if (!(await confirmAllowed(c))) return tooMany(c);
+    const found = await findConfirmation(c.req.param("token"));
+    if (!found) return linkGone(c);
+    const nonce = randomBytes(16).toString("base64");
+    return c.body(
+      confirmationPage({
+        formName: found.form.name,
+        successMessage: found.form.successMessage,
+        state: found.confirmed ? "already_confirmed" : "ask",
+        action: c.req.path,
+        nonce,
+      }),
+      200,
+      // `form-action` also covers the redirect after the POST (the form's thank-you page).
+      pageHeaders(nonce, found.form.redirectUrl ? [new URL(found.form.redirectUrl).origin] : []),
+    );
+  });
+
+  router.post("/c/:token", async (c) => {
+    if (!(await confirmAllowed(c))) return tooMany(c);
+    const result = await confirmFormSubmission(c.req.param("token"), new Date(), opts.billing);
+    if (!result) return linkGone(c);
+    if (result.outcome === "unavailable") {
+      const nonce = randomBytes(16).toString("base64");
+      return c.body(
+        unavailablePage({ message: "This form isn't accepting submissions right now.", nonce }),
+        403,
+        pageHeaders(nonce),
+      );
+    }
+    if (result.outcome === "confirmed" && result.form.redirectUrl) {
+      return c.redirect(result.form.redirectUrl, 303);
+    }
+    const nonce = randomBytes(16).toString("base64");
+    return c.body(
+      confirmationPage({
+        formName: result.form.name,
+        successMessage: result.form.successMessage,
+        state: result.outcome,
+        action: c.req.path,
+        nonce,
+      }),
+      200,
+      pageHeaders(nonce),
+    );
+  });
 
   // Preflight for scripts posting JSON: allowed for any origin the form accepts.
   router.options("/:formId", async (c) => {

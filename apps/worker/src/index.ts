@@ -16,7 +16,13 @@ import {
 import { createBillingRuntime } from "@coss/billing/runtime";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
-import { createEmailService, emailNotifier, notificationEnvironment } from "@coss/email";
+import {
+  authorizeLiveSender,
+  createEmailService,
+  EmailError,
+  emailNotifier,
+  notificationEnvironment,
+} from "@coss/email";
 import {
   EMAIL_DISPATCH_MARKETING_QUEUE,
   ensureEmailDispatchQueues,
@@ -49,6 +55,8 @@ import {
   broadcastThrottleRefund,
 } from "./broadcast-throttle.ts";
 import { env } from "./env.ts";
+import { formContactSink } from "./form-contacts.ts";
+import { formMailer, formVerificationQuota } from "./form-mailer.ts";
 import { hookThrottle } from "./hooks-throttle.ts";
 import { dmarcReportQuota, inboundQuota, type SesInboundDeps } from "./inbound.ts";
 import { startJobs, WORKER_LOOP_NAMES } from "./jobs.ts";
@@ -255,8 +263,56 @@ const signNotifications =
       }
     : null;
 
-// Forms: files of deleted and purged submissions, and organization deletion.
+// Forms: files of deleted and purged submissions, and organization deletion; notifications,
+// contacts and verification emails through the email product (form-mailer.ts, form-contacts.ts).
 const formsStore = formsStoreFromEnv(env);
+const formsFallbackAddress =
+  env.FORMS_NOTIFICATIONS_FROM ??
+  (env.NOTIFICATIONS_FROM ? addressOf(env.NOTIFICATIONS_FROM) : null);
+const formDeliveries = env.FORMS_PUBLIC_URL
+  ? {
+      formsUrl: env.FORMS_PUBLIC_URL,
+      dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
+      mailer: formMailer({
+        service: emailService,
+        limiter: rateLimits.limiter,
+        fallback:
+          systemEnvironment && formsFallbackAddress
+            ? { environment: systemEnvironment, address: formsFallbackAddress }
+            : null,
+      }),
+      contacts: formContactSink({
+        emailService,
+        limiter: rateLimits.limiter,
+        linkKeys: linkKeysFromEnv(env),
+        linkBaseUrl:
+          env.TRACKING_PUBLIC_URL ?? env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`,
+        plans: createPlanGate({ systemOrganizationId }),
+      }),
+      admitVerification: formVerificationQuota(rateLimits.limiter),
+      async verifiedAddress({
+        organizationId,
+        address,
+      }: {
+        organizationId: string;
+        address: string;
+      }) {
+        try {
+          await authorizeLiveSender({
+            organizationId,
+            from: address,
+            provider: email.liveProvider.name,
+          });
+          return true;
+        } catch (error) {
+          // Only "not a verified domain" drops the recipient; a hold, a paused tenant or a
+          // database error is thrown, so the delivery is retried rather than sent without them.
+          if (error instanceof EmailError && error.code === "domain_not_verified") return false;
+          throw error;
+        }
+      },
+    }
+  : null;
 
 const loops = startJobs({
   systemOrganizationId,
@@ -299,6 +355,7 @@ const loops = startJobs({
   signNotifications,
   signStore,
   formsStore,
+  formDeliveries,
   webhooks: { secretsKeys, send },
   migrations: {
     secretsKeys,

@@ -1,6 +1,11 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { pool } from "@coss/db";
-import { createForm, type FormEnvironment } from "@coss/forms";
+import {
+  createForm,
+  type FormEmail,
+  type FormEnvironment,
+  runDueFormDeliveries,
+} from "@coss/forms";
 import { CreateFormRequest } from "@coss/forms/schemas";
 import { testFormChecks } from "@coss/forms/testing";
 import { cachedOverrides, clientIpResolver, setRateLimitOverride } from "@coss/ratelimit";
@@ -237,5 +242,46 @@ describe("POST /f/:id", () => {
     );
     expect((await app.fetch(htmlPost(form.id, { message: "one" }))).status).toBe(200);
     expect((await app.fetch(htmlPost(form.id, { message: "two" }))).status).toBe(429);
+  });
+});
+
+describe("/f/c/:token", () => {
+  test("the verification link: the GET shows a button, the POST confirms", async () => {
+    const { app } = createTestApp();
+    const form = await newForm({
+      submitter: { verify: true },
+      redirect_url: "https://www.example.com/thanks",
+    });
+    const posted = await app.fetch(htmlPost(form.id, { email: "ada@example.com" }));
+    expect(await posted.text()).toContain("Check your email");
+    const emails: FormEmail[] = [];
+    await runDueFormDeliveries(
+      { scope: { organizationIds: [env.organizationId] } },
+      {
+        formsUrl: FORMS_URL,
+        dashboardUrl: "https://coss.test",
+        verifiedAddress: async () => false,
+        mailer: {
+          async send(email) {
+            emails.push(email);
+            return { replayed: false };
+          },
+        },
+        contacts: { add: async () => {} },
+      },
+    );
+    const link = /(http:\/\/forms\.coss\.test\/f\/c\/\S+)/.exec(emails[0]?.text ?? "")?.[1] ?? "";
+    expect(link).toContain("/f/c/cossf_");
+
+    const page = await app.fetch(new Request(link));
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain("Confirm and send");
+    expect((await latest(form.id))?.status).toBe("pending_confirmation");
+
+    const confirmed = await app.fetch(new Request(link, { method: "POST" }));
+    expect(confirmed.status).toBe(303);
+    expect(confirmed.headers.get("location")).toBe("https://www.example.com/thanks");
+    expect((await latest(form.id))?.status).toBe("accepted");
+    expect((await app.fetch(new Request(`${FORMS_URL}/f/c/cossf_nope`))).status).toBe(404);
   });
 });

@@ -38,6 +38,7 @@ const {
   form,
   formSubmission,
   formSubmissionFile,
+  marketingSettings,
   member,
   topic,
   user,
@@ -425,7 +426,10 @@ async function check(env: FormEnvironment, values: FormValues, checks: FormCheck
       );
     }
   }
-  if (values.contacts?.enabled) await checkContacts(env, values.contacts, defined);
+  if (values.contacts?.enabled) {
+    await checkContacts(env, values.contacts, defined);
+    await checkConfirmationSender(env, values.contacts);
+  }
   if (values.hosted?.enabled) checkHosted(values.fields);
   if (values.verifySubmitter && env.mode === "live" && !values.confirmationFrom) {
     throw new FormError(
@@ -458,7 +462,11 @@ async function check(env: FormEnvironment, values: FormValues, checks: FormCheck
   }
 }
 
-async function memberAddresses(organizationId: string, addresses: string[]): Promise<Set<string>> {
+/** Which of these addresses belong to verified members of the organization (lower-cased). */
+export async function memberAddresses(
+  organizationId: string,
+  addresses: string[],
+): Promise<Set<string>> {
   if (addresses.length === 0) return new Set();
   const rows = await db
     .select({ email: user.email })
@@ -533,6 +541,37 @@ async function checkContacts(
         param: "contacts",
       });
     }
+  }
+}
+
+/**
+ * Double opt-in sends the environment's confirmation email, which needs its sender (the marketing
+ * settings' `confirmation_from`): refused up front rather than failing every submission later.
+ */
+async function checkConfirmationSender(
+  env: FormEnvironment,
+  contacts: FormContactsConfig,
+): Promise<void> {
+  const [settings] = await db
+    .select({
+      doubleOptInDefault: marketingSettings.doubleOptInDefault,
+      confirmationFrom: marketingSettings.confirmationFrom,
+    })
+    .from(marketingSettings)
+    .where(
+      and(
+        eq(marketingSettings.organizationId, env.organizationId),
+        eq(marketingSettings.environmentId, env.environmentId),
+      ),
+    )
+    .limit(1);
+  const doubleOptIn = contacts.doubleOptIn ?? settings?.doubleOptInDefault ?? false;
+  if (doubleOptIn && !settings?.confirmationFrom) {
+    throw new FormError(
+      "invalid_contacts",
+      "Double opt-in sends the environment's confirmation email: set its sender (confirmation_from) in the marketing settings first.",
+      { param: "contacts.double_opt_in" },
+    );
   }
 }
 

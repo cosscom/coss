@@ -1135,6 +1135,18 @@
           "description": "Forms' bucket of uploaded files (Terraform output forms_files_bucket), with AWS_REGION. Unset: forms refuse uploads in production."
         },
         {
+          "name": "FORMS_PUBLIC_URL",
+          "kind": "plain",
+          "required": false,
+          "description": "Origin forms are served on (a registrable domain of its own, routed to the api service); endpoints are <FORMS_PUBLIC_URL>/f/<id>. Unset: Forms is off."
+        },
+        {
+          "name": "FORMS_NOTIFICATIONS_FROM",
+          "kind": "plain",
+          "required": false,
+          "description": "coss.com's sender of form notifications (\"<form name> via coss.com\"), on a verified domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default NOTIFICATIONS_FROM's address."
+        },
+        {
           "name": "SIGN_SEALER",
           "kind": "plain",
           "required": false,

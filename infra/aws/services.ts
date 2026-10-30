@@ -902,6 +902,14 @@ export const SERVICES: Service[] = [
       trackingPublicUrl,
       signDocumentsBucket,
       formsFilesBucket,
+      formsPublicUrl,
+      {
+        name: "FORMS_NOTIFICATIONS_FROM",
+        kind: "plain",
+        required: false,
+        description:
+          "coss.com's sender of form notifications (\"<form name> via coss.com\"), on a verified domain of NOTIFICATIONS_ENVIRONMENT_ID's organization; default NOTIFICATIONS_FROM's address.",
+      },
       ...signSeal,
       signPublicUrl,
       {

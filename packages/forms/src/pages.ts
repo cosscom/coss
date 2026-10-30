@@ -107,3 +107,22 @@ export function unavailablePage(input: { message: string; nonce: string }): stri
     body: `<h1>This form isn't available</h1><p>${escapeHtml(input.message)}</p>`,
   });
 }
+
+/** The submitter's verification link: one button (a GET changes nothing), then the outcome. */
+export function confirmationPage(input: {
+  formName: string;
+  successMessage: string | null;
+  state: "ask" | "confirmed" | "already_confirmed";
+  action: string;
+  nonce: string;
+}): string {
+  const name = escapeHtml(input.formName);
+  const body =
+    input.state === "ask"
+      ? `<h1>Confirm your email</h1><p>Confirm your email address to send your submission to ${name}.</p>` +
+        `<form method="post" action="${escapeHtml(input.action)}"><p><button type="submit">Confirm and send</button></p></form>`
+      : input.state === "confirmed"
+        ? `<h1>Thank you</h1><p>${escapeHtml(input.successMessage ?? `Your submission to ${input.formName} was sent.`)}</p>`
+        : `<h1>Already confirmed</h1><p>Your submission to ${name} was already sent.</p>`;
+  return page({ title: input.formName, nonce: input.nonce, body });
+}

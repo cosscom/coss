@@ -40,7 +40,12 @@ import {
   sweepUnclaimedEmails,
 } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
-import { type FormFileStore, runDueFormStoreCleanup } from "@coss/forms";
+import {
+  type FormDeliveryDeps,
+  type FormFileStore,
+  runDueFormDeliveries,
+  runDueFormStoreCleanup,
+} from "@coss/forms";
 import {
   type HookDeliveryDeps,
   hookFailureRateCheck,
@@ -119,6 +124,7 @@ const SIGN_COMPLETION_BATCH = 5;
 const SIGN_NOTIFICATION_BATCH = 50;
 const SIGN_CLEANUP_BATCH = 500;
 const FORMS_CLEANUP_BATCH = 500;
+const FORMS_DELIVERY_BATCH = 50;
 // Content screening only records verdicts; this check turns them into warnings and suspensions.
 // Hooks delivery failures warn by default (their policy has no suspension threshold).
 const REPUTATION_CHECKS = [
@@ -166,6 +172,8 @@ export type WorkerDeps = {
   signStore?: DocumentStore | null;
   /** Forms' file store: deletions of removed submissions' files, and organization deletion. */
   formsStore?: FormFileStore | null;
+  /** Forms' notifications, contacts and verification emails; `null`: off (no forms host yet). */
+  formDeliveries?: FormDeliveryDeps | null;
   /** Sign's emails, reminders and expiry; `null`: off (no document store or signing app yet). */
   signNotifications?: SignNotificationDeps | null;
   /** Push notifications to the iOS app; `null`: held until APNs is configured. */
@@ -663,15 +671,23 @@ export function startJobs(deps: WorkerDeps): Loop[] {
     );
   }
   const formsStore = deps.formsStore;
-  if (formsStore) {
+  const formDeliveries = deps.formDeliveries;
+  if (formsStore || formDeliveries) {
     loops.push(
       start({
-        // Files of deleted and purged submissions leave the store.
+        // Notifications should arrive within seconds of a submission; files of deleted and purged
+        // submissions leave the store.
         name: "forms",
-        intervalMs: 10_000,
-        run: async () =>
-          (await runDueFormStoreCleanup({ limit: FORMS_CLEANUP_BATCH }, formsStore)) ===
-          FORMS_CLEANUP_BATCH,
+        intervalMs: 2000,
+        run: async () => {
+          const delivered = formDeliveries
+            ? await runDueFormDeliveries({ limit: FORMS_DELIVERY_BATCH }, formDeliveries)
+            : 0;
+          const cleaned = formsStore
+            ? await runDueFormStoreCleanup({ limit: FORMS_CLEANUP_BATCH }, formsStore)
+            : 0;
+          return delivered === FORMS_DELIVERY_BATCH || cleaned === FORMS_CLEANUP_BATCH;
+        },
       }),
     );
   }
