@@ -433,12 +433,29 @@ export async function updateInbox(
  * Deletes an inbox with its threads. The received emails and emails its messages point at stay
  * (they are the environment's), and mail to its address is still received by the environment.
  */
+/**
+ * Deletes an inbox (its threads go with it; their emails stay). A live inbox's days that started
+ * since its last charge (the fee loop hadn't reached them) are charged in the same transaction.
+ */
 export async function deleteInbox(scope: Scope & { id: string }): Promise<boolean> {
-  const rows = await db
-    .delete(inbox)
-    .where(and(scoped(scope), eq(inbox.id, scope.id)))
-    .returning({ id: inbox.id });
-  return rows.length > 0;
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .delete(inbox)
+      .where(and(scoped(scope), eq(inbox.id, scope.id)))
+      .returning({
+        organizationId: inbox.organizationId,
+        projectId: inbox.projectId,
+        environmentId: inbox.environmentId,
+        dueDays: sql<number>`case when ${inbox.nextFeeAt} <= transaction_timestamp()
+          then floor(extract(epoch from transaction_timestamp() - ${inbox.nextFeeAt}) * 1000
+            / ${INBOX_FEE_INTERVAL_MS})::int + 1
+          else 0 end`,
+      });
+    if (!row) return false;
+    const { dueDays, ...source } = row;
+    await recordUsage(tx, { ...source, meter: "email.inboxes", quantity: dueDays });
+    return true;
+  });
 }
 
 // --- Threading -----------------------------------------------------------------------------------

@@ -300,8 +300,8 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   organization-wide advisory lock). **Billing**: a live inbox is `email.inboxes`, one unit per day it exists — the first in
   the insert's transaction (reserved first through the `UsageGate`: Free's included inbox-days), then the worker's
   `inbox-fees` loop (`chargeDueInboxFees`: `next_fee_at` moves a day per charge, one day per run, so a backlog catches up
-  run by run; each day is reserved too, so churn can't outlast Free's inbox-days, and days past them are written off);
-  sandbox inboxes have no `next_fee_at`. Under the organization lock a `client_id` is looked up again before the
+  run by run; each day is reserved too, so churn can't outlast Free's inbox-days, and days past them are written off), and
+  `deleteInbox` charges the days that started since the last charge; sandbox inboxes have no `next_fee_at`. Under the organization lock a `client_id` is looked up again before the
   limit is checked (a concurrent create with it may have just committed).
   Receiving is `receiveEmail`'s: in its transaction, after `email.received`, `recordInboundInboxMessages` files the
   row into every inbox of that environment among the **envelope** recipients (never parsed `To`) and enqueues

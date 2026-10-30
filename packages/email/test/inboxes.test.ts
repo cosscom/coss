@@ -853,4 +853,22 @@ describe("inboxes", () => {
     expect(first?.inbox.id).toBe(second?.inbox.id ?? "");
     expect([first?.created, second?.created].sort()).toEqual([false, true]);
   });
+
+  test("deleting an inbox charges the days that started since its last charge", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const { inbox } = await createInbox(live(tenant), { username: "short-lived" }, deps);
+    const { inbox: fresh } = await createInbox(live(tenant), { username: "fresh" }, deps);
+    expect(await inboxDays(org)).toBe(2);
+    // The fee loop is three days behind on one of them: its third day started 49 hours ago.
+    await db
+      .update(schema.inbox)
+      .set({ nextFeeAt: new Date(Date.now() - 49 * 60 * 60 * 1000) })
+      .where(eq(schema.inbox.id, inbox.id));
+    expect(await deleteInbox({ ...live(tenant), id: inbox.id })).toBe(true);
+    expect(await inboxDays(org)).toBe(5);
+    // A day not yet started costs nothing more.
+    expect(await deleteInbox({ ...live(tenant), id: fresh.id })).toBe(true);
+    expect(await inboxDays(org)).toBe(5);
+  });
 });
