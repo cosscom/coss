@@ -33,6 +33,7 @@
     "@coss/sms": "workspace:*",
     "@coss/tenancy": "workspace:*",
     "@coss/ui": "workspace:*",
+    "@coss/verify": "workspace:*",
     "@coss/versioning": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@sentry/nextjs": "catalog:",

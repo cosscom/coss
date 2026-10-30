@@ -1,0 +1,23 @@
+---
+title: Email codes
+description: Email codes from your own sender or coss.com's.
+---
+
+A verification to an email address sends an email with the subject "Your Acme verification
+code" and the code in its body, with when it expires. The code is never in the subject: subjects
+are kept (in your emails, their events and webhooks) after the body is erased. It has no links,
+and opens and clicks are never tracked.
+
+## Which sender
+
+- **Your own address**: set "Email codes come from" in Verify's settings to an address on one of
+  your [verified domains](/docs/email/domains). The email is sent from your environment, with your
+  suppression list, and appears in your emails.
+- **coss.com's sender** (the default, and whenever your address stops being verified): the email
+  comes from coss.com as "Acme via coss.com", from coss.com's environment, so it doesn't appear in
+  your emails.
+
+An address on your environment's suppression list (it bounced, or complained) can't get codes,
+whichever sender is used; with coss.com's sender, neither can one that bounced or complained
+about coss.com's own emails. The verification fails with `recipient_suppressed`. Email codes cost nothing beyond the
+verification itself.

@@ -959,6 +959,9 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   at a verified sender of coss.com's own organization.
 
 **Not built yet** (don't assume these exist; delete a line when it ships): the real landing page,
+Verify's voice and WhatsApp channels, locales other than English, custom message templates, a
+settings API, Verify in the MCP server, the CLI and the iOS app, Verify's shared numbers in
+production (they wait for coss.com's own one-time-code registration and `VERIFY_SMS_*`),
 Sign's archival timestamps in seals (PAdES B-LTA: renewing a document timestamp before its TSA certificate expires) and a standalone certificate download,
 a price for `sign.completed_requests`, Sign in the iOS app, the admin console, the MCP server and the CLI, and Sign
 in production (off until "Going live" in `packages/sign/AGENTS.md` is done),
@@ -972,7 +975,7 @@ verification outside Go (the others return plain JSON), framework drivers built 
 IdP-initiated SAML and SAML single logout, more than one SSO provider per organization,
 editing an API key's permissions (create a new key), API keys restricted to sending domains or IP addresses,
 org logos, uploading a profile picture, email change,
-email/SMS two-factor codes, sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, webhooks and notification emails for dedicated IP status changes, standard (manually
+email/SMS two-factor codes (through Verify), sign-in providers other than Google and GitHub, "trust this device" for 2FA, renaming passkeys, webhooks and notification emails for dedicated IP status changes, standard (manually
 warmed) dedicated IPs or more than one pool per organization, an automatic direct-debit policy (only per-account
 required payment methods), multi-currency, metering for video/scheduling (their meters
 and rates exist; the products don't), SMS alphanumeric sender IDs, short codes, MMS, batch SMS, SMS templates,

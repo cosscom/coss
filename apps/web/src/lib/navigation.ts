@@ -39,6 +39,7 @@ import {
   SendIcon,
   SettingsIcon,
   ShieldAlertIcon,
+  ShieldCheckIcon,
   ShieldIcon,
   SignatureIcon,
   SlidersHorizontalIcon,
@@ -95,6 +96,13 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Requests", path: "/sign", icon: SignatureIcon },
       { label: "Templates", path: "/sign/templates", icon: FilePenLineIcon },
       { label: "Settings", path: "/sign/settings", icon: PenLineIcon },
+    ],
+  },
+  {
+    label: "Verify",
+    items: [
+      { label: "Verifications", path: "/verify", icon: ShieldCheckIcon },
+      { label: "Settings", path: "/verify/settings", icon: SlidersHorizontalIcon },
     ],
   },
   {
@@ -235,6 +243,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   emails: "Emails",
   sms: "SMS",
   sign: "Sign",
+  verify: "Verify",
   register: "Register",
   templates: "Templates",
   versions: "Versions",

@@ -5,6 +5,7 @@
     "inboxes",
     "sms",
     "sign",
+    "verify",
     "hooks",
     "risk",
     "(platform)",

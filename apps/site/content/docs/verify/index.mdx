@@ -1,0 +1,72 @@
+---
+title: Verify
+description: Prove someone has a phone number or a mailbox with a one-time code.
+icon: Otp
+---
+
+`coss.verify` sends a one-time code to a phone number (SMS) or an email address and checks the
+code the person typed. coss.com makes the code, sends it, keeps only a keyed hash of it, counts
+the attempts and expires it; your backend makes two calls. SMS codes go from coss.com's own
+numbers unless you choose one of yours, so there is nothing to register first.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const userIp: string;
+// ---cut---
+// 1. The user typed their number: send them a code.
+const { data: verification } = await coss.verify.start({ to: "+14155550123", ip: userIp });
+
+// 2. They typed the code they got: check it.
+const { data: check } = await coss.verify.check({ to: "+14155550123", code: "482913" });
+if (check?.valid) {
+  // The number is theirs.
+}
+```
+
+Only `valid: true` proves the person has the phone or mailbox. Check on your backend, never in the
+browser, and treat the API key as you would any secret.
+
+## How a verification goes
+
+1. **Start it** with `to`: a number in E.164 form (`+14155550123`) gets an SMS, an email address an
+   email (or pass `channel`). Pass the end user's `ip`, and your `user_id` if you have one: the
+   [fraud guard](/docs/verify/fraud-guard) uses them.
+2. **It is checked before anything is sent.** A verification the fraud guard blocks is stored as
+   `blocked` with its `reasons`, the call fails with `verification_blocked`, and nothing is sent
+   or billed.
+3. **The code goes out** — 6 digits by default — and the verification is `pending` until it
+   expires (10 minutes by default).
+4. **Check the code.** By `to` (the destination's latest verification) or by `verification_id`.
+   The right code makes it `approved` (`verification.approved`); a wrong one spends an attempt,
+   and the fifth wrong one fails it (`verification.failed`). Checking an approved verification
+   again with its code stays valid until it expires, without being billed again.
+
+Starting again for the same destination while a verification is pending **sends a new code**
+(the earlier one stops working, and the expiry restarts), up to 5 times; cancel one with
+`coss.verify.cancel(id)`. Code length, lifetime, attempts, senders and the countries SMS codes
+may go to are the environment's Verify settings in the dashboard.
+
+## Pricing
+
+You pay per **approved** verification, plus the channel: an SMS from coss.com's numbers is billed
+at the SMS price of its country (`verify.sms`), one from your own number as any SMS, and email
+costs nothing extra. Verifications that are blocked, fail or expire cost only the messages
+actually sent. See [pricing](/pricing).
+
+## What's in it
+
+<Cards>
+  <Card title="SMS codes" href="/docs/verify/sms">
+    coss.com's shared numbers or your own, countries and opt-outs.
+  </Card>
+  <Card title="Email codes" href="/docs/verify/email">
+    Your own sender or coss.com's, and what the email says.
+  </Card>
+  <Card title="Fraud guard" href="/docs/verify/fraud-guard">
+    How SMS pumping is stopped before you pay for it, and every reason it gives.
+  </Card>
+  <Card title="Testing" href="/docs/verify/testing">
+    Sandbox codes are always zeros.
+  </Card>
+</Cards>

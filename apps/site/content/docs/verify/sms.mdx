@@ -1,0 +1,42 @@
+---
+title: SMS codes
+description: Where SMS codes come from, where they may go, and what they say.
+---
+
+A verification to a phone number (E.164, like `+14155550123`) sends an SMS:
+
+```
+Your Acme verification code is 482913. Don't share it with anyone.
+```
+
+The name is the environment's Verify setting "App name" (the project's name by default); the
+wording is fixed, because carriers approve senders for exactly this kind of message.
+
+## Which number sends it
+
+- **coss.com's shared numbers** (the default): numbers coss.com registered with carriers for
+  one-time codes. You register nothing. Each destination always gets its codes from the same
+  number. The messages are coss.com's, so they don't appear in your SMS list; their cost is
+  billed to you as `verify.sms`, by country, once a carrier takes the message.
+- **One of your own numbers**: choose it in Verify's settings. It must be registered and approved
+  ([SMS senders](/docs/sms/senders)); the messages appear under SMS in your environment and are billed as
+  SMS. Use it when your users should see your number, or for countries the shared numbers don't
+  reach.
+
+## Countries
+
+Codes go only to the countries in the environment's Verify settings (the US and Canada by
+default); anything else fails with `country_not_allowed`. Allow only where your users are: SMS
+pumping sends codes to numbers elsewhere. The shared numbers never send to the countries where
+pumping is most common; send from your own number if you have users there.
+
+## Opt-outs
+
+A person who replied STOP to the number can't get codes from it: the verification fails with
+`recipient_suppressed`. On the shared numbers, a STOP applies to every app using them, as with
+any shared sender. Ask the person to reply START, or use email.
+
+## What coss.com keeps
+
+The code itself is never stored, logged or put in a webhook: coss.com keeps a keyed hash of it
+until the verification expires, and the message's text is erased once it is sent.

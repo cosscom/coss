@@ -5,9 +5,10 @@ description: Build with coss.com (transactional and marketing email, inboxes for
 
 # Building with coss.com
 
-coss.com is one API key and one SDK for email, inboxes for agents, SMS, Hooks (webhooks your app
-sends to its own users) and Risk (sign-up, login and payment risk decisions). Its docs are written
-for agents too: read them instead of guessing field names, error codes or webhook payloads.
+coss.com is one API key and one SDK for email, inboxes for agents, SMS, Verify (one-time codes by
+SMS or email), Hooks (webhooks your app sends to its own users) and Risk (sign-up, login and
+payment risk decisions). Its docs are written for agents too: read them instead of guessing field
+names, error codes or webhook payloads.
 
 ## Read the docs first
 
