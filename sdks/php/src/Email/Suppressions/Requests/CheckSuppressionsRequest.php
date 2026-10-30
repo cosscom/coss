@@ -23,10 +23,16 @@ class CheckSuppressionsRequest extends JsonSerializableType
     public ?string $stream;
 
     /**
+     * @var ?string $subaccount The sub-account you plan to send for (its id or your uid): its own entries count too.
+     */
+    public ?string $subaccount;
+
+    /**
      * @param array{
      *   address: string,
      *   category?: ?string,
      *   stream?: ?value-of<CheckSuppressionsRequestStream>,
+     *   subaccount?: ?string,
      * } $values
      */
     public function __construct(
@@ -40,6 +46,10 @@ class CheckSuppressionsRequest extends JsonSerializableType
         $this->stream = $values['stream'] ?? null;
         if (array_key_exists('stream', $values)) {
             $this->_setField('stream');
+        }
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
         }
     }
 }

@@ -122,6 +122,13 @@ public record EmailMessage : IJsonOnDeserialized
     [JsonPropertyName("broadcast_id")]
     public string? BroadcastId { get; set; }
 
+    /// <summary>
+    /// The sub-account the email was sent for; `null` if it was sent for none.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("subaccount_id")]
+    public string? SubaccountId { get; set; }
+
     [JsonPropertyName("content_storage")]
     public required EmailContentStorage ContentStorage { get; set; }
 

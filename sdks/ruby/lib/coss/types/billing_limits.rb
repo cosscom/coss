@@ -11,6 +11,8 @@ module Coss
       field :webhook_endpoints_per_environment, -> { Integer }, optional: false, nullable: true
 
       field :contacts_per_environment, -> { Integer }, optional: false, nullable: true
+
+      field :inboxes, -> { Integer }, optional: false, nullable: true
     end
   end
 end

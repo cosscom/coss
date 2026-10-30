@@ -5,11 +5,15 @@ import typing
 from .broadcast_webhook_event import BroadcastWebhookEvent
 from .contact_webhook_event import ContactWebhookEvent
 from .email_webhook_event import EmailWebhookEvent
+from .form_submission_webhook_event import FormSubmissionWebhookEvent
 from .hook_endpoint_webhook_event import HookEndpointWebhookEvent
+from .inbox_message_received_webhook_event import InboxMessageReceivedWebhookEvent
 from .received_email_webhook_event import ReceivedEmailWebhookEvent
 from .received_sms_webhook_event import ReceivedSmsWebhookEvent
 from .risk_webhook_event import RiskWebhookEvent
+from .sign_request_webhook_event import SignRequestWebhookEvent
 from .sms_webhook_event import SmsWebhookEvent
+from .verification_webhook_event import VerificationWebhookEvent
 
 WebhookTestEventEvent = typing.Union[
     EmailWebhookEvent,
@@ -18,6 +22,10 @@ WebhookTestEventEvent = typing.Union[
     RiskWebhookEvent,
     ContactWebhookEvent,
     BroadcastWebhookEvent,
+    InboxMessageReceivedWebhookEvent,
     SmsWebhookEvent,
     ReceivedSmsWebhookEvent,
+    SignRequestWebhookEvent,
+    VerificationWebhookEvent,
+    FormSubmissionWebhookEvent,
 ]

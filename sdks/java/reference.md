@@ -175,6 +175,14 @@ client.email().list(
 <dl>
 <dd>
 
+**subaccount:** `Optional<String>` — Only the emails sent for this sub-account (its id or your uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **createdAfter:** `Optional<OffsetDateTime>` — Only emails created at or after this time.
     
 </dd>
@@ -783,8 +791,27 @@ Every domain of the organization, ordered by name. Domains belong to the organiz
 <dd>
 
 ```java
-client.domains().list();
+client.domains().list(
+    ListDomainsRequest
+        .builder()
+        .build()
+);
 ```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — Only this sub-account's domains (its id or your uid).
+    
 </dd>
 </dl>
 </dd>
@@ -843,6 +870,14 @@ client.domains().create(
 <dd>
 
 **name:** `String` — The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
     
 </dd>
 </dl>
@@ -961,6 +996,74 @@ client.domains().delete(
 <dd>
 
 **id:** `String` — The domain's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.domains.update(id, request) -> Domain</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.domains().update(
+    "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    UpdateDomainRequest
+        .builder()
+        .sharedWithSubaccounts(true)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The domain's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sharedWithSubaccounts:** `Boolean` — Let your sub-accounts send from this domain of yours (through your organization's reputation).
     
 </dd>
 </dl>
@@ -1813,7 +1916,7 @@ client.webhookEvents().test(
 <dl>
 <dd>
 
-**type:** `CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+**type:** `CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
     
 </dd>
 </dl>
@@ -2197,6 +2300,880 @@ client.sms().cancel(
 <dd>
 
 **id:** `String` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Verify
+<details><summary><code>client.verify.list() -> VerificationList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Verifications of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.verify().list(
+    ListVerifyRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `Optional<String>` — Only verifications to this destination.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional<ListVerifyRequestStatus>` — Only verifications in this status.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.start(request) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a one-time code to a phone number (SMS) or an email address and returns the verification, `pending` until you check the code the end user typed (`POST /v1/verifications/check`). Starting again for the same destination while it is pending sends a new code (the earlier one stops working), up to 5 times. Before a new verification costs anything, the fraud guard checks it (your Risk lists, premium-rate numbers, Tor, and velocity per IP, user, number range and country, with how often their codes are entered): a blocked one is stored with its `reasons` and nothing is sent. Pass the end user's `ip` (and your `user_id`) so it can tell them apart. SMS codes come from coss.com's shared numbers unless the environment's Verify settings name one of your own; email codes from your sender, else coss.com's. Sandbox (`coss_test_…`) keys deliver nothing and the code is always zeros.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.verify().start(
+    StartVerificationRequest
+        .builder()
+        .to("+14155550199")
+        .idempotencyKey("welcome-user-123")
+        .ip("203.0.113.7")
+        .userId("user_42")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes retries safe: a repeated request with the same key and body returns the original verification instead of sending another code, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `String` — Where the code goes: a mobile number in E.164 form, or an email address. A pending verification to the same destination and channel is reused: its code is sent again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**channel:** `Optional<StartVerificationRequestChannel>` — `sms` or `email`. Default: `sms` for a phone number, `email` for an address.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ip:** `Optional<String>` — The end user's IP address. The fraud guard uses it (velocity, Tor); recommended.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**userId:** `Optional<String>` — Your id for the end user, for the fraud guard's velocity and your Risk lists.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `Optional<List<StartVerificationRequestTagsItem>>` — Up to 10 tags.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.check(request) -> VerificationCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Checks the code the end user typed, by the verification's id or by the destination (its latest verification). `valid: true` approves it (`verification.approved`, billed once); a wrong code spends an attempt, and the last one fails it. Checking an approved verification again with its code stays valid until it expires, without being billed again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.verify().check(
+    CheckVerificationRequest
+        .builder()
+        .code("482913")
+        .idempotencyKey("welcome-user-123")
+        .to("+14155550199")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes retries safe: a repeated check with the same key returns the same answer without spending another attempt. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**verificationId:** `Optional<String>` — The verification to check. Give this or `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `Optional<String>` — The destination the code was sent to: checks its most recent verification. Give this or `verification_id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**code:** `String` — The code the end user entered.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.get(id) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.verify().get(
+    "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+    GetVerifyRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The verification's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.verify.cancel(id) -> Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a pending verification: its code stops working. Canceling it again returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.verify().cancel(
+    "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+    CancelVerifyRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The verification's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Forms
+<details><summary><code>client.forms.list() -> FormList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's forms, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().list(
+    ListFormsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.create(request) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A hosted form endpoint: point an HTML `<form action>` (or `coss/forms`) at its `endpoint`. Every submission is screened by Risk (the honeypot, captcha, email, IP, device, velocity and content) and accepted ones go to webhooks (`form.submission.received`), notification emails and contacts. Without `fields`, any field is accepted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().create(
+    CreateFormRequest
+        .builder()
+        .name("Contact us")
+        .allowedOrigins(
+            Optional.of(
+                Arrays.asList("https://www.example.com")
+            )
+        )
+        .notifications(
+            CreateFormRequestNotifications
+                .builder()
+                .recipients(
+                    Optional.of(
+                        Arrays.asList("support@example.com")
+                    )
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `Optional<Boolean>` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `Optional<List<FormFieldInput>>` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strictFields:** `Optional<Boolean>` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `Optional<List<String>>` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectUrl:** `Optional<String>` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `Optional<CreateFormRequestSpam>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `Optional<CreateFormRequestSubmitter>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `Optional<CreateFormRequestNotifications>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `Optional<CreateFormRequestContacts>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `Optional<CreateFormRequestFiles>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `Optional<CreateFormRequestHosted>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.get(id) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().get(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    GetFormsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.remove(id) -> DeletedForm</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the form with every submission and uploaded file. Its endpoint answers 404 from then on.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().remove(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    RemoveFormsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.update(id, request) -> Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Only the fields given change, within each group (`spam`, `contacts`, …) too.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().update(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    UpdateFormRequest
+        .builder()
+        .spam(
+            UpdateFormRequestSpam
+                .builder()
+                .captcha(UpdateFormRequestSpamCaptcha.REQUIRED)
+                .build()
+        )
+        .contacts(
+            UpdateFormRequestContacts
+                .builder()
+                .enabled(true)
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `Optional<Boolean>` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `Optional<List<FormFieldInput>>` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strictFields:** `Optional<Boolean>` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `Optional<List<String>>` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectUrl:** `Optional<String>` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `Optional<UpdateFormRequestSpam>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `Optional<UpdateFormRequestSubmitter>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `Optional<UpdateFormRequestNotifications>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `Optional<UpdateFormRequestContacts>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `Optional<UpdateFormRequestFiles>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `Optional<UpdateFormRequestHosted>` 
     
 </dd>
 </dl>
@@ -3087,6 +4064,332 @@ client.logDrains().update(
 </dl>
 </details>
 
+## Inboxes
+<details><summary><code>client.inboxes.list() -> InboxList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's inboxes, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().list(
+    ListInboxesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.create(request) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives an agent (or anyone) its own email address in the API key's environment: `username@<the environment's inbound domain>`, which needs no DNS setup, or an address at one of the environment's receiving domains (`domain`). Mail to it is kept as threads, and each message that arrives sends an `inbox.message.received` webhook. With a `client_id` that already has an inbox, that inbox is returned (200) instead of a new one.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().create(
+    CreateInboxRequest
+        .builder()
+        .username("support-agent")
+        .displayName("Acme Support")
+        .clientId("agent-42")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**username:** `Optional<String>` — The part before the @. Omit it for a random one. Mail to `username+anything@domain` reaches the inbox too.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**domain:** `Optional<String>` — One of the environment's receiving domains (its hostname). Omit it for the environment's own domain under coss.com's inbound domain, which needs no DNS setup.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `Optional<String>` — The name messages from the inbox are sent with.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**clientId:** `Optional<String>` — Your own id for the inbox (unique per environment). Creating an inbox with a `client_id` that already has one returns that inbox instead (200), so retries and "one inbox per user" need no bookkeeping.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.get(inboxId) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().get(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    GetInboxesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.delete(inboxId) -> DeletedInbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the inbox and its threads. The received emails and emails they held stay in the environment until their retention ends, and mail to the address is still received by the environment (without a thread or `inbox.message.received` webhook).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().delete(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    DeleteInboxesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.update(inboxId, request) -> Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name messages from the inbox are sent with. Its address never changes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().update(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    UpdateInboxRequest
+        .builder()
+        .displayName(
+            OptionalNullable.of("Acme Help")
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `Optional<String>` — The name messages are sent with; `null` sends with the bare address.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Risk
 <details><summary><code>client.risk.assess(request) -> RiskAssessment</code></summary>
 <dl>
@@ -3450,6 +4753,65 @@ client.risk().checkIp(
 <dd>
 
 **ip:** `String` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.risk.checkPhone(request) -> RiskPhoneCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.risk().checkPhone(
+    RiskPhoneCheckRequest
+        .builder()
+        .phone("+14155550123")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone:** `String` — The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
     
 </dd>
 </dl>
@@ -5118,6 +6480,7 @@ The suppression list of the API key's environment, newest first. Pass the last `
 client.email().suppressions().list(
     ListSuppressionsRequest
         .builder()
+        .subaccount("user_8812")
         .build()
 );
 ```
@@ -5130,6 +6493,14 @@ client.email().suppressions().list(
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — List a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -5232,6 +6603,14 @@ client.email().suppressions().add(
     
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -5307,6 +6686,14 @@ client.email().suppressions().check(
     
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — The sub-account you plan to send for (its id or your uid): its own entries count too.
+    
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -5374,6 +6761,14 @@ client.email().suppressions().import_(
 <dl>
 <dd>
 
+**subaccount:** `Optional<String>` — Import into a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **suppressions:** `List<ImportSuppressionsRequestSuppressionsItem>` — 1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
     
 </dd>
@@ -5428,6 +6823,14 @@ client.email().suppressions().export(
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `Optional<String>` — Export a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -5545,6 +6948,520 @@ client.email().suppressions().remove(
 <dd>
 
 **id:** `String` — The suppression's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Subaccounts
+<details><summary><code>client.email.subaccounts.list() -> SubaccountList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's sub-accounts, newest first. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().list(
+    ListSubaccountsRequest
+        .builder()
+        .after("sub_01k7c8m4q2f3e9v6t5r1n0p8yz")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 50.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — The last `id` of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.create(request) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a sub-account: one of your users, who gets their own domains, suppressions, quotas and reputation. Give it a `uid` (e.g. your user's id) to address it by in every path and send. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().create(
+    CreateSubaccountRequest
+        .builder()
+        .name("Acme Bakery")
+        .uid("user_8812")
+        .quotas(
+            CreateSubaccountRequestQuotas
+                .builder()
+                .recipientsPerDay(
+                    OptionalNullable.of(5000)
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `String` — A name for your own reference.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `Optional<String>` — Your own id for it, to address it by instead of its `id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs (at most 16; keys up to 40 characters, values up to 500).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `Optional<CreateSubaccountRequestQuotas>` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.get(subaccount) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A sub-account of the API key's environment, by its id or uid, with its quotas and reputation.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().get(
+    "user_8812",
+    GetSubaccountsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `String` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.delete(subaccount) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts deleting the sub-account: its sends are refused at once, then its domains are released and it is removed with its suppressions (`status` is `deleting` until then). Its emails stay, with its id. Repeating the call returns it as it is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().delete(
+    "user_8812",
+    DeleteSubaccountsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `String` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.update(subaccount, request) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name, uid, metadata, status or quotas. Fields left out keep their value; `status: "disabled"` refuses its sends until it is `active` again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().update(
+    "user_8812",
+    UpdateSubaccountRequest
+        .builder()
+        .status(UpdateSubaccountRequestStatus.DISABLED)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `String` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `Optional<String>` — `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Replaces the metadata.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional<UpdateSubaccountRequestStatus>` — `disabled` refuses its sends until it is `active` again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `Optional<UpdateSubaccountRequestQuotas>` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.reinstate(subaccount) -> Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its rates are measured again from now on. A pause is never lifted on its own. Repeating the call returns it as it is. Your organization's own reputation still counts its sending.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().reinstate(
+    "user_8812",
+    ReinstateSubaccountsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `String` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.email.subaccounts.stats(subaccount) -> SubaccountStats</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, failed and suppressed, counted from its emails as they are now (a later bounce moves its day's numbers). Emails are kept 45 days, so earlier days are left out.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.email().subaccounts().stats(
+    "user_8812",
+    StatsSubaccountsRequest
+        .builder()
+        .from("2026-10-01")
+        .to("2026-10-15")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `String` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `Optional<String>` — First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `Optional<String>` — Last day (UTC, `YYYY-MM-DD`), included; default today.
     
 </dd>
 </dl>
@@ -9946,6 +11863,357 @@ client.email().templates().versions().restore(
 </dl>
 </details>
 
+## Forms Submissions
+<details><summary><code>client.forms.submissions.list(id) -> FormSubmissionList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. `status` narrows them: `accepted` (delivered), `held` (Risk asked for a review), `spam` and `pending_confirmation` (waiting for the submitter's email link).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().submissions().list(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    ListSubmissionsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional<String>` — Only submissions in these statuses, comma-separated: `held,spam`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.get(id, submissionId) -> FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().submissions().get(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    GetSubmissionsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionId:** `String` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.remove(id, submissionId) -> DeletedFormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the submission and its files.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().submissions().remove(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    RemoveSubmissionsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionId:** `String` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.release(id, submissionId) -> FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Not spam: a `held` or `spam` submission becomes `accepted` and is delivered (webhooks, notifications, contacts), and Risk records its assessment as `legitimate`. Releasing an accepted submission returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().submissions().release(
+    "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+    ReleaseSubmissionsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionId:** `String` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.forms.submissions.file(id, submissionId, fileId) -> InputStream</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A file uploaded with the submission, as `application/octet-stream`: whatever its type, treat it as untrusted (a submitter chose it).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.forms().submissions().file(
+    "id",
+    "submission_id",
+    "file_id",
+    FileSubmissionsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionId:** `String` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fileId:** `String` — The file's id (`files[].id` of the submission).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Hooks EventTypes
 <details><summary><code>client.hooks.eventTypes.list() -> HookEventTypeList</code></summary>
 <dl>
@@ -12180,6 +14448,718 @@ client.hooks().portal().createSession(
 </dl>
 </details>
 
+## Inboxes Threads
+<details><summary><code>client.inboxes.threads.list(inboxId) -> InboxThreadList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The inbox's conversations, the one with the latest message first, with a preview of that message. A thread whose `last_inbound_at` equals its `last_message_at` awaits a reply. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().threads().list(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ListThreadsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.threads.get(inboxId, threadId) -> InboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The conversation with its latest messages, oldest first, each with its text and `extracted_text` (its own words, without the quoted conversation): what an agent reads before it replies. HTML is the sender's: sanitize it before showing it to anyone.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().threads().get(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+    GetThreadsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**threadId:** `String` — The thread's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.threads.delete(inboxId, threadId) -> DeletedInboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Removes the conversation from the inbox. Its received emails and emails stay in the environment until their retention ends; a later reply starts a new thread.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().threads().delete(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+    DeleteThreadsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**threadId:** `String` — The thread's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inboxes Messages
+<details><summary><code>client.inboxes.messages.list(inboxId) -> InboxMessageList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages of every thread, newest first, with a preview instead of their bodies (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().messages().list(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ListMessagesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**direction:** `Optional<ListMessagesRequestDirection>` — Only inbound (received) or outbound (sent) messages.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.send(inboxId, request) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts a thread with a message from the inbox's address, sent like any email (its `email_id` has its delivery events and webhooks; never tracked). Replies to it arrive in the same thread. Live inboxes send only from receiving domains under one of the organization's verified domains (`can_send`); sandbox ones always can, and deliver nothing. Recipients count against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().messages().send(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    SendInboxMessageRequest
+        .builder()
+        .to(
+            SendInboxMessageRequestTo.of("jane@example.com")
+        )
+        .subject("Your order")
+        .idempotencyKey("welcome-user-123")
+        .text("Hi Jane, your order has shipped.")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `SendInboxMessageRequestTo` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `Optional<SendInboxMessageRequestCc>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `Optional<SendInboxMessageRequestBcc>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subject:** `String` — The new thread's subject.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `Optional<String>` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `Optional<String>` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `Optional<List<SendEmailAttachment>>` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `Optional<List<SendInboxMessageRequestTagsItem>>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.get(inboxId, messageId) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The message with its text, HTML and `extracted_text`. An outbound message's delivery is its email's (`email_id`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().messages().get(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+    GetMessagesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageId:** `String` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.getAttachment(inboxId, messageId, attachmentId) -> InputStream</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An inbound message's attachment, always as `application/octet-stream` (its declared type is the attachment's `content_type`): treat it as untrusted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().messages().getAttachment(
+    "inbox_id",
+    "message_id",
+    "attachment_id",
+    GetAttachmentMessagesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageId:** `String` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachmentId:** `String` — The attachment's id (from the message's `attachments`).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.inboxes.messages.reply(inboxId, messageId, request) -> InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replies in the message's thread from the inbox's address: to its sender (its `Reply-To` first), or to an outbound message's recipients again for a follow-up; `reply_all` adds everyone else on it. The subject gets `Re:`, and `In-Reply-To`/`References` let the recipient's mail client thread it. Sent like any email, counted against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.inboxes().messages().reply(
+    "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+    ReplyInboxMessageRequest
+        .builder()
+        .idempotencyKey("welcome-user-123")
+        .text("Sorry about that, Jane! A new one is on its way.")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxId:** `String` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageId:** `String` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**replyAll:** `Optional<Boolean>` — Also reply to everyone else on the message (its `to` and `cc`, but the inbox). Default `false`: only the sender (its `Reply-To`, when it has one).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `Optional<ReplyInboxMessageRequestCc>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `Optional<ReplyInboxMessageRequestBcc>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `Optional<String>` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `Optional<String>` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `Optional<List<SendEmailAttachment>>` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `Optional<List<ReplyInboxMessageRequestTagsItem>>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## LogDrains Batches
 <details><summary><code>client.logDrains.batches.list(id) -> LogDrainBatchList</code></summary>
 <dl>
@@ -13664,6 +16644,1811 @@ client.risk().limitBuckets().update(
 <dd>
 
 **onFailure:** `Optional<UpdateRiskLimitBucketRequestOnFailure>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Documents
+<details><summary><code>client.sign.documents.list() -> SignDocumentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents uploaded to the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().documents().list(
+    ListDocumentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.upload(request) -> SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads a PDF (base64, at most 25 MB and 500 pages, not password-protected) for signature requests to use. The response lists each page's size and the text anchors found in it (`{{signature:signer_1}}`), which fields can be placed by. Requests can also take PDFs inline.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().documents().upload(
+    UploadSignDocumentRequest
+        .builder()
+        .filename("agreement.pdf")
+        .content("JVBERi0xLjcKJYGBgYEKCjEgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFsgNCAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagoKMyAwIG9iago8PAovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovSGVsdmV0aWNhLTcwOTg0ODA3ODkgMyAwIFIKPj4KL1hPYmplY3QgPDwKPj4KL0V4dEdTdGF0ZSA8PAo+Pgo+PgovTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdCi9Bbm5vdHMgWyBdCi9Db250ZW50cyBbIDUgMCBSIF0KPj4KZW5kb2JqCgo1IDAgb2JqCjw8Ci9GaWx0ZXIgL0ZsYXRlRGVjb2RlCi9MZW5ndGggMTIwCj4+CnN0cmVhbQp4nG2KMQrCQBBF+znF1II4O7s7fxckYEjEwkaYC4hEiWgREc9vtLCSV/3330Stk/CHx4VWu+H2Gp7j6biE1JKKoFQOyn4mTex7Ct80MJQhwn6ndY5WDdZbQEKGWo4bFbQzf56fm3fexoAOXcN+JV9Q73SgN3RWIBIKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE2IDAwMDAwIG4gCjAwMDAwMDAwNzYgMDAwMDAgbiAKMDAwMDAwMDEyNiAwMDAwMCBuIAowMDAwMDAwMjI0IDAwMDAwIG4gCjAwMDAwMDA0MTkgMDAwMDAgbiAKCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAyIDAgUgo+PgoKc3RhcnR4cmVmCjYxMgolJUVPRg==")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**filename:** `String` — The file's name, ending in `.pdf`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content:** `String` — The PDF's bytes, base64-encoded (at most 25 MB decoded).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.get(id) -> SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().documents().get(
+    "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    GetDocumentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The document's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.documents.remove(id) -> DeletedSignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes an uploaded document and its file. Documents a request uses can't be deleted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().documents().remove(
+    "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    RemoveDocumentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The document's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Requests
+<details><summary><code>client.sign.requests.list() -> SignRequestList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Signature requests of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().list(
+    ListRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**status:** `Optional<String>` — Only requests in these statuses, comma-separated: `sent,draft`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.create(request) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Asks one or more signers to sign one or more PDFs. Give documents by id (uploaded) or inline, and each signer's fields by position (`page`, `x`, `y`, `width`, `height` in PDF points from the page's top left) or by text anchor (`{{signature:signer_1}}`). Every signer needs a `signature` field. Sent at once unless `send` is `false` (a `draft`). Each signer signs by email (`delivery: "email"`, the default) or in your app (`"embedded"`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().create(
+    CreateSignRequestRequest
+        .builder()
+        .title("Services agreement")
+        .idempotencyKey("welcome-user-123")
+        .documents(
+            Arrays.asList(
+                CreateSignRequestRequestDocumentsItem.of(
+                    CreateSignRequestRequestDocumentsItemDocumentId
+                        .builder()
+                        .documentId("sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz")
+                        .build()
+                )
+            )
+        )
+        .signers(
+            Arrays.asList(
+                CreateSignRequestRequestSignersItem
+                    .builder()
+                    .name("Ada Lovelace")
+                    .email("ada@example.com")
+                    .fields(
+                        Arrays.asList(
+                            SignFieldInput.of(
+                                SignFieldInputAnchor
+                                    .builder()
+                                    .type(SignFieldInputAnchorType.SIGNATURE)
+                                    .anchor("{{signature:signer_1}}")
+                                    .build()
+                            ),
+                            SignFieldInput.of(
+                                SignFieldInputDocument
+                                    .builder()
+                                    .type(SignFieldInputDocumentType.DATE_SIGNED)
+                                    .page(2L)
+                                    .x(320.0)
+                                    .y(640.0)
+                                    .width(120.0)
+                                    .height(18.0)
+                                    .build()
+                            )
+                        )
+                    )
+                    .build()
+            )
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `String` — Shown to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `Optional<String>` — A note to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `List<CreateSignRequestRequestDocumentsItem>` — Uploaded documents by id, or PDFs inline (base64).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `List<CreateSignRequestRequestSignersItem>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `Optional<CreateSignRequestRequestSigningOrder>` — `parallel` (default): everyone at once. `sequential`: in each signer's `order`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresAt:** `Optional<OffsetDateTime>` — When unsigned requests expire (at most 365 days ahead).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `Optional<Integer>` — Email signers who haven't signed get a reminder every this many days (up to 3). Default: your Sign settings' `reminder_interval_days`; `null`: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `Optional<Boolean>` — Default `true`: send at once. `false` keeps a `draft` to send later.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.get(id) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().get(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    GetRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.remove(id) -> DeletedSignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit trail, signatures and signed document, for good. Its documents stay (delete them on their own). Keep the signed document first if you need it: it is your record.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().remove(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    RemoveRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.send(id) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a `draft`. An already sent request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().send(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    SendRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.cancel(id) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a `draft` or `sent` request: its signers can no longer sign. An already canceled request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().cancel(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    CancelRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.auditTrail(id) -> SignEventList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the request, oldest first: who did it, from which address, the documents' SHA-256 when it mattered, and a hash chain (`previous_hash`, `hash`) that shows the trail is complete and unchanged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().auditTrail(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    AuditTrailRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.remind(id) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't signed and whose turn it is, unless they were emailed in the last hour. Embedded signers are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().remind(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    RemindRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.requests.signedDocument(id) -> InputStream</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The completed request's sealed PDF: every document with the signatures and values filled in, then a certificate of completion (signers, how they were identified, what they agreed to, the documents' SHA-256 and the audit trail). coss.com's seal makes any later change visible in PDF viewers. Ready once `signed_document` is set, which the `sign_request.completed` webhook announces.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().requests().signedDocument(
+    "id",
+    SignedDocumentRequestsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Sessions
+<details><summary><code>client.sign.sessions.create(id, signerId, request) -> SignSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the signing page for one `embedded` signer of a sent request. Your app vouches for who the signer is (the audit trail records `customer_asserted`), so create it only for that signed-in user, when they open the page that shows it. Embed the `url` in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from `coss/sign` does it), or redirect to it. Each call creates a new session.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().sessions().create(
+    "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    CreateSignSessionRequest
+        .builder()
+        .expiresIn(3600)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signerId:** `String` — The signer's id (`signers[].id` of the request).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `Optional<Integer>` — Seconds until the link expires: default 3600, at most 86400. Mint one when your user opens the page that shows it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Settings
+<details><summary><code>client.sign.settings.get() -> SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The API key's environment's settings: which sites may embed the signing page, how it looks, and the consent text signers accept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().settings().get();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.settings.update(request) -> SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given; the others keep their values.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().settings().update(
+    UpdateSignSettingsRequest
+        .builder()
+        .displayName(
+            OptionalNullable.of("Acme")
+        )
+        .allowedOrigins(
+            Optional.of(
+                Arrays.asList("https://app.example.com")
+            )
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `Optional<List<String>>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**accentColor:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**theme:** `Optional<UpdateSignSettingsRequestTheme>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**disclosure:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**emailFrom:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Templates
+<details><summary><code>client.sign.templates.list() -> SignTemplateList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. Pass the last `id` as `after` while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().list(
+    ListTemplatesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.create(request) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents with fields for roles (`client`, `company`) instead of named signers, made into requests by naming a signer per role. Fields by position or text anchor (resolved now). Can start empty and be built in the embedded builder (create a builder session).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().create(
+    CreateSignTemplateRequest
+        .builder()
+        .name("Mutual NDA")
+        .documents(
+            Optional.of(
+                Arrays.asList(
+                    CreateSignTemplateRequestDocumentsItem.of(
+                        CreateSignTemplateRequestDocumentsItemDocumentId
+                            .builder()
+                            .documentId("sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz")
+                            .build()
+                    )
+                )
+            )
+        )
+        .roles(
+            Optional.of(
+                Arrays.asList(
+                    CreateSignTemplateRequestRolesItem
+                        .builder()
+                        .key("client")
+                        .name("Client")
+                        .build(),
+                    CreateSignTemplateRequestRolesItem
+                        .builder()
+                        .key("company")
+                        .name("Company")
+                        .build()
+                )
+            )
+        )
+        .fields(
+            Optional.of(
+                Arrays.asList(
+                    CreateSignTemplateRequestFieldsItem.of(
+                        CreateSignTemplateRequestFieldsItemAnchor
+                            .builder()
+                            .type(CreateSignTemplateRequestFieldsItemAnchorType.SIGNATURE)
+                            .anchor("{{signature:client}}")
+                            .role("client")
+                            .build()
+                    ),
+                    CreateSignTemplateRequestFieldsItem.of(
+                        CreateSignTemplateRequestFieldsItemDocument
+                            .builder()
+                            .type(CreateSignTemplateRequestFieldsItemDocumentType.TEXT)
+                            .page(1L)
+                            .x(72.0)
+                            .y(140.0)
+                            .width(200.0)
+                            .height(18.0)
+                            .role("client")
+                            .mergeKey(Optional.of("client_company"))
+                            .build()
+                    ),
+                    CreateSignTemplateRequestFieldsItem.of(
+                        CreateSignTemplateRequestFieldsItemAnchor
+                            .builder()
+                            .type(CreateSignTemplateRequestFieldsItemAnchorType.SIGNATURE)
+                            .anchor("{{signature:company}}")
+                            .role("company")
+                            .build()
+                    )
+                )
+            )
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `Optional<String>` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `Optional<String>` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `Optional<CreateSignTemplateRequestSigningOrder>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `Optional<List<CreateSignTemplateRequestDocumentsItem>>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `Optional<List<CreateSignTemplateRequestRolesItem>>` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `Optional<List<CreateSignTemplateRequestFieldsItem>>` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.get(id) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().get(
+    "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    GetTemplatesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The template's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.remove(id) -> DeletedSignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Requests made from it, and its documents, stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().remove(
+    "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    RemoveTemplatesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The template's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.update(id, request) -> SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given. `documents`, `roles` and `fields` each replace the whole list. Requests already made from it don't change.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().update(
+    "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    UpdateSignTemplateRequest
+        .builder()
+        .name("Mutual NDA (2026)")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `Optional<String>` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `Optional<String>` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `Optional<UpdateSignTemplateRequestSigningOrder>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `Optional<List<UpdateSignTemplateRequestDocumentsItem>>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `Optional<List<UpdateSignTemplateRequestRolesItem>>` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `Optional<List<UpdateSignTemplateRequestFieldsItem>>` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.createRequest(id, request) -> SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A signature request with the template's documents and fields: name one signer for each role, and give its merge fields' values. Like creating a request, it is sent at once unless `send` is `false`, and an `Idempotency-Key` makes retries safe.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().createRequest(
+    "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    CreateSignRequestFromTemplateRequest
+        .builder()
+        .signers(
+            Arrays.asList(
+                CreateSignRequestFromTemplateRequestSignersItem
+                    .builder()
+                    .role("client")
+                    .name("Ada Lovelace")
+                    .email("ada@example.com")
+                    .build(),
+                CreateSignRequestFromTemplateRequestSignersItem
+                    .builder()
+                    .role("company")
+                    .name("Grace Hopper")
+                    .email("grace@acme.com")
+                    .delivery(CreateSignRequestFromTemplateRequestSignersItemDelivery.EMBEDDED)
+                    .build()
+            )
+        )
+        .idempotencyKey("welcome-user-123")
+        .mergeFields(
+            new HashMap<String, String>() {{
+                put("client_company", "Analytical Engines Ltd");
+            }}
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `Optional<String>` — Default: the template's title (else its name).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `List<CreateSignRequestFromTemplateRequestSignersItem>` — One signer for each of the template's roles.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**mergeFields:** `Optional<Map<String, String>>` — Values of the template's merge fields, by `merge_key`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `Optional<CreateSignRequestFromTemplateRequestSigningOrder>` — Default: the template's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresAt:** `Optional<OffsetDateTime>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `Optional<Boolean>` — Default `true`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.sign.templates.createBuilderSession(id, request) -> SignBuilderSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the embedded builder for this template: upload documents, add roles, and drag fields onto pages. Embed it with `mountBuilder` from `coss/sign` (from an origin in your Sign settings' `allowed_origins`) for whoever edits the template.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.sign().templates().createBuilderSession(
+    "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    CreateSignBuilderSessionRequest
+        .builder()
+        .expiresIn(3600)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `Optional<Integer>` — Seconds until the link expires: default 3600, at most 86400.
     
 </dd>
 </dl>

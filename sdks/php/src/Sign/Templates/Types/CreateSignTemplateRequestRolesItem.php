@@ -1,0 +1,42 @@
+<?php
+
+namespace Coss\Sign\Templates\Types;
+
+use Coss\Core\Json\JsonSerializableType;
+use Coss\Core\Json\JsonProperty;
+
+class CreateSignTemplateRequestRolesItem extends JsonSerializableType
+{
+    /**
+     * @var string $key The role's key, e.g. `client`.
+     */
+    #[JsonProperty('key')]
+    public string $key;
+
+    /**
+     * @var string $name Shown in the builder, e.g. `Client`.
+     */
+    #[JsonProperty('name')]
+    public string $name;
+
+    /**
+     * @param array{
+     *   key: string,
+     *   name: string,
+     * } $values
+     */
+    public function __construct(
+        array $values,
+    ) {
+        $this->key = $values['key'];
+        $this->name = $values['name'];
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toJson();
+    }
+}

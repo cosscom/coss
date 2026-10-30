@@ -15,6 +15,7 @@ class BillingLimits(UniversalBaseModel):
     members: typing.Optional[int] = None
     webhook_endpoints_per_environment: typing.Optional[int] = None
     contacts_per_environment: typing.Optional[int] = None
+    inboxes: typing.Optional[int] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

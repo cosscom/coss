@@ -90,7 +90,8 @@ public class TestTest : BaseMockServerTest
                   "category": "category",
                   "sandbox": true,
                   "recipient": "recipient",
-                  "occurred_at": "2024-01-15T09:30:00.000Z"
+                  "occurred_at": "2024-01-15T09:30:00.000Z",
+                  "subaccount_id": "subaccount_id"
                 }
               },
               "endpoints": 1000000,
@@ -203,7 +204,8 @@ public class TestTest : BaseMockServerTest
                   "category": "onboarding",
                   "sandbox": true,
                   "recipient": "ada@example.com",
-                  "occurred_at": "2026-10-10T12:00:03.000Z"
+                  "occurred_at": "2026-10-10T12:00:03.000Z",
+                  "subaccount_id": "subaccount_id"
                 }
               },
               "endpoints": 1,

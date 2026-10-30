@@ -9,6 +9,12 @@ namespace Coss.Email;
 public record ListSuppressionsRequest
 {
     /// <summary>
+    /// List a sub-account's own list (its id or your uid) instead of the environment's.
+    /// </summary>
+    [JsonIgnore]
+    public string? Subaccount { get; set; }
+
+    /// <summary>
     /// Only entries for this address.
     /// </summary>
     [JsonIgnore]

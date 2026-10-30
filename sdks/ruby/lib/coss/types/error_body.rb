@@ -13,6 +13,8 @@ module Coss
 
       field :issues, -> { Internal::Types::Array[Coss::Types::ErrorBodyIssuesItem] }, optional: true, nullable: false
 
+      field :hint, -> { String }, optional: true, nullable: false
+
       field :request_id, -> { String }, optional: false, nullable: false
     end
   end

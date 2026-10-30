@@ -127,6 +127,7 @@ public class SendBatchTest : BaseMockServerTest
                     "locale": "locale"
                   },
                   "broadcast_id": "broadcast_id",
+                  "subaccount_id": "subaccount_id",
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": "2024-01-15T09:30:00.000Z"
@@ -227,6 +228,7 @@ public class SendBatchTest : BaseMockServerTest
                     "locale": "locale"
                   },
                   "broadcast_id": "broadcast_id",
+                  "subaccount_id": "subaccount_id",
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": "2024-01-15T09:30:00.000Z"
@@ -279,6 +281,7 @@ public class SendBatchTest : BaseMockServerTest
                         Attachments = null,
                         Tracking = null,
                         Stream = null,
+                        Subaccount = null,
                     },
                     new SendEmailRequest
                     {
@@ -301,6 +304,7 @@ public class SendBatchTest : BaseMockServerTest
                         Attachments = null,
                         Tracking = null,
                         Stream = null,
+                        Subaccount = null,
                     },
                 },
             }
@@ -404,6 +408,7 @@ public class SendBatchTest : BaseMockServerTest
                   "batch_id": "batch_01k8d0n6x5f3w2e1r9t7y4u6i8",
                   "template": null,
                   "broadcast_id": null,
+                  "subaccount_id": null,
                   "content_storage": {
                     "mode": "store",
                     "discarded_at": null

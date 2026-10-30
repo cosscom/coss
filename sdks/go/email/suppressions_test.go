@@ -27,6 +27,14 @@ func TestSettersCreateSuppressionRequest(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetSubaccount", func(t *testing.T) {
+		obj := &CreateSuppressionRequest{}
+		var fernTestValueSubaccount *string
+		obj.SetSubaccount(fernTestValueSubaccount)
+		assert.Equal(t, fernTestValueSubaccount, obj.Subaccount)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 }
 
 func TestSettersMarkExplicitCreateSuppressionRequest(t *testing.T) {
@@ -92,6 +100,37 @@ func TestSettersMarkExplicitCreateSuppressionRequest(t *testing.T) {
 		// It verifies that setting a field via setter allows successful JSON round-trip
 	})
 
+	t.Run("SetSubaccount_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSuppressionRequest{}
+		var fernTestValueSubaccount *string
+
+		// Act
+		obj.SetSubaccount(fernTestValueSubaccount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 }
 
 func TestSettersCheckSuppressionsRequest(t *testing.T) {
@@ -116,6 +155,14 @@ func TestSettersCheckSuppressionsRequest(t *testing.T) {
 		var fernTestValueStream *CheckSuppressionsRequestStream
 		obj.SetStream(fernTestValueStream)
 		assert.Equal(t, fernTestValueStream, obj.Stream)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetSubaccount", func(t *testing.T) {
+		obj := &CheckSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+		obj.SetSubaccount(fernTestValueSubaccount)
+		assert.Equal(t, fernTestValueSubaccount, obj.Subaccount)
 		assert.NotNil(t, obj.explicitFields)
 	})
 
@@ -215,9 +262,48 @@ func TestSettersMarkExplicitCheckSuppressionsRequest(t *testing.T) {
 		// It verifies that setting a field via setter allows successful JSON round-trip
 	})
 
+	t.Run("SetSubaccount_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CheckSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+
+		// Act
+		obj.SetSubaccount(fernTestValueSubaccount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 }
 
 func TestSettersExportSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount", func(t *testing.T) {
+		obj := &ExportSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+		obj.SetSubaccount(fernTestValueSubaccount)
+		assert.Equal(t, fernTestValueSubaccount, obj.Subaccount)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetScope", func(t *testing.T) {
 		obj := &ExportSuppressionsRequest{}
 		var fernTestValueScope *cossgo.ExportSuppressionsRequestScope
@@ -237,6 +323,37 @@ func TestSettersExportSuppressionsRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitExportSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ExportSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+
+		// Act
+		obj.SetSubaccount(fernTestValueSubaccount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetScope_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -347,6 +464,14 @@ func TestSettersMarkExplicitGetSuppressionsRequest(t *testing.T) {
 }
 
 func TestSettersImportSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount", func(t *testing.T) {
+		obj := &ImportSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+		obj.SetSubaccount(fernTestValueSubaccount)
+		assert.Equal(t, fernTestValueSubaccount, obj.Subaccount)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetSuppressions", func(t *testing.T) {
 		obj := &ImportSuppressionsRequest{}
 		var fernTestValueSuppressions []*ImportSuppressionsRequestSuppressionsItem
@@ -358,6 +483,37 @@ func TestSettersImportSuppressionsRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitImportSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ImportSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+
+		// Act
+		obj.SetSubaccount(fernTestValueSubaccount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetSuppressions_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -392,6 +548,14 @@ func TestSettersMarkExplicitImportSuppressionsRequest(t *testing.T) {
 }
 
 func TestSettersListSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount", func(t *testing.T) {
+		obj := &ListSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+		obj.SetSubaccount(fernTestValueSubaccount)
+		assert.Equal(t, fernTestValueSubaccount, obj.Subaccount)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetAddress", func(t *testing.T) {
 		obj := &ListSuppressionsRequest{}
 		var fernTestValueAddress *string
@@ -427,6 +591,37 @@ func TestSettersListSuppressionsRequest(t *testing.T) {
 }
 
 func TestSettersMarkExplicitListSuppressionsRequest(t *testing.T) {
+	t.Run("SetSubaccount_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ListSuppressionsRequest{}
+		var fernTestValueSubaccount *string
+
+		// Act
+		obj.SetSubaccount(fernTestValueSubaccount)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetAddress_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange

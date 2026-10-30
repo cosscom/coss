@@ -19,7 +19,13 @@ public final class LogDrainSource {
 
     public static final LogDrainSource SMS = new LogDrainSource(Value.SMS, "sms");
 
+    public static final LogDrainSource VERIFY = new LogDrainSource(Value.VERIFY, "verify");
+
+    public static final LogDrainSource FORMS = new LogDrainSource(Value.FORMS, "forms");
+
     public static final LogDrainSource API = new LogDrainSource(Value.API, "api");
+
+    public static final LogDrainSource SIGN = new LogDrainSource(Value.SIGN, "sign");
 
     private final Value value;
 
@@ -65,8 +71,14 @@ public final class LogDrainSource {
                 return visitor.visitSmtp();
             case SMS:
                 return visitor.visitSms();
+            case VERIFY:
+                return visitor.visitVerify();
+            case FORMS:
+                return visitor.visitForms();
             case API:
                 return visitor.visitApi();
+            case SIGN:
+                return visitor.visitSign();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -88,8 +100,14 @@ public final class LogDrainSource {
                 return SMTP;
             case "sms":
                 return SMS;
+            case "verify":
+                return VERIFY;
+            case "forms":
+                return FORMS;
             case "api":
                 return API;
+            case "sign":
+                return SIGN;
             default:
                 return new LogDrainSource(Value.UNKNOWN, value);
         }
@@ -108,6 +126,12 @@ public final class LogDrainSource {
 
         SMS,
 
+        SIGN,
+
+        VERIFY,
+
+        FORMS,
+
         AUDIT,
 
         UNKNOWN
@@ -125,6 +149,12 @@ public final class LogDrainSource {
         T visitSmtp();
 
         T visitSms();
+
+        T visitSign();
+
+        T visitVerify();
+
+        T visitForms();
 
         T visitAudit();
 

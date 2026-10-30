@@ -5,6 +5,7 @@ namespace Coss\Email;
 use Coss\Email\Templates\TemplatesClient;
 use Coss\Email\DedicatedIps\DedicatedIpsClient;
 use Coss\Email\Suppressions\SuppressionsClient;
+use Coss\Email\Subaccounts\SubaccountsClient;
 use Coss\Email\Tracking\TrackingClient;
 use Coss\Email\Storage\StorageClient;
 use Coss\Email\Contacts\ContactsClient;
@@ -51,6 +52,11 @@ class EmailClient
      * @var SuppressionsClient $suppressions
      */
     public SuppressionsClient $suppressions;
+
+    /**
+     * @var SubaccountsClient $subaccounts
+     */
+    public SubaccountsClient $subaccounts;
 
     /**
      * @var TrackingClient $tracking
@@ -132,6 +138,7 @@ class EmailClient
         $this->templates = new TemplatesClient($this->client, $this->options);
         $this->dedicatedIps = new DedicatedIpsClient($this->client, $this->options);
         $this->suppressions = new SuppressionsClient($this->client, $this->options);
+        $this->subaccounts = new SubaccountsClient($this->client, $this->options);
         $this->tracking = new TrackingClient($this->client, $this->options);
         $this->storage = new StorageClient($this->client, $this->options);
         $this->contacts = new ContactsClient($this->client, $this->options);
@@ -189,6 +196,9 @@ class EmailClient
         }
         if ($request->batchId != null) {
             $query['batch_id'] = $request->batchId;
+        }
+        if ($request->subaccount != null) {
+            $query['subaccount'] = $request->subaccount;
         }
         if ($request->createdAfter != null) {
             $query['created_after'] = JsonSerializer::serializeDateTime($request->createdAfter);

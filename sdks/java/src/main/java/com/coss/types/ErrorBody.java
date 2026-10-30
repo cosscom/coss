@@ -32,6 +32,8 @@ public final class ErrorBody {
 
     private final Optional<List<ErrorBodyIssuesItem>> issues;
 
+    private final Optional<String> hint;
+
     private final String requestId;
 
     private final Map<String, Object> additionalProperties;
@@ -42,6 +44,7 @@ public final class ErrorBody {
             String message,
             Optional<String> param,
             Optional<List<ErrorBodyIssuesItem>> issues,
+            Optional<String> hint,
             String requestId,
             Map<String, Object> additionalProperties) {
         this.type = type;
@@ -49,6 +52,7 @@ public final class ErrorBody {
         this.message = message;
         this.param = param;
         this.issues = issues;
+        this.hint = hint;
         this.requestId = requestId;
         this.additionalProperties = additionalProperties;
     }
@@ -90,6 +94,14 @@ public final class ErrorBody {
         return issues;
     }
 
+    /**
+     * @return What to try next. Present when coss.com can name a fix, and often includes a docs URL.
+     */
+    @JsonProperty("hint")
+    public Optional<String> getHint() {
+        return hint;
+    }
+
     @JsonProperty("request_id")
     public String getRequestId() {
         return requestId;
@@ -112,12 +124,13 @@ public final class ErrorBody {
                 && message.equals(other.message)
                 && param.equals(other.param)
                 && issues.equals(other.issues)
+                && hint.equals(other.hint)
                 && requestId.equals(other.requestId);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.type, this.code, this.message, this.param, this.issues, this.requestId);
+        return Objects.hash(this.type, this.code, this.message, this.param, this.issues, this.hint, this.requestId);
     }
 
     @java.lang.Override
@@ -173,6 +186,13 @@ public final class ErrorBody {
         _FinalStage issues(Optional<List<ErrorBodyIssuesItem>> issues);
 
         _FinalStage issues(List<ErrorBodyIssuesItem> issues);
+
+        /**
+         * <p>What to try next. Present when coss.com can name a fix, and often includes a docs URL.</p>
+         */
+        _FinalStage hint(Optional<String> hint);
+
+        _FinalStage hint(String hint);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -184,6 +204,8 @@ public final class ErrorBody {
         private String message;
 
         private String requestId;
+
+        private Optional<String> hint = Optional.empty();
 
         private Optional<List<ErrorBodyIssuesItem>> issues = Optional.empty();
 
@@ -201,6 +223,7 @@ public final class ErrorBody {
             message(other.getMessage());
             param(other.getParam());
             issues(other.getIssues());
+            hint(other.getHint());
             requestId(other.getRequestId());
             return this;
         }
@@ -238,6 +261,26 @@ public final class ErrorBody {
         @JsonSetter("request_id")
         public _FinalStage requestId(@NotNull String requestId) {
             this.requestId = Objects.requireNonNull(requestId, "requestId must not be null");
+            return this;
+        }
+
+        /**
+         * <p>What to try next. Present when coss.com can name a fix, and often includes a docs URL.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage hint(String hint) {
+            this.hint = Optional.ofNullable(hint);
+            return this;
+        }
+
+        /**
+         * <p>What to try next. Present when coss.com can name a fix, and often includes a docs URL.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "hint", nulls = Nulls.SKIP)
+        public _FinalStage hint(Optional<String> hint) {
+            this.hint = hint;
             return this;
         }
 
@@ -283,7 +326,7 @@ public final class ErrorBody {
 
         @java.lang.Override
         public ErrorBody build() {
-            return new ErrorBody(type, code, message, param, issues, requestId, additionalProperties);
+            return new ErrorBody(type, code, message, param, issues, hint, requestId, additionalProperties);
         }
 
         @java.lang.Override

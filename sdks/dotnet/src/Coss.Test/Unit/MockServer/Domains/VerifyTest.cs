@@ -107,7 +107,9 @@ public class VerifyTest : BaseMockServerTest
                     "message": "message"
                   }
                 ]
-              }
+              },
+              "subaccount_id": "subaccount_id",
+              "shared_with_subaccounts": true
             }
             """;
 
@@ -228,7 +230,9 @@ public class VerifyTest : BaseMockServerTest
                     "message": "message"
                   }
                 ]
-              }
+              },
+              "subaccount_id": null,
+              "shared_with_subaccounts": false
             }
             """;
 

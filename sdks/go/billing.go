@@ -1241,6 +1241,7 @@ var (
 	billingLimitsFieldMembers                        = big.NewInt(1 << 1)
 	billingLimitsFieldWebhookEndpointsPerEnvironment = big.NewInt(1 << 2)
 	billingLimitsFieldContactsPerEnvironment         = big.NewInt(1 << 3)
+	billingLimitsFieldInboxes                        = big.NewInt(1 << 4)
 )
 
 // billingLimitsNullableFields maps the wire names of BillingLimits's nullable fields (required or optional) to their field bits.
@@ -1249,6 +1250,7 @@ var billingLimitsNullableFields = map[string]*big.Int{
 	"members":                           billingLimitsFieldMembers,
 	"webhook_endpoints_per_environment": billingLimitsFieldWebhookEndpointsPerEnvironment,
 	"contacts_per_environment":          billingLimitsFieldContactsPerEnvironment,
+	"inboxes":                           billingLimitsFieldInboxes,
 }
 
 // Resource limits (`null`: unlimited).
@@ -1257,6 +1259,7 @@ type BillingLimits struct {
 	Members                        *int64 `json:"members,omitempty" url:"members,omitempty"`
 	WebhookEndpointsPerEnvironment *int64 `json:"webhook_endpoints_per_environment,omitempty" url:"webhook_endpoints_per_environment,omitempty"`
 	ContactsPerEnvironment         *int64 `json:"contacts_per_environment,omitempty" url:"contacts_per_environment,omitempty"`
+	Inboxes                        *int64 `json:"inboxes,omitempty" url:"inboxes,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1291,6 +1294,13 @@ func (b *BillingLimits) GetContactsPerEnvironment() *int64 {
 		return nil
 	}
 	return b.ContactsPerEnvironment
+}
+
+func (b *BillingLimits) GetInboxes() *int64 {
+	if b == nil {
+		return nil
+	}
+	return b.Inboxes
 }
 
 func (b *BillingLimits) GetExtraProperties() map[string]interface{} {
@@ -1335,6 +1345,13 @@ func (b *BillingLimits) SetWebhookEndpointsPerEnvironment(webhookEndpointsPerEnv
 func (b *BillingLimits) SetContactsPerEnvironment(contactsPerEnvironment *int64) {
 	b.ContactsPerEnvironment = contactsPerEnvironment
 	b.require(billingLimitsFieldContactsPerEnvironment)
+}
+
+// SetInboxes sets the Inboxes field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (b *BillingLimits) SetInboxes(inboxes *int64) {
+	b.Inboxes = inboxes
+	b.require(billingLimitsFieldInboxes)
 }
 
 func (b *BillingLimits) UnmarshalJSON(data []byte) error {
@@ -1983,10 +2000,17 @@ type BillingUsageItemMeter string
 const (
 	BillingUsageItemMeterEmailRecipients         BillingUsageItemMeter = "email.recipients"
 	BillingUsageItemMeterEmailDedicatedIP        BillingUsageItemMeter = "email.dedicated_ip"
+	BillingUsageItemMeterEmailReceived           BillingUsageItemMeter = "email.received"
+	BillingUsageItemMeterEmailInboxes            BillingUsageItemMeter = "email.inboxes"
 	BillingUsageItemMeterSmsSegments             BillingUsageItemMeter = "sms.segments"
 	BillingUsageItemMeterSmsReceivedSegments     BillingUsageItemMeter = "sms.received_segments"
 	BillingUsageItemMeterSmsNumbers              BillingUsageItemMeter = "sms.numbers"
 	BillingUsageItemMeterSmsRegistrations        BillingUsageItemMeter = "sms.registrations"
+	BillingUsageItemMeterSignCompletedRequests   BillingUsageItemMeter = "sign.completed_requests"
+	BillingUsageItemMeterRiskPhoneChecks         BillingUsageItemMeter = "risk.phone_checks"
+	BillingUsageItemMeterVerifyVerifications     BillingUsageItemMeter = "verify.verifications"
+	BillingUsageItemMeterVerifySms               BillingUsageItemMeter = "verify.sms"
+	BillingUsageItemMeterFormsSubmissions        BillingUsageItemMeter = "forms.submissions"
 	BillingUsageItemMeterVideoParticipantMinutes BillingUsageItemMeter = "video.participant_minutes"
 	BillingUsageItemMeterSchedulingBookings      BillingUsageItemMeter = "scheduling.bookings"
 )
@@ -1997,6 +2021,10 @@ func NewBillingUsageItemMeterFromString(s string) (BillingUsageItemMeter, error)
 		return BillingUsageItemMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return BillingUsageItemMeterEmailDedicatedIP, nil
+	case "email.received":
+		return BillingUsageItemMeterEmailReceived, nil
+	case "email.inboxes":
+		return BillingUsageItemMeterEmailInboxes, nil
 	case "sms.segments":
 		return BillingUsageItemMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -2005,6 +2033,16 @@ func NewBillingUsageItemMeterFromString(s string) (BillingUsageItemMeter, error)
 		return BillingUsageItemMeterSmsNumbers, nil
 	case "sms.registrations":
 		return BillingUsageItemMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return BillingUsageItemMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return BillingUsageItemMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return BillingUsageItemMeterVerifyVerifications, nil
+	case "verify.sms":
+		return BillingUsageItemMeterVerifySms, nil
+	case "forms.submissions":
+		return BillingUsageItemMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return BillingUsageItemMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2425,10 +2463,17 @@ type UsageMeter string
 const (
 	UsageMeterEmailRecipients         UsageMeter = "email.recipients"
 	UsageMeterEmailDedicatedIP        UsageMeter = "email.dedicated_ip"
+	UsageMeterEmailReceived           UsageMeter = "email.received"
+	UsageMeterEmailInboxes            UsageMeter = "email.inboxes"
 	UsageMeterSmsSegments             UsageMeter = "sms.segments"
 	UsageMeterSmsReceivedSegments     UsageMeter = "sms.received_segments"
 	UsageMeterSmsNumbers              UsageMeter = "sms.numbers"
 	UsageMeterSmsRegistrations        UsageMeter = "sms.registrations"
+	UsageMeterSignCompletedRequests   UsageMeter = "sign.completed_requests"
+	UsageMeterRiskPhoneChecks         UsageMeter = "risk.phone_checks"
+	UsageMeterVerifyVerifications     UsageMeter = "verify.verifications"
+	UsageMeterVerifySms               UsageMeter = "verify.sms"
+	UsageMeterFormsSubmissions        UsageMeter = "forms.submissions"
 	UsageMeterVideoParticipantMinutes UsageMeter = "video.participant_minutes"
 	UsageMeterSchedulingBookings      UsageMeter = "scheduling.bookings"
 )
@@ -2439,6 +2484,10 @@ func NewUsageMeterFromString(s string) (UsageMeter, error) {
 		return UsageMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return UsageMeterEmailDedicatedIP, nil
+	case "email.received":
+		return UsageMeterEmailReceived, nil
+	case "email.inboxes":
+		return UsageMeterEmailInboxes, nil
 	case "sms.segments":
 		return UsageMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -2447,6 +2496,16 @@ func NewUsageMeterFromString(s string) (UsageMeter, error) {
 		return UsageMeterSmsNumbers, nil
 	case "sms.registrations":
 		return UsageMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return UsageMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return UsageMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return UsageMeterVerifyVerifications, nil
+	case "verify.sms":
+		return UsageMeterVerifySms, nil
+	case "forms.submissions":
+		return UsageMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return UsageMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2540,10 +2599,17 @@ type UsageBillingRequestMeter string
 const (
 	UsageBillingRequestMeterEmailRecipients         UsageBillingRequestMeter = "email.recipients"
 	UsageBillingRequestMeterEmailDedicatedIP        UsageBillingRequestMeter = "email.dedicated_ip"
+	UsageBillingRequestMeterEmailReceived           UsageBillingRequestMeter = "email.received"
+	UsageBillingRequestMeterEmailInboxes            UsageBillingRequestMeter = "email.inboxes"
 	UsageBillingRequestMeterSmsSegments             UsageBillingRequestMeter = "sms.segments"
 	UsageBillingRequestMeterSmsReceivedSegments     UsageBillingRequestMeter = "sms.received_segments"
 	UsageBillingRequestMeterSmsNumbers              UsageBillingRequestMeter = "sms.numbers"
 	UsageBillingRequestMeterSmsRegistrations        UsageBillingRequestMeter = "sms.registrations"
+	UsageBillingRequestMeterSignCompletedRequests   UsageBillingRequestMeter = "sign.completed_requests"
+	UsageBillingRequestMeterRiskPhoneChecks         UsageBillingRequestMeter = "risk.phone_checks"
+	UsageBillingRequestMeterVerifyVerifications     UsageBillingRequestMeter = "verify.verifications"
+	UsageBillingRequestMeterVerifySms               UsageBillingRequestMeter = "verify.sms"
+	UsageBillingRequestMeterFormsSubmissions        UsageBillingRequestMeter = "forms.submissions"
 	UsageBillingRequestMeterVideoParticipantMinutes UsageBillingRequestMeter = "video.participant_minutes"
 	UsageBillingRequestMeterSchedulingBookings      UsageBillingRequestMeter = "scheduling.bookings"
 )
@@ -2554,6 +2620,10 @@ func NewUsageBillingRequestMeterFromString(s string) (UsageBillingRequestMeter, 
 		return UsageBillingRequestMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return UsageBillingRequestMeterEmailDedicatedIP, nil
+	case "email.received":
+		return UsageBillingRequestMeterEmailReceived, nil
+	case "email.inboxes":
+		return UsageBillingRequestMeterEmailInboxes, nil
 	case "sms.segments":
 		return UsageBillingRequestMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -2562,6 +2632,16 @@ func NewUsageBillingRequestMeterFromString(s string) (UsageBillingRequestMeter, 
 		return UsageBillingRequestMeterSmsNumbers, nil
 	case "sms.registrations":
 		return UsageBillingRequestMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return UsageBillingRequestMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return UsageBillingRequestMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return UsageBillingRequestMeterVerifyVerifications, nil
+	case "verify.sms":
+		return UsageBillingRequestMeterVerifySms, nil
+	case "forms.submissions":
+		return UsageBillingRequestMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return UsageBillingRequestMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":

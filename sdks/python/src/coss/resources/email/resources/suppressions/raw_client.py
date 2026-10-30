@@ -47,6 +47,7 @@ class RawSuppressionsClient:
     def list(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         address: typing.Optional[str] = None,
         scope: typing.Optional[ListSuppressionsRequestScope] = None,
         limit: typing.Optional[int] = None,
@@ -58,6 +59,9 @@ class RawSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            List a sub-account's own list (its id or your uid) instead of the environment's.
+
         address : typing.Optional[str]
             Only entries for this address.
 
@@ -82,6 +86,7 @@ class RawSuppressionsClient:
             "v1/suppressions",
             method="GET",
             params={
+                "subaccount": subaccount,
                 "address": address,
                 "scope": scope,
                 "limit": limit,
@@ -123,6 +128,17 @@ class RawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -190,6 +206,7 @@ class RawSuppressionsClient:
         *,
         address: str,
         scope: typing.Optional[CreateSuppressionRequestScope] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Suppression]:
         """
@@ -202,6 +219,9 @@ class RawSuppressionsClient:
 
         scope : typing.Optional[CreateSuppressionRequestScope]
             Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
+
+        subaccount : typing.Optional[str]
+            Add it to a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -219,6 +239,7 @@ class RawSuppressionsClient:
                 "scope": convert_and_respect_annotation_metadata(
                     object_=scope, annotation=CreateSuppressionRequestScope, direction="write"
                 ),
+                "subaccount": subaccount,
             },
             headers={
                 "content-type": "application/json",
@@ -261,6 +282,17 @@ class RawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -351,6 +383,7 @@ class RawSuppressionsClient:
         address: str,
         category: typing.Optional[str] = None,
         stream: typing.Optional[CheckSuppressionsRequestStream] = None,
+        subaccount: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SuppressionCheck]:
         """
@@ -367,6 +400,9 @@ class RawSuppressionsClient:
         stream : typing.Optional[CheckSuppressionsRequestStream]
             The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.
 
+        subaccount : typing.Optional[str]
+            The sub-account you plan to send for (its id or your uid): its own entries count too.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -382,6 +418,7 @@ class RawSuppressionsClient:
                 "address": address,
                 "category": category,
                 "stream": stream,
+                "subaccount": subaccount,
             },
             request_options=request_options,
         )
@@ -419,6 +456,17 @@ class RawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -485,6 +533,7 @@ class RawSuppressionsClient:
         self,
         *,
         suppressions: typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SuppressionImport]:
         """
@@ -494,6 +543,9 @@ class RawSuppressionsClient:
         ----------
         suppressions : typing.Sequence[ImportSuppressionsRequestSuppressionsItem]
             1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
+
+        subaccount : typing.Optional[str]
+            Import into a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -507,6 +559,7 @@ class RawSuppressionsClient:
             "v1/suppressions/import",
             method="POST",
             json={
+                "subaccount": subaccount,
                 "suppressions": convert_and_respect_annotation_metadata(
                     object_=suppressions,
                     annotation=typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
@@ -554,6 +607,17 @@ class RawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -641,6 +705,7 @@ class RawSuppressionsClient:
     def export(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         scope: typing.Optional[ExportSuppressionsRequestScope] = None,
         reason: typing.Optional[ExportSuppressionsRequestReason] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -650,6 +715,9 @@ class RawSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Export a sub-account's own list (its id or your uid) instead of the environment's.
+
         scope : typing.Optional[ExportSuppressionsRequestScope]
             Only entries with this scope.
 
@@ -668,6 +736,7 @@ class RawSuppressionsClient:
             "v1/suppressions/export",
             method="GET",
             params={
+                "subaccount": subaccount,
                 "scope": scope,
                 "reason": reason,
             },
@@ -700,6 +769,17 @@ class RawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1006,6 +1086,7 @@ class AsyncRawSuppressionsClient:
     async def list(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         address: typing.Optional[str] = None,
         scope: typing.Optional[ListSuppressionsRequestScope] = None,
         limit: typing.Optional[int] = None,
@@ -1017,6 +1098,9 @@ class AsyncRawSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            List a sub-account's own list (its id or your uid) instead of the environment's.
+
         address : typing.Optional[str]
             Only entries for this address.
 
@@ -1041,6 +1125,7 @@ class AsyncRawSuppressionsClient:
             "v1/suppressions",
             method="GET",
             params={
+                "subaccount": subaccount,
                 "address": address,
                 "scope": scope,
                 "limit": limit,
@@ -1082,6 +1167,17 @@ class AsyncRawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1149,6 +1245,7 @@ class AsyncRawSuppressionsClient:
         *,
         address: str,
         scope: typing.Optional[CreateSuppressionRequestScope] = OMIT,
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Suppression]:
         """
@@ -1161,6 +1258,9 @@ class AsyncRawSuppressionsClient:
 
         scope : typing.Optional[CreateSuppressionRequestScope]
             Defaults to `*` (every email). Pass a category, e.g. "marketing", to only skip those.
+
+        subaccount : typing.Optional[str]
+            Add it to a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1178,6 +1278,7 @@ class AsyncRawSuppressionsClient:
                 "scope": convert_and_respect_annotation_metadata(
                     object_=scope, annotation=CreateSuppressionRequestScope, direction="write"
                 ),
+                "subaccount": subaccount,
             },
             headers={
                 "content-type": "application/json",
@@ -1220,6 +1321,17 @@ class AsyncRawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1310,6 +1422,7 @@ class AsyncRawSuppressionsClient:
         address: str,
         category: typing.Optional[str] = None,
         stream: typing.Optional[CheckSuppressionsRequestStream] = None,
+        subaccount: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SuppressionCheck]:
         """
@@ -1326,6 +1439,9 @@ class AsyncRawSuppressionsClient:
         stream : typing.Optional[CheckSuppressionsRequestStream]
             The stream of the email you plan to send (default `transactional`). `marketing` also counts `stream:marketing` entries.
 
+        subaccount : typing.Optional[str]
+            The sub-account you plan to send for (its id or your uid): its own entries count too.
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1341,6 +1457,7 @@ class AsyncRawSuppressionsClient:
                 "address": address,
                 "category": category,
                 "stream": stream,
+                "subaccount": subaccount,
             },
             request_options=request_options,
         )
@@ -1378,6 +1495,17 @@ class AsyncRawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1444,6 +1572,7 @@ class AsyncRawSuppressionsClient:
         self,
         *,
         suppressions: typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
+        subaccount: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SuppressionImport]:
         """
@@ -1453,6 +1582,9 @@ class AsyncRawSuppressionsClient:
         ----------
         suppressions : typing.Sequence[ImportSuppressionsRequestSuppressionsItem]
             1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
+
+        subaccount : typing.Optional[str]
+            Import into a sub-account's own list (its id or your uid) instead of the environment's.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1466,6 +1598,7 @@ class AsyncRawSuppressionsClient:
             "v1/suppressions/import",
             method="POST",
             json={
+                "subaccount": subaccount,
                 "suppressions": convert_and_respect_annotation_metadata(
                     object_=suppressions,
                     annotation=typing.Sequence[ImportSuppressionsRequestSuppressionsItem],
@@ -1513,6 +1646,17 @@ class AsyncRawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,
@@ -1600,6 +1744,7 @@ class AsyncRawSuppressionsClient:
     async def export(
         self,
         *,
+        subaccount: typing.Optional[str] = None,
         scope: typing.Optional[ExportSuppressionsRequestScope] = None,
         reason: typing.Optional[ExportSuppressionsRequestReason] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1609,6 +1754,9 @@ class AsyncRawSuppressionsClient:
 
         Parameters
         ----------
+        subaccount : typing.Optional[str]
+            Export a sub-account's own list (its id or your uid) instead of the environment's.
+
         scope : typing.Optional[ExportSuppressionsRequestScope]
             Only entries with this scope.
 
@@ -1627,6 +1775,7 @@ class AsyncRawSuppressionsClient:
             "v1/suppressions/export",
             method="GET",
             params={
+                "subaccount": subaccount,
                 "scope": scope,
                 "reason": reason,
             },
@@ -1659,6 +1808,17 @@ class AsyncRawSuppressionsClient:
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
                         Error,

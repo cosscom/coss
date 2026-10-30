@@ -55,6 +55,8 @@ module Coss
 
       field :broadcast_id, -> { String }, optional: false, nullable: true
 
+      field :subaccount_id, -> { String }, optional: false, nullable: true
+
       field :content_storage, -> { Coss::Types::EmailContentStorage }, optional: false, nullable: false
     end
   end

@@ -3776,10 +3776,17 @@ type BillingWebhookEventThreeDataMeter string
 const (
 	BillingWebhookEventThreeDataMeterEmailRecipients         BillingWebhookEventThreeDataMeter = "email.recipients"
 	BillingWebhookEventThreeDataMeterEmailDedicatedIP        BillingWebhookEventThreeDataMeter = "email.dedicated_ip"
+	BillingWebhookEventThreeDataMeterEmailReceived           BillingWebhookEventThreeDataMeter = "email.received"
+	BillingWebhookEventThreeDataMeterEmailInboxes            BillingWebhookEventThreeDataMeter = "email.inboxes"
 	BillingWebhookEventThreeDataMeterSmsSegments             BillingWebhookEventThreeDataMeter = "sms.segments"
 	BillingWebhookEventThreeDataMeterSmsReceivedSegments     BillingWebhookEventThreeDataMeter = "sms.received_segments"
 	BillingWebhookEventThreeDataMeterSmsNumbers              BillingWebhookEventThreeDataMeter = "sms.numbers"
 	BillingWebhookEventThreeDataMeterSmsRegistrations        BillingWebhookEventThreeDataMeter = "sms.registrations"
+	BillingWebhookEventThreeDataMeterSignCompletedRequests   BillingWebhookEventThreeDataMeter = "sign.completed_requests"
+	BillingWebhookEventThreeDataMeterRiskPhoneChecks         BillingWebhookEventThreeDataMeter = "risk.phone_checks"
+	BillingWebhookEventThreeDataMeterVerifyVerifications     BillingWebhookEventThreeDataMeter = "verify.verifications"
+	BillingWebhookEventThreeDataMeterVerifySms               BillingWebhookEventThreeDataMeter = "verify.sms"
+	BillingWebhookEventThreeDataMeterFormsSubmissions        BillingWebhookEventThreeDataMeter = "forms.submissions"
 	BillingWebhookEventThreeDataMeterVideoParticipantMinutes BillingWebhookEventThreeDataMeter = "video.participant_minutes"
 	BillingWebhookEventThreeDataMeterSchedulingBookings      BillingWebhookEventThreeDataMeter = "scheduling.bookings"
 )
@@ -3790,6 +3797,10 @@ func NewBillingWebhookEventThreeDataMeterFromString(s string) (BillingWebhookEve
 		return BillingWebhookEventThreeDataMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return BillingWebhookEventThreeDataMeterEmailDedicatedIP, nil
+	case "email.received":
+		return BillingWebhookEventThreeDataMeterEmailReceived, nil
+	case "email.inboxes":
+		return BillingWebhookEventThreeDataMeterEmailInboxes, nil
 	case "sms.segments":
 		return BillingWebhookEventThreeDataMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -3798,6 +3809,16 @@ func NewBillingWebhookEventThreeDataMeterFromString(s string) (BillingWebhookEve
 		return BillingWebhookEventThreeDataMeterSmsNumbers, nil
 	case "sms.registrations":
 		return BillingWebhookEventThreeDataMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return BillingWebhookEventThreeDataMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return BillingWebhookEventThreeDataMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return BillingWebhookEventThreeDataMeterVerifyVerifications, nil
+	case "verify.sms":
+		return BillingWebhookEventThreeDataMeterVerifySms, nil
+	case "forms.submissions":
+		return BillingWebhookEventThreeDataMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return BillingWebhookEventThreeDataMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -7718,6 +7739,7 @@ const (
 	ContactSourceDashboard        ContactSource = "dashboard"
 	ContactSourceImport           ContactSource = "import"
 	ContactSourcePreferenceCenter ContactSource = "preference_center"
+	ContactSourceForm             ContactSource = "form"
 )
 
 func NewContactSourceFromString(s string) (ContactSource, error) {
@@ -7730,6 +7752,8 @@ func NewContactSourceFromString(s string) (ContactSource, error) {
 		return ContactSourceImport, nil
 	case "preference_center":
 		return ContactSourcePreferenceCenter, nil
+	case "form":
+		return ContactSourceForm, nil
 	}
 	var t ContactSource
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -8595,10 +8619,17 @@ type CreditMeter string
 const (
 	CreditMeterEmailRecipients         CreditMeter = "email.recipients"
 	CreditMeterEmailDedicatedIP        CreditMeter = "email.dedicated_ip"
+	CreditMeterEmailReceived           CreditMeter = "email.received"
+	CreditMeterEmailInboxes            CreditMeter = "email.inboxes"
 	CreditMeterSmsSegments             CreditMeter = "sms.segments"
 	CreditMeterSmsReceivedSegments     CreditMeter = "sms.received_segments"
 	CreditMeterSmsNumbers              CreditMeter = "sms.numbers"
 	CreditMeterSmsRegistrations        CreditMeter = "sms.registrations"
+	CreditMeterSignCompletedRequests   CreditMeter = "sign.completed_requests"
+	CreditMeterRiskPhoneChecks         CreditMeter = "risk.phone_checks"
+	CreditMeterVerifyVerifications     CreditMeter = "verify.verifications"
+	CreditMeterVerifySms               CreditMeter = "verify.sms"
+	CreditMeterFormsSubmissions        CreditMeter = "forms.submissions"
 	CreditMeterVideoParticipantMinutes CreditMeter = "video.participant_minutes"
 	CreditMeterSchedulingBookings      CreditMeter = "scheduling.bookings"
 )
@@ -8609,6 +8640,10 @@ func NewCreditMeterFromString(s string) (CreditMeter, error) {
 		return CreditMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return CreditMeterEmailDedicatedIP, nil
+	case "email.received":
+		return CreditMeterEmailReceived, nil
+	case "email.inboxes":
+		return CreditMeterEmailInboxes, nil
 	case "sms.segments":
 		return CreditMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -8617,6 +8652,16 @@ func NewCreditMeterFromString(s string) (CreditMeter, error) {
 		return CreditMeterSmsNumbers, nil
 	case "sms.registrations":
 		return CreditMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return CreditMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return CreditMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return CreditMeterVerifyVerifications, nil
+	case "verify.sms":
+		return CreditMeterVerifySms, nil
+	case "forms.submissions":
+		return CreditMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return CreditMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -8636,10 +8681,17 @@ type CreditMetersItem string
 const (
 	CreditMetersItemEmailRecipients         CreditMetersItem = "email.recipients"
 	CreditMetersItemEmailDedicatedIP        CreditMetersItem = "email.dedicated_ip"
+	CreditMetersItemEmailReceived           CreditMetersItem = "email.received"
+	CreditMetersItemEmailInboxes            CreditMetersItem = "email.inboxes"
 	CreditMetersItemSmsSegments             CreditMetersItem = "sms.segments"
 	CreditMetersItemSmsReceivedSegments     CreditMetersItem = "sms.received_segments"
 	CreditMetersItemSmsNumbers              CreditMetersItem = "sms.numbers"
 	CreditMetersItemSmsRegistrations        CreditMetersItem = "sms.registrations"
+	CreditMetersItemSignCompletedRequests   CreditMetersItem = "sign.completed_requests"
+	CreditMetersItemRiskPhoneChecks         CreditMetersItem = "risk.phone_checks"
+	CreditMetersItemVerifyVerifications     CreditMetersItem = "verify.verifications"
+	CreditMetersItemVerifySms               CreditMetersItem = "verify.sms"
+	CreditMetersItemFormsSubmissions        CreditMetersItem = "forms.submissions"
 	CreditMetersItemVideoParticipantMinutes CreditMetersItem = "video.participant_minutes"
 	CreditMetersItemSchedulingBookings      CreditMetersItem = "scheduling.bookings"
 )
@@ -8650,6 +8702,10 @@ func NewCreditMetersItemFromString(s string) (CreditMetersItem, error) {
 		return CreditMetersItemEmailRecipients, nil
 	case "email.dedicated_ip":
 		return CreditMetersItemEmailDedicatedIP, nil
+	case "email.received":
+		return CreditMetersItemEmailReceived, nil
+	case "email.inboxes":
+		return CreditMetersItemEmailInboxes, nil
 	case "sms.segments":
 		return CreditMetersItemSmsSegments, nil
 	case "sms.received_segments":
@@ -8658,6 +8714,16 @@ func NewCreditMetersItemFromString(s string) (CreditMetersItem, error) {
 		return CreditMetersItemSmsNumbers, nil
 	case "sms.registrations":
 		return CreditMetersItemSmsRegistrations, nil
+	case "sign.completed_requests":
+		return CreditMetersItemSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return CreditMetersItemRiskPhoneChecks, nil
+	case "verify.verifications":
+		return CreditMetersItemVerifyVerifications, nil
+	case "verify.sms":
+		return CreditMetersItemVerifySms, nil
+	case "forms.submissions":
+		return CreditMetersItemFormsSubmissions, nil
 	case "video.participant_minutes":
 		return CreditMetersItemVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -9783,6 +9849,143 @@ func (d DeletedEmailTemplateObject) Ptr() *DeletedEmailTemplateObject {
 }
 
 var (
+	deletedFormSubmissionFieldObject  = big.NewInt(1 << 0)
+	deletedFormSubmissionFieldID      = big.NewInt(1 << 1)
+	deletedFormSubmissionFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedFormSubmission struct {
+	Object  DeletedFormSubmissionObject `json:"object" url:"object"`
+	ID      string                      `json:"id" url:"id"`
+	Deleted bool                        `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedFormSubmission) GetObject() DeletedFormSubmissionObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedFormSubmission) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedFormSubmission) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedFormSubmission) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedFormSubmission) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedFormSubmission) SetObject(object DeletedFormSubmissionObject) {
+	d.Object = object
+	d.require(deletedFormSubmissionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedFormSubmission) SetID(id string) {
+	d.ID = id
+	d.require(deletedFormSubmissionFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedFormSubmission) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedFormSubmissionFieldDeleted)
+}
+
+func (d *DeletedFormSubmission) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedFormSubmission
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedFormSubmission(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedFormSubmission) MarshalJSON() ([]byte, error) {
+	type embed DeletedFormSubmission
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedFormSubmission) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedFormSubmissionObject string
+
+const (
+	DeletedFormSubmissionObjectFormSubmission DeletedFormSubmissionObject = "form_submission"
+)
+
+func NewDeletedFormSubmissionObjectFromString(s string) (DeletedFormSubmissionObject, error) {
+	switch s {
+	case "form_submission":
+		return DeletedFormSubmissionObjectFormSubmission, nil
+	}
+	var t DeletedFormSubmissionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedFormSubmissionObject) Ptr() *DeletedFormSubmissionObject {
+	return &d
+}
+
+var (
 	deletedHookApplicationFieldObject  = big.NewInt(1 << 0)
 	deletedHookApplicationFieldID      = big.NewInt(1 << 1)
 	deletedHookApplicationFieldDeleted = big.NewInt(1 << 2)
@@ -10053,6 +10256,143 @@ func NewDeletedHookEndpointObjectFromString(s string) (DeletedHookEndpointObject
 }
 
 func (d DeletedHookEndpointObject) Ptr() *DeletedHookEndpointObject {
+	return &d
+}
+
+var (
+	deletedInboxThreadFieldObject  = big.NewInt(1 << 0)
+	deletedInboxThreadFieldID      = big.NewInt(1 << 1)
+	deletedInboxThreadFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedInboxThread struct {
+	Object  DeletedInboxThreadObject `json:"object" url:"object"`
+	ID      string                   `json:"id" url:"id"`
+	Deleted bool                     `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedInboxThread) GetObject() DeletedInboxThreadObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedInboxThread) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedInboxThread) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedInboxThread) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedInboxThread) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedInboxThread) SetObject(object DeletedInboxThreadObject) {
+	d.Object = object
+	d.require(deletedInboxThreadFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedInboxThread) SetID(id string) {
+	d.ID = id
+	d.require(deletedInboxThreadFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedInboxThread) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedInboxThreadFieldDeleted)
+}
+
+func (d *DeletedInboxThread) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedInboxThread
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedInboxThread(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedInboxThread) MarshalJSON() ([]byte, error) {
+	type embed DeletedInboxThread
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedInboxThread) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedInboxThreadObject string
+
+const (
+	DeletedInboxThreadObjectInboxThread DeletedInboxThreadObject = "inbox_thread"
+)
+
+func NewDeletedInboxThreadObjectFromString(s string) (DeletedInboxThreadObject, error) {
+	switch s {
+	case "inbox_thread":
+		return DeletedInboxThreadObjectInboxThread, nil
+	}
+	var t DeletedInboxThreadObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedInboxThreadObject) Ptr() *DeletedInboxThreadObject {
 	return &d
 }
 
@@ -10738,6 +11078,417 @@ func NewDeletedSegmentObjectFromString(s string) (DeletedSegmentObject, error) {
 }
 
 func (d DeletedSegmentObject) Ptr() *DeletedSegmentObject {
+	return &d
+}
+
+var (
+	deletedSignDocumentFieldObject  = big.NewInt(1 << 0)
+	deletedSignDocumentFieldID      = big.NewInt(1 << 1)
+	deletedSignDocumentFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedSignDocument struct {
+	Object  DeletedSignDocumentObject `json:"object" url:"object"`
+	ID      string                    `json:"id" url:"id"`
+	Deleted bool                      `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedSignDocument) GetObject() DeletedSignDocumentObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedSignDocument) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedSignDocument) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedSignDocument) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedSignDocument) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignDocument) SetObject(object DeletedSignDocumentObject) {
+	d.Object = object
+	d.require(deletedSignDocumentFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignDocument) SetID(id string) {
+	d.ID = id
+	d.require(deletedSignDocumentFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignDocument) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedSignDocumentFieldDeleted)
+}
+
+func (d *DeletedSignDocument) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedSignDocument
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedSignDocument(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedSignDocument) MarshalJSON() ([]byte, error) {
+	type embed DeletedSignDocument
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedSignDocument) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedSignDocumentObject string
+
+const (
+	DeletedSignDocumentObjectSignDocument DeletedSignDocumentObject = "sign_document"
+)
+
+func NewDeletedSignDocumentObjectFromString(s string) (DeletedSignDocumentObject, error) {
+	switch s {
+	case "sign_document":
+		return DeletedSignDocumentObjectSignDocument, nil
+	}
+	var t DeletedSignDocumentObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedSignDocumentObject) Ptr() *DeletedSignDocumentObject {
+	return &d
+}
+
+var (
+	deletedSignRequestFieldObject  = big.NewInt(1 << 0)
+	deletedSignRequestFieldID      = big.NewInt(1 << 1)
+	deletedSignRequestFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedSignRequest struct {
+	Object  DeletedSignRequestObject `json:"object" url:"object"`
+	ID      string                   `json:"id" url:"id"`
+	Deleted bool                     `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedSignRequest) GetObject() DeletedSignRequestObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedSignRequest) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedSignRequest) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedSignRequest) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedSignRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignRequest) SetObject(object DeletedSignRequestObject) {
+	d.Object = object
+	d.require(deletedSignRequestFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignRequest) SetID(id string) {
+	d.ID = id
+	d.require(deletedSignRequestFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignRequest) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedSignRequestFieldDeleted)
+}
+
+func (d *DeletedSignRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedSignRequest
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedSignRequest(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedSignRequest) MarshalJSON() ([]byte, error) {
+	type embed DeletedSignRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedSignRequest) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedSignRequestObject string
+
+const (
+	DeletedSignRequestObjectSignRequest DeletedSignRequestObject = "sign_request"
+)
+
+func NewDeletedSignRequestObjectFromString(s string) (DeletedSignRequestObject, error) {
+	switch s {
+	case "sign_request":
+		return DeletedSignRequestObjectSignRequest, nil
+	}
+	var t DeletedSignRequestObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedSignRequestObject) Ptr() *DeletedSignRequestObject {
+	return &d
+}
+
+var (
+	deletedSignTemplateFieldObject  = big.NewInt(1 << 0)
+	deletedSignTemplateFieldID      = big.NewInt(1 << 1)
+	deletedSignTemplateFieldDeleted = big.NewInt(1 << 2)
+)
+
+type DeletedSignTemplate struct {
+	Object  DeletedSignTemplateObject `json:"object" url:"object"`
+	ID      string                    `json:"id" url:"id"`
+	Deleted bool                      `json:"deleted" url:"deleted"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (d *DeletedSignTemplate) GetObject() DeletedSignTemplateObject {
+	if d == nil {
+		return ""
+	}
+	return d.Object
+}
+
+func (d *DeletedSignTemplate) GetID() string {
+	if d == nil {
+		return ""
+	}
+	return d.ID
+}
+
+func (d *DeletedSignTemplate) GetDeleted() bool {
+	if d == nil {
+		return false
+	}
+	return d.Deleted
+}
+
+func (d *DeletedSignTemplate) GetExtraProperties() map[string]interface{} {
+	if d == nil {
+		return nil
+	}
+	return d.extraProperties
+}
+
+func (d *DeletedSignTemplate) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignTemplate) SetObject(object DeletedSignTemplateObject) {
+	d.Object = object
+	d.require(deletedSignTemplateFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignTemplate) SetID(id string) {
+	d.ID = id
+	d.require(deletedSignTemplateFieldID)
+}
+
+// SetDeleted sets the Deleted field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DeletedSignTemplate) SetDeleted(deleted bool) {
+	d.Deleted = deleted
+	d.require(deletedSignTemplateFieldDeleted)
+}
+
+func (d *DeletedSignTemplate) UnmarshalJSON(data []byte) error {
+	type unmarshaler DeletedSignTemplate
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = DeletedSignTemplate(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *d)
+	if err != nil {
+		return err
+	}
+	d.extraProperties = extraProperties
+	d.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (d *DeletedSignTemplate) MarshalJSON() ([]byte, error) {
+	type embed DeletedSignTemplate
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*d),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, d.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (d *DeletedSignTemplate) String() string {
+	if d == nil {
+		return "<nil>"
+	}
+	if len(d.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(d); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", d)
+}
+
+type DeletedSignTemplateObject string
+
+const (
+	DeletedSignTemplateObjectSignTemplate DeletedSignTemplateObject = "sign_template"
+)
+
+func NewDeletedSignTemplateObjectFromString(s string) (DeletedSignTemplateObject, error) {
+	switch s {
+	case "sign_template":
+		return DeletedSignTemplateObjectSignTemplate, nil
+	}
+	var t DeletedSignTemplateObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DeletedSignTemplateObject) Ptr() *DeletedSignTemplateObject {
 	return &d
 }
 
@@ -14072,22 +14823,24 @@ func (d *DmarcSource) String() string {
 }
 
 var (
-	domainFieldObject         = big.NewInt(1 << 0)
-	domainFieldID             = big.NewInt(1 << 1)
-	domainFieldName           = big.NewInt(1 << 2)
-	domainFieldStatus         = big.NewInt(1 << 3)
-	domainFieldCanSend        = big.NewInt(1 << 4)
-	domainFieldRegion         = big.NewInt(1 << 5)
-	domainFieldMailFromDomain = big.NewInt(1 << 6)
-	domainFieldMailFromStatus = big.NewInt(1 << 7)
-	domainFieldRecords        = big.NewInt(1 << 8)
-	domainFieldCreatedAt      = big.NewInt(1 << 9)
-	domainFieldLastCheckedAt  = big.NewInt(1 << 10)
-	domainFieldVerifiedAt     = big.NewInt(1 << 11)
-	domainFieldFailedAt       = big.NewInt(1 << 12)
-	domainFieldTracking       = big.NewInt(1 << 13)
-	domainFieldReceiving      = big.NewInt(1 << 14)
-	domainFieldBimi           = big.NewInt(1 << 15)
+	domainFieldObject                = big.NewInt(1 << 0)
+	domainFieldID                    = big.NewInt(1 << 1)
+	domainFieldName                  = big.NewInt(1 << 2)
+	domainFieldStatus                = big.NewInt(1 << 3)
+	domainFieldCanSend               = big.NewInt(1 << 4)
+	domainFieldRegion                = big.NewInt(1 << 5)
+	domainFieldMailFromDomain        = big.NewInt(1 << 6)
+	domainFieldMailFromStatus        = big.NewInt(1 << 7)
+	domainFieldRecords               = big.NewInt(1 << 8)
+	domainFieldCreatedAt             = big.NewInt(1 << 9)
+	domainFieldLastCheckedAt         = big.NewInt(1 << 10)
+	domainFieldVerifiedAt            = big.NewInt(1 << 11)
+	domainFieldFailedAt              = big.NewInt(1 << 12)
+	domainFieldTracking              = big.NewInt(1 << 13)
+	domainFieldReceiving             = big.NewInt(1 << 14)
+	domainFieldBimi                  = big.NewInt(1 << 15)
+	domainFieldSubaccountID          = big.NewInt(1 << 16)
+	domainFieldSharedWithSubaccounts = big.NewInt(1 << 17)
 )
 
 // domainNullableFields maps the wire names of Domain's nullable fields (required or optional) to their field bits.
@@ -14098,6 +14851,7 @@ var domainNullableFields = map[string]*big.Int{
 	"failed_at":       domainFieldFailedAt,
 	"tracking":        domainFieldTracking,
 	"receiving":       domainFieldReceiving,
+	"subaccount_id":   domainFieldSubaccountID,
 }
 
 type Domain struct {
@@ -14122,6 +14876,10 @@ type Domain struct {
 	Tracking      *TrackingDomain  `json:"tracking,omitempty" url:"tracking,omitempty"`
 	Receiving     *ReceivingDomain `json:"receiving,omitempty" url:"receiving,omitempty"`
 	Bimi          *DomainBimi      `json:"bimi" url:"bimi"`
+	// The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own.
+	SubaccountID *string `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
+	// An organization's domain its sub-accounts may send from too.
+	SharedWithSubaccounts bool `json:"shared_with_subaccounts" url:"shared_with_subaccounts"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -14240,6 +14998,20 @@ func (d *Domain) GetBimi() *DomainBimi {
 		return nil
 	}
 	return d.Bimi
+}
+
+func (d *Domain) GetSubaccountID() *string {
+	if d == nil {
+		return nil
+	}
+	return d.SubaccountID
+}
+
+func (d *Domain) GetSharedWithSubaccounts() bool {
+	if d == nil {
+		return false
+	}
+	return d.SharedWithSubaccounts
 }
 
 func (d *Domain) GetExtraProperties() map[string]interface{} {
@@ -14368,6 +15140,20 @@ func (d *Domain) SetReceiving(receiving *ReceivingDomain) {
 func (d *Domain) SetBimi(bimi *DomainBimi) {
 	d.Bimi = bimi
 	d.require(domainFieldBimi)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *Domain) SetSubaccountID(subaccountID *string) {
+	d.SubaccountID = subaccountID
+	d.require(domainFieldSubaccountID)
+}
+
+// SetSharedWithSubaccounts sets the SharedWithSubaccounts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *Domain) SetSharedWithSubaccounts(sharedWithSubaccounts bool) {
+	d.SharedWithSubaccounts = sharedWithSubaccounts
+	d.require(domainFieldSharedWithSubaccounts)
 }
 
 func (d *Domain) UnmarshalJSON(data []byte) error {
@@ -16722,20 +17508,22 @@ var (
 	emailFieldBatchID        = big.NewInt(1 << 23)
 	emailFieldTemplate       = big.NewInt(1 << 24)
 	emailFieldBroadcastID    = big.NewInt(1 << 25)
-	emailFieldContentStorage = big.NewInt(1 << 26)
+	emailFieldSubaccountID   = big.NewInt(1 << 26)
+	emailFieldContentStorage = big.NewInt(1 << 27)
 )
 
 // emailNullableFields maps the wire names of Email's nullable fields (required or optional) to their field bits.
 var emailNullableFields = map[string]*big.Int{
-	"html":         emailFieldHTML,
-	"text":         emailFieldText,
-	"category":     emailFieldCategory,
-	"failure":      emailFieldFailure,
-	"sent_at":      emailFieldSentAt,
-	"scheduled_at": emailFieldScheduledAt,
-	"batch_id":     emailFieldBatchID,
-	"template":     emailFieldTemplate,
-	"broadcast_id": emailFieldBroadcastID,
+	"html":          emailFieldHTML,
+	"text":          emailFieldText,
+	"category":      emailFieldCategory,
+	"failure":       emailFieldFailure,
+	"sent_at":       emailFieldSentAt,
+	"scheduled_at":  emailFieldScheduledAt,
+	"batch_id":      emailFieldBatchID,
+	"template":      emailFieldTemplate,
+	"broadcast_id":  emailFieldBroadcastID,
+	"subaccount_id": emailFieldSubaccountID,
 }
 
 type Email struct {
@@ -16772,7 +17560,9 @@ type Email struct {
 	// The template the email was rendered from; `null` if it was sent without one.
 	Template *EmailTemplateReference `json:"template,omitempty" url:"template,omitempty"`
 	// The broadcast the email is part of; `null` for any other email.
-	BroadcastID    *string              `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	BroadcastID *string `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	// The sub-account the email was sent for; `null` if it was sent for none.
+	SubaccountID   *string              `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
 	ContentStorage *EmailContentStorage `json:"content_storage" url:"content_storage"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -16962,6 +17752,13 @@ func (e *Email) GetBroadcastID() *string {
 		return nil
 	}
 	return e.BroadcastID
+}
+
+func (e *Email) GetSubaccountID() *string {
+	if e == nil {
+		return nil
+	}
+	return e.SubaccountID
 }
 
 func (e *Email) GetContentStorage() *EmailContentStorage {
@@ -17167,6 +17964,13 @@ func (e *Email) SetTemplate(template *EmailTemplateReference) {
 func (e *Email) SetBroadcastID(broadcastID *string) {
 	e.BroadcastID = broadcastID
 	e.require(emailFieldBroadcastID)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *Email) SetSubaccountID(subaccountID *string) {
+	e.SubaccountID = subaccountID
+	e.require(emailFieldSubaccountID)
 }
 
 // SetContentStorage sets the ContentStorage field and marks it as non-optional;
@@ -19401,7 +20205,8 @@ var (
 	errorBodyFieldMessage   = big.NewInt(1 << 2)
 	errorBodyFieldParam     = big.NewInt(1 << 3)
 	errorBodyFieldIssues    = big.NewInt(1 << 4)
-	errorBodyFieldRequestID = big.NewInt(1 << 5)
+	errorBodyFieldHint      = big.NewInt(1 << 5)
+	errorBodyFieldRequestID = big.NewInt(1 << 6)
 )
 
 type ErrorBody struct {
@@ -19413,8 +20218,10 @@ type ErrorBody struct {
 	// The request field or header the error relates to.
 	Param *string `json:"param,omitempty" url:"param,omitempty"`
 	// Every problem: of the request (`validation_error`) or of a template (`invalid_template_variables`, `template_invalid`).
-	Issues    []*ErrorBodyIssuesItem `json:"issues,omitempty" url:"issues,omitempty"`
-	RequestID string                 `json:"request_id" url:"request_id"`
+	Issues []*ErrorBodyIssuesItem `json:"issues,omitempty" url:"issues,omitempty"`
+	// What to try next. Present when coss.com can name a fix, and often includes a docs URL.
+	Hint      *string `json:"hint,omitempty" url:"hint,omitempty"`
+	RequestID string  `json:"request_id" url:"request_id"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -19456,6 +20263,13 @@ func (e *ErrorBody) GetIssues() []*ErrorBodyIssuesItem {
 		return nil
 	}
 	return e.Issues
+}
+
+func (e *ErrorBody) GetHint() *string {
+	if e == nil {
+		return nil
+	}
+	return e.Hint
 }
 
 func (e *ErrorBody) GetRequestID() string {
@@ -19514,6 +20328,13 @@ func (e *ErrorBody) SetParam(param *string) {
 func (e *ErrorBody) SetIssues(issues []*ErrorBodyIssuesItem) {
 	e.Issues = issues
 	e.require(errorBodyFieldIssues)
+}
+
+// SetHint sets the Hint field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *ErrorBody) SetHint(hint *string) {
+	e.Hint = hint
+	e.require(errorBodyFieldHint)
 }
 
 // SetRequestID sets the RequestID field and marks it as non-optional;
@@ -19984,6 +20805,992 @@ func NewForgottenRiskUserObjectFromString(s string) (ForgottenRiskUserObject, er
 }
 
 func (f ForgottenRiskUserObject) Ptr() *ForgottenRiskUserObject {
+	return &f
+}
+
+var (
+	formSubmissionFieldObject         = big.NewInt(1 << 0)
+	formSubmissionFieldID             = big.NewInt(1 << 1)
+	formSubmissionFieldFormID         = big.NewInt(1 << 2)
+	formSubmissionFieldStatus         = big.NewInt(1 << 3)
+	formSubmissionFieldData           = big.NewInt(1 << 4)
+	formSubmissionFieldSubmitterEmail = big.NewInt(1 << 5)
+	formSubmissionFieldFiles          = big.NewInt(1 << 6)
+	formSubmissionFieldSpamReason     = big.NewInt(1 << 7)
+	formSubmissionFieldRisk           = big.NewInt(1 << 8)
+	formSubmissionFieldIP             = big.NewInt(1 << 9)
+	formSubmissionFieldUserAgent      = big.NewInt(1 << 10)
+	formSubmissionFieldOrigin         = big.NewInt(1 << 11)
+	formSubmissionFieldReferrer       = big.NewInt(1 << 12)
+	formSubmissionFieldConfirmedAt    = big.NewInt(1 << 13)
+	formSubmissionFieldAcceptedAt     = big.NewInt(1 << 14)
+	formSubmissionFieldReleasedAt     = big.NewInt(1 << 15)
+	formSubmissionFieldSandbox        = big.NewInt(1 << 16)
+	formSubmissionFieldCreatedAt      = big.NewInt(1 << 17)
+)
+
+// formSubmissionNullableFields maps the wire names of FormSubmission's nullable fields (required or optional) to their field bits.
+var formSubmissionNullableFields = map[string]*big.Int{
+	"submitter_email": formSubmissionFieldSubmitterEmail,
+	"spam_reason":     formSubmissionFieldSpamReason,
+	"risk":            formSubmissionFieldRisk,
+	"ip":              formSubmissionFieldIP,
+	"user_agent":      formSubmissionFieldUserAgent,
+	"origin":          formSubmissionFieldOrigin,
+	"referrer":        formSubmissionFieldReferrer,
+	"confirmed_at":    formSubmissionFieldConfirmedAt,
+	"accepted_at":     formSubmissionFieldAcceptedAt,
+	"released_at":     formSubmissionFieldReleasedAt,
+}
+
+type FormSubmission struct {
+	Object FormSubmissionObject `json:"object" url:"object"`
+	ID     string               `json:"id" url:"id"`
+	FormID string               `json:"form_id" url:"form_id"`
+	// `accepted`: delivered (webhooks, notifications, contacts). `held`: Risk asked for a review. `spam`: refused by Risk, the content check or the honeypot. `pending_confirmation`: waiting for the submitter's email link.
+	Status FormSubmissionStatus `json:"status" url:"status"`
+	// Field name → value; a field posted several times has an array.
+	Data           map[string]*FormSubmissionDataValue `json:"data" url:"data"`
+	SubmitterEmail *string                             `json:"submitter_email,omitempty" url:"submitter_email,omitempty"`
+	Files          []*FormSubmissionFile               `json:"files" url:"files"`
+	SpamReason     *FormSubmissionSpamReason           `json:"spam_reason,omitempty" url:"spam_reason,omitempty"`
+	// Risk's assessment; `null` when none ran (honeypot).
+	Risk        *FormSubmissionRisk `json:"risk,omitempty" url:"risk,omitempty"`
+	IP          *string             `json:"ip,omitempty" url:"ip,omitempty"`
+	UserAgent   *string             `json:"user_agent,omitempty" url:"user_agent,omitempty"`
+	Origin      *string             `json:"origin,omitempty" url:"origin,omitempty"`
+	Referrer    *string             `json:"referrer,omitempty" url:"referrer,omitempty"`
+	ConfirmedAt *time.Time          `json:"confirmed_at,omitempty" url:"confirmed_at,omitempty"`
+	AcceptedAt  *time.Time          `json:"accepted_at,omitempty" url:"accepted_at,omitempty"`
+	ReleasedAt  *time.Time          `json:"released_at,omitempty" url:"released_at,omitempty"`
+	Sandbox     bool                `json:"sandbox" url:"sandbox"`
+	CreatedAt   time.Time           `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmission) GetObject() FormSubmissionObject {
+	if f == nil {
+		return ""
+	}
+	return f.Object
+}
+
+func (f *FormSubmission) GetID() string {
+	if f == nil {
+		return ""
+	}
+	return f.ID
+}
+
+func (f *FormSubmission) GetFormID() string {
+	if f == nil {
+		return ""
+	}
+	return f.FormID
+}
+
+func (f *FormSubmission) GetStatus() FormSubmissionStatus {
+	if f == nil {
+		return ""
+	}
+	return f.Status
+}
+
+func (f *FormSubmission) GetData() map[string]*FormSubmissionDataValue {
+	if f == nil {
+		return nil
+	}
+	return f.Data
+}
+
+func (f *FormSubmission) GetSubmitterEmail() *string {
+	if f == nil {
+		return nil
+	}
+	return f.SubmitterEmail
+}
+
+func (f *FormSubmission) GetFiles() []*FormSubmissionFile {
+	if f == nil {
+		return nil
+	}
+	return f.Files
+}
+
+func (f *FormSubmission) GetSpamReason() *FormSubmissionSpamReason {
+	if f == nil {
+		return nil
+	}
+	return f.SpamReason
+}
+
+func (f *FormSubmission) GetRisk() *FormSubmissionRisk {
+	if f == nil {
+		return nil
+	}
+	return f.Risk
+}
+
+func (f *FormSubmission) GetIP() *string {
+	if f == nil {
+		return nil
+	}
+	return f.IP
+}
+
+func (f *FormSubmission) GetUserAgent() *string {
+	if f == nil {
+		return nil
+	}
+	return f.UserAgent
+}
+
+func (f *FormSubmission) GetOrigin() *string {
+	if f == nil {
+		return nil
+	}
+	return f.Origin
+}
+
+func (f *FormSubmission) GetReferrer() *string {
+	if f == nil {
+		return nil
+	}
+	return f.Referrer
+}
+
+func (f *FormSubmission) GetConfirmedAt() *time.Time {
+	if f == nil {
+		return nil
+	}
+	return f.ConfirmedAt
+}
+
+func (f *FormSubmission) GetAcceptedAt() *time.Time {
+	if f == nil {
+		return nil
+	}
+	return f.AcceptedAt
+}
+
+func (f *FormSubmission) GetReleasedAt() *time.Time {
+	if f == nil {
+		return nil
+	}
+	return f.ReleasedAt
+}
+
+func (f *FormSubmission) GetSandbox() bool {
+	if f == nil {
+		return false
+	}
+	return f.Sandbox
+}
+
+func (f *FormSubmission) GetCreatedAt() time.Time {
+	if f == nil {
+		return time.Time{}
+	}
+	return f.CreatedAt
+}
+
+func (f *FormSubmission) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmission) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetObject(object FormSubmissionObject) {
+	f.Object = object
+	f.require(formSubmissionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetID(id string) {
+	f.ID = id
+	f.require(formSubmissionFieldID)
+}
+
+// SetFormID sets the FormID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetFormID(formID string) {
+	f.FormID = formID
+	f.require(formSubmissionFieldFormID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetStatus(status FormSubmissionStatus) {
+	f.Status = status
+	f.require(formSubmissionFieldStatus)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetData(data map[string]*FormSubmissionDataValue) {
+	f.Data = data
+	f.require(formSubmissionFieldData)
+}
+
+// SetSubmitterEmail sets the SubmitterEmail field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetSubmitterEmail(submitterEmail *string) {
+	f.SubmitterEmail = submitterEmail
+	f.require(formSubmissionFieldSubmitterEmail)
+}
+
+// SetFiles sets the Files field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetFiles(files []*FormSubmissionFile) {
+	f.Files = files
+	f.require(formSubmissionFieldFiles)
+}
+
+// SetSpamReason sets the SpamReason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetSpamReason(spamReason *FormSubmissionSpamReason) {
+	f.SpamReason = spamReason
+	f.require(formSubmissionFieldSpamReason)
+}
+
+// SetRisk sets the Risk field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetRisk(risk *FormSubmissionRisk) {
+	f.Risk = risk
+	f.require(formSubmissionFieldRisk)
+}
+
+// SetIP sets the IP field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetIP(ip *string) {
+	f.IP = ip
+	f.require(formSubmissionFieldIP)
+}
+
+// SetUserAgent sets the UserAgent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetUserAgent(userAgent *string) {
+	f.UserAgent = userAgent
+	f.require(formSubmissionFieldUserAgent)
+}
+
+// SetOrigin sets the Origin field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetOrigin(origin *string) {
+	f.Origin = origin
+	f.require(formSubmissionFieldOrigin)
+}
+
+// SetReferrer sets the Referrer field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetReferrer(referrer *string) {
+	f.Referrer = referrer
+	f.require(formSubmissionFieldReferrer)
+}
+
+// SetConfirmedAt sets the ConfirmedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetConfirmedAt(confirmedAt *time.Time) {
+	f.ConfirmedAt = confirmedAt
+	f.require(formSubmissionFieldConfirmedAt)
+}
+
+// SetAcceptedAt sets the AcceptedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetAcceptedAt(acceptedAt *time.Time) {
+	f.AcceptedAt = acceptedAt
+	f.require(formSubmissionFieldAcceptedAt)
+}
+
+// SetReleasedAt sets the ReleasedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetReleasedAt(releasedAt *time.Time) {
+	f.ReleasedAt = releasedAt
+	f.require(formSubmissionFieldReleasedAt)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetSandbox(sandbox bool) {
+	f.Sandbox = sandbox
+	f.require(formSubmissionFieldSandbox)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmission) SetCreatedAt(createdAt time.Time) {
+	f.CreatedAt = createdAt
+	f.require(formSubmissionFieldCreatedAt)
+}
+
+func (f *FormSubmission) UnmarshalJSON(data []byte) error {
+	type embed FormSubmission
+	var unmarshaler = struct {
+		embed
+		ConfirmedAt *internal.DateTime `json:"confirmed_at,omitempty"`
+		AcceptedAt  *internal.DateTime `json:"accepted_at,omitempty"`
+		ReleasedAt  *internal.DateTime `json:"released_at,omitempty"`
+		CreatedAt   *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*f),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*f = FormSubmission(unmarshaler.embed)
+	f.ConfirmedAt = unmarshaler.ConfirmedAt.TimePtr()
+	f.AcceptedAt = unmarshaler.AcceptedAt.TimePtr()
+	f.ReleasedAt = unmarshaler.ReleasedAt.TimePtr()
+	f.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, formSubmissionNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		f.require(presentFields)
+	}
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmission) MarshalJSON() ([]byte, error) {
+	type embed FormSubmission
+	var marshaler = struct {
+		embed
+		ConfirmedAt *internal.DateTime `json:"confirmed_at,omitempty"`
+		AcceptedAt  *internal.DateTime `json:"accepted_at,omitempty"`
+		ReleasedAt  *internal.DateTime `json:"released_at,omitempty"`
+		CreatedAt   *internal.DateTime `json:"created_at"`
+	}{
+		embed:       embed(*f),
+		ConfirmedAt: internal.NewOptionalDateTime(f.ConfirmedAt),
+		AcceptedAt:  internal.NewOptionalDateTime(f.AcceptedAt),
+		ReleasedAt:  internal.NewOptionalDateTime(f.ReleasedAt),
+		CreatedAt:   internal.NewDateTime(f.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmission) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+type FormSubmissionDataValue struct {
+	String     string
+	StringList []string
+
+	typ string
+}
+
+func (f *FormSubmissionDataValue) GetString() string {
+	if f == nil {
+		return ""
+	}
+	return f.String
+}
+
+func (f *FormSubmissionDataValue) GetStringList() []string {
+	if f == nil {
+		return nil
+	}
+	return f.StringList
+}
+
+func (f *FormSubmissionDataValue) UnmarshalJSON(data []byte) error {
+	var valueString string
+	if err := json.Unmarshal(data, &valueString); err == nil {
+		f.typ = "String"
+		f.String = valueString
+		return nil
+	}
+	var valueStringList []string
+	if err := json.Unmarshal(data, &valueStringList); err == nil {
+		f.typ = "StringList"
+		f.StringList = valueStringList
+		return nil
+	}
+	return fmt.Errorf("%s cannot be deserialized as a %T", data, f)
+}
+
+func (f FormSubmissionDataValue) MarshalJSON() ([]byte, error) {
+	if f.typ == "String" || f.String != "" {
+		return json.Marshal(f.String)
+	}
+	if f.typ == "StringList" || f.StringList != nil {
+		return json.Marshal(f.StringList)
+	}
+	return nil, fmt.Errorf("type %T does not include a non-empty union type", f)
+}
+
+type FormSubmissionDataValueVisitor interface {
+	VisitString(string) error
+	VisitStringList([]string) error
+}
+
+func (f *FormSubmissionDataValue) Accept(visitor FormSubmissionDataValueVisitor) error {
+	if f.typ == "String" || f.String != "" {
+		return visitor.VisitString(f.String)
+	}
+	if f.typ == "StringList" || f.StringList != nil {
+		return visitor.VisitStringList(f.StringList)
+	}
+	return fmt.Errorf("type %T does not include a non-empty union type", f)
+}
+
+var (
+	formSubmissionFileFieldID          = big.NewInt(1 << 0)
+	formSubmissionFileFieldField       = big.NewInt(1 << 1)
+	formSubmissionFileFieldFilename    = big.NewInt(1 << 2)
+	formSubmissionFileFieldContentType = big.NewInt(1 << 3)
+	formSubmissionFileFieldSize        = big.NewInt(1 << 4)
+)
+
+type FormSubmissionFile struct {
+	ID          string `json:"id" url:"id"`
+	Field       string `json:"field" url:"field"`
+	Filename    string `json:"filename" url:"filename"`
+	ContentType string `json:"content_type" url:"content_type"`
+	// Bytes.
+	Size int64 `json:"size" url:"size"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmissionFile) GetID() string {
+	if f == nil {
+		return ""
+	}
+	return f.ID
+}
+
+func (f *FormSubmissionFile) GetField() string {
+	if f == nil {
+		return ""
+	}
+	return f.Field
+}
+
+func (f *FormSubmissionFile) GetFilename() string {
+	if f == nil {
+		return ""
+	}
+	return f.Filename
+}
+
+func (f *FormSubmissionFile) GetContentType() string {
+	if f == nil {
+		return ""
+	}
+	return f.ContentType
+}
+
+func (f *FormSubmissionFile) GetSize() int64 {
+	if f == nil {
+		return 0
+	}
+	return f.Size
+}
+
+func (f *FormSubmissionFile) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmissionFile) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionFile) SetID(id string) {
+	f.ID = id
+	f.require(formSubmissionFileFieldID)
+}
+
+// SetField sets the Field field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionFile) SetField(field string) {
+	f.Field = field
+	f.require(formSubmissionFileFieldField)
+}
+
+// SetFilename sets the Filename field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionFile) SetFilename(filename string) {
+	f.Filename = filename
+	f.require(formSubmissionFileFieldFilename)
+}
+
+// SetContentType sets the ContentType field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionFile) SetContentType(contentType string) {
+	f.ContentType = contentType
+	f.require(formSubmissionFileFieldContentType)
+}
+
+// SetSize sets the Size field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionFile) SetSize(size int64) {
+	f.Size = size
+	f.require(formSubmissionFileFieldSize)
+}
+
+func (f *FormSubmissionFile) UnmarshalJSON(data []byte) error {
+	type unmarshaler FormSubmissionFile
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*f = FormSubmissionFile(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmissionFile) MarshalJSON() ([]byte, error) {
+	type embed FormSubmissionFile
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*f),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmissionFile) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+var (
+	formSubmissionListFieldObject  = big.NewInt(1 << 0)
+	formSubmissionListFieldData    = big.NewInt(1 << 1)
+	formSubmissionListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type FormSubmissionList struct {
+	Object  FormSubmissionListObject `json:"object" url:"object"`
+	Data    []*FormSubmission        `json:"data" url:"data"`
+	HasMore bool                     `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmissionList) GetObject() FormSubmissionListObject {
+	if f == nil {
+		return ""
+	}
+	return f.Object
+}
+
+func (f *FormSubmissionList) GetData() []*FormSubmission {
+	if f == nil {
+		return nil
+	}
+	return f.Data
+}
+
+func (f *FormSubmissionList) GetHasMore() bool {
+	if f == nil {
+		return false
+	}
+	return f.HasMore
+}
+
+func (f *FormSubmissionList) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmissionList) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionList) SetObject(object FormSubmissionListObject) {
+	f.Object = object
+	f.require(formSubmissionListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionList) SetData(data []*FormSubmission) {
+	f.Data = data
+	f.require(formSubmissionListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionList) SetHasMore(hasMore bool) {
+	f.HasMore = hasMore
+	f.require(formSubmissionListFieldHasMore)
+}
+
+func (f *FormSubmissionList) UnmarshalJSON(data []byte) error {
+	type unmarshaler FormSubmissionList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*f = FormSubmissionList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmissionList) MarshalJSON() ([]byte, error) {
+	type embed FormSubmissionList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*f),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmissionList) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+type FormSubmissionListObject string
+
+const (
+	FormSubmissionListObjectList FormSubmissionListObject = "list"
+)
+
+func NewFormSubmissionListObjectFromString(s string) (FormSubmissionListObject, error) {
+	switch s {
+	case "list":
+		return FormSubmissionListObjectList, nil
+	}
+	var t FormSubmissionListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionListObject) Ptr() *FormSubmissionListObject {
+	return &f
+}
+
+type FormSubmissionObject string
+
+const (
+	FormSubmissionObjectFormSubmission FormSubmissionObject = "form_submission"
+)
+
+func NewFormSubmissionObjectFromString(s string) (FormSubmissionObject, error) {
+	switch s {
+	case "form_submission":
+		return FormSubmissionObjectFormSubmission, nil
+	}
+	var t FormSubmissionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionObject) Ptr() *FormSubmissionObject {
+	return &f
+}
+
+var (
+	formSubmissionRiskFieldAssessmentID = big.NewInt(1 << 0)
+	formSubmissionRiskFieldDecision     = big.NewInt(1 << 1)
+	formSubmissionRiskFieldScore        = big.NewInt(1 << 2)
+)
+
+// formSubmissionRiskNullableFields maps the wire names of FormSubmissionRisk's nullable fields (required or optional) to their field bits.
+var formSubmissionRiskNullableFields = map[string]*big.Int{
+	"assessment_id": formSubmissionRiskFieldAssessmentID,
+	"decision":      formSubmissionRiskFieldDecision,
+	"score":         formSubmissionRiskFieldScore,
+}
+
+// Risk's assessment; `null` when none ran (honeypot).
+type FormSubmissionRisk struct {
+	AssessmentID *string                     `json:"assessment_id,omitempty" url:"assessment_id,omitempty"`
+	Decision     *FormSubmissionRiskDecision `json:"decision,omitempty" url:"decision,omitempty"`
+	Score        *float64                    `json:"score,omitempty" url:"score,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmissionRisk) GetAssessmentID() *string {
+	if f == nil {
+		return nil
+	}
+	return f.AssessmentID
+}
+
+func (f *FormSubmissionRisk) GetDecision() *FormSubmissionRiskDecision {
+	if f == nil {
+		return nil
+	}
+	return f.Decision
+}
+
+func (f *FormSubmissionRisk) GetScore() *float64 {
+	if f == nil {
+		return nil
+	}
+	return f.Score
+}
+
+func (f *FormSubmissionRisk) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmissionRisk) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetAssessmentID sets the AssessmentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionRisk) SetAssessmentID(assessmentID *string) {
+	f.AssessmentID = assessmentID
+	f.require(formSubmissionRiskFieldAssessmentID)
+}
+
+// SetDecision sets the Decision field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionRisk) SetDecision(decision *FormSubmissionRiskDecision) {
+	f.Decision = decision
+	f.require(formSubmissionRiskFieldDecision)
+}
+
+// SetScore sets the Score field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionRisk) SetScore(score *float64) {
+	f.Score = score
+	f.require(formSubmissionRiskFieldScore)
+}
+
+func (f *FormSubmissionRisk) UnmarshalJSON(data []byte) error {
+	type unmarshaler FormSubmissionRisk
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*f = FormSubmissionRisk(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, formSubmissionRiskNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		f.require(presentFields)
+	}
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmissionRisk) MarshalJSON() ([]byte, error) {
+	type embed FormSubmissionRisk
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*f),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmissionRisk) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+type FormSubmissionRiskDecision string
+
+const (
+	FormSubmissionRiskDecisionAllow  FormSubmissionRiskDecision = "allow"
+	FormSubmissionRiskDecisionReview FormSubmissionRiskDecision = "review"
+	FormSubmissionRiskDecisionBlock  FormSubmissionRiskDecision = "block"
+)
+
+func NewFormSubmissionRiskDecisionFromString(s string) (FormSubmissionRiskDecision, error) {
+	switch s {
+	case "allow":
+		return FormSubmissionRiskDecisionAllow, nil
+	case "review":
+		return FormSubmissionRiskDecisionReview, nil
+	case "block":
+		return FormSubmissionRiskDecisionBlock, nil
+	}
+	var t FormSubmissionRiskDecision
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionRiskDecision) Ptr() *FormSubmissionRiskDecision {
+	return &f
+}
+
+type FormSubmissionSpamReason string
+
+const (
+	FormSubmissionSpamReasonHoneypot   FormSubmissionSpamReason = "honeypot"
+	FormSubmissionSpamReasonRiskBlock  FormSubmissionSpamReason = "risk_block"
+	FormSubmissionSpamReasonRiskReview FormSubmissionSpamReason = "risk_review"
+	FormSubmissionSpamReasonContent    FormSubmissionSpamReason = "content"
+)
+
+func NewFormSubmissionSpamReasonFromString(s string) (FormSubmissionSpamReason, error) {
+	switch s {
+	case "honeypot":
+		return FormSubmissionSpamReasonHoneypot, nil
+	case "risk_block":
+		return FormSubmissionSpamReasonRiskBlock, nil
+	case "risk_review":
+		return FormSubmissionSpamReasonRiskReview, nil
+	case "content":
+		return FormSubmissionSpamReasonContent, nil
+	}
+	var t FormSubmissionSpamReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionSpamReason) Ptr() *FormSubmissionSpamReason {
+	return &f
+}
+
+// `accepted`: delivered (webhooks, notifications, contacts). `held`: Risk asked for a review. `spam`: refused by Risk, the content check or the honeypot. `pending_confirmation`: waiting for the submitter's email link.
+type FormSubmissionStatus string
+
+const (
+	FormSubmissionStatusPendingConfirmation FormSubmissionStatus = "pending_confirmation"
+	FormSubmissionStatusAccepted            FormSubmissionStatus = "accepted"
+	FormSubmissionStatusHeld                FormSubmissionStatus = "held"
+	FormSubmissionStatusSpam                FormSubmissionStatus = "spam"
+)
+
+func NewFormSubmissionStatusFromString(s string) (FormSubmissionStatus, error) {
+	switch s {
+	case "pending_confirmation":
+		return FormSubmissionStatusPendingConfirmation, nil
+	case "accepted":
+		return FormSubmissionStatusAccepted, nil
+	case "held":
+		return FormSubmissionStatusHeld, nil
+	case "spam":
+		return FormSubmissionStatusSpam, nil
+	}
+	var t FormSubmissionStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionStatus) Ptr() *FormSubmissionStatus {
 	return &f
 }
 
@@ -23639,6 +25446,1872 @@ func (i InboundAddressObject) Ptr() *InboundAddressObject {
 }
 
 var (
+	inboxMessageFieldObject          = big.NewInt(1 << 0)
+	inboxMessageFieldID              = big.NewInt(1 << 1)
+	inboxMessageFieldInboxID         = big.NewInt(1 << 2)
+	inboxMessageFieldThreadID        = big.NewInt(1 << 3)
+	inboxMessageFieldDirection       = big.NewInt(1 << 4)
+	inboxMessageFieldStatus          = big.NewInt(1 << 5)
+	inboxMessageFieldFrom            = big.NewInt(1 << 6)
+	inboxMessageFieldTo              = big.NewInt(1 << 7)
+	inboxMessageFieldCc              = big.NewInt(1 << 8)
+	inboxMessageFieldSubject         = big.NewInt(1 << 9)
+	inboxMessageFieldPreview         = big.NewInt(1 << 10)
+	inboxMessageFieldAttachments     = big.NewInt(1 << 11)
+	inboxMessageFieldSpam            = big.NewInt(1 << 12)
+	inboxMessageFieldReceivedEmailID = big.NewInt(1 << 13)
+	inboxMessageFieldEmailID         = big.NewInt(1 << 14)
+	inboxMessageFieldCreatedAt       = big.NewInt(1 << 15)
+	inboxMessageFieldReplyTo         = big.NewInt(1 << 16)
+	inboxMessageFieldMessageID       = big.NewInt(1 << 17)
+	inboxMessageFieldInReplyTo       = big.NewInt(1 << 18)
+	inboxMessageFieldReferences      = big.NewInt(1 << 19)
+	inboxMessageFieldText            = big.NewInt(1 << 20)
+	inboxMessageFieldExtractedText   = big.NewInt(1 << 21)
+	inboxMessageFieldHTML            = big.NewInt(1 << 22)
+	inboxMessageFieldTruncated       = big.NewInt(1 << 23)
+)
+
+// inboxMessageNullableFields maps the wire names of InboxMessage's nullable fields (required or optional) to their field bits.
+var inboxMessageNullableFields = map[string]*big.Int{
+	"from":              inboxMessageFieldFrom,
+	"subject":           inboxMessageFieldSubject,
+	"preview":           inboxMessageFieldPreview,
+	"received_email_id": inboxMessageFieldReceivedEmailID,
+	"email_id":          inboxMessageFieldEmailID,
+	"message_id":        inboxMessageFieldMessageID,
+	"in_reply_to":       inboxMessageFieldInReplyTo,
+	"text":              inboxMessageFieldText,
+	"extracted_text":    inboxMessageFieldExtractedText,
+	"html":              inboxMessageFieldHTML,
+}
+
+type InboxMessage struct {
+	Object   InboxMessageObject `json:"object" url:"object"`
+	ID       string             `json:"id" url:"id"`
+	InboxID  string             `json:"inbox_id" url:"inbox_id"`
+	ThreadID string             `json:"thread_id" url:"thread_id"`
+	// `inbound`: received by the inbox. `outbound`: sent from it.
+	Direction InboxMessageDirection `json:"direction" url:"direction"`
+	// `received` for inbound messages; an outbound message's email status (`queued`, `sent`, `failed`, …): its email has each recipient's delivery.
+	Status InboxMessageStatus `json:"status" url:"status"`
+	// The `From` header.
+	From    *string  `json:"from,omitempty" url:"from,omitempty"`
+	To      []string `json:"to" url:"to"`
+	Cc      []string `json:"cc" url:"cc"`
+	Subject *string  `json:"subject,omitempty" url:"subject,omitempty"`
+	// The start of the message's own text (without the quoted conversation).
+	Preview *string `json:"preview,omitempty" url:"preview,omitempty"`
+	// An inbound message's attachments (download them from the message).
+	Attachments []*ReceivedEmailAttachment `json:"attachments" url:"attachments"`
+	// Whether the receiving server judged it spam.
+	Spam bool `json:"spam" url:"spam"`
+	// The received email of an inbound message.
+	ReceivedEmailID *string `json:"received_email_id,omitempty" url:"received_email_id,omitempty"`
+	// The email of an outbound message: its delivery events and webhooks name it.
+	EmailID *string `json:"email_id,omitempty" url:"email_id,omitempty"`
+	// When it was received or sent.
+	CreatedAt time.Time `json:"created_at" url:"created_at"`
+	ReplyTo   []string  `json:"reply_to" url:"reply_to"`
+	// An inbound message's `Message-ID` header (outbound ones get theirs at sending).
+	MessageID  *string  `json:"message_id,omitempty" url:"message_id,omitempty"`
+	InReplyTo  *string  `json:"in_reply_to,omitempty" url:"in_reply_to,omitempty"`
+	References []string `json:"references" url:"references"`
+	Text       *string  `json:"text,omitempty" url:"text,omitempty"`
+	// The message's own text: `text` without the quoted conversation and signature below it (a heuristic; when nothing is left, all of `text`). Made from `html` when there is no `text`.
+	ExtractedText *string `json:"extracted_text,omitempty" url:"extracted_text,omitempty"`
+	// The sender's HTML: sanitize it before showing it to anyone.
+	HTML *string `json:"html,omitempty" url:"html,omitempty"`
+	// Whether `text` or `html` were shortened (2 MB each).
+	Truncated bool `json:"truncated" url:"truncated"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxMessage) GetObject() InboxMessageObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxMessage) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxMessage) GetInboxID() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxID
+}
+
+func (i *InboxMessage) GetThreadID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ThreadID
+}
+
+func (i *InboxMessage) GetDirection() InboxMessageDirection {
+	if i == nil {
+		return ""
+	}
+	return i.Direction
+}
+
+func (i *InboxMessage) GetStatus() InboxMessageStatus {
+	if i == nil {
+		return ""
+	}
+	return i.Status
+}
+
+func (i *InboxMessage) GetFrom() *string {
+	if i == nil {
+		return nil
+	}
+	return i.From
+}
+
+func (i *InboxMessage) GetTo() []string {
+	if i == nil {
+		return nil
+	}
+	return i.To
+}
+
+func (i *InboxMessage) GetCc() []string {
+	if i == nil {
+		return nil
+	}
+	return i.Cc
+}
+
+func (i *InboxMessage) GetSubject() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Subject
+}
+
+func (i *InboxMessage) GetPreview() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Preview
+}
+
+func (i *InboxMessage) GetAttachments() []*ReceivedEmailAttachment {
+	if i == nil {
+		return nil
+	}
+	return i.Attachments
+}
+
+func (i *InboxMessage) GetSpam() bool {
+	if i == nil {
+		return false
+	}
+	return i.Spam
+}
+
+func (i *InboxMessage) GetReceivedEmailID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ReceivedEmailID
+}
+
+func (i *InboxMessage) GetEmailID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.EmailID
+}
+
+func (i *InboxMessage) GetCreatedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxMessage) GetReplyTo() []string {
+	if i == nil {
+		return nil
+	}
+	return i.ReplyTo
+}
+
+func (i *InboxMessage) GetMessageID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.MessageID
+}
+
+func (i *InboxMessage) GetInReplyTo() *string {
+	if i == nil {
+		return nil
+	}
+	return i.InReplyTo
+}
+
+func (i *InboxMessage) GetReferences() []string {
+	if i == nil {
+		return nil
+	}
+	return i.References
+}
+
+func (i *InboxMessage) GetText() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Text
+}
+
+func (i *InboxMessage) GetExtractedText() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ExtractedText
+}
+
+func (i *InboxMessage) GetHTML() *string {
+	if i == nil {
+		return nil
+	}
+	return i.HTML
+}
+
+func (i *InboxMessage) GetTruncated() bool {
+	if i == nil {
+		return false
+	}
+	return i.Truncated
+}
+
+func (i *InboxMessage) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxMessage) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetObject(object InboxMessageObject) {
+	i.Object = object
+	i.require(inboxMessageFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetID(id string) {
+	i.ID = id
+	i.require(inboxMessageFieldID)
+}
+
+// SetInboxID sets the InboxID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetInboxID(inboxID string) {
+	i.InboxID = inboxID
+	i.require(inboxMessageFieldInboxID)
+}
+
+// SetThreadID sets the ThreadID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetThreadID(threadID string) {
+	i.ThreadID = threadID
+	i.require(inboxMessageFieldThreadID)
+}
+
+// SetDirection sets the Direction field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetDirection(direction InboxMessageDirection) {
+	i.Direction = direction
+	i.require(inboxMessageFieldDirection)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetStatus(status InboxMessageStatus) {
+	i.Status = status
+	i.require(inboxMessageFieldStatus)
+}
+
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetFrom(from *string) {
+	i.From = from
+	i.require(inboxMessageFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetTo(to []string) {
+	i.To = to
+	i.require(inboxMessageFieldTo)
+}
+
+// SetCc sets the Cc field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetCc(cc []string) {
+	i.Cc = cc
+	i.require(inboxMessageFieldCc)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetSubject(subject *string) {
+	i.Subject = subject
+	i.require(inboxMessageFieldSubject)
+}
+
+// SetPreview sets the Preview field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetPreview(preview *string) {
+	i.Preview = preview
+	i.require(inboxMessageFieldPreview)
+}
+
+// SetAttachments sets the Attachments field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetAttachments(attachments []*ReceivedEmailAttachment) {
+	i.Attachments = attachments
+	i.require(inboxMessageFieldAttachments)
+}
+
+// SetSpam sets the Spam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetSpam(spam bool) {
+	i.Spam = spam
+	i.require(inboxMessageFieldSpam)
+}
+
+// SetReceivedEmailID sets the ReceivedEmailID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetReceivedEmailID(receivedEmailID *string) {
+	i.ReceivedEmailID = receivedEmailID
+	i.require(inboxMessageFieldReceivedEmailID)
+}
+
+// SetEmailID sets the EmailID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetEmailID(emailID *string) {
+	i.EmailID = emailID
+	i.require(inboxMessageFieldEmailID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetCreatedAt(createdAt time.Time) {
+	i.CreatedAt = createdAt
+	i.require(inboxMessageFieldCreatedAt)
+}
+
+// SetReplyTo sets the ReplyTo field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetReplyTo(replyTo []string) {
+	i.ReplyTo = replyTo
+	i.require(inboxMessageFieldReplyTo)
+}
+
+// SetMessageID sets the MessageID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetMessageID(messageID *string) {
+	i.MessageID = messageID
+	i.require(inboxMessageFieldMessageID)
+}
+
+// SetInReplyTo sets the InReplyTo field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetInReplyTo(inReplyTo *string) {
+	i.InReplyTo = inReplyTo
+	i.require(inboxMessageFieldInReplyTo)
+}
+
+// SetReferences sets the References field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetReferences(references []string) {
+	i.References = references
+	i.require(inboxMessageFieldReferences)
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetText(text *string) {
+	i.Text = text
+	i.require(inboxMessageFieldText)
+}
+
+// SetExtractedText sets the ExtractedText field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetExtractedText(extractedText *string) {
+	i.ExtractedText = extractedText
+	i.require(inboxMessageFieldExtractedText)
+}
+
+// SetHTML sets the HTML field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetHTML(html *string) {
+	i.HTML = html
+	i.require(inboxMessageFieldHTML)
+}
+
+// SetTruncated sets the Truncated field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessage) SetTruncated(truncated bool) {
+	i.Truncated = truncated
+	i.require(inboxMessageFieldTruncated)
+}
+
+func (i *InboxMessage) UnmarshalJSON(data []byte) error {
+	type embed InboxMessage
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxMessage(unmarshaler.embed)
+	i.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxMessageNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxMessage) MarshalJSON() ([]byte, error) {
+	type embed InboxMessage
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*i),
+		CreatedAt: internal.NewDateTime(i.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxMessage) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+// `inbound`: received by the inbox. `outbound`: sent from it.
+type InboxMessageDirection string
+
+const (
+	InboxMessageDirectionInbound  InboxMessageDirection = "inbound"
+	InboxMessageDirectionOutbound InboxMessageDirection = "outbound"
+)
+
+func NewInboxMessageDirectionFromString(s string) (InboxMessageDirection, error) {
+	switch s {
+	case "inbound":
+		return InboxMessageDirectionInbound, nil
+	case "outbound":
+		return InboxMessageDirectionOutbound, nil
+	}
+	var t InboxMessageDirection
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageDirection) Ptr() *InboxMessageDirection {
+	return &i
+}
+
+var (
+	inboxMessageListFieldObject  = big.NewInt(1 << 0)
+	inboxMessageListFieldData    = big.NewInt(1 << 1)
+	inboxMessageListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type InboxMessageList struct {
+	Object  InboxMessageListObject `json:"object" url:"object"`
+	Data    []*InboxMessageSummary `json:"data" url:"data"`
+	HasMore bool                   `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxMessageList) GetObject() InboxMessageListObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxMessageList) GetData() []*InboxMessageSummary {
+	if i == nil {
+		return nil
+	}
+	return i.Data
+}
+
+func (i *InboxMessageList) GetHasMore() bool {
+	if i == nil {
+		return false
+	}
+	return i.HasMore
+}
+
+func (i *InboxMessageList) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxMessageList) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageList) SetObject(object InboxMessageListObject) {
+	i.Object = object
+	i.require(inboxMessageListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageList) SetData(data []*InboxMessageSummary) {
+	i.Data = data
+	i.require(inboxMessageListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageList) SetHasMore(hasMore bool) {
+	i.HasMore = hasMore
+	i.require(inboxMessageListFieldHasMore)
+}
+
+func (i *InboxMessageList) UnmarshalJSON(data []byte) error {
+	type unmarshaler InboxMessageList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*i = InboxMessageList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxMessageList) MarshalJSON() ([]byte, error) {
+	type embed InboxMessageList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*i),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxMessageList) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+type InboxMessageListObject string
+
+const (
+	InboxMessageListObjectList InboxMessageListObject = "list"
+)
+
+func NewInboxMessageListObjectFromString(s string) (InboxMessageListObject, error) {
+	switch s {
+	case "list":
+		return InboxMessageListObjectList, nil
+	}
+	var t InboxMessageListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageListObject) Ptr() *InboxMessageListObject {
+	return &i
+}
+
+type InboxMessageObject string
+
+const (
+	InboxMessageObjectInboxMessage InboxMessageObject = "inbox_message"
+)
+
+func NewInboxMessageObjectFromString(s string) (InboxMessageObject, error) {
+	switch s {
+	case "inbox_message":
+		return InboxMessageObjectInboxMessage, nil
+	}
+	var t InboxMessageObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageObject) Ptr() *InboxMessageObject {
+	return &i
+}
+
+// `received` for inbound messages; an outbound message's email status (`queued`, `sent`, `failed`, …): its email has each recipient's delivery.
+type InboxMessageStatus string
+
+const (
+	InboxMessageStatusReceived  InboxMessageStatus = "received"
+	InboxMessageStatusQueued    InboxMessageStatus = "queued"
+	InboxMessageStatusSent      InboxMessageStatus = "sent"
+	InboxMessageStatusFailed    InboxMessageStatus = "failed"
+	InboxMessageStatusScheduled InboxMessageStatus = "scheduled"
+	InboxMessageStatusCanceled  InboxMessageStatus = "canceled"
+)
+
+func NewInboxMessageStatusFromString(s string) (InboxMessageStatus, error) {
+	switch s {
+	case "received":
+		return InboxMessageStatusReceived, nil
+	case "queued":
+		return InboxMessageStatusQueued, nil
+	case "sent":
+		return InboxMessageStatusSent, nil
+	case "failed":
+		return InboxMessageStatusFailed, nil
+	case "scheduled":
+		return InboxMessageStatusScheduled, nil
+	case "canceled":
+		return InboxMessageStatusCanceled, nil
+	}
+	var t InboxMessageStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageStatus) Ptr() *InboxMessageStatus {
+	return &i
+}
+
+var (
+	inboxMessageSummaryFieldObject          = big.NewInt(1 << 0)
+	inboxMessageSummaryFieldID              = big.NewInt(1 << 1)
+	inboxMessageSummaryFieldInboxID         = big.NewInt(1 << 2)
+	inboxMessageSummaryFieldThreadID        = big.NewInt(1 << 3)
+	inboxMessageSummaryFieldDirection       = big.NewInt(1 << 4)
+	inboxMessageSummaryFieldStatus          = big.NewInt(1 << 5)
+	inboxMessageSummaryFieldFrom            = big.NewInt(1 << 6)
+	inboxMessageSummaryFieldTo              = big.NewInt(1 << 7)
+	inboxMessageSummaryFieldCc              = big.NewInt(1 << 8)
+	inboxMessageSummaryFieldSubject         = big.NewInt(1 << 9)
+	inboxMessageSummaryFieldPreview         = big.NewInt(1 << 10)
+	inboxMessageSummaryFieldAttachments     = big.NewInt(1 << 11)
+	inboxMessageSummaryFieldSpam            = big.NewInt(1 << 12)
+	inboxMessageSummaryFieldReceivedEmailID = big.NewInt(1 << 13)
+	inboxMessageSummaryFieldEmailID         = big.NewInt(1 << 14)
+	inboxMessageSummaryFieldCreatedAt       = big.NewInt(1 << 15)
+)
+
+// inboxMessageSummaryNullableFields maps the wire names of InboxMessageSummary's nullable fields (required or optional) to their field bits.
+var inboxMessageSummaryNullableFields = map[string]*big.Int{
+	"from":              inboxMessageSummaryFieldFrom,
+	"subject":           inboxMessageSummaryFieldSubject,
+	"preview":           inboxMessageSummaryFieldPreview,
+	"received_email_id": inboxMessageSummaryFieldReceivedEmailID,
+	"email_id":          inboxMessageSummaryFieldEmailID,
+}
+
+type InboxMessageSummary struct {
+	Object   InboxMessageSummaryObject `json:"object" url:"object"`
+	ID       string                    `json:"id" url:"id"`
+	InboxID  string                    `json:"inbox_id" url:"inbox_id"`
+	ThreadID string                    `json:"thread_id" url:"thread_id"`
+	// `inbound`: received by the inbox. `outbound`: sent from it.
+	Direction InboxMessageSummaryDirection `json:"direction" url:"direction"`
+	// `received` for inbound messages; an outbound message's email status (`queued`, `sent`, `failed`, …): its email has each recipient's delivery.
+	Status InboxMessageSummaryStatus `json:"status" url:"status"`
+	// The `From` header.
+	From    *string  `json:"from,omitempty" url:"from,omitempty"`
+	To      []string `json:"to" url:"to"`
+	Cc      []string `json:"cc" url:"cc"`
+	Subject *string  `json:"subject,omitempty" url:"subject,omitempty"`
+	// The start of the message's own text (without the quoted conversation).
+	Preview *string `json:"preview,omitempty" url:"preview,omitempty"`
+	// An inbound message's attachments (download them from the message).
+	Attachments []*ReceivedEmailAttachment `json:"attachments" url:"attachments"`
+	// Whether the receiving server judged it spam.
+	Spam bool `json:"spam" url:"spam"`
+	// The received email of an inbound message.
+	ReceivedEmailID *string `json:"received_email_id,omitempty" url:"received_email_id,omitempty"`
+	// The email of an outbound message: its delivery events and webhooks name it.
+	EmailID *string `json:"email_id,omitempty" url:"email_id,omitempty"`
+	// When it was received or sent.
+	CreatedAt time.Time `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxMessageSummary) GetObject() InboxMessageSummaryObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxMessageSummary) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxMessageSummary) GetInboxID() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxID
+}
+
+func (i *InboxMessageSummary) GetThreadID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ThreadID
+}
+
+func (i *InboxMessageSummary) GetDirection() InboxMessageSummaryDirection {
+	if i == nil {
+		return ""
+	}
+	return i.Direction
+}
+
+func (i *InboxMessageSummary) GetStatus() InboxMessageSummaryStatus {
+	if i == nil {
+		return ""
+	}
+	return i.Status
+}
+
+func (i *InboxMessageSummary) GetFrom() *string {
+	if i == nil {
+		return nil
+	}
+	return i.From
+}
+
+func (i *InboxMessageSummary) GetTo() []string {
+	if i == nil {
+		return nil
+	}
+	return i.To
+}
+
+func (i *InboxMessageSummary) GetCc() []string {
+	if i == nil {
+		return nil
+	}
+	return i.Cc
+}
+
+func (i *InboxMessageSummary) GetSubject() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Subject
+}
+
+func (i *InboxMessageSummary) GetPreview() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Preview
+}
+
+func (i *InboxMessageSummary) GetAttachments() []*ReceivedEmailAttachment {
+	if i == nil {
+		return nil
+	}
+	return i.Attachments
+}
+
+func (i *InboxMessageSummary) GetSpam() bool {
+	if i == nil {
+		return false
+	}
+	return i.Spam
+}
+
+func (i *InboxMessageSummary) GetReceivedEmailID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.ReceivedEmailID
+}
+
+func (i *InboxMessageSummary) GetEmailID() *string {
+	if i == nil {
+		return nil
+	}
+	return i.EmailID
+}
+
+func (i *InboxMessageSummary) GetCreatedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxMessageSummary) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxMessageSummary) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetObject(object InboxMessageSummaryObject) {
+	i.Object = object
+	i.require(inboxMessageSummaryFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetID(id string) {
+	i.ID = id
+	i.require(inboxMessageSummaryFieldID)
+}
+
+// SetInboxID sets the InboxID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetInboxID(inboxID string) {
+	i.InboxID = inboxID
+	i.require(inboxMessageSummaryFieldInboxID)
+}
+
+// SetThreadID sets the ThreadID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetThreadID(threadID string) {
+	i.ThreadID = threadID
+	i.require(inboxMessageSummaryFieldThreadID)
+}
+
+// SetDirection sets the Direction field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetDirection(direction InboxMessageSummaryDirection) {
+	i.Direction = direction
+	i.require(inboxMessageSummaryFieldDirection)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetStatus(status InboxMessageSummaryStatus) {
+	i.Status = status
+	i.require(inboxMessageSummaryFieldStatus)
+}
+
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetFrom(from *string) {
+	i.From = from
+	i.require(inboxMessageSummaryFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetTo(to []string) {
+	i.To = to
+	i.require(inboxMessageSummaryFieldTo)
+}
+
+// SetCc sets the Cc field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetCc(cc []string) {
+	i.Cc = cc
+	i.require(inboxMessageSummaryFieldCc)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetSubject(subject *string) {
+	i.Subject = subject
+	i.require(inboxMessageSummaryFieldSubject)
+}
+
+// SetPreview sets the Preview field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetPreview(preview *string) {
+	i.Preview = preview
+	i.require(inboxMessageSummaryFieldPreview)
+}
+
+// SetAttachments sets the Attachments field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetAttachments(attachments []*ReceivedEmailAttachment) {
+	i.Attachments = attachments
+	i.require(inboxMessageSummaryFieldAttachments)
+}
+
+// SetSpam sets the Spam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetSpam(spam bool) {
+	i.Spam = spam
+	i.require(inboxMessageSummaryFieldSpam)
+}
+
+// SetReceivedEmailID sets the ReceivedEmailID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetReceivedEmailID(receivedEmailID *string) {
+	i.ReceivedEmailID = receivedEmailID
+	i.require(inboxMessageSummaryFieldReceivedEmailID)
+}
+
+// SetEmailID sets the EmailID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetEmailID(emailID *string) {
+	i.EmailID = emailID
+	i.require(inboxMessageSummaryFieldEmailID)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageSummary) SetCreatedAt(createdAt time.Time) {
+	i.CreatedAt = createdAt
+	i.require(inboxMessageSummaryFieldCreatedAt)
+}
+
+func (i *InboxMessageSummary) UnmarshalJSON(data []byte) error {
+	type embed InboxMessageSummary
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxMessageSummary(unmarshaler.embed)
+	i.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxMessageSummaryNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxMessageSummary) MarshalJSON() ([]byte, error) {
+	type embed InboxMessageSummary
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*i),
+		CreatedAt: internal.NewDateTime(i.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxMessageSummary) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+// `inbound`: received by the inbox. `outbound`: sent from it.
+type InboxMessageSummaryDirection string
+
+const (
+	InboxMessageSummaryDirectionInbound  InboxMessageSummaryDirection = "inbound"
+	InboxMessageSummaryDirectionOutbound InboxMessageSummaryDirection = "outbound"
+)
+
+func NewInboxMessageSummaryDirectionFromString(s string) (InboxMessageSummaryDirection, error) {
+	switch s {
+	case "inbound":
+		return InboxMessageSummaryDirectionInbound, nil
+	case "outbound":
+		return InboxMessageSummaryDirectionOutbound, nil
+	}
+	var t InboxMessageSummaryDirection
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageSummaryDirection) Ptr() *InboxMessageSummaryDirection {
+	return &i
+}
+
+type InboxMessageSummaryObject string
+
+const (
+	InboxMessageSummaryObjectInboxMessage InboxMessageSummaryObject = "inbox_message"
+)
+
+func NewInboxMessageSummaryObjectFromString(s string) (InboxMessageSummaryObject, error) {
+	switch s {
+	case "inbox_message":
+		return InboxMessageSummaryObjectInboxMessage, nil
+	}
+	var t InboxMessageSummaryObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageSummaryObject) Ptr() *InboxMessageSummaryObject {
+	return &i
+}
+
+// `received` for inbound messages; an outbound message's email status (`queued`, `sent`, `failed`, …): its email has each recipient's delivery.
+type InboxMessageSummaryStatus string
+
+const (
+	InboxMessageSummaryStatusReceived  InboxMessageSummaryStatus = "received"
+	InboxMessageSummaryStatusQueued    InboxMessageSummaryStatus = "queued"
+	InboxMessageSummaryStatusSent      InboxMessageSummaryStatus = "sent"
+	InboxMessageSummaryStatusFailed    InboxMessageSummaryStatus = "failed"
+	InboxMessageSummaryStatusScheduled InboxMessageSummaryStatus = "scheduled"
+	InboxMessageSummaryStatusCanceled  InboxMessageSummaryStatus = "canceled"
+)
+
+func NewInboxMessageSummaryStatusFromString(s string) (InboxMessageSummaryStatus, error) {
+	switch s {
+	case "received":
+		return InboxMessageSummaryStatusReceived, nil
+	case "queued":
+		return InboxMessageSummaryStatusQueued, nil
+	case "sent":
+		return InboxMessageSummaryStatusSent, nil
+	case "failed":
+		return InboxMessageSummaryStatusFailed, nil
+	case "scheduled":
+		return InboxMessageSummaryStatusScheduled, nil
+	case "canceled":
+		return InboxMessageSummaryStatusCanceled, nil
+	}
+	var t InboxMessageSummaryStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageSummaryStatus) Ptr() *InboxMessageSummaryStatus {
+	return &i
+}
+
+var (
+	inboxThreadFieldObject        = big.NewInt(1 << 0)
+	inboxThreadFieldID            = big.NewInt(1 << 1)
+	inboxThreadFieldInboxID       = big.NewInt(1 << 2)
+	inboxThreadFieldSubject       = big.NewInt(1 << 3)
+	inboxThreadFieldParticipants  = big.NewInt(1 << 4)
+	inboxThreadFieldMessageCount  = big.NewInt(1 << 5)
+	inboxThreadFieldPreview       = big.NewInt(1 << 6)
+	inboxThreadFieldLastMessageAt = big.NewInt(1 << 7)
+	inboxThreadFieldLastInboundAt = big.NewInt(1 << 8)
+	inboxThreadFieldCreatedAt     = big.NewInt(1 << 9)
+	inboxThreadFieldMessages      = big.NewInt(1 << 10)
+)
+
+// inboxThreadNullableFields maps the wire names of InboxThread's nullable fields (required or optional) to their field bits.
+var inboxThreadNullableFields = map[string]*big.Int{
+	"subject":         inboxThreadFieldSubject,
+	"preview":         inboxThreadFieldPreview,
+	"last_inbound_at": inboxThreadFieldLastInboundAt,
+}
+
+type InboxThread struct {
+	Object  InboxThreadObject `json:"object" url:"object"`
+	ID      string            `json:"id" url:"id"`
+	InboxID string            `json:"inbox_id" url:"inbox_id"`
+	// The first message's subject.
+	Subject *string `json:"subject,omitempty" url:"subject,omitempty"`
+	// Addresses of everyone in the conversation but the inbox (Bcc'd ones never).
+	Participants []string `json:"participants" url:"participants"`
+	MessageCount int64    `json:"message_count" url:"message_count"`
+	// The start of the latest message.
+	Preview       *string   `json:"preview,omitempty" url:"preview,omitempty"`
+	LastMessageAt time.Time `json:"last_message_at" url:"last_message_at"`
+	// When its latest inbound message arrived: later than `last_message_at`'s outbound one means the conversation awaits a reply.
+	LastInboundAt *time.Time `json:"last_inbound_at,omitempty" url:"last_inbound_at,omitempty"`
+	CreatedAt     time.Time  `json:"created_at" url:"created_at"`
+	// The thread's messages, oldest first: its latest 50 (see `message_count`; list the inbox's messages for older ones).
+	Messages []*InboxMessage `json:"messages" url:"messages"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxThread) GetObject() InboxThreadObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxThread) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxThread) GetInboxID() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxID
+}
+
+func (i *InboxThread) GetSubject() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Subject
+}
+
+func (i *InboxThread) GetParticipants() []string {
+	if i == nil {
+		return nil
+	}
+	return i.Participants
+}
+
+func (i *InboxThread) GetMessageCount() int64 {
+	if i == nil {
+		return 0
+	}
+	return i.MessageCount
+}
+
+func (i *InboxThread) GetPreview() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Preview
+}
+
+func (i *InboxThread) GetLastMessageAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.LastMessageAt
+}
+
+func (i *InboxThread) GetLastInboundAt() *time.Time {
+	if i == nil {
+		return nil
+	}
+	return i.LastInboundAt
+}
+
+func (i *InboxThread) GetCreatedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxThread) GetMessages() []*InboxMessage {
+	if i == nil {
+		return nil
+	}
+	return i.Messages
+}
+
+func (i *InboxThread) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxThread) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetObject(object InboxThreadObject) {
+	i.Object = object
+	i.require(inboxThreadFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetID(id string) {
+	i.ID = id
+	i.require(inboxThreadFieldID)
+}
+
+// SetInboxID sets the InboxID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetInboxID(inboxID string) {
+	i.InboxID = inboxID
+	i.require(inboxThreadFieldInboxID)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetSubject(subject *string) {
+	i.Subject = subject
+	i.require(inboxThreadFieldSubject)
+}
+
+// SetParticipants sets the Participants field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetParticipants(participants []string) {
+	i.Participants = participants
+	i.require(inboxThreadFieldParticipants)
+}
+
+// SetMessageCount sets the MessageCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetMessageCount(messageCount int64) {
+	i.MessageCount = messageCount
+	i.require(inboxThreadFieldMessageCount)
+}
+
+// SetPreview sets the Preview field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetPreview(preview *string) {
+	i.Preview = preview
+	i.require(inboxThreadFieldPreview)
+}
+
+// SetLastMessageAt sets the LastMessageAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetLastMessageAt(lastMessageAt time.Time) {
+	i.LastMessageAt = lastMessageAt
+	i.require(inboxThreadFieldLastMessageAt)
+}
+
+// SetLastInboundAt sets the LastInboundAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetLastInboundAt(lastInboundAt *time.Time) {
+	i.LastInboundAt = lastInboundAt
+	i.require(inboxThreadFieldLastInboundAt)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetCreatedAt(createdAt time.Time) {
+	i.CreatedAt = createdAt
+	i.require(inboxThreadFieldCreatedAt)
+}
+
+// SetMessages sets the Messages field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThread) SetMessages(messages []*InboxMessage) {
+	i.Messages = messages
+	i.require(inboxThreadFieldMessages)
+}
+
+func (i *InboxThread) UnmarshalJSON(data []byte) error {
+	type embed InboxThread
+	var unmarshaler = struct {
+		embed
+		LastMessageAt *internal.DateTime `json:"last_message_at"`
+		LastInboundAt *internal.DateTime `json:"last_inbound_at,omitempty"`
+		CreatedAt     *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxThread(unmarshaler.embed)
+	i.LastMessageAt = unmarshaler.LastMessageAt.Time()
+	i.LastInboundAt = unmarshaler.LastInboundAt.TimePtr()
+	i.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxThreadNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxThread) MarshalJSON() ([]byte, error) {
+	type embed InboxThread
+	var marshaler = struct {
+		embed
+		LastMessageAt *internal.DateTime `json:"last_message_at"`
+		LastInboundAt *internal.DateTime `json:"last_inbound_at,omitempty"`
+		CreatedAt     *internal.DateTime `json:"created_at"`
+	}{
+		embed:         embed(*i),
+		LastMessageAt: internal.NewDateTime(i.LastMessageAt),
+		LastInboundAt: internal.NewOptionalDateTime(i.LastInboundAt),
+		CreatedAt:     internal.NewDateTime(i.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxThread) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+var (
+	inboxThreadListFieldObject  = big.NewInt(1 << 0)
+	inboxThreadListFieldData    = big.NewInt(1 << 1)
+	inboxThreadListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type InboxThreadList struct {
+	Object  InboxThreadListObject `json:"object" url:"object"`
+	Data    []*InboxThreadSummary `json:"data" url:"data"`
+	HasMore bool                  `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxThreadList) GetObject() InboxThreadListObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxThreadList) GetData() []*InboxThreadSummary {
+	if i == nil {
+		return nil
+	}
+	return i.Data
+}
+
+func (i *InboxThreadList) GetHasMore() bool {
+	if i == nil {
+		return false
+	}
+	return i.HasMore
+}
+
+func (i *InboxThreadList) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxThreadList) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadList) SetObject(object InboxThreadListObject) {
+	i.Object = object
+	i.require(inboxThreadListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadList) SetData(data []*InboxThreadSummary) {
+	i.Data = data
+	i.require(inboxThreadListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadList) SetHasMore(hasMore bool) {
+	i.HasMore = hasMore
+	i.require(inboxThreadListFieldHasMore)
+}
+
+func (i *InboxThreadList) UnmarshalJSON(data []byte) error {
+	type unmarshaler InboxThreadList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*i = InboxThreadList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxThreadList) MarshalJSON() ([]byte, error) {
+	type embed InboxThreadList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*i),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxThreadList) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+type InboxThreadListObject string
+
+const (
+	InboxThreadListObjectList InboxThreadListObject = "list"
+)
+
+func NewInboxThreadListObjectFromString(s string) (InboxThreadListObject, error) {
+	switch s {
+	case "list":
+		return InboxThreadListObjectList, nil
+	}
+	var t InboxThreadListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxThreadListObject) Ptr() *InboxThreadListObject {
+	return &i
+}
+
+type InboxThreadObject string
+
+const (
+	InboxThreadObjectInboxThread InboxThreadObject = "inbox_thread"
+)
+
+func NewInboxThreadObjectFromString(s string) (InboxThreadObject, error) {
+	switch s {
+	case "inbox_thread":
+		return InboxThreadObjectInboxThread, nil
+	}
+	var t InboxThreadObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxThreadObject) Ptr() *InboxThreadObject {
+	return &i
+}
+
+var (
+	inboxThreadSummaryFieldObject        = big.NewInt(1 << 0)
+	inboxThreadSummaryFieldID            = big.NewInt(1 << 1)
+	inboxThreadSummaryFieldInboxID       = big.NewInt(1 << 2)
+	inboxThreadSummaryFieldSubject       = big.NewInt(1 << 3)
+	inboxThreadSummaryFieldParticipants  = big.NewInt(1 << 4)
+	inboxThreadSummaryFieldMessageCount  = big.NewInt(1 << 5)
+	inboxThreadSummaryFieldPreview       = big.NewInt(1 << 6)
+	inboxThreadSummaryFieldLastMessageAt = big.NewInt(1 << 7)
+	inboxThreadSummaryFieldLastInboundAt = big.NewInt(1 << 8)
+	inboxThreadSummaryFieldCreatedAt     = big.NewInt(1 << 9)
+)
+
+// inboxThreadSummaryNullableFields maps the wire names of InboxThreadSummary's nullable fields (required or optional) to their field bits.
+var inboxThreadSummaryNullableFields = map[string]*big.Int{
+	"subject":         inboxThreadSummaryFieldSubject,
+	"preview":         inboxThreadSummaryFieldPreview,
+	"last_inbound_at": inboxThreadSummaryFieldLastInboundAt,
+}
+
+type InboxThreadSummary struct {
+	Object  InboxThreadSummaryObject `json:"object" url:"object"`
+	ID      string                   `json:"id" url:"id"`
+	InboxID string                   `json:"inbox_id" url:"inbox_id"`
+	// The first message's subject.
+	Subject *string `json:"subject,omitempty" url:"subject,omitempty"`
+	// Addresses of everyone in the conversation but the inbox (Bcc'd ones never).
+	Participants []string `json:"participants" url:"participants"`
+	MessageCount int64    `json:"message_count" url:"message_count"`
+	// The start of the latest message.
+	Preview       *string   `json:"preview,omitempty" url:"preview,omitempty"`
+	LastMessageAt time.Time `json:"last_message_at" url:"last_message_at"`
+	// When its latest inbound message arrived: later than `last_message_at`'s outbound one means the conversation awaits a reply.
+	LastInboundAt *time.Time `json:"last_inbound_at,omitempty" url:"last_inbound_at,omitempty"`
+	CreatedAt     time.Time  `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxThreadSummary) GetObject() InboxThreadSummaryObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxThreadSummary) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxThreadSummary) GetInboxID() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxID
+}
+
+func (i *InboxThreadSummary) GetSubject() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Subject
+}
+
+func (i *InboxThreadSummary) GetParticipants() []string {
+	if i == nil {
+		return nil
+	}
+	return i.Participants
+}
+
+func (i *InboxThreadSummary) GetMessageCount() int64 {
+	if i == nil {
+		return 0
+	}
+	return i.MessageCount
+}
+
+func (i *InboxThreadSummary) GetPreview() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Preview
+}
+
+func (i *InboxThreadSummary) GetLastMessageAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.LastMessageAt
+}
+
+func (i *InboxThreadSummary) GetLastInboundAt() *time.Time {
+	if i == nil {
+		return nil
+	}
+	return i.LastInboundAt
+}
+
+func (i *InboxThreadSummary) GetCreatedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxThreadSummary) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxThreadSummary) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetObject(object InboxThreadSummaryObject) {
+	i.Object = object
+	i.require(inboxThreadSummaryFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetID(id string) {
+	i.ID = id
+	i.require(inboxThreadSummaryFieldID)
+}
+
+// SetInboxID sets the InboxID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetInboxID(inboxID string) {
+	i.InboxID = inboxID
+	i.require(inboxThreadSummaryFieldInboxID)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetSubject(subject *string) {
+	i.Subject = subject
+	i.require(inboxThreadSummaryFieldSubject)
+}
+
+// SetParticipants sets the Participants field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetParticipants(participants []string) {
+	i.Participants = participants
+	i.require(inboxThreadSummaryFieldParticipants)
+}
+
+// SetMessageCount sets the MessageCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetMessageCount(messageCount int64) {
+	i.MessageCount = messageCount
+	i.require(inboxThreadSummaryFieldMessageCount)
+}
+
+// SetPreview sets the Preview field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetPreview(preview *string) {
+	i.Preview = preview
+	i.require(inboxThreadSummaryFieldPreview)
+}
+
+// SetLastMessageAt sets the LastMessageAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetLastMessageAt(lastMessageAt time.Time) {
+	i.LastMessageAt = lastMessageAt
+	i.require(inboxThreadSummaryFieldLastMessageAt)
+}
+
+// SetLastInboundAt sets the LastInboundAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetLastInboundAt(lastInboundAt *time.Time) {
+	i.LastInboundAt = lastInboundAt
+	i.require(inboxThreadSummaryFieldLastInboundAt)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxThreadSummary) SetCreatedAt(createdAt time.Time) {
+	i.CreatedAt = createdAt
+	i.require(inboxThreadSummaryFieldCreatedAt)
+}
+
+func (i *InboxThreadSummary) UnmarshalJSON(data []byte) error {
+	type embed InboxThreadSummary
+	var unmarshaler = struct {
+		embed
+		LastMessageAt *internal.DateTime `json:"last_message_at"`
+		LastInboundAt *internal.DateTime `json:"last_inbound_at,omitempty"`
+		CreatedAt     *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxThreadSummary(unmarshaler.embed)
+	i.LastMessageAt = unmarshaler.LastMessageAt.Time()
+	i.LastInboundAt = unmarshaler.LastInboundAt.TimePtr()
+	i.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxThreadSummaryNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxThreadSummary) MarshalJSON() ([]byte, error) {
+	type embed InboxThreadSummary
+	var marshaler = struct {
+		embed
+		LastMessageAt *internal.DateTime `json:"last_message_at"`
+		LastInboundAt *internal.DateTime `json:"last_inbound_at,omitempty"`
+		CreatedAt     *internal.DateTime `json:"created_at"`
+	}{
+		embed:         embed(*i),
+		LastMessageAt: internal.NewDateTime(i.LastMessageAt),
+		LastInboundAt: internal.NewOptionalDateTime(i.LastInboundAt),
+		CreatedAt:     internal.NewDateTime(i.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxThreadSummary) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+type InboxThreadSummaryObject string
+
+const (
+	InboxThreadSummaryObjectInboxThread InboxThreadSummaryObject = "inbox_thread"
+)
+
+func NewInboxThreadSummaryObjectFromString(s string) (InboxThreadSummaryObject, error) {
+	switch s {
+	case "inbox_thread":
+		return InboxThreadSummaryObjectInboxThread, nil
+	}
+	var t InboxThreadSummaryObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxThreadSummaryObject) Ptr() *InboxThreadSummaryObject {
+	return &i
+}
+
+var (
 	invoiceFieldObject           = big.NewInt(1 << 0)
 	invoiceFieldID               = big.NewInt(1 << 1)
 	invoiceFieldNumber           = big.NewInt(1 << 2)
@@ -24493,10 +28166,17 @@ type InvoiceLineMeter string
 const (
 	InvoiceLineMeterEmailRecipients         InvoiceLineMeter = "email.recipients"
 	InvoiceLineMeterEmailDedicatedIP        InvoiceLineMeter = "email.dedicated_ip"
+	InvoiceLineMeterEmailReceived           InvoiceLineMeter = "email.received"
+	InvoiceLineMeterEmailInboxes            InvoiceLineMeter = "email.inboxes"
 	InvoiceLineMeterSmsSegments             InvoiceLineMeter = "sms.segments"
 	InvoiceLineMeterSmsReceivedSegments     InvoiceLineMeter = "sms.received_segments"
 	InvoiceLineMeterSmsNumbers              InvoiceLineMeter = "sms.numbers"
 	InvoiceLineMeterSmsRegistrations        InvoiceLineMeter = "sms.registrations"
+	InvoiceLineMeterSignCompletedRequests   InvoiceLineMeter = "sign.completed_requests"
+	InvoiceLineMeterRiskPhoneChecks         InvoiceLineMeter = "risk.phone_checks"
+	InvoiceLineMeterVerifyVerifications     InvoiceLineMeter = "verify.verifications"
+	InvoiceLineMeterVerifySms               InvoiceLineMeter = "verify.sms"
+	InvoiceLineMeterFormsSubmissions        InvoiceLineMeter = "forms.submissions"
 	InvoiceLineMeterVideoParticipantMinutes InvoiceLineMeter = "video.participant_minutes"
 	InvoiceLineMeterSchedulingBookings      InvoiceLineMeter = "scheduling.bookings"
 )
@@ -24507,6 +28187,10 @@ func NewInvoiceLineMeterFromString(s string) (InvoiceLineMeter, error) {
 		return InvoiceLineMeterEmailRecipients, nil
 	case "email.dedicated_ip":
 		return InvoiceLineMeterEmailDedicatedIP, nil
+	case "email.received":
+		return InvoiceLineMeterEmailReceived, nil
+	case "email.inboxes":
+		return InvoiceLineMeterEmailInboxes, nil
 	case "sms.segments":
 		return InvoiceLineMeterSmsSegments, nil
 	case "sms.received_segments":
@@ -24515,6 +28199,16 @@ func NewInvoiceLineMeterFromString(s string) (InvoiceLineMeter, error) {
 		return InvoiceLineMeterSmsNumbers, nil
 	case "sms.registrations":
 		return InvoiceLineMeterSmsRegistrations, nil
+	case "sign.completed_requests":
+		return InvoiceLineMeterSignCompletedRequests, nil
+	case "risk.phone_checks":
+		return InvoiceLineMeterRiskPhoneChecks, nil
+	case "verify.verifications":
+		return InvoiceLineMeterVerifyVerifications, nil
+	case "verify.sms":
+		return InvoiceLineMeterVerifySms, nil
+	case "forms.submissions":
+		return InvoiceLineMeterFormsSubmissions, nil
 	case "video.participant_minutes":
 		return InvoiceLineMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -38922,6 +42616,5610 @@ func (s SegmentObject) Ptr() *SegmentObject {
 }
 
 var (
+	sendEmailAttachmentFieldFilename    = big.NewInt(1 << 0)
+	sendEmailAttachmentFieldContent     = big.NewInt(1 << 1)
+	sendEmailAttachmentFieldContentType = big.NewInt(1 << 2)
+	sendEmailAttachmentFieldContentID   = big.NewInt(1 << 3)
+)
+
+type SendEmailAttachment struct {
+	Filename string `json:"filename" url:"filename"`
+	// The file's bytes, base64-encoded.
+	Content string `json:"content" url:"content"`
+	// Defaults from the filename's extension.
+	ContentType *string `json:"content_type,omitempty" url:"content_type,omitempty"`
+	// Makes the attachment inline: reference it from `html` as `<img src="cid:logo@acme">`.
+	ContentID *string `json:"content_id,omitempty" url:"content_id,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SendEmailAttachment) GetFilename() string {
+	if s == nil {
+		return ""
+	}
+	return s.Filename
+}
+
+func (s *SendEmailAttachment) GetContent() string {
+	if s == nil {
+		return ""
+	}
+	return s.Content
+}
+
+func (s *SendEmailAttachment) GetContentType() *string {
+	if s == nil {
+		return nil
+	}
+	return s.ContentType
+}
+
+func (s *SendEmailAttachment) GetContentID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.ContentID
+}
+
+func (s *SendEmailAttachment) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SendEmailAttachment) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetFilename sets the Filename field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SendEmailAttachment) SetFilename(filename string) {
+	s.Filename = filename
+	s.require(sendEmailAttachmentFieldFilename)
+}
+
+// SetContent sets the Content field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SendEmailAttachment) SetContent(content string) {
+	s.Content = content
+	s.require(sendEmailAttachmentFieldContent)
+}
+
+// SetContentType sets the ContentType field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SendEmailAttachment) SetContentType(contentType *string) {
+	s.ContentType = contentType
+	s.require(sendEmailAttachmentFieldContentType)
+}
+
+// SetContentID sets the ContentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SendEmailAttachment) SetContentID(contentID *string) {
+	s.ContentID = contentID
+	s.require(sendEmailAttachmentFieldContentID)
+}
+
+func (s *SendEmailAttachment) UnmarshalJSON(data []byte) error {
+	type unmarshaler SendEmailAttachment
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SendEmailAttachment(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SendEmailAttachment) MarshalJSON() ([]byte, error) {
+	type embed SendEmailAttachment
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SendEmailAttachment) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signBuilderSessionFieldObject     = big.NewInt(1 << 0)
+	signBuilderSessionFieldID         = big.NewInt(1 << 1)
+	signBuilderSessionFieldTemplateID = big.NewInt(1 << 2)
+	signBuilderSessionFieldURL        = big.NewInt(1 << 3)
+	signBuilderSessionFieldToken      = big.NewInt(1 << 4)
+	signBuilderSessionFieldExpiresAt  = big.NewInt(1 << 5)
+)
+
+type SignBuilderSession struct {
+	Object     SignBuilderSessionObject `json:"object" url:"object"`
+	ID         string                   `json:"id" url:"id"`
+	TemplateID string                   `json:"template_id" url:"template_id"`
+	// The builder: embed it (from an allowed origin, `mountBuilder` from `coss/sign`) for whoever edits the template: they can upload documents, add roles and place fields. Show it only to them.
+	URL string `json:"url" url:"url"`
+	// The secret part of `url`, shown only here.
+	Token     string    `json:"token" url:"token"`
+	ExpiresAt time.Time `json:"expires_at" url:"expires_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignBuilderSession) GetObject() SignBuilderSessionObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignBuilderSession) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignBuilderSession) GetTemplateID() string {
+	if s == nil {
+		return ""
+	}
+	return s.TemplateID
+}
+
+func (s *SignBuilderSession) GetURL() string {
+	if s == nil {
+		return ""
+	}
+	return s.URL
+}
+
+func (s *SignBuilderSession) GetToken() string {
+	if s == nil {
+		return ""
+	}
+	return s.Token
+}
+
+func (s *SignBuilderSession) GetExpiresAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.ExpiresAt
+}
+
+func (s *SignBuilderSession) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignBuilderSession) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetObject(object SignBuilderSessionObject) {
+	s.Object = object
+	s.require(signBuilderSessionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetID(id string) {
+	s.ID = id
+	s.require(signBuilderSessionFieldID)
+}
+
+// SetTemplateID sets the TemplateID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetTemplateID(templateID string) {
+	s.TemplateID = templateID
+	s.require(signBuilderSessionFieldTemplateID)
+}
+
+// SetURL sets the URL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetURL(url string) {
+	s.URL = url
+	s.require(signBuilderSessionFieldURL)
+}
+
+// SetToken sets the Token field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetToken(token string) {
+	s.Token = token
+	s.require(signBuilderSessionFieldToken)
+}
+
+// SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignBuilderSession) SetExpiresAt(expiresAt time.Time) {
+	s.ExpiresAt = expiresAt
+	s.require(signBuilderSessionFieldExpiresAt)
+}
+
+func (s *SignBuilderSession) UnmarshalJSON(data []byte) error {
+	type embed SignBuilderSession
+	var unmarshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expires_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignBuilderSession(unmarshaler.embed)
+	s.ExpiresAt = unmarshaler.ExpiresAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignBuilderSession) MarshalJSON() ([]byte, error) {
+	type embed SignBuilderSession
+	var marshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expires_at"`
+	}{
+		embed:     embed(*s),
+		ExpiresAt: internal.NewDateTime(s.ExpiresAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignBuilderSession) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignBuilderSessionObject string
+
+const (
+	SignBuilderSessionObjectSignBuilderSession SignBuilderSessionObject = "sign_builder_session"
+)
+
+func NewSignBuilderSessionObjectFromString(s string) (SignBuilderSessionObject, error) {
+	switch s {
+	case "sign_builder_session":
+		return SignBuilderSessionObjectSignBuilderSession, nil
+	}
+	var t SignBuilderSessionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignBuilderSessionObject) Ptr() *SignBuilderSessionObject {
+	return &s
+}
+
+var (
+	signDocumentFieldObject    = big.NewInt(1 << 0)
+	signDocumentFieldID        = big.NewInt(1 << 1)
+	signDocumentFieldFilename  = big.NewInt(1 << 2)
+	signDocumentFieldSize      = big.NewInt(1 << 3)
+	signDocumentFieldSha256    = big.NewInt(1 << 4)
+	signDocumentFieldPageCount = big.NewInt(1 << 5)
+	signDocumentFieldPages     = big.NewInt(1 << 6)
+	signDocumentFieldAnchors   = big.NewInt(1 << 7)
+	signDocumentFieldSandbox   = big.NewInt(1 << 8)
+	signDocumentFieldCreatedAt = big.NewInt(1 << 9)
+)
+
+type SignDocument struct {
+	Object   SignDocumentObject `json:"object" url:"object"`
+	ID       string             `json:"id" url:"id"`
+	Filename string             `json:"filename" url:"filename"`
+	// Bytes.
+	Size int64 `json:"size" url:"size"`
+	// Hex SHA-256 of the uploaded bytes.
+	Sha256    string `json:"sha256" url:"sha256"`
+	PageCount int64  `json:"page_count" url:"page_count"`
+	// Each page's size, in order.
+	Pages []*SignDocumentPagesItem `json:"pages" url:"pages"`
+	// Text anchors (`{{signature:signer_1}}`) found in the document, which fields can be placed by.
+	Anchors   []*SignDocumentAnchorsItem `json:"anchors" url:"anchors"`
+	Sandbox   bool                       `json:"sandbox" url:"sandbox"`
+	CreatedAt time.Time                  `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignDocument) GetObject() SignDocumentObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignDocument) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignDocument) GetFilename() string {
+	if s == nil {
+		return ""
+	}
+	return s.Filename
+}
+
+func (s *SignDocument) GetSize() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Size
+}
+
+func (s *SignDocument) GetSha256() string {
+	if s == nil {
+		return ""
+	}
+	return s.Sha256
+}
+
+func (s *SignDocument) GetPageCount() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.PageCount
+}
+
+func (s *SignDocument) GetPages() []*SignDocumentPagesItem {
+	if s == nil {
+		return nil
+	}
+	return s.Pages
+}
+
+func (s *SignDocument) GetAnchors() []*SignDocumentAnchorsItem {
+	if s == nil {
+		return nil
+	}
+	return s.Anchors
+}
+
+func (s *SignDocument) GetSandbox() bool {
+	if s == nil {
+		return false
+	}
+	return s.Sandbox
+}
+
+func (s *SignDocument) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SignDocument) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignDocument) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetObject(object SignDocumentObject) {
+	s.Object = object
+	s.require(signDocumentFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetID(id string) {
+	s.ID = id
+	s.require(signDocumentFieldID)
+}
+
+// SetFilename sets the Filename field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetFilename(filename string) {
+	s.Filename = filename
+	s.require(signDocumentFieldFilename)
+}
+
+// SetSize sets the Size field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetSize(size int64) {
+	s.Size = size
+	s.require(signDocumentFieldSize)
+}
+
+// SetSha256 sets the Sha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetSha256(sha256 string) {
+	s.Sha256 = sha256
+	s.require(signDocumentFieldSha256)
+}
+
+// SetPageCount sets the PageCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetPageCount(pageCount int64) {
+	s.PageCount = pageCount
+	s.require(signDocumentFieldPageCount)
+}
+
+// SetPages sets the Pages field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetPages(pages []*SignDocumentPagesItem) {
+	s.Pages = pages
+	s.require(signDocumentFieldPages)
+}
+
+// SetAnchors sets the Anchors field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetAnchors(anchors []*SignDocumentAnchorsItem) {
+	s.Anchors = anchors
+	s.require(signDocumentFieldAnchors)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetSandbox(sandbox bool) {
+	s.Sandbox = sandbox
+	s.require(signDocumentFieldSandbox)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocument) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(signDocumentFieldCreatedAt)
+}
+
+func (s *SignDocument) UnmarshalJSON(data []byte) error {
+	type embed SignDocument
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignDocument(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignDocument) MarshalJSON() ([]byte, error) {
+	type embed SignDocument
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignDocument) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signDocumentAnchorsItemFieldText   = big.NewInt(1 << 0)
+	signDocumentAnchorsItemFieldPage   = big.NewInt(1 << 1)
+	signDocumentAnchorsItemFieldX      = big.NewInt(1 << 2)
+	signDocumentAnchorsItemFieldY      = big.NewInt(1 << 3)
+	signDocumentAnchorsItemFieldWidth  = big.NewInt(1 << 4)
+	signDocumentAnchorsItemFieldHeight = big.NewInt(1 << 5)
+)
+
+// A text anchor found in the document, in points from the page's top left.
+type SignDocumentAnchorsItem struct {
+	Text   string  `json:"text" url:"text"`
+	Page   int64   `json:"page" url:"page"`
+	X      float64 `json:"x" url:"x"`
+	Y      float64 `json:"y" url:"y"`
+	Width  float64 `json:"width" url:"width"`
+	Height float64 `json:"height" url:"height"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignDocumentAnchorsItem) GetText() string {
+	if s == nil {
+		return ""
+	}
+	return s.Text
+}
+
+func (s *SignDocumentAnchorsItem) GetPage() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Page
+}
+
+func (s *SignDocumentAnchorsItem) GetX() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.X
+}
+
+func (s *SignDocumentAnchorsItem) GetY() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Y
+}
+
+func (s *SignDocumentAnchorsItem) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignDocumentAnchorsItem) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignDocumentAnchorsItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignDocumentAnchorsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetText sets the Text field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetText(text string) {
+	s.Text = text
+	s.require(signDocumentAnchorsItemFieldText)
+}
+
+// SetPage sets the Page field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetPage(page int64) {
+	s.Page = page
+	s.require(signDocumentAnchorsItemFieldPage)
+}
+
+// SetX sets the X field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetX(x float64) {
+	s.X = x
+	s.require(signDocumentAnchorsItemFieldX)
+}
+
+// SetY sets the Y field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetY(y float64) {
+	s.Y = y
+	s.require(signDocumentAnchorsItemFieldY)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetWidth(width float64) {
+	s.Width = width
+	s.require(signDocumentAnchorsItemFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentAnchorsItem) SetHeight(height float64) {
+	s.Height = height
+	s.require(signDocumentAnchorsItemFieldHeight)
+}
+
+func (s *SignDocumentAnchorsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignDocumentAnchorsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignDocumentAnchorsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignDocumentAnchorsItem) MarshalJSON() ([]byte, error) {
+	type embed SignDocumentAnchorsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignDocumentAnchorsItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signDocumentListFieldObject  = big.NewInt(1 << 0)
+	signDocumentListFieldData    = big.NewInt(1 << 1)
+	signDocumentListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SignDocumentList struct {
+	Object  SignDocumentListObject `json:"object" url:"object"`
+	Data    []*SignDocument        `json:"data" url:"data"`
+	HasMore bool                   `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignDocumentList) GetObject() SignDocumentListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignDocumentList) GetData() []*SignDocument {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SignDocumentList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SignDocumentList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignDocumentList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentList) SetObject(object SignDocumentListObject) {
+	s.Object = object
+	s.require(signDocumentListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentList) SetData(data []*SignDocument) {
+	s.Data = data
+	s.require(signDocumentListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(signDocumentListFieldHasMore)
+}
+
+func (s *SignDocumentList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignDocumentList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignDocumentList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignDocumentList) MarshalJSON() ([]byte, error) {
+	type embed SignDocumentList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignDocumentList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignDocumentListObject string
+
+const (
+	SignDocumentListObjectList SignDocumentListObject = "list"
+)
+
+func NewSignDocumentListObjectFromString(s string) (SignDocumentListObject, error) {
+	switch s {
+	case "list":
+		return SignDocumentListObjectList, nil
+	}
+	var t SignDocumentListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignDocumentListObject) Ptr() *SignDocumentListObject {
+	return &s
+}
+
+type SignDocumentObject string
+
+const (
+	SignDocumentObjectSignDocument SignDocumentObject = "sign_document"
+)
+
+func NewSignDocumentObjectFromString(s string) (SignDocumentObject, error) {
+	switch s {
+	case "sign_document":
+		return SignDocumentObjectSignDocument, nil
+	}
+	var t SignDocumentObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignDocumentObject) Ptr() *SignDocumentObject {
+	return &s
+}
+
+var (
+	signDocumentPagesItemFieldWidth  = big.NewInt(1 << 0)
+	signDocumentPagesItemFieldHeight = big.NewInt(1 << 1)
+)
+
+type SignDocumentPagesItem struct {
+	// In PDF points (1/72 inch).
+	Width  float64 `json:"width" url:"width"`
+	Height float64 `json:"height" url:"height"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignDocumentPagesItem) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignDocumentPagesItem) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignDocumentPagesItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignDocumentPagesItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentPagesItem) SetWidth(width float64) {
+	s.Width = width
+	s.require(signDocumentPagesItemFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignDocumentPagesItem) SetHeight(height float64) {
+	s.Height = height
+	s.require(signDocumentPagesItemFieldHeight)
+}
+
+func (s *SignDocumentPagesItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignDocumentPagesItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignDocumentPagesItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignDocumentPagesItem) MarshalJSON() ([]byte, error) {
+	type embed SignDocumentPagesItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignDocumentPagesItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signEventFieldObject       = big.NewInt(1 << 0)
+	signEventFieldID           = big.NewInt(1 << 1)
+	signEventFieldSequence     = big.NewInt(1 << 2)
+	signEventFieldType         = big.NewInt(1 << 3)
+	signEventFieldSignerID     = big.NewInt(1 << 4)
+	signEventFieldActor        = big.NewInt(1 << 5)
+	signEventFieldIPAddress    = big.NewInt(1 << 6)
+	signEventFieldUserAgent    = big.NewInt(1 << 7)
+	signEventFieldDetails      = big.NewInt(1 << 8)
+	signEventFieldOccurredAt   = big.NewInt(1 << 9)
+	signEventFieldPreviousHash = big.NewInt(1 << 10)
+	signEventFieldHash         = big.NewInt(1 << 11)
+)
+
+// signEventNullableFields maps the wire names of SignEvent's nullable fields (required or optional) to their field bits.
+var signEventNullableFields = map[string]*big.Int{
+	"signer_id":     signEventFieldSignerID,
+	"ip_address":    signEventFieldIPAddress,
+	"user_agent":    signEventFieldUserAgent,
+	"previous_hash": signEventFieldPreviousHash,
+}
+
+type SignEvent struct {
+	Object SignEventObject `json:"object" url:"object"`
+	ID     string          `json:"id" url:"id"`
+	// 1-based position in the request's trail.
+	Sequence int64         `json:"sequence" url:"sequence"`
+	Type     SignEventType `json:"type" url:"type"`
+	SignerID *string       `json:"signer_id,omitempty" url:"signer_id,omitempty"`
+	// Who did it: your API key, a signer, a member in the dashboard, or coss.com.
+	Actor        SignEventActor    `json:"actor" url:"actor"`
+	IPAddress    *string           `json:"ip_address,omitempty" url:"ip_address,omitempty"`
+	UserAgent    *string           `json:"user_agent,omitempty" url:"user_agent,omitempty"`
+	Details      *SignEventDetails `json:"details" url:"details"`
+	OccurredAt   time.Time         `json:"occurred_at" url:"occurred_at"`
+	PreviousHash *string           `json:"previous_hash,omitempty" url:"previous_hash,omitempty"`
+	// SHA-256 over this event and `previous_hash`: changing or removing an event breaks the chain from there on.
+	Hash string `json:"hash" url:"hash"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignEvent) GetObject() SignEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignEvent) GetSequence() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Sequence
+}
+
+func (s *SignEvent) GetType() SignEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignEvent) GetSignerID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SignerID
+}
+
+func (s *SignEvent) GetActor() SignEventActor {
+	if s == nil {
+		return ""
+	}
+	return s.Actor
+}
+
+func (s *SignEvent) GetIPAddress() *string {
+	if s == nil {
+		return nil
+	}
+	return s.IPAddress
+}
+
+func (s *SignEvent) GetUserAgent() *string {
+	if s == nil {
+		return nil
+	}
+	return s.UserAgent
+}
+
+func (s *SignEvent) GetDetails() *SignEventDetails {
+	if s == nil {
+		return nil
+	}
+	return s.Details
+}
+
+func (s *SignEvent) GetOccurredAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.OccurredAt
+}
+
+func (s *SignEvent) GetPreviousHash() *string {
+	if s == nil {
+		return nil
+	}
+	return s.PreviousHash
+}
+
+func (s *SignEvent) GetHash() string {
+	if s == nil {
+		return ""
+	}
+	return s.Hash
+}
+
+func (s *SignEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetObject(object SignEventObject) {
+	s.Object = object
+	s.require(signEventFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetID(id string) {
+	s.ID = id
+	s.require(signEventFieldID)
+}
+
+// SetSequence sets the Sequence field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetSequence(sequence int64) {
+	s.Sequence = sequence
+	s.require(signEventFieldSequence)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetType(type_ SignEventType) {
+	s.Type = type_
+	s.require(signEventFieldType)
+}
+
+// SetSignerID sets the SignerID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetSignerID(signerID *string) {
+	s.SignerID = signerID
+	s.require(signEventFieldSignerID)
+}
+
+// SetActor sets the Actor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetActor(actor SignEventActor) {
+	s.Actor = actor
+	s.require(signEventFieldActor)
+}
+
+// SetIPAddress sets the IPAddress field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetIPAddress(ipAddress *string) {
+	s.IPAddress = ipAddress
+	s.require(signEventFieldIPAddress)
+}
+
+// SetUserAgent sets the UserAgent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetUserAgent(userAgent *string) {
+	s.UserAgent = userAgent
+	s.require(signEventFieldUserAgent)
+}
+
+// SetDetails sets the Details field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetDetails(details *SignEventDetails) {
+	s.Details = details
+	s.require(signEventFieldDetails)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetOccurredAt(occurredAt time.Time) {
+	s.OccurredAt = occurredAt
+	s.require(signEventFieldOccurredAt)
+}
+
+// SetPreviousHash sets the PreviousHash field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetPreviousHash(previousHash *string) {
+	s.PreviousHash = previousHash
+	s.require(signEventFieldPreviousHash)
+}
+
+// SetHash sets the Hash field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEvent) SetHash(hash string) {
+	s.Hash = hash
+	s.require(signEventFieldHash)
+}
+
+func (s *SignEvent) UnmarshalJSON(data []byte) error {
+	type embed SignEvent
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignEvent(unmarshaler.embed)
+	s.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signEventNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignEvent) MarshalJSON() ([]byte, error) {
+	type embed SignEvent
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*s),
+		OccurredAt: internal.NewDateTime(s.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// Who did it: your API key, a signer, a member in the dashboard, or coss.com.
+type SignEventActor string
+
+const (
+	SignEventActorAPIKey    SignEventActor = "api_key"
+	SignEventActorSigner    SignEventActor = "signer"
+	SignEventActorDashboard SignEventActor = "dashboard"
+	SignEventActorSystem    SignEventActor = "system"
+)
+
+func NewSignEventActorFromString(s string) (SignEventActor, error) {
+	switch s {
+	case "api_key":
+		return SignEventActorAPIKey, nil
+	case "signer":
+		return SignEventActorSigner, nil
+	case "dashboard":
+		return SignEventActorDashboard, nil
+	case "system":
+		return SignEventActorSystem, nil
+	}
+	var t SignEventActor
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignEventActor) Ptr() *SignEventActor {
+	return &s
+}
+
+var (
+	signEventDetailsFieldReason               = big.NewInt(1 << 0)
+	signEventDetailsFieldDocumentSha256       = big.NewInt(1 << 1)
+	signEventDetailsFieldDisclosureSha256     = big.NewInt(1 << 2)
+	signEventDetailsFieldFieldIDs             = big.NewInt(1 << 3)
+	signEventDetailsFieldSignatureSha256      = big.NewInt(1 << 4)
+	signEventDetailsFieldInitialsSha256       = big.NewInt(1 << 5)
+	signEventDetailsFieldSessionID            = big.NewInt(1 << 6)
+	signEventDetailsFieldSignedDocumentSha256 = big.NewInt(1 << 7)
+)
+
+type SignEventDetails struct {
+	Reason *string `json:"reason,omitempty" url:"reason,omitempty"`
+	// Each document's SHA-256 at that moment, by document id.
+	DocumentSha256 map[string]string `json:"document_sha256,omitempty" url:"document_sha256,omitempty"`
+	// SHA-256 of the consent text the signer accepted.
+	DisclosureSha256 *string  `json:"disclosure_sha256,omitempty" url:"disclosure_sha256,omitempty"`
+	FieldIDs         []string `json:"field_ids,omitempty" url:"field_ids,omitempty"`
+	// SHA-256 of the signature image the signer adopted.
+	SignatureSha256 *string `json:"signature_sha256,omitempty" url:"signature_sha256,omitempty"`
+	InitialsSha256  *string `json:"initials_sha256,omitempty" url:"initials_sha256,omitempty"`
+	// The signing session the signer used.
+	SessionID *string `json:"session_id,omitempty" url:"session_id,omitempty"`
+	// `sealed`: the SHA-256 of the sealed, completed document.
+	SignedDocumentSha256 *string `json:"signed_document_sha256,omitempty" url:"signed_document_sha256,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignEventDetails) GetReason() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Reason
+}
+
+func (s *SignEventDetails) GetDocumentSha256() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.DocumentSha256
+}
+
+func (s *SignEventDetails) GetDisclosureSha256() *string {
+	if s == nil {
+		return nil
+	}
+	return s.DisclosureSha256
+}
+
+func (s *SignEventDetails) GetFieldIDs() []string {
+	if s == nil {
+		return nil
+	}
+	return s.FieldIDs
+}
+
+func (s *SignEventDetails) GetSignatureSha256() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SignatureSha256
+}
+
+func (s *SignEventDetails) GetInitialsSha256() *string {
+	if s == nil {
+		return nil
+	}
+	return s.InitialsSha256
+}
+
+func (s *SignEventDetails) GetSessionID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SessionID
+}
+
+func (s *SignEventDetails) GetSignedDocumentSha256() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SignedDocumentSha256
+}
+
+func (s *SignEventDetails) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignEventDetails) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetReason(reason *string) {
+	s.Reason = reason
+	s.require(signEventDetailsFieldReason)
+}
+
+// SetDocumentSha256 sets the DocumentSha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetDocumentSha256(documentSha256 map[string]string) {
+	s.DocumentSha256 = documentSha256
+	s.require(signEventDetailsFieldDocumentSha256)
+}
+
+// SetDisclosureSha256 sets the DisclosureSha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetDisclosureSha256(disclosureSha256 *string) {
+	s.DisclosureSha256 = disclosureSha256
+	s.require(signEventDetailsFieldDisclosureSha256)
+}
+
+// SetFieldIDs sets the FieldIDs field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetFieldIDs(fieldIDs []string) {
+	s.FieldIDs = fieldIDs
+	s.require(signEventDetailsFieldFieldIDs)
+}
+
+// SetSignatureSha256 sets the SignatureSha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetSignatureSha256(signatureSha256 *string) {
+	s.SignatureSha256 = signatureSha256
+	s.require(signEventDetailsFieldSignatureSha256)
+}
+
+// SetInitialsSha256 sets the InitialsSha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetInitialsSha256(initialsSha256 *string) {
+	s.InitialsSha256 = initialsSha256
+	s.require(signEventDetailsFieldInitialsSha256)
+}
+
+// SetSessionID sets the SessionID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetSessionID(sessionID *string) {
+	s.SessionID = sessionID
+	s.require(signEventDetailsFieldSessionID)
+}
+
+// SetSignedDocumentSha256 sets the SignedDocumentSha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventDetails) SetSignedDocumentSha256(signedDocumentSha256 *string) {
+	s.SignedDocumentSha256 = signedDocumentSha256
+	s.require(signEventDetailsFieldSignedDocumentSha256)
+}
+
+func (s *SignEventDetails) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignEventDetails
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignEventDetails(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignEventDetails) MarshalJSON() ([]byte, error) {
+	type embed SignEventDetails
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignEventDetails) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signEventListFieldObject  = big.NewInt(1 << 0)
+	signEventListFieldData    = big.NewInt(1 << 1)
+	signEventListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SignEventList struct {
+	Object  SignEventListObject `json:"object" url:"object"`
+	Data    []*SignEvent        `json:"data" url:"data"`
+	HasMore bool                `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignEventList) GetObject() SignEventListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignEventList) GetData() []*SignEvent {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SignEventList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SignEventList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignEventList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventList) SetObject(object SignEventListObject) {
+	s.Object = object
+	s.require(signEventListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventList) SetData(data []*SignEvent) {
+	s.Data = data
+	s.require(signEventListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignEventList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(signEventListFieldHasMore)
+}
+
+func (s *SignEventList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignEventList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignEventList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignEventList) MarshalJSON() ([]byte, error) {
+	type embed SignEventList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignEventList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignEventListObject string
+
+const (
+	SignEventListObjectList SignEventListObject = "list"
+)
+
+func NewSignEventListObjectFromString(s string) (SignEventListObject, error) {
+	switch s {
+	case "list":
+		return SignEventListObjectList, nil
+	}
+	var t SignEventListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignEventListObject) Ptr() *SignEventListObject {
+	return &s
+}
+
+type SignEventObject string
+
+const (
+	SignEventObjectSignEvent SignEventObject = "sign_event"
+)
+
+func NewSignEventObjectFromString(s string) (SignEventObject, error) {
+	switch s {
+	case "sign_event":
+		return SignEventObjectSignEvent, nil
+	}
+	var t SignEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignEventObject) Ptr() *SignEventObject {
+	return &s
+}
+
+type SignEventType string
+
+const (
+	SignEventTypeCreated   SignEventType = "created"
+	SignEventTypeSent      SignEventType = "sent"
+	SignEventTypeNotified  SignEventType = "notified"
+	SignEventTypeViewed    SignEventType = "viewed"
+	SignEventTypeConsented SignEventType = "consented"
+	SignEventTypeSigned    SignEventType = "signed"
+	SignEventTypeDeclined  SignEventType = "declined"
+	SignEventTypeReminded  SignEventType = "reminded"
+	SignEventTypeCanceled  SignEventType = "canceled"
+	SignEventTypeExpired   SignEventType = "expired"
+	SignEventTypeCompleted SignEventType = "completed"
+	SignEventTypeSealed    SignEventType = "sealed"
+)
+
+func NewSignEventTypeFromString(s string) (SignEventType, error) {
+	switch s {
+	case "created":
+		return SignEventTypeCreated, nil
+	case "sent":
+		return SignEventTypeSent, nil
+	case "notified":
+		return SignEventTypeNotified, nil
+	case "viewed":
+		return SignEventTypeViewed, nil
+	case "consented":
+		return SignEventTypeConsented, nil
+	case "signed":
+		return SignEventTypeSigned, nil
+	case "declined":
+		return SignEventTypeDeclined, nil
+	case "reminded":
+		return SignEventTypeReminded, nil
+	case "canceled":
+		return SignEventTypeCanceled, nil
+	case "expired":
+		return SignEventTypeExpired, nil
+	case "completed":
+		return SignEventTypeCompleted, nil
+	case "sealed":
+		return SignEventTypeSealed, nil
+	}
+	var t SignEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignEventType) Ptr() *SignEventType {
+	return &s
+}
+
+var (
+	signFieldFieldObject     = big.NewInt(1 << 0)
+	signFieldFieldID         = big.NewInt(1 << 1)
+	signFieldFieldSignerID   = big.NewInt(1 << 2)
+	signFieldFieldDocumentID = big.NewInt(1 << 3)
+	signFieldFieldType       = big.NewInt(1 << 4)
+	signFieldFieldPage       = big.NewInt(1 << 5)
+	signFieldFieldX          = big.NewInt(1 << 6)
+	signFieldFieldY          = big.NewInt(1 << 7)
+	signFieldFieldWidth      = big.NewInt(1 << 8)
+	signFieldFieldHeight     = big.NewInt(1 << 9)
+	signFieldFieldRequired   = big.NewInt(1 << 10)
+	signFieldFieldLabel      = big.NewInt(1 << 11)
+	signFieldFieldAnchor     = big.NewInt(1 << 12)
+)
+
+// signFieldNullableFields maps the wire names of SignField's nullable fields (required or optional) to their field bits.
+var signFieldNullableFields = map[string]*big.Int{
+	"label":  signFieldFieldLabel,
+	"anchor": signFieldFieldAnchor,
+}
+
+type SignField struct {
+	Object     SignFieldObject `json:"object" url:"object"`
+	ID         string          `json:"id" url:"id"`
+	SignerID   string          `json:"signer_id" url:"signer_id"`
+	DocumentID string          `json:"document_id" url:"document_id"`
+	Type       SignFieldType   `json:"type" url:"type"`
+	Page       int64           `json:"page" url:"page"`
+	X          float64         `json:"x" url:"x"`
+	Y          float64         `json:"y" url:"y"`
+	Width      float64         `json:"width" url:"width"`
+	Height     float64         `json:"height" url:"height"`
+	Required   bool            `json:"required" url:"required"`
+	Label      *string         `json:"label,omitempty" url:"label,omitempty"`
+	Anchor     *string         `json:"anchor,omitempty" url:"anchor,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignField) GetObject() SignFieldObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignField) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignField) GetSignerID() string {
+	if s == nil {
+		return ""
+	}
+	return s.SignerID
+}
+
+func (s *SignField) GetDocumentID() string {
+	if s == nil {
+		return ""
+	}
+	return s.DocumentID
+}
+
+func (s *SignField) GetType() SignFieldType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignField) GetPage() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Page
+}
+
+func (s *SignField) GetX() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.X
+}
+
+func (s *SignField) GetY() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Y
+}
+
+func (s *SignField) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignField) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignField) GetRequired() bool {
+	if s == nil {
+		return false
+	}
+	return s.Required
+}
+
+func (s *SignField) GetLabel() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Label
+}
+
+func (s *SignField) GetAnchor() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Anchor
+}
+
+func (s *SignField) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignField) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetObject(object SignFieldObject) {
+	s.Object = object
+	s.require(signFieldFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetID(id string) {
+	s.ID = id
+	s.require(signFieldFieldID)
+}
+
+// SetSignerID sets the SignerID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetSignerID(signerID string) {
+	s.SignerID = signerID
+	s.require(signFieldFieldSignerID)
+}
+
+// SetDocumentID sets the DocumentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetDocumentID(documentID string) {
+	s.DocumentID = documentID
+	s.require(signFieldFieldDocumentID)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetType(type_ SignFieldType) {
+	s.Type = type_
+	s.require(signFieldFieldType)
+}
+
+// SetPage sets the Page field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetPage(page int64) {
+	s.Page = page
+	s.require(signFieldFieldPage)
+}
+
+// SetX sets the X field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetX(x float64) {
+	s.X = x
+	s.require(signFieldFieldX)
+}
+
+// SetY sets the Y field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetY(y float64) {
+	s.Y = y
+	s.require(signFieldFieldY)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetWidth(width float64) {
+	s.Width = width
+	s.require(signFieldFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetHeight(height float64) {
+	s.Height = height
+	s.require(signFieldFieldHeight)
+}
+
+// SetRequired sets the Required field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetRequired(required bool) {
+	s.Required = required
+	s.require(signFieldFieldRequired)
+}
+
+// SetLabel sets the Label field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetLabel(label *string) {
+	s.Label = label
+	s.require(signFieldFieldLabel)
+}
+
+// SetAnchor sets the Anchor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignField) SetAnchor(anchor *string) {
+	s.Anchor = anchor
+	s.require(signFieldFieldAnchor)
+}
+
+func (s *SignField) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignField
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignField(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signFieldNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignField) MarshalJSON() ([]byte, error) {
+	type embed SignField
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignField) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignFieldInput struct {
+	SignFieldInputDocument *SignFieldInputDocument
+	SignFieldInputAnchor   *SignFieldInputAnchor
+
+	typ string
+}
+
+func (s *SignFieldInput) GetSignFieldInputDocument() *SignFieldInputDocument {
+	if s == nil {
+		return nil
+	}
+	return s.SignFieldInputDocument
+}
+
+func (s *SignFieldInput) GetSignFieldInputAnchor() *SignFieldInputAnchor {
+	if s == nil {
+		return nil
+	}
+	return s.SignFieldInputAnchor
+}
+
+func (s *SignFieldInput) UnmarshalJSON(data []byte) error {
+	if internal.MatchesObjectKeys(data, []string{"type", "required", "label", "document", "page", "x", "y", "width", "height"}, []string{"type", "page", "x", "y", "width", "height"}) {
+		valueSignFieldInputDocument := new(SignFieldInputDocument)
+		if err := json.Unmarshal(data, &valueSignFieldInputDocument); err == nil {
+			s.typ = "SignFieldInputDocument"
+			s.SignFieldInputDocument = valueSignFieldInputDocument
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"type", "required", "label", "anchor", "width", "height", "offset_x", "offset_y"}, []string{"type", "anchor"}) {
+		valueSignFieldInputAnchor := new(SignFieldInputAnchor)
+		if err := json.Unmarshal(data, &valueSignFieldInputAnchor); err == nil {
+			s.typ = "SignFieldInputAnchor"
+			s.SignFieldInputAnchor = valueSignFieldInputAnchor
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"type", "page", "x", "y", "width", "height"}) {
+		valueSignFieldInputDocument := new(SignFieldInputDocument)
+		if err := json.Unmarshal(data, &valueSignFieldInputDocument); err == nil {
+			s.typ = "SignFieldInputDocument"
+			s.SignFieldInputDocument = valueSignFieldInputDocument
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"type", "anchor"}) {
+		valueSignFieldInputAnchor := new(SignFieldInputAnchor)
+		if err := json.Unmarshal(data, &valueSignFieldInputAnchor); err == nil {
+			s.typ = "SignFieldInputAnchor"
+			s.SignFieldInputAnchor = valueSignFieldInputAnchor
+			return nil
+		}
+	}
+	valueSignFieldInputDocument := new(SignFieldInputDocument)
+	if err := json.Unmarshal(data, &valueSignFieldInputDocument); err == nil {
+		s.typ = "SignFieldInputDocument"
+		s.SignFieldInputDocument = valueSignFieldInputDocument
+		return nil
+	}
+	valueSignFieldInputAnchor := new(SignFieldInputAnchor)
+	if err := json.Unmarshal(data, &valueSignFieldInputAnchor); err == nil {
+		s.typ = "SignFieldInputAnchor"
+		s.SignFieldInputAnchor = valueSignFieldInputAnchor
+		return nil
+	}
+	return fmt.Errorf("%s cannot be deserialized as a %T", data, s)
+}
+
+func (s SignFieldInput) MarshalJSON() ([]byte, error) {
+	if s.typ == "SignFieldInputDocument" || s.SignFieldInputDocument != nil {
+		return json.Marshal(s.SignFieldInputDocument)
+	}
+	if s.typ == "SignFieldInputAnchor" || s.SignFieldInputAnchor != nil {
+		return json.Marshal(s.SignFieldInputAnchor)
+	}
+	return nil, fmt.Errorf("type %T does not include a non-empty union type", s)
+}
+
+type SignFieldInputVisitor interface {
+	VisitSignFieldInputDocument(*SignFieldInputDocument) error
+	VisitSignFieldInputAnchor(*SignFieldInputAnchor) error
+}
+
+func (s *SignFieldInput) Accept(visitor SignFieldInputVisitor) error {
+	if s.typ == "SignFieldInputDocument" || s.SignFieldInputDocument != nil {
+		return visitor.VisitSignFieldInputDocument(s.SignFieldInputDocument)
+	}
+	if s.typ == "SignFieldInputAnchor" || s.SignFieldInputAnchor != nil {
+		return visitor.VisitSignFieldInputAnchor(s.SignFieldInputAnchor)
+	}
+	return fmt.Errorf("type %T does not include a non-empty union type", s)
+}
+
+var (
+	signFieldInputAnchorFieldType     = big.NewInt(1 << 0)
+	signFieldInputAnchorFieldRequired = big.NewInt(1 << 1)
+	signFieldInputAnchorFieldLabel    = big.NewInt(1 << 2)
+	signFieldInputAnchorFieldAnchor   = big.NewInt(1 << 3)
+	signFieldInputAnchorFieldWidth    = big.NewInt(1 << 4)
+	signFieldInputAnchorFieldHeight   = big.NewInt(1 << 5)
+	signFieldInputAnchorFieldOffsetX  = big.NewInt(1 << 6)
+	signFieldInputAnchorFieldOffsetY  = big.NewInt(1 << 7)
+)
+
+type SignFieldInputAnchor struct {
+	// `signature` and `initials` take the signer's adopted signature, `date_signed` is filled with the signing date, `name` and `email` with the signer's, `text` and `checkbox` by the signer.
+	Type SignFieldInputAnchorType `json:"type" url:"type"`
+	// Default `true`. A signer can't finish with a required field empty.
+	Required *bool `json:"required,omitempty" url:"required,omitempty"`
+	// Shown to the signer.
+	Label *string `json:"label,omitempty" url:"label,omitempty"`
+	// Place the field over every occurrence of this text in the documents (e.g. `{{signature:signer_1}}`).
+	Anchor string `json:"anchor" url:"anchor"`
+	// Default: the anchor text's width.
+	Width *float64 `json:"width,omitempty" url:"width,omitempty"`
+	// Default: the anchor text's height.
+	Height *float64 `json:"height,omitempty" url:"height,omitempty"`
+	// Points to move it right.
+	OffsetX *float64 `json:"offset_x,omitempty" url:"offset_x,omitempty"`
+	// Points to move it down.
+	OffsetY *float64 `json:"offset_y,omitempty" url:"offset_y,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignFieldInputAnchor) GetType() SignFieldInputAnchorType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignFieldInputAnchor) GetRequired() *bool {
+	if s == nil {
+		return nil
+	}
+	return s.Required
+}
+
+func (s *SignFieldInputAnchor) GetLabel() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Label
+}
+
+func (s *SignFieldInputAnchor) GetAnchor() string {
+	if s == nil {
+		return ""
+	}
+	return s.Anchor
+}
+
+func (s *SignFieldInputAnchor) GetWidth() *float64 {
+	if s == nil {
+		return nil
+	}
+	return s.Width
+}
+
+func (s *SignFieldInputAnchor) GetHeight() *float64 {
+	if s == nil {
+		return nil
+	}
+	return s.Height
+}
+
+func (s *SignFieldInputAnchor) GetOffsetX() *float64 {
+	if s == nil {
+		return nil
+	}
+	return s.OffsetX
+}
+
+func (s *SignFieldInputAnchor) GetOffsetY() *float64 {
+	if s == nil {
+		return nil
+	}
+	return s.OffsetY
+}
+
+func (s *SignFieldInputAnchor) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignFieldInputAnchor) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetType(type_ SignFieldInputAnchorType) {
+	s.Type = type_
+	s.require(signFieldInputAnchorFieldType)
+}
+
+// SetRequired sets the Required field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetRequired(required *bool) {
+	s.Required = required
+	s.require(signFieldInputAnchorFieldRequired)
+}
+
+// SetLabel sets the Label field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetLabel(label *string) {
+	s.Label = label
+	s.require(signFieldInputAnchorFieldLabel)
+}
+
+// SetAnchor sets the Anchor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetAnchor(anchor string) {
+	s.Anchor = anchor
+	s.require(signFieldInputAnchorFieldAnchor)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetWidth(width *float64) {
+	s.Width = width
+	s.require(signFieldInputAnchorFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetHeight(height *float64) {
+	s.Height = height
+	s.require(signFieldInputAnchorFieldHeight)
+}
+
+// SetOffsetX sets the OffsetX field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetOffsetX(offsetX *float64) {
+	s.OffsetX = offsetX
+	s.require(signFieldInputAnchorFieldOffsetX)
+}
+
+// SetOffsetY sets the OffsetY field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputAnchor) SetOffsetY(offsetY *float64) {
+	s.OffsetY = offsetY
+	s.require(signFieldInputAnchorFieldOffsetY)
+}
+
+func (s *SignFieldInputAnchor) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignFieldInputAnchor
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignFieldInputAnchor(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignFieldInputAnchor) MarshalJSON() ([]byte, error) {
+	type embed SignFieldInputAnchor
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignFieldInputAnchor) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// `signature` and `initials` take the signer's adopted signature, `date_signed` is filled with the signing date, `name` and `email` with the signer's, `text` and `checkbox` by the signer.
+type SignFieldInputAnchorType string
+
+const (
+	SignFieldInputAnchorTypeSignature  SignFieldInputAnchorType = "signature"
+	SignFieldInputAnchorTypeInitials   SignFieldInputAnchorType = "initials"
+	SignFieldInputAnchorTypeDateSigned SignFieldInputAnchorType = "date_signed"
+	SignFieldInputAnchorTypeName       SignFieldInputAnchorType = "name"
+	SignFieldInputAnchorTypeEmail      SignFieldInputAnchorType = "email"
+	SignFieldInputAnchorTypeText       SignFieldInputAnchorType = "text"
+	SignFieldInputAnchorTypeCheckbox   SignFieldInputAnchorType = "checkbox"
+)
+
+func NewSignFieldInputAnchorTypeFromString(s string) (SignFieldInputAnchorType, error) {
+	switch s {
+	case "signature":
+		return SignFieldInputAnchorTypeSignature, nil
+	case "initials":
+		return SignFieldInputAnchorTypeInitials, nil
+	case "date_signed":
+		return SignFieldInputAnchorTypeDateSigned, nil
+	case "name":
+		return SignFieldInputAnchorTypeName, nil
+	case "email":
+		return SignFieldInputAnchorTypeEmail, nil
+	case "text":
+		return SignFieldInputAnchorTypeText, nil
+	case "checkbox":
+		return SignFieldInputAnchorTypeCheckbox, nil
+	}
+	var t SignFieldInputAnchorType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignFieldInputAnchorType) Ptr() *SignFieldInputAnchorType {
+	return &s
+}
+
+var (
+	signFieldInputDocumentFieldType     = big.NewInt(1 << 0)
+	signFieldInputDocumentFieldRequired = big.NewInt(1 << 1)
+	signFieldInputDocumentFieldLabel    = big.NewInt(1 << 2)
+	signFieldInputDocumentFieldDocument = big.NewInt(1 << 3)
+	signFieldInputDocumentFieldPage     = big.NewInt(1 << 4)
+	signFieldInputDocumentFieldX        = big.NewInt(1 << 5)
+	signFieldInputDocumentFieldY        = big.NewInt(1 << 6)
+	signFieldInputDocumentFieldWidth    = big.NewInt(1 << 7)
+	signFieldInputDocumentFieldHeight   = big.NewInt(1 << 8)
+)
+
+type SignFieldInputDocument struct {
+	// `signature` and `initials` take the signer's adopted signature, `date_signed` is filled with the signing date, `name` and `email` with the signer's, `text` and `checkbox` by the signer.
+	Type SignFieldInputDocumentType `json:"type" url:"type"`
+	// Default `true`. A signer can't finish with a required field empty.
+	Required *bool `json:"required,omitempty" url:"required,omitempty"`
+	// Shown to the signer.
+	Label *string `json:"label,omitempty" url:"label,omitempty"`
+	// Index of the document in `documents` (default 0).
+	Document *int64 `json:"document,omitempty" url:"document,omitempty"`
+	// 1-based page number.
+	Page int64 `json:"page" url:"page"`
+	// Left edge, in PDF points from the page's left.
+	X float64 `json:"x" url:"x"`
+	// Top edge, in PDF points from the page's top.
+	Y      float64 `json:"y" url:"y"`
+	Width  float64 `json:"width" url:"width"`
+	Height float64 `json:"height" url:"height"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignFieldInputDocument) GetType() SignFieldInputDocumentType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignFieldInputDocument) GetRequired() *bool {
+	if s == nil {
+		return nil
+	}
+	return s.Required
+}
+
+func (s *SignFieldInputDocument) GetLabel() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Label
+}
+
+func (s *SignFieldInputDocument) GetDocument() *int64 {
+	if s == nil {
+		return nil
+	}
+	return s.Document
+}
+
+func (s *SignFieldInputDocument) GetPage() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Page
+}
+
+func (s *SignFieldInputDocument) GetX() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.X
+}
+
+func (s *SignFieldInputDocument) GetY() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Y
+}
+
+func (s *SignFieldInputDocument) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignFieldInputDocument) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignFieldInputDocument) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignFieldInputDocument) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetType(type_ SignFieldInputDocumentType) {
+	s.Type = type_
+	s.require(signFieldInputDocumentFieldType)
+}
+
+// SetRequired sets the Required field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetRequired(required *bool) {
+	s.Required = required
+	s.require(signFieldInputDocumentFieldRequired)
+}
+
+// SetLabel sets the Label field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetLabel(label *string) {
+	s.Label = label
+	s.require(signFieldInputDocumentFieldLabel)
+}
+
+// SetDocument sets the Document field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetDocument(document *int64) {
+	s.Document = document
+	s.require(signFieldInputDocumentFieldDocument)
+}
+
+// SetPage sets the Page field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetPage(page int64) {
+	s.Page = page
+	s.require(signFieldInputDocumentFieldPage)
+}
+
+// SetX sets the X field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetX(x float64) {
+	s.X = x
+	s.require(signFieldInputDocumentFieldX)
+}
+
+// SetY sets the Y field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetY(y float64) {
+	s.Y = y
+	s.require(signFieldInputDocumentFieldY)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetWidth(width float64) {
+	s.Width = width
+	s.require(signFieldInputDocumentFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignFieldInputDocument) SetHeight(height float64) {
+	s.Height = height
+	s.require(signFieldInputDocumentFieldHeight)
+}
+
+func (s *SignFieldInputDocument) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignFieldInputDocument
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignFieldInputDocument(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignFieldInputDocument) MarshalJSON() ([]byte, error) {
+	type embed SignFieldInputDocument
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignFieldInputDocument) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// `signature` and `initials` take the signer's adopted signature, `date_signed` is filled with the signing date, `name` and `email` with the signer's, `text` and `checkbox` by the signer.
+type SignFieldInputDocumentType string
+
+const (
+	SignFieldInputDocumentTypeSignature  SignFieldInputDocumentType = "signature"
+	SignFieldInputDocumentTypeInitials   SignFieldInputDocumentType = "initials"
+	SignFieldInputDocumentTypeDateSigned SignFieldInputDocumentType = "date_signed"
+	SignFieldInputDocumentTypeName       SignFieldInputDocumentType = "name"
+	SignFieldInputDocumentTypeEmail      SignFieldInputDocumentType = "email"
+	SignFieldInputDocumentTypeText       SignFieldInputDocumentType = "text"
+	SignFieldInputDocumentTypeCheckbox   SignFieldInputDocumentType = "checkbox"
+)
+
+func NewSignFieldInputDocumentTypeFromString(s string) (SignFieldInputDocumentType, error) {
+	switch s {
+	case "signature":
+		return SignFieldInputDocumentTypeSignature, nil
+	case "initials":
+		return SignFieldInputDocumentTypeInitials, nil
+	case "date_signed":
+		return SignFieldInputDocumentTypeDateSigned, nil
+	case "name":
+		return SignFieldInputDocumentTypeName, nil
+	case "email":
+		return SignFieldInputDocumentTypeEmail, nil
+	case "text":
+		return SignFieldInputDocumentTypeText, nil
+	case "checkbox":
+		return SignFieldInputDocumentTypeCheckbox, nil
+	}
+	var t SignFieldInputDocumentType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignFieldInputDocumentType) Ptr() *SignFieldInputDocumentType {
+	return &s
+}
+
+type SignFieldObject string
+
+const (
+	SignFieldObjectSignField SignFieldObject = "sign_field"
+)
+
+func NewSignFieldObjectFromString(s string) (SignFieldObject, error) {
+	switch s {
+	case "sign_field":
+		return SignFieldObjectSignField, nil
+	}
+	var t SignFieldObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignFieldObject) Ptr() *SignFieldObject {
+	return &s
+}
+
+type SignFieldType string
+
+const (
+	SignFieldTypeSignature  SignFieldType = "signature"
+	SignFieldTypeInitials   SignFieldType = "initials"
+	SignFieldTypeDateSigned SignFieldType = "date_signed"
+	SignFieldTypeName       SignFieldType = "name"
+	SignFieldTypeEmail      SignFieldType = "email"
+	SignFieldTypeText       SignFieldType = "text"
+	SignFieldTypeCheckbox   SignFieldType = "checkbox"
+)
+
+func NewSignFieldTypeFromString(s string) (SignFieldType, error) {
+	switch s {
+	case "signature":
+		return SignFieldTypeSignature, nil
+	case "initials":
+		return SignFieldTypeInitials, nil
+	case "date_signed":
+		return SignFieldTypeDateSigned, nil
+	case "name":
+		return SignFieldTypeName, nil
+	case "email":
+		return SignFieldTypeEmail, nil
+	case "text":
+		return SignFieldTypeText, nil
+	case "checkbox":
+		return SignFieldTypeCheckbox, nil
+	}
+	var t SignFieldType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignFieldType) Ptr() *SignFieldType {
+	return &s
+}
+
+var (
+	signRequestFieldObject               = big.NewInt(1 << 0)
+	signRequestFieldID                   = big.NewInt(1 << 1)
+	signRequestFieldStatus               = big.NewInt(1 << 2)
+	signRequestFieldTitle                = big.NewInt(1 << 3)
+	signRequestFieldMessage              = big.NewInt(1 << 4)
+	signRequestFieldSigningOrder         = big.NewInt(1 << 5)
+	signRequestFieldDocuments            = big.NewInt(1 << 6)
+	signRequestFieldSigners              = big.NewInt(1 << 7)
+	signRequestFieldFields               = big.NewInt(1 << 8)
+	signRequestFieldMetadata             = big.NewInt(1 << 9)
+	signRequestFieldSandbox              = big.NewInt(1 << 10)
+	signRequestFieldReminderIntervalDays = big.NewInt(1 << 11)
+	signRequestFieldExpiresAt            = big.NewInt(1 << 12)
+	signRequestFieldExpiredAt            = big.NewInt(1 << 13)
+	signRequestFieldSentAt               = big.NewInt(1 << 14)
+	signRequestFieldCompletedAt          = big.NewInt(1 << 15)
+	signRequestFieldCanceledAt           = big.NewInt(1 << 16)
+	signRequestFieldDeclinedAt           = big.NewInt(1 << 17)
+	signRequestFieldSignedDocument       = big.NewInt(1 << 18)
+	signRequestFieldCreatedAt            = big.NewInt(1 << 19)
+)
+
+// signRequestNullableFields maps the wire names of SignRequest's nullable fields (required or optional) to their field bits.
+var signRequestNullableFields = map[string]*big.Int{
+	"message":                signRequestFieldMessage,
+	"reminder_interval_days": signRequestFieldReminderIntervalDays,
+	"expires_at":             signRequestFieldExpiresAt,
+	"expired_at":             signRequestFieldExpiredAt,
+	"sent_at":                signRequestFieldSentAt,
+	"completed_at":           signRequestFieldCompletedAt,
+	"canceled_at":            signRequestFieldCanceledAt,
+	"declined_at":            signRequestFieldDeclinedAt,
+	"signed_document":        signRequestFieldSignedDocument,
+}
+
+type SignRequest struct {
+	Object SignRequestObject `json:"object" url:"object"`
+	ID     string            `json:"id" url:"id"`
+	// `draft` until sent, `sent` while signers sign, then `completed` (everyone signed), `declined` (a signer declined), `canceled` or `expired`.
+	Status       SignRequestStatus           `json:"status" url:"status"`
+	Title        string                      `json:"title" url:"title"`
+	Message      *string                     `json:"message,omitempty" url:"message,omitempty"`
+	SigningOrder SignRequestSigningOrder     `json:"signing_order" url:"signing_order"`
+	Documents    []*SignRequestDocumentsItem `json:"documents" url:"documents"`
+	Signers      []*SignSigner               `json:"signers" url:"signers"`
+	Fields       []*SignField                `json:"fields" url:"fields"`
+	Metadata     map[string]string           `json:"metadata" url:"metadata"`
+	Sandbox      bool                        `json:"sandbox" url:"sandbox"`
+	// Days between automatic reminders to email signers; `null`: none.
+	ReminderIntervalDays *int64     `json:"reminder_interval_days,omitempty" url:"reminder_interval_days,omitempty"`
+	ExpiresAt            *time.Time `json:"expires_at,omitempty" url:"expires_at,omitempty"`
+	ExpiredAt            *time.Time `json:"expired_at,omitempty" url:"expired_at,omitempty"`
+	SentAt               *time.Time `json:"sent_at,omitempty" url:"sent_at,omitempty"`
+	CompletedAt          *time.Time `json:"completed_at,omitempty" url:"completed_at,omitempty"`
+	CanceledAt           *time.Time `json:"canceled_at,omitempty" url:"canceled_at,omitempty"`
+	DeclinedAt           *time.Time `json:"declined_at,omitempty" url:"declined_at,omitempty"`
+	// The completed document, sealed by coss.com: every document with the signatures and values filled in, and a certificate of completion. `null` until it is ready (shortly after `completed`, announced by the `sign_request.completed` webhook); download it from `GET /v1/sign/requests/{id}/signed_document`.
+	SignedDocument *SignRequestSignedDocument `json:"signed_document,omitempty" url:"signed_document,omitempty"`
+	CreatedAt      time.Time                  `json:"created_at" url:"created_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequest) GetObject() SignRequestObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignRequest) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignRequest) GetStatus() SignRequestStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SignRequest) GetTitle() string {
+	if s == nil {
+		return ""
+	}
+	return s.Title
+}
+
+func (s *SignRequest) GetMessage() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Message
+}
+
+func (s *SignRequest) GetSigningOrder() SignRequestSigningOrder {
+	if s == nil {
+		return ""
+	}
+	return s.SigningOrder
+}
+
+func (s *SignRequest) GetDocuments() []*SignRequestDocumentsItem {
+	if s == nil {
+		return nil
+	}
+	return s.Documents
+}
+
+func (s *SignRequest) GetSigners() []*SignSigner {
+	if s == nil {
+		return nil
+	}
+	return s.Signers
+}
+
+func (s *SignRequest) GetFields() []*SignField {
+	if s == nil {
+		return nil
+	}
+	return s.Fields
+}
+
+func (s *SignRequest) GetMetadata() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Metadata
+}
+
+func (s *SignRequest) GetSandbox() bool {
+	if s == nil {
+		return false
+	}
+	return s.Sandbox
+}
+
+func (s *SignRequest) GetReminderIntervalDays() *int64 {
+	if s == nil {
+		return nil
+	}
+	return s.ReminderIntervalDays
+}
+
+func (s *SignRequest) GetExpiresAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.ExpiresAt
+}
+
+func (s *SignRequest) GetExpiredAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.ExpiredAt
+}
+
+func (s *SignRequest) GetSentAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.SentAt
+}
+
+func (s *SignRequest) GetCompletedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.CompletedAt
+}
+
+func (s *SignRequest) GetCanceledAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.CanceledAt
+}
+
+func (s *SignRequest) GetDeclinedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.DeclinedAt
+}
+
+func (s *SignRequest) GetSignedDocument() *SignRequestSignedDocument {
+	if s == nil {
+		return nil
+	}
+	return s.SignedDocument
+}
+
+func (s *SignRequest) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SignRequest) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetObject(object SignRequestObject) {
+	s.Object = object
+	s.require(signRequestFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetID(id string) {
+	s.ID = id
+	s.require(signRequestFieldID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetStatus(status SignRequestStatus) {
+	s.Status = status
+	s.require(signRequestFieldStatus)
+}
+
+// SetTitle sets the Title field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetTitle(title string) {
+	s.Title = title
+	s.require(signRequestFieldTitle)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetMessage(message *string) {
+	s.Message = message
+	s.require(signRequestFieldMessage)
+}
+
+// SetSigningOrder sets the SigningOrder field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetSigningOrder(signingOrder SignRequestSigningOrder) {
+	s.SigningOrder = signingOrder
+	s.require(signRequestFieldSigningOrder)
+}
+
+// SetDocuments sets the Documents field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetDocuments(documents []*SignRequestDocumentsItem) {
+	s.Documents = documents
+	s.require(signRequestFieldDocuments)
+}
+
+// SetSigners sets the Signers field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetSigners(signers []*SignSigner) {
+	s.Signers = signers
+	s.require(signRequestFieldSigners)
+}
+
+// SetFields sets the Fields field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetFields(fields []*SignField) {
+	s.Fields = fields
+	s.require(signRequestFieldFields)
+}
+
+// SetMetadata sets the Metadata field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetMetadata(metadata map[string]string) {
+	s.Metadata = metadata
+	s.require(signRequestFieldMetadata)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetSandbox(sandbox bool) {
+	s.Sandbox = sandbox
+	s.require(signRequestFieldSandbox)
+}
+
+// SetReminderIntervalDays sets the ReminderIntervalDays field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetReminderIntervalDays(reminderIntervalDays *int64) {
+	s.ReminderIntervalDays = reminderIntervalDays
+	s.require(signRequestFieldReminderIntervalDays)
+}
+
+// SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetExpiresAt(expiresAt *time.Time) {
+	s.ExpiresAt = expiresAt
+	s.require(signRequestFieldExpiresAt)
+}
+
+// SetExpiredAt sets the ExpiredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetExpiredAt(expiredAt *time.Time) {
+	s.ExpiredAt = expiredAt
+	s.require(signRequestFieldExpiredAt)
+}
+
+// SetSentAt sets the SentAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetSentAt(sentAt *time.Time) {
+	s.SentAt = sentAt
+	s.require(signRequestFieldSentAt)
+}
+
+// SetCompletedAt sets the CompletedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetCompletedAt(completedAt *time.Time) {
+	s.CompletedAt = completedAt
+	s.require(signRequestFieldCompletedAt)
+}
+
+// SetCanceledAt sets the CanceledAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetCanceledAt(canceledAt *time.Time) {
+	s.CanceledAt = canceledAt
+	s.require(signRequestFieldCanceledAt)
+}
+
+// SetDeclinedAt sets the DeclinedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetDeclinedAt(declinedAt *time.Time) {
+	s.DeclinedAt = declinedAt
+	s.require(signRequestFieldDeclinedAt)
+}
+
+// SetSignedDocument sets the SignedDocument field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetSignedDocument(signedDocument *SignRequestSignedDocument) {
+	s.SignedDocument = signedDocument
+	s.require(signRequestFieldSignedDocument)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequest) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(signRequestFieldCreatedAt)
+}
+
+func (s *SignRequest) UnmarshalJSON(data []byte) error {
+	type embed SignRequest
+	var unmarshaler = struct {
+		embed
+		ExpiresAt   *internal.DateTime `json:"expires_at,omitempty"`
+		ExpiredAt   *internal.DateTime `json:"expired_at,omitempty"`
+		SentAt      *internal.DateTime `json:"sent_at,omitempty"`
+		CompletedAt *internal.DateTime `json:"completed_at,omitempty"`
+		CanceledAt  *internal.DateTime `json:"canceled_at,omitempty"`
+		DeclinedAt  *internal.DateTime `json:"declined_at,omitempty"`
+		CreatedAt   *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignRequest(unmarshaler.embed)
+	s.ExpiresAt = unmarshaler.ExpiresAt.TimePtr()
+	s.ExpiredAt = unmarshaler.ExpiredAt.TimePtr()
+	s.SentAt = unmarshaler.SentAt.TimePtr()
+	s.CompletedAt = unmarshaler.CompletedAt.TimePtr()
+	s.CanceledAt = unmarshaler.CanceledAt.TimePtr()
+	s.DeclinedAt = unmarshaler.DeclinedAt.TimePtr()
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signRequestNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequest) MarshalJSON() ([]byte, error) {
+	type embed SignRequest
+	var marshaler = struct {
+		embed
+		ExpiresAt   *internal.DateTime `json:"expires_at,omitempty"`
+		ExpiredAt   *internal.DateTime `json:"expired_at,omitempty"`
+		SentAt      *internal.DateTime `json:"sent_at,omitempty"`
+		CompletedAt *internal.DateTime `json:"completed_at,omitempty"`
+		CanceledAt  *internal.DateTime `json:"canceled_at,omitempty"`
+		DeclinedAt  *internal.DateTime `json:"declined_at,omitempty"`
+		CreatedAt   *internal.DateTime `json:"created_at"`
+	}{
+		embed:       embed(*s),
+		ExpiresAt:   internal.NewOptionalDateTime(s.ExpiresAt),
+		ExpiredAt:   internal.NewOptionalDateTime(s.ExpiredAt),
+		SentAt:      internal.NewOptionalDateTime(s.SentAt),
+		CompletedAt: internal.NewOptionalDateTime(s.CompletedAt),
+		CanceledAt:  internal.NewOptionalDateTime(s.CanceledAt),
+		DeclinedAt:  internal.NewOptionalDateTime(s.DeclinedAt),
+		CreatedAt:   internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequest) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signRequestDocumentsItemFieldID        = big.NewInt(1 << 0)
+	signRequestDocumentsItemFieldFilename  = big.NewInt(1 << 1)
+	signRequestDocumentsItemFieldSha256    = big.NewInt(1 << 2)
+	signRequestDocumentsItemFieldPageCount = big.NewInt(1 << 3)
+)
+
+type SignRequestDocumentsItem struct {
+	ID        string `json:"id" url:"id"`
+	Filename  string `json:"filename" url:"filename"`
+	Sha256    string `json:"sha256" url:"sha256"`
+	PageCount int64  `json:"page_count" url:"page_count"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestDocumentsItem) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignRequestDocumentsItem) GetFilename() string {
+	if s == nil {
+		return ""
+	}
+	return s.Filename
+}
+
+func (s *SignRequestDocumentsItem) GetSha256() string {
+	if s == nil {
+		return ""
+	}
+	return s.Sha256
+}
+
+func (s *SignRequestDocumentsItem) GetPageCount() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.PageCount
+}
+
+func (s *SignRequestDocumentsItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestDocumentsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestDocumentsItem) SetID(id string) {
+	s.ID = id
+	s.require(signRequestDocumentsItemFieldID)
+}
+
+// SetFilename sets the Filename field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestDocumentsItem) SetFilename(filename string) {
+	s.Filename = filename
+	s.require(signRequestDocumentsItemFieldFilename)
+}
+
+// SetSha256 sets the Sha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestDocumentsItem) SetSha256(sha256 string) {
+	s.Sha256 = sha256
+	s.require(signRequestDocumentsItemFieldSha256)
+}
+
+// SetPageCount sets the PageCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestDocumentsItem) SetPageCount(pageCount int64) {
+	s.PageCount = pageCount
+	s.require(signRequestDocumentsItemFieldPageCount)
+}
+
+func (s *SignRequestDocumentsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignRequestDocumentsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignRequestDocumentsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestDocumentsItem) MarshalJSON() ([]byte, error) {
+	type embed SignRequestDocumentsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestDocumentsItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signRequestListFieldObject  = big.NewInt(1 << 0)
+	signRequestListFieldData    = big.NewInt(1 << 1)
+	signRequestListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SignRequestList struct {
+	Object  SignRequestListObject `json:"object" url:"object"`
+	Data    []*SignRequest        `json:"data" url:"data"`
+	HasMore bool                  `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestList) GetObject() SignRequestListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignRequestList) GetData() []*SignRequest {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SignRequestList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SignRequestList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestList) SetObject(object SignRequestListObject) {
+	s.Object = object
+	s.require(signRequestListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestList) SetData(data []*SignRequest) {
+	s.Data = data
+	s.require(signRequestListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(signRequestListFieldHasMore)
+}
+
+func (s *SignRequestList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignRequestList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignRequestList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestList) MarshalJSON() ([]byte, error) {
+	type embed SignRequestList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignRequestListObject string
+
+const (
+	SignRequestListObjectList SignRequestListObject = "list"
+)
+
+func NewSignRequestListObjectFromString(s string) (SignRequestListObject, error) {
+	switch s {
+	case "list":
+		return SignRequestListObjectList, nil
+	}
+	var t SignRequestListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestListObject) Ptr() *SignRequestListObject {
+	return &s
+}
+
+type SignRequestObject string
+
+const (
+	SignRequestObjectSignRequest SignRequestObject = "sign_request"
+)
+
+func NewSignRequestObjectFromString(s string) (SignRequestObject, error) {
+	switch s {
+	case "sign_request":
+		return SignRequestObjectSignRequest, nil
+	}
+	var t SignRequestObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestObject) Ptr() *SignRequestObject {
+	return &s
+}
+
+var (
+	signRequestSignedDocumentFieldSha256   = big.NewInt(1 << 0)
+	signRequestSignedDocumentFieldSealedAt = big.NewInt(1 << 1)
+)
+
+type SignRequestSignedDocument struct {
+	// Hex SHA-256 of the sealed PDF.
+	Sha256   string    `json:"sha256" url:"sha256"`
+	SealedAt time.Time `json:"sealed_at" url:"sealed_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestSignedDocument) GetSha256() string {
+	if s == nil {
+		return ""
+	}
+	return s.Sha256
+}
+
+func (s *SignRequestSignedDocument) GetSealedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.SealedAt
+}
+
+func (s *SignRequestSignedDocument) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestSignedDocument) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetSha256 sets the Sha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestSignedDocument) SetSha256(sha256 string) {
+	s.Sha256 = sha256
+	s.require(signRequestSignedDocumentFieldSha256)
+}
+
+// SetSealedAt sets the SealedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestSignedDocument) SetSealedAt(sealedAt time.Time) {
+	s.SealedAt = sealedAt
+	s.require(signRequestSignedDocumentFieldSealedAt)
+}
+
+func (s *SignRequestSignedDocument) UnmarshalJSON(data []byte) error {
+	type embed SignRequestSignedDocument
+	var unmarshaler = struct {
+		embed
+		SealedAt *internal.DateTime `json:"sealed_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignRequestSignedDocument(unmarshaler.embed)
+	s.SealedAt = unmarshaler.SealedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestSignedDocument) MarshalJSON() ([]byte, error) {
+	type embed SignRequestSignedDocument
+	var marshaler = struct {
+		embed
+		SealedAt *internal.DateTime `json:"sealed_at"`
+	}{
+		embed:    embed(*s),
+		SealedAt: internal.NewDateTime(s.SealedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestSignedDocument) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignRequestSigningOrder string
+
+const (
+	SignRequestSigningOrderParallel   SignRequestSigningOrder = "parallel"
+	SignRequestSigningOrderSequential SignRequestSigningOrder = "sequential"
+)
+
+func NewSignRequestSigningOrderFromString(s string) (SignRequestSigningOrder, error) {
+	switch s {
+	case "parallel":
+		return SignRequestSigningOrderParallel, nil
+	case "sequential":
+		return SignRequestSigningOrderSequential, nil
+	}
+	var t SignRequestSigningOrder
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestSigningOrder) Ptr() *SignRequestSigningOrder {
+	return &s
+}
+
+// `draft` until sent, `sent` while signers sign, then `completed` (everyone signed), `declined` (a signer declined), `canceled` or `expired`.
+type SignRequestStatus string
+
+const (
+	SignRequestStatusDraft     SignRequestStatus = "draft"
+	SignRequestStatusSent      SignRequestStatus = "sent"
+	SignRequestStatusCompleted SignRequestStatus = "completed"
+	SignRequestStatusDeclined  SignRequestStatus = "declined"
+	SignRequestStatusCanceled  SignRequestStatus = "canceled"
+	SignRequestStatusExpired   SignRequestStatus = "expired"
+)
+
+func NewSignRequestStatusFromString(s string) (SignRequestStatus, error) {
+	switch s {
+	case "draft":
+		return SignRequestStatusDraft, nil
+	case "sent":
+		return SignRequestStatusSent, nil
+	case "completed":
+		return SignRequestStatusCompleted, nil
+	case "declined":
+		return SignRequestStatusDeclined, nil
+	case "canceled":
+		return SignRequestStatusCanceled, nil
+	case "expired":
+		return SignRequestStatusExpired, nil
+	}
+	var t SignRequestStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestStatus) Ptr() *SignRequestStatus {
+	return &s
+}
+
+var (
+	signSessionFieldObject    = big.NewInt(1 << 0)
+	signSessionFieldID        = big.NewInt(1 << 1)
+	signSessionFieldRequestID = big.NewInt(1 << 2)
+	signSessionFieldSignerID  = big.NewInt(1 << 3)
+	signSessionFieldURL       = big.NewInt(1 << 4)
+	signSessionFieldToken     = big.NewInt(1 << 5)
+	signSessionFieldExpiresAt = big.NewInt(1 << 6)
+)
+
+type SignSession struct {
+	Object    SignSessionObject `json:"object" url:"object"`
+	ID        string            `json:"id" url:"id"`
+	RequestID string            `json:"request_id" url:"request_id"`
+	SignerID  string            `json:"signer_id" url:"signer_id"`
+	// The signing page: embed it in an iframe (from an allowed origin, with `coss/sign`'s `mountSigning`) or redirect to it. The token is in the URL fragment, so it never reaches a server log: show it only to that signer.
+	URL string `json:"url" url:"url"`
+	// The secret part of `url`, shown only here.
+	Token     string    `json:"token" url:"token"`
+	ExpiresAt time.Time `json:"expires_at" url:"expires_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignSession) GetObject() SignSessionObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignSession) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignSession) GetRequestID() string {
+	if s == nil {
+		return ""
+	}
+	return s.RequestID
+}
+
+func (s *SignSession) GetSignerID() string {
+	if s == nil {
+		return ""
+	}
+	return s.SignerID
+}
+
+func (s *SignSession) GetURL() string {
+	if s == nil {
+		return ""
+	}
+	return s.URL
+}
+
+func (s *SignSession) GetToken() string {
+	if s == nil {
+		return ""
+	}
+	return s.Token
+}
+
+func (s *SignSession) GetExpiresAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.ExpiresAt
+}
+
+func (s *SignSession) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignSession) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetObject(object SignSessionObject) {
+	s.Object = object
+	s.require(signSessionFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetID(id string) {
+	s.ID = id
+	s.require(signSessionFieldID)
+}
+
+// SetRequestID sets the RequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetRequestID(requestID string) {
+	s.RequestID = requestID
+	s.require(signSessionFieldRequestID)
+}
+
+// SetSignerID sets the SignerID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetSignerID(signerID string) {
+	s.SignerID = signerID
+	s.require(signSessionFieldSignerID)
+}
+
+// SetURL sets the URL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetURL(url string) {
+	s.URL = url
+	s.require(signSessionFieldURL)
+}
+
+// SetToken sets the Token field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetToken(token string) {
+	s.Token = token
+	s.require(signSessionFieldToken)
+}
+
+// SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSession) SetExpiresAt(expiresAt time.Time) {
+	s.ExpiresAt = expiresAt
+	s.require(signSessionFieldExpiresAt)
+}
+
+func (s *SignSession) UnmarshalJSON(data []byte) error {
+	type embed SignSession
+	var unmarshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expires_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignSession(unmarshaler.embed)
+	s.ExpiresAt = unmarshaler.ExpiresAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignSession) MarshalJSON() ([]byte, error) {
+	type embed SignSession
+	var marshaler = struct {
+		embed
+		ExpiresAt *internal.DateTime `json:"expires_at"`
+	}{
+		embed:     embed(*s),
+		ExpiresAt: internal.NewDateTime(s.ExpiresAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignSession) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignSessionObject string
+
+const (
+	SignSessionObjectSignSession SignSessionObject = "sign_session"
+)
+
+func NewSignSessionObjectFromString(s string) (SignSessionObject, error) {
+	switch s {
+	case "sign_session":
+		return SignSessionObjectSignSession, nil
+	}
+	var t SignSessionObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSessionObject) Ptr() *SignSessionObject {
+	return &s
+}
+
+var (
+	signSettingsFieldObject               = big.NewInt(1 << 0)
+	signSettingsFieldAllowedOrigins       = big.NewInt(1 << 1)
+	signSettingsFieldDisplayName          = big.NewInt(1 << 2)
+	signSettingsFieldAccentColor          = big.NewInt(1 << 3)
+	signSettingsFieldTheme                = big.NewInt(1 << 4)
+	signSettingsFieldDisclosure           = big.NewInt(1 << 5)
+	signSettingsFieldEmailFrom            = big.NewInt(1 << 6)
+	signSettingsFieldReminderIntervalDays = big.NewInt(1 << 7)
+)
+
+// signSettingsNullableFields maps the wire names of SignSettings's nullable fields (required or optional) to their field bits.
+var signSettingsNullableFields = map[string]*big.Int{
+	"display_name":           signSettingsFieldDisplayName,
+	"accent_color":           signSettingsFieldAccentColor,
+	"disclosure":             signSettingsFieldDisclosure,
+	"email_from":             signSettingsFieldEmailFrom,
+	"reminder_interval_days": signSettingsFieldReminderIntervalDays,
+}
+
+type SignSettings struct {
+	Object SignSettingsObject `json:"object" url:"object"`
+	// Origins that may embed the signing page in an iframe, like `https://app.example.com` (sandbox environments also `http://localhost:<port>`). Empty: it can only be opened on its own.
+	AllowedOrigins []string `json:"allowed_origins" url:"allowed_origins"`
+	// The requester's name signers see. `null`: the organization's name.
+	DisplayName *string           `json:"display_name,omitempty" url:"display_name,omitempty"`
+	AccentColor *string           `json:"accent_color,omitempty" url:"accent_color,omitempty"`
+	Theme       SignSettingsTheme `json:"theme" url:"theme"`
+	// Your own consent text signers accept before they see a document. `null`: coss.com's default, which covers ESIGN's consumer disclosure. Have your counsel review a replacement.
+	Disclosure *string `json:"disclosure,omitempty" url:"disclosure,omitempty"`
+	// Signing emails (invitations, reminders, signed copies) come from this address, on a verified domain in live environments. `null`: from coss.com, as "<display name> via coss.com".
+	EmailFrom *string `json:"email_from,omitempty" url:"email_from,omitempty"`
+	// The default days between reminders for new requests; `null`: none.
+	ReminderIntervalDays *int64 `json:"reminder_interval_days,omitempty" url:"reminder_interval_days,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignSettings) GetObject() SignSettingsObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignSettings) GetAllowedOrigins() []string {
+	if s == nil {
+		return nil
+	}
+	return s.AllowedOrigins
+}
+
+func (s *SignSettings) GetDisplayName() *string {
+	if s == nil {
+		return nil
+	}
+	return s.DisplayName
+}
+
+func (s *SignSettings) GetAccentColor() *string {
+	if s == nil {
+		return nil
+	}
+	return s.AccentColor
+}
+
+func (s *SignSettings) GetTheme() SignSettingsTheme {
+	if s == nil {
+		return ""
+	}
+	return s.Theme
+}
+
+func (s *SignSettings) GetDisclosure() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Disclosure
+}
+
+func (s *SignSettings) GetEmailFrom() *string {
+	if s == nil {
+		return nil
+	}
+	return s.EmailFrom
+}
+
+func (s *SignSettings) GetReminderIntervalDays() *int64 {
+	if s == nil {
+		return nil
+	}
+	return s.ReminderIntervalDays
+}
+
+func (s *SignSettings) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignSettings) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetObject(object SignSettingsObject) {
+	s.Object = object
+	s.require(signSettingsFieldObject)
+}
+
+// SetAllowedOrigins sets the AllowedOrigins field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetAllowedOrigins(allowedOrigins []string) {
+	s.AllowedOrigins = allowedOrigins
+	s.require(signSettingsFieldAllowedOrigins)
+}
+
+// SetDisplayName sets the DisplayName field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetDisplayName(displayName *string) {
+	s.DisplayName = displayName
+	s.require(signSettingsFieldDisplayName)
+}
+
+// SetAccentColor sets the AccentColor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetAccentColor(accentColor *string) {
+	s.AccentColor = accentColor
+	s.require(signSettingsFieldAccentColor)
+}
+
+// SetTheme sets the Theme field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetTheme(theme SignSettingsTheme) {
+	s.Theme = theme
+	s.require(signSettingsFieldTheme)
+}
+
+// SetDisclosure sets the Disclosure field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetDisclosure(disclosure *string) {
+	s.Disclosure = disclosure
+	s.require(signSettingsFieldDisclosure)
+}
+
+// SetEmailFrom sets the EmailFrom field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetEmailFrom(emailFrom *string) {
+	s.EmailFrom = emailFrom
+	s.require(signSettingsFieldEmailFrom)
+}
+
+// SetReminderIntervalDays sets the ReminderIntervalDays field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSettings) SetReminderIntervalDays(reminderIntervalDays *int64) {
+	s.ReminderIntervalDays = reminderIntervalDays
+	s.require(signSettingsFieldReminderIntervalDays)
+}
+
+func (s *SignSettings) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignSettings
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignSettings(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signSettingsNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignSettings) MarshalJSON() ([]byte, error) {
+	type embed SignSettings
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignSettings) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignSettingsObject string
+
+const (
+	SignSettingsObjectSignSettings SignSettingsObject = "sign_settings"
+)
+
+func NewSignSettingsObjectFromString(s string) (SignSettingsObject, error) {
+	switch s {
+	case "sign_settings":
+		return SignSettingsObjectSignSettings, nil
+	}
+	var t SignSettingsObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSettingsObject) Ptr() *SignSettingsObject {
+	return &s
+}
+
+type SignSettingsTheme string
+
+const (
+	SignSettingsThemeSystem SignSettingsTheme = "system"
+	SignSettingsThemeLight  SignSettingsTheme = "light"
+	SignSettingsThemeDark   SignSettingsTheme = "dark"
+)
+
+func NewSignSettingsThemeFromString(s string) (SignSettingsTheme, error) {
+	switch s {
+	case "system":
+		return SignSettingsThemeSystem, nil
+	case "light":
+		return SignSettingsThemeLight, nil
+	case "dark":
+		return SignSettingsThemeDark, nil
+	}
+	var t SignSettingsTheme
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSettingsTheme) Ptr() *SignSettingsTheme {
+	return &s
+}
+
+var (
+	signSignerFieldObject         = big.NewInt(1 << 0)
+	signSignerFieldID             = big.NewInt(1 << 1)
+	signSignerFieldName           = big.NewInt(1 << 2)
+	signSignerFieldEmail          = big.NewInt(1 << 3)
+	signSignerFieldOrder          = big.NewInt(1 << 4)
+	signSignerFieldDelivery       = big.NewInt(1 << 5)
+	signSignerFieldAuthentication = big.NewInt(1 << 6)
+	signSignerFieldStatus         = big.NewInt(1 << 7)
+	signSignerFieldClientRef      = big.NewInt(1 << 8)
+	signSignerFieldViewedAt       = big.NewInt(1 << 9)
+	signSignerFieldSignedAt       = big.NewInt(1 << 10)
+	signSignerFieldDeclinedAt     = big.NewInt(1 << 11)
+	signSignerFieldDeclineReason  = big.NewInt(1 << 12)
+)
+
+// signSignerNullableFields maps the wire names of SignSigner's nullable fields (required or optional) to their field bits.
+var signSignerNullableFields = map[string]*big.Int{
+	"client_ref":     signSignerFieldClientRef,
+	"viewed_at":      signSignerFieldViewedAt,
+	"signed_at":      signSignerFieldSignedAt,
+	"declined_at":    signSignerFieldDeclinedAt,
+	"decline_reason": signSignerFieldDeclineReason,
+}
+
+type SignSigner struct {
+	Object   SignSignerObject   `json:"object" url:"object"`
+	ID       string             `json:"id" url:"id"`
+	Name     string             `json:"name" url:"name"`
+	Email    string             `json:"email" url:"email"`
+	Order    int64              `json:"order" url:"order"`
+	Delivery SignSignerDelivery `json:"delivery" url:"delivery"`
+	// How the signer is identified: `email_link` (they opened the link coss.com emailed) or `customer_asserted` (your app vouched for them).
+	Authentication SignSignerAuthentication `json:"authentication" url:"authentication"`
+	Status         SignSignerStatus         `json:"status" url:"status"`
+	ClientRef      *string                  `json:"client_ref,omitempty" url:"client_ref,omitempty"`
+	ViewedAt       *time.Time               `json:"viewed_at,omitempty" url:"viewed_at,omitempty"`
+	SignedAt       *time.Time               `json:"signed_at,omitempty" url:"signed_at,omitempty"`
+	DeclinedAt     *time.Time               `json:"declined_at,omitempty" url:"declined_at,omitempty"`
+	DeclineReason  *string                  `json:"decline_reason,omitempty" url:"decline_reason,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignSigner) GetObject() SignSignerObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignSigner) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignSigner) GetName() string {
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (s *SignSigner) GetEmail() string {
+	if s == nil {
+		return ""
+	}
+	return s.Email
+}
+
+func (s *SignSigner) GetOrder() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Order
+}
+
+func (s *SignSigner) GetDelivery() SignSignerDelivery {
+	if s == nil {
+		return ""
+	}
+	return s.Delivery
+}
+
+func (s *SignSigner) GetAuthentication() SignSignerAuthentication {
+	if s == nil {
+		return ""
+	}
+	return s.Authentication
+}
+
+func (s *SignSigner) GetStatus() SignSignerStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SignSigner) GetClientRef() *string {
+	if s == nil {
+		return nil
+	}
+	return s.ClientRef
+}
+
+func (s *SignSigner) GetViewedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.ViewedAt
+}
+
+func (s *SignSigner) GetSignedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.SignedAt
+}
+
+func (s *SignSigner) GetDeclinedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.DeclinedAt
+}
+
+func (s *SignSigner) GetDeclineReason() *string {
+	if s == nil {
+		return nil
+	}
+	return s.DeclineReason
+}
+
+func (s *SignSigner) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignSigner) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetObject(object SignSignerObject) {
+	s.Object = object
+	s.require(signSignerFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetID(id string) {
+	s.ID = id
+	s.require(signSignerFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetName(name string) {
+	s.Name = name
+	s.require(signSignerFieldName)
+}
+
+// SetEmail sets the Email field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetEmail(email string) {
+	s.Email = email
+	s.require(signSignerFieldEmail)
+}
+
+// SetOrder sets the Order field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetOrder(order int64) {
+	s.Order = order
+	s.require(signSignerFieldOrder)
+}
+
+// SetDelivery sets the Delivery field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetDelivery(delivery SignSignerDelivery) {
+	s.Delivery = delivery
+	s.require(signSignerFieldDelivery)
+}
+
+// SetAuthentication sets the Authentication field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetAuthentication(authentication SignSignerAuthentication) {
+	s.Authentication = authentication
+	s.require(signSignerFieldAuthentication)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetStatus(status SignSignerStatus) {
+	s.Status = status
+	s.require(signSignerFieldStatus)
+}
+
+// SetClientRef sets the ClientRef field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetClientRef(clientRef *string) {
+	s.ClientRef = clientRef
+	s.require(signSignerFieldClientRef)
+}
+
+// SetViewedAt sets the ViewedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetViewedAt(viewedAt *time.Time) {
+	s.ViewedAt = viewedAt
+	s.require(signSignerFieldViewedAt)
+}
+
+// SetSignedAt sets the SignedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetSignedAt(signedAt *time.Time) {
+	s.SignedAt = signedAt
+	s.require(signSignerFieldSignedAt)
+}
+
+// SetDeclinedAt sets the DeclinedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetDeclinedAt(declinedAt *time.Time) {
+	s.DeclinedAt = declinedAt
+	s.require(signSignerFieldDeclinedAt)
+}
+
+// SetDeclineReason sets the DeclineReason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignSigner) SetDeclineReason(declineReason *string) {
+	s.DeclineReason = declineReason
+	s.require(signSignerFieldDeclineReason)
+}
+
+func (s *SignSigner) UnmarshalJSON(data []byte) error {
+	type embed SignSigner
+	var unmarshaler = struct {
+		embed
+		ViewedAt   *internal.DateTime `json:"viewed_at,omitempty"`
+		SignedAt   *internal.DateTime `json:"signed_at,omitempty"`
+		DeclinedAt *internal.DateTime `json:"declined_at,omitempty"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignSigner(unmarshaler.embed)
+	s.ViewedAt = unmarshaler.ViewedAt.TimePtr()
+	s.SignedAt = unmarshaler.SignedAt.TimePtr()
+	s.DeclinedAt = unmarshaler.DeclinedAt.TimePtr()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signSignerNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignSigner) MarshalJSON() ([]byte, error) {
+	type embed SignSigner
+	var marshaler = struct {
+		embed
+		ViewedAt   *internal.DateTime `json:"viewed_at,omitempty"`
+		SignedAt   *internal.DateTime `json:"signed_at,omitempty"`
+		DeclinedAt *internal.DateTime `json:"declined_at,omitempty"`
+	}{
+		embed:      embed(*s),
+		ViewedAt:   internal.NewOptionalDateTime(s.ViewedAt),
+		SignedAt:   internal.NewOptionalDateTime(s.SignedAt),
+		DeclinedAt: internal.NewOptionalDateTime(s.DeclinedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignSigner) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// How the signer is identified: `email_link` (they opened the link coss.com emailed) or `customer_asserted` (your app vouched for them).
+type SignSignerAuthentication string
+
+const (
+	SignSignerAuthenticationEmailLink        SignSignerAuthentication = "email_link"
+	SignSignerAuthenticationCustomerAsserted SignSignerAuthentication = "customer_asserted"
+)
+
+func NewSignSignerAuthenticationFromString(s string) (SignSignerAuthentication, error) {
+	switch s {
+	case "email_link":
+		return SignSignerAuthenticationEmailLink, nil
+	case "customer_asserted":
+		return SignSignerAuthenticationCustomerAsserted, nil
+	}
+	var t SignSignerAuthentication
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSignerAuthentication) Ptr() *SignSignerAuthentication {
+	return &s
+}
+
+type SignSignerDelivery string
+
+const (
+	SignSignerDeliveryEmbedded SignSignerDelivery = "embedded"
+	SignSignerDeliveryEmail    SignSignerDelivery = "email"
+)
+
+func NewSignSignerDeliveryFromString(s string) (SignSignerDelivery, error) {
+	switch s {
+	case "embedded":
+		return SignSignerDeliveryEmbedded, nil
+	case "email":
+		return SignSignerDeliveryEmail, nil
+	}
+	var t SignSignerDelivery
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSignerDelivery) Ptr() *SignSignerDelivery {
+	return &s
+}
+
+type SignSignerObject string
+
+const (
+	SignSignerObjectSignSigner SignSignerObject = "sign_signer"
+)
+
+func NewSignSignerObjectFromString(s string) (SignSignerObject, error) {
+	switch s {
+	case "sign_signer":
+		return SignSignerObjectSignSigner, nil
+	}
+	var t SignSignerObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSignerObject) Ptr() *SignSignerObject {
+	return &s
+}
+
+type SignSignerStatus string
+
+const (
+	SignSignerStatusPending  SignSignerStatus = "pending"
+	SignSignerStatusNotified SignSignerStatus = "notified"
+	SignSignerStatusViewed   SignSignerStatus = "viewed"
+	SignSignerStatusSigned   SignSignerStatus = "signed"
+	SignSignerStatusDeclined SignSignerStatus = "declined"
+)
+
+func NewSignSignerStatusFromString(s string) (SignSignerStatus, error) {
+	switch s {
+	case "pending":
+		return SignSignerStatusPending, nil
+	case "notified":
+		return SignSignerStatusNotified, nil
+	case "viewed":
+		return SignSignerStatusViewed, nil
+	case "signed":
+		return SignSignerStatusSigned, nil
+	case "declined":
+		return SignSignerStatusDeclined, nil
+	}
+	var t SignSignerStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignSignerStatus) Ptr() *SignSignerStatus {
+	return &s
+}
+
+var (
+	signTemplateFieldObject       = big.NewInt(1 << 0)
+	signTemplateFieldID           = big.NewInt(1 << 1)
+	signTemplateFieldName         = big.NewInt(1 << 2)
+	signTemplateFieldTitle        = big.NewInt(1 << 3)
+	signTemplateFieldMessage      = big.NewInt(1 << 4)
+	signTemplateFieldSigningOrder = big.NewInt(1 << 5)
+	signTemplateFieldDocuments    = big.NewInt(1 << 6)
+	signTemplateFieldRoles        = big.NewInt(1 << 7)
+	signTemplateFieldFields       = big.NewInt(1 << 8)
+	signTemplateFieldReady        = big.NewInt(1 << 9)
+	signTemplateFieldSandbox      = big.NewInt(1 << 10)
+	signTemplateFieldCreatedAt    = big.NewInt(1 << 11)
+	signTemplateFieldUpdatedAt    = big.NewInt(1 << 12)
+)
+
+// signTemplateNullableFields maps the wire names of SignTemplate's nullable fields (required or optional) to their field bits.
+var signTemplateNullableFields = map[string]*big.Int{
+	"title":   signTemplateFieldTitle,
+	"message": signTemplateFieldMessage,
+}
+
+type SignTemplate struct {
+	Object       SignTemplateObject           `json:"object" url:"object"`
+	ID           string                       `json:"id" url:"id"`
+	Name         string                       `json:"name" url:"name"`
+	Title        *string                      `json:"title,omitempty" url:"title,omitempty"`
+	Message      *string                      `json:"message,omitempty" url:"message,omitempty"`
+	SigningOrder SignTemplateSigningOrder     `json:"signing_order" url:"signing_order"`
+	Documents    []*SignTemplateDocumentsItem `json:"documents" url:"documents"`
+	Roles        []*SignTemplateRolesItem     `json:"roles" url:"roles"`
+	Fields       []*SignTemplateFieldsItem    `json:"fields" url:"fields"`
+	// It has documents and every role has a `signature` field, so requests can be made from it.
+	Ready     bool      `json:"ready" url:"ready"`
+	Sandbox   bool      `json:"sandbox" url:"sandbox"`
+	CreatedAt time.Time `json:"created_at" url:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" url:"updated_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplate) GetObject() SignTemplateObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignTemplate) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignTemplate) GetName() string {
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (s *SignTemplate) GetTitle() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Title
+}
+
+func (s *SignTemplate) GetMessage() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Message
+}
+
+func (s *SignTemplate) GetSigningOrder() SignTemplateSigningOrder {
+	if s == nil {
+		return ""
+	}
+	return s.SigningOrder
+}
+
+func (s *SignTemplate) GetDocuments() []*SignTemplateDocumentsItem {
+	if s == nil {
+		return nil
+	}
+	return s.Documents
+}
+
+func (s *SignTemplate) GetRoles() []*SignTemplateRolesItem {
+	if s == nil {
+		return nil
+	}
+	return s.Roles
+}
+
+func (s *SignTemplate) GetFields() []*SignTemplateFieldsItem {
+	if s == nil {
+		return nil
+	}
+	return s.Fields
+}
+
+func (s *SignTemplate) GetReady() bool {
+	if s == nil {
+		return false
+	}
+	return s.Ready
+}
+
+func (s *SignTemplate) GetSandbox() bool {
+	if s == nil {
+		return false
+	}
+	return s.Sandbox
+}
+
+func (s *SignTemplate) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SignTemplate) GetUpdatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.UpdatedAt
+}
+
+func (s *SignTemplate) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplate) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetObject(object SignTemplateObject) {
+	s.Object = object
+	s.require(signTemplateFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetID(id string) {
+	s.ID = id
+	s.require(signTemplateFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetName(name string) {
+	s.Name = name
+	s.require(signTemplateFieldName)
+}
+
+// SetTitle sets the Title field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetTitle(title *string) {
+	s.Title = title
+	s.require(signTemplateFieldTitle)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetMessage(message *string) {
+	s.Message = message
+	s.require(signTemplateFieldMessage)
+}
+
+// SetSigningOrder sets the SigningOrder field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetSigningOrder(signingOrder SignTemplateSigningOrder) {
+	s.SigningOrder = signingOrder
+	s.require(signTemplateFieldSigningOrder)
+}
+
+// SetDocuments sets the Documents field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetDocuments(documents []*SignTemplateDocumentsItem) {
+	s.Documents = documents
+	s.require(signTemplateFieldDocuments)
+}
+
+// SetRoles sets the Roles field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetRoles(roles []*SignTemplateRolesItem) {
+	s.Roles = roles
+	s.require(signTemplateFieldRoles)
+}
+
+// SetFields sets the Fields field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetFields(fields []*SignTemplateFieldsItem) {
+	s.Fields = fields
+	s.require(signTemplateFieldFields)
+}
+
+// SetReady sets the Ready field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetReady(ready bool) {
+	s.Ready = ready
+	s.require(signTemplateFieldReady)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetSandbox(sandbox bool) {
+	s.Sandbox = sandbox
+	s.require(signTemplateFieldSandbox)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(signTemplateFieldCreatedAt)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplate) SetUpdatedAt(updatedAt time.Time) {
+	s.UpdatedAt = updatedAt
+	s.require(signTemplateFieldUpdatedAt)
+}
+
+func (s *SignTemplate) UnmarshalJSON(data []byte) error {
+	type embed SignTemplate
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+		UpdatedAt *internal.DateTime `json:"updated_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignTemplate(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	s.UpdatedAt = unmarshaler.UpdatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signTemplateNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplate) MarshalJSON() ([]byte, error) {
+	type embed SignTemplate
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+		UpdatedAt *internal.DateTime `json:"updated_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+		UpdatedAt: internal.NewDateTime(s.UpdatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplate) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signTemplateDocumentsItemFieldID        = big.NewInt(1 << 0)
+	signTemplateDocumentsItemFieldFilename  = big.NewInt(1 << 1)
+	signTemplateDocumentsItemFieldSha256    = big.NewInt(1 << 2)
+	signTemplateDocumentsItemFieldPageCount = big.NewInt(1 << 3)
+	signTemplateDocumentsItemFieldPages     = big.NewInt(1 << 4)
+)
+
+type SignTemplateDocumentsItem struct {
+	ID        string                                `json:"id" url:"id"`
+	Filename  string                                `json:"filename" url:"filename"`
+	Sha256    string                                `json:"sha256" url:"sha256"`
+	PageCount int64                                 `json:"page_count" url:"page_count"`
+	Pages     []*SignTemplateDocumentsItemPagesItem `json:"pages" url:"pages"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplateDocumentsItem) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignTemplateDocumentsItem) GetFilename() string {
+	if s == nil {
+		return ""
+	}
+	return s.Filename
+}
+
+func (s *SignTemplateDocumentsItem) GetSha256() string {
+	if s == nil {
+		return ""
+	}
+	return s.Sha256
+}
+
+func (s *SignTemplateDocumentsItem) GetPageCount() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.PageCount
+}
+
+func (s *SignTemplateDocumentsItem) GetPages() []*SignTemplateDocumentsItemPagesItem {
+	if s == nil {
+		return nil
+	}
+	return s.Pages
+}
+
+func (s *SignTemplateDocumentsItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplateDocumentsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItem) SetID(id string) {
+	s.ID = id
+	s.require(signTemplateDocumentsItemFieldID)
+}
+
+// SetFilename sets the Filename field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItem) SetFilename(filename string) {
+	s.Filename = filename
+	s.require(signTemplateDocumentsItemFieldFilename)
+}
+
+// SetSha256 sets the Sha256 field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItem) SetSha256(sha256 string) {
+	s.Sha256 = sha256
+	s.require(signTemplateDocumentsItemFieldSha256)
+}
+
+// SetPageCount sets the PageCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItem) SetPageCount(pageCount int64) {
+	s.PageCount = pageCount
+	s.require(signTemplateDocumentsItemFieldPageCount)
+}
+
+// SetPages sets the Pages field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItem) SetPages(pages []*SignTemplateDocumentsItemPagesItem) {
+	s.Pages = pages
+	s.require(signTemplateDocumentsItemFieldPages)
+}
+
+func (s *SignTemplateDocumentsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignTemplateDocumentsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignTemplateDocumentsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplateDocumentsItem) MarshalJSON() ([]byte, error) {
+	type embed SignTemplateDocumentsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplateDocumentsItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signTemplateDocumentsItemPagesItemFieldWidth  = big.NewInt(1 << 0)
+	signTemplateDocumentsItemPagesItemFieldHeight = big.NewInt(1 << 1)
+)
+
+type SignTemplateDocumentsItemPagesItem struct {
+	// In PDF points (1/72 inch).
+	Width  float64 `json:"width" url:"width"`
+	Height float64 `json:"height" url:"height"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItemPagesItem) SetWidth(width float64) {
+	s.Width = width
+	s.require(signTemplateDocumentsItemPagesItemFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateDocumentsItemPagesItem) SetHeight(height float64) {
+	s.Height = height
+	s.require(signTemplateDocumentsItemPagesItemFieldHeight)
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignTemplateDocumentsItemPagesItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignTemplateDocumentsItemPagesItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) MarshalJSON() ([]byte, error) {
+	type embed SignTemplateDocumentsItemPagesItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplateDocumentsItemPagesItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signTemplateFieldsItemFieldID         = big.NewInt(1 << 0)
+	signTemplateFieldsItemFieldRole       = big.NewInt(1 << 1)
+	signTemplateFieldsItemFieldDocumentID = big.NewInt(1 << 2)
+	signTemplateFieldsItemFieldType       = big.NewInt(1 << 3)
+	signTemplateFieldsItemFieldPage       = big.NewInt(1 << 4)
+	signTemplateFieldsItemFieldX          = big.NewInt(1 << 5)
+	signTemplateFieldsItemFieldY          = big.NewInt(1 << 6)
+	signTemplateFieldsItemFieldWidth      = big.NewInt(1 << 7)
+	signTemplateFieldsItemFieldHeight     = big.NewInt(1 << 8)
+	signTemplateFieldsItemFieldRequired   = big.NewInt(1 << 9)
+	signTemplateFieldsItemFieldLabel      = big.NewInt(1 << 10)
+	signTemplateFieldsItemFieldMergeKey   = big.NewInt(1 << 11)
+)
+
+// signTemplateFieldsItemNullableFields maps the wire names of SignTemplateFieldsItem's nullable fields (required or optional) to their field bits.
+var signTemplateFieldsItemNullableFields = map[string]*big.Int{
+	"label":     signTemplateFieldsItemFieldLabel,
+	"merge_key": signTemplateFieldsItemFieldMergeKey,
+}
+
+type SignTemplateFieldsItem struct {
+	ID         string                     `json:"id" url:"id"`
+	Role       string                     `json:"role" url:"role"`
+	DocumentID string                     `json:"document_id" url:"document_id"`
+	Type       SignTemplateFieldsItemType `json:"type" url:"type"`
+	Page       int64                      `json:"page" url:"page"`
+	X          float64                    `json:"x" url:"x"`
+	Y          float64                    `json:"y" url:"y"`
+	Width      float64                    `json:"width" url:"width"`
+	Height     float64                    `json:"height" url:"height"`
+	Required   bool                       `json:"required" url:"required"`
+	Label      *string                    `json:"label,omitempty" url:"label,omitempty"`
+	MergeKey   *string                    `json:"merge_key,omitempty" url:"merge_key,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplateFieldsItem) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignTemplateFieldsItem) GetRole() string {
+	if s == nil {
+		return ""
+	}
+	return s.Role
+}
+
+func (s *SignTemplateFieldsItem) GetDocumentID() string {
+	if s == nil {
+		return ""
+	}
+	return s.DocumentID
+}
+
+func (s *SignTemplateFieldsItem) GetType() SignTemplateFieldsItemType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignTemplateFieldsItem) GetPage() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Page
+}
+
+func (s *SignTemplateFieldsItem) GetX() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.X
+}
+
+func (s *SignTemplateFieldsItem) GetY() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Y
+}
+
+func (s *SignTemplateFieldsItem) GetWidth() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Width
+}
+
+func (s *SignTemplateFieldsItem) GetHeight() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Height
+}
+
+func (s *SignTemplateFieldsItem) GetRequired() bool {
+	if s == nil {
+		return false
+	}
+	return s.Required
+}
+
+func (s *SignTemplateFieldsItem) GetLabel() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Label
+}
+
+func (s *SignTemplateFieldsItem) GetMergeKey() *string {
+	if s == nil {
+		return nil
+	}
+	return s.MergeKey
+}
+
+func (s *SignTemplateFieldsItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplateFieldsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetID(id string) {
+	s.ID = id
+	s.require(signTemplateFieldsItemFieldID)
+}
+
+// SetRole sets the Role field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetRole(role string) {
+	s.Role = role
+	s.require(signTemplateFieldsItemFieldRole)
+}
+
+// SetDocumentID sets the DocumentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetDocumentID(documentID string) {
+	s.DocumentID = documentID
+	s.require(signTemplateFieldsItemFieldDocumentID)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetType(type_ SignTemplateFieldsItemType) {
+	s.Type = type_
+	s.require(signTemplateFieldsItemFieldType)
+}
+
+// SetPage sets the Page field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetPage(page int64) {
+	s.Page = page
+	s.require(signTemplateFieldsItemFieldPage)
+}
+
+// SetX sets the X field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetX(x float64) {
+	s.X = x
+	s.require(signTemplateFieldsItemFieldX)
+}
+
+// SetY sets the Y field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetY(y float64) {
+	s.Y = y
+	s.require(signTemplateFieldsItemFieldY)
+}
+
+// SetWidth sets the Width field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetWidth(width float64) {
+	s.Width = width
+	s.require(signTemplateFieldsItemFieldWidth)
+}
+
+// SetHeight sets the Height field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetHeight(height float64) {
+	s.Height = height
+	s.require(signTemplateFieldsItemFieldHeight)
+}
+
+// SetRequired sets the Required field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetRequired(required bool) {
+	s.Required = required
+	s.require(signTemplateFieldsItemFieldRequired)
+}
+
+// SetLabel sets the Label field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetLabel(label *string) {
+	s.Label = label
+	s.require(signTemplateFieldsItemFieldLabel)
+}
+
+// SetMergeKey sets the MergeKey field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateFieldsItem) SetMergeKey(mergeKey *string) {
+	s.MergeKey = mergeKey
+	s.require(signTemplateFieldsItemFieldMergeKey)
+}
+
+func (s *SignTemplateFieldsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignTemplateFieldsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignTemplateFieldsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signTemplateFieldsItemNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplateFieldsItem) MarshalJSON() ([]byte, error) {
+	type embed SignTemplateFieldsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplateFieldsItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignTemplateFieldsItemType string
+
+const (
+	SignTemplateFieldsItemTypeSignature  SignTemplateFieldsItemType = "signature"
+	SignTemplateFieldsItemTypeInitials   SignTemplateFieldsItemType = "initials"
+	SignTemplateFieldsItemTypeDateSigned SignTemplateFieldsItemType = "date_signed"
+	SignTemplateFieldsItemTypeName       SignTemplateFieldsItemType = "name"
+	SignTemplateFieldsItemTypeEmail      SignTemplateFieldsItemType = "email"
+	SignTemplateFieldsItemTypeText       SignTemplateFieldsItemType = "text"
+	SignTemplateFieldsItemTypeCheckbox   SignTemplateFieldsItemType = "checkbox"
+)
+
+func NewSignTemplateFieldsItemTypeFromString(s string) (SignTemplateFieldsItemType, error) {
+	switch s {
+	case "signature":
+		return SignTemplateFieldsItemTypeSignature, nil
+	case "initials":
+		return SignTemplateFieldsItemTypeInitials, nil
+	case "date_signed":
+		return SignTemplateFieldsItemTypeDateSigned, nil
+	case "name":
+		return SignTemplateFieldsItemTypeName, nil
+	case "email":
+		return SignTemplateFieldsItemTypeEmail, nil
+	case "text":
+		return SignTemplateFieldsItemTypeText, nil
+	case "checkbox":
+		return SignTemplateFieldsItemTypeCheckbox, nil
+	}
+	var t SignTemplateFieldsItemType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignTemplateFieldsItemType) Ptr() *SignTemplateFieldsItemType {
+	return &s
+}
+
+var (
+	signTemplateListFieldObject  = big.NewInt(1 << 0)
+	signTemplateListFieldData    = big.NewInt(1 << 1)
+	signTemplateListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SignTemplateList struct {
+	Object  SignTemplateListObject `json:"object" url:"object"`
+	Data    []*SignTemplate        `json:"data" url:"data"`
+	HasMore bool                   `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplateList) GetObject() SignTemplateListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignTemplateList) GetData() []*SignTemplate {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SignTemplateList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SignTemplateList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplateList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateList) SetObject(object SignTemplateListObject) {
+	s.Object = object
+	s.require(signTemplateListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateList) SetData(data []*SignTemplate) {
+	s.Data = data
+	s.require(signTemplateListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(signTemplateListFieldHasMore)
+}
+
+func (s *SignTemplateList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignTemplateList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignTemplateList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplateList) MarshalJSON() ([]byte, error) {
+	type embed SignTemplateList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplateList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignTemplateListObject string
+
+const (
+	SignTemplateListObjectList SignTemplateListObject = "list"
+)
+
+func NewSignTemplateListObjectFromString(s string) (SignTemplateListObject, error) {
+	switch s {
+	case "list":
+		return SignTemplateListObjectList, nil
+	}
+	var t SignTemplateListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignTemplateListObject) Ptr() *SignTemplateListObject {
+	return &s
+}
+
+type SignTemplateObject string
+
+const (
+	SignTemplateObjectSignTemplate SignTemplateObject = "sign_template"
+)
+
+func NewSignTemplateObjectFromString(s string) (SignTemplateObject, error) {
+	switch s {
+	case "sign_template":
+		return SignTemplateObjectSignTemplate, nil
+	}
+	var t SignTemplateObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignTemplateObject) Ptr() *SignTemplateObject {
+	return &s
+}
+
+var (
+	signTemplateRolesItemFieldKey  = big.NewInt(1 << 0)
+	signTemplateRolesItemFieldName = big.NewInt(1 << 1)
+)
+
+type SignTemplateRolesItem struct {
+	Key  string `json:"key" url:"key"`
+	Name string `json:"name" url:"name"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignTemplateRolesItem) GetKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.Key
+}
+
+func (s *SignTemplateRolesItem) GetName() string {
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (s *SignTemplateRolesItem) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignTemplateRolesItem) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetKey sets the Key field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateRolesItem) SetKey(key string) {
+	s.Key = key
+	s.require(signTemplateRolesItemFieldKey)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignTemplateRolesItem) SetName(name string) {
+	s.Name = name
+	s.require(signTemplateRolesItemFieldName)
+}
+
+func (s *SignTemplateRolesItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignTemplateRolesItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignTemplateRolesItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignTemplateRolesItem) MarshalJSON() ([]byte, error) {
+	type embed SignTemplateRolesItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignTemplateRolesItem) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignTemplateSigningOrder string
+
+const (
+	SignTemplateSigningOrderParallel   SignTemplateSigningOrder = "parallel"
+	SignTemplateSigningOrderSequential SignTemplateSigningOrder = "sequential"
+)
+
+func NewSignTemplateSigningOrderFromString(s string) (SignTemplateSigningOrder, error) {
+	switch s {
+	case "parallel":
+		return SignTemplateSigningOrderParallel, nil
+	case "sequential":
+		return SignTemplateSigningOrderSequential, nil
+	}
+	var t SignTemplateSigningOrder
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignTemplateSigningOrder) Ptr() *SignTemplateSigningOrder {
+	return &s
+}
+
+var (
 	smsNumberFieldObject             = big.NewInt(1 << 0)
 	smsNumberFieldID                 = big.NewInt(1 << 1)
 	smsNumberFieldPhoneNumber        = big.NewInt(1 << 2)
@@ -40365,18 +49663,1650 @@ func (s StorageSettingsObject) Ptr() *StorageSettingsObject {
 }
 
 var (
-	suppressionFieldObject    = big.NewInt(1 << 0)
-	suppressionFieldID        = big.NewInt(1 << 1)
-	suppressionFieldAddress   = big.NewInt(1 << 2)
-	suppressionFieldScope     = big.NewInt(1 << 3)
-	suppressionFieldReason    = big.NewInt(1 << 4)
-	suppressionFieldEmailID   = big.NewInt(1 << 5)
-	suppressionFieldCreatedAt = big.NewInt(1 << 6)
+	subaccountFieldObject     = big.NewInt(1 << 0)
+	subaccountFieldID         = big.NewInt(1 << 1)
+	subaccountFieldUID        = big.NewInt(1 << 2)
+	subaccountFieldName       = big.NewInt(1 << 3)
+	subaccountFieldMetadata   = big.NewInt(1 << 4)
+	subaccountFieldStatus     = big.NewInt(1 << 5)
+	subaccountFieldQuotas     = big.NewInt(1 << 6)
+	subaccountFieldReputation = big.NewInt(1 << 7)
+	subaccountFieldCreatedAt  = big.NewInt(1 << 8)
+	subaccountFieldUpdatedAt  = big.NewInt(1 << 9)
+)
+
+// subaccountNullableFields maps the wire names of Subaccount's nullable fields (required or optional) to their field bits.
+var subaccountNullableFields = map[string]*big.Int{
+	"uid": subaccountFieldUID,
+}
+
+type Subaccount struct {
+	Object SubaccountObject `json:"object" url:"object"`
+	ID     string           `json:"id" url:"id"`
+	// Your own id for it (e.g. your user's id), unique in the environment. Every path and send that takes a sub-account accepts its `id` or its `uid`.
+	UID      *string           `json:"uid,omitempty" url:"uid,omitempty"`
+	Name     string            `json:"name" url:"name"`
+	Metadata map[string]string `json:"metadata" url:"metadata"`
+	// `disabled`: you turned it off (its sends are refused). `deleting`: its domains are being released.
+	Status     SubaccountStatus      `json:"status" url:"status"`
+	Quotas     *SubaccountQuotas     `json:"quotas" url:"quotas"`
+	Reputation *SubaccountReputation `json:"reputation" url:"reputation"`
+	CreatedAt  time.Time             `json:"created_at" url:"created_at"`
+	UpdatedAt  time.Time             `json:"updated_at" url:"updated_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *Subaccount) GetObject() SubaccountObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *Subaccount) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *Subaccount) GetUID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.UID
+}
+
+func (s *Subaccount) GetName() string {
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (s *Subaccount) GetMetadata() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Metadata
+}
+
+func (s *Subaccount) GetStatus() SubaccountStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *Subaccount) GetQuotas() *SubaccountQuotas {
+	if s == nil {
+		return nil
+	}
+	return s.Quotas
+}
+
+func (s *Subaccount) GetReputation() *SubaccountReputation {
+	if s == nil {
+		return nil
+	}
+	return s.Reputation
+}
+
+func (s *Subaccount) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *Subaccount) GetUpdatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.UpdatedAt
+}
+
+func (s *Subaccount) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *Subaccount) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetObject(object SubaccountObject) {
+	s.Object = object
+	s.require(subaccountFieldObject)
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetID(id string) {
+	s.ID = id
+	s.require(subaccountFieldID)
+}
+
+// SetUID sets the UID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetUID(uid *string) {
+	s.UID = uid
+	s.require(subaccountFieldUID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetName(name string) {
+	s.Name = name
+	s.require(subaccountFieldName)
+}
+
+// SetMetadata sets the Metadata field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetMetadata(metadata map[string]string) {
+	s.Metadata = metadata
+	s.require(subaccountFieldMetadata)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetStatus(status SubaccountStatus) {
+	s.Status = status
+	s.require(subaccountFieldStatus)
+}
+
+// SetQuotas sets the Quotas field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetQuotas(quotas *SubaccountQuotas) {
+	s.Quotas = quotas
+	s.require(subaccountFieldQuotas)
+}
+
+// SetReputation sets the Reputation field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetReputation(reputation *SubaccountReputation) {
+	s.Reputation = reputation
+	s.require(subaccountFieldReputation)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(subaccountFieldCreatedAt)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Subaccount) SetUpdatedAt(updatedAt time.Time) {
+	s.UpdatedAt = updatedAt
+	s.require(subaccountFieldUpdatedAt)
+}
+
+func (s *Subaccount) UnmarshalJSON(data []byte) error {
+	type embed Subaccount
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+		UpdatedAt *internal.DateTime `json:"updated_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = Subaccount(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	s.UpdatedAt = unmarshaler.UpdatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, subaccountNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *Subaccount) MarshalJSON() ([]byte, error) {
+	type embed Subaccount
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+		UpdatedAt *internal.DateTime `json:"updated_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+		UpdatedAt: internal.NewDateTime(s.UpdatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *Subaccount) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	subaccountListFieldObject  = big.NewInt(1 << 0)
+	subaccountListFieldData    = big.NewInt(1 << 1)
+	subaccountListFieldHasMore = big.NewInt(1 << 2)
+)
+
+type SubaccountList struct {
+	Object  SubaccountListObject `json:"object" url:"object"`
+	Data    []*Subaccount        `json:"data" url:"data"`
+	HasMore bool                 `json:"has_more" url:"has_more"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountList) GetObject() SubaccountListObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SubaccountList) GetData() []*Subaccount {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SubaccountList) GetHasMore() bool {
+	if s == nil {
+		return false
+	}
+	return s.HasMore
+}
+
+func (s *SubaccountList) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountList) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountList) SetObject(object SubaccountListObject) {
+	s.Object = object
+	s.require(subaccountListFieldObject)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountList) SetData(data []*Subaccount) {
+	s.Data = data
+	s.require(subaccountListFieldData)
+}
+
+// SetHasMore sets the HasMore field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountList) SetHasMore(hasMore bool) {
+	s.HasMore = hasMore
+	s.require(subaccountListFieldHasMore)
+}
+
+func (s *SubaccountList) UnmarshalJSON(data []byte) error {
+	type unmarshaler SubaccountList
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SubaccountList(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountList) MarshalJSON() ([]byte, error) {
+	type embed SubaccountList
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountList) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SubaccountListObject string
+
+const (
+	SubaccountListObjectList SubaccountListObject = "list"
+)
+
+func NewSubaccountListObjectFromString(s string) (SubaccountListObject, error) {
+	switch s {
+	case "list":
+		return SubaccountListObjectList, nil
+	}
+	var t SubaccountListObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountListObject) Ptr() *SubaccountListObject {
+	return &s
+}
+
+type SubaccountObject string
+
+const (
+	SubaccountObjectSubaccount SubaccountObject = "subaccount"
+)
+
+func NewSubaccountObjectFromString(s string) (SubaccountObject, error) {
+	switch s {
+	case "subaccount":
+		return SubaccountObjectSubaccount, nil
+	}
+	var t SubaccountObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountObject) Ptr() *SubaccountObject {
+	return &s
+}
+
+var (
+	subaccountQuotasFieldRecipientsPerDay    = big.NewInt(1 << 0)
+	subaccountQuotasFieldRecipientsPerSecond = big.NewInt(1 << 1)
+	subaccountQuotasFieldBurst               = big.NewInt(1 << 2)
+)
+
+// subaccountQuotasNullableFields maps the wire names of SubaccountQuotas's nullable fields (required or optional) to their field bits.
+var subaccountQuotasNullableFields = map[string]*big.Int{
+	"recipients_per_day":    subaccountQuotasFieldRecipientsPerDay,
+	"recipients_per_second": subaccountQuotasFieldRecipientsPerSecond,
+	"burst":                 subaccountQuotasFieldBurst,
+}
+
+type SubaccountQuotas struct {
+	// Recipients it may send to per day; `null`: only your organization's quota.
+	RecipientsPerDay *int `json:"recipients_per_day,omitempty" url:"recipients_per_day,omitempty"`
+	// Recipients it may send to per second; `null`: only your organization's quota.
+	RecipientsPerSecond *int `json:"recipients_per_second,omitempty" url:"recipients_per_second,omitempty"`
+	// How many recipients a moment may take before the per-second rate applies; `null`: the per-second rate.
+	Burst *int `json:"burst,omitempty" url:"burst,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountQuotas) GetRecipientsPerDay() *int {
+	if s == nil {
+		return nil
+	}
+	return s.RecipientsPerDay
+}
+
+func (s *SubaccountQuotas) GetRecipientsPerSecond() *int {
+	if s == nil {
+		return nil
+	}
+	return s.RecipientsPerSecond
+}
+
+func (s *SubaccountQuotas) GetBurst() *int {
+	if s == nil {
+		return nil
+	}
+	return s.Burst
+}
+
+func (s *SubaccountQuotas) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountQuotas) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetRecipientsPerDay sets the RecipientsPerDay field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountQuotas) SetRecipientsPerDay(recipientsPerDay *int) {
+	s.RecipientsPerDay = recipientsPerDay
+	s.require(subaccountQuotasFieldRecipientsPerDay)
+}
+
+// SetRecipientsPerSecond sets the RecipientsPerSecond field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountQuotas) SetRecipientsPerSecond(recipientsPerSecond *int) {
+	s.RecipientsPerSecond = recipientsPerSecond
+	s.require(subaccountQuotasFieldRecipientsPerSecond)
+}
+
+// SetBurst sets the Burst field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountQuotas) SetBurst(burst *int) {
+	s.Burst = burst
+	s.require(subaccountQuotasFieldBurst)
+}
+
+func (s *SubaccountQuotas) UnmarshalJSON(data []byte) error {
+	type unmarshaler SubaccountQuotas
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SubaccountQuotas(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, subaccountQuotasNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountQuotas) MarshalJSON() ([]byte, error) {
+	type embed SubaccountQuotas
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountQuotas) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	subaccountReputationFieldStatus       = big.NewInt(1 << 0)
+	subaccountReputationFieldTrigger      = big.NewInt(1 << 1)
+	subaccountReputationFieldChangedAt    = big.NewInt(1 << 2)
+	subaccountReputationFieldReinstatedAt = big.NewInt(1 << 3)
+)
+
+// subaccountReputationNullableFields maps the wire names of SubaccountReputation's nullable fields (required or optional) to their field bits.
+var subaccountReputationNullableFields = map[string]*big.Int{
+	"trigger":       subaccountReputationFieldTrigger,
+	"changed_at":    subaccountReputationFieldChangedAt,
+	"reinstated_at": subaccountReputationFieldReinstatedAt,
+}
+
+type SubaccountReputation struct {
+	// `warning`: a rate is close to its limit. `paused`: its live sends are refused (`subaccount_paused`) until you reinstate it.
+	Status SubaccountReputationStatus `json:"status" url:"status"`
+	// What last changed it, e.g. `bounce_rate`, `complaint_rate`, `content_screening`.
+	Trigger      *string    `json:"trigger,omitempty" url:"trigger,omitempty"`
+	ChangedAt    *time.Time `json:"changed_at,omitempty" url:"changed_at,omitempty"`
+	ReinstatedAt *time.Time `json:"reinstated_at,omitempty" url:"reinstated_at,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountReputation) GetStatus() SubaccountReputationStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SubaccountReputation) GetTrigger() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Trigger
+}
+
+func (s *SubaccountReputation) GetChangedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.ChangedAt
+}
+
+func (s *SubaccountReputation) GetReinstatedAt() *time.Time {
+	if s == nil {
+		return nil
+	}
+	return s.ReinstatedAt
+}
+
+func (s *SubaccountReputation) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountReputation) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountReputation) SetStatus(status SubaccountReputationStatus) {
+	s.Status = status
+	s.require(subaccountReputationFieldStatus)
+}
+
+// SetTrigger sets the Trigger field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountReputation) SetTrigger(trigger *string) {
+	s.Trigger = trigger
+	s.require(subaccountReputationFieldTrigger)
+}
+
+// SetChangedAt sets the ChangedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountReputation) SetChangedAt(changedAt *time.Time) {
+	s.ChangedAt = changedAt
+	s.require(subaccountReputationFieldChangedAt)
+}
+
+// SetReinstatedAt sets the ReinstatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountReputation) SetReinstatedAt(reinstatedAt *time.Time) {
+	s.ReinstatedAt = reinstatedAt
+	s.require(subaccountReputationFieldReinstatedAt)
+}
+
+func (s *SubaccountReputation) UnmarshalJSON(data []byte) error {
+	type embed SubaccountReputation
+	var unmarshaler = struct {
+		embed
+		ChangedAt    *internal.DateTime `json:"changed_at,omitempty"`
+		ReinstatedAt *internal.DateTime `json:"reinstated_at,omitempty"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SubaccountReputation(unmarshaler.embed)
+	s.ChangedAt = unmarshaler.ChangedAt.TimePtr()
+	s.ReinstatedAt = unmarshaler.ReinstatedAt.TimePtr()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, subaccountReputationNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountReputation) MarshalJSON() ([]byte, error) {
+	type embed SubaccountReputation
+	var marshaler = struct {
+		embed
+		ChangedAt    *internal.DateTime `json:"changed_at,omitempty"`
+		ReinstatedAt *internal.DateTime `json:"reinstated_at,omitempty"`
+	}{
+		embed:        embed(*s),
+		ChangedAt:    internal.NewOptionalDateTime(s.ChangedAt),
+		ReinstatedAt: internal.NewOptionalDateTime(s.ReinstatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountReputation) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// `warning`: a rate is close to its limit. `paused`: its live sends are refused (`subaccount_paused`) until you reinstate it.
+type SubaccountReputationStatus string
+
+const (
+	SubaccountReputationStatusGood    SubaccountReputationStatus = "good"
+	SubaccountReputationStatusWarning SubaccountReputationStatus = "warning"
+	SubaccountReputationStatusPaused  SubaccountReputationStatus = "paused"
+)
+
+func NewSubaccountReputationStatusFromString(s string) (SubaccountReputationStatus, error) {
+	switch s {
+	case "good":
+		return SubaccountReputationStatusGood, nil
+	case "warning":
+		return SubaccountReputationStatusWarning, nil
+	case "paused":
+		return SubaccountReputationStatusPaused, nil
+	}
+	var t SubaccountReputationStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountReputationStatus) Ptr() *SubaccountReputationStatus {
+	return &s
+}
+
+var (
+	subaccountStatsFieldObject       = big.NewInt(1 << 0)
+	subaccountStatsFieldSubaccountID = big.NewInt(1 << 1)
+	subaccountStatsFieldFrom         = big.NewInt(1 << 2)
+	subaccountStatsFieldTo           = big.NewInt(1 << 3)
+	subaccountStatsFieldData         = big.NewInt(1 << 4)
+)
+
+type SubaccountStats struct {
+	Object       SubaccountStatsObject `json:"object" url:"object"`
+	SubaccountID string                `json:"subaccount_id" url:"subaccount_id"`
+	From         time.Time             `json:"from" url:"from" format:"date"`
+	To           time.Time             `json:"to" url:"to" format:"date"`
+	// One entry per day with sends, oldest first; recipients count by their current status.
+	Data []*SubaccountStatsDay `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountStats) GetObject() SubaccountStatsObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SubaccountStats) GetSubaccountID() string {
+	if s == nil {
+		return ""
+	}
+	return s.SubaccountID
+}
+
+func (s *SubaccountStats) GetFrom() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.From
+}
+
+func (s *SubaccountStats) GetTo() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.To
+}
+
+func (s *SubaccountStats) GetData() []*SubaccountStatsDay {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SubaccountStats) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountStats) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStats) SetObject(object SubaccountStatsObject) {
+	s.Object = object
+	s.require(subaccountStatsFieldObject)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStats) SetSubaccountID(subaccountID string) {
+	s.SubaccountID = subaccountID
+	s.require(subaccountStatsFieldSubaccountID)
+}
+
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStats) SetFrom(from time.Time) {
+	s.From = from
+	s.require(subaccountStatsFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStats) SetTo(to time.Time) {
+	s.To = to
+	s.require(subaccountStatsFieldTo)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStats) SetData(data []*SubaccountStatsDay) {
+	s.Data = data
+	s.require(subaccountStatsFieldData)
+}
+
+func (s *SubaccountStats) UnmarshalJSON(data []byte) error {
+	type embed SubaccountStats
+	var unmarshaler = struct {
+		embed
+		From *internal.Date `json:"from"`
+		To   *internal.Date `json:"to"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SubaccountStats(unmarshaler.embed)
+	s.From = unmarshaler.From.Time()
+	s.To = unmarshaler.To.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountStats) MarshalJSON() ([]byte, error) {
+	type embed SubaccountStats
+	var marshaler = struct {
+		embed
+		From *internal.Date `json:"from"`
+		To   *internal.Date `json:"to"`
+	}{
+		embed: embed(*s),
+		From:  internal.NewDate(s.From),
+		To:    internal.NewDate(s.To),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountStats) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	subaccountStatsDayFieldDate       = big.NewInt(1 << 0)
+	subaccountStatsDayFieldRecipients = big.NewInt(1 << 1)
+	subaccountStatsDayFieldSent       = big.NewInt(1 << 2)
+	subaccountStatsDayFieldDelivered  = big.NewInt(1 << 3)
+	subaccountStatsDayFieldBounced    = big.NewInt(1 << 4)
+	subaccountStatsDayFieldComplained = big.NewInt(1 << 5)
+	subaccountStatsDayFieldFailed     = big.NewInt(1 << 6)
+	subaccountStatsDayFieldSuppressed = big.NewInt(1 << 7)
+)
+
+type SubaccountStatsDay struct {
+	Date time.Time `json:"date" url:"date" format:"date"`
+	// Recipients of the emails sent that day.
+	Recipients int64 `json:"recipients" url:"recipients"`
+	// Handed to the provider (delivered or not).
+	Sent       int64 `json:"sent" url:"sent"`
+	Delivered  int64 `json:"delivered" url:"delivered"`
+	Bounced    int64 `json:"bounced" url:"bounced"`
+	Complained int64 `json:"complained" url:"complained"`
+	Failed     int64 `json:"failed" url:"failed"`
+	// Skipped: on a suppression list.
+	Suppressed int64 `json:"suppressed" url:"suppressed"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountStatsDay) GetDate() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.Date
+}
+
+func (s *SubaccountStatsDay) GetRecipients() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Recipients
+}
+
+func (s *SubaccountStatsDay) GetSent() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Sent
+}
+
+func (s *SubaccountStatsDay) GetDelivered() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Delivered
+}
+
+func (s *SubaccountStatsDay) GetBounced() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Bounced
+}
+
+func (s *SubaccountStatsDay) GetComplained() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Complained
+}
+
+func (s *SubaccountStatsDay) GetFailed() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Failed
+}
+
+func (s *SubaccountStatsDay) GetSuppressed() int64 {
+	if s == nil {
+		return 0
+	}
+	return s.Suppressed
+}
+
+func (s *SubaccountStatsDay) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountStatsDay) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetDate sets the Date field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetDate(date time.Time) {
+	s.Date = date
+	s.require(subaccountStatsDayFieldDate)
+}
+
+// SetRecipients sets the Recipients field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetRecipients(recipients int64) {
+	s.Recipients = recipients
+	s.require(subaccountStatsDayFieldRecipients)
+}
+
+// SetSent sets the Sent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetSent(sent int64) {
+	s.Sent = sent
+	s.require(subaccountStatsDayFieldSent)
+}
+
+// SetDelivered sets the Delivered field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetDelivered(delivered int64) {
+	s.Delivered = delivered
+	s.require(subaccountStatsDayFieldDelivered)
+}
+
+// SetBounced sets the Bounced field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetBounced(bounced int64) {
+	s.Bounced = bounced
+	s.require(subaccountStatsDayFieldBounced)
+}
+
+// SetComplained sets the Complained field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetComplained(complained int64) {
+	s.Complained = complained
+	s.require(subaccountStatsDayFieldComplained)
+}
+
+// SetFailed sets the Failed field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetFailed(failed int64) {
+	s.Failed = failed
+	s.require(subaccountStatsDayFieldFailed)
+}
+
+// SetSuppressed sets the Suppressed field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountStatsDay) SetSuppressed(suppressed int64) {
+	s.Suppressed = suppressed
+	s.require(subaccountStatsDayFieldSuppressed)
+}
+
+func (s *SubaccountStatsDay) UnmarshalJSON(data []byte) error {
+	type embed SubaccountStatsDay
+	var unmarshaler = struct {
+		embed
+		Date *internal.Date `json:"date"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SubaccountStatsDay(unmarshaler.embed)
+	s.Date = unmarshaler.Date.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountStatsDay) MarshalJSON() ([]byte, error) {
+	type embed SubaccountStatsDay
+	var marshaler = struct {
+		embed
+		Date *internal.Date `json:"date"`
+	}{
+		embed: embed(*s),
+		Date:  internal.NewDate(s.Date),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountStatsDay) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SubaccountStatsObject string
+
+const (
+	SubaccountStatsObjectSubaccountStats SubaccountStatsObject = "subaccount_stats"
+)
+
+func NewSubaccountStatsObjectFromString(s string) (SubaccountStatsObject, error) {
+	switch s {
+	case "subaccount_stats":
+		return SubaccountStatsObjectSubaccountStats, nil
+	}
+	var t SubaccountStatsObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountStatsObject) Ptr() *SubaccountStatsObject {
+	return &s
+}
+
+// `disabled`: you turned it off (its sends are refused). `deleting`: its domains are being released.
+type SubaccountStatus string
+
+const (
+	SubaccountStatusActive   SubaccountStatus = "active"
+	SubaccountStatusDisabled SubaccountStatus = "disabled"
+	SubaccountStatusDeleting SubaccountStatus = "deleting"
+)
+
+func NewSubaccountStatusFromString(s string) (SubaccountStatus, error) {
+	switch s {
+	case "active":
+		return SubaccountStatusActive, nil
+	case "disabled":
+		return SubaccountStatusDisabled, nil
+	case "deleting":
+		return SubaccountStatusDeleting, nil
+	}
+	var t SubaccountStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountStatus) Ptr() *SubaccountStatus {
+	return &s
+}
+
+var (
+	subaccountWebhookEventFieldID         = big.NewInt(1 << 0)
+	subaccountWebhookEventFieldObject     = big.NewInt(1 << 1)
+	subaccountWebhookEventFieldType       = big.NewInt(1 << 2)
+	subaccountWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
+	subaccountWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
+	subaccountWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type SubaccountWebhookEvent struct {
+	// The event id, also sent as the `webhook-id` header.
+	ID     string                       `json:"id" url:"id"`
+	Object SubaccountWebhookEventObject `json:"object" url:"object"`
+	Type   SubaccountWebhookEventType   `json:"type" url:"type"`
+	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
+	APIVersion string                      `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                   `json:"created_at" url:"created_at"`
+	Data       *SubaccountWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountWebhookEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SubaccountWebhookEvent) GetObject() SubaccountWebhookEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SubaccountWebhookEvent) GetType() SubaccountWebhookEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SubaccountWebhookEvent) GetAPIVersion() string {
+	if s == nil {
+		return ""
+	}
+	return s.APIVersion
+}
+
+func (s *SubaccountWebhookEvent) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SubaccountWebhookEvent) GetData() *SubaccountWebhookEventData {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SubaccountWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetID(id string) {
+	s.ID = id
+	s.require(subaccountWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetObject(object SubaccountWebhookEventObject) {
+	s.Object = object
+	s.require(subaccountWebhookEventFieldObject)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetType(type_ SubaccountWebhookEventType) {
+	s.Type = type_
+	s.require(subaccountWebhookEventFieldType)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetAPIVersion(apiVersion string) {
+	s.APIVersion = apiVersion
+	s.require(subaccountWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(subaccountWebhookEventFieldCreatedAt)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEvent) SetData(data *SubaccountWebhookEventData) {
+	s.Data = data
+	s.require(subaccountWebhookEventFieldData)
+}
+
+func (s *SubaccountWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed SubaccountWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SubaccountWebhookEvent(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed SubaccountWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountWebhookEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	subaccountWebhookEventDataFieldSubaccountID   = big.NewInt(1 << 0)
+	subaccountWebhookEventDataFieldUID            = big.NewInt(1 << 1)
+	subaccountWebhookEventDataFieldStatus         = big.NewInt(1 << 2)
+	subaccountWebhookEventDataFieldPreviousStatus = big.NewInt(1 << 3)
+	subaccountWebhookEventDataFieldTrigger        = big.NewInt(1 << 4)
+	subaccountWebhookEventDataFieldOccurredAt     = big.NewInt(1 << 5)
+	subaccountWebhookEventDataFieldChecks         = big.NewInt(1 << 6)
+)
+
+// subaccountWebhookEventDataNullableFields maps the wire names of SubaccountWebhookEventData's nullable fields (required or optional) to their field bits.
+var subaccountWebhookEventDataNullableFields = map[string]*big.Int{
+	"uid":     subaccountWebhookEventDataFieldUID,
+	"trigger": subaccountWebhookEventDataFieldTrigger,
+}
+
+type SubaccountWebhookEventData struct {
+	SubaccountID   string                                   `json:"subaccount_id" url:"subaccount_id"`
+	UID            *string                                  `json:"uid,omitempty" url:"uid,omitempty"`
+	Status         SubaccountWebhookEventDataStatus         `json:"status" url:"status"`
+	PreviousStatus SubaccountWebhookEventDataPreviousStatus `json:"previous_status" url:"previous_status"`
+	// What changed it: a check (`bounce_rate`, `complaint_rate`), `content_screening` or `reinstated`.
+	Trigger    *string   `json:"trigger,omitempty" url:"trigger,omitempty"`
+	OccurredAt time.Time `json:"occurred_at" url:"occurred_at"`
+	// The measurements behind the change (empty for reinstatements and screening).
+	Checks []*ReputationCheck `json:"checks" url:"checks"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SubaccountWebhookEventData) GetSubaccountID() string {
+	if s == nil {
+		return ""
+	}
+	return s.SubaccountID
+}
+
+func (s *SubaccountWebhookEventData) GetUID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.UID
+}
+
+func (s *SubaccountWebhookEventData) GetStatus() SubaccountWebhookEventDataStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SubaccountWebhookEventData) GetPreviousStatus() SubaccountWebhookEventDataPreviousStatus {
+	if s == nil {
+		return ""
+	}
+	return s.PreviousStatus
+}
+
+func (s *SubaccountWebhookEventData) GetTrigger() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Trigger
+}
+
+func (s *SubaccountWebhookEventData) GetOccurredAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.OccurredAt
+}
+
+func (s *SubaccountWebhookEventData) GetChecks() []*ReputationCheck {
+	if s == nil {
+		return nil
+	}
+	return s.Checks
+}
+
+func (s *SubaccountWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SubaccountWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetSubaccountID(subaccountID string) {
+	s.SubaccountID = subaccountID
+	s.require(subaccountWebhookEventDataFieldSubaccountID)
+}
+
+// SetUID sets the UID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetUID(uid *string) {
+	s.UID = uid
+	s.require(subaccountWebhookEventDataFieldUID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetStatus(status SubaccountWebhookEventDataStatus) {
+	s.Status = status
+	s.require(subaccountWebhookEventDataFieldStatus)
+}
+
+// SetPreviousStatus sets the PreviousStatus field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetPreviousStatus(previousStatus SubaccountWebhookEventDataPreviousStatus) {
+	s.PreviousStatus = previousStatus
+	s.require(subaccountWebhookEventDataFieldPreviousStatus)
+}
+
+// SetTrigger sets the Trigger field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetTrigger(trigger *string) {
+	s.Trigger = trigger
+	s.require(subaccountWebhookEventDataFieldTrigger)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetOccurredAt(occurredAt time.Time) {
+	s.OccurredAt = occurredAt
+	s.require(subaccountWebhookEventDataFieldOccurredAt)
+}
+
+// SetChecks sets the Checks field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SubaccountWebhookEventData) SetChecks(checks []*ReputationCheck) {
+	s.Checks = checks
+	s.require(subaccountWebhookEventDataFieldChecks)
+}
+
+func (s *SubaccountWebhookEventData) UnmarshalJSON(data []byte) error {
+	type embed SubaccountWebhookEventData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SubaccountWebhookEventData(unmarshaler.embed)
+	s.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, subaccountWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SubaccountWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed SubaccountWebhookEventData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*s),
+		OccurredAt: internal.NewDateTime(s.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SubaccountWebhookEventData) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SubaccountWebhookEventDataPreviousStatus string
+
+const (
+	SubaccountWebhookEventDataPreviousStatusGood    SubaccountWebhookEventDataPreviousStatus = "good"
+	SubaccountWebhookEventDataPreviousStatusWarning SubaccountWebhookEventDataPreviousStatus = "warning"
+	SubaccountWebhookEventDataPreviousStatusPaused  SubaccountWebhookEventDataPreviousStatus = "paused"
+)
+
+func NewSubaccountWebhookEventDataPreviousStatusFromString(s string) (SubaccountWebhookEventDataPreviousStatus, error) {
+	switch s {
+	case "good":
+		return SubaccountWebhookEventDataPreviousStatusGood, nil
+	case "warning":
+		return SubaccountWebhookEventDataPreviousStatusWarning, nil
+	case "paused":
+		return SubaccountWebhookEventDataPreviousStatusPaused, nil
+	}
+	var t SubaccountWebhookEventDataPreviousStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountWebhookEventDataPreviousStatus) Ptr() *SubaccountWebhookEventDataPreviousStatus {
+	return &s
+}
+
+type SubaccountWebhookEventDataStatus string
+
+const (
+	SubaccountWebhookEventDataStatusGood    SubaccountWebhookEventDataStatus = "good"
+	SubaccountWebhookEventDataStatusWarning SubaccountWebhookEventDataStatus = "warning"
+	SubaccountWebhookEventDataStatusPaused  SubaccountWebhookEventDataStatus = "paused"
+)
+
+func NewSubaccountWebhookEventDataStatusFromString(s string) (SubaccountWebhookEventDataStatus, error) {
+	switch s {
+	case "good":
+		return SubaccountWebhookEventDataStatusGood, nil
+	case "warning":
+		return SubaccountWebhookEventDataStatusWarning, nil
+	case "paused":
+		return SubaccountWebhookEventDataStatusPaused, nil
+	}
+	var t SubaccountWebhookEventDataStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountWebhookEventDataStatus) Ptr() *SubaccountWebhookEventDataStatus {
+	return &s
+}
+
+type SubaccountWebhookEventObject string
+
+const (
+	SubaccountWebhookEventObjectEvent SubaccountWebhookEventObject = "event"
+)
+
+func NewSubaccountWebhookEventObjectFromString(s string) (SubaccountWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return SubaccountWebhookEventObjectEvent, nil
+	}
+	var t SubaccountWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountWebhookEventObject) Ptr() *SubaccountWebhookEventObject {
+	return &s
+}
+
+type SubaccountWebhookEventType string
+
+const (
+	SubaccountWebhookEventTypeSubaccountReputationWarning   SubaccountWebhookEventType = "subaccount.reputation_warning"
+	SubaccountWebhookEventTypeSubaccountReputationRecovered SubaccountWebhookEventType = "subaccount.reputation_recovered"
+	SubaccountWebhookEventTypeSubaccountPaused              SubaccountWebhookEventType = "subaccount.paused"
+	SubaccountWebhookEventTypeSubaccountReinstated          SubaccountWebhookEventType = "subaccount.reinstated"
+)
+
+func NewSubaccountWebhookEventTypeFromString(s string) (SubaccountWebhookEventType, error) {
+	switch s {
+	case "subaccount.reputation_warning":
+		return SubaccountWebhookEventTypeSubaccountReputationWarning, nil
+	case "subaccount.reputation_recovered":
+		return SubaccountWebhookEventTypeSubaccountReputationRecovered, nil
+	case "subaccount.paused":
+		return SubaccountWebhookEventTypeSubaccountPaused, nil
+	case "subaccount.reinstated":
+		return SubaccountWebhookEventTypeSubaccountReinstated, nil
+	}
+	var t SubaccountWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SubaccountWebhookEventType) Ptr() *SubaccountWebhookEventType {
+	return &s
+}
+
+var (
+	suppressionFieldObject       = big.NewInt(1 << 0)
+	suppressionFieldID           = big.NewInt(1 << 1)
+	suppressionFieldAddress      = big.NewInt(1 << 2)
+	suppressionFieldScope        = big.NewInt(1 << 3)
+	suppressionFieldReason       = big.NewInt(1 << 4)
+	suppressionFieldEmailID      = big.NewInt(1 << 5)
+	suppressionFieldSubaccountID = big.NewInt(1 << 6)
+	suppressionFieldCreatedAt    = big.NewInt(1 << 7)
 )
 
 // suppressionNullableFields maps the wire names of Suppression's nullable fields (required or optional) to their field bits.
 var suppressionNullableFields = map[string]*big.Int{
-	"email_id": suppressionFieldEmailID,
+	"email_id":      suppressionFieldEmailID,
+	"subaccount_id": suppressionFieldSubaccountID,
 }
 
 type Suppression struct {
@@ -40389,8 +51319,10 @@ type Suppression struct {
 	// `bounce`: added after a permanent bounce. `complaint`: added after a spam complaint. `manual`: added one by one through the API or dashboard. `import`: added by a bulk import. `unsubscribe`: added by the recipient's one-click unsubscribe, scoped to the email's category.
 	Reason SuppressionReason `json:"reason" url:"reason"`
 	// The email whose bounce or complaint added this entry.
-	EmailID   *string   `json:"email_id,omitempty" url:"email_id,omitempty"`
-	CreatedAt time.Time `json:"created_at" url:"created_at"`
+	EmailID *string `json:"email_id,omitempty" url:"email_id,omitempty"`
+	// The sub-account whose list it is on; `null` for the environment's own list.
+	SubaccountID *string   `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
+	CreatedAt    time.Time `json:"created_at" url:"created_at"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -40439,6 +51371,13 @@ func (s *Suppression) GetEmailID() *string {
 		return nil
 	}
 	return s.EmailID
+}
+
+func (s *Suppression) GetSubaccountID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.SubaccountID
 }
 
 func (s *Suppression) GetCreatedAt() time.Time {
@@ -40504,6 +51443,13 @@ func (s *Suppression) SetReason(reason SuppressionReason) {
 func (s *Suppression) SetEmailID(emailID *string) {
 	s.EmailID = emailID
 	s.require(suppressionFieldEmailID)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *Suppression) SetSubaccountID(subaccountID *string) {
+	s.SubaccountID = subaccountID
+	s.require(suppressionFieldSubaccountID)
 }
 
 // SetCreatedAt sets the CreatedAt field and marks it as non-optional;

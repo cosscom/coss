@@ -2648,6 +2648,27 @@ func TestEnumLogDrainSource(t *testing.T) {
 		assert.Equal(t, LogDrainSource("sms"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_sign", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogDrainSourceFromString("sign")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogDrainSource("sign"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_verify", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogDrainSourceFromString("verify")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogDrainSource("verify"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_forms", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogDrainSourceFromString("forms")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogDrainSource("forms"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_audit", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewLogDrainSourceFromString("audit")

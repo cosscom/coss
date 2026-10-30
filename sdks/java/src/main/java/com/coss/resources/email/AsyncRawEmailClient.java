@@ -113,6 +113,10 @@ public class AsyncRawEmailClient {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "batch_id", request.getBatchId().get(), false);
         }
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (request.getCreatedAfter().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "created_after", request.getCreatedAfter().get(), false);

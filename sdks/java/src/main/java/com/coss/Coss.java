@@ -11,12 +11,16 @@ import com.coss.resources.billing.BillingClient;
 import com.coss.resources.domains.DomainsClient;
 import com.coss.resources.email.EmailClient;
 import com.coss.resources.environment.EnvironmentClient;
+import com.coss.resources.forms.FormsClient;
 import com.coss.resources.hooks.HooksClient;
+import com.coss.resources.inboxes.InboxesClient;
 import com.coss.resources.logdrains.LogDrainsClient;
 import com.coss.resources.logs.LogsClient;
 import com.coss.resources.reputation.ReputationClient;
 import com.coss.resources.risk.RiskClient;
+import com.coss.resources.sign.SignClient;
 import com.coss.resources.sms.SmsClient;
+import com.coss.resources.verify.VerifyClient;
 import com.coss.resources.webhookendpoints.WebhookEndpointsClient;
 import com.coss.resources.webhookevents.WebhookEventsClient;
 import com.coss.resources.webhooklisteners.WebhookListenersClient;
@@ -41,6 +45,10 @@ public class Coss implements AutoCloseable {
 
     protected final Supplier<SmsClient> smsClient;
 
+    protected final Supplier<VerifyClient> verifyClient;
+
+    protected final Supplier<FormsClient> formsClient;
+
     protected final Supplier<ReputationClient> reputationClient;
 
     protected final Supplier<LogsClient> logsClient;
@@ -51,9 +59,13 @@ public class Coss implements AutoCloseable {
 
     protected final Supplier<LogDrainsClient> logDrainsClient;
 
+    protected final Supplier<InboxesClient> inboxesClient;
+
     protected final Supplier<RiskClient> riskClient;
 
     protected final Supplier<HooksClient> hooksClient;
+
+    protected final Supplier<SignClient> signClient;
 
     public Coss(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
@@ -65,13 +77,17 @@ public class Coss implements AutoCloseable {
         this.webhookListenersClient = Suppliers.memoize(() -> new WebhookListenersClient(clientOptions));
         this.webhookEventsClient = Suppliers.memoize(() -> new WebhookEventsClient(clientOptions));
         this.smsClient = Suppliers.memoize(() -> new SmsClient(clientOptions));
+        this.verifyClient = Suppliers.memoize(() -> new VerifyClient(clientOptions));
+        this.formsClient = Suppliers.memoize(() -> new FormsClient(clientOptions));
         this.reputationClient = Suppliers.memoize(() -> new ReputationClient(clientOptions));
         this.logsClient = Suppliers.memoize(() -> new LogsClient(clientOptions));
         this.auditEventsClient = Suppliers.memoize(() -> new AuditEventsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new BillingClient(clientOptions));
         this.logDrainsClient = Suppliers.memoize(() -> new LogDrainsClient(clientOptions));
+        this.inboxesClient = Suppliers.memoize(() -> new InboxesClient(clientOptions));
         this.riskClient = Suppliers.memoize(() -> new RiskClient(clientOptions));
         this.hooksClient = Suppliers.memoize(() -> new HooksClient(clientOptions));
+        this.signClient = Suppliers.memoize(() -> new SignClient(clientOptions));
     }
 
     public EnvironmentClient environment() {
@@ -106,6 +122,14 @@ public class Coss implements AutoCloseable {
         return this.smsClient.get();
     }
 
+    public VerifyClient verify() {
+        return this.verifyClient.get();
+    }
+
+    public FormsClient forms() {
+        return this.formsClient.get();
+    }
+
     public ReputationClient reputation() {
         return this.reputationClient.get();
     }
@@ -126,12 +150,20 @@ public class Coss implements AutoCloseable {
         return this.logDrainsClient.get();
     }
 
+    public InboxesClient inboxes() {
+        return this.inboxesClient.get();
+    }
+
     public RiskClient risk() {
         return this.riskClient.get();
     }
 
     public HooksClient hooks() {
         return this.hooksClient.get();
+    }
+
+    public SignClient sign() {
+        return this.signClient.get();
     }
 
     /**

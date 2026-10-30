@@ -10,10 +10,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -21,10 +23,13 @@ import org.jetbrains.annotations.NotNull;
 public final class CreateDomainRequest {
     private final String name;
 
+    private final Optional<String> subaccount;
+
     private final Map<String, Object> additionalProperties;
 
-    private CreateDomainRequest(String name, Map<String, Object> additionalProperties) {
+    private CreateDomainRequest(String name, Optional<String> subaccount, Map<String, Object> additionalProperties) {
         this.name = name;
+        this.subaccount = subaccount;
         this.additionalProperties = additionalProperties;
     }
 
@@ -34,6 +39,14 @@ public final class CreateDomainRequest {
     @JsonProperty("name")
     public String getName() {
         return name;
+    }
+
+    /**
+     * @return Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
     }
 
     @java.lang.Override
@@ -48,12 +61,12 @@ public final class CreateDomainRequest {
     }
 
     private boolean equalTo(CreateDomainRequest other) {
-        return name.equals(other.name);
+        return name.equals(other.name) && subaccount.equals(other.subaccount);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.name);
+        return Objects.hash(this.name, this.subaccount);
     }
 
     @java.lang.Override
@@ -80,11 +93,20 @@ public final class CreateDomainRequest {
         _FinalStage additionalProperty(String key, Object value);
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
+
+        /**
+         * <p>Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.</p>
+         */
+        _FinalStage subaccount(Optional<String> subaccount);
+
+        _FinalStage subaccount(String subaccount);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements NameStage, _FinalStage {
         private String name;
+
+        private Optional<String> subaccount = Optional.empty();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
@@ -94,6 +116,7 @@ public final class CreateDomainRequest {
         @java.lang.Override
         public Builder from(CreateDomainRequest other) {
             name(other.getName());
+            subaccount(other.getSubaccount());
             return this;
         }
 
@@ -108,9 +131,29 @@ public final class CreateDomainRequest {
             return this;
         }
 
+        /**
+         * <p>Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
+            return this;
+        }
+
+        /**
+         * <p>Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public _FinalStage subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
+            return this;
+        }
+
         @java.lang.Override
         public CreateDomainRequest build() {
-            return new CreateDomainRequest(name, additionalProperties);
+            return new CreateDomainRequest(name, subaccount, additionalProperties);
         }
 
         @java.lang.Override

@@ -239,6 +239,52 @@ module Coss
         end
       end
 
+      # Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile,
+      # landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it.
+      # Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed
+      # (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed
+      # lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional
+      # numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap,
+      # `0199` invalid, the rest mobile).
+      #
+      # @param request_options [Hash]
+      # @param params [Coss::Risk::Types::RiskPhoneCheckRequest]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      #
+      # @example
+      #   client.risk.check_phone(phone: "+14155550123")
+      #
+      # @return [Coss::Types::RiskPhoneCheck]
+      def check_phone(request_options: {}, **params)
+        params = Coss::Internal::Types::Utils.normalize_keys(params)
+        headers = { "Idempotency-Key" => Coss::Internal::IdempotencyKey.generate }
+        request = Coss::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "v1/risk/phone/check",
+          headers: headers,
+          body: Coss::Risk::Types::RiskPhoneCheckRequest.new(params).to_h,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Coss::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Coss::Types::RiskPhoneCheck.load(response.body))
+        else
+          error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+          raise error_class.new(response.body, code: code)
+        end
+      end
+
       # Scores text people post on your platform (a profile bio, a comment, a listing) for spam, phishing, malware and
       # fraud with an AI model, with zero data retention. Returns scores only: you decide what they mean. Neither the
       # text nor the scores are stored, and request logs keep no body for this endpoint. Takes up to 3 seconds; a

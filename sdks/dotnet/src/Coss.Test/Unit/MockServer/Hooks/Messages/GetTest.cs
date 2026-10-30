@@ -1,4 +1,3 @@
-using Coss.Hooks;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -42,7 +41,11 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Hooks.Messages.GetAsync(
-            new GetMessagesRequest { Application = "application", MessageId = "message_id" }
+            new Coss.Hooks.GetMessagesRequest
+            {
+                Application = "application",
+                MessageId = "message_id",
+            }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -82,7 +85,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Hooks.Messages.GetAsync(
-            new GetMessagesRequest
+            new Coss.Hooks.GetMessagesRequest
             {
                 Application = "customer_8812",
                 MessageId = "hmsg_01k7c8m4q2f3e9v6t5r1n0p8yz",

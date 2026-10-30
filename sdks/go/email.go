@@ -101,10 +101,11 @@ var (
 	listEmailRequestFieldQ               = big.NewInt(1 << 3)
 	listEmailRequestFieldCategory        = big.NewInt(1 << 4)
 	listEmailRequestFieldBatchID         = big.NewInt(1 << 5)
-	listEmailRequestFieldCreatedAfter    = big.NewInt(1 << 6)
-	listEmailRequestFieldCreatedBefore   = big.NewInt(1 << 7)
-	listEmailRequestFieldLimit           = big.NewInt(1 << 8)
-	listEmailRequestFieldAfter           = big.NewInt(1 << 9)
+	listEmailRequestFieldSubaccount      = big.NewInt(1 << 6)
+	listEmailRequestFieldCreatedAfter    = big.NewInt(1 << 7)
+	listEmailRequestFieldCreatedBefore   = big.NewInt(1 << 8)
+	listEmailRequestFieldLimit           = big.NewInt(1 << 9)
+	listEmailRequestFieldAfter           = big.NewInt(1 << 10)
 )
 
 type ListEmailRequest struct {
@@ -120,6 +121,8 @@ type ListEmailRequest struct {
 	Category *string `json:"-" url:"category,omitempty"`
 	// Only the emails of this batch.
 	BatchID *string `json:"-" url:"batch_id,omitempty"`
+	// Only the emails sent for this sub-account (its id or your uid).
+	Subaccount *string `json:"-" url:"subaccount,omitempty"`
 	// Only emails created at or after this time.
 	CreatedAfter *time.Time `json:"-" url:"created_after,omitempty"`
 	// Only emails created before this time.
@@ -182,6 +185,13 @@ func (l *ListEmailRequest) SetCategory(category *string) {
 func (l *ListEmailRequest) SetBatchID(batchID *string) {
 	l.BatchID = batchID
 	l.require(listEmailRequestFieldBatchID)
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListEmailRequest) SetSubaccount(subaccount *string) {
+	l.Subaccount = subaccount
+	l.require(listEmailRequestFieldSubaccount)
 }
 
 // SetCreatedAfter sets the CreatedAfter field and marks it as non-optional;
@@ -2876,18 +2886,20 @@ var (
 	emailSummaryFieldBatchID        = big.NewInt(1 << 19)
 	emailSummaryFieldTemplate       = big.NewInt(1 << 20)
 	emailSummaryFieldBroadcastID    = big.NewInt(1 << 21)
-	emailSummaryFieldContentStorage = big.NewInt(1 << 22)
+	emailSummaryFieldSubaccountID   = big.NewInt(1 << 22)
+	emailSummaryFieldContentStorage = big.NewInt(1 << 23)
 )
 
 // emailSummaryNullableFields maps the wire names of EmailSummary's nullable fields (required or optional) to their field bits.
 var emailSummaryNullableFields = map[string]*big.Int{
-	"category":     emailSummaryFieldCategory,
-	"failure":      emailSummaryFieldFailure,
-	"sent_at":      emailSummaryFieldSentAt,
-	"scheduled_at": emailSummaryFieldScheduledAt,
-	"batch_id":     emailSummaryFieldBatchID,
-	"template":     emailSummaryFieldTemplate,
-	"broadcast_id": emailSummaryFieldBroadcastID,
+	"category":      emailSummaryFieldCategory,
+	"failure":       emailSummaryFieldFailure,
+	"sent_at":       emailSummaryFieldSentAt,
+	"scheduled_at":  emailSummaryFieldScheduledAt,
+	"batch_id":      emailSummaryFieldBatchID,
+	"template":      emailSummaryFieldTemplate,
+	"broadcast_id":  emailSummaryFieldBroadcastID,
+	"subaccount_id": emailSummaryFieldSubaccountID,
 }
 
 // An email without its content. Retrieve the email for `html`, `text`, `headers` and `attachments`.
@@ -2920,7 +2932,9 @@ type EmailSummary struct {
 	// The template the email was rendered from; `null` if it was sent without one.
 	Template *EmailTemplateReference `json:"template,omitempty" url:"template,omitempty"`
 	// The broadcast the email is part of; `null` for any other email.
-	BroadcastID    *string              `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	BroadcastID *string `json:"broadcast_id,omitempty" url:"broadcast_id,omitempty"`
+	// The sub-account the email was sent for; `null` if it was sent for none.
+	SubaccountID   *string              `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
 	ContentStorage *EmailContentStorage `json:"content_storage" url:"content_storage"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -3082,6 +3096,13 @@ func (e *EmailSummary) GetBroadcastID() *string {
 		return nil
 	}
 	return e.BroadcastID
+}
+
+func (e *EmailSummary) GetSubaccountID() *string {
+	if e == nil {
+		return nil
+	}
+	return e.SubaccountID
 }
 
 func (e *EmailSummary) GetContentStorage() *EmailContentStorage {
@@ -3259,6 +3280,13 @@ func (e *EmailSummary) SetTemplate(template *EmailTemplateReference) {
 func (e *EmailSummary) SetBroadcastID(broadcastID *string) {
 	e.BroadcastID = broadcastID
 	e.require(emailSummaryFieldBroadcastID)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailSummary) SetSubaccountID(subaccountID *string) {
+	e.SubaccountID = subaccountID
+	e.require(emailSummaryFieldSubaccountID)
 }
 
 // SetContentStorage sets the ContentStorage field and marks it as non-optional;
@@ -3646,143 +3674,6 @@ func (e *EmailSummaryTagsItem) String() string {
 }
 
 var (
-	sendEmailAttachmentFieldFilename    = big.NewInt(1 << 0)
-	sendEmailAttachmentFieldContent     = big.NewInt(1 << 1)
-	sendEmailAttachmentFieldContentType = big.NewInt(1 << 2)
-	sendEmailAttachmentFieldContentID   = big.NewInt(1 << 3)
-)
-
-type SendEmailAttachment struct {
-	Filename string `json:"filename" url:"filename"`
-	// The file's bytes, base64-encoded.
-	Content string `json:"content" url:"content"`
-	// Defaults from the filename's extension.
-	ContentType *string `json:"content_type,omitempty" url:"content_type,omitempty"`
-	// Makes the attachment inline: reference it from `html` as `<img src="cid:logo@acme">`.
-	ContentID *string `json:"content_id,omitempty" url:"content_id,omitempty"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SendEmailAttachment) GetFilename() string {
-	if s == nil {
-		return ""
-	}
-	return s.Filename
-}
-
-func (s *SendEmailAttachment) GetContent() string {
-	if s == nil {
-		return ""
-	}
-	return s.Content
-}
-
-func (s *SendEmailAttachment) GetContentType() *string {
-	if s == nil {
-		return nil
-	}
-	return s.ContentType
-}
-
-func (s *SendEmailAttachment) GetContentID() *string {
-	if s == nil {
-		return nil
-	}
-	return s.ContentID
-}
-
-func (s *SendEmailAttachment) GetExtraProperties() map[string]interface{} {
-	if s == nil {
-		return nil
-	}
-	return s.extraProperties
-}
-
-func (s *SendEmailAttachment) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetFilename sets the Filename field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SendEmailAttachment) SetFilename(filename string) {
-	s.Filename = filename
-	s.require(sendEmailAttachmentFieldFilename)
-}
-
-// SetContent sets the Content field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SendEmailAttachment) SetContent(content string) {
-	s.Content = content
-	s.require(sendEmailAttachmentFieldContent)
-}
-
-// SetContentType sets the ContentType field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SendEmailAttachment) SetContentType(contentType *string) {
-	s.ContentType = contentType
-	s.require(sendEmailAttachmentFieldContentType)
-}
-
-// SetContentID sets the ContentID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SendEmailAttachment) SetContentID(contentID *string) {
-	s.ContentID = contentID
-	s.require(sendEmailAttachmentFieldContentID)
-}
-
-func (s *SendEmailAttachment) UnmarshalJSON(data []byte) error {
-	type unmarshaler SendEmailAttachment
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SendEmailAttachment(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SendEmailAttachment) MarshalJSON() ([]byte, error) {
-	type embed SendEmailAttachment
-	var marshaler = struct {
-		embed
-	}{
-		embed: embed(*s),
-	}
-	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
-	return json.Marshal(explicitMarshaler)
-}
-
-func (s *SendEmailAttachment) String() string {
-	if s == nil {
-		return "<nil>"
-	}
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-var (
 	sendEmailRequestFieldFrom            = big.NewInt(1 << 0)
 	sendEmailRequestFieldTo              = big.NewInt(1 << 1)
 	sendEmailRequestFieldCc              = big.NewInt(1 << 2)
@@ -3802,6 +3693,7 @@ var (
 	sendEmailRequestFieldAttachments     = big.NewInt(1 << 16)
 	sendEmailRequestFieldTracking        = big.NewInt(1 << 17)
 	sendEmailRequestFieldStream          = big.NewInt(1 << 18)
+	sendEmailRequestFieldSubaccount      = big.NewInt(1 << 19)
 )
 
 type SendEmailRequest struct {
@@ -3837,6 +3729,8 @@ type SendEmailRequest struct {
 	Tracking    *TrackingOptions       `json:"tracking,omitempty" url:"tracking,omitempty"`
 	// `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
 	Stream *SendEmailRequestStream `json:"stream,omitempty" url:"stream,omitempty"`
+	// Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+	Subaccount *string `json:"subaccount,omitempty" url:"subaccount,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -3976,6 +3870,13 @@ func (s *SendEmailRequest) GetStream() *SendEmailRequestStream {
 		return nil
 	}
 	return s.Stream
+}
+
+func (s *SendEmailRequest) GetSubaccount() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Subaccount
 }
 
 func (s *SendEmailRequest) GetExtraProperties() map[string]interface{} {
@@ -4125,6 +4026,13 @@ func (s *SendEmailRequest) SetTracking(tracking *TrackingOptions) {
 func (s *SendEmailRequest) SetStream(stream *SendEmailRequestStream) {
 	s.Stream = stream
 	s.require(sendEmailRequestFieldStream)
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SendEmailRequest) SetSubaccount(subaccount *string) {
+	s.Subaccount = subaccount
+	s.require(sendEmailRequestFieldSubaccount)
 }
 
 func (s *SendEmailRequest) UnmarshalJSON(data []byte) error {

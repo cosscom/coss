@@ -1,4 +1,3 @@
-using Coss.Email;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -41,7 +40,9 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Email.Templates.GetAsync(new GetTemplatesRequest { Id = "id" });
+        var response = await Client.Email.Templates.GetAsync(
+            new Coss.Email.GetTemplatesRequest { Id = "id" }
+        );
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -78,7 +79,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Templates.GetAsync(
-            new GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
+            new Coss.Email.GetTemplatesRequest { Id = "etpl_01k7c8m4q2f3e9v6t5r1n0p8yz" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

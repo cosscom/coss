@@ -59,6 +59,10 @@ public final class Domain {
 
     private final DomainBimi bimi;
 
+    private final OptionalNullable<String> subaccountId;
+
+    private final boolean sharedWithSubaccounts;
+
     private final Map<String, Object> additionalProperties;
 
     private Domain(
@@ -78,6 +82,8 @@ public final class Domain {
             OptionalNullable<TrackingDomain> tracking,
             OptionalNullable<ReceivingDomain> receiving,
             DomainBimi bimi,
+            OptionalNullable<String> subaccountId,
+            boolean sharedWithSubaccounts,
             Map<String, Object> additionalProperties) {
         this.object = object;
         this.id = id;
@@ -95,6 +101,8 @@ public final class Domain {
         this.tracking = tracking;
         this.receiving = receiving;
         this.bimi = bimi;
+        this.subaccountId = subaccountId;
+        this.sharedWithSubaccounts = sharedWithSubaccounts;
         this.additionalProperties = additionalProperties;
     }
 
@@ -217,6 +225,26 @@ public final class Domain {
         return bimi;
     }
 
+    /**
+     * @return The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    public OptionalNullable<String> getSubaccountId() {
+        if (subaccountId == null) {
+            return OptionalNullable.absent();
+        }
+        return subaccountId;
+    }
+
+    /**
+     * @return An organization's domain its sub-accounts may send from too.
+     */
+    @JsonProperty("shared_with_subaccounts")
+    public boolean getSharedWithSubaccounts() {
+        return sharedWithSubaccounts;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("region")
     private OptionalNullable<String> _getRegion() {
@@ -253,6 +281,12 @@ public final class Domain {
         return receiving;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    private OptionalNullable<String> _getSubaccountId() {
+        return subaccountId;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -280,7 +314,9 @@ public final class Domain {
                 && failedAt.equals(other.failedAt)
                 && tracking.equals(other.tracking)
                 && receiving.equals(other.receiving)
-                && bimi.equals(other.bimi);
+                && bimi.equals(other.bimi)
+                && subaccountId.equals(other.subaccountId)
+                && sharedWithSubaccounts == other.sharedWithSubaccounts;
     }
 
     @java.lang.Override
@@ -301,7 +337,9 @@ public final class Domain {
                 this.failedAt,
                 this.tracking,
                 this.receiving,
-                this.bimi);
+                this.bimi,
+                this.subaccountId,
+                this.sharedWithSubaccounts);
     }
 
     @java.lang.Override
@@ -360,7 +398,14 @@ public final class Domain {
     }
 
     public interface BimiStage {
-        _FinalStage bimi(@NotNull DomainBimi bimi);
+        SharedWithSubaccountsStage bimi(@NotNull DomainBimi bimi);
+    }
+
+    public interface SharedWithSubaccountsStage {
+        /**
+         * <p>An organization's domain its sub-accounts may send from too.</p>
+         */
+        _FinalStage sharedWithSubaccounts(boolean sharedWithSubaccounts);
     }
 
     public interface _FinalStage {
@@ -426,6 +471,17 @@ public final class Domain {
         _FinalStage receiving(Optional<ReceivingDomain> receiving);
 
         _FinalStage receiving(Nullable<ReceivingDomain> receiving);
+
+        /**
+         * <p>The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.</p>
+         */
+        _FinalStage subaccountId(OptionalNullable<String> subaccountId);
+
+        _FinalStage subaccountId(String subaccountId);
+
+        _FinalStage subaccountId(Optional<String> subaccountId);
+
+        _FinalStage subaccountId(Nullable<String> subaccountId);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -439,6 +495,7 @@ public final class Domain {
                     MailFromStatusStage,
                     CreatedAtStage,
                     BimiStage,
+                    SharedWithSubaccountsStage,
                     _FinalStage {
         private DomainObject object;
 
@@ -457,6 +514,10 @@ public final class Domain {
         private OffsetDateTime createdAt;
 
         private DomainBimi bimi;
+
+        private boolean sharedWithSubaccounts;
+
+        private OptionalNullable<String> subaccountId = OptionalNullable.absent();
 
         private OptionalNullable<ReceivingDomain> receiving = OptionalNullable.absent();
 
@@ -495,6 +556,8 @@ public final class Domain {
             tracking(other.getTracking());
             receiving(other.getReceiving());
             bimi(other.getBimi());
+            subaccountId(other.getSubaccountId());
+            sharedWithSubaccounts(other.getSharedWithSubaccounts());
             return this;
         }
 
@@ -572,8 +635,69 @@ public final class Domain {
 
         @java.lang.Override
         @JsonSetter("bimi")
-        public _FinalStage bimi(@NotNull DomainBimi bimi) {
+        public SharedWithSubaccountsStage bimi(@NotNull DomainBimi bimi) {
             this.bimi = Objects.requireNonNull(bimi, "bimi must not be null");
+            return this;
+        }
+
+        /**
+         * <p>An organization's domain its sub-accounts may send from too.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        @JsonSetter("shared_with_subaccounts")
+        public _FinalStage sharedWithSubaccounts(boolean sharedWithSubaccounts) {
+            this.sharedWithSubaccounts = sharedWithSubaccounts;
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Nullable<String> subaccountId) {
+            if (subaccountId.isNull()) {
+                this.subaccountId = OptionalNullable.ofNull();
+            } else if (subaccountId.isEmpty()) {
+                this.subaccountId = OptionalNullable.absent();
+            } else {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Optional<String> subaccountId) {
+            if (subaccountId.isPresent()) {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            } else {
+                this.subaccountId = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(String subaccountId) {
+            this.subaccountId = OptionalNullable.of(subaccountId);
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the domain belongs to (only it sends from it, with its own reputation); <code>null</code> for the organization's own.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount_id", nulls = Nulls.SKIP)
+        public _FinalStage subaccountId(OptionalNullable<String> subaccountId) {
+            this.subaccountId = subaccountId;
             return this;
         }
 
@@ -841,6 +965,8 @@ public final class Domain {
                     tracking,
                     receiving,
                     bimi,
+                    subaccountId,
+                    sharedWithSubaccounts,
                     additionalProperties);
         }
 

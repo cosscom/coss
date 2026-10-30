@@ -15,6 +15,7 @@ from ...types.risk_event import RiskEvent
 from ...types.risk_ip_check import RiskIpCheck
 from ...types.risk_limit import RiskLimit
 from ...types.risk_outcome import RiskOutcome
+from ...types.risk_phone_check import RiskPhoneCheck
 from .raw_client import AsyncRawRiskClient, RawRiskClient
 from .types.create_risk_assessment_request_captcha import CreateRiskAssessmentRequestCaptcha
 from .types.create_risk_assessment_request_content import CreateRiskAssessmentRequestContent
@@ -275,6 +276,38 @@ class RiskClient:
         )
         """
         _response = self._raw_client.check_ip(ip=ip, request_options=request_options)
+        return _response.data
+
+    def check_phone(self, *, phone: str, request_options: typing.Optional[RequestOptions] = None) -> RiskPhoneCheck:
+        """
+        Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+
+        Parameters
+        ----------
+        phone : str
+            The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RiskPhoneCheck
+            What coss.com knows about the number.
+
+        Examples
+        --------
+        from coss import Coss
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.risk.check_phone(
+            phone="+14155550123",
+        )
+        """
+        _response = self._raw_client.check_phone(phone=phone, request_options=request_options)
         return _response.data
 
     def classify(
@@ -698,6 +731,48 @@ class AsyncRiskClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.check_ip(ip=ip, request_options=request_options)
+        return _response.data
+
+    async def check_phone(
+        self, *, phone: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> RiskPhoneCheck:
+        """
+        Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+
+        Parameters
+        ----------
+        phone : str
+            The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RiskPhoneCheck
+            What coss.com knows about the number.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.risk.check_phone(
+                phone="+14155550123",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.check_phone(phone=phone, request_options=request_options)
         return _response.data
 
     async def classify(

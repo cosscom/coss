@@ -15,6 +15,7 @@ if typing.TYPE_CHECKING:
         received,
         segments,
         storage,
+        subaccounts,
         suppressions,
         templates,
         topics,
@@ -39,6 +40,7 @@ if typing.TYPE_CHECKING:
         UpsertContactRequestTopicsItemStatus,
     )
     from .storage import UpdateStorageSettingsRequestContentStorage
+    from .subaccounts import CreateSubaccountRequestQuotas, UpdateSubaccountRequestQuotas, UpdateSubaccountRequestStatus
     from .suppressions import (
         CheckSuppressionsRequestStream,
         CreateSuppressionRequestScope,
@@ -56,6 +58,7 @@ if typing.TYPE_CHECKING:
 _dynamic_imports: typing.Dict[str, str] = {
     "CheckSuppressionsRequestStream": ".suppressions",
     "CreateBroadcastRequestTracking": ".broadcasts",
+    "CreateSubaccountRequestQuotas": ".subaccounts",
     "CreateSuppressionRequestScope": ".suppressions",
     "CreateSuppressionRequestScopeOne": ".suppressions",
     "CreateSuppressionRequestScopeZero": ".suppressions",
@@ -78,6 +81,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "UpdateContactTopicsRequestTopicsItem": ".contacts",
     "UpdateContactTopicsRequestTopicsItemStatus": ".contacts",
     "UpdateStorageSettingsRequestContentStorage": ".storage",
+    "UpdateSubaccountRequestQuotas": ".subaccounts",
+    "UpdateSubaccountRequestStatus": ".subaccounts",
     "UpdateTopicRequestDefaultSubscription": ".topics",
     "UpdateTopicRequestVisibility": ".topics",
     "UpsertContactRequestPropertiesValue": ".contacts",
@@ -92,6 +97,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "received": ".received",
     "segments": ".segments",
     "storage": ".storage",
+    "subaccounts": ".subaccounts",
     "suppressions": ".suppressions",
     "templates": ".templates",
     "topics": ".topics",
@@ -123,6 +129,7 @@ def __dir__():
 __all__ = [
     "CheckSuppressionsRequestStream",
     "CreateBroadcastRequestTracking",
+    "CreateSubaccountRequestQuotas",
     "CreateSuppressionRequestScope",
     "CreateSuppressionRequestScopeOne",
     "CreateSuppressionRequestScopeZero",
@@ -145,6 +152,8 @@ __all__ = [
     "UpdateContactTopicsRequestTopicsItem",
     "UpdateContactTopicsRequestTopicsItemStatus",
     "UpdateStorageSettingsRequestContentStorage",
+    "UpdateSubaccountRequestQuotas",
+    "UpdateSubaccountRequestStatus",
     "UpdateTopicRequestDefaultSubscription",
     "UpdateTopicRequestVisibility",
     "UpsertContactRequestPropertiesValue",
@@ -159,6 +168,7 @@ __all__ = [
     "received",
     "segments",
     "storage",
+    "subaccounts",
     "suppressions",
     "templates",
     "topics",

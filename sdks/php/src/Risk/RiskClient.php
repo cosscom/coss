@@ -26,6 +26,8 @@ use Coss\Risk\Requests\RiskEmailCheckRequest;
 use Coss\Types\RiskEmailCheck;
 use Coss\Risk\Requests\RiskIpCheckRequest;
 use Coss\Types\RiskIpCheck;
+use Coss\Risk\Requests\RiskPhoneCheckRequest;
+use Coss\Types\RiskPhoneCheck;
 use Coss\Risk\Requests\RiskContentClassifyRequest;
 use Coss\Types\RiskContentClassification;
 use Coss\Risk\Requests\CheckRiskLimitRequest;
@@ -397,6 +399,68 @@ class RiskClient
                     return null;
                 }
                 return RiskIpCheck::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+     *
+     * Example:
+     * ```php
+     * $client->risk->checkPhone(
+     *     new RiskPhoneCheckRequest([
+     *         'phone' => '+14155550123',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param RiskPhoneCheckRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?RiskPhoneCheck
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function checkPhone(RiskPhoneCheckRequest $request, ?array $options = null): ?RiskPhoneCheck
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        $headers = [];
+        $headers['Idempotency-Key'] ??= IdempotencyKey::generate();
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/risk/phone/check",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return RiskPhoneCheck::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

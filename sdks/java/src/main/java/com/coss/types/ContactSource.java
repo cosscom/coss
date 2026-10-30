@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public final class ContactSource {
     public static final ContactSource IMPORT = new ContactSource(Value.IMPORT, "import");
 
+    public static final ContactSource FORM = new ContactSource(Value.FORM, "form");
+
     public static final ContactSource PREFERENCE_CENTER =
             new ContactSource(Value.PREFERENCE_CENTER, "preference_center");
 
@@ -50,6 +52,8 @@ public final class ContactSource {
         switch (value) {
             case IMPORT:
                 return visitor.visitImport();
+            case FORM:
+                return visitor.visitForm();
             case PREFERENCE_CENTER:
                 return visitor.visitPreferenceCenter();
             case DASHBOARD:
@@ -67,6 +71,8 @@ public final class ContactSource {
         switch (value) {
             case "import":
                 return IMPORT;
+            case "form":
+                return FORM;
             case "preference_center":
                 return PREFERENCE_CENTER;
             case "dashboard":
@@ -87,6 +93,8 @@ public final class ContactSource {
 
         PREFERENCE_CENTER,
 
+        FORM,
+
         UNKNOWN
     }
 
@@ -98,6 +106,8 @@ public final class ContactSource {
         T visitImport();
 
         T visitPreferenceCenter();
+
+        T visitForm();
 
         T visitUnknown(String unknownType);
     }

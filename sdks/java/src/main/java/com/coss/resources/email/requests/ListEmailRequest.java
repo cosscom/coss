@@ -33,6 +33,8 @@ public final class ListEmailRequest {
 
     private final Optional<String> batchId;
 
+    private final Optional<String> subaccount;
+
     private final Optional<OffsetDateTime> createdAfter;
 
     private final Optional<OffsetDateTime> createdBefore;
@@ -50,6 +52,7 @@ public final class ListEmailRequest {
             Optional<String> q,
             Optional<String> category,
             Optional<String> batchId,
+            Optional<String> subaccount,
             Optional<OffsetDateTime> createdAfter,
             Optional<OffsetDateTime> createdBefore,
             Optional<Integer> limit,
@@ -61,6 +64,7 @@ public final class ListEmailRequest {
         this.q = q;
         this.category = category;
         this.batchId = batchId;
+        this.subaccount = subaccount;
         this.createdAfter = createdAfter;
         this.createdBefore = createdBefore;
         this.limit = limit;
@@ -117,6 +121,14 @@ public final class ListEmailRequest {
     }
 
     /**
+     * @return Only the emails sent for this sub-account (its id or your uid).
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
+    }
+
+    /**
      * @return Only emails created at or after this time.
      */
     @JsonProperty("created_after")
@@ -166,6 +178,7 @@ public final class ListEmailRequest {
                 && q.equals(other.q)
                 && category.equals(other.category)
                 && batchId.equals(other.batchId)
+                && subaccount.equals(other.subaccount)
                 && createdAfter.equals(other.createdAfter)
                 && createdBefore.equals(other.createdBefore)
                 && limit.equals(other.limit)
@@ -181,6 +194,7 @@ public final class ListEmailRequest {
                 this.q,
                 this.category,
                 this.batchId,
+                this.subaccount,
                 this.createdAfter,
                 this.createdBefore,
                 this.limit,
@@ -210,6 +224,8 @@ public final class ListEmailRequest {
 
         private Optional<String> batchId = Optional.empty();
 
+        private Optional<String> subaccount = Optional.empty();
+
         private Optional<OffsetDateTime> createdAfter = Optional.empty();
 
         private Optional<OffsetDateTime> createdBefore = Optional.empty();
@@ -230,6 +246,7 @@ public final class ListEmailRequest {
             q(other.getQ());
             category(other.getCategory());
             batchId(other.getBatchId());
+            subaccount(other.getSubaccount());
             createdAfter(other.getCreatedAfter());
             createdBefore(other.getCreatedBefore());
             limit(other.getLimit());
@@ -322,6 +339,20 @@ public final class ListEmailRequest {
         }
 
         /**
+         * <p>Only the emails sent for this sub-account (its id or your uid).</p>
+         */
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public Builder subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
+            return this;
+        }
+
+        public Builder subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
+            return this;
+        }
+
+        /**
          * <p>Only emails created at or after this time.</p>
          */
         @JsonSetter(value = "created_after", nulls = Nulls.SKIP)
@@ -385,6 +416,7 @@ public final class ListEmailRequest {
                     q,
                     category,
                     batchId,
+                    subaccount,
                     createdAfter,
                     createdBefore,
                     limit,

@@ -182,6 +182,14 @@ client.Email.List(
 <dl>
 <dd>
 
+**subaccount:** `*string` — Only the emails sent for this sub-account (its id or your uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **createdAfter:** `*time.Time` — Only emails created at or after this time.
     
 </dd>
@@ -810,10 +818,27 @@ Every domain of the organization, ordered by name. Domains belong to the organiz
 <dd>
 
 ```go
+request := &coss.ListDomainsRequest{}
 client.Domains.List(
     context.TODO(),
+    request,
 )
 ```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — Only this sub-account's domains (its id or your uid).
+    
 </dd>
 </dl>
 </dd>
@@ -873,6 +898,14 @@ client.Domains.Create(
 <dd>
 
 **name:** `string` — The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
     
 </dd>
 </dl>
@@ -993,6 +1026,75 @@ client.Domains.Delete(
 <dd>
 
 **id:** `string` — The domain's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Domains.Update(ID, request) -> *coss.Domain</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.UpdateDomainRequest{
+    ID: "dom_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    SharedWithSubaccounts: true,
+}
+client.Domains.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The domain's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sharedWithSubaccounts:** `bool` — Let your sub-accounts send from this domain of yours (through your organization's reputation).
     
 </dd>
 </dl>
@@ -1854,7 +1956,7 @@ client.WebhookEvents.Test(
 <dl>
 <dd>
 
-**type_:** `coss.CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+**type_:** `coss.CreateTestWebhookEventRequestType` — The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
     
 </dd>
 </dl>
@@ -2239,6 +2341,887 @@ client.Sms.Cancel(
 <dd>
 
 **id:** `string` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Verify
+<details><summary><code>client.Verify.List() -> *coss.VerificationList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Verifications of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.ListVerifyRequest{}
+client.Verify.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**to:** `*string` — Only verifications to this destination.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*coss.ListVerifyRequestStatus` — Only verifications in this status.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.Start(request) -> *coss.Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a one-time code to a phone number (SMS) or an email address and returns the verification, `pending` until you check the code the end user typed (`POST /v1/verifications/check`). Starting again for the same destination while it is pending sends a new code (the earlier one stops working), up to 5 times. Before a new verification costs anything, the fraud guard checks it (your Risk lists, premium-rate numbers, Tor, and velocity per IP, user, number range and country, with how often their codes are entered): a blocked one is stored with its `reasons` and nothing is sent. Pass the end user's `ip` (and your `user_id`) so it can tell them apart. SMS codes come from coss.com's shared numbers unless the environment's Verify settings name one of your own; email codes from your sender, else coss.com's. Sandbox (`coss_test_…`) keys deliver nothing and the code is always zeros.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.StartVerificationRequest{
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    To: "+14155550199",
+    IP: coss.String(
+        "203.0.113.7",
+    ),
+    UserID: coss.String(
+        "user_42",
+    ),
+}
+client.Verify.Start(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated request with the same key and body returns the original verification instead of sending another code, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `string` — Where the code goes: a mobile number in E.164 form, or an email address. A pending verification to the same destination and channel is reused: its code is sent again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**channel:** `*coss.StartVerificationRequestChannel` — `sms` or `email`. Default: `sms` for a phone number, `email` for an address.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ip:** `*string` — The end user's IP address. The fraud guard uses it (velocity, Tor); recommended.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**userID:** `*string` — Your id for the end user, for the fraud guard's velocity and your Risk lists.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `[]*coss.StartVerificationRequestTagsItem` — Up to 10 tags.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.Check(request) -> *coss.VerificationCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Checks the code the end user typed, by the verification's id or by the destination (its latest verification). `valid: true` approves it (`verification.approved`, billed once); a wrong code spends an attempt, and the last one fails it. Checking an approved verification again with its code stays valid until it expires, without being billed again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CheckVerificationRequest{
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    To: coss.String(
+        "+14155550199",
+    ),
+    Code: "482913",
+}
+client.Verify.Check(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated check with the same key returns the same answer without spending another attempt. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**verificationID:** `*string` — The verification to check. Give this or `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `*string` — The destination the code was sent to: checks its most recent verification. Give this or `verification_id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**code:** `string` — The code the end user entered.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.Get(ID) -> *coss.Verification</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.GetVerifyRequest{
+    ID: "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+}
+client.Verify.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The verification's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Verify.Cancel(ID) -> *coss.Verification</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a pending verification: its code stops working. Canceling it again returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CancelVerifyRequest{
+    ID: "vrf_01k8e2m4q2f3e9v6t5r1n0p8yz",
+}
+client.Verify.Cancel(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The verification's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Forms
+<details><summary><code>client.Forms.List() -> *coss.FormList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's forms, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.ListFormsRequest{}
+client.Forms.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Create(request) -> *coss.Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A hosted form endpoint: point an HTML `<form action>` (or `coss/forms`) at its `endpoint`. Every submission is screened by Risk (the honeypot, captcha, email, IP, device, velocity and content) and accepted ones go to webhooks (`form.submission.received`), notification emails and contacts. Without `fields`, any field is accepted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CreateFormRequest{
+    Name: "Contact us",
+    AllowedOrigins: []string{
+        "https://www.example.com",
+    },
+    Notifications: &coss.CreateFormRequestNotifications{
+        Recipients: []string{
+            "support@example.com",
+        },
+    },
+}
+client.Forms.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `*bool` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `[]*coss.FormFieldInput` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strictFields:** `*bool` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `[]string` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectURL:** `*string` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `*coss.CreateFormRequestSpam` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `*coss.CreateFormRequestSubmitter` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `*coss.CreateFormRequestNotifications` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `*coss.CreateFormRequestContacts` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `*coss.CreateFormRequestFiles` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `*coss.CreateFormRequestHosted` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Get(ID) -> *coss.Form</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.GetFormsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+}
+client.Forms.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Remove(ID) -> *coss.DeletedForm</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the form with every submission and uploaded file. Its endpoint answers 404 from then on.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.RemoveFormsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+}
+client.Forms.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Update(ID, request) -> *coss.Form</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Only the fields given change, within each group (`spam`, `contacts`, …) too.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.UpdateFormRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    Spam: &coss.UpdateFormRequestSpam{
+        Captcha: coss.UpdateFormRequestSpamCaptchaRequired.Ptr(),
+    },
+    Contacts: &coss.UpdateFormRequestContacts{
+        Enabled: coss.Bool(
+            true,
+        ),
+    },
+}
+client.Forms.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**enabled:** `*bool` — `false`: submissions are refused.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `[]*coss.FormFieldInput` — The form's fields. `null` (default): any field is accepted. With fields, submissions are validated against them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strictFields:** `*bool` — With `fields`: refuse fields the form doesn't define. Default false.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `[]string` — Sites that may post to the form, like `https://www.example.com` (sandbox environments also `http://localhost:<port>`). Empty (default): any.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectURL:** `*string` — Where browsers go after an HTML post. `null`: coss.com's thank-you page. A post's `_next` field overrides it when its origin is allowed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**spam:** `*coss.UpdateFormRequestSpam` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submitter:** `*coss.UpdateFormRequestSubmitter` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `*coss.UpdateFormRequestNotifications` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**contacts:** `*coss.UpdateFormRequestContacts` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**files:** `*coss.UpdateFormRequestFiles` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosted:** `*coss.UpdateFormRequestHosted` 
     
 </dd>
 </dl>
@@ -3142,6 +4125,342 @@ client.LogDrains.Update(
 </dl>
 </details>
 
+## Inboxes
+<details><summary><code>client.Inboxes.List() -> *coss.InboxList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's inboxes, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.ListInboxesRequest{}
+client.Inboxes.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Create(request) -> *coss.Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives an agent (or anyone) its own email address in the API key's environment: `username@<the environment's inbound domain>`, which needs no DNS setup, or an address at one of the environment's receiving domains (`domain`). Mail to it is kept as threads, and each message that arrives sends an `inbox.message.received` webhook. With a `client_id` that already has an inbox, that inbox is returned (200) instead of a new one.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CreateInboxRequest{
+    Username: coss.String(
+        "support-agent",
+    ),
+    DisplayName: coss.String(
+        "Acme Support",
+    ),
+    ClientID: coss.String(
+        "agent-42",
+    ),
+}
+client.Inboxes.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**username:** `*string` — The part before the @. Omit it for a random one. Mail to `username+anything@domain` reaches the inbox too.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**domain:** `*string` — One of the environment's receiving domains (its hostname). Omit it for the environment's own domain under coss.com's inbound domain, which needs no DNS setup.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `*string` — The name messages from the inbox are sent with.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**clientID:** `*string` — Your own id for the inbox (unique per environment). Creating an inbox with a `client_id` that already has one returns that inbox instead (200), so retries and "one inbox per user" need no bookkeeping.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Get(InboxID) -> *coss.Inbox</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.GetInboxesRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Inboxes.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Delete(InboxID) -> *coss.DeletedInbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the inbox and its threads. The received emails and emails they held stay in the environment until their retention ends, and mail to the address is still received by the environment (without a thread or `inbox.message.received` webhook).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.DeleteInboxesRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Inboxes.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Update(InboxID, request) -> *coss.Inbox</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name messages from the inbox are sent with. Its address never changes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.UpdateInboxRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    DisplayName: coss.String(
+        "Acme Help",
+    ),
+}
+client.Inboxes.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `*string` — The name messages are sent with; `null` sends with the bare address.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Risk
 <details><summary><code>client.Risk.Assess(request) -> *coss.RiskAssessment</code></summary>
 <dl>
@@ -3516,6 +4835,66 @@ client.Risk.CheckIP(
 <dd>
 
 **ip:** `string` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Risk.CheckPhone(request) -> *coss.RiskPhoneCheck</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.RiskPhoneCheckRequest{
+    Phone: "+14155550123",
+}
+client.Risk.CheckPhone(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone:** `string` — The number in E.164 (`+14155550123`); spaces, dashes, dots and brackets are ignored. Anything else is `valid: false`.
     
 </dd>
 </dl>
@@ -5193,7 +6572,11 @@ The suppression list of the API key's environment, newest first. Pass the last `
 <dd>
 
 ```go
-request := &email.ListSuppressionsRequest{}
+request := &email.ListSuppressionsRequest{
+    Subaccount: coss.String(
+        "user_8812",
+    ),
+}
 client.Email.Suppressions.List(
     context.TODO(),
     request,
@@ -5208,6 +6591,14 @@ client.Email.Suppressions.List(
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — List a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -5311,6 +6702,14 @@ client.Email.Suppressions.Add(
     
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -5387,6 +6786,14 @@ client.Email.Suppressions.Check(
     
 </dd>
 </dl>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — The sub-account you plan to send for (its id or your uid): its own entries count too.
+    
+</dd>
+</dl>
 </dd>
 </dl>
 
@@ -5453,6 +6860,14 @@ client.Email.Suppressions.Import(
 <dl>
 <dd>
 
+**subaccount:** `*string` — Import into a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **suppressions:** `[]*email.ImportSuppressionsRequestSuppressionsItem` — 1-1000 entries. Each one is validated on its own: invalid entries are skipped and reported in `invalid`, the rest are imported.
     
 </dd>
@@ -5507,6 +6922,14 @@ client.Email.Suppressions.Export(
 
 <dl>
 <dd>
+
+<dl>
+<dd>
+
+**subaccount:** `*string` — Export a sub-account's own list (its id or your uid) instead of the environment's.
+    
+</dd>
+</dl>
 
 <dl>
 <dd>
@@ -5626,6 +7049,536 @@ client.Email.Suppressions.Remove(
 <dd>
 
 **id:** `string` — The suppression's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Email Subaccounts
+<details><summary><code>client.Email.Subaccounts.List() -> *coss.SubaccountList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's sub-accounts, newest first. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.ListSubaccountsRequest{
+    After: coss.String(
+        "sub_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ),
+}
+client.Email.Subaccounts.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 50.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — The last `id` of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Create(request) -> *coss.Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Creates a sub-account: one of your users, who gets their own domains, suppressions, quotas and reputation. Give it a `uid` (e.g. your user's id) to address it by in every path and send. Sub-accounts belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox ones, a `coss_live_…` key only production ones.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.CreateSubaccountRequest{
+    Name: "Acme Bakery",
+    UID: coss.String(
+        "user_8812",
+    ),
+    Quotas: &email.CreateSubaccountRequestQuotas{
+        RecipientsPerDay: coss.Int(
+            5000,
+        ),
+    },
+}
+client.Email.Subaccounts.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `string` — A name for your own reference.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `*string` — Your own id for it, to address it by instead of its `id`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Your own key-value pairs (at most 16; keys up to 40 characters, values up to 500).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `*email.CreateSubaccountRequestQuotas` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Get(Subaccount) -> *coss.Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A sub-account of the API key's environment, by its id or uid, with its quotas and reputation.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.GetSubaccountsRequest{
+    Subaccount: "user_8812",
+}
+client.Email.Subaccounts.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `string` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Delete(Subaccount) -> *coss.Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts deleting the sub-account: its sends are refused at once, then its domains are released and it is removed with its suppressions (`status` is `deleting` until then). Its emails stay, with its id. Repeating the call returns it as it is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.DeleteSubaccountsRequest{
+    Subaccount: "user_8812",
+}
+client.Email.Subaccounts.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `string` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Update(Subaccount, request) -> *coss.Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the name, uid, metadata, status or quotas. Fields left out keep their value; `status: "disabled"` refuses its sends until it is `active` again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.UpdateSubaccountRequest{
+    Subaccount: "user_8812",
+    Status: email.UpdateSubaccountRequestStatusDisabled.Ptr(),
+}
+client.Email.Subaccounts.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `string` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `*string` — `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Replaces the metadata.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*email.UpdateSubaccountRequestStatus` — `disabled` refuses its sends until it is `active` again.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quotas:** `*email.UpdateSubaccountRequestQuotas` — Fields left out keep their value; `null` removes a quota.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Reinstate(Subaccount) -> *coss.Subaccount</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its rates are measured again from now on. A pause is never lifted on its own. Repeating the call returns it as it is. Your organization's own reputation still counts its sending.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.ReinstateSubaccountsRequest{
+    Subaccount: "user_8812",
+}
+client.Email.Subaccounts.Reinstate(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `string` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Email.Subaccounts.Stats(Subaccount) -> *coss.SubaccountStats</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The sub-account's sending per UTC day: recipients, sent, delivered, bounced, complained, failed and suppressed, counted from its emails as they are now (a later bounce moves its day's numbers). Emails are kept 45 days, so earlier days are left out.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &email.StatsSubaccountsRequest{
+    Subaccount: "user_8812",
+    From: coss.Time(
+        coss.MustParseDate(
+            "2026-10-01",
+        ),
+    ),
+    To: coss.Time(
+        coss.MustParseDate(
+            "2026-10-15",
+        ),
+    ),
+}
+client.Email.Subaccounts.Stats(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**subaccount:** `string` — The sub-account's `id` (`sub_…`) or your `uid` for it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `*time.Time` — First day (UTC, `YYYY-MM-DD`); default 30 days before `to`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `*time.Time` — Last day (UTC, `YYYY-MM-DD`), included; default today.
     
 </dd>
 </dl>
@@ -10083,6 +12036,362 @@ client.Email.Templates.Versions.Restore(
 </dl>
 </details>
 
+## Forms Submissions
+<details><summary><code>client.Forms.Submissions.List(ID) -> *coss.FormSubmissionList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. `status` narrows them: `accepted` (delivered), `held` (Risk asked for a review), `spam` and `pending_confirmation` (waiting for the submitter's email link).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &forms.ListSubmissionsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+}
+client.Forms.Submissions.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*string` — Only submissions in these statuses, comma-separated: `held,spam`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.Get(ID, SubmissionID) -> *coss.FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &forms.GetSubmissionsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    SubmissionID: "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+}
+client.Forms.Submissions.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionID:** `string` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.Remove(ID, SubmissionID) -> *coss.DeletedFormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes the submission and its files.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &forms.RemoveSubmissionsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    SubmissionID: "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+}
+client.Forms.Submissions.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionID:** `string` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.Release(ID, SubmissionID) -> *coss.FormSubmission</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Not spam: a `held` or `spam` submission becomes `accepted` and is delivered (webhooks, notifications, contacts), and Risk records its assessment as `legitimate`. Releasing an accepted submission returns it as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &forms.ReleaseSubmissionsRequest{
+    ID: "form_01kd2m8n3p4q5r6s7t8v9w0x1y",
+    SubmissionID: "fsub_01kd2m9a0b1c2d3e4f5g6h7j8k",
+}
+client.Forms.Submissions.Release(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionID:** `string` — The submission's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Forms.Submissions.File(ID, SubmissionID, FileID) -> string</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A file uploaded with the submission, as `application/octet-stream`: whatever its type, treat it as untrusted (a submitter chose it).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &forms.FileSubmissionsRequest{
+    ID: "id",
+    SubmissionID: "submission_id",
+    FileID: "file_id",
+}
+client.Forms.Submissions.File(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The form's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**submissionID:** `string` — The submission's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fileID:** `string` — The file's id (`files[].id` of the submission).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Hooks EventTypes
 <details><summary><code>client.Hooks.EventTypes.List() -> *coss.HookEventTypeList</code></summary>
 <dl>
@@ -12352,6 +14661,734 @@ client.Hooks.Portal.CreateSession(
 </dl>
 </details>
 
+## Inboxes Threads
+<details><summary><code>client.Inboxes.Threads.List(InboxID) -> *coss.InboxThreadList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The inbox's conversations, the one with the latest message first, with a preview of that message. A thread whose `last_inbound_at` equals its `last_message_at` awaits a reply. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.ListThreadsRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Inboxes.Threads.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Threads.Get(InboxID, ThreadID) -> *coss.InboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The conversation with its latest messages, oldest first, each with its text and `extracted_text` (its own words, without the quoted conversation): what an agent reads before it replies. HTML is the sender's: sanitize it before showing it to anyone.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.GetThreadsRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ThreadID: "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+}
+client.Inboxes.Threads.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**threadID:** `string` — The thread's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Threads.Delete(InboxID, ThreadID) -> *coss.DeletedInboxThread</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Removes the conversation from the inbox. Its received emails and emails stay in the environment until their retention ends; a later reply starts a new thread.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.DeleteThreadsRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ThreadID: "thread_01k7c8m4r0c2b8w9y3d5f6g7h8",
+}
+client.Inboxes.Threads.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**threadID:** `string` — The thread's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Inboxes Messages
+<details><summary><code>client.Inboxes.Messages.List(InboxID) -> *coss.InboxMessageList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Messages of every thread, newest first, with a preview instead of their bodies (retrieve one for those). Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.ListMessagesRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Inboxes.Messages.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**direction:** `*inboxes.ListMessagesRequestDirection` — Only inbound (received) or outbound (sent) messages.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.Send(InboxID, request) -> *coss.InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts a thread with a message from the inbox's address, sent like any email (its `email_id` has its delivery events and webhooks; never tracked). Replies to it arrive in the same thread. Live inboxes send only from receiving domains under one of the organization's verified domains (`can_send`); sandbox ones always can, and deliver nothing. Recipients count against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.SendInboxMessageRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    To: &inboxes.SendInboxMessageRequestTo{
+        String: "jane@example.com",
+    },
+    Subject: "Your order",
+    Text: coss.String(
+        "Hi Jane, your order has shipped.",
+    ),
+}
+client.Inboxes.Messages.Send(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**to:** `*inboxes.SendInboxMessageRequestTo` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `*inboxes.SendInboxMessageRequestCc` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `*inboxes.SendInboxMessageRequestBcc` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**subject:** `string` — The new thread's subject.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `*string` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `*string` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `[]*coss.SendEmailAttachment` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `[]*inboxes.SendInboxMessageRequestTagsItem` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.Get(InboxID, MessageID) -> *coss.InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The message with its text, HTML and `extracted_text`. An outbound message's delivery is its email's (`email_id`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.GetMessagesRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    MessageID: "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+}
+client.Inboxes.Messages.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageID:** `string` — The message's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.GetAttachment(InboxID, MessageID, AttachmentID) -> string</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An inbound message's attachment, always as `application/octet-stream` (its declared type is the attachment's `content_type`): treat it as untrusted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.GetAttachmentMessagesRequest{
+    InboxID: "inbox_id",
+    MessageID: "message_id",
+    AttachmentID: "attachment_id",
+}
+client.Inboxes.Messages.GetAttachment(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageID:** `string` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachmentID:** `string` — The attachment's id (from the message's `attachments`).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Inboxes.Messages.Reply(InboxID, MessageID, request) -> *coss.InboxMessage</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replies in the message's thread from the inbox's address: to its sender (its `Reply-To` first), or to an outbound message's recipients again for a follow-up; `reply_all` adds everyone else on it. The subject gets `Re:`, and `In-Reply-To`/`References` let the recipient's mail client thread it. Sent like any email, counted against the send quota.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &inboxes.ReplyInboxMessageRequest{
+    InboxID: "inbox_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    MessageID: "imsg_01k7c8m4s1d3c9x0z4e6g7h8j9",
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    Text: coss.String(
+        "Sorry about that, Jane! A new one is on its way.",
+    ),
+}
+client.Inboxes.Messages.Reply(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**inboxID:** `string` — The inbox's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**messageID:** `string` — The message's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes the send safe to retry: a repeat with the same key and body returns the first message instead of sending again (keys are per inbox). 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**replyAll:** `*bool` — Also reply to everyone else on the message (its `to` and `cc`, but the inbox). Default `false`: only the sender (its `Reply-To`, when it has one).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cc:** `*inboxes.ReplyInboxMessageRequestCc` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bcc:** `*inboxes.ReplyInboxMessageRequestBcc` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**text:** `*string` — Plain-text body. Without it, an `html` email goes out with a text part generated from the HTML.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**html:** `*string` — HTML body. Provide `html`, `text`, or both.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attachments:** `[]*coss.SendEmailAttachment` — Up to 20 files, at most 25 MB combined.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `[]*inboxes.ReplyInboxMessageRequestTagsItem` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## LogDrains Batches
 <details><summary><code>client.LogDrains.Batches.List(ID) -> *coss.LogDrainBatchList</code></summary>
 <dl>
@@ -13861,6 +16898,1808 @@ client.Risk.LimitBuckets.Update(
 <dd>
 
 **onFailure:** `*risk.UpdateRiskLimitBucketRequestOnFailure` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Documents
+<details><summary><code>client.Sign.Documents.List() -> *coss.SignDocumentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents uploaded to the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.ListDocumentsRequest{}
+client.Sign.Documents.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.Upload(request) -> *coss.SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Uploads a PDF (base64, at most 25 MB and 500 pages, not password-protected) for signature requests to use. The response lists each page's size and the text anchors found in it (`{{signature:signer_1}}`), which fields can be placed by. Requests can also take PDFs inline.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.UploadSignDocumentRequest{
+    Filename: "agreement.pdf",
+    Content: "JVBERi0xLjcKJYGBgYEKCjEgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFsgNCAwIFIgXQovQ291bnQgMQo+PgplbmRvYmoKCjIgMCBvYmoKPDwKL1R5cGUgL0NhdGFsb2cKL1BhZ2VzIDEgMCBSCj4+CmVuZG9iagoKMyAwIG9iago8PAovVHlwZSAvRm9udAovU3VidHlwZSAvVHlwZTEKL0Jhc2VGb250IC9IZWx2ZXRpY2EKL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcKPj4KZW5kb2JqCgo0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlCi9QYXJlbnQgMSAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovSGVsdmV0aWNhLTcwOTg0ODA3ODkgMyAwIFIKPj4KL1hPYmplY3QgPDwKPj4KL0V4dEdTdGF0ZSA8PAo+Pgo+PgovTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdCi9Bbm5vdHMgWyBdCi9Db250ZW50cyBbIDUgMCBSIF0KPj4KZW5kb2JqCgo1IDAgb2JqCjw8Ci9GaWx0ZXIgL0ZsYXRlRGVjb2RlCi9MZW5ndGggMTIwCj4+CnN0cmVhbQp4nG2KMQrCQBBF+znF1II4O7s7fxckYEjEwkaYC4hEiWgREc9vtLCSV/3330Stk/CHx4VWu+H2Gp7j6biE1JKKoFQOyn4mTex7Ct80MJQhwn6ndY5WDdZbQEKGWo4bFbQzf56fm3fexoAOXcN+JV9Q73SgN3RWIBIKZW5kc3RyZWFtCmVuZG9iagoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE2IDAwMDAwIG4gCjAwMDAwMDAwNzYgMDAwMDAgbiAKMDAwMDAwMDEyNiAwMDAwMCBuIAowMDAwMDAwMjI0IDAwMDAwIG4gCjAwMDAwMDA0MTkgMDAwMDAgbiAKCnRyYWlsZXIKPDwKL1NpemUgNgovUm9vdCAyIDAgUgo+PgoKc3RhcnR4cmVmCjYxMgolJUVPRg==",
+}
+client.Sign.Documents.Upload(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**filename:** `string` — The file's name, ending in `.pdf`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content:** `string` — The PDF's bytes, base64-encoded (at most 25 MB decoded).
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.Get(ID) -> *coss.SignDocument</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.GetDocumentsRequest{
+    ID: "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Documents.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The document's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Documents.Remove(ID) -> *coss.DeletedSignDocument</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes an uploaded document and its file. Documents a request uses can't be deleted.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.RemoveDocumentsRequest{
+    ID: "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Documents.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The document's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Requests
+<details><summary><code>client.Sign.Requests.List() -> *coss.SignRequestList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Signature requests of the API key's environment, newest first. Pass the last `id` as `after` to get the next page while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.ListRequestsRequest{}
+client.Sign.Requests.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**status:** `*string` — Only requests in these statuses, comma-separated: `sent,draft`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Create(request) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Asks one or more signers to sign one or more PDFs. Give documents by id (uploaded) or inline, and each signer's fields by position (`page`, `x`, `y`, `width`, `height` in PDF points from the page's top left) or by text anchor (`{{signature:signer_1}}`). Every signer needs a `signature` field. Sent at once unless `send` is `false` (a `draft`). Each signer signs by email (`delivery: "email"`, the default) or in your app (`"embedded"`).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CreateSignRequestRequest{
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    Title: "Services agreement",
+    Documents: []*sign.CreateSignRequestRequestDocumentsItem{
+        &sign.CreateSignRequestRequestDocumentsItem{
+            CreateSignRequestRequestDocumentsItemDocumentID: &sign.CreateSignRequestRequestDocumentsItemDocumentID{
+                DocumentID: "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            },
+        },
+    },
+    Signers: []*sign.CreateSignRequestRequestSignersItem{
+        &sign.CreateSignRequestRequestSignersItem{
+            Name: "Ada Lovelace",
+            Email: "ada@example.com",
+            Fields: []*coss.SignFieldInput{
+                &coss.SignFieldInput{
+                    SignFieldInputAnchor: &coss.SignFieldInputAnchor{
+                        Type: coss.SignFieldInputAnchorTypeSignature,
+                        Anchor: "{{signature:signer_1}}",
+                    },
+                },
+                &coss.SignFieldInput{
+                    SignFieldInputDocument: &coss.SignFieldInputDocument{
+                        Type: coss.SignFieldInputDocumentTypeDateSigned,
+                        Page: int64(2),
+                        X: 320,
+                        Y: 640,
+                        Width: 120,
+                        Height: 18,
+                    },
+                },
+            },
+        },
+    },
+}
+client.Sign.Requests.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `string` — Shown to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `*string` — A note to signers.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `[]*sign.CreateSignRequestRequestDocumentsItem` — Uploaded documents by id, or PDFs inline (base64).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `[]*sign.CreateSignRequestRequestSignersItem` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `*sign.CreateSignRequestRequestSigningOrder` — `parallel` (default): everyone at once. `sequential`: in each signer's `order`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresAt:** `*time.Time` — When unsigned requests expire (at most 365 days ahead).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `*int` — Email signers who haven't signed get a reminder every this many days (up to 3). Default: your Sign settings' `reminder_interval_days`; `null`: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `*bool` — Default `true`: send at once. `false` keeps a `draft` to send later.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Get(ID) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.GetRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Remove(ID) -> *coss.DeletedSignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Deletes a request that isn't `sent` (cancel it first) with its signers, fields, audit trail, signatures and signed document, for good. Its documents stay (delete them on their own). Keep the signed document first if you need it: it is your record.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.RemoveRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Send(ID) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Sends a `draft`. An already sent request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.SendRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.Send(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Cancel(ID) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Cancels a `draft` or `sent` request: its signers can no longer sign. An already canceled request is returned as is.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CancelRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.Cancel(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.AuditTrail(ID) -> *coss.SignEventList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Everything that happened to the request, oldest first: who did it, from which address, the documents' SHA-256 when it mattered, and a hash chain (`previous_hash`, `hash`) that shows the trail is complete and unchanged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.AuditTrailRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.AuditTrail(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.Remind(ID) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Emails a reminder, with a fresh link, to every email signer of a sent request who hasn't signed and whose turn it is, unless they were emailed in the last hour. Embedded signers are yours to remind. Sent within seconds; each is a `reminded` event in the audit trail.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.RemindRequestsRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Requests.Remind(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Requests.SignedDocument(ID) -> string</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The completed request's sealed PDF: every document with the signatures and values filled in, then a certificate of completion (signers, how they were identified, what they agreed to, the documents' SHA-256 and the audit trail). coss.com's seal makes any later change visible in PDF viewers. Ready once `signed_document` is set, which the `sign_request.completed` webhook announces.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.SignedDocumentRequestsRequest{
+    ID: "id",
+}
+client.Sign.Requests.SignedDocument(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Sessions
+<details><summary><code>client.Sign.Sessions.Create(ID, SignerID, request) -> *coss.SignSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the signing page for one `embedded` signer of a sent request. Your app vouches for who the signer is (the audit trail records `customer_asserted`), so create it only for that signed-in user, when they open the page that shows it. Embed the `url` in an iframe from an origin in your Sign settings' `allowed_origins` (`mountSigning` from `coss/sign` does it), or redirect to it. Each call creates a new session.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CreateSignSessionRequest{
+    ID: "sreq_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    SignerID: "ssgn_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ExpiresIn: coss.Int(
+        3600,
+    ),
+}
+client.Sign.Sessions.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The signature request's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signerID:** `string` — The signer's id (`signers[].id` of the request).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `*int` — Seconds until the link expires: default 3600, at most 86400. Mint one when your user opens the page that shows it.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Settings
+<details><summary><code>client.Sign.Settings.Get() -> *coss.SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The API key's environment's settings: which sites may embed the signing page, how it looks, and the consent text signers accept.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Sign.Settings.Get(
+    context.TODO(),
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Settings.Update(request) -> *coss.SignSettings</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given; the others keep their values.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.UpdateSignSettingsRequest{
+    AllowedOrigins: []string{
+        "https://app.example.com",
+    },
+    DisplayName: coss.String(
+        "Acme",
+    ),
+}
+client.Sign.Settings.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**allowedOrigins:** `[]string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**displayName:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**accentColor:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**theme:** `*sign.UpdateSignSettingsRequestTheme` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**disclosure:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**emailFrom:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `*int` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Sign Templates
+<details><summary><code>client.Sign.Templates.List() -> *coss.SignTemplateList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first. Pass the last `id` as `after` while `has_more` is true.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.ListTemplatesRequest{}
+client.Sign.Templates.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` — 1-100, default 20.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — Cursor: the `id` of the last item of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.Create(request) -> *coss.SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Documents with fields for roles (`client`, `company`) instead of named signers, made into requests by naming a signer per role. Fields by position or text anchor (resolved now). Can start empty and be built in the embedded builder (create a builder session).
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CreateSignTemplateRequest{
+    Name: "Mutual NDA",
+    Documents: []*sign.CreateSignTemplateRequestDocumentsItem{
+        &sign.CreateSignTemplateRequestDocumentsItem{
+            CreateSignTemplateRequestDocumentsItemDocumentID: &sign.CreateSignTemplateRequestDocumentsItemDocumentID{
+                DocumentID: "sdoc_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            },
+        },
+    },
+    Roles: []*sign.CreateSignTemplateRequestRolesItem{
+        &sign.CreateSignTemplateRequestRolesItem{
+            Key: "client",
+            Name: "Client",
+        },
+        &sign.CreateSignTemplateRequestRolesItem{
+            Key: "company",
+            Name: "Company",
+        },
+    },
+    Fields: []*sign.CreateSignTemplateRequestFieldsItem{
+        &sign.CreateSignTemplateRequestFieldsItem{
+            CreateSignTemplateRequestFieldsItemAnchor: &sign.CreateSignTemplateRequestFieldsItemAnchor{
+                Type: sign.CreateSignTemplateRequestFieldsItemAnchorTypeSignature,
+                Anchor: "{{signature:client}}",
+                Role: "client",
+            },
+        },
+        &sign.CreateSignTemplateRequestFieldsItem{
+            CreateSignTemplateRequestFieldsItemDocument: &sign.CreateSignTemplateRequestFieldsItemDocument{
+                Type: sign.CreateSignTemplateRequestFieldsItemDocumentTypeText,
+                Page: int64(1),
+                X: 72,
+                Y: 140,
+                Width: 200,
+                Height: 18,
+                Role: "client",
+                MergeKey: coss.String(
+                    "client_company",
+                ),
+            },
+        },
+        &sign.CreateSignTemplateRequestFieldsItem{
+            CreateSignTemplateRequestFieldsItemAnchor: &sign.CreateSignTemplateRequestFieldsItemAnchor{
+                Type: sign.CreateSignTemplateRequestFieldsItemAnchorTypeSignature,
+                Anchor: "{{signature:company}}",
+                Role: "company",
+            },
+        },
+    },
+}
+client.Sign.Templates.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `*string` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `*string` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `*sign.CreateSignTemplateRequestSigningOrder` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `[]*sign.CreateSignTemplateRequestDocumentsItem` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `[]*sign.CreateSignTemplateRequestRolesItem` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `[]*sign.CreateSignTemplateRequestFieldsItem` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.Get(ID) -> *coss.SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.GetTemplatesRequest{
+    ID: "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Templates.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.Remove(ID) -> *coss.DeletedSignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Requests made from it, and its documents, stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.RemoveTemplatesRequest{
+    ID: "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+}
+client.Sign.Templates.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.Update(ID, request) -> *coss.SignTemplate</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes the fields given. `documents`, `roles` and `fields` each replace the whole list. Requests already made from it don't change.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.UpdateSignTemplateRequest{
+    ID: "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    Name: coss.String(
+        "Mutual NDA (2026)",
+    ),
+}
+client.Sign.Templates.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `*string` — Requests' title (a request may set its own). Default: `name`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `*string` — Requests' message to signers (a request may set its own).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `*sign.UpdateSignTemplateRequestSigningOrder` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**documents:** `[]*sign.UpdateSignTemplateRequestDocumentsItem` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**roles:** `[]*sign.UpdateSignTemplateRequestRolesItem` — Who signs: each request names one signer per role.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fields:** `[]*sign.UpdateSignTemplateRequestFieldsItem` — Each role's fields, by position or text anchor (resolved when saved). A template can be used once every role has a `signature` field.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.CreateRequest(ID, request) -> *coss.SignRequest</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A signature request with the template's documents and fields: name one signer for each role, and give its merge fields' values. Like creating a request, it is sent at once unless `send` is `false`, and an `Idempotency-Key` makes retries safe.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CreateSignRequestFromTemplateRequest{
+    ID: "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    Signers: []*sign.CreateSignRequestFromTemplateRequestSignersItem{
+        &sign.CreateSignRequestFromTemplateRequestSignersItem{
+            Role: "client",
+            Name: "Ada Lovelace",
+            Email: "ada@example.com",
+        },
+        &sign.CreateSignRequestFromTemplateRequestSignersItem{
+            Role: "company",
+            Name: "Grace Hopper",
+            Email: "grace@acme.com",
+            Delivery: sign.CreateSignRequestFromTemplateRequestSignersItemDeliveryEmbedded.Ptr(),
+        },
+    },
+    MergeFields: map[string]string{
+        "client_company": "Analytical Engines Ltd",
+    },
+}
+client.Sign.Templates.CreateRequest(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated request with the same key and body returns the original request (in its current state) instead of creating another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `*string` — Default: the template's title (else its name).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**message:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signers:** `[]*sign.CreateSignRequestFromTemplateRequestSignersItem` — One signer for each of the template's roles.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**mergeFields:** `map[string]string` — Values of the template's merge fields, by `merge_key`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**signingOrder:** `*sign.CreateSignRequestFromTemplateRequestSigningOrder` — Default: the template's.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresAt:** `*time.Time` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Your own key-value pairs, returned with the request and its webhooks.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminderIntervalDays:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**send:** `*bool` — Default `true`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Sign.Templates.CreateBuilderSession(ID, request) -> *coss.SignBuilderSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A short-lived link to the embedded builder for this template: upload documents, add roles, and drag fields onto pages. Embed it with `mountBuilder` from `coss/sign` (from an origin in your Sign settings' `allowed_origins`) for whoever edits the template.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &sign.CreateSignBuilderSessionRequest{
+    ID: "stpl_01k7c8m4q2f3e9v6t5r1n0p8yz",
+    ExpiresIn: coss.Int(
+        3600,
+    ),
+}
+client.Sign.Templates.CreateBuilderSession(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The template's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `*int` — Seconds until the link expires: default 3600, at most 86400.
     
 </dd>
 </dl>

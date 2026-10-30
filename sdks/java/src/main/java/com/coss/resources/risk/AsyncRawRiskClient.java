@@ -18,6 +18,7 @@ import com.coss.errors.ContentTooLargeError;
 import com.coss.errors.ForbiddenError;
 import com.coss.errors.InternalServerError;
 import com.coss.errors.NotFoundError;
+import com.coss.errors.PaymentRequiredError;
 import com.coss.errors.ServiceUnavailableError;
 import com.coss.errors.TooManyRequestsError;
 import com.coss.errors.UnauthorizedError;
@@ -29,6 +30,7 @@ import com.coss.resources.risk.requests.CreateRiskFeedbackRequest;
 import com.coss.resources.risk.requests.RiskContentClassifyRequest;
 import com.coss.resources.risk.requests.RiskEmailCheckRequest;
 import com.coss.resources.risk.requests.RiskIpCheckRequest;
+import com.coss.resources.risk.requests.RiskPhoneCheckRequest;
 import com.coss.types.Error;
 import com.coss.types.RiskAssessment;
 import com.coss.types.RiskCalibration;
@@ -36,6 +38,7 @@ import com.coss.types.RiskContentClassification;
 import com.coss.types.RiskEmailCheck;
 import com.coss.types.RiskIpCheck;
 import com.coss.types.RiskLimit;
+import com.coss.types.RiskPhoneCheck;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -640,6 +643,137 @@ public class AsyncRawRiskClient {
                                 return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 413:
+                                future.completeExceptionally(new ContentTooLargeError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 415:
+                                future.completeExceptionally(new UnsupportedMediaTypeError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 422:
+                                future.completeExceptionally(new UnprocessableEntityError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 500:
+                                future.completeExceptionally(new InternalServerError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 503:
+                                future.completeExceptionally(new ServiceUnavailableError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new CossApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new CossException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new CossException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new CossException("Network error executing HTTP request", e));
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in <code>degraded</code>. Each live check that gets an answer is billed (<code>risk.phone_checks</code>; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers <code>+1 202 555 01xx</code> (<code>0101</code> landline, <code>0102</code> non-fixed VoIP, <code>0103</code> fixed VoIP, <code>0104</code> a recent SIM swap, <code>0199</code> invalid, the rest mobile).
+     */
+    public CompletableFuture<CossHttpResponse<RiskPhoneCheck>> checkPhone(RiskPhoneCheckRequest request) {
+        return checkPhone(request, null);
+    }
+
+    /**
+     * Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in <code>degraded</code>. Each live check that gets an answer is billed (<code>risk.phone_checks</code>; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers <code>+1 202 555 01xx</code> (<code>0101</code> landline, <code>0102</code> non-fixed VoIP, <code>0103</code> fixed VoIP, <code>0104</code> a recent SIM swap, <code>0199</code> invalid, the rest mobile).
+     */
+    public CompletableFuture<CossHttpResponse<RiskPhoneCheck>> checkPhone(
+            RiskPhoneCheckRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("v1/risk/phone/check");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(request), MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(IdempotencyUtils.withGeneratedIdempotencyKey(
+                        clientOptions.headers(requestOptions), "Idempotency-Key")))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        CompletableFuture<CossHttpResponse<RiskPhoneCheck>> future = new CompletableFuture<>();
+        client.newCall(okhttpRequest).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new CossHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, RiskPhoneCheck.class),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 402:
+                                future.completeExceptionally(new PaymentRequiredError(
                                         ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
                                         response));
                                 return;

@@ -263,6 +263,52 @@ func (r *RawClient) CheckIP(
 	}, nil
 }
 
+func (r *RawClient) CheckPhone(
+	ctx context.Context,
+	request *coss.RiskPhoneCheckRequest,
+	opts ...option.RequestOption,
+) (*core.Response[*coss.RiskPhoneCheck], error) {
+	options := core.NewRequestOptions(opts...)
+	baseURL := internal.ResolveBaseURL(
+		options.BaseURL,
+		r.baseURL,
+		"https://api.coss.com",
+	)
+	endpointURL := baseURL + "/v1/risk/phone/check"
+	headers := internal.MergeHeaders(
+		r.options.ToHeader(),
+		options.ToHeader(),
+	)
+	headers.Add("Content-Type", "application/json")
+	core.SetIdempotencyKeyHeader(headers)
+
+	var response *coss.RiskPhoneCheck
+	raw, err := r.caller.Call(
+		ctx,
+		&internal.CallParams{
+			URL:             endpointURL,
+			Method:          http.MethodPost,
+			Headers:         headers,
+			MaxAttempts:     options.MaxAttempts,
+			DisableRetries:  true,
+			BodyProperties:  options.BodyProperties,
+			QueryParameters: options.QueryParameters,
+			Client:          options.HTTPClient,
+			Request:         request,
+			Response:        &response,
+			ErrorDecoder:    internal.NewErrorDecoder(coss.ErrorCodes),
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &core.Response[*coss.RiskPhoneCheck]{
+		StatusCode: raw.StatusCode,
+		Header:     raw.Header,
+		Body:       response,
+	}, nil
+}
+
 func (r *RawClient) Classify(
 	ctx context.Context,
 	request *coss.RiskContentClassifyRequest,

@@ -17,7 +17,13 @@ public final class LogSource {
 
     public static final LogSource SMS = new LogSource(Value.SMS, "sms");
 
+    public static final LogSource VERIFY = new LogSource(Value.VERIFY, "verify");
+
+    public static final LogSource FORMS = new LogSource(Value.FORMS, "forms");
+
     public static final LogSource API = new LogSource(Value.API, "api");
+
+    public static final LogSource SIGN = new LogSource(Value.SIGN, "sign");
 
     private final Value value;
 
@@ -60,8 +66,14 @@ public final class LogSource {
                 return visitor.visitSmtp();
             case SMS:
                 return visitor.visitSms();
+            case VERIFY:
+                return visitor.visitVerify();
+            case FORMS:
+                return visitor.visitForms();
             case API:
                 return visitor.visitApi();
+            case SIGN:
+                return visitor.visitSign();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -81,8 +93,14 @@ public final class LogSource {
                 return SMTP;
             case "sms":
                 return SMS;
+            case "verify":
+                return VERIFY;
+            case "forms":
+                return FORMS;
             case "api":
                 return API;
+            case "sign":
+                return SIGN;
             default:
                 return new LogSource(Value.UNKNOWN, value);
         }
@@ -101,6 +119,12 @@ public final class LogSource {
 
         SMS,
 
+        SIGN,
+
+        VERIFY,
+
+        FORMS,
+
         UNKNOWN
     }
 
@@ -116,6 +140,12 @@ public final class LogSource {
         T visitSmtp();
 
         T visitSms();
+
+        T visitSign();
+
+        T visitVerify();
+
+        T visitForms();
 
         T visitUnknown(String unknownType);
     }

@@ -20,6 +20,12 @@ public readonly record struct LogDrainSource : IStringEnum
 
     public static readonly LogDrainSource Sms = new(Values.Sms);
 
+    public static readonly LogDrainSource Sign = new(Values.Sign);
+
+    public static readonly LogDrainSource Verify = new(Values.Verify);
+
+    public static readonly LogDrainSource Forms = new(Values.Forms);
+
     public static readonly LogDrainSource Audit = new(Values.Audit);
 
     public LogDrainSource(string value)
@@ -129,6 +135,12 @@ public readonly record struct LogDrainSource : IStringEnum
         public const string Smtp = "smtp";
 
         public const string Sms = "sms";
+
+        public const string Sign = "sign";
+
+        public const string Verify = "verify";
+
+        public const string Forms = "forms";
 
         public const string Audit = "audit";
     }

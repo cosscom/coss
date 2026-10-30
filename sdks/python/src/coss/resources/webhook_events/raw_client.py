@@ -45,7 +45,7 @@ class RawWebhookEventsClient:
         Parameters
         ----------
         type : CreateTestWebhookEventRequestType
-            The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+            The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
 
         data : typing.Optional[typing.Dict[str, typing.Any]]
             Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.
@@ -211,7 +211,7 @@ class AsyncRawWebhookEventsClient:
         Parameters
         ----------
         type : CreateTestWebhookEventRequestType
-            The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+            The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
 
         data : typing.Optional[typing.Dict[str, typing.Any]]
             Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.

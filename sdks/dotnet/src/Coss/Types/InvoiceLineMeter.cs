@@ -12,6 +12,10 @@ public readonly record struct InvoiceLineMeter : IStringEnum
 
     public static readonly InvoiceLineMeter EmailDedicatedIp = new(Values.EmailDedicatedIp);
 
+    public static readonly InvoiceLineMeter EmailReceived = new(Values.EmailReceived);
+
+    public static readonly InvoiceLineMeter EmailInboxes = new(Values.EmailInboxes);
+
     public static readonly InvoiceLineMeter SmsSegments = new(Values.SmsSegments);
 
     public static readonly InvoiceLineMeter SmsReceivedSegments = new(Values.SmsReceivedSegments);
@@ -19,6 +23,18 @@ public readonly record struct InvoiceLineMeter : IStringEnum
     public static readonly InvoiceLineMeter SmsNumbers = new(Values.SmsNumbers);
 
     public static readonly InvoiceLineMeter SmsRegistrations = new(Values.SmsRegistrations);
+
+    public static readonly InvoiceLineMeter SignCompletedRequests = new(
+        Values.SignCompletedRequests
+    );
+
+    public static readonly InvoiceLineMeter RiskPhoneChecks = new(Values.RiskPhoneChecks);
+
+    public static readonly InvoiceLineMeter VerifyVerifications = new(Values.VerifyVerifications);
+
+    public static readonly InvoiceLineMeter VerifySms = new(Values.VerifySms);
+
+    public static readonly InvoiceLineMeter FormsSubmissions = new(Values.FormsSubmissions);
 
     public static readonly InvoiceLineMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
@@ -126,6 +142,10 @@ public readonly record struct InvoiceLineMeter : IStringEnum
 
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
+        public const string EmailReceived = "email.received";
+
+        public const string EmailInboxes = "email.inboxes";
+
         public const string SmsSegments = "sms.segments";
 
         public const string SmsReceivedSegments = "sms.received_segments";
@@ -133,6 +153,16 @@ public readonly record struct InvoiceLineMeter : IStringEnum
         public const string SmsNumbers = "sms.numbers";
 
         public const string SmsRegistrations = "sms.registrations";
+
+        public const string SignCompletedRequests = "sign.completed_requests";
+
+        public const string RiskPhoneChecks = "risk.phone_checks";
+
+        public const string VerifyVerifications = "verify.verifications";
+
+        public const string VerifySms = "verify.sms";
+
+        public const string FormsSubmissions = "forms.submissions";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

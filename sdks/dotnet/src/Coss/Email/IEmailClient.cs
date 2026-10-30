@@ -4,9 +4,10 @@ namespace Coss;
 
 public partial interface IEmailClient
 {
-    public ITemplatesClient Templates { get; }
+    public Coss.Email.ITemplatesClient Templates { get; }
     public IDedicatedIpsClient DedicatedIps { get; }
     public Coss.Email.ISuppressionsClient Suppressions { get; }
+    public ISubaccountsClient Subaccounts { get; }
     public Coss.Email.ITrackingClient Tracking { get; }
     public IStorageClient Storage { get; }
     public IContactsClient Contacts { get; }

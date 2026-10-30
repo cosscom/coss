@@ -1,4 +1,3 @@
-using Coss.Hooks;
 using Coss.Test.Unit.MockServer;
 using Coss.Test.Utils;
 using NUnit.Framework;
@@ -60,7 +59,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Hooks.Messages.ListAsync(
-            new ListMessagesRequest { Application = "application" }
+            new Coss.Hooks.ListMessagesRequest { Application = "application" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -104,7 +103,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Hooks.Messages.ListAsync(
-            new ListMessagesRequest { Application = "customer_8812" }
+            new Coss.Hooks.ListMessagesRequest { Application = "customer_8812" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

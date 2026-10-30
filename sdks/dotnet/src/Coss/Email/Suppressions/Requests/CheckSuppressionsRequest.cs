@@ -24,6 +24,12 @@ public record CheckSuppressionsRequest
     [JsonIgnore]
     public CheckSuppressionsRequestStream? Stream { get; set; }
 
+    /// <summary>
+    /// The sub-account you plan to send for (its id or your uid): its own entries count too.
+    /// </summary>
+    [JsonIgnore]
+    public string? Subaccount { get; set; }
+
     /// <inheritdoc />
     public override string ToString()
     {

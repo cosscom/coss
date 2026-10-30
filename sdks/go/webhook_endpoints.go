@@ -1493,6 +1493,10 @@ const (
 	CreateWebhookEndpointRequestEventTypesItemAccountReinstated             CreateWebhookEndpointRequestEventTypesItem = "account.reinstated"
 	CreateWebhookEndpointRequestEventTypesItemAccountMarketingPaused        CreateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
 	CreateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated    CreateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
+	CreateWebhookEndpointRequestEventTypesItemSubaccountReputationWarning   CreateWebhookEndpointRequestEventTypesItem = "subaccount.reputation_warning"
+	CreateWebhookEndpointRequestEventTypesItemSubaccountReputationRecovered CreateWebhookEndpointRequestEventTypesItem = "subaccount.reputation_recovered"
+	CreateWebhookEndpointRequestEventTypesItemSubaccountPaused              CreateWebhookEndpointRequestEventTypesItem = "subaccount.paused"
+	CreateWebhookEndpointRequestEventTypesItemSubaccountReinstated          CreateWebhookEndpointRequestEventTypesItem = "subaccount.reinstated"
 	CreateWebhookEndpointRequestEventTypesItemHookEndpointDisabled          CreateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
 	CreateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized       CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
 	CreateWebhookEndpointRequestEventTypesItemBillingInvoicePaid            CreateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
@@ -1518,6 +1522,7 @@ const (
 	CreateWebhookEndpointRequestEventTypesItemBroadcastPaused               CreateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
 	CreateWebhookEndpointRequestEventTypesItemBroadcastCanceled             CreateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
 	CreateWebhookEndpointRequestEventTypesItemBroadcastFailed               CreateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	CreateWebhookEndpointRequestEventTypesItemInboxMessageReceived          CreateWebhookEndpointRequestEventTypesItem = "inbox.message.received"
 	CreateWebhookEndpointRequestEventTypesItemSmsScheduled                  CreateWebhookEndpointRequestEventTypesItem = "sms.scheduled"
 	CreateWebhookEndpointRequestEventTypesItemSmsSent                       CreateWebhookEndpointRequestEventTypesItem = "sms.sent"
 	CreateWebhookEndpointRequestEventTypesItemSmsDelivered                  CreateWebhookEndpointRequestEventTypesItem = "sms.delivered"
@@ -1528,6 +1533,18 @@ const (
 	CreateWebhookEndpointRequestEventTypesItemSmsReceived                   CreateWebhookEndpointRequestEventTypesItem = "sms.received"
 	CreateWebhookEndpointRequestEventTypesItemSmsOptedOut                   CreateWebhookEndpointRequestEventTypesItem = "sms.opted_out"
 	CreateWebhookEndpointRequestEventTypesItemSmsOptedIn                    CreateWebhookEndpointRequestEventTypesItem = "sms.opted_in"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestSent               CreateWebhookEndpointRequestEventTypesItem = "sign_request.sent"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestViewed             CreateWebhookEndpointRequestEventTypesItem = "sign_request.viewed"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestSignerSigned       CreateWebhookEndpointRequestEventTypesItem = "sign_request.signer_signed"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestDeclined           CreateWebhookEndpointRequestEventTypesItem = "sign_request.declined"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestCompleted          CreateWebhookEndpointRequestEventTypesItem = "sign_request.completed"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestCanceled           CreateWebhookEndpointRequestEventTypesItem = "sign_request.canceled"
+	CreateWebhookEndpointRequestEventTypesItemSignRequestExpired            CreateWebhookEndpointRequestEventTypesItem = "sign_request.expired"
+	CreateWebhookEndpointRequestEventTypesItemVerificationApproved          CreateWebhookEndpointRequestEventTypesItem = "verification.approved"
+	CreateWebhookEndpointRequestEventTypesItemVerificationFailed            CreateWebhookEndpointRequestEventTypesItem = "verification.failed"
+	CreateWebhookEndpointRequestEventTypesItemVerificationBlocked           CreateWebhookEndpointRequestEventTypesItem = "verification.blocked"
+	CreateWebhookEndpointRequestEventTypesItemFormSubmissionReceived        CreateWebhookEndpointRequestEventTypesItem = "form.submission.received"
+	CreateWebhookEndpointRequestEventTypesItemFormSubmissionFlagged         CreateWebhookEndpointRequestEventTypesItem = "form.submission.flagged"
 )
 
 func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWebhookEndpointRequestEventTypesItem, error) {
@@ -1574,6 +1591,14 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemAccountMarketingPaused, nil
 	case "account.marketing_reinstated":
 		return CreateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated, nil
+	case "subaccount.reputation_warning":
+		return CreateWebhookEndpointRequestEventTypesItemSubaccountReputationWarning, nil
+	case "subaccount.reputation_recovered":
+		return CreateWebhookEndpointRequestEventTypesItemSubaccountReputationRecovered, nil
+	case "subaccount.paused":
+		return CreateWebhookEndpointRequestEventTypesItemSubaccountPaused, nil
+	case "subaccount.reinstated":
+		return CreateWebhookEndpointRequestEventTypesItemSubaccountReinstated, nil
 	case "hook_endpoint.disabled":
 		return CreateWebhookEndpointRequestEventTypesItemHookEndpointDisabled, nil
 	case "billing.invoice_finalized":
@@ -1624,6 +1649,8 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemBroadcastCanceled, nil
 	case "broadcast.failed":
 		return CreateWebhookEndpointRequestEventTypesItemBroadcastFailed, nil
+	case "inbox.message.received":
+		return CreateWebhookEndpointRequestEventTypesItemInboxMessageReceived, nil
 	case "sms.scheduled":
 		return CreateWebhookEndpointRequestEventTypesItemSmsScheduled, nil
 	case "sms.sent":
@@ -1644,6 +1671,30 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemSmsOptedOut, nil
 	case "sms.opted_in":
 		return CreateWebhookEndpointRequestEventTypesItemSmsOptedIn, nil
+	case "sign_request.sent":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestSent, nil
+	case "sign_request.viewed":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestViewed, nil
+	case "sign_request.signer_signed":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestSignerSigned, nil
+	case "sign_request.declined":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestDeclined, nil
+	case "sign_request.completed":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestCompleted, nil
+	case "sign_request.canceled":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestCanceled, nil
+	case "sign_request.expired":
+		return CreateWebhookEndpointRequestEventTypesItemSignRequestExpired, nil
+	case "verification.approved":
+		return CreateWebhookEndpointRequestEventTypesItemVerificationApproved, nil
+	case "verification.failed":
+		return CreateWebhookEndpointRequestEventTypesItemVerificationFailed, nil
+	case "verification.blocked":
+		return CreateWebhookEndpointRequestEventTypesItemVerificationBlocked, nil
+	case "form.submission.received":
+		return CreateWebhookEndpointRequestEventTypesItemFormSubmissionReceived, nil
+	case "form.submission.flagged":
+		return CreateWebhookEndpointRequestEventTypesItemFormSubmissionFlagged, nil
 	}
 	var t CreateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -1697,6 +1748,10 @@ const (
 	UpdateWebhookEndpointRequestEventTypesItemAccountReinstated             UpdateWebhookEndpointRequestEventTypesItem = "account.reinstated"
 	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingPaused        UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_paused"
 	UpdateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated    UpdateWebhookEndpointRequestEventTypesItem = "account.marketing_reinstated"
+	UpdateWebhookEndpointRequestEventTypesItemSubaccountReputationWarning   UpdateWebhookEndpointRequestEventTypesItem = "subaccount.reputation_warning"
+	UpdateWebhookEndpointRequestEventTypesItemSubaccountReputationRecovered UpdateWebhookEndpointRequestEventTypesItem = "subaccount.reputation_recovered"
+	UpdateWebhookEndpointRequestEventTypesItemSubaccountPaused              UpdateWebhookEndpointRequestEventTypesItem = "subaccount.paused"
+	UpdateWebhookEndpointRequestEventTypesItemSubaccountReinstated          UpdateWebhookEndpointRequestEventTypesItem = "subaccount.reinstated"
 	UpdateWebhookEndpointRequestEventTypesItemHookEndpointDisabled          UpdateWebhookEndpointRequestEventTypesItem = "hook_endpoint.disabled"
 	UpdateWebhookEndpointRequestEventTypesItemBillingInvoiceFinalized       UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_finalized"
 	UpdateWebhookEndpointRequestEventTypesItemBillingInvoicePaid            UpdateWebhookEndpointRequestEventTypesItem = "billing.invoice_paid"
@@ -1722,6 +1777,7 @@ const (
 	UpdateWebhookEndpointRequestEventTypesItemBroadcastPaused               UpdateWebhookEndpointRequestEventTypesItem = "broadcast.paused"
 	UpdateWebhookEndpointRequestEventTypesItemBroadcastCanceled             UpdateWebhookEndpointRequestEventTypesItem = "broadcast.canceled"
 	UpdateWebhookEndpointRequestEventTypesItemBroadcastFailed               UpdateWebhookEndpointRequestEventTypesItem = "broadcast.failed"
+	UpdateWebhookEndpointRequestEventTypesItemInboxMessageReceived          UpdateWebhookEndpointRequestEventTypesItem = "inbox.message.received"
 	UpdateWebhookEndpointRequestEventTypesItemSmsScheduled                  UpdateWebhookEndpointRequestEventTypesItem = "sms.scheduled"
 	UpdateWebhookEndpointRequestEventTypesItemSmsSent                       UpdateWebhookEndpointRequestEventTypesItem = "sms.sent"
 	UpdateWebhookEndpointRequestEventTypesItemSmsDelivered                  UpdateWebhookEndpointRequestEventTypesItem = "sms.delivered"
@@ -1732,6 +1788,18 @@ const (
 	UpdateWebhookEndpointRequestEventTypesItemSmsReceived                   UpdateWebhookEndpointRequestEventTypesItem = "sms.received"
 	UpdateWebhookEndpointRequestEventTypesItemSmsOptedOut                   UpdateWebhookEndpointRequestEventTypesItem = "sms.opted_out"
 	UpdateWebhookEndpointRequestEventTypesItemSmsOptedIn                    UpdateWebhookEndpointRequestEventTypesItem = "sms.opted_in"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestSent               UpdateWebhookEndpointRequestEventTypesItem = "sign_request.sent"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestViewed             UpdateWebhookEndpointRequestEventTypesItem = "sign_request.viewed"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestSignerSigned       UpdateWebhookEndpointRequestEventTypesItem = "sign_request.signer_signed"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestDeclined           UpdateWebhookEndpointRequestEventTypesItem = "sign_request.declined"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestCompleted          UpdateWebhookEndpointRequestEventTypesItem = "sign_request.completed"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestCanceled           UpdateWebhookEndpointRequestEventTypesItem = "sign_request.canceled"
+	UpdateWebhookEndpointRequestEventTypesItemSignRequestExpired            UpdateWebhookEndpointRequestEventTypesItem = "sign_request.expired"
+	UpdateWebhookEndpointRequestEventTypesItemVerificationApproved          UpdateWebhookEndpointRequestEventTypesItem = "verification.approved"
+	UpdateWebhookEndpointRequestEventTypesItemVerificationFailed            UpdateWebhookEndpointRequestEventTypesItem = "verification.failed"
+	UpdateWebhookEndpointRequestEventTypesItemVerificationBlocked           UpdateWebhookEndpointRequestEventTypesItem = "verification.blocked"
+	UpdateWebhookEndpointRequestEventTypesItemFormSubmissionReceived        UpdateWebhookEndpointRequestEventTypesItem = "form.submission.received"
+	UpdateWebhookEndpointRequestEventTypesItemFormSubmissionFlagged         UpdateWebhookEndpointRequestEventTypesItem = "form.submission.flagged"
 )
 
 func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWebhookEndpointRequestEventTypesItem, error) {
@@ -1778,6 +1846,14 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemAccountMarketingPaused, nil
 	case "account.marketing_reinstated":
 		return UpdateWebhookEndpointRequestEventTypesItemAccountMarketingReinstated, nil
+	case "subaccount.reputation_warning":
+		return UpdateWebhookEndpointRequestEventTypesItemSubaccountReputationWarning, nil
+	case "subaccount.reputation_recovered":
+		return UpdateWebhookEndpointRequestEventTypesItemSubaccountReputationRecovered, nil
+	case "subaccount.paused":
+		return UpdateWebhookEndpointRequestEventTypesItemSubaccountPaused, nil
+	case "subaccount.reinstated":
+		return UpdateWebhookEndpointRequestEventTypesItemSubaccountReinstated, nil
 	case "hook_endpoint.disabled":
 		return UpdateWebhookEndpointRequestEventTypesItemHookEndpointDisabled, nil
 	case "billing.invoice_finalized":
@@ -1828,6 +1904,8 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemBroadcastCanceled, nil
 	case "broadcast.failed":
 		return UpdateWebhookEndpointRequestEventTypesItemBroadcastFailed, nil
+	case "inbox.message.received":
+		return UpdateWebhookEndpointRequestEventTypesItemInboxMessageReceived, nil
 	case "sms.scheduled":
 		return UpdateWebhookEndpointRequestEventTypesItemSmsScheduled, nil
 	case "sms.sent":
@@ -1848,6 +1926,30 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemSmsOptedOut, nil
 	case "sms.opted_in":
 		return UpdateWebhookEndpointRequestEventTypesItemSmsOptedIn, nil
+	case "sign_request.sent":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestSent, nil
+	case "sign_request.viewed":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestViewed, nil
+	case "sign_request.signer_signed":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestSignerSigned, nil
+	case "sign_request.declined":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestDeclined, nil
+	case "sign_request.completed":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestCompleted, nil
+	case "sign_request.canceled":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestCanceled, nil
+	case "sign_request.expired":
+		return UpdateWebhookEndpointRequestEventTypesItemSignRequestExpired, nil
+	case "verification.approved":
+		return UpdateWebhookEndpointRequestEventTypesItemVerificationApproved, nil
+	case "verification.failed":
+		return UpdateWebhookEndpointRequestEventTypesItemVerificationFailed, nil
+	case "verification.blocked":
+		return UpdateWebhookEndpointRequestEventTypesItemVerificationBlocked, nil
+	case "form.submission.received":
+		return UpdateWebhookEndpointRequestEventTypesItemFormSubmissionReceived, nil
+	case "form.submission.flagged":
+		return UpdateWebhookEndpointRequestEventTypesItemFormSubmissionFlagged, nil
 	}
 	var t UpdateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

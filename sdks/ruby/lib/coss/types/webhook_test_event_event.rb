@@ -18,9 +18,17 @@ module Coss
 
       member -> { Coss::Types::BroadcastWebhookEvent }
 
+      member -> { Coss::Types::InboxMessageReceivedWebhookEvent }
+
       member -> { Coss::Types::SmsWebhookEvent }
 
       member -> { Coss::Types::ReceivedSmsWebhookEvent }
+
+      member -> { Coss::Types::SignRequestWebhookEvent }
+
+      member -> { Coss::Types::VerificationWebhookEvent }
+
+      member -> { Coss::Types::FormSubmissionWebhookEvent }
     end
   end
 end

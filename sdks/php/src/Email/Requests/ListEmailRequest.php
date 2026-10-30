@@ -38,6 +38,11 @@ class ListEmailRequest extends JsonSerializableType
     public ?string $batchId;
 
     /**
+     * @var ?string $subaccount Only the emails sent for this sub-account (its id or your uid).
+     */
+    public ?string $subaccount;
+
+    /**
      * @var ?DateTime $createdAfter Only emails created at or after this time.
      */
     public ?DateTime $createdAfter;
@@ -65,6 +70,7 @@ class ListEmailRequest extends JsonSerializableType
      *   q?: ?string,
      *   category?: ?string,
      *   batchId?: ?string,
+     *   subaccount?: ?string,
      *   createdAfter?: ?DateTime,
      *   createdBefore?: ?DateTime,
      *   limit?: ?int,
@@ -97,6 +103,10 @@ class ListEmailRequest extends JsonSerializableType
         $this->batchId = $values['batchId'] ?? null;
         if (array_key_exists('batchId', $values)) {
             $this->_setField('batchId');
+        }
+        $this->subaccount = $values['subaccount'] ?? null;
+        if (array_key_exists('subaccount', $values)) {
+            $this->_setField('subaccount');
         }
         $this->createdAfter = $values['createdAfter'] ?? null;
         if (array_key_exists('createdAfter', $values)) {

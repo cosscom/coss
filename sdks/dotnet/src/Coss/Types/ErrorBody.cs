@@ -40,6 +40,13 @@ public record ErrorBody : IJsonOnDeserialized
     [JsonPropertyName("issues")]
     public IEnumerable<ErrorBodyIssuesItem>? Issues { get; set; }
 
+    /// <summary>
+    /// What to try next. Present when coss.com can name a fix, and often includes a docs URL.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("hint")]
+    public string? Hint { get; set; }
+
     [JsonPropertyName("request_id")]
     public required string RequestId { get; set; }
 

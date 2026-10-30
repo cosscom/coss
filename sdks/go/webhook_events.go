@@ -16,7 +16,7 @@ var (
 )
 
 type CreateTestWebhookEventRequest struct {
-	// The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+	// The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
 	Type CreateTestWebhookEventRequestType `json:"type" url:"-"`
 	// Fields merged over the sample's `data` (objects field by field, anything else replaced), in the latest API version's shape: e.g. a real `email_id`, or the `recipient` your handler looks for. Unknown fields are refused.
 	Data map[string]any `json:"data,omitempty" url:"-"`
@@ -1203,6 +1203,7 @@ const (
 	ContactWebhookEventDataSourceDashboard        ContactWebhookEventDataSource = "dashboard"
 	ContactWebhookEventDataSourceImport           ContactWebhookEventDataSource = "import"
 	ContactWebhookEventDataSourcePreferenceCenter ContactWebhookEventDataSource = "preference_center"
+	ContactWebhookEventDataSourceForm             ContactWebhookEventDataSource = "form"
 )
 
 func NewContactWebhookEventDataSourceFromString(s string) (ContactWebhookEventDataSource, error) {
@@ -1215,6 +1216,8 @@ func NewContactWebhookEventDataSourceFromString(s string) (ContactWebhookEventDa
 		return ContactWebhookEventDataSourceImport, nil
 	case "preference_center":
 		return ContactWebhookEventDataSourcePreferenceCenter, nil
+	case "form":
+		return ContactWebhookEventDataSourceForm, nil
 	}
 	var t ContactWebhookEventDataSource
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -1451,25 +1454,26 @@ func (e *EmailWebhookEvent) String() string {
 }
 
 var (
-	emailWebhookEventDataFieldBounce      = big.NewInt(1 << 0)
-	emailWebhookEventDataFieldComplaint   = big.NewInt(1 << 1)
-	emailWebhookEventDataFieldDelay       = big.NewInt(1 << 2)
-	emailWebhookEventDataFieldDelivery    = big.NewInt(1 << 3)
-	emailWebhookEventDataFieldFailure     = big.NewInt(1 << 4)
-	emailWebhookEventDataFieldSuppression = big.NewInt(1 << 5)
-	emailWebhookEventDataFieldUnsubscribe = big.NewInt(1 << 6)
-	emailWebhookEventDataFieldOpen        = big.NewInt(1 << 7)
-	emailWebhookEventDataFieldClick       = big.NewInt(1 << 8)
-	emailWebhookEventDataFieldReschedule  = big.NewInt(1 << 9)
-	emailWebhookEventDataFieldEmailID     = big.NewInt(1 << 10)
-	emailWebhookEventDataFieldFrom        = big.NewInt(1 << 11)
-	emailWebhookEventDataFieldTo          = big.NewInt(1 << 12)
-	emailWebhookEventDataFieldSubject     = big.NewInt(1 << 13)
-	emailWebhookEventDataFieldTags        = big.NewInt(1 << 14)
-	emailWebhookEventDataFieldCategory    = big.NewInt(1 << 15)
-	emailWebhookEventDataFieldSandbox     = big.NewInt(1 << 16)
-	emailWebhookEventDataFieldRecipient   = big.NewInt(1 << 17)
-	emailWebhookEventDataFieldOccurredAt  = big.NewInt(1 << 18)
+	emailWebhookEventDataFieldBounce       = big.NewInt(1 << 0)
+	emailWebhookEventDataFieldComplaint    = big.NewInt(1 << 1)
+	emailWebhookEventDataFieldDelay        = big.NewInt(1 << 2)
+	emailWebhookEventDataFieldDelivery     = big.NewInt(1 << 3)
+	emailWebhookEventDataFieldFailure      = big.NewInt(1 << 4)
+	emailWebhookEventDataFieldSuppression  = big.NewInt(1 << 5)
+	emailWebhookEventDataFieldUnsubscribe  = big.NewInt(1 << 6)
+	emailWebhookEventDataFieldOpen         = big.NewInt(1 << 7)
+	emailWebhookEventDataFieldClick        = big.NewInt(1 << 8)
+	emailWebhookEventDataFieldReschedule   = big.NewInt(1 << 9)
+	emailWebhookEventDataFieldEmailID      = big.NewInt(1 << 10)
+	emailWebhookEventDataFieldFrom         = big.NewInt(1 << 11)
+	emailWebhookEventDataFieldTo           = big.NewInt(1 << 12)
+	emailWebhookEventDataFieldSubject      = big.NewInt(1 << 13)
+	emailWebhookEventDataFieldTags         = big.NewInt(1 << 14)
+	emailWebhookEventDataFieldCategory     = big.NewInt(1 << 15)
+	emailWebhookEventDataFieldSandbox      = big.NewInt(1 << 16)
+	emailWebhookEventDataFieldRecipient    = big.NewInt(1 << 17)
+	emailWebhookEventDataFieldOccurredAt   = big.NewInt(1 << 18)
+	emailWebhookEventDataFieldSubaccountID = big.NewInt(1 << 19)
 )
 
 // emailWebhookEventDataNullableFields maps the wire names of EmailWebhookEventData's nullable fields (required or optional) to their field bits.
@@ -1503,6 +1507,8 @@ type EmailWebhookEventData struct {
 	Sandbox    bool                             `json:"sandbox" url:"sandbox"`
 	Recipient  *string                          `json:"recipient,omitempty" url:"recipient,omitempty"`
 	OccurredAt time.Time                        `json:"occurred_at" url:"occurred_at"`
+	// Only for an email sent for a sub-account: its id.
+	SubaccountID *string `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1642,6 +1648,13 @@ func (e *EmailWebhookEventData) GetOccurredAt() time.Time {
 		return time.Time{}
 	}
 	return e.OccurredAt
+}
+
+func (e *EmailWebhookEventData) GetSubaccountID() *string {
+	if e == nil {
+		return nil
+	}
+	return e.SubaccountID
 }
 
 func (e *EmailWebhookEventData) GetExtraProperties() map[string]interface{} {
@@ -1791,6 +1804,13 @@ func (e *EmailWebhookEventData) SetRecipient(recipient *string) {
 func (e *EmailWebhookEventData) SetOccurredAt(occurredAt time.Time) {
 	e.OccurredAt = occurredAt
 	e.require(emailWebhookEventDataFieldOccurredAt)
+}
+
+// SetSubaccountID sets the SubaccountID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailWebhookEventData) SetSubaccountID(subaccountID *string) {
+	e.SubaccountID = subaccountID
+	e.require(emailWebhookEventDataFieldSubaccountID)
 }
 
 func (e *EmailWebhookEventData) UnmarshalJSON(data []byte) error {
@@ -3253,6 +3273,596 @@ func (e EmailWebhookEventType) Ptr() *EmailWebhookEventType {
 }
 
 var (
+	formSubmissionWebhookEventFieldID         = big.NewInt(1 << 0)
+	formSubmissionWebhookEventFieldObject     = big.NewInt(1 << 1)
+	formSubmissionWebhookEventFieldType       = big.NewInt(1 << 2)
+	formSubmissionWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
+	formSubmissionWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
+	formSubmissionWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type FormSubmissionWebhookEvent struct {
+	// The event id.
+	ID     string                           `json:"id" url:"id"`
+	Object FormSubmissionWebhookEventObject `json:"object" url:"object"`
+	// `received`: a submission was accepted (at once, after the submitter confirmed, or released from review). `flagged`: Risk held it for review or refused it (honeypot catches send nothing).
+	Type FormSubmissionWebhookEventType `json:"type" url:"type"`
+	// The API version the payload is rendered in (your endpoint's version).
+	APIVersion string                          `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                       `json:"created_at" url:"created_at"`
+	Data       *FormSubmissionWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmissionWebhookEvent) GetID() string {
+	if f == nil {
+		return ""
+	}
+	return f.ID
+}
+
+func (f *FormSubmissionWebhookEvent) GetObject() FormSubmissionWebhookEventObject {
+	if f == nil {
+		return ""
+	}
+	return f.Object
+}
+
+func (f *FormSubmissionWebhookEvent) GetType() FormSubmissionWebhookEventType {
+	if f == nil {
+		return ""
+	}
+	return f.Type
+}
+
+func (f *FormSubmissionWebhookEvent) GetAPIVersion() string {
+	if f == nil {
+		return ""
+	}
+	return f.APIVersion
+}
+
+func (f *FormSubmissionWebhookEvent) GetCreatedAt() time.Time {
+	if f == nil {
+		return time.Time{}
+	}
+	return f.CreatedAt
+}
+
+func (f *FormSubmissionWebhookEvent) GetData() *FormSubmissionWebhookEventData {
+	if f == nil {
+		return nil
+	}
+	return f.Data
+}
+
+func (f *FormSubmissionWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmissionWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetID(id string) {
+	f.ID = id
+	f.require(formSubmissionWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetObject(object FormSubmissionWebhookEventObject) {
+	f.Object = object
+	f.require(formSubmissionWebhookEventFieldObject)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetType(type_ FormSubmissionWebhookEventType) {
+	f.Type = type_
+	f.require(formSubmissionWebhookEventFieldType)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetAPIVersion(apiVersion string) {
+	f.APIVersion = apiVersion
+	f.require(formSubmissionWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	f.CreatedAt = createdAt
+	f.require(formSubmissionWebhookEventFieldCreatedAt)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEvent) SetData(data *FormSubmissionWebhookEventData) {
+	f.Data = data
+	f.require(formSubmissionWebhookEventFieldData)
+}
+
+func (f *FormSubmissionWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed FormSubmissionWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*f),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*f = FormSubmissionWebhookEvent(unmarshaler.embed)
+	f.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmissionWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed FormSubmissionWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*f),
+		CreatedAt: internal.NewDateTime(f.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmissionWebhookEvent) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+var (
+	formSubmissionWebhookEventDataFieldFormID         = big.NewInt(1 << 0)
+	formSubmissionWebhookEventDataFieldFormName       = big.NewInt(1 << 1)
+	formSubmissionWebhookEventDataFieldSubmissionID   = big.NewInt(1 << 2)
+	formSubmissionWebhookEventDataFieldStatus         = big.NewInt(1 << 3)
+	formSubmissionWebhookEventDataFieldData           = big.NewInt(1 << 4)
+	formSubmissionWebhookEventDataFieldSubmitterEmail = big.NewInt(1 << 5)
+	formSubmissionWebhookEventDataFieldFiles          = big.NewInt(1 << 6)
+	formSubmissionWebhookEventDataFieldSpamReason     = big.NewInt(1 << 7)
+	formSubmissionWebhookEventDataFieldSandbox        = big.NewInt(1 << 8)
+	formSubmissionWebhookEventDataFieldOccurredAt     = big.NewInt(1 << 9)
+)
+
+// formSubmissionWebhookEventDataNullableFields maps the wire names of FormSubmissionWebhookEventData's nullable fields (required or optional) to their field bits.
+var formSubmissionWebhookEventDataNullableFields = map[string]*big.Int{
+	"submitter_email": formSubmissionWebhookEventDataFieldSubmitterEmail,
+	"spam_reason":     formSubmissionWebhookEventDataFieldSpamReason,
+}
+
+type FormSubmissionWebhookEventData struct {
+	FormID       string                               `json:"form_id" url:"form_id"`
+	FormName     string                               `json:"form_name" url:"form_name"`
+	SubmissionID string                               `json:"submission_id" url:"submission_id"`
+	Status       FormSubmissionWebhookEventDataStatus `json:"status" url:"status"`
+	// Field name → value; a field posted several times has an array.
+	Data           map[string]*FormSubmissionWebhookEventDataDataValue `json:"data" url:"data"`
+	SubmitterEmail *string                                             `json:"submitter_email,omitempty" url:"submitter_email,omitempty"`
+	// Uploaded files (download them with the API; never their bytes here).
+	Files      []*FormSubmissionFile                     `json:"files" url:"files"`
+	SpamReason *FormSubmissionWebhookEventDataSpamReason `json:"spam_reason,omitempty" url:"spam_reason,omitempty"`
+	Sandbox    bool                                      `json:"sandbox" url:"sandbox"`
+	OccurredAt time.Time                                 `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (f *FormSubmissionWebhookEventData) GetFormID() string {
+	if f == nil {
+		return ""
+	}
+	return f.FormID
+}
+
+func (f *FormSubmissionWebhookEventData) GetFormName() string {
+	if f == nil {
+		return ""
+	}
+	return f.FormName
+}
+
+func (f *FormSubmissionWebhookEventData) GetSubmissionID() string {
+	if f == nil {
+		return ""
+	}
+	return f.SubmissionID
+}
+
+func (f *FormSubmissionWebhookEventData) GetStatus() FormSubmissionWebhookEventDataStatus {
+	if f == nil {
+		return ""
+	}
+	return f.Status
+}
+
+func (f *FormSubmissionWebhookEventData) GetData() map[string]*FormSubmissionWebhookEventDataDataValue {
+	if f == nil {
+		return nil
+	}
+	return f.Data
+}
+
+func (f *FormSubmissionWebhookEventData) GetSubmitterEmail() *string {
+	if f == nil {
+		return nil
+	}
+	return f.SubmitterEmail
+}
+
+func (f *FormSubmissionWebhookEventData) GetFiles() []*FormSubmissionFile {
+	if f == nil {
+		return nil
+	}
+	return f.Files
+}
+
+func (f *FormSubmissionWebhookEventData) GetSpamReason() *FormSubmissionWebhookEventDataSpamReason {
+	if f == nil {
+		return nil
+	}
+	return f.SpamReason
+}
+
+func (f *FormSubmissionWebhookEventData) GetSandbox() bool {
+	if f == nil {
+		return false
+	}
+	return f.Sandbox
+}
+
+func (f *FormSubmissionWebhookEventData) GetOccurredAt() time.Time {
+	if f == nil {
+		return time.Time{}
+	}
+	return f.OccurredAt
+}
+
+func (f *FormSubmissionWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if f == nil {
+		return nil
+	}
+	return f.extraProperties
+}
+
+func (f *FormSubmissionWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if f.explicitFields != nil {
+		next.Set(f.explicitFields)
+	}
+	next.Or(next, field)
+	f.explicitFields = next
+}
+
+// SetFormID sets the FormID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetFormID(formID string) {
+	f.FormID = formID
+	f.require(formSubmissionWebhookEventDataFieldFormID)
+}
+
+// SetFormName sets the FormName field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetFormName(formName string) {
+	f.FormName = formName
+	f.require(formSubmissionWebhookEventDataFieldFormName)
+}
+
+// SetSubmissionID sets the SubmissionID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetSubmissionID(submissionID string) {
+	f.SubmissionID = submissionID
+	f.require(formSubmissionWebhookEventDataFieldSubmissionID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetStatus(status FormSubmissionWebhookEventDataStatus) {
+	f.Status = status
+	f.require(formSubmissionWebhookEventDataFieldStatus)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetData(data map[string]*FormSubmissionWebhookEventDataDataValue) {
+	f.Data = data
+	f.require(formSubmissionWebhookEventDataFieldData)
+}
+
+// SetSubmitterEmail sets the SubmitterEmail field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetSubmitterEmail(submitterEmail *string) {
+	f.SubmitterEmail = submitterEmail
+	f.require(formSubmissionWebhookEventDataFieldSubmitterEmail)
+}
+
+// SetFiles sets the Files field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetFiles(files []*FormSubmissionFile) {
+	f.Files = files
+	f.require(formSubmissionWebhookEventDataFieldFiles)
+}
+
+// SetSpamReason sets the SpamReason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetSpamReason(spamReason *FormSubmissionWebhookEventDataSpamReason) {
+	f.SpamReason = spamReason
+	f.require(formSubmissionWebhookEventDataFieldSpamReason)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetSandbox(sandbox bool) {
+	f.Sandbox = sandbox
+	f.require(formSubmissionWebhookEventDataFieldSandbox)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (f *FormSubmissionWebhookEventData) SetOccurredAt(occurredAt time.Time) {
+	f.OccurredAt = occurredAt
+	f.require(formSubmissionWebhookEventDataFieldOccurredAt)
+}
+
+func (f *FormSubmissionWebhookEventData) UnmarshalJSON(data []byte) error {
+	type embed FormSubmissionWebhookEventData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*f),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*f = FormSubmissionWebhookEventData(unmarshaler.embed)
+	f.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *f)
+	if err != nil {
+		return err
+	}
+	f.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, formSubmissionWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		f.require(presentFields)
+	}
+	f.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (f *FormSubmissionWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed FormSubmissionWebhookEventData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*f),
+		OccurredAt: internal.NewDateTime(f.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, f.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (f *FormSubmissionWebhookEventData) String() string {
+	if f == nil {
+		return "<nil>"
+	}
+	if len(f.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(f.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(f); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", f)
+}
+
+type FormSubmissionWebhookEventDataDataValue struct {
+	String     string
+	StringList []string
+
+	typ string
+}
+
+func (f *FormSubmissionWebhookEventDataDataValue) GetString() string {
+	if f == nil {
+		return ""
+	}
+	return f.String
+}
+
+func (f *FormSubmissionWebhookEventDataDataValue) GetStringList() []string {
+	if f == nil {
+		return nil
+	}
+	return f.StringList
+}
+
+func (f *FormSubmissionWebhookEventDataDataValue) UnmarshalJSON(data []byte) error {
+	var valueString string
+	if err := json.Unmarshal(data, &valueString); err == nil {
+		f.typ = "String"
+		f.String = valueString
+		return nil
+	}
+	var valueStringList []string
+	if err := json.Unmarshal(data, &valueStringList); err == nil {
+		f.typ = "StringList"
+		f.StringList = valueStringList
+		return nil
+	}
+	return fmt.Errorf("%s cannot be deserialized as a %T", data, f)
+}
+
+func (f FormSubmissionWebhookEventDataDataValue) MarshalJSON() ([]byte, error) {
+	if f.typ == "String" || f.String != "" {
+		return json.Marshal(f.String)
+	}
+	if f.typ == "StringList" || f.StringList != nil {
+		return json.Marshal(f.StringList)
+	}
+	return nil, fmt.Errorf("type %T does not include a non-empty union type", f)
+}
+
+type FormSubmissionWebhookEventDataDataValueVisitor interface {
+	VisitString(string) error
+	VisitStringList([]string) error
+}
+
+func (f *FormSubmissionWebhookEventDataDataValue) Accept(visitor FormSubmissionWebhookEventDataDataValueVisitor) error {
+	if f.typ == "String" || f.String != "" {
+		return visitor.VisitString(f.String)
+	}
+	if f.typ == "StringList" || f.StringList != nil {
+		return visitor.VisitStringList(f.StringList)
+	}
+	return fmt.Errorf("type %T does not include a non-empty union type", f)
+}
+
+type FormSubmissionWebhookEventDataSpamReason string
+
+const (
+	FormSubmissionWebhookEventDataSpamReasonHoneypot   FormSubmissionWebhookEventDataSpamReason = "honeypot"
+	FormSubmissionWebhookEventDataSpamReasonRiskBlock  FormSubmissionWebhookEventDataSpamReason = "risk_block"
+	FormSubmissionWebhookEventDataSpamReasonRiskReview FormSubmissionWebhookEventDataSpamReason = "risk_review"
+	FormSubmissionWebhookEventDataSpamReasonContent    FormSubmissionWebhookEventDataSpamReason = "content"
+)
+
+func NewFormSubmissionWebhookEventDataSpamReasonFromString(s string) (FormSubmissionWebhookEventDataSpamReason, error) {
+	switch s {
+	case "honeypot":
+		return FormSubmissionWebhookEventDataSpamReasonHoneypot, nil
+	case "risk_block":
+		return FormSubmissionWebhookEventDataSpamReasonRiskBlock, nil
+	case "risk_review":
+		return FormSubmissionWebhookEventDataSpamReasonRiskReview, nil
+	case "content":
+		return FormSubmissionWebhookEventDataSpamReasonContent, nil
+	}
+	var t FormSubmissionWebhookEventDataSpamReason
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionWebhookEventDataSpamReason) Ptr() *FormSubmissionWebhookEventDataSpamReason {
+	return &f
+}
+
+type FormSubmissionWebhookEventDataStatus string
+
+const (
+	FormSubmissionWebhookEventDataStatusPendingConfirmation FormSubmissionWebhookEventDataStatus = "pending_confirmation"
+	FormSubmissionWebhookEventDataStatusAccepted            FormSubmissionWebhookEventDataStatus = "accepted"
+	FormSubmissionWebhookEventDataStatusHeld                FormSubmissionWebhookEventDataStatus = "held"
+	FormSubmissionWebhookEventDataStatusSpam                FormSubmissionWebhookEventDataStatus = "spam"
+)
+
+func NewFormSubmissionWebhookEventDataStatusFromString(s string) (FormSubmissionWebhookEventDataStatus, error) {
+	switch s {
+	case "pending_confirmation":
+		return FormSubmissionWebhookEventDataStatusPendingConfirmation, nil
+	case "accepted":
+		return FormSubmissionWebhookEventDataStatusAccepted, nil
+	case "held":
+		return FormSubmissionWebhookEventDataStatusHeld, nil
+	case "spam":
+		return FormSubmissionWebhookEventDataStatusSpam, nil
+	}
+	var t FormSubmissionWebhookEventDataStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionWebhookEventDataStatus) Ptr() *FormSubmissionWebhookEventDataStatus {
+	return &f
+}
+
+type FormSubmissionWebhookEventObject string
+
+const (
+	FormSubmissionWebhookEventObjectEvent FormSubmissionWebhookEventObject = "event"
+)
+
+func NewFormSubmissionWebhookEventObjectFromString(s string) (FormSubmissionWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return FormSubmissionWebhookEventObjectEvent, nil
+	}
+	var t FormSubmissionWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionWebhookEventObject) Ptr() *FormSubmissionWebhookEventObject {
+	return &f
+}
+
+// `received`: a submission was accepted (at once, after the submitter confirmed, or released from review). `flagged`: Risk held it for review or refused it (honeypot catches send nothing).
+type FormSubmissionWebhookEventType string
+
+const (
+	FormSubmissionWebhookEventTypeFormSubmissionReceived FormSubmissionWebhookEventType = "form.submission.received"
+	FormSubmissionWebhookEventTypeFormSubmissionFlagged  FormSubmissionWebhookEventType = "form.submission.flagged"
+)
+
+func NewFormSubmissionWebhookEventTypeFromString(s string) (FormSubmissionWebhookEventType, error) {
+	switch s {
+	case "form.submission.received":
+		return FormSubmissionWebhookEventTypeFormSubmissionReceived, nil
+	case "form.submission.flagged":
+		return FormSubmissionWebhookEventTypeFormSubmissionFlagged, nil
+	}
+	var t FormSubmissionWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (f FormSubmissionWebhookEventType) Ptr() *FormSubmissionWebhookEventType {
+	return &f
+}
+
+var (
 	hookEndpointWebhookEventFieldID         = big.NewInt(1 << 0)
 	hookEndpointWebhookEventFieldObject     = big.NewInt(1 << 1)
 	hookEndpointWebhookEventFieldType       = big.NewInt(1 << 2)
@@ -3654,6 +4264,521 @@ func NewHookEndpointWebhookEventTypeFromString(s string) (HookEndpointWebhookEve
 
 func (h HookEndpointWebhookEventType) Ptr() *HookEndpointWebhookEventType {
 	return &h
+}
+
+var (
+	inboxMessageReceivedWebhookEventFieldID         = big.NewInt(1 << 0)
+	inboxMessageReceivedWebhookEventFieldObject     = big.NewInt(1 << 1)
+	inboxMessageReceivedWebhookEventFieldType       = big.NewInt(1 << 2)
+	inboxMessageReceivedWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
+	inboxMessageReceivedWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
+	inboxMessageReceivedWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type InboxMessageReceivedWebhookEvent struct {
+	// The event id, and the `webhook-id` header.
+	ID     string                                 `json:"id" url:"id"`
+	Object InboxMessageReceivedWebhookEventObject `json:"object" url:"object"`
+	Type   InboxMessageReceivedWebhookEventType   `json:"type" url:"type"`
+	// The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`.
+	APIVersion string                                `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                             `json:"created_at" url:"created_at"`
+	Data       *InboxMessageReceivedWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ID
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetObject() InboxMessageReceivedWebhookEventObject {
+	if i == nil {
+		return ""
+	}
+	return i.Object
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetType() InboxMessageReceivedWebhookEventType {
+	if i == nil {
+		return ""
+	}
+	return i.Type
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetAPIVersion() string {
+	if i == nil {
+		return ""
+	}
+	return i.APIVersion
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetCreatedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.CreatedAt
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetData() *InboxMessageReceivedWebhookEventData {
+	if i == nil {
+		return nil
+	}
+	return i.Data
+}
+
+func (i *InboxMessageReceivedWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxMessageReceivedWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetID(id string) {
+	i.ID = id
+	i.require(inboxMessageReceivedWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetObject(object InboxMessageReceivedWebhookEventObject) {
+	i.Object = object
+	i.require(inboxMessageReceivedWebhookEventFieldObject)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetType(type_ InboxMessageReceivedWebhookEventType) {
+	i.Type = type_
+	i.require(inboxMessageReceivedWebhookEventFieldType)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetAPIVersion(apiVersion string) {
+	i.APIVersion = apiVersion
+	i.require(inboxMessageReceivedWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	i.CreatedAt = createdAt
+	i.require(inboxMessageReceivedWebhookEventFieldCreatedAt)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEvent) SetData(data *InboxMessageReceivedWebhookEventData) {
+	i.Data = data
+	i.require(inboxMessageReceivedWebhookEventFieldData)
+}
+
+func (i *InboxMessageReceivedWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed InboxMessageReceivedWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxMessageReceivedWebhookEvent(unmarshaler.embed)
+	i.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxMessageReceivedWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed InboxMessageReceivedWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*i),
+		CreatedAt: internal.NewDateTime(i.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxMessageReceivedWebhookEvent) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+var (
+	inboxMessageReceivedWebhookEventDataFieldInboxID         = big.NewInt(1 << 0)
+	inboxMessageReceivedWebhookEventDataFieldInboxAddress    = big.NewInt(1 << 1)
+	inboxMessageReceivedWebhookEventDataFieldThreadID        = big.NewInt(1 << 2)
+	inboxMessageReceivedWebhookEventDataFieldMessageID       = big.NewInt(1 << 3)
+	inboxMessageReceivedWebhookEventDataFieldReceivedEmailID = big.NewInt(1 << 4)
+	inboxMessageReceivedWebhookEventDataFieldFrom            = big.NewInt(1 << 5)
+	inboxMessageReceivedWebhookEventDataFieldTo              = big.NewInt(1 << 6)
+	inboxMessageReceivedWebhookEventDataFieldSubject         = big.NewInt(1 << 7)
+	inboxMessageReceivedWebhookEventDataFieldAttachmentCount = big.NewInt(1 << 8)
+	inboxMessageReceivedWebhookEventDataFieldNewThread       = big.NewInt(1 << 9)
+	inboxMessageReceivedWebhookEventDataFieldSpam            = big.NewInt(1 << 10)
+	inboxMessageReceivedWebhookEventDataFieldSandbox         = big.NewInt(1 << 11)
+	inboxMessageReceivedWebhookEventDataFieldReceivedAt      = big.NewInt(1 << 12)
+)
+
+// inboxMessageReceivedWebhookEventDataNullableFields maps the wire names of InboxMessageReceivedWebhookEventData's nullable fields (required or optional) to their field bits.
+var inboxMessageReceivedWebhookEventDataNullableFields = map[string]*big.Int{
+	"from":    inboxMessageReceivedWebhookEventDataFieldFrom,
+	"subject": inboxMessageReceivedWebhookEventDataFieldSubject,
+}
+
+type InboxMessageReceivedWebhookEventData struct {
+	InboxID      string `json:"inbox_id" url:"inbox_id"`
+	InboxAddress string `json:"inbox_address" url:"inbox_address"`
+	ThreadID     string `json:"thread_id" url:"thread_id"`
+	// The inbox message's id (`imsg_…`).
+	MessageID       string   `json:"message_id" url:"message_id"`
+	ReceivedEmailID string   `json:"received_email_id" url:"received_email_id"`
+	From            *string  `json:"from,omitempty" url:"from,omitempty"`
+	To              []string `json:"to" url:"to"`
+	Subject         *string  `json:"subject,omitempty" url:"subject,omitempty"`
+	AttachmentCount int64    `json:"attachment_count" url:"attachment_count"`
+	// Whether the message started its thread.
+	NewThread  bool      `json:"new_thread" url:"new_thread"`
+	Spam       bool      `json:"spam" url:"spam"`
+	Sandbox    bool      `json:"sandbox" url:"sandbox"`
+	ReceivedAt time.Time `json:"received_at" url:"received_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetInboxID() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxID
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetInboxAddress() string {
+	if i == nil {
+		return ""
+	}
+	return i.InboxAddress
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetThreadID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ThreadID
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetMessageID() string {
+	if i == nil {
+		return ""
+	}
+	return i.MessageID
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetReceivedEmailID() string {
+	if i == nil {
+		return ""
+	}
+	return i.ReceivedEmailID
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetFrom() *string {
+	if i == nil {
+		return nil
+	}
+	return i.From
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetTo() []string {
+	if i == nil {
+		return nil
+	}
+	return i.To
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetSubject() *string {
+	if i == nil {
+		return nil
+	}
+	return i.Subject
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetAttachmentCount() int64 {
+	if i == nil {
+		return 0
+	}
+	return i.AttachmentCount
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetNewThread() bool {
+	if i == nil {
+		return false
+	}
+	return i.NewThread
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetSpam() bool {
+	if i == nil {
+		return false
+	}
+	return i.Spam
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetSandbox() bool {
+	if i == nil {
+		return false
+	}
+	return i.Sandbox
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetReceivedAt() time.Time {
+	if i == nil {
+		return time.Time{}
+	}
+	return i.ReceivedAt
+}
+
+func (i *InboxMessageReceivedWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if i == nil {
+		return nil
+	}
+	return i.extraProperties
+}
+
+func (i *InboxMessageReceivedWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if i.explicitFields != nil {
+		next.Set(i.explicitFields)
+	}
+	next.Or(next, field)
+	i.explicitFields = next
+}
+
+// SetInboxID sets the InboxID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetInboxID(inboxID string) {
+	i.InboxID = inboxID
+	i.require(inboxMessageReceivedWebhookEventDataFieldInboxID)
+}
+
+// SetInboxAddress sets the InboxAddress field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetInboxAddress(inboxAddress string) {
+	i.InboxAddress = inboxAddress
+	i.require(inboxMessageReceivedWebhookEventDataFieldInboxAddress)
+}
+
+// SetThreadID sets the ThreadID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetThreadID(threadID string) {
+	i.ThreadID = threadID
+	i.require(inboxMessageReceivedWebhookEventDataFieldThreadID)
+}
+
+// SetMessageID sets the MessageID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetMessageID(messageID string) {
+	i.MessageID = messageID
+	i.require(inboxMessageReceivedWebhookEventDataFieldMessageID)
+}
+
+// SetReceivedEmailID sets the ReceivedEmailID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetReceivedEmailID(receivedEmailID string) {
+	i.ReceivedEmailID = receivedEmailID
+	i.require(inboxMessageReceivedWebhookEventDataFieldReceivedEmailID)
+}
+
+// SetFrom sets the From field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetFrom(from *string) {
+	i.From = from
+	i.require(inboxMessageReceivedWebhookEventDataFieldFrom)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetTo(to []string) {
+	i.To = to
+	i.require(inboxMessageReceivedWebhookEventDataFieldTo)
+}
+
+// SetSubject sets the Subject field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetSubject(subject *string) {
+	i.Subject = subject
+	i.require(inboxMessageReceivedWebhookEventDataFieldSubject)
+}
+
+// SetAttachmentCount sets the AttachmentCount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetAttachmentCount(attachmentCount int64) {
+	i.AttachmentCount = attachmentCount
+	i.require(inboxMessageReceivedWebhookEventDataFieldAttachmentCount)
+}
+
+// SetNewThread sets the NewThread field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetNewThread(newThread bool) {
+	i.NewThread = newThread
+	i.require(inboxMessageReceivedWebhookEventDataFieldNewThread)
+}
+
+// SetSpam sets the Spam field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetSpam(spam bool) {
+	i.Spam = spam
+	i.require(inboxMessageReceivedWebhookEventDataFieldSpam)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetSandbox(sandbox bool) {
+	i.Sandbox = sandbox
+	i.require(inboxMessageReceivedWebhookEventDataFieldSandbox)
+}
+
+// SetReceivedAt sets the ReceivedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *InboxMessageReceivedWebhookEventData) SetReceivedAt(receivedAt time.Time) {
+	i.ReceivedAt = receivedAt
+	i.require(inboxMessageReceivedWebhookEventDataFieldReceivedAt)
+}
+
+func (i *InboxMessageReceivedWebhookEventData) UnmarshalJSON(data []byte) error {
+	type embed InboxMessageReceivedWebhookEventData
+	var unmarshaler = struct {
+		embed
+		ReceivedAt *internal.DateTime `json:"received_at"`
+	}{
+		embed: embed(*i),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*i = InboxMessageReceivedWebhookEventData(unmarshaler.embed)
+	i.ReceivedAt = unmarshaler.ReceivedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *i)
+	if err != nil {
+		return err
+	}
+	i.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, inboxMessageReceivedWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		i.require(presentFields)
+	}
+	i.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (i *InboxMessageReceivedWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed InboxMessageReceivedWebhookEventData
+	var marshaler = struct {
+		embed
+		ReceivedAt *internal.DateTime `json:"received_at"`
+	}{
+		embed:      embed(*i),
+		ReceivedAt: internal.NewDateTime(i.ReceivedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, i.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (i *InboxMessageReceivedWebhookEventData) String() string {
+	if i == nil {
+		return "<nil>"
+	}
+	if len(i.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(i.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(i); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", i)
+}
+
+type InboxMessageReceivedWebhookEventObject string
+
+const (
+	InboxMessageReceivedWebhookEventObjectEvent InboxMessageReceivedWebhookEventObject = "event"
+)
+
+func NewInboxMessageReceivedWebhookEventObjectFromString(s string) (InboxMessageReceivedWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return InboxMessageReceivedWebhookEventObjectEvent, nil
+	}
+	var t InboxMessageReceivedWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageReceivedWebhookEventObject) Ptr() *InboxMessageReceivedWebhookEventObject {
+	return &i
+}
+
+type InboxMessageReceivedWebhookEventType string
+
+const (
+	InboxMessageReceivedWebhookEventTypeInboxMessageReceived InboxMessageReceivedWebhookEventType = "inbox.message.received"
+)
+
+func NewInboxMessageReceivedWebhookEventTypeFromString(s string) (InboxMessageReceivedWebhookEventType, error) {
+	switch s {
+	case "inbox.message.received":
+		return InboxMessageReceivedWebhookEventTypeInboxMessageReceived, nil
+	}
+	var t InboxMessageReceivedWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (i InboxMessageReceivedWebhookEventType) Ptr() *InboxMessageReceivedWebhookEventType {
+	return &i
 }
 
 var (
@@ -5041,6 +6166,689 @@ func (r RiskWebhookEventType) Ptr() *RiskWebhookEventType {
 }
 
 var (
+	signRequestWebhookEventFieldID         = big.NewInt(1 << 0)
+	signRequestWebhookEventFieldObject     = big.NewInt(1 << 1)
+	signRequestWebhookEventFieldType       = big.NewInt(1 << 2)
+	signRequestWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
+	signRequestWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
+	signRequestWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type SignRequestWebhookEvent struct {
+	// The event id: the same as the audit trail's `SignEvent.id`.
+	ID     string                        `json:"id" url:"id"`
+	Object SignRequestWebhookEventObject `json:"object" url:"object"`
+	Type   SignRequestWebhookEventType   `json:"type" url:"type"`
+	// The API version the payload is rendered in (your endpoint's version).
+	APIVersion string                       `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                    `json:"created_at" url:"created_at"`
+	Data       *SignRequestWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestWebhookEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignRequestWebhookEvent) GetObject() SignRequestWebhookEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SignRequestWebhookEvent) GetType() SignRequestWebhookEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SignRequestWebhookEvent) GetAPIVersion() string {
+	if s == nil {
+		return ""
+	}
+	return s.APIVersion
+}
+
+func (s *SignRequestWebhookEvent) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SignRequestWebhookEvent) GetData() *SignRequestWebhookEventData {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SignRequestWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetID(id string) {
+	s.ID = id
+	s.require(signRequestWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetObject(object SignRequestWebhookEventObject) {
+	s.Object = object
+	s.require(signRequestWebhookEventFieldObject)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetType(type_ SignRequestWebhookEventType) {
+	s.Type = type_
+	s.require(signRequestWebhookEventFieldType)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetAPIVersion(apiVersion string) {
+	s.APIVersion = apiVersion
+	s.require(signRequestWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(signRequestWebhookEventFieldCreatedAt)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEvent) SetData(data *SignRequestWebhookEventData) {
+	s.Data = data
+	s.require(signRequestWebhookEventFieldData)
+}
+
+func (s *SignRequestWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed SignRequestWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignRequestWebhookEvent(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed SignRequestWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestWebhookEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signRequestWebhookEventDataFieldSignRequestID = big.NewInt(1 << 0)
+	signRequestWebhookEventDataFieldStatus        = big.NewInt(1 << 1)
+	signRequestWebhookEventDataFieldTitle         = big.NewInt(1 << 2)
+	signRequestWebhookEventDataFieldMetadata      = big.NewInt(1 << 3)
+	signRequestWebhookEventDataFieldSigner        = big.NewInt(1 << 4)
+	signRequestWebhookEventDataFieldReason        = big.NewInt(1 << 5)
+	signRequestWebhookEventDataFieldSandbox       = big.NewInt(1 << 6)
+	signRequestWebhookEventDataFieldOccurredAt    = big.NewInt(1 << 7)
+)
+
+// signRequestWebhookEventDataNullableFields maps the wire names of SignRequestWebhookEventData's nullable fields (required or optional) to their field bits.
+var signRequestWebhookEventDataNullableFields = map[string]*big.Int{
+	"signer": signRequestWebhookEventDataFieldSigner,
+	"reason": signRequestWebhookEventDataFieldReason,
+}
+
+type SignRequestWebhookEventData struct {
+	SignRequestID string `json:"sign_request_id" url:"sign_request_id"`
+	// The request's status after the event.
+	Status   SignRequestWebhookEventDataStatus `json:"status" url:"status"`
+	Title    string                            `json:"title" url:"title"`
+	Metadata map[string]string                 `json:"metadata" url:"metadata"`
+	// The signer who viewed, signed or declined; `null` otherwise.
+	Signer *SignRequestWebhookEventDataSigner `json:"signer,omitempty" url:"signer,omitempty"`
+	// A decline's reason, if the signer gave one.
+	Reason     *string   `json:"reason,omitempty" url:"reason,omitempty"`
+	Sandbox    bool      `json:"sandbox" url:"sandbox"`
+	OccurredAt time.Time `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestWebhookEventData) GetSignRequestID() string {
+	if s == nil {
+		return ""
+	}
+	return s.SignRequestID
+}
+
+func (s *SignRequestWebhookEventData) GetStatus() SignRequestWebhookEventDataStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SignRequestWebhookEventData) GetTitle() string {
+	if s == nil {
+		return ""
+	}
+	return s.Title
+}
+
+func (s *SignRequestWebhookEventData) GetMetadata() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Metadata
+}
+
+func (s *SignRequestWebhookEventData) GetSigner() *SignRequestWebhookEventDataSigner {
+	if s == nil {
+		return nil
+	}
+	return s.Signer
+}
+
+func (s *SignRequestWebhookEventData) GetReason() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Reason
+}
+
+func (s *SignRequestWebhookEventData) GetSandbox() bool {
+	if s == nil {
+		return false
+	}
+	return s.Sandbox
+}
+
+func (s *SignRequestWebhookEventData) GetOccurredAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.OccurredAt
+}
+
+func (s *SignRequestWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetSignRequestID sets the SignRequestID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetSignRequestID(signRequestID string) {
+	s.SignRequestID = signRequestID
+	s.require(signRequestWebhookEventDataFieldSignRequestID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetStatus(status SignRequestWebhookEventDataStatus) {
+	s.Status = status
+	s.require(signRequestWebhookEventDataFieldStatus)
+}
+
+// SetTitle sets the Title field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetTitle(title string) {
+	s.Title = title
+	s.require(signRequestWebhookEventDataFieldTitle)
+}
+
+// SetMetadata sets the Metadata field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetMetadata(metadata map[string]string) {
+	s.Metadata = metadata
+	s.require(signRequestWebhookEventDataFieldMetadata)
+}
+
+// SetSigner sets the Signer field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetSigner(signer *SignRequestWebhookEventDataSigner) {
+	s.Signer = signer
+	s.require(signRequestWebhookEventDataFieldSigner)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetReason(reason *string) {
+	s.Reason = reason
+	s.require(signRequestWebhookEventDataFieldReason)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetSandbox(sandbox bool) {
+	s.Sandbox = sandbox
+	s.require(signRequestWebhookEventDataFieldSandbox)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventData) SetOccurredAt(occurredAt time.Time) {
+	s.OccurredAt = occurredAt
+	s.require(signRequestWebhookEventDataFieldOccurredAt)
+}
+
+func (s *SignRequestWebhookEventData) UnmarshalJSON(data []byte) error {
+	type embed SignRequestWebhookEventData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SignRequestWebhookEventData(unmarshaler.embed)
+	s.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signRequestWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed SignRequestWebhookEventData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*s),
+		OccurredAt: internal.NewDateTime(s.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestWebhookEventData) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	signRequestWebhookEventDataSignerFieldID        = big.NewInt(1 << 0)
+	signRequestWebhookEventDataSignerFieldName      = big.NewInt(1 << 1)
+	signRequestWebhookEventDataSignerFieldEmail     = big.NewInt(1 << 2)
+	signRequestWebhookEventDataSignerFieldClientRef = big.NewInt(1 << 3)
+	signRequestWebhookEventDataSignerFieldStatus    = big.NewInt(1 << 4)
+)
+
+// signRequestWebhookEventDataSignerNullableFields maps the wire names of SignRequestWebhookEventDataSigner's nullable fields (required or optional) to their field bits.
+var signRequestWebhookEventDataSignerNullableFields = map[string]*big.Int{
+	"client_ref": signRequestWebhookEventDataSignerFieldClientRef,
+}
+
+// The signer who viewed, signed or declined; `null` otherwise.
+type SignRequestWebhookEventDataSigner struct {
+	ID        string                                  `json:"id" url:"id"`
+	Name      string                                  `json:"name" url:"name"`
+	Email     string                                  `json:"email" url:"email"`
+	ClientRef *string                                 `json:"client_ref,omitempty" url:"client_ref,omitempty"`
+	Status    SignRequestWebhookEventDataSignerStatus `json:"status" url:"status"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetName() string {
+	if s == nil {
+		return ""
+	}
+	return s.Name
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetEmail() string {
+	if s == nil {
+		return ""
+	}
+	return s.Email
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetClientRef() *string {
+	if s == nil {
+		return nil
+	}
+	return s.ClientRef
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetStatus() SignRequestWebhookEventDataSignerStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SignRequestWebhookEventDataSigner) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SignRequestWebhookEventDataSigner) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventDataSigner) SetID(id string) {
+	s.ID = id
+	s.require(signRequestWebhookEventDataSignerFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventDataSigner) SetName(name string) {
+	s.Name = name
+	s.require(signRequestWebhookEventDataSignerFieldName)
+}
+
+// SetEmail sets the Email field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventDataSigner) SetEmail(email string) {
+	s.Email = email
+	s.require(signRequestWebhookEventDataSignerFieldEmail)
+}
+
+// SetClientRef sets the ClientRef field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventDataSigner) SetClientRef(clientRef *string) {
+	s.ClientRef = clientRef
+	s.require(signRequestWebhookEventDataSignerFieldClientRef)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SignRequestWebhookEventDataSigner) SetStatus(status SignRequestWebhookEventDataSignerStatus) {
+	s.Status = status
+	s.require(signRequestWebhookEventDataSignerFieldStatus)
+}
+
+func (s *SignRequestWebhookEventDataSigner) UnmarshalJSON(data []byte) error {
+	type unmarshaler SignRequestWebhookEventDataSigner
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SignRequestWebhookEventDataSigner(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, signRequestWebhookEventDataSignerNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SignRequestWebhookEventDataSigner) MarshalJSON() ([]byte, error) {
+	type embed SignRequestWebhookEventDataSigner
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SignRequestWebhookEventDataSigner) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SignRequestWebhookEventDataSignerStatus string
+
+const (
+	SignRequestWebhookEventDataSignerStatusPending  SignRequestWebhookEventDataSignerStatus = "pending"
+	SignRequestWebhookEventDataSignerStatusNotified SignRequestWebhookEventDataSignerStatus = "notified"
+	SignRequestWebhookEventDataSignerStatusViewed   SignRequestWebhookEventDataSignerStatus = "viewed"
+	SignRequestWebhookEventDataSignerStatusSigned   SignRequestWebhookEventDataSignerStatus = "signed"
+	SignRequestWebhookEventDataSignerStatusDeclined SignRequestWebhookEventDataSignerStatus = "declined"
+)
+
+func NewSignRequestWebhookEventDataSignerStatusFromString(s string) (SignRequestWebhookEventDataSignerStatus, error) {
+	switch s {
+	case "pending":
+		return SignRequestWebhookEventDataSignerStatusPending, nil
+	case "notified":
+		return SignRequestWebhookEventDataSignerStatusNotified, nil
+	case "viewed":
+		return SignRequestWebhookEventDataSignerStatusViewed, nil
+	case "signed":
+		return SignRequestWebhookEventDataSignerStatusSigned, nil
+	case "declined":
+		return SignRequestWebhookEventDataSignerStatusDeclined, nil
+	}
+	var t SignRequestWebhookEventDataSignerStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestWebhookEventDataSignerStatus) Ptr() *SignRequestWebhookEventDataSignerStatus {
+	return &s
+}
+
+// The request's status after the event.
+type SignRequestWebhookEventDataStatus string
+
+const (
+	SignRequestWebhookEventDataStatusDraft     SignRequestWebhookEventDataStatus = "draft"
+	SignRequestWebhookEventDataStatusSent      SignRequestWebhookEventDataStatus = "sent"
+	SignRequestWebhookEventDataStatusCompleted SignRequestWebhookEventDataStatus = "completed"
+	SignRequestWebhookEventDataStatusDeclined  SignRequestWebhookEventDataStatus = "declined"
+	SignRequestWebhookEventDataStatusCanceled  SignRequestWebhookEventDataStatus = "canceled"
+	SignRequestWebhookEventDataStatusExpired   SignRequestWebhookEventDataStatus = "expired"
+)
+
+func NewSignRequestWebhookEventDataStatusFromString(s string) (SignRequestWebhookEventDataStatus, error) {
+	switch s {
+	case "draft":
+		return SignRequestWebhookEventDataStatusDraft, nil
+	case "sent":
+		return SignRequestWebhookEventDataStatusSent, nil
+	case "completed":
+		return SignRequestWebhookEventDataStatusCompleted, nil
+	case "declined":
+		return SignRequestWebhookEventDataStatusDeclined, nil
+	case "canceled":
+		return SignRequestWebhookEventDataStatusCanceled, nil
+	case "expired":
+		return SignRequestWebhookEventDataStatusExpired, nil
+	}
+	var t SignRequestWebhookEventDataStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestWebhookEventDataStatus) Ptr() *SignRequestWebhookEventDataStatus {
+	return &s
+}
+
+type SignRequestWebhookEventObject string
+
+const (
+	SignRequestWebhookEventObjectEvent SignRequestWebhookEventObject = "event"
+)
+
+func NewSignRequestWebhookEventObjectFromString(s string) (SignRequestWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return SignRequestWebhookEventObjectEvent, nil
+	}
+	var t SignRequestWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestWebhookEventObject) Ptr() *SignRequestWebhookEventObject {
+	return &s
+}
+
+type SignRequestWebhookEventType string
+
+const (
+	SignRequestWebhookEventTypeSignRequestSent         SignRequestWebhookEventType = "sign_request.sent"
+	SignRequestWebhookEventTypeSignRequestViewed       SignRequestWebhookEventType = "sign_request.viewed"
+	SignRequestWebhookEventTypeSignRequestSignerSigned SignRequestWebhookEventType = "sign_request.signer_signed"
+	SignRequestWebhookEventTypeSignRequestDeclined     SignRequestWebhookEventType = "sign_request.declined"
+	SignRequestWebhookEventTypeSignRequestCompleted    SignRequestWebhookEventType = "sign_request.completed"
+	SignRequestWebhookEventTypeSignRequestCanceled     SignRequestWebhookEventType = "sign_request.canceled"
+	SignRequestWebhookEventTypeSignRequestExpired      SignRequestWebhookEventType = "sign_request.expired"
+)
+
+func NewSignRequestWebhookEventTypeFromString(s string) (SignRequestWebhookEventType, error) {
+	switch s {
+	case "sign_request.sent":
+		return SignRequestWebhookEventTypeSignRequestSent, nil
+	case "sign_request.viewed":
+		return SignRequestWebhookEventTypeSignRequestViewed, nil
+	case "sign_request.signer_signed":
+		return SignRequestWebhookEventTypeSignRequestSignerSigned, nil
+	case "sign_request.declined":
+		return SignRequestWebhookEventTypeSignRequestDeclined, nil
+	case "sign_request.completed":
+		return SignRequestWebhookEventTypeSignRequestCompleted, nil
+	case "sign_request.canceled":
+		return SignRequestWebhookEventTypeSignRequestCanceled, nil
+	case "sign_request.expired":
+		return SignRequestWebhookEventTypeSignRequestExpired, nil
+	}
+	var t SignRequestWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SignRequestWebhookEventType) Ptr() *SignRequestWebhookEventType {
+	return &s
+}
+
+var (
 	smsWebhookEventFieldID         = big.NewInt(1 << 0)
 	smsWebhookEventFieldObject     = big.NewInt(1 << 1)
 	smsWebhookEventFieldType       = big.NewInt(1 << 2)
@@ -5875,6 +7683,822 @@ func (s SmsWebhookEventType) Ptr() *SmsWebhookEventType {
 }
 
 var (
+	verificationWebhookEventFieldID         = big.NewInt(1 << 0)
+	verificationWebhookEventFieldObject     = big.NewInt(1 << 1)
+	verificationWebhookEventFieldType       = big.NewInt(1 << 2)
+	verificationWebhookEventFieldAPIVersion = big.NewInt(1 << 3)
+	verificationWebhookEventFieldCreatedAt  = big.NewInt(1 << 4)
+	verificationWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type VerificationWebhookEvent struct {
+	ID     string                         `json:"id" url:"id"`
+	Object VerificationWebhookEventObject `json:"object" url:"object"`
+	Type   VerificationWebhookEventType   `json:"type" url:"type"`
+	// The API version the payload is rendered in (your endpoint's version).
+	APIVersion string                        `json:"api_version" url:"api_version"`
+	CreatedAt  time.Time                     `json:"created_at" url:"created_at"`
+	Data       *VerificationWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (v *VerificationWebhookEvent) GetID() string {
+	if v == nil {
+		return ""
+	}
+	return v.ID
+}
+
+func (v *VerificationWebhookEvent) GetObject() VerificationWebhookEventObject {
+	if v == nil {
+		return ""
+	}
+	return v.Object
+}
+
+func (v *VerificationWebhookEvent) GetType() VerificationWebhookEventType {
+	if v == nil {
+		return ""
+	}
+	return v.Type
+}
+
+func (v *VerificationWebhookEvent) GetAPIVersion() string {
+	if v == nil {
+		return ""
+	}
+	return v.APIVersion
+}
+
+func (v *VerificationWebhookEvent) GetCreatedAt() time.Time {
+	if v == nil {
+		return time.Time{}
+	}
+	return v.CreatedAt
+}
+
+func (v *VerificationWebhookEvent) GetData() *VerificationWebhookEventData {
+	if v == nil {
+		return nil
+	}
+	return v.Data
+}
+
+func (v *VerificationWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if v == nil {
+		return nil
+	}
+	return v.extraProperties
+}
+
+func (v *VerificationWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if v.explicitFields != nil {
+		next.Set(v.explicitFields)
+	}
+	next.Or(next, field)
+	v.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetID(id string) {
+	v.ID = id
+	v.require(verificationWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetObject(object VerificationWebhookEventObject) {
+	v.Object = object
+	v.require(verificationWebhookEventFieldObject)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetType(type_ VerificationWebhookEventType) {
+	v.Type = type_
+	v.require(verificationWebhookEventFieldType)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetAPIVersion(apiVersion string) {
+	v.APIVersion = apiVersion
+	v.require(verificationWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	v.CreatedAt = createdAt
+	v.require(verificationWebhookEventFieldCreatedAt)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEvent) SetData(data *VerificationWebhookEventData) {
+	v.Data = data
+	v.require(verificationWebhookEventFieldData)
+}
+
+func (v *VerificationWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed VerificationWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*v),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*v = VerificationWebhookEvent(unmarshaler.embed)
+	v.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *v)
+	if err != nil {
+		return err
+	}
+	v.extraProperties = extraProperties
+	v.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (v *VerificationWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed VerificationWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*v),
+		CreatedAt: internal.NewDateTime(v.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, v.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (v *VerificationWebhookEvent) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	if len(v.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(v); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+var (
+	verificationWebhookEventDataFieldVerificationID = big.NewInt(1 << 0)
+	verificationWebhookEventDataFieldChannel        = big.NewInt(1 << 1)
+	verificationWebhookEventDataFieldTo             = big.NewInt(1 << 2)
+	verificationWebhookEventDataFieldStatus         = big.NewInt(1 << 3)
+	verificationWebhookEventDataFieldFailure        = big.NewInt(1 << 4)
+	verificationWebhookEventDataFieldReasons        = big.NewInt(1 << 5)
+	verificationWebhookEventDataFieldTags           = big.NewInt(1 << 6)
+	verificationWebhookEventDataFieldSandbox        = big.NewInt(1 << 7)
+	verificationWebhookEventDataFieldOccurredAt     = big.NewInt(1 << 8)
+)
+
+// verificationWebhookEventDataNullableFields maps the wire names of VerificationWebhookEventData's nullable fields (required or optional) to their field bits.
+var verificationWebhookEventDataNullableFields = map[string]*big.Int{
+	"failure": verificationWebhookEventDataFieldFailure,
+}
+
+type VerificationWebhookEventData struct {
+	VerificationID string                                     `json:"verification_id" url:"verification_id"`
+	Channel        VerificationWebhookEventDataChannel        `json:"channel" url:"channel"`
+	To             string                                     `json:"to" url:"to"`
+	Status         VerificationWebhookEventDataStatus         `json:"status" url:"status"`
+	Failure        *VerificationWebhookEventDataFailure       `json:"failure,omitempty" url:"failure,omitempty"`
+	Reasons        []*VerificationWebhookEventDataReasonsItem `json:"reasons" url:"reasons"`
+	Tags           []*VerificationWebhookEventDataTagsItem    `json:"tags" url:"tags"`
+	Sandbox        bool                                       `json:"sandbox" url:"sandbox"`
+	OccurredAt     time.Time                                  `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (v *VerificationWebhookEventData) GetVerificationID() string {
+	if v == nil {
+		return ""
+	}
+	return v.VerificationID
+}
+
+func (v *VerificationWebhookEventData) GetChannel() VerificationWebhookEventDataChannel {
+	if v == nil {
+		return ""
+	}
+	return v.Channel
+}
+
+func (v *VerificationWebhookEventData) GetTo() string {
+	if v == nil {
+		return ""
+	}
+	return v.To
+}
+
+func (v *VerificationWebhookEventData) GetStatus() VerificationWebhookEventDataStatus {
+	if v == nil {
+		return ""
+	}
+	return v.Status
+}
+
+func (v *VerificationWebhookEventData) GetFailure() *VerificationWebhookEventDataFailure {
+	if v == nil {
+		return nil
+	}
+	return v.Failure
+}
+
+func (v *VerificationWebhookEventData) GetReasons() []*VerificationWebhookEventDataReasonsItem {
+	if v == nil {
+		return nil
+	}
+	return v.Reasons
+}
+
+func (v *VerificationWebhookEventData) GetTags() []*VerificationWebhookEventDataTagsItem {
+	if v == nil {
+		return nil
+	}
+	return v.Tags
+}
+
+func (v *VerificationWebhookEventData) GetSandbox() bool {
+	if v == nil {
+		return false
+	}
+	return v.Sandbox
+}
+
+func (v *VerificationWebhookEventData) GetOccurredAt() time.Time {
+	if v == nil {
+		return time.Time{}
+	}
+	return v.OccurredAt
+}
+
+func (v *VerificationWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if v == nil {
+		return nil
+	}
+	return v.extraProperties
+}
+
+func (v *VerificationWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if v.explicitFields != nil {
+		next.Set(v.explicitFields)
+	}
+	next.Or(next, field)
+	v.explicitFields = next
+}
+
+// SetVerificationID sets the VerificationID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetVerificationID(verificationID string) {
+	v.VerificationID = verificationID
+	v.require(verificationWebhookEventDataFieldVerificationID)
+}
+
+// SetChannel sets the Channel field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetChannel(channel VerificationWebhookEventDataChannel) {
+	v.Channel = channel
+	v.require(verificationWebhookEventDataFieldChannel)
+}
+
+// SetTo sets the To field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetTo(to string) {
+	v.To = to
+	v.require(verificationWebhookEventDataFieldTo)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetStatus(status VerificationWebhookEventDataStatus) {
+	v.Status = status
+	v.require(verificationWebhookEventDataFieldStatus)
+}
+
+// SetFailure sets the Failure field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetFailure(failure *VerificationWebhookEventDataFailure) {
+	v.Failure = failure
+	v.require(verificationWebhookEventDataFieldFailure)
+}
+
+// SetReasons sets the Reasons field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetReasons(reasons []*VerificationWebhookEventDataReasonsItem) {
+	v.Reasons = reasons
+	v.require(verificationWebhookEventDataFieldReasons)
+}
+
+// SetTags sets the Tags field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetTags(tags []*VerificationWebhookEventDataTagsItem) {
+	v.Tags = tags
+	v.require(verificationWebhookEventDataFieldTags)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetSandbox(sandbox bool) {
+	v.Sandbox = sandbox
+	v.require(verificationWebhookEventDataFieldSandbox)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventData) SetOccurredAt(occurredAt time.Time) {
+	v.OccurredAt = occurredAt
+	v.require(verificationWebhookEventDataFieldOccurredAt)
+}
+
+func (v *VerificationWebhookEventData) UnmarshalJSON(data []byte) error {
+	type embed VerificationWebhookEventData
+	var unmarshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed: embed(*v),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*v = VerificationWebhookEventData(unmarshaler.embed)
+	v.OccurredAt = unmarshaler.OccurredAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *v)
+	if err != nil {
+		return err
+	}
+	v.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, verificationWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		v.require(presentFields)
+	}
+	v.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (v *VerificationWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed VerificationWebhookEventData
+	var marshaler = struct {
+		embed
+		OccurredAt *internal.DateTime `json:"occurred_at"`
+	}{
+		embed:      embed(*v),
+		OccurredAt: internal.NewDateTime(v.OccurredAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, v.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (v *VerificationWebhookEventData) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	if len(v.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(v); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+type VerificationWebhookEventDataChannel string
+
+const (
+	VerificationWebhookEventDataChannelSms   VerificationWebhookEventDataChannel = "sms"
+	VerificationWebhookEventDataChannelEmail VerificationWebhookEventDataChannel = "email"
+)
+
+func NewVerificationWebhookEventDataChannelFromString(s string) (VerificationWebhookEventDataChannel, error) {
+	switch s {
+	case "sms":
+		return VerificationWebhookEventDataChannelSms, nil
+	case "email":
+		return VerificationWebhookEventDataChannelEmail, nil
+	}
+	var t VerificationWebhookEventDataChannel
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (v VerificationWebhookEventDataChannel) Ptr() *VerificationWebhookEventDataChannel {
+	return &v
+}
+
+var (
+	verificationWebhookEventDataFailureFieldCode    = big.NewInt(1 << 0)
+	verificationWebhookEventDataFailureFieldMessage = big.NewInt(1 << 1)
+)
+
+type VerificationWebhookEventDataFailure struct {
+	Code    string `json:"code" url:"code"`
+	Message string `json:"message" url:"message"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (v *VerificationWebhookEventDataFailure) GetCode() string {
+	if v == nil {
+		return ""
+	}
+	return v.Code
+}
+
+func (v *VerificationWebhookEventDataFailure) GetMessage() string {
+	if v == nil {
+		return ""
+	}
+	return v.Message
+}
+
+func (v *VerificationWebhookEventDataFailure) GetExtraProperties() map[string]interface{} {
+	if v == nil {
+		return nil
+	}
+	return v.extraProperties
+}
+
+func (v *VerificationWebhookEventDataFailure) require(field *big.Int) {
+	next := new(big.Int)
+	if v.explicitFields != nil {
+		next.Set(v.explicitFields)
+	}
+	next.Or(next, field)
+	v.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataFailure) SetCode(code string) {
+	v.Code = code
+	v.require(verificationWebhookEventDataFailureFieldCode)
+}
+
+// SetMessage sets the Message field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataFailure) SetMessage(message string) {
+	v.Message = message
+	v.require(verificationWebhookEventDataFailureFieldMessage)
+}
+
+func (v *VerificationWebhookEventDataFailure) UnmarshalJSON(data []byte) error {
+	type unmarshaler VerificationWebhookEventDataFailure
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*v = VerificationWebhookEventDataFailure(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *v)
+	if err != nil {
+		return err
+	}
+	v.extraProperties = extraProperties
+	v.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (v *VerificationWebhookEventDataFailure) MarshalJSON() ([]byte, error) {
+	type embed VerificationWebhookEventDataFailure
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*v),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, v.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (v *VerificationWebhookEventDataFailure) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	if len(v.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(v); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+var (
+	verificationWebhookEventDataReasonsItemFieldCode  = big.NewInt(1 << 0)
+	verificationWebhookEventDataReasonsItemFieldValue = big.NewInt(1 << 1)
+)
+
+// A fraud guard reason (see the docs' list).
+type VerificationWebhookEventDataReasonsItem struct {
+	Code  string   `json:"code" url:"code"`
+	Value *float64 `json:"value,omitempty" url:"value,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) GetCode() string {
+	if v == nil {
+		return ""
+	}
+	return v.Code
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) GetValue() *float64 {
+	if v == nil {
+		return nil
+	}
+	return v.Value
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) GetExtraProperties() map[string]interface{} {
+	if v == nil {
+		return nil
+	}
+	return v.extraProperties
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if v.explicitFields != nil {
+		next.Set(v.explicitFields)
+	}
+	next.Or(next, field)
+	v.explicitFields = next
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataReasonsItem) SetCode(code string) {
+	v.Code = code
+	v.require(verificationWebhookEventDataReasonsItemFieldCode)
+}
+
+// SetValue sets the Value field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataReasonsItem) SetValue(value *float64) {
+	v.Value = value
+	v.require(verificationWebhookEventDataReasonsItemFieldValue)
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler VerificationWebhookEventDataReasonsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*v = VerificationWebhookEventDataReasonsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *v)
+	if err != nil {
+		return err
+	}
+	v.extraProperties = extraProperties
+	v.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) MarshalJSON() ([]byte, error) {
+	type embed VerificationWebhookEventDataReasonsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*v),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, v.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (v *VerificationWebhookEventDataReasonsItem) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	if len(v.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(v); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+type VerificationWebhookEventDataStatus string
+
+const (
+	VerificationWebhookEventDataStatusPending  VerificationWebhookEventDataStatus = "pending"
+	VerificationWebhookEventDataStatusApproved VerificationWebhookEventDataStatus = "approved"
+	VerificationWebhookEventDataStatusExpired  VerificationWebhookEventDataStatus = "expired"
+	VerificationWebhookEventDataStatusCanceled VerificationWebhookEventDataStatus = "canceled"
+	VerificationWebhookEventDataStatusFailed   VerificationWebhookEventDataStatus = "failed"
+	VerificationWebhookEventDataStatusBlocked  VerificationWebhookEventDataStatus = "blocked"
+)
+
+func NewVerificationWebhookEventDataStatusFromString(s string) (VerificationWebhookEventDataStatus, error) {
+	switch s {
+	case "pending":
+		return VerificationWebhookEventDataStatusPending, nil
+	case "approved":
+		return VerificationWebhookEventDataStatusApproved, nil
+	case "expired":
+		return VerificationWebhookEventDataStatusExpired, nil
+	case "canceled":
+		return VerificationWebhookEventDataStatusCanceled, nil
+	case "failed":
+		return VerificationWebhookEventDataStatusFailed, nil
+	case "blocked":
+		return VerificationWebhookEventDataStatusBlocked, nil
+	}
+	var t VerificationWebhookEventDataStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (v VerificationWebhookEventDataStatus) Ptr() *VerificationWebhookEventDataStatus {
+	return &v
+}
+
+var (
+	verificationWebhookEventDataTagsItemFieldName  = big.NewInt(1 << 0)
+	verificationWebhookEventDataTagsItemFieldValue = big.NewInt(1 << 1)
+)
+
+type VerificationWebhookEventDataTagsItem struct {
+	Name  string `json:"name" url:"name"`
+	Value string `json:"value" url:"value"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (v *VerificationWebhookEventDataTagsItem) GetName() string {
+	if v == nil {
+		return ""
+	}
+	return v.Name
+}
+
+func (v *VerificationWebhookEventDataTagsItem) GetValue() string {
+	if v == nil {
+		return ""
+	}
+	return v.Value
+}
+
+func (v *VerificationWebhookEventDataTagsItem) GetExtraProperties() map[string]interface{} {
+	if v == nil {
+		return nil
+	}
+	return v.extraProperties
+}
+
+func (v *VerificationWebhookEventDataTagsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if v.explicitFields != nil {
+		next.Set(v.explicitFields)
+	}
+	next.Or(next, field)
+	v.explicitFields = next
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataTagsItem) SetName(name string) {
+	v.Name = name
+	v.require(verificationWebhookEventDataTagsItemFieldName)
+}
+
+// SetValue sets the Value field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (v *VerificationWebhookEventDataTagsItem) SetValue(value string) {
+	v.Value = value
+	v.require(verificationWebhookEventDataTagsItemFieldValue)
+}
+
+func (v *VerificationWebhookEventDataTagsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler VerificationWebhookEventDataTagsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*v = VerificationWebhookEventDataTagsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *v)
+	if err != nil {
+		return err
+	}
+	v.extraProperties = extraProperties
+	v.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (v *VerificationWebhookEventDataTagsItem) MarshalJSON() ([]byte, error) {
+	type embed VerificationWebhookEventDataTagsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*v),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, v.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (v *VerificationWebhookEventDataTagsItem) String() string {
+	if v == nil {
+		return "<nil>"
+	}
+	if len(v.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(v); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", v)
+}
+
+type VerificationWebhookEventObject string
+
+const (
+	VerificationWebhookEventObjectEvent VerificationWebhookEventObject = "event"
+)
+
+func NewVerificationWebhookEventObjectFromString(s string) (VerificationWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return VerificationWebhookEventObjectEvent, nil
+	}
+	var t VerificationWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (v VerificationWebhookEventObject) Ptr() *VerificationWebhookEventObject {
+	return &v
+}
+
+type VerificationWebhookEventType string
+
+const (
+	VerificationWebhookEventTypeVerificationApproved VerificationWebhookEventType = "verification.approved"
+	VerificationWebhookEventTypeVerificationFailed   VerificationWebhookEventType = "verification.failed"
+	VerificationWebhookEventTypeVerificationBlocked  VerificationWebhookEventType = "verification.blocked"
+)
+
+func NewVerificationWebhookEventTypeFromString(s string) (VerificationWebhookEventType, error) {
+	switch s {
+	case "verification.approved":
+		return VerificationWebhookEventTypeVerificationApproved, nil
+	case "verification.failed":
+		return VerificationWebhookEventTypeVerificationFailed, nil
+	case "verification.blocked":
+		return VerificationWebhookEventTypeVerificationBlocked, nil
+	}
+	var t VerificationWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (v VerificationWebhookEventType) Ptr() *VerificationWebhookEventType {
+	return &v
+}
+
+var (
 	webhookTestEventFieldObject    = big.NewInt(1 << 0)
 	webhookTestEventFieldEvent     = big.NewInt(1 << 1)
 	webhookTestEventFieldEndpoints = big.NewInt(1 << 2)
@@ -6013,14 +8637,18 @@ func (w *WebhookTestEvent) String() string {
 
 // The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`.
 type WebhookTestEventEvent struct {
-	EmailWebhookEvent         *EmailWebhookEvent
-	ReceivedEmailWebhookEvent *ReceivedEmailWebhookEvent
-	HookEndpointWebhookEvent  *HookEndpointWebhookEvent
-	RiskWebhookEvent          *RiskWebhookEvent
-	ContactWebhookEvent       *ContactWebhookEvent
-	BroadcastWebhookEvent     *BroadcastWebhookEvent
-	SmsWebhookEvent           *SmsWebhookEvent
-	ReceivedSmsWebhookEvent   *ReceivedSmsWebhookEvent
+	EmailWebhookEvent                *EmailWebhookEvent
+	ReceivedEmailWebhookEvent        *ReceivedEmailWebhookEvent
+	HookEndpointWebhookEvent         *HookEndpointWebhookEvent
+	RiskWebhookEvent                 *RiskWebhookEvent
+	ContactWebhookEvent              *ContactWebhookEvent
+	BroadcastWebhookEvent            *BroadcastWebhookEvent
+	InboxMessageReceivedWebhookEvent *InboxMessageReceivedWebhookEvent
+	SmsWebhookEvent                  *SmsWebhookEvent
+	ReceivedSmsWebhookEvent          *ReceivedSmsWebhookEvent
+	SignRequestWebhookEvent          *SignRequestWebhookEvent
+	VerificationWebhookEvent         *VerificationWebhookEvent
+	FormSubmissionWebhookEvent       *FormSubmissionWebhookEvent
 
 	typ string
 }
@@ -6067,6 +8695,13 @@ func (w *WebhookTestEventEvent) GetBroadcastWebhookEvent() *BroadcastWebhookEven
 	return w.BroadcastWebhookEvent
 }
 
+func (w *WebhookTestEventEvent) GetInboxMessageReceivedWebhookEvent() *InboxMessageReceivedWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.InboxMessageReceivedWebhookEvent
+}
+
 func (w *WebhookTestEventEvent) GetSmsWebhookEvent() *SmsWebhookEvent {
 	if w == nil {
 		return nil
@@ -6079,6 +8714,27 @@ func (w *WebhookTestEventEvent) GetReceivedSmsWebhookEvent() *ReceivedSmsWebhook
 		return nil
 	}
 	return w.ReceivedSmsWebhookEvent
+}
+
+func (w *WebhookTestEventEvent) GetSignRequestWebhookEvent() *SignRequestWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.SignRequestWebhookEvent
+}
+
+func (w *WebhookTestEventEvent) GetVerificationWebhookEvent() *VerificationWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.VerificationWebhookEvent
+}
+
+func (w *WebhookTestEventEvent) GetFormSubmissionWebhookEvent() *FormSubmissionWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.FormSubmissionWebhookEvent
 }
 
 func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
@@ -6131,6 +8787,14 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if internal.MatchesObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueInboxMessageReceivedWebhookEvent := new(InboxMessageReceivedWebhookEvent)
+		if err := json.Unmarshal(data, &valueInboxMessageReceivedWebhookEvent); err == nil {
+			w.typ = "InboxMessageReceivedWebhookEvent"
+			w.InboxMessageReceivedWebhookEvent = valueInboxMessageReceivedWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
 		valueSmsWebhookEvent := new(SmsWebhookEvent)
 		if err := json.Unmarshal(data, &valueSmsWebhookEvent); err == nil {
 			w.typ = "SmsWebhookEvent"
@@ -6143,6 +8807,30 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(data, &valueReceivedSmsWebhookEvent); err == nil {
 			w.typ = "ReceivedSmsWebhookEvent"
 			w.ReceivedSmsWebhookEvent = valueReceivedSmsWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueSignRequestWebhookEvent := new(SignRequestWebhookEvent)
+		if err := json.Unmarshal(data, &valueSignRequestWebhookEvent); err == nil {
+			w.typ = "SignRequestWebhookEvent"
+			w.SignRequestWebhookEvent = valueSignRequestWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueVerificationWebhookEvent := new(VerificationWebhookEvent)
+		if err := json.Unmarshal(data, &valueVerificationWebhookEvent); err == nil {
+			w.typ = "VerificationWebhookEvent"
+			w.VerificationWebhookEvent = valueVerificationWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueFormSubmissionWebhookEvent := new(FormSubmissionWebhookEvent)
+		if err := json.Unmarshal(data, &valueFormSubmissionWebhookEvent); err == nil {
+			w.typ = "FormSubmissionWebhookEvent"
+			w.FormSubmissionWebhookEvent = valueFormSubmissionWebhookEvent
 			return nil
 		}
 	}
@@ -6195,6 +8883,14 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if internal.HasObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueInboxMessageReceivedWebhookEvent := new(InboxMessageReceivedWebhookEvent)
+		if err := json.Unmarshal(data, &valueInboxMessageReceivedWebhookEvent); err == nil {
+			w.typ = "InboxMessageReceivedWebhookEvent"
+			w.InboxMessageReceivedWebhookEvent = valueInboxMessageReceivedWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
 		valueSmsWebhookEvent := new(SmsWebhookEvent)
 		if err := json.Unmarshal(data, &valueSmsWebhookEvent); err == nil {
 			w.typ = "SmsWebhookEvent"
@@ -6207,6 +8903,30 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(data, &valueReceivedSmsWebhookEvent); err == nil {
 			w.typ = "ReceivedSmsWebhookEvent"
 			w.ReceivedSmsWebhookEvent = valueReceivedSmsWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueSignRequestWebhookEvent := new(SignRequestWebhookEvent)
+		if err := json.Unmarshal(data, &valueSignRequestWebhookEvent); err == nil {
+			w.typ = "SignRequestWebhookEvent"
+			w.SignRequestWebhookEvent = valueSignRequestWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueVerificationWebhookEvent := new(VerificationWebhookEvent)
+		if err := json.Unmarshal(data, &valueVerificationWebhookEvent); err == nil {
+			w.typ = "VerificationWebhookEvent"
+			w.VerificationWebhookEvent = valueVerificationWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "type", "api_version", "created_at", "data"}) {
+		valueFormSubmissionWebhookEvent := new(FormSubmissionWebhookEvent)
+		if err := json.Unmarshal(data, &valueFormSubmissionWebhookEvent); err == nil {
+			w.typ = "FormSubmissionWebhookEvent"
+			w.FormSubmissionWebhookEvent = valueFormSubmissionWebhookEvent
 			return nil
 		}
 	}
@@ -6246,6 +8966,12 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		w.BroadcastWebhookEvent = valueBroadcastWebhookEvent
 		return nil
 	}
+	valueInboxMessageReceivedWebhookEvent := new(InboxMessageReceivedWebhookEvent)
+	if err := json.Unmarshal(data, &valueInboxMessageReceivedWebhookEvent); err == nil {
+		w.typ = "InboxMessageReceivedWebhookEvent"
+		w.InboxMessageReceivedWebhookEvent = valueInboxMessageReceivedWebhookEvent
+		return nil
+	}
 	valueSmsWebhookEvent := new(SmsWebhookEvent)
 	if err := json.Unmarshal(data, &valueSmsWebhookEvent); err == nil {
 		w.typ = "SmsWebhookEvent"
@@ -6256,6 +8982,24 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &valueReceivedSmsWebhookEvent); err == nil {
 		w.typ = "ReceivedSmsWebhookEvent"
 		w.ReceivedSmsWebhookEvent = valueReceivedSmsWebhookEvent
+		return nil
+	}
+	valueSignRequestWebhookEvent := new(SignRequestWebhookEvent)
+	if err := json.Unmarshal(data, &valueSignRequestWebhookEvent); err == nil {
+		w.typ = "SignRequestWebhookEvent"
+		w.SignRequestWebhookEvent = valueSignRequestWebhookEvent
+		return nil
+	}
+	valueVerificationWebhookEvent := new(VerificationWebhookEvent)
+	if err := json.Unmarshal(data, &valueVerificationWebhookEvent); err == nil {
+		w.typ = "VerificationWebhookEvent"
+		w.VerificationWebhookEvent = valueVerificationWebhookEvent
+		return nil
+	}
+	valueFormSubmissionWebhookEvent := new(FormSubmissionWebhookEvent)
+	if err := json.Unmarshal(data, &valueFormSubmissionWebhookEvent); err == nil {
+		w.typ = "FormSubmissionWebhookEvent"
+		w.FormSubmissionWebhookEvent = valueFormSubmissionWebhookEvent
 		return nil
 	}
 	return fmt.Errorf("%s cannot be deserialized as a %T", data, w)
@@ -6280,11 +9024,23 @@ func (w WebhookTestEventEvent) MarshalJSON() ([]byte, error) {
 	if w.typ == "BroadcastWebhookEvent" || w.BroadcastWebhookEvent != nil {
 		return json.Marshal(w.BroadcastWebhookEvent)
 	}
+	if w.typ == "InboxMessageReceivedWebhookEvent" || w.InboxMessageReceivedWebhookEvent != nil {
+		return json.Marshal(w.InboxMessageReceivedWebhookEvent)
+	}
 	if w.typ == "SmsWebhookEvent" || w.SmsWebhookEvent != nil {
 		return json.Marshal(w.SmsWebhookEvent)
 	}
 	if w.typ == "ReceivedSmsWebhookEvent" || w.ReceivedSmsWebhookEvent != nil {
 		return json.Marshal(w.ReceivedSmsWebhookEvent)
+	}
+	if w.typ == "SignRequestWebhookEvent" || w.SignRequestWebhookEvent != nil {
+		return json.Marshal(w.SignRequestWebhookEvent)
+	}
+	if w.typ == "VerificationWebhookEvent" || w.VerificationWebhookEvent != nil {
+		return json.Marshal(w.VerificationWebhookEvent)
+	}
+	if w.typ == "FormSubmissionWebhookEvent" || w.FormSubmissionWebhookEvent != nil {
+		return json.Marshal(w.FormSubmissionWebhookEvent)
 	}
 	return nil, fmt.Errorf("type %T does not include a non-empty union type", w)
 }
@@ -6296,8 +9052,12 @@ type WebhookTestEventEventVisitor interface {
 	VisitRiskWebhookEvent(*RiskWebhookEvent) error
 	VisitContactWebhookEvent(*ContactWebhookEvent) error
 	VisitBroadcastWebhookEvent(*BroadcastWebhookEvent) error
+	VisitInboxMessageReceivedWebhookEvent(*InboxMessageReceivedWebhookEvent) error
 	VisitSmsWebhookEvent(*SmsWebhookEvent) error
 	VisitReceivedSmsWebhookEvent(*ReceivedSmsWebhookEvent) error
+	VisitSignRequestWebhookEvent(*SignRequestWebhookEvent) error
+	VisitVerificationWebhookEvent(*VerificationWebhookEvent) error
+	VisitFormSubmissionWebhookEvent(*FormSubmissionWebhookEvent) error
 }
 
 func (w *WebhookTestEventEvent) Accept(visitor WebhookTestEventEventVisitor) error {
@@ -6319,11 +9079,23 @@ func (w *WebhookTestEventEvent) Accept(visitor WebhookTestEventEventVisitor) err
 	if w.typ == "BroadcastWebhookEvent" || w.BroadcastWebhookEvent != nil {
 		return visitor.VisitBroadcastWebhookEvent(w.BroadcastWebhookEvent)
 	}
+	if w.typ == "InboxMessageReceivedWebhookEvent" || w.InboxMessageReceivedWebhookEvent != nil {
+		return visitor.VisitInboxMessageReceivedWebhookEvent(w.InboxMessageReceivedWebhookEvent)
+	}
 	if w.typ == "SmsWebhookEvent" || w.SmsWebhookEvent != nil {
 		return visitor.VisitSmsWebhookEvent(w.SmsWebhookEvent)
 	}
 	if w.typ == "ReceivedSmsWebhookEvent" || w.ReceivedSmsWebhookEvent != nil {
 		return visitor.VisitReceivedSmsWebhookEvent(w.ReceivedSmsWebhookEvent)
+	}
+	if w.typ == "SignRequestWebhookEvent" || w.SignRequestWebhookEvent != nil {
+		return visitor.VisitSignRequestWebhookEvent(w.SignRequestWebhookEvent)
+	}
+	if w.typ == "VerificationWebhookEvent" || w.VerificationWebhookEvent != nil {
+		return visitor.VisitVerificationWebhookEvent(w.VerificationWebhookEvent)
+	}
+	if w.typ == "FormSubmissionWebhookEvent" || w.FormSubmissionWebhookEvent != nil {
+		return visitor.VisitFormSubmissionWebhookEvent(w.FormSubmissionWebhookEvent)
 	}
 	return fmt.Errorf("type %T does not include a non-empty union type", w)
 }
@@ -6347,7 +9119,7 @@ func (w WebhookTestEventObject) Ptr() *WebhookTestEventObject {
 	return &w
 }
 
-// The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+// The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
 type CreateTestWebhookEventRequestType string
 
 const (
@@ -6372,6 +9144,10 @@ const (
 	CreateTestWebhookEventRequestTypeAccountReinstated             CreateTestWebhookEventRequestType = "account.reinstated"
 	CreateTestWebhookEventRequestTypeAccountMarketingPaused        CreateTestWebhookEventRequestType = "account.marketing_paused"
 	CreateTestWebhookEventRequestTypeAccountMarketingReinstated    CreateTestWebhookEventRequestType = "account.marketing_reinstated"
+	CreateTestWebhookEventRequestTypeSubaccountReputationWarning   CreateTestWebhookEventRequestType = "subaccount.reputation_warning"
+	CreateTestWebhookEventRequestTypeSubaccountReputationRecovered CreateTestWebhookEventRequestType = "subaccount.reputation_recovered"
+	CreateTestWebhookEventRequestTypeSubaccountPaused              CreateTestWebhookEventRequestType = "subaccount.paused"
+	CreateTestWebhookEventRequestTypeSubaccountReinstated          CreateTestWebhookEventRequestType = "subaccount.reinstated"
 	CreateTestWebhookEventRequestTypeHookEndpointDisabled          CreateTestWebhookEventRequestType = "hook_endpoint.disabled"
 	CreateTestWebhookEventRequestTypeBillingInvoiceFinalized       CreateTestWebhookEventRequestType = "billing.invoice_finalized"
 	CreateTestWebhookEventRequestTypeBillingInvoicePaid            CreateTestWebhookEventRequestType = "billing.invoice_paid"
@@ -6397,6 +9173,7 @@ const (
 	CreateTestWebhookEventRequestTypeBroadcastPaused               CreateTestWebhookEventRequestType = "broadcast.paused"
 	CreateTestWebhookEventRequestTypeBroadcastCanceled             CreateTestWebhookEventRequestType = "broadcast.canceled"
 	CreateTestWebhookEventRequestTypeBroadcastFailed               CreateTestWebhookEventRequestType = "broadcast.failed"
+	CreateTestWebhookEventRequestTypeInboxMessageReceived          CreateTestWebhookEventRequestType = "inbox.message.received"
 	CreateTestWebhookEventRequestTypeSmsScheduled                  CreateTestWebhookEventRequestType = "sms.scheduled"
 	CreateTestWebhookEventRequestTypeSmsSent                       CreateTestWebhookEventRequestType = "sms.sent"
 	CreateTestWebhookEventRequestTypeSmsDelivered                  CreateTestWebhookEventRequestType = "sms.delivered"
@@ -6407,6 +9184,18 @@ const (
 	CreateTestWebhookEventRequestTypeSmsReceived                   CreateTestWebhookEventRequestType = "sms.received"
 	CreateTestWebhookEventRequestTypeSmsOptedOut                   CreateTestWebhookEventRequestType = "sms.opted_out"
 	CreateTestWebhookEventRequestTypeSmsOptedIn                    CreateTestWebhookEventRequestType = "sms.opted_in"
+	CreateTestWebhookEventRequestTypeSignRequestSent               CreateTestWebhookEventRequestType = "sign_request.sent"
+	CreateTestWebhookEventRequestTypeSignRequestViewed             CreateTestWebhookEventRequestType = "sign_request.viewed"
+	CreateTestWebhookEventRequestTypeSignRequestSignerSigned       CreateTestWebhookEventRequestType = "sign_request.signer_signed"
+	CreateTestWebhookEventRequestTypeSignRequestDeclined           CreateTestWebhookEventRequestType = "sign_request.declined"
+	CreateTestWebhookEventRequestTypeSignRequestCompleted          CreateTestWebhookEventRequestType = "sign_request.completed"
+	CreateTestWebhookEventRequestTypeSignRequestCanceled           CreateTestWebhookEventRequestType = "sign_request.canceled"
+	CreateTestWebhookEventRequestTypeSignRequestExpired            CreateTestWebhookEventRequestType = "sign_request.expired"
+	CreateTestWebhookEventRequestTypeVerificationApproved          CreateTestWebhookEventRequestType = "verification.approved"
+	CreateTestWebhookEventRequestTypeVerificationFailed            CreateTestWebhookEventRequestType = "verification.failed"
+	CreateTestWebhookEventRequestTypeVerificationBlocked           CreateTestWebhookEventRequestType = "verification.blocked"
+	CreateTestWebhookEventRequestTypeFormSubmissionReceived        CreateTestWebhookEventRequestType = "form.submission.received"
+	CreateTestWebhookEventRequestTypeFormSubmissionFlagged         CreateTestWebhookEventRequestType = "form.submission.flagged"
 )
 
 func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhookEventRequestType, error) {
@@ -6453,6 +9242,14 @@ func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhook
 		return CreateTestWebhookEventRequestTypeAccountMarketingPaused, nil
 	case "account.marketing_reinstated":
 		return CreateTestWebhookEventRequestTypeAccountMarketingReinstated, nil
+	case "subaccount.reputation_warning":
+		return CreateTestWebhookEventRequestTypeSubaccountReputationWarning, nil
+	case "subaccount.reputation_recovered":
+		return CreateTestWebhookEventRequestTypeSubaccountReputationRecovered, nil
+	case "subaccount.paused":
+		return CreateTestWebhookEventRequestTypeSubaccountPaused, nil
+	case "subaccount.reinstated":
+		return CreateTestWebhookEventRequestTypeSubaccountReinstated, nil
 	case "hook_endpoint.disabled":
 		return CreateTestWebhookEventRequestTypeHookEndpointDisabled, nil
 	case "billing.invoice_finalized":
@@ -6503,6 +9300,8 @@ func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhook
 		return CreateTestWebhookEventRequestTypeBroadcastCanceled, nil
 	case "broadcast.failed":
 		return CreateTestWebhookEventRequestTypeBroadcastFailed, nil
+	case "inbox.message.received":
+		return CreateTestWebhookEventRequestTypeInboxMessageReceived, nil
 	case "sms.scheduled":
 		return CreateTestWebhookEventRequestTypeSmsScheduled, nil
 	case "sms.sent":
@@ -6523,6 +9322,30 @@ func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhook
 		return CreateTestWebhookEventRequestTypeSmsOptedOut, nil
 	case "sms.opted_in":
 		return CreateTestWebhookEventRequestTypeSmsOptedIn, nil
+	case "sign_request.sent":
+		return CreateTestWebhookEventRequestTypeSignRequestSent, nil
+	case "sign_request.viewed":
+		return CreateTestWebhookEventRequestTypeSignRequestViewed, nil
+	case "sign_request.signer_signed":
+		return CreateTestWebhookEventRequestTypeSignRequestSignerSigned, nil
+	case "sign_request.declined":
+		return CreateTestWebhookEventRequestTypeSignRequestDeclined, nil
+	case "sign_request.completed":
+		return CreateTestWebhookEventRequestTypeSignRequestCompleted, nil
+	case "sign_request.canceled":
+		return CreateTestWebhookEventRequestTypeSignRequestCanceled, nil
+	case "sign_request.expired":
+		return CreateTestWebhookEventRequestTypeSignRequestExpired, nil
+	case "verification.approved":
+		return CreateTestWebhookEventRequestTypeVerificationApproved, nil
+	case "verification.failed":
+		return CreateTestWebhookEventRequestTypeVerificationFailed, nil
+	case "verification.blocked":
+		return CreateTestWebhookEventRequestTypeVerificationBlocked, nil
+	case "form.submission.received":
+		return CreateTestWebhookEventRequestTypeFormSubmissionReceived, nil
+	case "form.submission.flagged":
+		return CreateTestWebhookEventRequestTypeFormSubmissionFlagged, nil
 	}
 	var t CreateTestWebhookEventRequestType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

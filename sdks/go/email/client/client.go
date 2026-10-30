@@ -16,6 +16,7 @@ import (
 	received "github.com/cosscom/coss-go/email/received"
 	segments "github.com/cosscom/coss-go/email/segments"
 	storage "github.com/cosscom/coss-go/email/storage"
+	subaccounts "github.com/cosscom/coss-go/email/subaccounts"
 	suppressions "github.com/cosscom/coss-go/email/suppressions"
 	client "github.com/cosscom/coss-go/email/templates/client"
 	topics "github.com/cosscom/coss-go/email/topics"
@@ -29,6 +30,7 @@ type Client struct {
 	Templates         *client.Client
 	DedicatedIps      *dedicatedips.Client
 	Suppressions      *suppressions.Client
+	Subaccounts       *subaccounts.Client
 	Tracking          *tracking.Client
 	Storage           *storage.Client
 	Contacts          *contactsclient.Client
@@ -56,6 +58,7 @@ func NewClient(options *core.RequestOptions) *Client {
 		Templates:         client.NewClient(options),
 		DedicatedIps:      dedicatedips.NewClient(options),
 		Suppressions:      suppressions.NewClient(options),
+		Subaccounts:       subaccounts.NewClient(options),
 		Tracking:          tracking.NewClient(options),
 		Storage:           storage.NewClient(options),
 		Contacts:          contactsclient.NewClient(options),

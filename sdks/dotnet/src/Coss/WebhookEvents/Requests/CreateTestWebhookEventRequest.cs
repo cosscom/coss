@@ -7,7 +7,7 @@ namespace Coss;
 public record CreateTestWebhookEventRequest
 {
     /// <summary>
-    /// The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
+    /// The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one.
     /// </summary>
     [JsonPropertyName("type")]
     public required CreateTestWebhookEventRequestType Type { get; set; }

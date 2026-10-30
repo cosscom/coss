@@ -10,12 +10,15 @@ import (
 )
 
 var (
-	createDomainRequestFieldName = big.NewInt(1 << 0)
+	createDomainRequestFieldName       = big.NewInt(1 << 0)
+	createDomainRequestFieldSubaccount = big.NewInt(1 << 1)
 )
 
 type CreateDomainRequest struct {
 	// The domain to send from, without a scheme or path. Subdomains are allowed; internationalized domains must be punycode-encoded.
 	Name string `json:"name" url:"-"`
+	// Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
+	Subaccount *string `json:"subaccount,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -35,6 +38,13 @@ func (c *CreateDomainRequest) require(field *big.Int) {
 func (c *CreateDomainRequest) SetName(name string) {
 	c.Name = name
 	c.require(createDomainRequestFieldName)
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateDomainRequest) SetSubaccount(subaccount *string) {
+	c.Subaccount = subaccount
+	c.require(createDomainRequestFieldSubaccount)
 }
 
 func (c *CreateDomainRequest) UnmarshalJSON(data []byte) error {
@@ -112,6 +122,34 @@ func (g *GetDomainsRequest) require(field *big.Int) {
 func (g *GetDomainsRequest) SetID(id string) {
 	g.ID = id
 	g.require(getDomainsRequestFieldID)
+}
+
+var (
+	listDomainsRequestFieldSubaccount = big.NewInt(1 << 0)
+)
+
+type ListDomainsRequest struct {
+	// Only this sub-account's domains (its id or your uid).
+	Subaccount *string `json:"-" url:"subaccount,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (l *ListDomainsRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if l.explicitFields != nil {
+		next.Set(l.explicitFields)
+	}
+	next.Or(next, field)
+	l.explicitFields = next
+}
+
+// SetSubaccount sets the Subaccount field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (l *ListDomainsRequest) SetSubaccount(subaccount *string) {
+	l.Subaccount = subaccount
+	l.require(listDomainsRequestFieldSubaccount)
 }
 
 var (
@@ -386,6 +424,65 @@ func NewDomainListObjectFromString(s string) (DomainListObject, error) {
 
 func (d DomainListObject) Ptr() *DomainListObject {
 	return &d
+}
+
+var (
+	updateDomainRequestFieldID                    = big.NewInt(1 << 0)
+	updateDomainRequestFieldSharedWithSubaccounts = big.NewInt(1 << 1)
+)
+
+type UpdateDomainRequest struct {
+	// The domain's id.
+	ID string `json:"-" url:"-"`
+	// Let your sub-accounts send from this domain of yours (through your organization's reputation).
+	SharedWithSubaccounts bool `json:"shared_with_subaccounts" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UpdateDomainRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if u.explicitFields != nil {
+		next.Set(u.explicitFields)
+	}
+	next.Or(next, field)
+	u.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateDomainRequest) SetID(id string) {
+	u.ID = id
+	u.require(updateDomainRequestFieldID)
+}
+
+// SetSharedWithSubaccounts sets the SharedWithSubaccounts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateDomainRequest) SetSharedWithSubaccounts(sharedWithSubaccounts bool) {
+	u.SharedWithSubaccounts = sharedWithSubaccounts
+	u.require(updateDomainRequestFieldSharedWithSubaccounts)
+}
+
+func (u *UpdateDomainRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler UpdateDomainRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*u = UpdateDomainRequest(body)
+	return nil
+}
+
+func (u *UpdateDomainRequest) MarshalJSON() ([]byte, error) {
+	type embed UpdateDomainRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
 }
 
 var (

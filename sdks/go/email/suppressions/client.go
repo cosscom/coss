@@ -47,7 +47,11 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &email.ListSuppressionsRequest{}
+//	request := &email.ListSuppressionsRequest{
+//	    Subaccount: coss.String(
+//	        "user_8812",
+//	    ),
+//	}
 //	client.Email.Suppressions.List(
 //	    context.TODO(),
 //	    request,

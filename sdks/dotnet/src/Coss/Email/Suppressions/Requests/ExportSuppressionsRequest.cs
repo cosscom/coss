@@ -9,6 +9,12 @@ namespace Coss.Email;
 public record ExportSuppressionsRequest
 {
     /// <summary>
+    /// Export a sub-account's own list (its id or your uid) instead of the environment's.
+    /// </summary>
+    [JsonIgnore]
+    public string? Subaccount { get; set; }
+
+    /// <summary>
     /// Only entries with this scope.
     /// </summary>
     [JsonIgnore]

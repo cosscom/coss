@@ -64,6 +64,7 @@ public class ImportTest : BaseMockServerTest
         var response = await Client.Email.Suppressions.ImportAsync(
             new ImportSuppressionsRequest
             {
+                Subaccount = null,
                 Suppressions = new List<ImportSuppressionsRequestSuppressionsItem>()
                 {
                     new ImportSuppressionsRequestSuppressionsItem

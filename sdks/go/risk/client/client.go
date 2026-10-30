@@ -204,6 +204,33 @@ func (c *Client) CheckIP(
 	return response.Body, nil
 }
 
+// Phone intelligence on its own: whether the number exists in its country's numbering plan, its line type (mobile, landline, fixed or non-fixed VoIP, toll-free…) and carrier, and the last SIM swap where carriers share it. Stateless. A failed lookup is reported in `degraded`. Each live check that gets an answer is billed (`risk.phone_checks`; plans include some every month, and Free stops at its allowance); invalid numbers, failed lookups and sandbox checks are free. Limited per organization as well as per key. Sandbox keys see the fictional numbers `+1 202 555 01xx` (`0101` landline, `0102` non-fixed VoIP, `0103` fixed VoIP, `0104` a recent SIM swap, `0199` invalid, the rest mobile).
+//
+// Example:
+//
+//	request := &coss.RiskPhoneCheckRequest{
+//	    Phone: "+14155550123",
+//	}
+//	client.Risk.CheckPhone(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) CheckPhone(
+	ctx context.Context,
+	request *coss.RiskPhoneCheckRequest,
+	opts ...option.RequestOption,
+) (*coss.RiskPhoneCheck, error) {
+	response, err := c.WithRawResponse.CheckPhone(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
 // Scores text people post on your platform (a profile bio, a comment, a listing) for spam, phishing, malware and fraud with an AI model, with zero data retention. Returns scores only: you decide what they mean. Neither the text nor the scores are stored, and request logs keep no body for this endpoint. Takes up to 3 seconds; a failure is a 503 you can retry or treat as unknown. Limited per organization as well as per key. Sandbox keys use markers instead of a model: `[coss-test:phishing]` scores 0.99, `[coss-test:spam:0.4]` exactly 0.4, everything else 0.01.
 //
 // Example:

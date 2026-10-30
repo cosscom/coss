@@ -724,6 +724,9 @@ const (
 	LogDrainSourceRisk    LogDrainSource = "risk"
 	LogDrainSourceSMTP    LogDrainSource = "smtp"
 	LogDrainSourceSms     LogDrainSource = "sms"
+	LogDrainSourceSign    LogDrainSource = "sign"
+	LogDrainSourceVerify  LogDrainSource = "verify"
+	LogDrainSourceForms   LogDrainSource = "forms"
 	LogDrainSourceAudit   LogDrainSource = "audit"
 )
 
@@ -741,6 +744,12 @@ func NewLogDrainSourceFromString(s string) (LogDrainSource, error) {
 		return LogDrainSourceSMTP, nil
 	case "sms":
 		return LogDrainSourceSms, nil
+	case "sign":
+		return LogDrainSourceSign, nil
+	case "verify":
+		return LogDrainSourceVerify, nil
+	case "forms":
+		return LogDrainSourceForms, nil
 	case "audit":
 		return LogDrainSourceAudit, nil
 	}

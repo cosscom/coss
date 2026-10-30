@@ -95,6 +95,11 @@ class SendEmailRequest(UniversalBaseModel):
     `transactional` (the default) or `marketing`. Marketing email goes out on its own sending infrastructure and reputation, so its complaints never hold up transactional mail. It needs the environment's postal address (marketing settings), exactly one recipient, and no `List-Unsubscribe` header: coss.com adds one-click unsubscribe headers and a footer with the address and an unsubscribe link (place them yourself with `{{{unsubscribe_url}}}`, `{{{preferences_url}}}` and `{{{mailing_address}}}`). Contacts who unsubscribed are skipped.
     """
 
+    subaccount: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Send for one of your sub-accounts (email for platforms): its id (`sub_…`) or your `uid` for it. The email then counts toward its quotas and reputation, skips its suppressions (and the environment's), and must come from one of its domains or a domain you share with sub-accounts. Transactional email only.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:

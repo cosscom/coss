@@ -125,6 +125,12 @@ class EmailWebhookEventData extends JsonSerializableType
     public DateTime $occurredAt;
 
     /**
+     * @var ?string $subaccountId Only for an email sent for a sub-account: its id.
+     */
+    #[JsonProperty('subaccount_id')]
+    public ?string $subaccountId;
+
+    /**
      * @param array{
      *   emailId: string,
      *   from: string,
@@ -145,6 +151,7 @@ class EmailWebhookEventData extends JsonSerializableType
      *   reschedule?: ?EmailWebhookEventDataReschedule,
      *   category?: ?string,
      *   recipient?: ?string,
+     *   subaccountId?: ?string,
      * } $values
      */
     public function __construct(
@@ -205,6 +212,10 @@ class EmailWebhookEventData extends JsonSerializableType
             $this->_setField('recipient');
         }
         $this->occurredAt = $values['occurredAt'];
+        $this->subaccountId = $values['subaccountId'] ?? null;
+        if (array_key_exists('subaccountId', $values)) {
+            $this->_setField('subaccountId');
+        }
     }
 
     /**

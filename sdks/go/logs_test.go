@@ -2539,6 +2539,27 @@ func TestEnumLogSource(t *testing.T) {
 		assert.Equal(t, LogSource("sms"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_sign", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogSourceFromString("sign")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogSource("sign"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_verify", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogSourceFromString("verify")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogSource("verify"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_forms", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewLogSourceFromString("forms")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, LogSource("forms"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewLogSourceFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)

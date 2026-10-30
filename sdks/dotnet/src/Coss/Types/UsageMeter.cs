@@ -12,6 +12,10 @@ public readonly record struct UsageMeter : IStringEnum
 
     public static readonly UsageMeter EmailDedicatedIp = new(Values.EmailDedicatedIp);
 
+    public static readonly UsageMeter EmailReceived = new(Values.EmailReceived);
+
+    public static readonly UsageMeter EmailInboxes = new(Values.EmailInboxes);
+
     public static readonly UsageMeter SmsSegments = new(Values.SmsSegments);
 
     public static readonly UsageMeter SmsReceivedSegments = new(Values.SmsReceivedSegments);
@@ -19,6 +23,16 @@ public readonly record struct UsageMeter : IStringEnum
     public static readonly UsageMeter SmsNumbers = new(Values.SmsNumbers);
 
     public static readonly UsageMeter SmsRegistrations = new(Values.SmsRegistrations);
+
+    public static readonly UsageMeter SignCompletedRequests = new(Values.SignCompletedRequests);
+
+    public static readonly UsageMeter RiskPhoneChecks = new(Values.RiskPhoneChecks);
+
+    public static readonly UsageMeter VerifyVerifications = new(Values.VerifyVerifications);
+
+    public static readonly UsageMeter VerifySms = new(Values.VerifySms);
+
+    public static readonly UsageMeter FormsSubmissions = new(Values.FormsSubmissions);
 
     public static readonly UsageMeter VideoParticipantMinutes = new(Values.VideoParticipantMinutes);
 
@@ -123,6 +137,10 @@ public readonly record struct UsageMeter : IStringEnum
 
         public const string EmailDedicatedIp = "email.dedicated_ip";
 
+        public const string EmailReceived = "email.received";
+
+        public const string EmailInboxes = "email.inboxes";
+
         public const string SmsSegments = "sms.segments";
 
         public const string SmsReceivedSegments = "sms.received_segments";
@@ -130,6 +148,16 @@ public readonly record struct UsageMeter : IStringEnum
         public const string SmsNumbers = "sms.numbers";
 
         public const string SmsRegistrations = "sms.registrations";
+
+        public const string SignCompletedRequests = "sign.completed_requests";
+
+        public const string RiskPhoneChecks = "risk.phone_checks";
+
+        public const string VerifyVerifications = "verify.verifications";
+
+        public const string VerifySms = "verify.sms";
+
+        public const string FormsSubmissions = "forms.submissions";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

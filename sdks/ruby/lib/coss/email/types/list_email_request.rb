@@ -16,6 +16,8 @@ module Coss
 
         field :batch_id, -> { String }, optional: true, nullable: false
 
+        field :subaccount, -> { String }, optional: true, nullable: false
+
         field :created_after, -> { String }, optional: true, nullable: false
 
         field :created_before, -> { String }, optional: true, nullable: false

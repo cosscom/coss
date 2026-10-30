@@ -71,6 +71,8 @@ public final class EmailSummary {
 
     private final OptionalNullable<String> broadcastId;
 
+    private final OptionalNullable<String> subaccountId;
+
     private final EmailContentStorage contentStorage;
 
     private final Map<String, Object> additionalProperties;
@@ -98,6 +100,7 @@ public final class EmailSummary {
             OptionalNullable<String> batchId,
             OptionalNullable<EmailTemplateReference> template,
             OptionalNullable<String> broadcastId,
+            OptionalNullable<String> subaccountId,
             EmailContentStorage contentStorage,
             Map<String, Object> additionalProperties) {
         this.object = object;
@@ -122,6 +125,7 @@ public final class EmailSummary {
         this.batchId = batchId;
         this.template = template;
         this.broadcastId = broadcastId;
+        this.subaccountId = subaccountId;
         this.contentStorage = contentStorage;
         this.additionalProperties = additionalProperties;
     }
@@ -285,6 +289,18 @@ public final class EmailSummary {
         return broadcastId;
     }
 
+    /**
+     * @return The sub-account the email was sent for; <code>null</code> if it was sent for none.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    public OptionalNullable<String> getSubaccountId() {
+        if (subaccountId == null) {
+            return OptionalNullable.absent();
+        }
+        return subaccountId;
+    }
+
     @JsonProperty("content_storage")
     public EmailContentStorage getContentStorage() {
         return contentStorage;
@@ -332,6 +348,12 @@ public final class EmailSummary {
         return broadcastId;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("subaccount_id")
+    private OptionalNullable<String> _getSubaccountId() {
+        return subaccountId;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -366,6 +388,7 @@ public final class EmailSummary {
                 && batchId.equals(other.batchId)
                 && template.equals(other.template)
                 && broadcastId.equals(other.broadcastId)
+                && subaccountId.equals(other.subaccountId)
                 && contentStorage.equals(other.contentStorage);
     }
 
@@ -394,6 +417,7 @@ public final class EmailSummary {
                 this.batchId,
                 this.template,
                 this.broadcastId,
+                this.subaccountId,
                 this.contentStorage);
     }
 
@@ -567,6 +591,17 @@ public final class EmailSummary {
         _FinalStage broadcastId(Optional<String> broadcastId);
 
         _FinalStage broadcastId(Nullable<String> broadcastId);
+
+        /**
+         * <p>The sub-account the email was sent for; <code>null</code> if it was sent for none.</p>
+         */
+        _FinalStage subaccountId(OptionalNullable<String> subaccountId);
+
+        _FinalStage subaccountId(String subaccountId);
+
+        _FinalStage subaccountId(Optional<String> subaccountId);
+
+        _FinalStage subaccountId(Nullable<String> subaccountId);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -601,6 +636,8 @@ public final class EmailSummary {
         private OffsetDateTime createdAt;
 
         private EmailContentStorage contentStorage;
+
+        private OptionalNullable<String> subaccountId = OptionalNullable.absent();
 
         private OptionalNullable<String> broadcastId = OptionalNullable.absent();
 
@@ -657,6 +694,7 @@ public final class EmailSummary {
             batchId(other.getBatchId());
             template(other.getTemplate());
             broadcastId(other.getBroadcastId());
+            subaccountId(other.getSubaccountId());
             contentStorage(other.getContentStorage());
             return this;
         }
@@ -736,6 +774,56 @@ public final class EmailSummary {
         @JsonSetter("content_storage")
         public _FinalStage contentStorage(@NotNull EmailContentStorage contentStorage) {
             this.contentStorage = Objects.requireNonNull(contentStorage, "contentStorage must not be null");
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the email was sent for; <code>null</code> if it was sent for none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Nullable<String> subaccountId) {
+            if (subaccountId.isNull()) {
+                this.subaccountId = OptionalNullable.ofNull();
+            } else if (subaccountId.isEmpty()) {
+                this.subaccountId = OptionalNullable.absent();
+            } else {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the email was sent for; <code>null</code> if it was sent for none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(Optional<String> subaccountId) {
+            if (subaccountId.isPresent()) {
+                this.subaccountId = OptionalNullable.of(subaccountId.get());
+            } else {
+                this.subaccountId = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the email was sent for; <code>null</code> if it was sent for none.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccountId(String subaccountId) {
+            this.subaccountId = OptionalNullable.of(subaccountId);
+            return this;
+        }
+
+        /**
+         * <p>The sub-account the email was sent for; <code>null</code> if it was sent for none.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount_id", nulls = Nulls.SKIP)
+        public _FinalStage subaccountId(OptionalNullable<String> subaccountId) {
+            this.subaccountId = subaccountId;
             return this;
         }
 
@@ -1228,6 +1316,7 @@ public final class EmailSummary {
                     batchId,
                     template,
                     broadcastId,
+                    subaccountId,
                     contentStorage,
                     additionalProperties);
         }

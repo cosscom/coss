@@ -31,6 +31,8 @@ public final class BillingLimits {
 
     private final OptionalNullable<Long> contactsPerEnvironment;
 
+    private final OptionalNullable<Long> inboxes;
+
     private final Map<String, Object> additionalProperties;
 
     private BillingLimits(
@@ -38,11 +40,13 @@ public final class BillingLimits {
             OptionalNullable<Long> members,
             OptionalNullable<Long> webhookEndpointsPerEnvironment,
             OptionalNullable<Long> contactsPerEnvironment,
+            OptionalNullable<Long> inboxes,
             Map<String, Object> additionalProperties) {
         this.domains = domains;
         this.members = members;
         this.webhookEndpointsPerEnvironment = webhookEndpointsPerEnvironment;
         this.contactsPerEnvironment = contactsPerEnvironment;
+        this.inboxes = inboxes;
         this.additionalProperties = additionalProperties;
     }
 
@@ -83,6 +87,15 @@ public final class BillingLimits {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("inboxes")
+    public OptionalNullable<Long> getInboxes() {
+        if (inboxes == null) {
+            return OptionalNullable.absent();
+        }
+        return inboxes;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("domains")
     private OptionalNullable<Long> _getDomains() {
         return domains;
@@ -106,6 +119,12 @@ public final class BillingLimits {
         return contactsPerEnvironment;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("inboxes")
+    private OptionalNullable<Long> _getInboxes() {
+        return inboxes;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -121,13 +140,18 @@ public final class BillingLimits {
         return domains.equals(other.domains)
                 && members.equals(other.members)
                 && webhookEndpointsPerEnvironment.equals(other.webhookEndpointsPerEnvironment)
-                && contactsPerEnvironment.equals(other.contactsPerEnvironment);
+                && contactsPerEnvironment.equals(other.contactsPerEnvironment)
+                && inboxes.equals(other.inboxes);
     }
 
     @java.lang.Override
     public int hashCode() {
         return Objects.hash(
-                this.domains, this.members, this.webhookEndpointsPerEnvironment, this.contactsPerEnvironment);
+                this.domains,
+                this.members,
+                this.webhookEndpointsPerEnvironment,
+                this.contactsPerEnvironment,
+                this.inboxes);
     }
 
     @java.lang.Override
@@ -149,6 +173,8 @@ public final class BillingLimits {
 
         private OptionalNullable<Long> contactsPerEnvironment = OptionalNullable.absent();
 
+        private OptionalNullable<Long> inboxes = OptionalNullable.absent();
+
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -159,6 +185,7 @@ public final class BillingLimits {
             members(other.getMembers());
             webhookEndpointsPerEnvironment(other.getWebhookEndpointsPerEnvironment());
             contactsPerEnvironment(other.getContactsPerEnvironment());
+            inboxes(other.getInboxes());
             return this;
         }
 
@@ -286,9 +313,45 @@ public final class BillingLimits {
             return this;
         }
 
+        @JsonSetter(value = "inboxes", nulls = Nulls.SKIP)
+        public Builder inboxes(OptionalNullable<Long> inboxes) {
+            this.inboxes = inboxes;
+            return this;
+        }
+
+        public Builder inboxes(Long inboxes) {
+            this.inboxes = OptionalNullable.of(inboxes);
+            return this;
+        }
+
+        public Builder inboxes(Optional<Long> inboxes) {
+            if (inboxes.isPresent()) {
+                this.inboxes = OptionalNullable.of(inboxes.get());
+            } else {
+                this.inboxes = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        public Builder inboxes(Nullable<Long> inboxes) {
+            if (inboxes.isNull()) {
+                this.inboxes = OptionalNullable.ofNull();
+            } else if (inboxes.isEmpty()) {
+                this.inboxes = OptionalNullable.absent();
+            } else {
+                this.inboxes = OptionalNullable.of(inboxes.get());
+            }
+            return this;
+        }
+
         public BillingLimits build() {
             return new BillingLimits(
-                    domains, members, webhookEndpointsPerEnvironment, contactsPerEnvironment, additionalProperties);
+                    domains,
+                    members,
+                    webhookEndpointsPerEnvironment,
+                    contactsPerEnvironment,
+                    inboxes,
+                    additionalProperties);
         }
 
         public Builder additionalProperty(String key, Object value) {

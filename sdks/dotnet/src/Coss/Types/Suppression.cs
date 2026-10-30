@@ -42,6 +42,13 @@ public record Suppression : IJsonOnDeserialized
     [JsonPropertyName("email_id")]
     public string? EmailId { get; set; }
 
+    /// <summary>
+    /// The sub-account whose list it is on; `null` for the environment's own list.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("subaccount_id")]
+    public string? SubaccountId { get; set; }
+
     [JsonPropertyName("created_at")]
     public required DateTime CreatedAt { get; set; }
 

@@ -12,14 +12,18 @@ import (
 	domainsclient "github.com/cosscom/coss-go/domains/client"
 	client "github.com/cosscom/coss-go/email/client"
 	environment "github.com/cosscom/coss-go/environment"
+	formsclient "github.com/cosscom/coss-go/forms/client"
 	hooksclient "github.com/cosscom/coss-go/hooks/client"
+	inboxesclient "github.com/cosscom/coss-go/inboxes/client"
 	internal "github.com/cosscom/coss-go/internal"
 	logdrainsclient "github.com/cosscom/coss-go/logdrains/client"
 	logs "github.com/cosscom/coss-go/logs"
 	option "github.com/cosscom/coss-go/option"
 	reputation "github.com/cosscom/coss-go/reputation"
 	riskclient "github.com/cosscom/coss-go/risk/client"
+	signclient "github.com/cosscom/coss-go/sign/client"
 	smsclient "github.com/cosscom/coss-go/sms/client"
+	verify "github.com/cosscom/coss-go/verify"
 	webhookendpointsclient "github.com/cosscom/coss-go/webhookendpoints/client"
 	webhookevents "github.com/cosscom/coss-go/webhookevents"
 	webhooklisteners "github.com/cosscom/coss-go/webhooklisteners"
@@ -34,13 +38,17 @@ type Client struct {
 	WebhookListeners *webhooklisteners.Client
 	WebhookEvents    *webhookevents.Client
 	Sms              *smsclient.Client
+	Verify           *verify.Client
+	Forms            *formsclient.Client
 	Reputation       *reputation.Client
 	Logs             *logs.Client
 	AuditEvents      *auditevents.Client
 	Billing          *billingclient.Client
 	LogDrains        *logdrainsclient.Client
+	Inboxes          *inboxesclient.Client
 	Risk             *riskclient.Client
 	Hooks            *hooksclient.Client
+	Sign             *signclient.Client
 
 	options *core.RequestOptions
 	baseURL string
@@ -65,13 +73,17 @@ func NewClient(opts ...option.RequestOption) *Client {
 		WebhookListeners: webhooklisteners.NewClient(options),
 		WebhookEvents:    webhookevents.NewClient(options),
 		Sms:              smsclient.NewClient(options),
+		Verify:           verify.NewClient(options),
+		Forms:            formsclient.NewClient(options),
 		Reputation:       reputation.NewClient(options),
 		Logs:             logs.NewClient(options),
 		AuditEvents:      auditevents.NewClient(options),
 		Billing:          billingclient.NewClient(options),
 		LogDrains:        logdrainsclient.NewClient(options),
+		Inboxes:          inboxesclient.NewClient(options),
 		Risk:             riskclient.NewClient(options),
 		Hooks:            hooksclient.NewClient(options),
+		Sign:             signclient.NewClient(options),
 		options:          options,
 		baseURL:          options.BaseURL,
 		caller: internal.NewCaller(

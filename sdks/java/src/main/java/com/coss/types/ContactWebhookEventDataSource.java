@@ -10,6 +10,8 @@ public final class ContactWebhookEventDataSource {
     public static final ContactWebhookEventDataSource IMPORT =
             new ContactWebhookEventDataSource(Value.IMPORT, "import");
 
+    public static final ContactWebhookEventDataSource FORM = new ContactWebhookEventDataSource(Value.FORM, "form");
+
     public static final ContactWebhookEventDataSource PREFERENCE_CENTER =
             new ContactWebhookEventDataSource(Value.PREFERENCE_CENTER, "preference_center");
 
@@ -53,6 +55,8 @@ public final class ContactWebhookEventDataSource {
         switch (value) {
             case IMPORT:
                 return visitor.visitImport();
+            case FORM:
+                return visitor.visitForm();
             case PREFERENCE_CENTER:
                 return visitor.visitPreferenceCenter();
             case DASHBOARD:
@@ -70,6 +74,8 @@ public final class ContactWebhookEventDataSource {
         switch (value) {
             case "import":
                 return IMPORT;
+            case "form":
+                return FORM;
             case "preference_center":
                 return PREFERENCE_CENTER;
             case "dashboard":
@@ -90,6 +96,8 @@ public final class ContactWebhookEventDataSource {
 
         PREFERENCE_CENTER,
 
+        FORM,
+
         UNKNOWN
     }
 
@@ -101,6 +109,8 @@ public final class ContactWebhookEventDataSource {
         T visitImport();
 
         T visitPreferenceCenter();
+
+        T visitForm();
 
         T visitUnknown(String unknownType);
     }

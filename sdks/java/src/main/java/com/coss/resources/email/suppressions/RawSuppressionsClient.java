@@ -81,6 +81,10 @@ public class RawSuppressionsClient {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/suppressions");
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (request.getAddress().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "address", request.getAddress().get(), false);
@@ -138,6 +142,9 @@ public class RawSuppressionsClient {
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 403:
                         throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 422:
                         throw new UnprocessableEntityError(
@@ -230,6 +237,9 @@ public class RawSuppressionsClient {
                     case 403:
                         throw new ForbiddenError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 413:
                         throw new ContentTooLargeError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
@@ -285,6 +295,10 @@ public class RawSuppressionsClient {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "stream", request.getStream().get(), false);
         }
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -326,6 +340,9 @@ public class RawSuppressionsClient {
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 403:
                         throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 422:
                         throw new UnprocessableEntityError(
@@ -419,6 +436,9 @@ public class RawSuppressionsClient {
                     case 403:
                         throw new ForbiddenError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 413:
                         throw new ContentTooLargeError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
@@ -479,6 +499,10 @@ public class RawSuppressionsClient {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
                 .addPathSegments("v1/suppressions/export");
+        if (request.getSubaccount().isPresent()) {
+            QueryStringMapper.addQueryParameter(
+                    httpUrl, "subaccount", request.getSubaccount().get(), false);
+        }
         if (request.getScope().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "scope", request.getScope().get(), false);
@@ -527,6 +551,9 @@ public class RawSuppressionsClient {
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 403:
                         throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
                     case 422:
                         throw new UnprocessableEntityError(

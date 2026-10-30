@@ -12,6 +12,13 @@ public record CreateDomainRequest
     [JsonPropertyName("name")]
     public required string Name { get; set; }
 
+    /// <summary>
+    /// Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("subaccount")]
+    public string? Subaccount { get; set; }
+
     /// <inheritdoc />
     public override string ToString()
     {

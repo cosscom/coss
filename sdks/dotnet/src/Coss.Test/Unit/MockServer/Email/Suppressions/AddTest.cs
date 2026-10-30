@@ -26,6 +26,7 @@ public class AddTest : BaseMockServerTest
               "scope": "scope",
               "reason": "bounce",
               "email_id": "email_id",
+              "subaccount_id": "subaccount_id",
               "created_at": "2024-01-15T09:30:00.000Z"
             }
             """;
@@ -47,7 +48,12 @@ public class AddTest : BaseMockServerTest
             );
 
         var response = await Client.Email.Suppressions.AddAsync(
-            new CreateSuppressionRequest { Address = "address", Scope = null }
+            new CreateSuppressionRequest
+            {
+                Address = "address",
+                Scope = null,
+                Subaccount = null,
+            }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -70,6 +76,7 @@ public class AddTest : BaseMockServerTest
               "scope": "marketing",
               "reason": "manual",
               "email_id": null,
+              "subaccount_id": null,
               "created_at": "2026-01-15T09:30:00.000Z"
             }
             """;

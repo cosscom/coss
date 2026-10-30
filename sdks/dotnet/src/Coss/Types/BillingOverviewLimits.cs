@@ -30,6 +30,10 @@ public record BillingOverviewLimits : IJsonOnDeserialized
     [JsonPropertyName("contacts_per_environment")]
     public long? ContactsPerEnvironment { get; set; }
 
+    [Nullable]
+    [JsonPropertyName("inboxes")]
+    public long? Inboxes { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

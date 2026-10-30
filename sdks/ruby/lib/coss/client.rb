@@ -12,7 +12,7 @@ module Coss
       @raw_client = Coss::Internal::Http::RawClient.new(
         base_url: base_url || Coss::Environment::DEFAULT,
         headers: {
-          "User-Agent" => "coss-ruby/0.1.0",
+          "User-Agent" => "coss-ruby/0.2.0",
           "X-Fern-Language" => "Ruby",
           Authorization: "Bearer #{api_key}",
           "Coss-Version" => api_version.to_s
@@ -62,6 +62,16 @@ module Coss
       @sms ||= Coss::Sms::Client.new(client: @raw_client)
     end
 
+    # @return [Coss::Verify::Client]
+    def verify
+      @verify ||= Coss::Verify::Client.new(client: @raw_client)
+    end
+
+    # @return [Coss::Forms::Client]
+    def forms
+      @forms ||= Coss::Forms::Client.new(client: @raw_client)
+    end
+
     # @return [Coss::Reputation::Client]
     def reputation
       @reputation ||= Coss::Reputation::Client.new(client: @raw_client)
@@ -87,6 +97,11 @@ module Coss
       @log_drains ||= Coss::LogDrains::Client.new(client: @raw_client)
     end
 
+    # @return [Coss::Inboxes::Client]
+    def inboxes
+      @inboxes ||= Coss::Inboxes::Client.new(client: @raw_client)
+    end
+
     # @return [Coss::Risk::Client]
     def risk
       @risk ||= Coss::Risk::Client.new(client: @raw_client)
@@ -95,6 +110,11 @@ module Coss
     # @return [Coss::Hooks::Client]
     def hooks
       @hooks ||= Coss::Hooks::Client.new(client: @raw_client)
+    end
+
+    # @return [Coss::Sign::Client]
+    def sign
+      @sign ||= Coss::Sign::Client.new(client: @raw_client)
     end
   end
 end

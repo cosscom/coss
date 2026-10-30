@@ -26,12 +26,18 @@ public final class CreateSuppressionRequest {
 
     private final Optional<CreateSuppressionRequestScope> scope;
 
+    private final Optional<String> subaccount;
+
     private final Map<String, Object> additionalProperties;
 
     private CreateSuppressionRequest(
-            String address, Optional<CreateSuppressionRequestScope> scope, Map<String, Object> additionalProperties) {
+            String address,
+            Optional<CreateSuppressionRequestScope> scope,
+            Optional<String> subaccount,
+            Map<String, Object> additionalProperties) {
         this.address = address;
         this.scope = scope;
+        this.subaccount = subaccount;
         this.additionalProperties = additionalProperties;
     }
 
@@ -51,6 +57,14 @@ public final class CreateSuppressionRequest {
         return scope;
     }
 
+    /**
+     * @return Add it to a sub-account's own list (its id or your uid) instead of the environment's.
+     */
+    @JsonProperty("subaccount")
+    public Optional<String> getSubaccount() {
+        return subaccount;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -63,12 +77,12 @@ public final class CreateSuppressionRequest {
     }
 
     private boolean equalTo(CreateSuppressionRequest other) {
-        return address.equals(other.address) && scope.equals(other.scope);
+        return address.equals(other.address) && scope.equals(other.scope) && subaccount.equals(other.subaccount);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.address, this.scope);
+        return Objects.hash(this.address, this.scope, this.subaccount);
     }
 
     @java.lang.Override
@@ -102,11 +116,20 @@ public final class CreateSuppressionRequest {
         _FinalStage scope(Optional<CreateSuppressionRequestScope> scope);
 
         _FinalStage scope(CreateSuppressionRequestScope scope);
+
+        /**
+         * <p>Add it to a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         */
+        _FinalStage subaccount(Optional<String> subaccount);
+
+        _FinalStage subaccount(String subaccount);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder implements AddressStage, _FinalStage {
         private String address;
+
+        private Optional<String> subaccount = Optional.empty();
 
         private Optional<CreateSuppressionRequestScope> scope = Optional.empty();
 
@@ -119,6 +142,7 @@ public final class CreateSuppressionRequest {
         public Builder from(CreateSuppressionRequest other) {
             address(other.getAddress());
             scope(other.getScope());
+            subaccount(other.getSubaccount());
             return this;
         }
 
@@ -130,6 +154,26 @@ public final class CreateSuppressionRequest {
         @JsonSetter("address")
         public _FinalStage address(@NotNull String address) {
             this.address = Objects.requireNonNull(address, "address must not be null");
+            return this;
+        }
+
+        /**
+         * <p>Add it to a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage subaccount(String subaccount) {
+            this.subaccount = Optional.ofNullable(subaccount);
+            return this;
+        }
+
+        /**
+         * <p>Add it to a sub-account's own list (its id or your uid) instead of the environment's.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "subaccount", nulls = Nulls.SKIP)
+        public _FinalStage subaccount(Optional<String> subaccount) {
+            this.subaccount = subaccount;
             return this;
         }
 
@@ -155,7 +199,7 @@ public final class CreateSuppressionRequest {
 
         @java.lang.Override
         public CreateSuppressionRequest build() {
-            return new CreateSuppressionRequest(address, scope, additionalProperties);
+            return new CreateSuppressionRequest(address, scope, subaccount, additionalProperties);
         }
 
         @java.lang.Override

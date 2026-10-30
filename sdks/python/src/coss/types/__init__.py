@@ -163,10 +163,18 @@ if typing.TYPE_CHECKING:
     from .deleted_domain_object import DeletedDomainObject
     from .deleted_email_template import DeletedEmailTemplate
     from .deleted_email_template_object import DeletedEmailTemplateObject
+    from .deleted_form import DeletedForm
+    from .deleted_form_object import DeletedFormObject
+    from .deleted_form_submission import DeletedFormSubmission
+    from .deleted_form_submission_object import DeletedFormSubmissionObject
     from .deleted_hook_application import DeletedHookApplication
     from .deleted_hook_application_object import DeletedHookApplicationObject
     from .deleted_hook_endpoint import DeletedHookEndpoint
     from .deleted_hook_endpoint_object import DeletedHookEndpointObject
+    from .deleted_inbox import DeletedInbox
+    from .deleted_inbox_object import DeletedInboxObject
+    from .deleted_inbox_thread import DeletedInboxThread
+    from .deleted_inbox_thread_object import DeletedInboxThreadObject
     from .deleted_log_drain import DeletedLogDrain
     from .deleted_log_drain_object import DeletedLogDrainObject
     from .deleted_received_email import DeletedReceivedEmail
@@ -179,6 +187,12 @@ if typing.TYPE_CHECKING:
     from .deleted_risk_rule_object import DeletedRiskRuleObject
     from .deleted_segment import DeletedSegment
     from .deleted_segment_object import DeletedSegmentObject
+    from .deleted_sign_document import DeletedSignDocument
+    from .deleted_sign_document_object import DeletedSignDocumentObject
+    from .deleted_sign_request import DeletedSignRequest
+    from .deleted_sign_request_object import DeletedSignRequestObject
+    from .deleted_sign_template import DeletedSignTemplate
+    from .deleted_sign_template_object import DeletedSignTemplateObject
     from .deleted_sms_suppression import DeletedSmsSuppression
     from .deleted_sms_suppression_object import DeletedSmsSuppressionObject
     from .deleted_suppression import DeletedSuppression
@@ -332,6 +346,39 @@ if typing.TYPE_CHECKING:
     from .export_suppressions_request_scope_zero import ExportSuppressionsRequestScopeZero
     from .forgotten_risk_user import ForgottenRiskUser
     from .forgotten_risk_user_object import ForgottenRiskUserObject
+    from .form import Form
+    from .form_contacts import FormContacts
+    from .form_field import FormField
+    from .form_field_input import FormFieldInput
+    from .form_field_input_type import FormFieldInputType
+    from .form_field_type import FormFieldType
+    from .form_files import FormFiles
+    from .form_hosted import FormHosted
+    from .form_list import FormList
+    from .form_list_object import FormListObject
+    from .form_notifications import FormNotifications
+    from .form_object import FormObject
+    from .form_spam import FormSpam
+    from .form_spam_captcha import FormSpamCaptcha
+    from .form_spam_on_review import FormSpamOnReview
+    from .form_submission import FormSubmission
+    from .form_submission_data_value import FormSubmissionDataValue
+    from .form_submission_file import FormSubmissionFile
+    from .form_submission_list import FormSubmissionList
+    from .form_submission_list_object import FormSubmissionListObject
+    from .form_submission_object import FormSubmissionObject
+    from .form_submission_risk import FormSubmissionRisk
+    from .form_submission_risk_decision import FormSubmissionRiskDecision
+    from .form_submission_spam_reason import FormSubmissionSpamReason
+    from .form_submission_status import FormSubmissionStatus
+    from .form_submission_webhook_event import FormSubmissionWebhookEvent
+    from .form_submission_webhook_event_data import FormSubmissionWebhookEventData
+    from .form_submission_webhook_event_data_data_value import FormSubmissionWebhookEventDataDataValue
+    from .form_submission_webhook_event_data_spam_reason import FormSubmissionWebhookEventDataSpamReason
+    from .form_submission_webhook_event_data_status import FormSubmissionWebhookEventDataStatus
+    from .form_submission_webhook_event_object import FormSubmissionWebhookEventObject
+    from .form_submission_webhook_event_type import FormSubmissionWebhookEventType
+    from .form_submitter import FormSubmitter
     from .hook_application import HookApplication
     from .hook_application_list import HookApplicationList
     from .hook_application_list_object import HookApplicationListObject
@@ -374,6 +421,31 @@ if typing.TYPE_CHECKING:
     from .hook_portal_session_object import HookPortalSessionObject
     from .inbound_address import InboundAddress
     from .inbound_address_object import InboundAddressObject
+    from .inbox import Inbox
+    from .inbox_kind import InboxKind
+    from .inbox_list import InboxList
+    from .inbox_list_object import InboxListObject
+    from .inbox_message import InboxMessage
+    from .inbox_message_direction import InboxMessageDirection
+    from .inbox_message_list import InboxMessageList
+    from .inbox_message_list_object import InboxMessageListObject
+    from .inbox_message_object import InboxMessageObject
+    from .inbox_message_received_webhook_event import InboxMessageReceivedWebhookEvent
+    from .inbox_message_received_webhook_event_data import InboxMessageReceivedWebhookEventData
+    from .inbox_message_received_webhook_event_object import InboxMessageReceivedWebhookEventObject
+    from .inbox_message_received_webhook_event_type import InboxMessageReceivedWebhookEventType
+    from .inbox_message_status import InboxMessageStatus
+    from .inbox_message_summary import InboxMessageSummary
+    from .inbox_message_summary_direction import InboxMessageSummaryDirection
+    from .inbox_message_summary_object import InboxMessageSummaryObject
+    from .inbox_message_summary_status import InboxMessageSummaryStatus
+    from .inbox_object import InboxObject
+    from .inbox_thread import InboxThread
+    from .inbox_thread_list import InboxThreadList
+    from .inbox_thread_list_object import InboxThreadListObject
+    from .inbox_thread_object import InboxThreadObject
+    from .inbox_thread_summary import InboxThreadSummary
+    from .inbox_thread_summary_object import InboxThreadSummaryObject
     from .invoice import Invoice
     from .invoice_collection_method import InvoiceCollectionMethod
     from .invoice_currency import InvoiceCurrency
@@ -524,6 +596,12 @@ if typing.TYPE_CHECKING:
     from .risk_list_entry_type import RiskListEntryType
     from .risk_login_signals import RiskLoginSignals
     from .risk_outcome import RiskOutcome
+    from .risk_phone_carrier import RiskPhoneCarrier
+    from .risk_phone_check import RiskPhoneCheck
+    from .risk_phone_check_degraded_item import RiskPhoneCheckDegradedItem
+    from .risk_phone_check_line_type import RiskPhoneCheckLineType
+    from .risk_phone_check_object import RiskPhoneCheckObject
+    from .risk_phone_sim_swap import RiskPhoneSimSwap
     from .risk_reason import RiskReason
     from .risk_reason_code import RiskReasonCode
     from .risk_reason_type import RiskReasonType
@@ -631,6 +709,64 @@ if typing.TYPE_CHECKING:
     from .send_email_request_stream import SendEmailRequestStream
     from .send_email_request_tags_item import SendEmailRequestTagsItem
     from .send_email_request_to import SendEmailRequestTo
+    from .sign_builder_session import SignBuilderSession
+    from .sign_builder_session_object import SignBuilderSessionObject
+    from .sign_document import SignDocument
+    from .sign_document_anchors_item import SignDocumentAnchorsItem
+    from .sign_document_list import SignDocumentList
+    from .sign_document_list_object import SignDocumentListObject
+    from .sign_document_object import SignDocumentObject
+    from .sign_document_pages_item import SignDocumentPagesItem
+    from .sign_event import SignEvent
+    from .sign_event_actor import SignEventActor
+    from .sign_event_details import SignEventDetails
+    from .sign_event_list import SignEventList
+    from .sign_event_list_object import SignEventListObject
+    from .sign_event_object import SignEventObject
+    from .sign_event_type import SignEventType
+    from .sign_field import SignField
+    from .sign_field_input import SignFieldInput
+    from .sign_field_input_anchor import SignFieldInputAnchor
+    from .sign_field_input_anchor_type import SignFieldInputAnchorType
+    from .sign_field_input_document import SignFieldInputDocument
+    from .sign_field_input_document_type import SignFieldInputDocumentType
+    from .sign_field_object import SignFieldObject
+    from .sign_field_type import SignFieldType
+    from .sign_request import SignRequest
+    from .sign_request_documents_item import SignRequestDocumentsItem
+    from .sign_request_list import SignRequestList
+    from .sign_request_list_object import SignRequestListObject
+    from .sign_request_object import SignRequestObject
+    from .sign_request_signed_document import SignRequestSignedDocument
+    from .sign_request_signing_order import SignRequestSigningOrder
+    from .sign_request_status import SignRequestStatus
+    from .sign_request_webhook_event import SignRequestWebhookEvent
+    from .sign_request_webhook_event_data import SignRequestWebhookEventData
+    from .sign_request_webhook_event_data_signer import SignRequestWebhookEventDataSigner
+    from .sign_request_webhook_event_data_signer_status import SignRequestWebhookEventDataSignerStatus
+    from .sign_request_webhook_event_data_status import SignRequestWebhookEventDataStatus
+    from .sign_request_webhook_event_object import SignRequestWebhookEventObject
+    from .sign_request_webhook_event_type import SignRequestWebhookEventType
+    from .sign_session import SignSession
+    from .sign_session_object import SignSessionObject
+    from .sign_settings import SignSettings
+    from .sign_settings_object import SignSettingsObject
+    from .sign_settings_theme import SignSettingsTheme
+    from .sign_signer import SignSigner
+    from .sign_signer_authentication import SignSignerAuthentication
+    from .sign_signer_delivery import SignSignerDelivery
+    from .sign_signer_object import SignSignerObject
+    from .sign_signer_status import SignSignerStatus
+    from .sign_template import SignTemplate
+    from .sign_template_documents_item import SignTemplateDocumentsItem
+    from .sign_template_documents_item_pages_item import SignTemplateDocumentsItemPagesItem
+    from .sign_template_fields_item import SignTemplateFieldsItem
+    from .sign_template_fields_item_type import SignTemplateFieldsItemType
+    from .sign_template_list import SignTemplateList
+    from .sign_template_list_object import SignTemplateListObject
+    from .sign_template_object import SignTemplateObject
+    from .sign_template_roles_item import SignTemplateRolesItem
+    from .sign_template_signing_order import SignTemplateSigningOrder
     from .sms import Sms
     from .sms_encoding import SmsEncoding
     from .sms_event import SmsEvent
@@ -676,6 +812,23 @@ if typing.TYPE_CHECKING:
     from .storage_settings import StorageSettings
     from .storage_settings_content_storage import StorageSettingsContentStorage
     from .storage_settings_object import StorageSettingsObject
+    from .subaccount import Subaccount
+    from .subaccount_list import SubaccountList
+    from .subaccount_list_object import SubaccountListObject
+    from .subaccount_object import SubaccountObject
+    from .subaccount_quotas import SubaccountQuotas
+    from .subaccount_reputation import SubaccountReputation
+    from .subaccount_reputation_status import SubaccountReputationStatus
+    from .subaccount_stats import SubaccountStats
+    from .subaccount_stats_day import SubaccountStatsDay
+    from .subaccount_stats_object import SubaccountStatsObject
+    from .subaccount_status import SubaccountStatus
+    from .subaccount_webhook_event import SubaccountWebhookEvent
+    from .subaccount_webhook_event_data import SubaccountWebhookEventData
+    from .subaccount_webhook_event_data_previous_status import SubaccountWebhookEventDataPreviousStatus
+    from .subaccount_webhook_event_data_status import SubaccountWebhookEventDataStatus
+    from .subaccount_webhook_event_object import SubaccountWebhookEventObject
+    from .subaccount_webhook_event_type import SubaccountWebhookEventType
     from .suppression import Suppression
     from .suppression_check import SuppressionCheck
     from .suppression_check_object import SuppressionCheckObject
@@ -722,6 +875,29 @@ if typing.TYPE_CHECKING:
     from .usage_list_object import UsageListObject
     from .usage_meter import UsageMeter
     from .usage_object import UsageObject
+    from .verification import Verification
+    from .verification_channel import VerificationChannel
+    from .verification_check import VerificationCheck
+    from .verification_check_object import VerificationCheckObject
+    from .verification_failure import VerificationFailure
+    from .verification_list import VerificationList
+    from .verification_list_object import VerificationListObject
+    from .verification_object import VerificationObject
+    from .verification_reasons_item import VerificationReasonsItem
+    from .verification_send import VerificationSend
+    from .verification_send_channel import VerificationSendChannel
+    from .verification_send_route import VerificationSendRoute
+    from .verification_status import VerificationStatus
+    from .verification_tags_item import VerificationTagsItem
+    from .verification_webhook_event import VerificationWebhookEvent
+    from .verification_webhook_event_data import VerificationWebhookEventData
+    from .verification_webhook_event_data_channel import VerificationWebhookEventDataChannel
+    from .verification_webhook_event_data_failure import VerificationWebhookEventDataFailure
+    from .verification_webhook_event_data_reasons_item import VerificationWebhookEventDataReasonsItem
+    from .verification_webhook_event_data_status import VerificationWebhookEventDataStatus
+    from .verification_webhook_event_data_tags_item import VerificationWebhookEventDataTagsItem
+    from .verification_webhook_event_object import VerificationWebhookEventObject
+    from .verification_webhook_event_type import VerificationWebhookEventType
     from .webhook_attempt import WebhookAttempt
     from .webhook_attempt_object import WebhookAttemptObject
     from .webhook_delivery import WebhookDelivery
@@ -907,10 +1083,18 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeletedDomainObject": ".deleted_domain_object",
     "DeletedEmailTemplate": ".deleted_email_template",
     "DeletedEmailTemplateObject": ".deleted_email_template_object",
+    "DeletedForm": ".deleted_form",
+    "DeletedFormObject": ".deleted_form_object",
+    "DeletedFormSubmission": ".deleted_form_submission",
+    "DeletedFormSubmissionObject": ".deleted_form_submission_object",
     "DeletedHookApplication": ".deleted_hook_application",
     "DeletedHookApplicationObject": ".deleted_hook_application_object",
     "DeletedHookEndpoint": ".deleted_hook_endpoint",
     "DeletedHookEndpointObject": ".deleted_hook_endpoint_object",
+    "DeletedInbox": ".deleted_inbox",
+    "DeletedInboxObject": ".deleted_inbox_object",
+    "DeletedInboxThread": ".deleted_inbox_thread",
+    "DeletedInboxThreadObject": ".deleted_inbox_thread_object",
     "DeletedLogDrain": ".deleted_log_drain",
     "DeletedLogDrainObject": ".deleted_log_drain_object",
     "DeletedReceivedEmail": ".deleted_received_email",
@@ -923,6 +1107,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeletedRiskRuleObject": ".deleted_risk_rule_object",
     "DeletedSegment": ".deleted_segment",
     "DeletedSegmentObject": ".deleted_segment_object",
+    "DeletedSignDocument": ".deleted_sign_document",
+    "DeletedSignDocumentObject": ".deleted_sign_document_object",
+    "DeletedSignRequest": ".deleted_sign_request",
+    "DeletedSignRequestObject": ".deleted_sign_request_object",
+    "DeletedSignTemplate": ".deleted_sign_template",
+    "DeletedSignTemplateObject": ".deleted_sign_template_object",
     "DeletedSmsSuppression": ".deleted_sms_suppression",
     "DeletedSmsSuppressionObject": ".deleted_sms_suppression_object",
     "DeletedSuppression": ".deleted_suppression",
@@ -1076,6 +1266,39 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ExportSuppressionsRequestScopeZero": ".export_suppressions_request_scope_zero",
     "ForgottenRiskUser": ".forgotten_risk_user",
     "ForgottenRiskUserObject": ".forgotten_risk_user_object",
+    "Form": ".form",
+    "FormContacts": ".form_contacts",
+    "FormField": ".form_field",
+    "FormFieldInput": ".form_field_input",
+    "FormFieldInputType": ".form_field_input_type",
+    "FormFieldType": ".form_field_type",
+    "FormFiles": ".form_files",
+    "FormHosted": ".form_hosted",
+    "FormList": ".form_list",
+    "FormListObject": ".form_list_object",
+    "FormNotifications": ".form_notifications",
+    "FormObject": ".form_object",
+    "FormSpam": ".form_spam",
+    "FormSpamCaptcha": ".form_spam_captcha",
+    "FormSpamOnReview": ".form_spam_on_review",
+    "FormSubmission": ".form_submission",
+    "FormSubmissionDataValue": ".form_submission_data_value",
+    "FormSubmissionFile": ".form_submission_file",
+    "FormSubmissionList": ".form_submission_list",
+    "FormSubmissionListObject": ".form_submission_list_object",
+    "FormSubmissionObject": ".form_submission_object",
+    "FormSubmissionRisk": ".form_submission_risk",
+    "FormSubmissionRiskDecision": ".form_submission_risk_decision",
+    "FormSubmissionSpamReason": ".form_submission_spam_reason",
+    "FormSubmissionStatus": ".form_submission_status",
+    "FormSubmissionWebhookEvent": ".form_submission_webhook_event",
+    "FormSubmissionWebhookEventData": ".form_submission_webhook_event_data",
+    "FormSubmissionWebhookEventDataDataValue": ".form_submission_webhook_event_data_data_value",
+    "FormSubmissionWebhookEventDataSpamReason": ".form_submission_webhook_event_data_spam_reason",
+    "FormSubmissionWebhookEventDataStatus": ".form_submission_webhook_event_data_status",
+    "FormSubmissionWebhookEventObject": ".form_submission_webhook_event_object",
+    "FormSubmissionWebhookEventType": ".form_submission_webhook_event_type",
+    "FormSubmitter": ".form_submitter",
     "HookApplication": ".hook_application",
     "HookApplicationList": ".hook_application_list",
     "HookApplicationListObject": ".hook_application_list_object",
@@ -1118,6 +1341,31 @@ _dynamic_imports: typing.Dict[str, str] = {
     "HookPortalSessionObject": ".hook_portal_session_object",
     "InboundAddress": ".inbound_address",
     "InboundAddressObject": ".inbound_address_object",
+    "Inbox": ".inbox",
+    "InboxKind": ".inbox_kind",
+    "InboxList": ".inbox_list",
+    "InboxListObject": ".inbox_list_object",
+    "InboxMessage": ".inbox_message",
+    "InboxMessageDirection": ".inbox_message_direction",
+    "InboxMessageList": ".inbox_message_list",
+    "InboxMessageListObject": ".inbox_message_list_object",
+    "InboxMessageObject": ".inbox_message_object",
+    "InboxMessageReceivedWebhookEvent": ".inbox_message_received_webhook_event",
+    "InboxMessageReceivedWebhookEventData": ".inbox_message_received_webhook_event_data",
+    "InboxMessageReceivedWebhookEventObject": ".inbox_message_received_webhook_event_object",
+    "InboxMessageReceivedWebhookEventType": ".inbox_message_received_webhook_event_type",
+    "InboxMessageStatus": ".inbox_message_status",
+    "InboxMessageSummary": ".inbox_message_summary",
+    "InboxMessageSummaryDirection": ".inbox_message_summary_direction",
+    "InboxMessageSummaryObject": ".inbox_message_summary_object",
+    "InboxMessageSummaryStatus": ".inbox_message_summary_status",
+    "InboxObject": ".inbox_object",
+    "InboxThread": ".inbox_thread",
+    "InboxThreadList": ".inbox_thread_list",
+    "InboxThreadListObject": ".inbox_thread_list_object",
+    "InboxThreadObject": ".inbox_thread_object",
+    "InboxThreadSummary": ".inbox_thread_summary",
+    "InboxThreadSummaryObject": ".inbox_thread_summary_object",
     "Invoice": ".invoice",
     "InvoiceCollectionMethod": ".invoice_collection_method",
     "InvoiceCurrency": ".invoice_currency",
@@ -1268,6 +1516,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "RiskListEntryType": ".risk_list_entry_type",
     "RiskLoginSignals": ".risk_login_signals",
     "RiskOutcome": ".risk_outcome",
+    "RiskPhoneCarrier": ".risk_phone_carrier",
+    "RiskPhoneCheck": ".risk_phone_check",
+    "RiskPhoneCheckDegradedItem": ".risk_phone_check_degraded_item",
+    "RiskPhoneCheckLineType": ".risk_phone_check_line_type",
+    "RiskPhoneCheckObject": ".risk_phone_check_object",
+    "RiskPhoneSimSwap": ".risk_phone_sim_swap",
     "RiskReason": ".risk_reason",
     "RiskReasonCode": ".risk_reason_code",
     "RiskReasonType": ".risk_reason_type",
@@ -1347,6 +1601,64 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SendEmailRequestStream": ".send_email_request_stream",
     "SendEmailRequestTagsItem": ".send_email_request_tags_item",
     "SendEmailRequestTo": ".send_email_request_to",
+    "SignBuilderSession": ".sign_builder_session",
+    "SignBuilderSessionObject": ".sign_builder_session_object",
+    "SignDocument": ".sign_document",
+    "SignDocumentAnchorsItem": ".sign_document_anchors_item",
+    "SignDocumentList": ".sign_document_list",
+    "SignDocumentListObject": ".sign_document_list_object",
+    "SignDocumentObject": ".sign_document_object",
+    "SignDocumentPagesItem": ".sign_document_pages_item",
+    "SignEvent": ".sign_event",
+    "SignEventActor": ".sign_event_actor",
+    "SignEventDetails": ".sign_event_details",
+    "SignEventList": ".sign_event_list",
+    "SignEventListObject": ".sign_event_list_object",
+    "SignEventObject": ".sign_event_object",
+    "SignEventType": ".sign_event_type",
+    "SignField": ".sign_field",
+    "SignFieldInput": ".sign_field_input",
+    "SignFieldInputAnchor": ".sign_field_input_anchor",
+    "SignFieldInputAnchorType": ".sign_field_input_anchor_type",
+    "SignFieldInputDocument": ".sign_field_input_document",
+    "SignFieldInputDocumentType": ".sign_field_input_document_type",
+    "SignFieldObject": ".sign_field_object",
+    "SignFieldType": ".sign_field_type",
+    "SignRequest": ".sign_request",
+    "SignRequestDocumentsItem": ".sign_request_documents_item",
+    "SignRequestList": ".sign_request_list",
+    "SignRequestListObject": ".sign_request_list_object",
+    "SignRequestObject": ".sign_request_object",
+    "SignRequestSignedDocument": ".sign_request_signed_document",
+    "SignRequestSigningOrder": ".sign_request_signing_order",
+    "SignRequestStatus": ".sign_request_status",
+    "SignRequestWebhookEvent": ".sign_request_webhook_event",
+    "SignRequestWebhookEventData": ".sign_request_webhook_event_data",
+    "SignRequestWebhookEventDataSigner": ".sign_request_webhook_event_data_signer",
+    "SignRequestWebhookEventDataSignerStatus": ".sign_request_webhook_event_data_signer_status",
+    "SignRequestWebhookEventDataStatus": ".sign_request_webhook_event_data_status",
+    "SignRequestWebhookEventObject": ".sign_request_webhook_event_object",
+    "SignRequestWebhookEventType": ".sign_request_webhook_event_type",
+    "SignSession": ".sign_session",
+    "SignSessionObject": ".sign_session_object",
+    "SignSettings": ".sign_settings",
+    "SignSettingsObject": ".sign_settings_object",
+    "SignSettingsTheme": ".sign_settings_theme",
+    "SignSigner": ".sign_signer",
+    "SignSignerAuthentication": ".sign_signer_authentication",
+    "SignSignerDelivery": ".sign_signer_delivery",
+    "SignSignerObject": ".sign_signer_object",
+    "SignSignerStatus": ".sign_signer_status",
+    "SignTemplate": ".sign_template",
+    "SignTemplateDocumentsItem": ".sign_template_documents_item",
+    "SignTemplateDocumentsItemPagesItem": ".sign_template_documents_item_pages_item",
+    "SignTemplateFieldsItem": ".sign_template_fields_item",
+    "SignTemplateFieldsItemType": ".sign_template_fields_item_type",
+    "SignTemplateList": ".sign_template_list",
+    "SignTemplateListObject": ".sign_template_list_object",
+    "SignTemplateObject": ".sign_template_object",
+    "SignTemplateRolesItem": ".sign_template_roles_item",
+    "SignTemplateSigningOrder": ".sign_template_signing_order",
     "Sms": ".sms",
     "SmsEncoding": ".sms_encoding",
     "SmsEvent": ".sms_event",
@@ -1392,6 +1704,23 @@ _dynamic_imports: typing.Dict[str, str] = {
     "StorageSettings": ".storage_settings",
     "StorageSettingsContentStorage": ".storage_settings_content_storage",
     "StorageSettingsObject": ".storage_settings_object",
+    "Subaccount": ".subaccount",
+    "SubaccountList": ".subaccount_list",
+    "SubaccountListObject": ".subaccount_list_object",
+    "SubaccountObject": ".subaccount_object",
+    "SubaccountQuotas": ".subaccount_quotas",
+    "SubaccountReputation": ".subaccount_reputation",
+    "SubaccountReputationStatus": ".subaccount_reputation_status",
+    "SubaccountStats": ".subaccount_stats",
+    "SubaccountStatsDay": ".subaccount_stats_day",
+    "SubaccountStatsObject": ".subaccount_stats_object",
+    "SubaccountStatus": ".subaccount_status",
+    "SubaccountWebhookEvent": ".subaccount_webhook_event",
+    "SubaccountWebhookEventData": ".subaccount_webhook_event_data",
+    "SubaccountWebhookEventDataPreviousStatus": ".subaccount_webhook_event_data_previous_status",
+    "SubaccountWebhookEventDataStatus": ".subaccount_webhook_event_data_status",
+    "SubaccountWebhookEventObject": ".subaccount_webhook_event_object",
+    "SubaccountWebhookEventType": ".subaccount_webhook_event_type",
     "Suppression": ".suppression",
     "SuppressionCheck": ".suppression_check",
     "SuppressionCheckObject": ".suppression_check_object",
@@ -1438,6 +1767,29 @@ _dynamic_imports: typing.Dict[str, str] = {
     "UsageListObject": ".usage_list_object",
     "UsageMeter": ".usage_meter",
     "UsageObject": ".usage_object",
+    "Verification": ".verification",
+    "VerificationChannel": ".verification_channel",
+    "VerificationCheck": ".verification_check",
+    "VerificationCheckObject": ".verification_check_object",
+    "VerificationFailure": ".verification_failure",
+    "VerificationList": ".verification_list",
+    "VerificationListObject": ".verification_list_object",
+    "VerificationObject": ".verification_object",
+    "VerificationReasonsItem": ".verification_reasons_item",
+    "VerificationSend": ".verification_send",
+    "VerificationSendChannel": ".verification_send_channel",
+    "VerificationSendRoute": ".verification_send_route",
+    "VerificationStatus": ".verification_status",
+    "VerificationTagsItem": ".verification_tags_item",
+    "VerificationWebhookEvent": ".verification_webhook_event",
+    "VerificationWebhookEventData": ".verification_webhook_event_data",
+    "VerificationWebhookEventDataChannel": ".verification_webhook_event_data_channel",
+    "VerificationWebhookEventDataFailure": ".verification_webhook_event_data_failure",
+    "VerificationWebhookEventDataReasonsItem": ".verification_webhook_event_data_reasons_item",
+    "VerificationWebhookEventDataStatus": ".verification_webhook_event_data_status",
+    "VerificationWebhookEventDataTagsItem": ".verification_webhook_event_data_tags_item",
+    "VerificationWebhookEventObject": ".verification_webhook_event_object",
+    "VerificationWebhookEventType": ".verification_webhook_event_type",
     "WebhookAttempt": ".webhook_attempt",
     "WebhookAttemptObject": ".webhook_attempt_object",
     "WebhookDelivery": ".webhook_delivery",
@@ -1647,10 +1999,18 @@ __all__ = [
     "DeletedDomainObject",
     "DeletedEmailTemplate",
     "DeletedEmailTemplateObject",
+    "DeletedForm",
+    "DeletedFormObject",
+    "DeletedFormSubmission",
+    "DeletedFormSubmissionObject",
     "DeletedHookApplication",
     "DeletedHookApplicationObject",
     "DeletedHookEndpoint",
     "DeletedHookEndpointObject",
+    "DeletedInbox",
+    "DeletedInboxObject",
+    "DeletedInboxThread",
+    "DeletedInboxThreadObject",
     "DeletedLogDrain",
     "DeletedLogDrainObject",
     "DeletedReceivedEmail",
@@ -1663,6 +2023,12 @@ __all__ = [
     "DeletedRiskRuleObject",
     "DeletedSegment",
     "DeletedSegmentObject",
+    "DeletedSignDocument",
+    "DeletedSignDocumentObject",
+    "DeletedSignRequest",
+    "DeletedSignRequestObject",
+    "DeletedSignTemplate",
+    "DeletedSignTemplateObject",
     "DeletedSmsSuppression",
     "DeletedSmsSuppressionObject",
     "DeletedSuppression",
@@ -1816,6 +2182,39 @@ __all__ = [
     "ExportSuppressionsRequestScopeZero",
     "ForgottenRiskUser",
     "ForgottenRiskUserObject",
+    "Form",
+    "FormContacts",
+    "FormField",
+    "FormFieldInput",
+    "FormFieldInputType",
+    "FormFieldType",
+    "FormFiles",
+    "FormHosted",
+    "FormList",
+    "FormListObject",
+    "FormNotifications",
+    "FormObject",
+    "FormSpam",
+    "FormSpamCaptcha",
+    "FormSpamOnReview",
+    "FormSubmission",
+    "FormSubmissionDataValue",
+    "FormSubmissionFile",
+    "FormSubmissionList",
+    "FormSubmissionListObject",
+    "FormSubmissionObject",
+    "FormSubmissionRisk",
+    "FormSubmissionRiskDecision",
+    "FormSubmissionSpamReason",
+    "FormSubmissionStatus",
+    "FormSubmissionWebhookEvent",
+    "FormSubmissionWebhookEventData",
+    "FormSubmissionWebhookEventDataDataValue",
+    "FormSubmissionWebhookEventDataSpamReason",
+    "FormSubmissionWebhookEventDataStatus",
+    "FormSubmissionWebhookEventObject",
+    "FormSubmissionWebhookEventType",
+    "FormSubmitter",
     "HookApplication",
     "HookApplicationList",
     "HookApplicationListObject",
@@ -1858,6 +2257,31 @@ __all__ = [
     "HookPortalSessionObject",
     "InboundAddress",
     "InboundAddressObject",
+    "Inbox",
+    "InboxKind",
+    "InboxList",
+    "InboxListObject",
+    "InboxMessage",
+    "InboxMessageDirection",
+    "InboxMessageList",
+    "InboxMessageListObject",
+    "InboxMessageObject",
+    "InboxMessageReceivedWebhookEvent",
+    "InboxMessageReceivedWebhookEventData",
+    "InboxMessageReceivedWebhookEventObject",
+    "InboxMessageReceivedWebhookEventType",
+    "InboxMessageStatus",
+    "InboxMessageSummary",
+    "InboxMessageSummaryDirection",
+    "InboxMessageSummaryObject",
+    "InboxMessageSummaryStatus",
+    "InboxObject",
+    "InboxThread",
+    "InboxThreadList",
+    "InboxThreadListObject",
+    "InboxThreadObject",
+    "InboxThreadSummary",
+    "InboxThreadSummaryObject",
     "Invoice",
     "InvoiceCollectionMethod",
     "InvoiceCurrency",
@@ -2008,6 +2432,12 @@ __all__ = [
     "RiskListEntryType",
     "RiskLoginSignals",
     "RiskOutcome",
+    "RiskPhoneCarrier",
+    "RiskPhoneCheck",
+    "RiskPhoneCheckDegradedItem",
+    "RiskPhoneCheckLineType",
+    "RiskPhoneCheckObject",
+    "RiskPhoneSimSwap",
     "RiskReason",
     "RiskReasonCode",
     "RiskReasonType",
@@ -2087,6 +2517,64 @@ __all__ = [
     "SendEmailRequestStream",
     "SendEmailRequestTagsItem",
     "SendEmailRequestTo",
+    "SignBuilderSession",
+    "SignBuilderSessionObject",
+    "SignDocument",
+    "SignDocumentAnchorsItem",
+    "SignDocumentList",
+    "SignDocumentListObject",
+    "SignDocumentObject",
+    "SignDocumentPagesItem",
+    "SignEvent",
+    "SignEventActor",
+    "SignEventDetails",
+    "SignEventList",
+    "SignEventListObject",
+    "SignEventObject",
+    "SignEventType",
+    "SignField",
+    "SignFieldInput",
+    "SignFieldInputAnchor",
+    "SignFieldInputAnchorType",
+    "SignFieldInputDocument",
+    "SignFieldInputDocumentType",
+    "SignFieldObject",
+    "SignFieldType",
+    "SignRequest",
+    "SignRequestDocumentsItem",
+    "SignRequestList",
+    "SignRequestListObject",
+    "SignRequestObject",
+    "SignRequestSignedDocument",
+    "SignRequestSigningOrder",
+    "SignRequestStatus",
+    "SignRequestWebhookEvent",
+    "SignRequestWebhookEventData",
+    "SignRequestWebhookEventDataSigner",
+    "SignRequestWebhookEventDataSignerStatus",
+    "SignRequestWebhookEventDataStatus",
+    "SignRequestWebhookEventObject",
+    "SignRequestWebhookEventType",
+    "SignSession",
+    "SignSessionObject",
+    "SignSettings",
+    "SignSettingsObject",
+    "SignSettingsTheme",
+    "SignSigner",
+    "SignSignerAuthentication",
+    "SignSignerDelivery",
+    "SignSignerObject",
+    "SignSignerStatus",
+    "SignTemplate",
+    "SignTemplateDocumentsItem",
+    "SignTemplateDocumentsItemPagesItem",
+    "SignTemplateFieldsItem",
+    "SignTemplateFieldsItemType",
+    "SignTemplateList",
+    "SignTemplateListObject",
+    "SignTemplateObject",
+    "SignTemplateRolesItem",
+    "SignTemplateSigningOrder",
     "Sms",
     "SmsEncoding",
     "SmsEvent",
@@ -2132,6 +2620,23 @@ __all__ = [
     "StorageSettings",
     "StorageSettingsContentStorage",
     "StorageSettingsObject",
+    "Subaccount",
+    "SubaccountList",
+    "SubaccountListObject",
+    "SubaccountObject",
+    "SubaccountQuotas",
+    "SubaccountReputation",
+    "SubaccountReputationStatus",
+    "SubaccountStats",
+    "SubaccountStatsDay",
+    "SubaccountStatsObject",
+    "SubaccountStatus",
+    "SubaccountWebhookEvent",
+    "SubaccountWebhookEventData",
+    "SubaccountWebhookEventDataPreviousStatus",
+    "SubaccountWebhookEventDataStatus",
+    "SubaccountWebhookEventObject",
+    "SubaccountWebhookEventType",
     "Suppression",
     "SuppressionCheck",
     "SuppressionCheckObject",
@@ -2178,6 +2683,29 @@ __all__ = [
     "UsageListObject",
     "UsageMeter",
     "UsageObject",
+    "Verification",
+    "VerificationChannel",
+    "VerificationCheck",
+    "VerificationCheckObject",
+    "VerificationFailure",
+    "VerificationList",
+    "VerificationListObject",
+    "VerificationObject",
+    "VerificationReasonsItem",
+    "VerificationSend",
+    "VerificationSendChannel",
+    "VerificationSendRoute",
+    "VerificationStatus",
+    "VerificationTagsItem",
+    "VerificationWebhookEvent",
+    "VerificationWebhookEventData",
+    "VerificationWebhookEventDataChannel",
+    "VerificationWebhookEventDataFailure",
+    "VerificationWebhookEventDataReasonsItem",
+    "VerificationWebhookEventDataStatus",
+    "VerificationWebhookEventDataTagsItem",
+    "VerificationWebhookEventObject",
+    "VerificationWebhookEventType",
     "WebhookAttempt",
     "WebhookAttemptObject",
     "WebhookDelivery",
