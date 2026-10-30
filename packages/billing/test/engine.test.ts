@@ -165,7 +165,7 @@ describe("terms", () => {
       },
     });
     expect(contract.rates["sms.segments"]?.byDimension).toEqual({
-      "country=US": { mode: "graduated", tiers: [{ upTo: null, unitNanos: 13_500_000n }] },
+      "country=US": { mode: "graduated", tiers: [{ upTo: null, unitNanos: 14_200_000n }] },
       "country=GB": { mode: "graduated", tiers: [{ upTo: null, unitNanos: 40_000_000n }] },
     });
     expect(meterAvailability(contract, "sms.segments", "country=GB")).toBe("available");
@@ -188,7 +188,7 @@ describe("terms", () => {
     expect(november).not.toBe(card);
     const tiers = (meter: MeterKey, dimension: string) =>
       november.rates[meter]?.byDimension?.[dimension]?.tiers;
-    expect(tiers("sms.segments", "country=US")).toEqual([{ upTo: null, unitNanos: 13_500_000n }]);
+    expect(tiers("sms.segments", "country=US")).toEqual([{ upTo: null, unitNanos: 14_200_000n }]);
     expect(tiers("sms.segments", "country=GB")).toEqual([{ upTo: null, unitNanos: 66_500_000n }]);
     expect(tiers("sms.numbers", "type=local")).toEqual([{ upTo: null, unitNanos: 1_150_000_000n }]);
     expect(november.rates["email.recipients"]).toBe(card.rates["email.recipients"]);

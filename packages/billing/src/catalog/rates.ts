@@ -87,7 +87,7 @@ const LAUNCH: RateCard = {
       },
     },
     // US only; other countries are priced per contract.
-    "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
+    "sms.segments": { byDimension: { "country=US": flatRate(14_200_000n) } },
     // $0.01 per phone check (first priced when the meter was added; it had no usage before).
     "risk.phone_checks": { default: flatRate(10_000_000n) },
     // $1.50 per 1,000 participant-minutes.
