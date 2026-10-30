@@ -170,9 +170,13 @@ export async function runDueNotifications(
 }
 
 async function deliver(row: NotificationRow, deps: NotificationDeps, now: Date): Promise<void> {
+  // Fenced to this claim (every claim bumps the attempt count): once the lease ran out and
+  // another worker took the row over, this one's outcome is dropped instead of overwriting it.
   const thisRow = and(
     eq(notification.id, row.id),
     eq(notification.organizationId, row.organizationId),
+    eq(notification.status, "pending"),
+    eq(notification.attemptCount, row.attemptCount),
   );
   const settle = (values: Partial<typeof notification.$inferInsert>) =>
     db

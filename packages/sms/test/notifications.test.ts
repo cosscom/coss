@@ -204,3 +204,39 @@ test("a rejected registration says why and links to registering again", async ()
   expect(sent[0]?.text).toContain("Register again: ");
   expect(sent[0]?.text).toContain("[!] 2. Carrier review (Not approved)");
 });
+
+test("a rejection overtaken by a new registration isn't sent", async () => {
+  const tenant = await createTestTenant();
+  const org = tenant.organization.id;
+  const d = deps();
+  const start = Date.now();
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "low_volume_standard",
+      profile: { ...PROFILE, legalName: "Acme [reject]" },
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  const settled = await settle(org, d, start);
+  await createSmsRegistration(
+    org,
+    SmsRegistrationInput.parse({
+      kind: "us_10dlc",
+      brandType: "low_volume_standard",
+      profile: PROFILE,
+      campaign: CAMPAIGN,
+    }),
+    d,
+  );
+  const sent = await send(org, new Date(settled + HOUR));
+  expect(sent.map((notice) => notice.subject)).toEqual([
+    "Acme, Inc.'s US A2P 10DLC registration is in review",
+  ]);
+  const rejection = (await listNotifications(org)).find(
+    (row) => row.kind === "sms.registration_rejected",
+  );
+  expect(rejection).toMatchObject({ status: "skipped", lastError: "Registered again since." });
+});

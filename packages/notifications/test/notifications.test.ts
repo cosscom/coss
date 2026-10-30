@@ -113,6 +113,29 @@ describe("notification outbox", () => {
     expect(row?.lastError).toContain("Unknown notification kind");
   });
 
+  test("a worker whose lease ran out can't overwrite the outcome of the one that took over", async () => {
+    const tenant = await createTestTenant();
+    await enqueue(tenant.organization.id, "test.hello");
+    const scope = { organizationIds: [tenant.organization.id] };
+    const now = new Date();
+    const takeover = recordingNotifier();
+    // The first worker's send outlives its lease: another worker claims, sends and settles the
+    // row meanwhile, then the first one's send fails.
+    const slow = {
+      async send() {
+        await runDueNotifications(
+          { scope, now: new Date(now.getTime() + 6 * MINUTE) },
+          { notifier: takeover, kinds, dashboardUrl: DASHBOARD },
+        );
+        throw new Error("Timed out (test).");
+      },
+    };
+    await runDueNotifications({ scope, now }, { notifier: slow, kinds, dashboardUrl: DASHBOARD });
+    expect(takeover.sent).toHaveLength(1);
+    const [row] = await listNotifications(tenant.organization.id);
+    expect(row).toMatchObject({ status: "sent", nextAttemptAt: null, attemptCount: 2 });
+  });
+
   test("old notifications are skipped, and settled ones are purged after retention", async () => {
     const tenant = await createTestTenant();
     await enqueue(tenant.organization.id, "test.hello");

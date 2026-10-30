@@ -12,7 +12,7 @@ import {
   type NotificationContext,
   type NotificationKinds,
 } from "@coss/notifications";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, ne } from "drizzle-orm";
 
 const { smsNumber, smsRegistration } = schema;
 
@@ -305,6 +305,25 @@ export const SMS_NOTIFICATION_KINDS: NotificationKinds = {
       if (registration?.status !== "rejected" && registration?.status !== "failed") {
         return { skip: "Not rejected (anymore)." };
       }
+      // Registered again since (the same toll-free number, or a new 10DLC registration):
+      // "register again" is old news.
+      const [newer] = await db
+        .select({ id: smsRegistration.id })
+        .from(smsRegistration)
+        .where(
+          and(
+            eq(smsRegistration.organizationId, context.organizationId),
+            eq(smsRegistration.kind, registration.kind),
+            registration.kind === "toll_free" && registration.numberId
+              ? eq(smsRegistration.numberId, registration.numberId)
+              : undefined,
+            ne(smsRegistration.id, registration.id),
+            // Postgres keeps microseconds, the Date only milliseconds: `gte`, minus this row.
+            gte(smsRegistration.createdAt, registration.createdAt),
+          ),
+        )
+        .limit(1);
+      if (newer) return { skip: "Registered again since." };
       const numbers = await coveredNumbers(registration);
       const business = oneLine(registration.profile.legalName);
       return {
