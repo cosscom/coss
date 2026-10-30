@@ -403,7 +403,7 @@ describe("SendEmailRequest: attachments", () => {
     expect(problem("README")).toBe('Filenames need an extension, e.g. "invoice.pdf".');
     expect(problem("trailing.")).toBe('Filenames need an extension, e.g. "invoice.pdf".');
     expect(problem("setup.EXE")).toBe("Attachments with the .exe extension cannot be sent.");
-    expect(problem("x".repeat(252) + ".pdf")).toBe("Filenames can be at most 255 characters.");
+    expect(problem(`${"x".repeat(252)}.pdf`)).toBe("Filenames can be at most 255 characters.");
     expect(problem("Rechnung März.pdf")).toBeUndefined();
   });
 

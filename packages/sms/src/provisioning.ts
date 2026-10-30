@@ -229,7 +229,7 @@ export async function createSmsRegistration(
             )
             .limit(1)
         : [];
-      if (!number || number.kind !== "toll_free") {
+      if (number?.kind !== "toll_free") {
         throw new SmsError("registration_invalid", "Choose one of your toll-free numbers.");
       }
       if (!number.providerSid || number.status === "releasing") {

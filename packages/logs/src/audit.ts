@@ -1,6 +1,6 @@
 import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, isId, newId } from "@coss/db/id";
-import { and, desc, eq, gte, inArray, like, lt, or, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, like, lt, or, sql } from "drizzle-orm";
 import { activeLogDrains, insertLogDrainRecords } from "./drain-outbox.ts";
 import type { OrgAuditActorType, OrgAuditEventOutput } from "./schemas.ts";
 
