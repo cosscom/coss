@@ -121,6 +121,7 @@ export async function recordProviderEvent(
       stream: email.stream,
       broadcastId: email.broadcastId,
       subaccountId: email.subaccountId,
+      traceparent: email.traceparent,
       createdAt: email.createdAt,
       dedicatedPool: email.dedicatedPool,
       mode: environment.mode,
@@ -381,6 +382,7 @@ export async function recordProviderEvent(
         recipient: row.recipient,
         occurred_at: row.occurredAt.toISOString(),
         ...(target.subaccountId ? { subaccount_id: target.subaccountId } : {}),
+        ...(target.traceparent ? { traceparent: target.traceparent } : {}),
         ...row.details,
       },
     };

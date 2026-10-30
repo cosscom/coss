@@ -44,6 +44,7 @@ export function smsEventLogEntries(
     to: string;
     toCountry: string;
     segments: number;
+    traceparent?: string | null;
   },
   provider: { provider: string; providerStatus: string },
   rows: readonly { id: string; type: SmsEventType; occurredAt: Date; details: SmsEventDetails }[],
@@ -68,6 +69,7 @@ export function smsEventLogEntries(
       from: target.from,
       country: target.toCountry,
       segments: target.segments,
+      ...(target.traceparent ? { traceparent: target.traceparent } : {}),
       ...row.details,
     },
   }));

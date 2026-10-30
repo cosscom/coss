@@ -5,6 +5,7 @@
  * the event types from here).
  */
 import { LATEST_API_VERSION } from "@coss/versioning";
+import { TRACEPARENT_PATTERN } from "@coss/webhooks/schemas";
 import { z } from "zod";
 import { countSegments, MAX_SMS_BODY_LENGTH, MAX_SMS_SEGMENTS } from "./segments.ts";
 
@@ -401,6 +402,15 @@ export const SmsWebhookEvent = z
       tags: z.array(z.object({ name: z.string(), value: z.string() })),
       sandbox: z.boolean(),
       occurred_at: z.iso.datetime(),
+      traceparent: z
+        .string()
+        .regex(TRACEPARENT_PATTERN)
+        .optional()
+        .meta({
+          description:
+            "Only for a message sent with a W3C `traceparent` header: that trace context (normalized to version `00`), also sent as this request's `traceparent` header, so handling the event joins the sender's trace.",
+          examples: ["00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"],
+        }),
     }),
   })
   .meta({

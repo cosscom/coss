@@ -4,12 +4,17 @@
  * when that description drifts from the libraries' real types.
  */
 import type { Provider } from "@auth/core/providers";
+import * as opentelemetry from "@opentelemetry/api";
 import { betterAuth } from "better-auth";
 import { emailOTP, magicLink, organization } from "better-auth/plugins";
 import nodemailer, { type SendMailOptions } from "nodemailer";
 import Coss, { CossProvider } from "../src/authjs.ts";
 import { cossEmail } from "../src/better-auth.ts";
+import type { OpenTelemetryApi } from "../src/core/tracing.ts";
 import { type CossSentMessageInfo, cossTransport, withCoss } from "../src/nodemailer.ts";
+
+// OpenTelemetry: the real API fits what the SDK's tracing describes of it.
+export const otel: OpenTelemetryApi = opentelemetry;
 
 // Nodemailer: the transport plugs into createTransport, and sendMail resolves with our info.
 const transporter = nodemailer.createTransport(cossTransport({ apiKey: "coss_test_x" }));

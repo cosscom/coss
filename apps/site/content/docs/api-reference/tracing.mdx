@@ -1,0 +1,62 @@
+---
+title: Tracing
+description: Send a W3C traceparent and follow an email or text message from your request to its webhooks.
+---
+
+Every `/v1` request may carry a [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+`traceparent` header. Sends store it on what they create — `POST /v1/emails`, `POST
+/v1/emails/batch` (on every email), an inbox's sends and replies, and `POST /v1/sms` — and the
+asynchronous delivery that follows echoes it:
+
+- in every **webhook event** about that email or text message, as `data.traceparent`, and as the
+  webhook request's own `traceparent` header, so your receiver's tracing continues your trace
+  without reading the body;
+- in the **log lines** of its events (`attributes.traceparent`) and of each webhook attempt, and
+  in the request's own `api.request` line (`attributes.request.headers`).
+
+```bash
+curl -X POST https://api.coss.com/v1/emails \
+  -H "Authorization: Bearer $COSS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01" \
+  -d '{"from":"Acme <hello@acme.com>","to":"user@example.com","subject":"Welcome","text":"Hi!"}'
+```
+
+The value is stored as version `00` in lowercase hex. An invalid one is ignored, never refused, as
+the specification asks; of several, the last one counts (an instrumented `fetch` appends its own
+span's). `tracestate` is accepted (browsers' tracing sends it) but not stored. The header isn't
+part of an [idempotent](/docs/api-reference/idempotency) request: a replay returns the email or
+message with the `traceparent` of the request that created it.
+
+## With the TypeScript SDK
+
+When [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/api) is installed (an
+optional peer dependency; OpenTelemetry's and Sentry's SDKs bring it along), every call gets a
+client span named after its method and route (`POST /v1/emails/{id}/cancel`, never an id) and sends
+the span's W3C trace context (`traceparent`, `tracestate`) from your app's propagator; other
+propagated headers, such as `baggage`, stay in your app. Retries share the span, so whichever attempt the API stores
+names the call. Without a registered tracer provider nothing is recorded or sent. Turn it off with
+`tracing: false`:
+
+```ts twoslash
+import { Coss } from "coss";
+// ---cut---
+const coss = new Coss({ tracing: false });
+```
+
+## In your webhook handler
+
+Continue the trace from the `traceparent` header (your HTTP server's instrumentation usually does
+this on its own), or from `data.traceparent` when events reach you some other way:
+
+```ts twoslash
+import { verifyWebhook } from "coss";
+declare const body: string;
+declare const headers: Headers;
+declare const secret: string;
+// ---cut---
+const event = await verifyWebhook(body, headers, secret);
+if (event.type === "email.delivered") {
+  console.log(event.data.email_id, event.data.traceparent);
+}
+```

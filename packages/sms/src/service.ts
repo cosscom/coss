@@ -61,6 +61,11 @@ export type SendSmsInput = {
   params: SendSmsRequestOutput;
   idempotencyKey?: string | null;
   /**
+   * The request's W3C `traceparent` (`parseTraceparent`), stored on the message and echoed in its
+   * log lines and webhooks. Not part of the request hash: a retry may carry another one.
+   */
+  traceparent?: string | null;
+  /**
    * Internal callers only (Verify): the body is a secret (a one-time code), so it is cleared once
    * the message is sent, failed or canceled. Its history keeps everything else.
    */
@@ -682,6 +687,7 @@ export function createSmsService(opts: SmsServiceOptions): SmsService {
           scheduledAt,
           idempotencyKey,
           requestHash,
+          traceparent: input.traceparent ?? null,
         })
         .onConflictDoNothing({ target: [smsMessage.environmentId, smsMessage.idempotencyKey] })
         .returning();

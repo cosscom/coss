@@ -25,6 +25,7 @@ import { errorResponse, internalError, notFound, toApiError } from "./errors.ts"
 import { apiVersion } from "./middleware/api-version.ts";
 import { requestId } from "./middleware/request-id.ts";
 import { requestLog } from "./middleware/request-log.ts";
+import { traceContext } from "./middleware/trace-context.ts";
 import { withApiVersionDocs } from "./openapi-versions.ts";
 import { createFormEndpointRoutes, FORMS_PATH_PREFIX } from "./routes/forms-public.ts";
 import { createPreferenceRoutes } from "./routes/preferences.ts";
@@ -136,7 +137,16 @@ export type CreateAppOptions = {
 };
 
 /** Request headers a browser may send, and response headers it may read, cross-origin. */
-const CORS_ALLOW_HEADERS = ["Authorization", "Content-Type", "Idempotency-Key", "Coss-Version"];
+// `traceparent` and `tracestate` (W3C Trace Context): a browser's tracing adds them to every fetch,
+// and a preflight refusing them would block the request. Only `traceparent` is read.
+const CORS_ALLOW_HEADERS = [
+  "Authorization",
+  "Content-Type",
+  "Idempotency-Key",
+  "Coss-Version",
+  "traceparent",
+  "tracestate",
+];
 const CORS_EXPOSE_HEADERS = ["X-Request-Id", "Idempotent-Replayed", "Retry-After", "Coss-Version"];
 
 /**
@@ -189,6 +199,7 @@ export function createApp(opts: CreateAppOptions) {
     }),
   );
   app.use("/v1/*", apiVersion);
+  app.use("/v1/*", traceContext);
   const strictHeaders = secureHeaders();
   // Mail clients and webmail load the open pixel from other origins.
   const trackingHeaders = secureHeaders({ crossOriginResourcePolicy: "cross-origin" });

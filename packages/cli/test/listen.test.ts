@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import { verifyWebhook } from "coss";
 import { readConfig } from "../src/config.ts";
-import { normalizeTarget } from "../src/listen/forward.ts";
+import { normalizeTarget, traceparentOf } from "../src/listen/forward.ts";
 import { run } from "../src/run.ts";
 import { apiError, environmentObject, fakeFetch, NOW, SANDBOX_KEY, testIo } from "./helpers.ts";
 
@@ -72,6 +72,14 @@ describe("coss listen", () => {
     expect(() => normalizeTarget("ftp://x")).toThrow();
   });
 
+  test("forwards an event's traceparent as coss.com's delivery does", () => {
+    const traceparent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+    expect(traceparentOf(JSON.stringify({ ...event, data: { traceparent } }))).toBe(traceparent);
+    expect(traceparentOf(JSON.stringify({ ...event, data: { traceparent: "x\ny" } }))).toBeNull();
+    expect(traceparentOf(JSON.stringify(event))).toBeNull();
+    expect(traceparentOf("not json")).toBeNull();
+  });
+
   test("forwards events signed with the profile's secret, acknowledges them and closes on Ctrl-C", async () => {
     const local = await receiver();
     const polls: unknown[] = [];
@@ -120,6 +128,7 @@ describe("coss listen", () => {
     expect(forwarded?.body).toBe(JSON.stringify(event));
     expect(forwarded?.headers["x-test"]).toBe("a, b");
     expect(forwarded?.headers["webhook-id"]).toBe("evt_1");
+    expect(forwarded?.headers.traceparent).toBeUndefined();
     const secret = (await readConfig(io)).profiles.default?.listen_secret ?? "";
     expect(io.errors()).toContain(secret);
     expect(

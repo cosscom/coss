@@ -51,6 +51,22 @@ function describe(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+const TRACEPARENT = /^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/;
+
+/**
+ * The `traceparent` coss.com's own delivery sends for this event (its `data.traceparent`: an email
+ * or text message sent with one), so a forwarded event continues the sender's trace the same way.
+ */
+export function traceparentOf(body: string): string | null {
+  try {
+    const value = (JSON.parse(body) as { data?: { traceparent?: unknown } } | null)?.data
+      ?.traceparent;
+    return typeof value === "string" && TRACEPARENT.test(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function forwardEvent(
   io: CliIo,
   input: {
@@ -62,6 +78,7 @@ export async function forwardEvent(
   },
 ): Promise<ForwardResult> {
   const timestamp = Math.floor(io.now().getTime() / 1000);
+  const traceparent = traceparentOf(input.body);
   const started = performance.now();
   try {
     const response = await io.fetch(input.url, {
@@ -69,6 +86,7 @@ export async function forwardEvent(
       headers: [
         ["content-type", "application/json"],
         ["user-agent", `coss-cli/${VERSION} (coss listen)`],
+        ...(traceparent ? [["traceparent", traceparent] as [string, string]] : []),
         ...input.headers,
         ...Object.entries(
           signatureHeaders({

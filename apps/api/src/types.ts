@@ -19,6 +19,11 @@ export type AppEnv = {
     clientIp: string | null;
     /** The API's versions and the changes between them. */
     versioning: Versioning;
+    /**
+     * The W3C `traceparent` header, validated and normalized (`/v1/*` only); `null` when absent or
+     * invalid. Stored on the emails and text messages the request sends.
+     */
+    traceparent: string | null;
     /** The `Coss-Version` header, validated (`/v1/*` only); `null` when absent. */
     requestedApiVersion: string | null;
     /**

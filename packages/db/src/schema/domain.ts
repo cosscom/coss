@@ -329,6 +329,9 @@ export const email = pgTable(
     // Handed to the provider through the sub-account's own tenant (set at claim: the From domain
     // was the sub-account's); else the organization's.
     subaccountTenant: boolean("subaccount_tenant").notNull().default(false),
+    // The caller's W3C trace context (`traceparent` header of the request that sent it, validated
+    // and normalized): echoed in the email's log lines and webhooks, so they join the caller's trace.
+    traceparent: text("traceparent"),
   },
   (t) => [
     foreignKey({

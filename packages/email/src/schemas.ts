@@ -11,7 +11,7 @@ import { SIGN_WEBHOOK_EVENT_TYPES } from "@coss/sign/schemas";
 import { SMS_WEBHOOK_EVENT_TYPES } from "@coss/sms/schemas";
 import { VERIFY_WEBHOOK_EVENT_TYPES } from "@coss/verify/schemas";
 import { LATEST_API_VERSION } from "@coss/versioning";
-import { HOOK_OPERATIONAL_EVENT_TYPES } from "@coss/webhooks/schemas";
+import { HOOK_OPERATIONAL_EVENT_TYPES, TRACEPARENT_PATTERN } from "@coss/webhooks/schemas";
 import { z } from "zod";
 import { SUBACCOUNT_EVENT_TYPES } from "./subaccount-schemas.ts";
 import {
@@ -1132,6 +1132,15 @@ export const EmailWebhookEvent = z
       subaccount_id: z.string().optional().meta({
         description: "Only for an email sent for a sub-account: its id.",
       }),
+      traceparent: z
+        .string()
+        .regex(TRACEPARENT_PATTERN)
+        .optional()
+        .meta({
+          description:
+            "Only for an email sent with a W3C `traceparent` header: that trace context (normalized to version `00`), also sent as this request's `traceparent` header, so handling the event joins the sender's trace.",
+          examples: ["00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"],
+        }),
     }),
   })
   .meta({

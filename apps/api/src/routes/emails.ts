@@ -415,6 +415,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         apiKeyOwnerId: ownerUserId,
         params,
         idempotencyKey,
+        traceparent: c.var.traceparent,
       };
       const quota = await sendQuotaRequests(c.var.auth, [params]);
       const decision = await consumeAll(c.var.rateLimiter, quota);
@@ -469,6 +470,7 @@ export function createEmailRoutes(emailService: EmailService): OpenAPIHono<AppEn
         apiKeyOwnerId: ownerUserId,
         emails,
         idempotencyKey,
+        traceparent: c.var.traceparent,
       };
       // Charged as one: the batch is accepted or refused as a whole.
       const quota = await sendQuotaRequests(c.var.auth, emails);

@@ -246,6 +246,9 @@ export const smsMessage = pgTable(
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     // Billing: metered once (`sms.segments`, by `to_country`) when it reaches a carrier.
     usageRecordedAt: timestamp("usage_recorded_at", { withTimezone: true }),
+    // The caller's W3C trace context (`traceparent` header of the request that sent it, validated
+    // and normalized): echoed in the message's log lines and webhooks.
+    traceparent: text("traceparent"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
