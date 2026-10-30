@@ -22,6 +22,7 @@ import {
   purgeExpiredReceivedEmails,
   purgeExpiredReputationRollups,
 } from "@coss/email";
+import { purgeExpiredFormFakeObjects, purgeExpiredFormSubmissions } from "@coss/forms";
 import {
   purgeExpiredHookDeliveryRollups,
   purgeExpiredHookIdempotencyKeys,
@@ -84,6 +85,9 @@ const STEPS: { name: string; purge: (opts: StepOptions) => Promise<number | numb
   { name: "hook portal sessions", purge: purgeExpiredHookPortalSessions },
   { name: "sign sessions", purge: purgeExpiredSignSessions },
   { name: "verifications", purge: purgeExpiredVerifications },
+  { name: "form submissions", purge: purgeExpiredFormSubmissions },
+  // The fake file store's stand-in for the S3 bucket's lifecycle rule.
+  { name: "fake form files", purge: purgeExpiredFormFakeObjects },
   { name: "hook recoveries", purge: purgeFinishedHookRecoveries },
   { name: "hook delivery rollups", purge: purgeExpiredHookDeliveryRollups },
   { name: "content screenings", purge: purgeExpiredScreenings },

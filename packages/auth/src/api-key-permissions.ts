@@ -23,6 +23,7 @@ export type ApiKeyPermissionGroup =
   | "SMS"
   | "Sign"
   | "Verify"
+  | "Forms"
   | "Platform"
   | "Risk"
   | "Hooks"
@@ -129,6 +130,13 @@ export const API_KEY_RESOURCES: readonly ApiKeyResourceInfo[] = [
       "Start, check and cancel verifications (one-time codes by SMS or email); read them.",
   },
   {
+    resource: "form",
+    label: "Forms",
+    group: "Forms",
+    description:
+      "Create and change forms; read their submissions and files, release submissions held as spam and delete them.",
+  },
+  {
     resource: "webhook",
     label: "Webhooks",
     group: "Platform",
@@ -190,6 +198,7 @@ export const API_KEY_PERMISSION_GROUPS: readonly ApiKeyPermissionGroup[] = [
   "SMS",
   "Sign",
   "Verify",
+  "Forms",
   "Platform",
   "Risk",
   "Hooks",

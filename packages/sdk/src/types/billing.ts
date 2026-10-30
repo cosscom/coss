@@ -18,6 +18,7 @@ export type Meter =
   | "risk.phone_checks"
   | "verify.verifications"
   | "verify.sms"
+  | "forms.submissions"
   | "video.participant_minutes"
   | "scheduling.bookings";
 

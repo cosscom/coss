@@ -302,6 +302,7 @@
         "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
         "@coss/email": "workspace:*",
+        "@coss/forms": "workspace:*",
         "@coss/hooks": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/migrate": "workspace:*",
@@ -465,6 +466,28 @@
         "@types/bun": "catalog:",
         "@types/nodemailer": "catalog:",
         "nodemailer": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/forms": {
+      "name": "@coss/forms",
+      "version": "0.0.0",
+      "dependencies": {
+        "@aws-sdk/client-s3": "catalog:",
+        "@coss/billing": "workspace:*",
+        "@coss/db": "workspace:*",
+        "@coss/logs": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "@coss/risk": "workspace:*",
+        "@coss/versioning": "workspace:*",
+        "@coss/webhooks": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -1287,6 +1310,8 @@
     "@coss/db": ["@coss/db@workspace:packages/db"],
 
     "@coss/email": ["@coss/email@workspace:packages/email"],
+
+    "@coss/forms": ["@coss/forms@workspace:packages/forms"],
 
     "@coss/hooks": ["@coss/hooks@workspace:packages/hooks"],
 

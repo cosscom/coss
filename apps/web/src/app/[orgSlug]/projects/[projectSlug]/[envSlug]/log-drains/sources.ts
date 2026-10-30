@@ -19,6 +19,10 @@ export const SOURCE_LABELS: Record<LogDrainSource, { label: string; description:
     label: "Verification events",
     description: "Codes sent, checked, approved, failed or blocked by the fraud guard.",
   },
+  forms: {
+    label: "Form submissions",
+    description: "Submissions received, flagged as spam, confirmed, released…",
+  },
   audit: {
     label: "Audit events",
     description: "Changes to this environment: keys, endpoints, drains, suppressions…",

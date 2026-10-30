@@ -1,6 +1,15 @@
 /** What coss.com meters: one meter per billable unit of a product. */
 
-export const PRODUCTS = ["email", "sms", "sign", "risk", "verify", "video", "scheduling"] as const;
+export const PRODUCTS = [
+  "email",
+  "sms",
+  "sign",
+  "risk",
+  "verify",
+  "forms",
+  "video",
+  "scheduling",
+] as const;
 export type Product = (typeof PRODUCTS)[number];
 
 export type MeterDefinition = {
@@ -142,6 +151,17 @@ export const METERS = {
     units: "segments",
     displayPer: 1,
     dimensions: ["country"],
+    requires: "plan",
+  },
+  // Forms: a submission accepted for delivery (spam, held and unconfirmed ones aren't counted
+  // until released or confirmed). Not priced yet, like Sign's meter.
+  "forms.submissions": {
+    product: "forms",
+    label: "Form submissions",
+    unit: "submission",
+    units: "submissions",
+    displayPer: 1000,
+    dimensions: [],
     requires: "plan",
   },
   "video.participant_minutes": {

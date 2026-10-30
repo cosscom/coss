@@ -34,7 +34,7 @@ export const MAILING_ADDRESS_MAX_LENGTH = 500;
 
 export const CONTACT_STATUSES = ["subscribed", "unsubscribed", "pending"] as const;
 export type ContactStatus = (typeof CONTACT_STATUSES)[number];
-export const CONTACT_SOURCES = ["api", "dashboard", "import", "preference_center"] as const;
+export const CONTACT_SOURCES = ["api", "dashboard", "import", "preference_center", "form"] as const;
 export type ContactSource = (typeof CONTACT_SOURCES)[number];
 export const CONTACT_PROPERTY_TYPES = ["string", "number", "boolean", "date"] as const;
 export type ContactPropertyType = (typeof CONTACT_PROPERTY_TYPES)[number];

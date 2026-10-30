@@ -78,6 +78,10 @@ export const RETENTION_DAYS = {
   migrations: 90,
   /** Imports never started (the provider's key they hold included). */
   migrationDrafts: 1,
+  /** Accepted form submissions (with their files), counted from when they were received. */
+  formSubmissions: 90,
+  /** Form submissions flagged as spam, held, or never confirmed by the submitter. */
+  formSpam: 14,
 } as const satisfies Record<string, number>;
 
 export type RetentionPeriod =
@@ -346,6 +350,20 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     period: { until: "deleted" },
   },
   {
+    id: "form_submissions",
+    label: "Form submissions",
+    description:
+      "What was submitted to your forms, with uploaded files, the submitter's address, browser and the page it came from. Submissions you delete, and files of submissions you delete, are removed right away.",
+    period: { days: RETENTION_DAYS.formSubmissions, after: "creation" },
+  },
+  {
+    id: "form_spam",
+    label: "Spam and unconfirmed form submissions",
+    description:
+      "Form submissions flagged as spam or held for review that you didn't release, and submissions whose submitter never confirmed their email address.",
+    period: { days: RETENTION_DAYS.formSpam, after: "creation" },
+  },
+  {
     id: "migrations",
     label: "Imports from other providers",
     description: `Reports of imports from Resend, SendGrid or Postmark: what was found, what was imported and what needs attention. The provider's API key is deleted as soon as an import finishes or is canceled, and an import that is never started is deleted after ${formatRetentionDays(RETENTION_DAYS.migrationDrafts)}. What it imported is kept like anything you create yourself.`,
@@ -355,7 +373,7 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     id: "account",
     label: "Account and configuration",
     description:
-      "Users, organizations, projects, environments, API keys, domains, SMS phone numbers and carrier registrations (with the business details they were registered with), email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
+      "Users, organizations, projects, environments, API keys, domains, SMS phone numbers and carrier registrations (with the business details they were registered with), email templates (with every published version), webhook endpoints, log drains, Hooks applications, event types and endpoints, risk allow and block lists, forms, contact properties, audiences, segments, topics, settings, and billing details (plan, contracts and credits). Items you delete (a key, a domain, a template, an endpoint, a drain, an application) are removed right away.",
     period: { until: "closed" },
   },
 ];
