@@ -871,4 +871,28 @@ describe("inboxes", () => {
     expect(await deleteInbox({ ...live(tenant), id: fresh.id })).toBe(true);
     expect(await inboxDays(org)).toBe(5);
   });
+
+  test("on Free, the days a deleted inbox is charged count toward its inbox-days", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const billing = createUsageGate();
+    const gated = { ...deps, plans: createPlanGate(), billing };
+    const { inbox } = await createInbox(live(tenant), { username: "churned" }, gated);
+    await db
+      .update(schema.billingQuota)
+      .set({ reserved: 92 })
+      .where(
+        and(
+          eq(schema.billingQuota.organizationId, org),
+          eq(schema.billingQuota.meter, "email.inboxes"),
+        ),
+      );
+    await db
+      .update(schema.inbox)
+      .set({ nextFeeAt: new Date(Date.now() - 60 * 60 * 1000) })
+      .where(eq(schema.inbox.id, inbox.id));
+    expect(await deleteInbox({ ...live(tenant), id: inbox.id }, { billing })).toBe(true);
+    const refused = await billingRefusal(createInbox(live(tenant), { username: "next" }, gated));
+    expect(refused.code).toBe("usage_limit_exceeded");
+  });
 });

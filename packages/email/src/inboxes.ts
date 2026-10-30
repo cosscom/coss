@@ -435,9 +435,13 @@ export async function updateInbox(
  */
 /**
  * Deletes an inbox (its threads go with it; their emails stay). A live inbox's days that started
- * since its last charge (the fee loop hadn't reached them) are charged in the same transaction.
+ * since its last charge (the fee loop hadn't reached them) are charged in the same transaction,
+ * counted toward a capped plan's allowance (`billing`) like the loop's.
  */
-export async function deleteInbox(scope: Scope & { id: string }): Promise<boolean> {
+export async function deleteInbox(
+  scope: Scope & { id: string },
+  deps: { billing?: UsageGate } = {},
+): Promise<boolean> {
   return db.transaction(async (tx) => {
     const [row] = await tx
       .delete(inbox)
@@ -453,6 +457,9 @@ export async function deleteInbox(scope: Scope & { id: string }): Promise<boolea
       });
     if (!row) return false;
     const { dueDays, ...source } = row;
+    if (deps.billing && dueDays > 0) {
+      await countTowardAllowance(tx, deps.billing, source.organizationId, dueDays);
+    }
     await recordUsage(tx, { ...source, meter: "email.inboxes", quantity: dueDays });
     return true;
   });

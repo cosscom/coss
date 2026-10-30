@@ -151,11 +151,14 @@ export async function deleteInboxAction(
   const result = await runAction(async () => {
     const context = await contextFor(formData, "delete");
     const { inbox } = await inboxFromForm(context, formData);
-    const deleted = await deleteInbox({
-      organizationId: context.organization.id,
-      environmentId: inbox.environmentId,
-      id: inbox.id,
-    });
+    const deleted = await deleteInbox(
+      {
+        organizationId: context.organization.id,
+        environmentId: inbox.environmentId,
+        id: inbox.id,
+      },
+      { billing: await usageGate() },
+    );
     if (!deleted) throw new ActionError("Inbox not found.");
     await audit(context, inbox, "inbox.deleted");
     return null;

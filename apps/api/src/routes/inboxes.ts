@@ -477,7 +477,7 @@ function sendQuota(c: Context<AppEnv>): InboxSendQuota {
 export function createInboxRoutes(deps: {
   emailService: EmailService;
   inbound: InboundRuntime | null;
-  /** Free's allowance: a live inbox reserves its first day. */
+  /** Free's allowance: a live inbox reserves its first day, a deleted one its uncharged days. */
   billing?: UsageGate;
 }): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
@@ -542,7 +542,9 @@ export function createInboxRoutes(deps: {
   router.openapi(deleteInboxRoute, async (c) => {
     const { inbox_id: id } = c.req.valid("param");
     const inbox = await getInbox({ ...env(c), id });
-    if (!inbox || !(await deleteInbox({ ...env(c), id }))) throw notFound(INBOX_NOT_FOUND);
+    if (!inbox || !(await deleteInbox({ ...env(c), id }, { billing: deps.billing }))) {
+      throw notFound(INBOX_NOT_FOUND);
+    }
     await recordApiAudit(c, {
       action: "inbox.deleted",
       target: { type: "inbox", id, label: inbox.address },
