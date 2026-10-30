@@ -19,7 +19,7 @@ const TWILIO: Competitor = {
   rows: [
     {
       label: "Price per segment",
-      coss: rateText("sms.segments"),
+      coss: `${rateText("sms.segments")}, carrier fees included`,
       them: "US: $0.0083 per segment sent or received, plus carrier fees per message",
       note: "List prices",
     },
@@ -776,7 +776,7 @@ const FORMSPREE: Competitor = {
   rows: [
     {
       label: "Price",
-      coss: "Metered per accepted live submission; see coss.com/pricing",
+      coss: `${rateText("forms.submissions")} accepted; ${includedUnitsText("forms.submissions")} on Free`,
       them: "Free (50 submissions a month); Personal $15, Professional $30, Business $90 a month",
     },
     {

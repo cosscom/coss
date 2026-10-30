@@ -26,7 +26,7 @@ faq:
   - question: Does coss.com handle US A2P 10DLC registration?
     answer: Yes. Owners and admins fill in one form on the dashboard, and coss.com submits the business profile, the brand and the campaign to the carriers in order, waiting for each review before the next step. Toll-free numbers go through toll-free verification instead. Reviews usually take a few days.
   - question: Do I need my own Twilio account?
-    answer: No. coss.com sends through Twilio on its own account, with a subaccount per organization, and buys the numbers and submits the registrations for you. Numbers and US carrier fees appear on your coss.com invoice.
+    answer: No. coss.com sends through Twilio on its own account, with a subaccount per organization, and buys the numbers and submits the registrations for you. Numbers and US carrier registration fees appear on your coss.com invoice.
   - question: What happens when someone replies STOP?
     answer: The number is suppressed in every live environment of your organization, since your numbers are shared by all of them, and each affected environment gets an sms.opted_out webhook. A reply of START removes the opt-out. The confirmation carriers require is sent automatically.
   - question: How are SMS messages counted and billed?
@@ -133,7 +133,7 @@ Sandbox (`coss_test_…`) keys accept any `from` number and skip the number, cou
 
 </Section>
 
-<Section title="Pricing" lede="Live messages are billed per segment by destination country, once a carrier has them. Numbers and US carrier fees are passed through at cost.">
+<Section title="Pricing" lede="Live messages are billed per segment by destination country, once a carrier has them, carrier fees included. Numbers and US carrier registration fees are passed through at cost.">
 
 <UsageRates product="sms" />
 

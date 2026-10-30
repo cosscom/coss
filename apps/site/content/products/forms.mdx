@@ -118,6 +118,14 @@ Accepted submissions go to webhooks, to up to 5 notification recipients that can
 
 </Section>
 
+<Section title="Pricing" lede="You pay per accepted live submission. Spam, held and unconfirmed submissions cost nothing unless you release them or the submitter confirms.">
+
+<UsageRates meters="forms.submissions" />
+
+The Free plan includes <Included meter="forms.submissions" />. Notification and confirmation emails sent from your own domain are billed like any email; notifications sent "via coss.com" are not. See [pricing](/pricing) for the plans.
+
+</Section>
+
 <Section title="Test it in a sandbox" lede="Sandbox forms screen, store and deliver submissions like live ones, and bill nothing.">
 
 Forms made with a sandbox (`coss_test_…`) key work end to end, and can allow `http://localhost` while you develop. Notification and confirmation emails go to the sandbox's fake provider, where the dashboard shows them with their links. Risk's test inputs show each outcome: a filled `_gotcha` is `spam`, text with `[coss-test:spam]` fails the content check, and the captcha tokens `test-pass` and `test-fail` pass or fail. See [testing forms](/docs/forms/testing).
