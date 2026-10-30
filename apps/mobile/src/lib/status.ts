@@ -215,6 +215,14 @@ export const DRAIN_SOURCE_LABELS: Record<string, string> = {
   audit: "Audit events",
 };
 
+/** Mirrors the dashboard's `FORMAT_LABELS` (`log-drains/sources.ts`). */
+export const DRAIN_FORMAT_LABELS: Record<string, string> = {
+  ndjson: "NDJSON",
+  loki: "Loki push",
+  datadog: "Datadog logs",
+  otlp: "OTLP/HTTP logs",
+};
+
 export function sourcesSummary(sources: string[]): string {
   return sources.length === 0
     ? "All sources"

@@ -12,6 +12,59 @@ export const LOG_DRAIN_DISABLED_REASONS = ["manual", "failing"] as const;
 export type LogDrainDisabledReason = (typeof LOG_DRAIN_DISABLED_REASONS)[number];
 export const DEFAULT_LOG_DRAIN_BATCH_LIST_LIMIT = 50;
 export const MAX_LOG_DRAIN_BATCH_LIST_LIMIT = 100;
+export const LOG_DRAIN_FORMATS = ["ndjson", "loki", "datadog", "otlp"] as const;
+export type LogDrainFormat = (typeof LOG_DRAIN_FORMATS)[number];
+export const LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH = 128;
+export const LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH = 4096;
+
+/**
+ * Headers coss.com sets on every batch (or HTTP itself manages), which an auth header can't
+ * replace. Compared lowercased; `webhook-` and `coss-` are reserved as prefixes.
+ */
+const RESERVED_HEADER_NAMES = new Set([
+  "connection",
+  "content-encoding",
+  "content-length",
+  "content-type",
+  "expect",
+  "host",
+  "keep-alive",
+  "proxy-authorization",
+  "proxy-connection",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "user-agent",
+]);
+const RESERVED_HEADER_PREFIXES = ["webhook-", "coss-"];
+
+/** Why a header name can't carry a drain's credentials, or `null` if it can. */
+export function logDrainAuthHeaderNameProblem(name: string): string | null {
+  // An HTTP token (RFC 9110).
+  if (!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name)) {
+    return "Header names are letters, digits and - (like Authorization or DD-API-KEY).";
+  }
+  const lower = name.toLowerCase();
+  if (
+    RESERVED_HEADER_NAMES.has(lower) ||
+    RESERVED_HEADER_PREFIXES.some((prefix) => lower.startsWith(prefix))
+  ) {
+    return `coss.com sets ${name} itself; use another header.`;
+  }
+  return null;
+}
+
+const FORMAT_DESCRIPTION =
+  "How batches are encoded. `ndjson`: one JSON object per line (`application/x-ndjson`), for " +
+  "your own endpoint. `loki`: Loki's push API (`/loki/api/v1/push`, Grafana Cloud Logs). " +
+  "`datadog`: Datadog's log intake (`/api/v2/logs`). `otlp`: OTLP/HTTP logs in JSON " +
+  "(`/v1/logs`, Grafana Cloud, Honeycomb, an OpenTelemetry Collector…).";
+
+export const LogDrainFormatEnum = z.enum(LOG_DRAIN_FORMATS).meta({
+  id: "LogDrainFormat",
+  description: FORMAT_DESCRIPTION,
+});
 
 const SOURCES_DESCRIPTION =
   "What the drain forwards: `api` (requests made with the environment's API keys), `email` " +
@@ -31,6 +84,8 @@ const DRAIN_EXAMPLE = {
   url: "https://logs.example.com/coss",
   description: "Production logs",
   sources: ["api", "email"],
+  format: "ndjson",
+  auth_header_name: null,
   enabled: true,
   disabled_reason: null,
   disabled_at: null,
@@ -45,6 +100,16 @@ export const LogDrainObject = z
     url: z.string().meta({ examples: ["https://logs.example.com/coss"] }),
     description: z.string().nullable(),
     sources: z.array(LogDrainSourceEnum).meta({ description: SOURCES_DESCRIPTION }),
+    format: LogDrainFormatEnum,
+    auth_header_name: z
+      .string()
+      .nullable()
+      .meta({
+        description:
+          "The header sent with every batch to authenticate it (e.g. `Authorization`, " +
+          "`DD-API-KEY`), or `null`. Its value is never returned.",
+        examples: ["DD-API-KEY"],
+      }),
     enabled: z.boolean().meta({
       description:
         "A disabled drain receives nothing, and lines logged while it is disabled are not kept for it.",
@@ -122,6 +187,41 @@ const Description = z
   )
   .meta({ description: "A note for your own reference. `null` clears it." });
 
+const AuthHeader = z
+  .strictObject({
+    name: z
+      .string()
+      .trim()
+      .min(1, "Enter a header name.")
+      .max(
+        LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH,
+        `Header names can be at most ${LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH} characters.`,
+      )
+      .superRefine((name, ctx) => {
+        const problem = logDrainAuthHeaderNameProblem(name);
+        if (problem) ctx.addIssue({ code: "custom", message: problem });
+      })
+      .meta({ examples: ["Authorization"] }),
+    value: z
+      .string()
+      .trim()
+      .min(1, "Enter the header's value.")
+      .max(
+        LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH,
+        `Header values can be at most ${LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH} characters.`,
+      )
+      // Visible ASCII, spaces and tabs: nothing that could end the header.
+      .regex(/^[\t\x20-\x7e]+$/, "Header values can only hold printable ASCII characters.")
+      .meta({ examples: ["Bearer <token>"] }),
+  })
+  .meta({
+    id: "LogDrainAuthHeader",
+    description:
+      "A header sent with every batch, for intake APIs that take a key: `Authorization` " +
+      "(`Basic …`, `Bearer …`), `DD-API-KEY`… Its value is stored encrypted and never returned. " +
+      "`null` removes it.",
+  });
+
 const Sources = z
   .array(LogDrainSourceEnum)
   .max(LOG_DRAIN_SOURCES.length)
@@ -134,6 +234,10 @@ export const CreateLogDrainRequest = z
     sources: Sources.optional().meta({
       description: `${SOURCES_DESCRIPTION} Defaults to every source.`,
     }),
+    format: LogDrainFormatEnum.optional().meta({
+      description: `${FORMAT_DESCRIPTION} Defaults to \`ndjson\`.`,
+    }),
+    auth_header: AuthHeader.nullish(),
   })
   .meta({
     id: "CreateLogDrainRequest",
@@ -142,6 +246,12 @@ export const CreateLogDrainRequest = z
         url: "https://logs.example.com/coss",
         description: "Production logs",
         sources: ["api", "email"],
+      },
+      {
+        url: "https://http-intake.logs.datadoghq.com/api/v2/logs",
+        description: "Datadog",
+        format: "datadog",
+        auth_header: { name: "DD-API-KEY", value: "<your Datadog API key>" },
       },
     ],
   });
@@ -153,6 +263,8 @@ export const UpdateLogDrainRequest = z
     url: Url.optional(),
     description: Description.nullish(),
     sources: Sources.optional(),
+    format: LogDrainFormatEnum.optional(),
+    auth_header: AuthHeader.nullish(),
     enabled: z.boolean().optional(),
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
@@ -227,7 +339,7 @@ export const LogDrainBatchObject = z
     }),
     drain_id: z.string(),
     status: LogDrainBatchStatusEnum,
-    line_count: z.number().int().meta({ description: "Lines in the batch (one per NDJSON line)." }),
+    line_count: z.number().int().meta({ description: "Lines in the batch." }),
     byte_size: z.number().int().meta({ description: "Size of the request body in bytes." }),
     attempt_count: z.number().int(),
     next_attempt_at: z.iso

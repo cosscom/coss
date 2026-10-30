@@ -10,7 +10,7 @@ repository root.
   `v2:<key id>` prefix is the AAD; ids are derived from the keys), encrypted with the first key, decrypted with the
   one named. Keyless `v1:` rows from before are still read by trying every key until `webhooks:reencrypt` rewrites
   them. Every write of a secret column goes through `encryptSecret`, and `reencryptWebhookSecrets` must cover every
-  encrypted column (today the webhook and Hooks endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, `log_drain.secret_ciphertext`, `risk_settings.captcha_secret_ciphertext` and `migration.credentials_ciphertext`, the provider key an import from another provider holds until it finishes). Rotation runbook: README.md,
+  encrypted column (today the webhook and Hooks endpoints' `secret_ciphertext` and `previous_secret_ciphertext`, `log_drain.secret_ciphertext` and `auth_header_ciphertext`, `risk_settings.captcha_secret_ciphertext` and `migration.credentials_ciphertext`, the provider key an import from another provider holds until it finishes). Rotation runbook: README.md,
   "Rotating `WEBHOOK_SECRETS_KEY`". The initial upgrade from v1-only readers must use README.md's
   "Upgrading from v1 webhook secret storage" coordinated cutover, not a rolling deployment.
 - **Delivery engine** (`@coss/webhooks/engine`): webhook deliveries, log drain batches (and future products) share
@@ -43,9 +43,14 @@ repository root.
   before changing eligibility — so every `log_entry` write path queues drain records without racing disable/delete;
   record ids ascend in write order and order delivery. The worker's `log-drains` loop (`runDueLogDrainDeliveries`,
   system-level) forms one open batch per drain at a time (partial unique index; the drain is locked `FOR NO KEY UPDATE
-  SKIP LOCKED` so it never blocks lines being queued), ≤ 500 lines / 1 MB (`takeBatch`), and posts it through
-  `createWebhookSender` as `application/x-ndjson`, Standard Webhooks-signed with `webhook-id` = the batch id (stable
-  across retries). Retries back off over ~a day (`LOG_DRAIN_RETRY_DELAYS_MS`); an exhausted batch disables the drain
+  SKIP LOCKED` so it never blocks lines being queued), ≤ 500 lines / 1 MB of NDJSON (`takeBatch`), and posts it
+  through `createWebhookSender` encoded in the drain's `format` (`log-drain-formats.ts`, pure: `ndjson`
+  `application/x-ndjson`, `loki` push, `datadog` intake, `otlp` OTLP/HTTP JSON; each carries every line whole),
+  Standard Webhooks-signed with `webhook-id` = the batch id (stable across retries), plus the drain's optional auth
+  header (`auth_header_name` + `auth_header_ciphertext`, both or neither, a CHECK; the value goes only through
+  `encryptSecret`, is never returned, revealed or audited — audit metadata names the header only; names coss.com
+  sets are refused by `logDrainAuthHeaderNameProblem`). The body is encoded from the drain as it is at each attempt,
+  so a format, URL or header change applies to the batch being retried. Retries back off over ~a day (`LOG_DRAIN_RETRY_DELAYS_MS`); an exhausted batch disables the drain
   (`disabled_reason = 'failing'`), drops its backlog and records a system `log_drain.disabled` audit event. Disabling
   by hand also drops the backlog; nothing is queued for a disabled drain. Suspended organizations' drains are held.
   Drain deliveries are never written to `log_entry` (that would feed itself). Retention (`purgeExpiredLogDrainBatches`):

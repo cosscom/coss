@@ -738,6 +738,9 @@ export type LogDrain = {
   description: string | null;
   /** Empty: all sources. */
   sources: LogDrainSource[];
+  format: "ndjson" | "loki" | "datadog" | "otlp";
+  /** Never the header's value. */
+  auth_header_name: string | null;
   enabled: boolean;
   disabled_reason: "manual" | "failing" | null;
   disabled_at: string | null;

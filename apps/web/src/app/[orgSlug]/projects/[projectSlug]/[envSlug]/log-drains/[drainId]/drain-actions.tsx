@@ -23,6 +23,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@coss/ui/components/dialog";
+import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
+import { Input } from "@coss/ui/components/input";
+import type { LogDrainFormat } from "@coss/webhooks/schemas";
 import { useActionState, useEffect, useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
@@ -31,8 +34,10 @@ import {
   deleteLogDrainAction,
   revealLogDrainSecretAction,
   setLogDrainEnabledAction,
+  updateLogDrainDeliveryAction,
   updateLogDrainSourcesAction,
 } from "../actions";
+import { AuthFields, FormatSelect } from "../delivery-fields";
 import { SourceCheckboxes } from "../source-checkboxes";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string; drainId: string };
@@ -128,6 +133,62 @@ function EditSourcesForm(props: Target & { sources: LogDrainSource[]; onSaved: (
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
         <SourceCheckboxes selected={props.sources} />
+        {state && !state.ok ? <FormError message={state.error} /> : null}
+      </DialogPanel>
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+        <Button loading={pending} type="submit">
+          Save
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+type Delivery = { url: string; format: LogDrainFormat; authHeaderName: string | null };
+
+export function EditDeliveryButton(props: Target & Delivery) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog onOpenChange={setOpen} open={open}>
+      <DialogTrigger render={<Button size="sm" variant="outline" />}>Edit delivery</DialogTrigger>
+      <DialogPopup>
+        <EditDeliveryForm {...props} onSaved={() => setOpen(false)} />
+      </DialogPopup>
+    </Dialog>
+  );
+}
+
+function EditDeliveryForm(props: Target & Delivery & { onSaved: () => void }) {
+  const [state, formAction, pending] = useActionToast(updateLogDrainDeliveryAction, {
+    success: "Delivery saved",
+  });
+  const { onSaved } = props;
+  useEffect(() => {
+    if (state?.ok) onSaved();
+  }, [state, onSaved]);
+  return (
+    // `contents` keeps header/panel/footer as direct flex children of the popup (coss ui pattern).
+    <form action={formAction} className="contents">
+      <TargetInputs {...props} />
+      <DialogHeader>
+        <DialogTitle>Delivery</DialogTitle>
+        <DialogDescription>
+          Where batches go and how they are encoded. A batch being retried goes out with the new
+          settings.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogPanel className="flex flex-col gap-4">
+        <Field>
+          <FieldLabel>URL</FieldLabel>
+          <Input defaultValue={props.url} name="url" required type="url" />
+          <FieldDescription>Must be https:// and publicly reachable.</FieldDescription>
+        </Field>
+        <FormatSelect defaultValue={props.format} />
+        <AuthFields
+          currentHeaderName={props.authHeaderName}
+          defaultKind={props.authHeaderName ? "keep" : "none"}
+        />
         {state && !state.ok ? <FormError message={state.error} /> : null}
       </DialogPanel>
       <DialogFooter>

@@ -15,10 +15,13 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import Link from "next/link";
+import { useState } from "react";
 import { CopyButton } from "@/components/copy-button";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import { createLogDrainAction } from "./actions";
+import { AuthFields, PresetSelect } from "./delivery-fields";
+import { DRAIN_PRESETS } from "./presets";
 import { SourceCheckboxes } from "./source-checkboxes";
 
 type Target = { orgSlug: string; projectSlug: string; envSlug: string };
@@ -39,6 +42,8 @@ function CreateDrainForm(props: Target) {
   const [state, formAction, pending] = useActionToast(createLogDrainAction, {
     success: "Log drain added",
   });
+  const [presetId, setPresetId] = useState(DRAIN_PRESETS[0]?.id ?? "custom");
+  const preset = DRAIN_PRESETS.find((candidate) => candidate.id === presetId) ?? DRAIN_PRESETS[0];
 
   if (state?.ok) {
     return (
@@ -46,7 +51,7 @@ function CreateDrainForm(props: Target) {
         <DialogHeader>
           <DialogTitle>Log drain added</DialogTitle>
           <DialogDescription>
-            Verify requests with this signing secret (for example with{" "}
+            Requests are signed with this secret: verify NDJSON batches with it (for example with{" "}
             <code>verifyLogDrainBatch</code> from the coss SDK). You can view it again on the
             drain's page.
           </DialogDescription>
@@ -83,21 +88,37 @@ function CreateDrainForm(props: Target) {
       <DialogHeader>
         <DialogTitle>Add a log drain</DialogTitle>
         <DialogDescription>
-          coss.com posts batches of log lines to this URL as signed NDJSON, usually within seconds.
+          coss.com posts batches of log lines to this URL, usually within seconds: as signed NDJSON
+          to your own endpoint, or straight into Grafana Cloud, Datadog or an OpenTelemetry
+          collector.
         </DialogDescription>
       </DialogHeader>
       <DialogPanel className="flex flex-col gap-4">
-        <Field>
-          <FieldLabel>URL</FieldLabel>
-          <Input
-            autoFocus
-            name="url"
-            placeholder="https://logs.example.com/coss"
-            required
-            type="url"
-          />
-          <FieldDescription>Must be https:// and publicly reachable.</FieldDescription>
-        </Field>
+        <PresetSelect onValueChange={setPresetId} presets={DRAIN_PRESETS} value={presetId} />
+        {preset ? (
+          // Keyed by preset, so choosing another one starts its fields afresh.
+          <div className="flex flex-col gap-4" key={preset.id}>
+            <input name="format" type="hidden" value={preset.format} />
+            <Field>
+              <FieldLabel>URL</FieldLabel>
+              <Input
+                autoFocus
+                defaultValue={preset.url}
+                name="url"
+                placeholder={preset.urlPlaceholder}
+                required
+                type="url"
+              />
+              <FieldDescription>{preset.urlHelp}</FieldDescription>
+            </Field>
+            <AuthFields
+              basicLabels={preset.basicLabels}
+              defaultHeaderName={preset.headerName}
+              defaultKind={preset.auth}
+              help={preset.credentialsHelp}
+            />
+          </div>
+        ) : null}
         <Field>
           <FieldLabel>Description</FieldLabel>
           <Input maxLength={256} name="description" placeholder="Optional" />

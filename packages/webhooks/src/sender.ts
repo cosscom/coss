@@ -19,7 +19,7 @@ export type WebhookRequest = {
   headers: Record<string, string>;
   body: string;
   timeoutMs?: number;
-  /** Default `application/json` (log drains send `application/x-ndjson`). */
+  /** Default `application/json` (log drains send their format's, e.g. `application/x-ndjson`). */
   contentType?: string;
   /** Default `COSS-Webhooks/1.0`. */
   userAgent?: string;

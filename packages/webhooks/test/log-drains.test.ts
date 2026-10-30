@@ -8,7 +8,6 @@ import { createTestTenant, createTestUser, type TestTenant } from "@coss/tenancy
 import { and, eq, isNull } from "drizzle-orm";
 import { WebhookError } from "../src/errors.ts";
 import {
-  LOG_DRAIN_CONTENT_TYPE,
   LOG_DRAIN_MAX_ATTEMPTS,
   LOG_DRAIN_RETRY_DELAYS_MS,
   MAX_BATCH_BYTES,
@@ -16,6 +15,7 @@ import {
   runDueLogDrainDeliveries,
   takeBatch,
 } from "../src/log-drain-delivery.ts";
+import { LOG_DRAIN_CONTENT_TYPES } from "../src/log-drain-formats.ts";
 import {
   countQueuedLogDrainLines,
   createLogDrain,
@@ -31,7 +31,7 @@ import {
 } from "../src/log-drains.ts";
 import { reencryptWebhookSecrets } from "../src/reencrypt.ts";
 import { purgeExpiredLogDrainBatches } from "../src/retention.ts";
-import { secretsKeyRing } from "../src/secrets.ts";
+import { decryptSecret, secretsKeyRing } from "../src/secrets.ts";
 import { signPayload } from "../src/signing.ts";
 import {
   TEST_SECRETS_KEYS,
@@ -412,6 +412,61 @@ describe("log drain management", () => {
     }
   });
 
+  test("stores a format and an encrypted auth header that is never read back", async () => {
+    const tenant = await createTestTenant();
+    const ids = { organizationId: tenant.organization.id, environmentId: tenant.production.id };
+    const { drain } = await createLogDrain(
+      {
+        ...ids,
+        url: "https://http-intake.logs.datadoghq.com/api/v2/logs",
+        sources: [],
+        format: "datadog",
+        authHeader: { name: " DD-API-KEY ", value: " dd-secret-value " },
+        userId: null,
+      },
+      testManagementDeps,
+    );
+    expect(drain).toMatchObject({ format: "datadog", authHeaderName: "DD-API-KEY" });
+    expect(drain.authHeaderCiphertext).not.toContain("dd-secret-value");
+    expect(decryptSecret(drain.authHeaderCiphertext ?? "", TEST_SECRETS_KEYS)).toBe(
+      "dd-secret-value",
+    );
+    const object = toLogDrainObject(drain);
+    expect(object).toMatchObject({ format: "datadog", auth_header_name: "DD-API-KEY" });
+    expect(JSON.stringify(object)).not.toContain("dd-secret-value");
+
+    // Unchanged unless named; `null` removes it.
+    const loki = await updateLogDrain(
+      { organizationId: ids.organizationId, id: drain.id, format: "loki" },
+      testManagementDeps,
+    );
+    expect(loki).toMatchObject({ format: "loki", authHeaderName: "DD-API-KEY" });
+    expect(loki.authHeaderCiphertext).toBe(drain.authHeaderCiphertext);
+    const removed = await updateLogDrain(
+      { organizationId: ids.organizationId, id: drain.id, authHeader: null },
+      testManagementDeps,
+    );
+    expect(removed).toMatchObject({ authHeaderName: null, authHeaderCiphertext: null });
+
+    const { drain: plain } = await drainFor(tenant, "https://logs.example.com/in");
+    expect(toLogDrainObject(plain)).toMatchObject({ format: "ndjson", auth_header_name: null });
+
+    for (const authHeader of [
+      { name: "Content-Type", value: "text/plain" },
+      { name: "webhook-signature", value: "v1,x" },
+      { name: "Bad Header", value: "x" },
+      { name: "Authorization", value: "" },
+      { name: "Authorization", value: "Bearer a\r\nX-Injected: 1" },
+    ]) {
+      const error = await updateLogDrain(
+        { organizationId: ids.organizationId, id: drain.id, authHeader },
+        testManagementDeps,
+      ).catch((caught: unknown) => caught);
+      expect(error).toBeInstanceOf(WebhookError);
+      expect((error as WebhookError).code).toBe("invalid_auth_header");
+    }
+  });
+
   test("is scoped to its organization and limited per environment", async () => {
     const tenant = await createTestTenant();
     const other = await createTestTenant();
@@ -601,7 +656,7 @@ describe("log drain delivery", () => {
       expect(receiver.received).toHaveLength(1);
       const request = receiver.received[0];
       if (!request) throw new Error("nothing received");
-      expect(request.headers.get("content-type")).toBe(LOG_DRAIN_CONTENT_TYPE);
+      expect(request.headers.get("content-type")).toBe(LOG_DRAIN_CONTENT_TYPES.ndjson);
       expect(request.headers.get("user-agent")).toBe("COSS-LogDrains/1.0");
       expect(request.headers.get("coss-log-drain-id")).toBe(drain.id);
       expect(request.headers.get("coss-environment-id")).toBe(tenant.production.id);
@@ -636,6 +691,79 @@ describe("log drain delivery", () => {
 
       // Nothing left to send.
       expect(await runDueLogDrainDeliveries({ scope: scopeOf(tenant) }, deps)).toBe(0);
+    } finally {
+      receiver.stop();
+    }
+  });
+
+  test("posts in the drain's format with its auth header, and retries in the current one", async () => {
+    const tenant = await createTestTenant();
+    let status = 500;
+    const receiver = webhookReceiver(() => new Response("nope", { status }));
+    try {
+      const { drain, secret } = await createLogDrain(
+        {
+          organizationId: tenant.organization.id,
+          environmentId: tenant.production.id,
+          url: receiver.url,
+          sources: [],
+          format: "datadog",
+          authHeader: { name: "DD-API-KEY", value: "dd-key" },
+          userId: null,
+        },
+        testManagementDeps,
+      );
+      await appendLogEntries(db, [line(tenant, { requestId: "req_1", level: "warning" })]);
+
+      const now = new Date();
+      expect(await runDueLogDrainDeliveries({ now, scope: scopeOf(tenant) }, deps)).toBe(1);
+      const first = receiver.received[0];
+      if (!first) throw new Error("nothing received");
+      expect(first.headers.get("content-type")).toBe("application/json");
+      expect(first.headers.get("dd-api-key")).toBe("dd-key");
+      expect(first.headers.get("coss-log-drain-id")).toBe(drain.id);
+      const batchId = first.headers.get("webhook-id") ?? "";
+      expect(first.headers.get("webhook-signature")).toBe(
+        signPayload({
+          secret,
+          id: batchId,
+          timestamp: Number(first.headers.get("webhook-timestamp")),
+          body: first.body,
+        }),
+      );
+      const [log] = JSON.parse(first.body) as Record<string, unknown>[];
+      expect(log).toMatchObject({
+        service: "coss",
+        status: "warn",
+        message: "GET /v1/domains 200",
+        coss: { object: "log", request_id: "req_1" },
+      });
+
+      // The retry goes out as the drain is now: Loki, without the header.
+      await updateLogDrain(
+        { organizationId: tenant.organization.id, id: drain.id, format: "loki", authHeader: null },
+        testManagementDeps,
+      );
+      status = 204;
+      const later = new Date(now.getTime() + 10 * SECOND);
+      expect(await runDueLogDrainDeliveries({ now: later, scope: scopeOf(tenant) }, deps)).toBe(1);
+      const retry = receiver.received[1];
+      if (!retry) throw new Error("no retry");
+      expect(retry.headers.get("webhook-id")).toBe(batchId);
+      expect(retry.headers.get("dd-api-key")).toBeNull();
+      const { streams } = JSON.parse(retry.body);
+      expect(streams[0].stream).toMatchObject({ source: "api", level: "warning" });
+      expect(JSON.parse(streams[0].values[0][1])).toMatchObject({ request_id: "req_1" });
+      const batch = await getLogDrainBatch({
+        organizationId: tenant.organization.id,
+        drainId: drain.id,
+        id: batchId,
+      });
+      expect(batch).toMatchObject({
+        status: "succeeded",
+        attemptCount: 2,
+        byteSize: Buffer.byteLength(retry.body),
+      });
     } finally {
       receiver.stop();
     }
@@ -856,5 +984,31 @@ describe("log drain secrets", () => {
     const row = await getLogDrain({ organizationId: tenant.organization.id, id: drain.id });
     if (!row) throw new Error("missing drain");
     expect(revealLogDrainSecret(row, secretsKeyRing([Buffer.alloc(32, 2)]))).toBe(secret);
+  });
+
+  test("re-encrypt the auth header value too", async () => {
+    const tenant = await createTestTenant();
+    const before = secretsKeyRing([Buffer.alloc(32, 3)]);
+    const during = secretsKeyRing([Buffer.alloc(32, 4), Buffer.alloc(32, 3)]);
+    const { drain } = await createLogDrain(
+      {
+        organizationId: tenant.organization.id,
+        environmentId: tenant.production.id,
+        url: "https://logs.example.com/in",
+        sources: [],
+        authHeader: { name: "Authorization", value: "Bearer token" },
+        userId: null,
+      },
+      { ...testManagementDeps, secretsKeys: before },
+    );
+    const result = await reencryptWebhookSecrets({ keys: during, scope: scopeOf(tenant) });
+    expect(result).toEqual({ checked: 1, reencrypted: 1, unreadable: [], conflicts: 0 });
+    const row = await getLogDrain({ organizationId: tenant.organization.id, id: drain.id });
+    const after = secretsKeyRing([Buffer.alloc(32, 4)]);
+    expect(decryptSecret(row?.authHeaderCiphertext ?? "", after)).toBe("Bearer token");
+    expect(await reencryptWebhookSecrets({ keys: during, scope: scopeOf(tenant) })).toMatchObject({
+      checked: 1,
+      reencrypted: 0,
+    });
   });
 });

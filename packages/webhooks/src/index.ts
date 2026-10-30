@@ -51,16 +51,20 @@ export {
   type WebhookListenerRow,
 } from "./listeners.ts";
 export {
-  LOG_DRAIN_CONTENT_TYPE,
   LOG_DRAIN_MAX_ATTEMPTS,
   LOG_DRAIN_RETRY_DELAYS_MS,
   type LogDrainDeliveryDeps,
   MAX_BATCH_BYTES,
   MAX_BATCH_LINES,
-  ndjson,
   runDueLogDrainDeliveries,
   takeBatch,
 } from "./log-drain-delivery.ts";
+export {
+  type EncodedLogDrainBatch,
+  encodeLogDrainBatch,
+  LOG_DRAIN_CONTENT_TYPES,
+  ndjson,
+} from "./log-drain-formats.ts";
 export * from "./log-drain-schemas.ts";
 export {
   countQueuedLogDrainLines,
@@ -69,6 +73,7 @@ export {
   getLogDrain,
   getLogDrainBatch,
   type LogDrainAttemptRow,
+  type LogDrainAuthHeader,
   type LogDrainBatchLogEntry,
   type LogDrainBatchRow,
   type LogDrainRow,

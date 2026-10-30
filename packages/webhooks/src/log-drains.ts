@@ -1,7 +1,8 @@
 /**
  * Log drains of an environment, and their batch log. A drain receives the environment's log lines
- * (`@coss/logs`, queued by `appendLogEntries`/`recordOrgAuditEvent`) in signed NDJSON batches
- * (`log-drain-delivery.ts`).
+ * (`@coss/logs`, queued by `appendLogEntries`/`recordOrgAuditEvent`) in signed batches
+ * (`log-drain-delivery.ts`) encoded in its format (`log-drain-formats.ts`), with an optional auth
+ * header whose value is stored encrypted and never read back.
  */
 import { db, type Executor, schema } from "@coss/db";
 import { isId } from "@coss/db/id";
@@ -12,10 +13,14 @@ import type { WebhookManagementDeps } from "./endpoints.ts";
 import { WebhookError } from "./errors.ts";
 import {
   DEFAULT_LOG_DRAIN_BATCH_LIST_LIMIT,
+  LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH,
+  LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH,
   LOG_DRAIN_DESCRIPTION_MAX_LENGTH,
   type LogDrainBatchObjectOutput,
   type LogDrainDisabledReason,
+  type LogDrainFormat,
   type LogDrainObjectOutput,
+  logDrainAuthHeaderNameProblem,
   MAX_LOG_DRAIN_BATCH_LIST_LIMIT,
 } from "./log-drain-schemas.ts";
 import { decryptSecret, encryptSecret, type SecretsKeyRing } from "./secrets.ts";
@@ -33,7 +38,10 @@ export const MAX_LOG_DRAINS_PER_ENVIRONMENT = 5;
 
 export const LOG_DRAIN_FAILED_MESSAGE = "The drain is disabled.";
 
-/** The drain's public wire representation. Never includes its signing secret. */
+/** A header sent with every batch; `value` is plain text only on its way in. */
+export type LogDrainAuthHeader = { name: string; value: string };
+
+/** The drain's public wire representation. Never includes its signing secret or auth header value. */
 export function toLogDrainObject(row: LogDrainRow): LogDrainObjectOutput {
   return {
     object: "log_drain",
@@ -41,6 +49,8 @@ export function toLogDrainObject(row: LogDrainRow): LogDrainObjectOutput {
     url: row.url,
     description: row.description,
     sources: row.sources,
+    format: row.format,
+    auth_header_name: row.authHeaderName,
     enabled: row.enabled,
     disabled_reason: row.enabled
       ? null
@@ -97,6 +107,43 @@ function checkedUrl(value: string, deps: WebhookManagementDeps): string {
   }
 }
 
+/**
+ * The auth header's columns: its name and its encrypted value, both `null` to remove it. The API
+ * validates the same rules first (`CreateLogDrainRequest`); the dashboard relies on these.
+ */
+function authHeaderColumns(
+  header: LogDrainAuthHeader | null,
+  keys: SecretsKeyRing,
+): { authHeaderName: string | null; authHeaderCiphertext: string | null } {
+  if (header === null) return { authHeaderName: null, authHeaderCiphertext: null };
+  const name = header.name.trim();
+  const value = header.value.trim();
+  if (!name) throw new WebhookError("invalid_auth_header", "Enter a header name.");
+  if (name.length > LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH) {
+    throw new WebhookError(
+      "invalid_auth_header",
+      `Header names can be at most ${LOG_DRAIN_AUTH_HEADER_NAME_MAX_LENGTH} characters.`,
+    );
+  }
+  const problem = logDrainAuthHeaderNameProblem(name);
+  if (problem) throw new WebhookError("invalid_auth_header", problem);
+  if (!value) throw new WebhookError("invalid_auth_header", "Enter the header's value.");
+  if (value.length > LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH) {
+    throw new WebhookError(
+      "invalid_auth_header",
+      `Header values can be at most ${LOG_DRAIN_AUTH_HEADER_VALUE_MAX_LENGTH} characters.`,
+    );
+  }
+  // Visible ASCII, spaces and tabs: nothing that could end the header.
+  if (!/^[\t\x20-\x7e]+$/.test(value)) {
+    throw new WebhookError(
+      "invalid_auth_header",
+      "Header values can only hold printable ASCII characters.",
+    );
+  }
+  return { authHeaderName: name, authHeaderCiphertext: encryptSecret(value, keys) };
+}
+
 /** Creates a drain with a new signing secret, which is returned in plain text. */
 export async function createLogDrain(
   input: {
@@ -105,12 +152,16 @@ export async function createLogDrain(
     url: string;
     description?: string | null;
     sources: readonly LogDrainSource[];
+    /** Default `ndjson`. */
+    format?: LogDrainFormat;
+    authHeader?: LogDrainAuthHeader | null;
     userId: string | null;
   },
   deps: WebhookManagementDeps,
 ): Promise<{ drain: LogDrainRow; secret: string }> {
   await deps.plans?.requireFeature(input.organizationId, "logDrains");
   const url = checkedUrl(input.url, deps);
+  const authHeader = authHeaderColumns(input.authHeader ?? null, deps.secretsKeys);
   const [env] = await db
     .select({ projectId: environment.projectId })
     .from(environment)
@@ -148,6 +199,8 @@ export async function createLogDrain(
       description: normalizeDescription(input.description),
       sources: normalizeSources(input.sources),
       secretCiphertext: encryptSecret(secret, deps.secretsKeys),
+      format: input.format ?? "ndjson",
+      ...authHeader,
       createdByUserId: input.userId,
     })
     .returning();
@@ -216,9 +269,10 @@ export async function discardLogDrainBacklog(
 }
 
 /**
- * Changes a drain's URL, description, sources or enabled flag. Fields left `undefined` keep their
- * current value; `description: null` clears it. Disabling drops the drain's backlog; the signing
- * secret never changes.
+ * Changes a drain's URL, description, sources, format, auth header or enabled flag. Fields left
+ * `undefined` keep their current value; `description: null` clears it and `authHeader: null`
+ * removes it. A batch being retried goes out in the new format, to the new URL, with the new
+ * header. Disabling drops the drain's backlog; the signing secret never changes.
  */
 export async function updateLogDrain(
   input: {
@@ -227,6 +281,8 @@ export async function updateLogDrain(
     url?: string;
     description?: string | null;
     sources?: readonly LogDrainSource[];
+    format?: LogDrainFormat;
+    authHeader?: LogDrainAuthHeader | null;
     enabled?: boolean;
   },
   deps: WebhookManagementDeps,
@@ -239,6 +295,8 @@ export async function updateLogDrain(
       description: normalizeDescription(input.description),
     }),
     ...(input.sources !== undefined && { sources: normalizeSources(input.sources) }),
+    ...(input.format !== undefined && { format: input.format }),
+    ...(input.authHeader !== undefined && authHeaderColumns(input.authHeader, deps.secretsKeys)),
     ...(input.enabled === true && { enabled: true, disabledReason: null, disabledAt: null }),
   };
   const scope = and(eq(logDrain.organizationId, input.organizationId), eq(logDrain.id, input.id));

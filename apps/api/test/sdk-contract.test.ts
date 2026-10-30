@@ -1520,8 +1520,27 @@ describe("coss.logDrains against the API", () => {
         line_count: 3,
       });
 
-      const updated = await coss.logDrains.update(created.data.id, { enabled: false });
-      expect(updated.data).toMatchObject({ enabled: false, disabled_reason: "manual" });
+      expect(created.data).toMatchObject({ format: "ndjson", auth_header_name: null });
+      const otlp = await coss.logDrains.update(created.data.id, {
+        format: "otlp",
+        auth_header: { name: "Authorization", value: "Bearer drain-token" },
+      });
+      expect(otlp.data).toMatchObject({ format: "otlp", auth_header_name: "Authorization" });
+      expect(JSON.stringify(otlp.data)).not.toContain("drain-token");
+      const reserved = await coss.logDrains.update(created.data.id, {
+        auth_header: { name: "Content-Type", value: "text/plain" },
+      });
+      expect(reserved.error).toMatchObject({ type: "invalid_request_error" });
+
+      const updated = await coss.logDrains.update(created.data.id, {
+        enabled: false,
+        auth_header: null,
+      });
+      expect(updated.data).toMatchObject({
+        enabled: false,
+        disabled_reason: "manual",
+        auth_header_name: null,
+      });
       const deleted = await coss.logDrains.delete(created.data.id);
       expect(deleted.data).toEqual({ object: "log_drain", id: created.data.id, deleted: true });
     } finally {

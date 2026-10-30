@@ -448,6 +448,8 @@ export function toMobileLogDrain(drain: LogDrainObjectOutput): LogDrain {
     url: drain.url,
     description: drain.description,
     sources: drain.sources,
+    format: drain.format,
+    auth_header_name: drain.auth_header_name,
     enabled: drain.enabled,
     disabled_reason: drain.disabled_reason,
     disabled_at: drain.disabled_at,
