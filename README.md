@@ -650,7 +650,9 @@ Cloudflare DNS (coss.com zone, DNS only)
   setting `X-Forms-Origin-Verify: <secret>` (Secrets Manager `coss/production/forms-origin-verify`). The ALB
   forwards only `/f/*` on that host to the api. `FORMS_PUBLIC_URL=https://cossforms.com` and `FORMS_FILES_BUCKET`
   (`terraform output forms_files_bucket`), both plain on web, api and worker, switch Forms on: the api serves
-  `/f/*` only on that host in production (`packages/forms/AGENTS.md`, "Production").
+  `/f/*` only on that host in production (`packages/forms/AGENTS.md`, "Production"). A redirect rule sends
+  everything else on the domain (the apex included) to `https://coss.com/docs/forms` (302), next to `www`'s
+  redirect to the apex.
 
 ### Monitoring and cost guardrails
 
