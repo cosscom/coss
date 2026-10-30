@@ -44,3 +44,13 @@ export function registerSenderHref(
   if (number.providerSid === null) return null;
   return `/${orgSlug}/sms/register?number=${encodeURIComponent(number.id)}`;
 }
+
+/** Where to register again after a registration was refused: the same sender it was for. */
+export function registerAgainHref(
+  orgSlug: string,
+  registration: { kind: "us_10dlc" | "toll_free"; numberId: string | null },
+): string {
+  return registration.kind === "toll_free" && registration.numberId
+    ? `/${orgSlug}/sms/register?number=${encodeURIComponent(registration.numberId)}`
+    : `/${orgSlug}/sms/register?kind=us_10dlc`;
+}

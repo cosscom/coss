@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Panel, PanelAction, PanelBody, PanelDescription, PanelHeader } from "@/components/panel";
 import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
+import { registerAgainHref } from "@/lib/sms-registration";
 
 type Step = { label: string; detail: string; tone: StatusTone; pulse?: boolean };
 
@@ -84,7 +85,10 @@ export function RegistrationSubmittedPanel(props: {
         </div>
         <PanelAction>
           {refused ? (
-            <Button render={<Link href={`/${props.orgSlug}/sms/register`} />} size="sm">
+            <Button
+              render={<Link href={registerAgainHref(props.orgSlug, registration)} />}
+              size="sm"
+            >
               Register again
             </Button>
           ) : null}

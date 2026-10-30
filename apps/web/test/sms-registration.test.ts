@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { needsSenderRegistration, registerSenderHref } from "../src/lib/sms-registration";
+import {
+  needsSenderRegistration,
+  registerAgainHref,
+  registerSenderHref,
+} from "../src/lib/sms-registration";
 
 const local = { id: "num_local", kind: "local", status: "active", providerSid: "PN1" } as const;
 const tollFree = { id: "num_tf", kind: "toll_free", status: "active", providerSid: "PN2" } as const;
@@ -40,5 +44,16 @@ describe("registerSenderHref", () => {
   test("a number being released needs nothing", () => {
     expect(needsSenderRegistration({ ...local, status: "releasing" }, null)).toBe(false);
     expect(registerSenderHref("acme", { ...tollFree, status: "releasing" }, null)).toBeNull();
+  });
+});
+
+describe("registerAgainHref", () => {
+  test("a refused registration is retried for the same sender", () => {
+    expect(registerAgainHref("acme", { kind: "toll_free", numberId: "num_tf" })).toBe(
+      "/acme/sms/register?number=num_tf",
+    );
+    expect(registerAgainHref("acme", { kind: "us_10dlc", numberId: null })).toBe(
+      "/acme/sms/register?kind=us_10dlc",
+    );
   });
 });
