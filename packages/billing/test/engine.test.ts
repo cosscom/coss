@@ -189,7 +189,7 @@ describe("terms", () => {
     const tiers = (meter: MeterKey, dimension: string) =>
       november.rates[meter]?.byDimension?.[dimension]?.tiers;
     expect(tiers("sms.segments", "country=US")).toEqual([{ upTo: null, unitNanos: 13_500_000n }]);
-    expect(tiers("sms.segments", "country=GB")).toEqual([{ upTo: null, unitNanos: 56_300_000n }]);
+    expect(tiers("sms.segments", "country=GB")).toEqual([{ upTo: null, unitNanos: 66_500_000n }]);
     expect(tiers("sms.numbers", "type=local")).toEqual([{ upTo: null, unitNanos: 1_150_000_000n }]);
     expect(november.rates["email.recipients"]).toBe(card.rates["email.recipients"]);
     expect(rateCardAt(new Date("2026-10-31T23:59:59Z"))).toBe(card);

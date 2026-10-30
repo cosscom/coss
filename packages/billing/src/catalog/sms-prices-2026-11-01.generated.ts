@@ -7,14 +7,14 @@ export const SMS_PRICES_2026_11_01: {
   inbound: Readonly<Record<string, bigint>>;
 } = {
   outbound: {
-    AU: 41_900_000n,
+    AU: 61_200_000n,
     CA: 20_800_000n,
     DE: 113_400_000n,
     FR: 73_900_000n,
-    GB: 56_300_000n,
+    GB: 66_500_000n,
     US: 13_500_000n,
   },
   inbound: {
-    US: 10_400_000n,
+    US: 14_800_000n,
   },
 };

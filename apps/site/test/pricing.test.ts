@@ -102,11 +102,11 @@ test("smsRates lists every priced country by name", () => {
   expect(rates.find((rate) => rate.code === "GB")).toEqual({
     code: "GB",
     country: "United Kingdom",
-    outbound: "$0.0563",
+    outbound: "$0.0665",
     inbound: null,
   });
   expect(rates.find((rate) => rate.code === "US")).toMatchObject({
     outbound: "$0.0135",
-    inbound: "$0.0104",
+    inbound: "$0.0148",
   });
 });
