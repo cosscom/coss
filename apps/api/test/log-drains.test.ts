@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { db, pool } from "@coss/db";
 import { appendLogEntries } from "@coss/logs";
+import { memoryLogWriter } from "@coss/logs/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import {
   getLogDrain,
@@ -24,6 +25,7 @@ import {
   REQUEST_ID,
   setKeyPermissions,
   type TestApp,
+  waitForLogLines,
 } from "./helpers.ts";
 
 const URL_ONE = "https://logs.example.com/coss";
@@ -284,6 +286,44 @@ describe("/v1/log_drains", () => {
       expect(missing.status).toBe(404);
     } finally {
       receiver.stop();
+    }
+  });
+});
+
+describe("log drain auth headers", () => {
+  test("are never returned, nor kept in the request log, even when refused", async () => {
+    const tenant = await createTestTenant();
+    const logWriter = memoryLogWriter();
+    const { app } = createTestApp({ logWriter });
+    const key = tenant.sandboxKey;
+    const created = await createDrain(app, key, {
+      url: URL_ONE,
+      format: "datadog",
+      auth_header: { name: "DD-API-KEY", value: "dd-created-value" },
+    });
+    expect(created).toMatchObject({ format: "datadog", auth_header_name: "DD-API-KEY" });
+    const refused = await apiRequest(app, "PATCH", `/v1/log_drains/${created.id}`, {
+      key,
+      body: { auth_header: { name: "Content-Type", value: "dd-refused-value" } },
+    });
+    expect(refused.status).toBe(422);
+    const updated = await apiRequest(app, "PATCH", `/v1/log_drains/${created.id}`, {
+      key,
+      body: { auth_header: { name: "Authorization", value: "Bearer dd-updated-value" } },
+    });
+    expect(updated.status).toBe(200);
+    const body = await updated.text();
+    expect(body).toContain('"auth_header_name":"Authorization"');
+    expect(body).not.toContain("dd-updated-value");
+
+    const lines = await waitForLogLines(logWriter, 3);
+    expect(lines.map((line) => line.statusCode)).toEqual([200, 422, 200]);
+    for (const line of lines) {
+      const logged = JSON.stringify(line);
+      for (const value of ["dd-created-value", "dd-refused-value", "dd-updated-value"]) {
+        expect(logged).not.toContain(value);
+      }
+      expect(line.attributes).toMatchObject({ request: { body: { auth_header: "[redacted]" } } });
     }
   });
 });

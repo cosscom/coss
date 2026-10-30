@@ -9,7 +9,12 @@ import { ErrorState, Loading, PageIntro, Screen } from "../../../../../../../com
 import { WebButton } from "../../../../../../../components/web-button";
 import { formatAgo, formatBytes, formatDateTime } from "../../../../../../../lib/format";
 import { useLogDrain } from "../../../../../../../lib/queries";
-import { BATCH_STATUS, drainStatus, sourcesSummary } from "../../../../../../../lib/status";
+import {
+  BATCH_STATUS,
+  DRAIN_FORMAT_LABELS,
+  drainStatus,
+  sourcesSummary,
+} from "../../../../../../../lib/status";
 import { type EnvironmentParams, environmentPath } from "../../../../../../../lib/web";
 
 // LOG_DRAIN_MAX_ATTEMPTS in @coss/webhooks (packages/webhooks/src/log-drain-delivery.ts).
@@ -67,6 +72,10 @@ export default function LogDrainScreen() {
       <Panel title="Details">
         <SpecList>
           <SpecItem label="Sources">{sourcesSummary(drain.sources)}</SpecItem>
+          <SpecItem label="Format">{DRAIN_FORMAT_LABELS[drain.format] ?? drain.format}</SpecItem>
+          <SpecItem label="Auth header" mono>
+            {drain.auth_header_name ?? "None"}
+          </SpecItem>
           <SpecItem label="Waiting" mono>
             {queued_lines === 1 ? "1 line" : `${queued_lines} lines`}
           </SpecItem>
@@ -76,7 +85,7 @@ export default function LogDrainScreen() {
         </SpecList>
       </Panel>
       <PagedPanel
-        description={`Each batch is one NDJSON request of up to 500 lines. Failed batches are retried for about a day (${LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent. Batches are kept for ${formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.`}
+        description={`Each batch is one request of up to 500 lines. Failed batches are retried for about a day (${LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent. Batches are kept for ${formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.`}
         empty={{
           icon: Package,
           title: "No batches yet",

@@ -2623,9 +2623,12 @@ export const logDrainSource = pgEnum("log_drain_source", [
 ]);
 export type LogDrainSource = (typeof logDrainSource.enumValues)[number];
 
+/** How a drain's batches are encoded (`@coss/webhooks` `log-drain-formats.ts`). */
+export const logDrainFormat = pgEnum("log_drain_format", ["ndjson", "loki", "datadog", "otlp"]);
+
 /**
- * An HTTPS endpoint an environment's log lines are streamed to, in signed NDJSON batches by the
- * worker (`@coss/webhooks` log drains). Queued lines are `log_drain_record`s.
+ * An HTTPS endpoint an environment's log lines are streamed to, in signed batches by the worker
+ * (`@coss/webhooks` log drains), encoded in its `format`. Queued lines are `log_drain_record`s.
  */
 export const logDrain = pgTable(
   "log_drain",
@@ -2642,6 +2645,11 @@ export const logDrain = pgTable(
     sources: logDrainSource("sources").array().notNull().default(sql`'{}'::log_drain_source[]`),
     // The `whsec_…` signing secret, encrypted with WEBHOOK_SECRETS_KEY.
     secretCiphertext: text("secret_ciphertext").notNull(),
+    format: logDrainFormat("format").notNull().default("ndjson"),
+    // A header sent with every batch (a vendor's API key, `Authorization`); the value is
+    // encrypted with WEBHOOK_SECRETS_KEY and never read back. Both or neither.
+    authHeaderName: text("auth_header_name"),
+    authHeaderCiphertext: text("auth_header_ciphertext"),
     enabled: boolean("enabled").notNull().default(true),
     // Why it is disabled: `manual` or `failing` (a batch exhausted its retries). Null while enabled.
     disabledReason: text("disabled_reason"),
@@ -2661,6 +2669,10 @@ export const logDrain = pgTable(
     // Every log line looks up its environment's enabled drains.
     index("log_drain_environment_idx").on(t.environmentId).where(sql`${t.enabled}`),
     unique("log_drain_id_organization_unique").on(t.id, t.organizationId),
+    check(
+      "log_drain_auth_header_check",
+      sql`(${t.authHeaderName} is null) = (${t.authHeaderCiphertext} is null)`,
+    ),
   ],
 );
 

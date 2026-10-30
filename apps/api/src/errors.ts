@@ -507,6 +507,8 @@ function fromWebhookError(error: WebhookError): ApiError {
       return invalidRequest(error.code, error.message, "url");
     case "invalid_api_version":
       return invalidRequest(error.code, error.message, "api_version");
+    case "invalid_auth_header":
+      return invalidRequest(error.code, error.message, "auth_header");
     case "too_many_endpoints":
     case "too_many_listeners":
     case "too_many_log_drains":

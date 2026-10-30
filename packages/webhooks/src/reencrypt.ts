@@ -356,7 +356,7 @@ async function reencryptMigrationCredentials(
   }
 }
 
-/** Log drains have one secret each (no rolls). */
+/** Log drains have one signing secret each (no rolls), and optionally an auth header value. */
 async function reencryptLogDrainSecrets(
   opts: {
     keys: SecretsKeyRing;
@@ -367,6 +367,10 @@ async function reencryptLogDrainSecrets(
   result: ReencryptResult,
 ): Promise<void> {
   const { keys } = opts;
+  const reencrypt = (stored: string) =>
+    isEncryptedWithPrimary(stored, keys)
+      ? stored
+      : encryptSecret(decryptSecret(stored, keys), keys);
   let after = "";
   for (;;) {
     const rows = await db
@@ -374,6 +378,7 @@ async function reencryptLogDrainSecrets(
         id: logDrain.id,
         organizationId: logDrain.organizationId,
         secretCiphertext: logDrain.secretCiphertext,
+        authHeaderCiphertext: logDrain.authHeaderCiphertext,
       })
       .from(logDrain)
       .where(
@@ -386,10 +391,17 @@ async function reencryptLogDrainSecrets(
       .limit(opts.batchSize);
     for (const row of rows) {
       result.checked++;
-      if (isEncryptedWithPrimary(row.secretCiphertext, keys)) continue;
-      let secretCiphertext: string;
+      const stale = [row.secretCiphertext, row.authHeaderCiphertext].some(
+        (stored) => stored !== null && !isEncryptedWithPrimary(stored, keys),
+      );
+      if (!stale) continue;
+      let next: { secretCiphertext: string; authHeaderCiphertext: string | null };
       try {
-        secretCiphertext = encryptSecret(decryptSecret(row.secretCiphertext, keys), keys);
+        next = {
+          secretCiphertext: reencrypt(row.secretCiphertext),
+          authHeaderCiphertext:
+            row.authHeaderCiphertext === null ? null : reencrypt(row.authHeaderCiphertext),
+        };
       } catch (error) {
         result.unreadable.push({
           id: row.id,
@@ -404,12 +416,15 @@ async function reencryptLogDrainSecrets(
       }
       const [updated] = await db
         .update(logDrain)
-        .set({ secretCiphertext, updatedAt: sql`${logDrain.updatedAt}` })
+        .set({ ...next, updatedAt: sql`${logDrain.updatedAt}` })
         .where(
           and(
             eq(logDrain.id, row.id),
             eq(logDrain.organizationId, row.organizationId),
             eq(logDrain.secretCiphertext, row.secretCiphertext),
+            row.authHeaderCiphertext === null
+              ? isNull(logDrain.authHeaderCiphertext)
+              : eq(logDrain.authHeaderCiphertext, row.authHeaderCiphertext),
           ),
         )
         .returning({ id: logDrain.id });

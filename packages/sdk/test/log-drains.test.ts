@@ -21,6 +21,8 @@ const drain: LogDrain = {
   url: "https://logs.example.com/coss",
   description: null,
   sources: ["api"],
+  format: "ndjson",
+  auth_header_name: null,
   enabled: true,
   disabled_reason: null,
   disabled_at: null,

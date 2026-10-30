@@ -22,6 +22,7 @@ import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { CreateDrainDialog } from "./create-drain-dialog";
 import { DrainStatusBadge } from "./drain-status";
+import { FORMAT_LABELS } from "./presets";
 import { sourcesSummary } from "./sources";
 
 export const metadata: Metadata = { title: "Log drains" };
@@ -83,7 +84,7 @@ export default async function LogDrainsPage({
             <EmptyState
               action={create}
               compact
-              description="Add one to send this environment's logs to an HTTPS endpoint you run, as they are written."
+              description="Add one to send this environment's logs, as they are written, to an HTTPS endpoint you run or straight into Grafana Cloud, Datadog or an OpenTelemetry collector."
               icon={CableIcon}
               title="No log drains yet"
             />
@@ -94,6 +95,7 @@ export default async function LogDrainsPage({
               <TableRow>
                 <TableHead>URL</TableHead>
                 <TableHead>Sources</TableHead>
+                <TableHead>Format</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Created</TableHead>
               </TableRow>
@@ -116,6 +118,9 @@ export default async function LogDrainsPage({
                   </TableCell>
                   <TableCell className="whitespace-normal text-muted-foreground">
                     {sourcesSummary(drain.sources)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {FORMAT_LABELS[drain.format].label}
                   </TableCell>
                   <TableCell>
                     <DrainStatusBadge drain={drain} />

@@ -21542,6 +21542,19 @@
             },
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
+          "format": {
+            "$ref": "#/components/schemas/LogDrainFormat"
+          },
+          "auth_header_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The header sent with every batch to authenticate it (e.g. `Authorization`, `DD-API-KEY`), or `null`. Its value is never returned.",
+            "examples": [
+              "DD-API-KEY"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled drain receives nothing, and lines logged while it is disabled are not kept for it."
@@ -21587,6 +21600,8 @@
           "url",
           "description",
           "sources",
+          "format",
+          "auth_header_name",
           "enabled",
           "disabled_reason",
           "disabled_at",
@@ -21604,6 +21619,8 @@
               "api",
               "email"
             ],
+            "format": "ndjson",
+            "auth_header_name": null,
             "enabled": true,
             "disabled_reason": null,
             "disabled_at": null,
@@ -21628,6 +21645,16 @@
           "audit"
         ],
         "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
+      },
+      "LogDrainFormat": {
+        "type": "string",
+        "enum": [
+          "ndjson",
+          "loki",
+          "datadog",
+          "otlp"
+        ],
+        "description": "How batches are encoded. `ndjson`: one JSON object per line (`application/x-ndjson`), for your own endpoint. `loki`: Loki's push API (`/loki/api/v1/push`, Grafana Cloud Logs). `datadog`: Datadog's log intake (`/api/v2/logs`). `otlp`: OTLP/HTTP logs in JSON (`/v1/logs`, Grafana Cloud, Honeycomb, an OpenTelemetry Collector…)."
       },
       "CreateLogDrainRequest": {
         "type": "object",
@@ -21656,6 +21683,19 @@
             },
             "maxItems": 10,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later. Defaults to every source."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "ndjson",
+              "loki",
+              "datadog",
+              "otlp"
+            ],
+            "description": "How batches are encoded. `ndjson`: one JSON object per line (`application/x-ndjson`), for your own endpoint. `loki`: Loki's push API (`/loki/api/v1/push`, Grafana Cloud Logs). `datadog`: Datadog's log intake (`/api/v2/logs`). `otlp`: OTLP/HTTP logs in JSON (`/v1/logs`, Grafana Cloud, Honeycomb, an OpenTelemetry Collector…). Defaults to `ndjson`."
+          },
+          "auth_header": {
+            "$ref": "#/components/schemas/LogDrainAuthHeader"
           }
         },
         "required": [
@@ -21670,8 +21710,48 @@
               "api",
               "email"
             ]
+          },
+          {
+            "url": "https://http-intake.logs.datadoghq.com/api/v2/logs",
+            "description": "Datadog",
+            "format": "datadog",
+            "auth_header": {
+              "name": "DD-API-KEY",
+              "value": "<your Datadog API key>"
+            }
           }
         ]
+      },
+      "LogDrainAuthHeader": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "examples": [
+              "Authorization"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "^[\\t\\x20-\\x7e]+$",
+            "examples": [
+              "Bearer <token>"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false,
+        "description": "A header sent with every batch, for intake APIs that take a key: `Authorization` (`Basic …`, `Bearer …`), `DD-API-KEY`… Its value is stored encrypted and never returned. `null` removes it."
       },
       "LogDrainList": {
         "type": "object",
@@ -21710,6 +21790,8 @@
                   "api",
                   "email"
                 ],
+                "format": "ndjson",
+                "auth_header_name": null,
                 "enabled": true,
                 "disabled_reason": null,
                 "disabled_at": null,
@@ -21755,6 +21837,19 @@
             },
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
           },
+          "format": {
+            "$ref": "#/components/schemas/LogDrainFormat"
+          },
+          "auth_header_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The header sent with every batch to authenticate it (e.g. `Authorization`, `DD-API-KEY`), or `null`. Its value is never returned.",
+            "examples": [
+              "DD-API-KEY"
+            ]
+          },
           "enabled": {
             "type": "boolean",
             "description": "A disabled drain receives nothing, and lines logged while it is disabled are not kept for it."
@@ -21793,6 +21888,8 @@
           "url",
           "description",
           "sources",
+          "format",
+          "auth_header_name",
           "enabled",
           "disabled_reason",
           "disabled_at",
@@ -21809,6 +21906,8 @@
               "api",
               "email"
             ],
+            "format": "ndjson",
+            "auth_header_name": null,
             "enabled": true,
             "disabled_reason": null,
             "disabled_at": null,
@@ -21844,6 +21943,12 @@
             },
             "maxItems": 10,
             "description": "What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later."
+          },
+          "format": {
+            "$ref": "#/components/schemas/LogDrainFormat"
+          },
+          "auth_header": {
+            "$ref": "#/components/schemas/LogDrainAuthHeader"
           },
           "enabled": {
             "type": "boolean"
@@ -21970,7 +22075,7 @@
           },
           "line_count": {
             "type": "integer",
-            "description": "Lines in the batch (one per NDJSON line)."
+            "description": "Lines in the batch."
           },
           "byte_size": {
             "type": "integer",
@@ -73984,7 +74089,7 @@
           "Log drains"
         ],
         "summary": "Create a log drain",
-        "description": "Streams the environment's logs to a URL: every line `GET /v1/logs` returns (API requests, email events, webhook attempts) and the environment's audit events, posted as signed NDJSON batches of up to 500 lines or 1 MB, usually within seconds. Log drains belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox drains, and a `coss_live_…` key only production ones. The response carries the signing secret, which is returned only here: store it, and verify every batch with it (`verifyLogDrainBatch` in the SDK).",
+        "description": "Streams the environment's logs to a URL: every line `GET /v1/logs` returns (API requests, email events, webhook attempts) and the environment's audit events, posted as signed batches of up to 500 lines or 1 MB, usually within seconds. `format` picks the body: NDJSON for your own endpoint, or the intake API of Loki (Grafana Cloud), Datadog or an OTLP/HTTP collector, with `auth_header` carrying its key. Log drains belong to the API key's own environment: a `coss_test_…` key only ever sees sandbox drains, and a `coss_live_…` key only production ones. The response carries the signing secret, which is returned only here: store it, and verify every NDJSON batch with it (`verifyLogDrainBatch` in the SDK).",
         "security": [
           {
             "bearerAuth": []
@@ -74158,7 +74263,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), the URL is not a usable https:// URL (`invalid_url`), or the environment already has 5 drains (`too_many_log_drains`).",
+            "description": "The body failed validation (`validation_error`), the URL is not a usable https:// URL (`invalid_url`), the auth header can't be sent (`invalid_auth_header`), or the environment already has 5 drains (`too_many_log_drains`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -74660,7 +74765,7 @@
           "Log drains"
         ],
         "summary": "Update a log drain",
-        "description": "Changes the URL, description, sources or `enabled` flag. Omitted fields keep their current value, and the signing secret stays the same. Disabling a drain drops the lines still waiting for it, and nothing is kept for it while it is disabled; enabling it again (also after coss.com disabled it for failing) sends lines logged from then on.",
+        "description": "Changes the URL, description, sources, format, auth header or `enabled` flag. Omitted fields keep their current value (`auth_header: null` removes the header), and the signing secret stays the same. A batch being retried goes out as the drain is when it is retried. Disabling a drain drops the lines still waiting for it, and nothing is kept for it while it is disabled; enabling it again (also after coss.com disabled it for failing) sends lines logged from then on.",
         "security": [
           {
             "bearerAuth": []
@@ -74873,7 +74978,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`) or the URL is not a usable https:// URL (`invalid_url`).",
+            "description": "The body failed validation (`validation_error`), the URL is not a usable https:// URL (`invalid_url`), or the auth header can't be sent (`invalid_auth_header`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -75188,7 +75293,7 @@
           "Log drains"
         ],
         "summary": "List a drain's batches",
-        "description": "The drain's delivery log, newest first: one batch per NDJSON request, with every HTTP attempt. A failing batch is retried with backoff for about a day (10 attempts); if every attempt fails, the drain is disabled. Pass the last `id` as `after` to get the next page while `has_more` is true.",
+        "description": "The drain's delivery log, newest first: one batch per request, with every HTTP attempt. A failing batch is retried with backoff for about a day (10 attempts); if every attempt fails, the drain is disabled. Pass the last `id` as `after` to get the next page while `has_more` is true.",
         "security": [
           {
             "bearerAuth": []

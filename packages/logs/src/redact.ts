@@ -13,6 +13,8 @@ const SECRET_KEYS: ReadonlySet<string> = new Set([
   "key",
   "privatekey",
   "signingsecret",
+  // A log drain's `auth_header: { name, value }`: the value is a vendor's credential.
+  "authheader",
   // Payment cards' fingerprints (risk checkouts): an identifier coss.com keeps only as a keyed hash.
   "fingerprint",
 ]);

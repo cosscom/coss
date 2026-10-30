@@ -1,7 +1,8 @@
 /**
  * Delivery of queued log drain lines (run by the worker): lines are grouped into batches of at
- * most `MAX_BATCH_LINES` lines / `MAX_BATCH_BYTES` bytes and posted as signed NDJSON, one open batch
- * per drain at a time, so lines arrive in order and a failing drain backs off as a whole.
+ * most `MAX_BATCH_LINES` lines / `MAX_BATCH_BYTES` bytes (measured as NDJSON) and posted signed, in
+ * the drain's format (`log-drain-formats.ts`) and with its auth header, one open batch per drain at a
+ * time, so lines arrive in order and a failing drain backs off as a whole.
  * System-level: the scan spans organizations, and every write is scoped by the drain's own
  * organization. Drain deliveries are never written to the environment log (that would feed itself).
  */
@@ -20,6 +21,7 @@ import {
   sendAttempt,
   stillOwned,
 } from "./engine/index.ts";
+import { encodeLogDrainBatch } from "./log-drain-formats.ts";
 import type { LogDrainDisabledReason } from "./log-drain-schemas.ts";
 import {
   discardLogDrainBacklog,
@@ -48,7 +50,6 @@ export const LOG_DRAIN_MAX_ATTEMPTS = LOG_DRAIN_RETRY_DELAYS_MS.length + 1;
 export const MAX_BATCH_LINES = 500;
 export const MAX_BATCH_BYTES = 1_000_000;
 export const LOG_DRAIN_TIMEOUT_MS = 15_000;
-export const LOG_DRAIN_CONTENT_TYPE = "application/x-ndjson";
 
 export type LogDrainDeliveryDeps = {
   /** From `WEBHOOK_SECRETS_KEY` (`parseSecretsKeys`). */
@@ -205,11 +206,6 @@ async function claimDue(now: Date, limit: number, scope: Scope): Promise<LogDrai
     .returning();
 }
 
-/** The request body: one JSON object per line, each line ending with `\n`. */
-export function ndjson(lines: readonly unknown[]): string {
-  return lines.map((line) => `${JSON.stringify(line)}\n`).join("");
-}
-
 /** Turns a drain off after a batch failed every attempt, dropping its backlog. */
 async function disableFailingDrain(
   tx: Executor,
@@ -293,10 +289,21 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
     )
     .orderBy(asc(logDrainRecord.id));
 
-  // Signed and sent byte for byte. The batch id is the `webhook-id` on every attempt, so a
+  // Encoded in the drain's current format (a retry after a change goes out in the new one), then
+  // signed and sent byte for byte. The batch id is the `webhook-id` on every attempt, so a
   // receiver can drop a batch it already stored.
-  const body = ndjson(records.map((record) => record.line));
+  const { body, contentType } = encodeLogDrainBatch(
+    drain.format,
+    records.map((record) => record.line),
+    { drainId: drain.id, environmentId: drain.environmentId },
+    now,
+  );
   const headers = {
+    // Reserved names (`logDrainAuthHeaderNameProblem`) can't get here, so it never replaces ours.
+    ...(drain.authHeaderName &&
+      drain.authHeaderCiphertext && {
+        [drain.authHeaderName]: decryptSecret(drain.authHeaderCiphertext, deps.secretsKeys),
+      }),
     ...signatureHeaders({
       secrets: [decryptSecret(drain.secretCiphertext, deps.secretsKeys)],
       id: batch.id,
@@ -311,7 +318,7 @@ async function attempt(batch: LogDrainBatchRow, now: Date, deps: LogDrainDeliver
     headers,
     body,
     timeoutMs: deps.timeoutMs ?? LOG_DRAIN_TIMEOUT_MS,
-    contentType: LOG_DRAIN_CONTENT_TYPE,
+    contentType,
     userAgent: "COSS-LogDrains/1.0",
   });
   const outcome = deliveryOutcome({

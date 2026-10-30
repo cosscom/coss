@@ -27,9 +27,11 @@ import { StatusDot, type StatusTone } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { DrainStatusBadge } from "../drain-status";
+import { FORMAT_LABELS } from "../presets";
 import { sourcesSummary } from "../sources";
 import {
   DeleteDrainButton,
+  EditDeliveryButton,
   EditSourcesButton,
   RevealDrainSecret,
   ToggleDrainButton,
@@ -85,6 +87,14 @@ export default async function LogDrainPage({
       <PageHeader
         actions={
           <>
+            {canUpdate ? (
+              <EditDeliveryButton
+                {...target}
+                authHeaderName={drain.authHeaderName}
+                format={drain.format}
+                url={drain.url}
+              />
+            ) : null}
             {canUpdate ? <EditSourcesButton {...target} sources={drain.sources} /> : null}
             {canUpdate ? <ToggleDrainButton {...target} enabled={drain.enabled} /> : null}
             {can({ logDrain: ["delete"] }) ? (
@@ -118,6 +128,10 @@ export default async function LogDrainPage({
           <PanelBody flush>
             <SpecList>
               <SpecItem label="Sources">{sourcesSummary(drain.sources)}</SpecItem>
+              <SpecItem label="Format">{FORMAT_LABELS[drain.format].label}</SpecItem>
+              <SpecItem label="Auth header" mono>
+                {drain.authHeaderName ?? "None"}
+              </SpecItem>
               <SpecItem label="Waiting" mono>
                 {queued === 1 ? "1 line" : `${queued.toLocaleString("en-US")} lines`}
               </SpecItem>
@@ -135,7 +149,8 @@ export default async function LogDrainPage({
                 Requests carry <code className="font-mono">webhook-id</code> (the batch id),{" "}
                 <code className="font-mono">webhook-timestamp</code> and{" "}
                 <code className="font-mono">webhook-signature</code> headers (Standard Webhooks).
-                Verify them with this secret before storing the lines.
+                Verify them with this secret before storing the lines (NDJSON drains; log platforms
+                ignore them).
               </>
             }
             title="Signing secret"
@@ -148,7 +163,7 @@ export default async function LogDrainPage({
       </div>
 
       <Panel
-        description={`Each batch is one NDJSON request of up to 500 lines. Failed batches are retried for about a day (${LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent. Batches are kept for ${formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.`}
+        description={`Each batch is one request of up to 500 lines. Failed batches are retried for about a day (${LOG_DRAIN_MAX_ATTEMPTS} attempts); any 2xx response counts as sent. Batches are kept for ${formatRetentionDays(RETENTION_DAYS.logDrainBatches)}.`}
         title="Recent batches"
       >
         {batches.length === 0 ? (

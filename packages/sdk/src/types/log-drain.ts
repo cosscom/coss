@@ -9,7 +9,24 @@ import type { Log, LogSource } from "./log.ts";
  */
 export type LogDrainSource = LogSource | "audit";
 
-/** An HTTPS endpoint the environment's log is streamed to, in signed NDJSON batches. */
+/**
+ * How batches are encoded. `ndjson`: one JSON object per line, for your own endpoint
+ * (`verifyLogDrainBatch` parses it). `loki`: Loki's push API (`/loki/api/v1/push`, Grafana Cloud
+ * Logs). `datadog`: Datadog's log intake (`/api/v2/logs`). `otlp`: OTLP/HTTP logs in JSON
+ * (`/v1/logs`).
+ */
+export type LogDrainFormat = "ndjson" | "loki" | "datadog" | "otlp";
+
+/**
+ * A header sent with every batch, for intake APIs that take a key: `Authorization` (`Basic …`,
+ * `Bearer …`), `DD-API-KEY`… Its value is stored encrypted and never returned.
+ */
+export interface LogDrainAuthHeader {
+  name: string;
+  value: string;
+}
+
+/** An HTTPS endpoint the environment's log is streamed to, in signed batches. */
 export interface LogDrain {
   object: "log_drain";
   id: string;
@@ -17,6 +34,9 @@ export interface LogDrain {
   description: string | null;
   /** Empty means every source, including ones added later. */
   sources: LogDrainSource[];
+  format: LogDrainFormat;
+  /** The auth header's name (e.g. `DD-API-KEY`), or `null`. Its value is never returned. */
+  auth_header_name: string | null;
   /** A disabled drain receives nothing, and lines logged meanwhile are not kept for it. */
   enabled: boolean;
   /** `manual`, or `failing`: a batch failed every attempt, so coss.com disabled it. */
@@ -44,6 +64,9 @@ export interface CreateLogDrainParams {
   description?: string | null;
   /** Defaults to every source. */
   sources?: LogDrainSource[];
+  /** Defaults to `ndjson`. */
+  format?: LogDrainFormat;
+  auth_header?: LogDrainAuthHeader | null;
 }
 
 export interface UpdateLogDrainParams {
@@ -51,6 +74,9 @@ export interface UpdateLogDrainParams {
   /** `null` clears it. */
   description?: string | null;
   sources?: LogDrainSource[];
+  format?: LogDrainFormat;
+  /** `null` removes it. */
+  auth_header?: LogDrainAuthHeader | null;
   /** Disabling drops the lines still waiting for the drain. */
   enabled?: boolean;
 }
@@ -70,7 +96,7 @@ export interface LogDrainAttempt {
   response_excerpt: string | null;
 }
 
-/** One NDJSON request; its `id` is the `webhook-id` header, the same on every attempt. */
+/** One request; its `id` is the `webhook-id` header, the same on every attempt. */
 export interface LogDrainBatch {
   object: "log_drain_batch";
   id: string;

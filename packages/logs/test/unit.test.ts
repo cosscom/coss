@@ -78,6 +78,15 @@ describe("redactBody", () => {
     }) as { checkout: { card: Record<string, unknown> }; device: Record<string, unknown> };
     expect(checkout.checkout.card).toEqual({ fingerprint: REDACTED, country: "US" });
     expect(checkout.device).toEqual({ token: REDACTED });
+    const drain = redactBody({
+      format: "datadog",
+      auth_header: { name: "DD-API-KEY", value: "dd-key" },
+    }) as Record<string, unknown>;
+    expect(drain).toEqual({ format: "datadog", auth_header: REDACTED });
+    // The response's header name is not a credential.
+    expect(redactBody({ auth_header_name: "DD-API-KEY" })).toEqual({
+      auth_header_name: "DD-API-KEY",
+    });
   });
 
   test("keeps only the sizes of content objects", () => {

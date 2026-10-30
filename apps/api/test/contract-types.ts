@@ -216,6 +216,7 @@ import type { ReceivedSmsWebhookEvent, SmsWebhookEvent } from "@coss/sms/schemas
 import type { VerificationWebhookEvent } from "@coss/verify/schemas";
 import type { ApiVersion } from "@coss/versioning";
 import type {
+  LogDrainFormat as ApiLogDrainFormat,
   CreateLogDrainRequest,
   DeletedLogDrain,
   DeletedWebhookEndpoint,
@@ -299,6 +300,7 @@ import type {
   LogDrain,
   LogDrainAttempt,
   LogDrainBatch,
+  LogDrainFormat,
   LogDrainLine,
   LogDrainSource,
   PollWebhookListenerParams,
@@ -803,6 +805,7 @@ export type Contract = [
   Assert<MutuallyAssignable<z.output<typeof LogDrainBatchObject>, LogDrainBatch>>,
   Assert<MutuallyAssignable<z.output<typeof LogDrainBatchList>, List<LogDrainBatch>>>,
   Assert<MutuallyAssignable<ApiLogDrainSource, LogDrainSource>>,
+  Assert<MutuallyAssignable<ApiLogDrainFormat, LogDrainFormat>>,
   Assert<MutuallyAssignable<z.output<typeof LogEntry> | z.output<typeof AuditEvent>, LogDrainLine>>,
   // Risk: assessments, feedback, list entries (the SDK's `lists.add` builds the wire body).
   Assert<MutuallyAssignable<z.input<typeof CreateRiskAssessmentRequest>, AssessRiskParams>>,

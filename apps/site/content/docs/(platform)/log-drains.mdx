@@ -7,7 +7,9 @@ icon: Waypoints
 A log drain is an HTTPS endpoint that receives an environment's [log](/docs/logs) as it is
 written: every API request, email event and webhook attempt, plus the changes made to the
 environment (from the organization's audit log). coss.com posts them in batches, usually within a few
-seconds, signed like [webhooks](/docs/webhooks).
+seconds, signed like [webhooks](/docs/webhooks): as NDJSON to an endpoint you run, or straight into
+[Grafana Cloud](#grafana-cloud), [Datadog](#datadog) or an [OpenTelemetry collector](#opentelemetry),
+with no relay in between.
 
 | Source    | Lines                                                                                          |
 | --------- | ---------------------------------------------------------------------------------------------- |
@@ -37,7 +39,77 @@ const { data, error } = await coss.logDrains.create({
 Drains belong to the API key's environment, like webhook endpoints. An environment can have up to
 5 drains.
 
-## What coss.com sends
+## Formats
+
+A drain's `format` picks the body of each request; `auth_header` adds a header the destination
+authenticates with (its value is stored encrypted and never shown again; a drain only reports
+`auth_header_name`). The dashboard's **Destination** presets fill both in.
+
+| Format    | Destination                                                         | Body                                         |
+| --------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| `ndjson`  | Your own endpoint (the default)                                     | One JSON object per line, [below](#ndjson)   |
+| `loki`    | Loki's push API, `/loki/api/v1/push` (Grafana Cloud Logs)           | A stream per source and level                |
+| `datadog` | Datadog's log intake, `/api/v2/logs`                                | One Datadog log per line                     |
+| `otlp`    | OTLP/HTTP logs in JSON, `/v1/logs` (Grafana Cloud, Honeycomb, a collector) | One log record per line                |
+
+Every format carries each line whole (the same object NDJSON would), so nothing is lost by choosing
+one. Change a drain's format, URL or header at any time: a batch being retried goes out as the drain
+is then.
+
+### Grafana Cloud
+
+With Loki, use your stack's Loki URL (its details page in the Grafana Cloud portal) and Basic
+authentication with the Loki user and an access policy token with the `logs:write` scope:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const user = "123456";
+const token = process.env.GRAFANA_CLOUD_TOKEN ?? "";
+await coss.logDrains.create({
+  url: "https://logs-prod-012.grafana.net/loki/api/v1/push",
+  format: "loki",
+  auth_header: {
+    name: "Authorization",
+    value: `Basic ${btoa(`${user}:${token}`)}`,
+  },
+});
+```
+
+Lines arrive labelled `service_name="coss"`, `environment_id`, `source` and `level`; each line is the
+JSON object, so `{service_name="coss"} | json` reads its fields. Grafana Cloud's OTLP endpoint works
+too (`format: "otlp"`, its URL + `/v1/logs`, the instance ID as the user).
+
+### Datadog
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.logDrains.create({
+  url: "https://http-intake.logs.datadoghq.com/api/v2/logs",
+  format: "datadog",
+  auth_header: { name: "DD-API-KEY", value: process.env.DD_API_KEY ?? "" },
+});
+```
+
+For another Datadog site, use its intake host (`http-intake.logs.datadoghq.eu`,
+`http-intake.logs.us3.datadoghq.com`…). Logs arrive with `service:coss`, `source:coss`, tags
+`source:<source>` and `environment_id:<id>`, a status from the line's level, its `message`, and the
+whole line under the `coss` attribute (`@coss.status_code`, `@coss.type`…).
+
+### OpenTelemetry
+
+`format: "otlp"` posts [OTLP/HTTP](https://opentelemetry.io/docs/specs/otlp/#otlphttp) logs as JSON
+to any `/v1/logs` endpoint (a collector, Honeycomb, Grafana Cloud…): `service.name` is `coss`, each
+record's severity comes from the line's level, its time from the line, and its body is the line as a
+map. Put the destination's key in `auth_header` (`Authorization: Bearer …`, `x-honeycomb-team`…).
+
+Header names coss.com sets itself (`Content-Type`, `User-Agent`, `webhook-*`, `coss-*`, `Host`…)
+can't be used.
+
+## NDJSON
 
 Each request is a `POST` with `Content-Type: application/x-ndjson`: one JSON object per line, each
 line ending with a newline, at most 500 lines or 1 MB per request. Log lines are exactly the
@@ -51,7 +123,8 @@ audit events the objects of the [audit log](/docs/audit-log) (`"object": "audit_
 
 The headers carry a [Standard Webhooks](https://www.standardwebhooks.com) signature over the body
 (`webhook-id`, `webhook-timestamp`, `webhook-signature`), plus `coss-log-drain-id` and
-`coss-environment-id`. Verify every request with the drain's secret before storing its lines:
+`coss-environment-id` (requests of every format carry them). Verify every request with the drain's
+secret before storing its lines:
 
 ```ts twoslash
 import { verifyLogDrainBatch } from "coss";
@@ -76,7 +149,8 @@ request is more than five minutes old: answer with a 4xx status then.
 - Answer with a 2xx status once the lines are stored. Anything else (or no answer within 15
   seconds) is retried after 5 seconds, 1 minute, 5 minutes, 30 minutes, 1, 2, 4, 8 and 8 hours.
 - A batch can arrive more than once: the `webhook-id` header is the batch's id and stays the same
-  on every retry, and each line has its own `id`. Skip what you already stored.
+  on every retry, and each line has its own `id`. Skip what you already stored. (Loki drops a
+  repeated line with the same timestamp by itself.)
 - Batches go out one at a time per drain, in the order lines were written. API request lines are
   written within about a second of the response, so they can follow the email events a request
   caused: sort by `occurred_at` (audit events: `created_at`) if order matters. Lines logged while a

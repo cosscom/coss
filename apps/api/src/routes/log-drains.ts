@@ -72,10 +72,12 @@ export const createLogDrainRoute = createRoute({
   summary: "Create a log drain",
   description:
     "Streams the environment's logs to a URL: every line `GET /v1/logs` returns (API requests, " +
-    "email events, webhook attempts) and the environment's audit events, posted as signed NDJSON " +
+    "email events, webhook attempts) and the environment's audit events, posted as signed " +
     `batches of up to ${MAX_BATCH_LINES} lines or ${MAX_BATCH_BYTES / 1_000_000} MB, usually within ` +
-    `seconds. ${SCOPE_NOTE} The response carries the signing secret, which is returned only ` +
-    "here: store it, and verify every batch with it (`verifyLogDrainBatch` in the SDK).",
+    "seconds. `format` picks the body: NDJSON for your own endpoint, or the intake API of Loki " +
+    "(Grafana Cloud), Datadog or an OTLP/HTTP collector, with `auth_header` carrying its key. " +
+    `${SCOPE_NOTE} The response carries the signing secret, which is returned only here: store ` +
+    "it, and verify every NDJSON batch with it (`verifyLogDrainBatch` in the SDK).",
   security: [{ bearerAuth: [] }],
   middleware: [
     requireApiKey({ logDrain: ["create"] }),
@@ -97,7 +99,8 @@ export const createLogDrainRoute = createRoute({
     ),
     422: errorDoc(
       "The body failed validation (`validation_error`), the URL is not a usable https:// URL " +
-        "(`invalid_url`), or the environment already has " +
+        "(`invalid_url`), the auth header can't be sent (`invalid_auth_header`), or the " +
+        "environment already has " +
         `${MAX_LOG_DRAINS_PER_ENVIRONMENT} drains (\`too_many_log_drains\`).`,
     ),
   },
@@ -142,8 +145,10 @@ export const updateLogDrainRoute = createRoute({
   tags: ["Log drains"],
   summary: "Update a log drain",
   description:
-    "Changes the URL, description, sources or `enabled` flag. Omitted fields keep their current " +
-    "value, and the signing secret stays the same. Disabling a drain drops the lines still " +
+    "Changes the URL, description, sources, format, auth header or `enabled` flag. Omitted " +
+    "fields keep their current value (`auth_header: null` removes the header), and the signing " +
+    "secret stays the same. A batch being retried goes out as the drain is when it is retried. " +
+    "Disabling a drain drops the lines still " +
     "waiting for it, and nothing is kept for it while it is disabled; enabling it again (also " +
     "after coss.com disabled it for failing) sends lines logged from then on.",
   security: [{ bearerAuth: [] }],
@@ -168,8 +173,8 @@ export const updateLogDrainRoute = createRoute({
     ),
     404: drainNotFound,
     422: errorDoc(
-      "The body failed validation (`validation_error`) or the URL is not a usable https:// URL " +
-        "(`invalid_url`).",
+      "The body failed validation (`validation_error`), the URL is not a usable https:// URL " +
+        "(`invalid_url`), or the auth header can't be sent (`invalid_auth_header`).",
     ),
   },
 });
@@ -205,7 +210,7 @@ export const listLogDrainBatchesRoute = createRoute({
   tags: ["Log drains"],
   summary: "List a drain's batches",
   description:
-    "The drain's delivery log, newest first: one batch per NDJSON request, with every HTTP " +
+    "The drain's delivery log, newest first: one batch per request, with every HTTP " +
     `attempt. A failing batch is retried with backoff for about a day (${LOG_DRAIN_MAX_ATTEMPTS} ` +
     "attempts); if every attempt fails, the drain is disabled. Pass the last `id` as `after` to " +
     "get the next page while `has_more` is true.",
@@ -262,6 +267,8 @@ export function createLogDrainRoutes(deps: WebhookManagementDeps): OpenAPIHono<A
         description: body.description,
         // Omitted means every source, including ones added later.
         sources: body.sources ?? [],
+        format: body.format,
+        authHeader: body.auth_header,
         userId: null,
       },
       deps,
@@ -269,7 +276,12 @@ export function createLogDrainRoutes(deps: WebhookManagementDeps): OpenAPIHono<A
     await recordApiAudit(c, {
       action: "log_drain.created",
       target: { type: "log_drain", id: drain.id, label: drain.url },
-      metadata: { sources: drain.sources },
+      // The header's name only: its value is a credential.
+      metadata: {
+        sources: drain.sources,
+        format: drain.format,
+        auth_header_name: drain.authHeaderName,
+      },
     });
     return c.json({ ...toLogDrainObject(drain), secret }, 200);
   });
@@ -298,6 +310,8 @@ export function createLogDrainRoutes(deps: WebhookManagementDeps): OpenAPIHono<A
         url: body.url,
         description: body.description,
         sources: body.sources,
+        format: body.format,
+        authHeader: body.auth_header,
         enabled: body.enabled,
       },
       deps,
