@@ -89,6 +89,29 @@ describe("/v1/forms", () => {
     expect(verified.status).toBe(201);
   });
 
+  test("a live hosted page whose text screens as phishing isn't published", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    const refused = await apiRequest(app, "POST", "/v1/forms", {
+      key: tenant.liveKey,
+      body: {
+        name: "Account check",
+        fields: [{ name: "email", type: "email" }],
+        hosted: { enabled: true, title: "Verify your bank account [coss-test:phishing]" },
+      },
+    });
+    expect(await errorOf(refused)).toMatchObject({ code: "hosted_content_refused" });
+    const published = await apiRequest(app, "POST", "/v1/forms", {
+      key: tenant.liveKey,
+      body: {
+        name: "Waitlist",
+        fields: [{ name: "email", type: "email" }],
+        hosted: { enabled: true, title: "Join the waitlist" },
+      },
+    });
+    expect(published.status).toBe(201);
+  });
+
   test("without a forms host, Forms is unavailable", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp({ forms: { url: null } });

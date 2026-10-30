@@ -1,12 +1,13 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  // `coss/device` and `coss/sign` run in browsers only; the integrations (`coss/nodemailer`, `coss/better-auth`,
+  // `coss/device`, `coss/sign` and `coss/forms` run in browsers only; the integrations (`coss/nodemailer`, `coss/better-auth`,
   // `coss/authjs`) and `coss/diagnose` are their own entries so `coss` never carries them.
   entry: [
     "src/index.ts",
     "src/device.ts",
     "src/sign.ts",
+    "src/forms.ts",
     "src/diagnose.ts",
     "src/nodemailer.ts",
     "src/better-auth.ts",

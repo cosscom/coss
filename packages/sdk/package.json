@@ -27,6 +27,7 @@
     "./better-auth": "./dist/better-auth.js",
     "./device": "./dist/device.js",
     "./diagnose": "./dist/diagnose.js",
+    "./forms": "./dist/forms.js",
     "./nodemailer": "./dist/nodemailer.js",
     "./sign": "./dist/sign.js",
     "./package.json": "./package.json"

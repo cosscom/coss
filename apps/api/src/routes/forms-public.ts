@@ -19,6 +19,11 @@ import {
   type FormFileStore,
   type FormLinks,
   findConfirmation,
+  getHostedForm,
+  HOSTED_MARKER_FIELD,
+  type HostedForm,
+  hostedFormPage,
+  hostedPageCsp,
   type SubmitFormResult,
   type SubmittedFile,
   submitForm,
@@ -56,7 +61,11 @@ function wantsJson(c: Context<AppEnv>): boolean {
   return accept.includes("application/json") && !accept.includes("text/html");
 }
 
-function pageHeaders(nonce: string, formOrigins: readonly string[] = []): Record<string, string> {
+function pageHeaders(
+  nonce: string,
+  formOrigins: readonly string[] = [],
+  frameAncestors: readonly string[] = [],
+): Record<string, string> {
   return {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": NO_STORE,
@@ -64,7 +73,25 @@ function pageHeaders(nonce: string, formOrigins: readonly string[] = []): Record
     "X-Robots-Tag": "noindex",
     "Content-Security-Policy":
       `default-src 'none'; style-src 'nonce-${nonce}'; form-action 'self'` +
-      `${formOrigins.map((origin) => ` ${origin}`).join("")}; frame-ancestors 'none'; base-uri 'none'`,
+      `${formOrigins.map((origin) => ` ${origin}`).join("")}; ` +
+      `frame-ancestors ${frameAncestors.length > 0 ? frameAncestors.join(" ") : "'none'"}; base-uri 'none'`,
+  };
+}
+
+/**
+ * A hosted page's headers. `same-origin`, not `no-referrer`: browsers send `Origin: null` for a
+ * form posted under `no-referrer`, which a form with allowed origins would refuse.
+ */
+function hostedHeaders(nonce: string, hosted: HostedForm): Record<string, string> {
+  return {
+    ...pageHeaders(nonce),
+    "Referrer-Policy": "same-origin",
+    "Content-Security-Policy": hostedPageCsp({
+      nonce,
+      captcha: hosted.captcha,
+      allowedOrigins: hosted.form.allowedOrigins,
+      redirectOrigins: hosted.form.redirectUrl ? [new URL(hosted.form.redirectUrl).origin] : [],
+    }),
   };
 }
 
@@ -255,6 +282,24 @@ export function createFormEndpointRoutes(opts: FormEndpointOptions): Hono<AppEnv
   });
 
   // Preflight for scripts posting JSON: allowed for any origin the form accepts.
+  // The hosted page (`hosted.enabled`): the form rendered from its fields, posting to itself.
+  router.get("/:formId", async (c) => {
+    const hosted = await getHostedForm(c.req.param("formId"));
+    const nonce = randomBytes(16).toString("base64");
+    if (!hosted) {
+      return c.body(
+        unavailablePage({ message: "This form doesn't exist or isn't published.", nonce }),
+        404,
+        pageHeaders(nonce),
+      );
+    }
+    return c.body(
+      hostedFormPage({ hosted, action: c.req.path, nonce }),
+      200,
+      hostedHeaders(nonce, hosted),
+    );
+  });
+
   router.options("/:formId", async (c) => {
     const origin = c.req.header("origin");
     return c.body(null, 204, {
@@ -346,6 +391,21 @@ export function createFormEndpointRoutes(opts: FormEndpointOptions): Hono<AppEnv
         return unavailable(429, "Too many submissions. Try again later.", { "Retry-After": "60" });
       case "invalid": {
         const errors: FieldError[] = result.errors;
+        // A post from the hosted page: the page again, with what was entered and what to fix.
+        const hosted =
+          !json && body.fields.some(([name]) => name === HOSTED_MARKER_FIELD)
+            ? await getHostedForm(formId)
+            : null;
+        if (hosted) {
+          const values = new Map<string, string[]>();
+          for (const [name, value] of body.fields)
+            values.set(name, [...(values.get(name) ?? []), value]);
+          return c.body(
+            hostedFormPage({ hosted, action: c.req.path, nonce, values, errors }),
+            422,
+            hostedHeaders(nonce, hosted),
+          );
+        }
         return json
           ? c.json({ ok: false, errors }, 422, {
               ...corsHeaders(origin, result.form.allowedOrigins),
@@ -379,7 +439,14 @@ export function createFormEndpointRoutes(opts: FormEndpointOptions): Hono<AppEnv
             nonce,
           }),
           200,
-          pageHeaders(nonce),
+          // After a hosted page's post, framed where the page itself may be.
+          pageHeaders(
+            nonce,
+            [],
+            body.fields.some(([name]) => name === HOSTED_MARKER_FIELD)
+              ? result.form.allowedOrigins
+              : [],
+          ),
         );
       }
     }

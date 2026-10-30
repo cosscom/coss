@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
+import { testRiskDeps } from "@coss/risk/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { eq, like } from "drizzle-orm";
 import {
@@ -11,6 +12,7 @@ import {
   type FormEnvironment,
   FormError,
   getForm,
+  hostedPageScreening,
   listForms,
   updateForm,
 } from "../src/index.ts";
@@ -114,6 +116,13 @@ describe("createForm", () => {
     ]);
   });
 
+  test("the honeypot can't take a control field's name", async () => {
+    await expectFormError(
+      create(sandbox, { name: "Marker", spam: { honeypot_field: "_hosted" } }),
+      "invalid_fields",
+    );
+  });
+
   test("a required captcha needs one in the environment's risk settings", async () => {
     await expectFormError(
       create(sandbox, { name: "Captcha", spam: { captcha: "required" } }),
@@ -144,6 +153,44 @@ describe("createForm", () => {
     });
     expect(form.hosted_url).toBe(form.endpoint);
     expect(form.hosted.published_at).not.toBeNull();
+    // Nothing on the page could fill it in.
+    await expectFormError(
+      create(sandbox, {
+        name: "Hidden",
+        hosted: { enabled: true },
+        fields: [
+          { name: "email", type: "email" },
+          { name: "campaign", type: "hidden", required: true },
+        ],
+      }),
+      "invalid_fields",
+    );
+    // A verifying form's page must ask for the address.
+    await expectFormError(
+      create(sandbox, {
+        name: "Verified",
+        hosted: { enabled: true },
+        submitter: { verify: true, email_field: "work_email" },
+        fields: [{ name: "email", type: "email" }],
+      }),
+      "invalid_fields",
+    );
+  });
+
+  test("screening a hosted page is charged; a spent budget publishes unscreened", async () => {
+    let classified = 0;
+    const deps = testRiskDeps({
+      chargeClassification: async () => false,
+      classifier: {
+        async classify() {
+          classified += 1;
+          throw new Error("must not be called");
+        },
+      } as never,
+    });
+    const screen = hostedPageScreening(deps);
+    expect(await screen({ organizationId: tenant.organization.id, text: "Join us" })).toBe(true);
+    expect(classified).toBe(0);
   });
 
   test("contacts must name the environment's audiences, topics and properties", async () => {
