@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { SampleCalendar } from "@/components/calendar/landing/sample-calendar";
 import { CopyPrompt } from "@/components/home/copy-prompt";
+import { AgentView, ApiView, DashboardView } from "@/components/home/investigate";
 import type { Mark } from "@/components/home/iso";
 import { PartDrawing } from "@/components/home/part-drawing";
 import { PRODUCTS } from "@/components/home/parts";
@@ -20,7 +21,7 @@ import { PlatformAssembly } from "@/components/home/platform-assembly";
 import { VendorDrawing } from "@/components/home/vendor-drawing";
 import { JsonLd } from "@/components/json-ld";
 import { RuledGrid } from "@/components/marketing-page";
-import { CheckList, SectionHead, SpecList, SpecRow } from "@/components/sheet";
+import { CheckList, SectionHead } from "@/components/sheet";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
 import { ShipyardNewTask } from "@/components/shipyard/new-task";
 import { SignUpButton } from "@/components/sign-up-button";
@@ -48,7 +49,7 @@ export default function HomePage() {
       <SameKey />
       <OneVendor />
       <Agents />
-      <Tolerances />
+      <Investigate />
       <MoreFromCoss />
       <Close />
     </main>
@@ -449,37 +450,42 @@ function Agents() {
   );
 }
 
-const TOLERANCES: [string, string][] = [
-  ["Batch send", "100 emails, all or nothing"],
-  ["Scheduling window", "30 days ahead"],
-  ["Attachments", "20 per email, 25 MB combined"],
-  ["SDK retries", "2, honoring Retry-After"],
-  ["SDK timeout", "30 s per attempt"],
-  ["SDK runtimes", "Node, Bun, Deno, Workers"],
-  ["SDK dependencies", "0"],
-  ["Webhook signatures", "Standard Webhooks"],
-  ["Webhook timeout", "10 s per attempt"],
-  ["Log search", "31 days per query"],
-  ["Suppression import", "1,000 entries per request"],
-  ["Send body limit", "40 MB"],
-];
-
-function Tolerances() {
+/** Where a customer looks when someone asks what happened to a message: the dashboard, an agent, the API. */
+function Investigate() {
   return (
-    <section aria-labelledby="tolerances-title" className="border-b">
-      <SectionHead id="tolerances-title" title="Tolerances">
-        The numbers your code can rely on. The docs list every limit in context.
+    <section aria-labelledby="investigate-title" className="border-b">
+      <SectionHead id="investigate-title" title="Know what happened to every message">
+        Every message keeps its events. Look one up in the dashboard, ask your agent, or show it in
+        your own admin panel.
       </SectionHead>
-      <SpecList>
-        {TOLERANCES.map(([label, value]) => (
-          <SpecRow key={label} label={label}>
-            {value}
-          </SpecRow>
-        ))}
-      </SpecList>
+      <div className="grid grid-cols-1 border-t lg:grid-cols-12">
+        <div className="drafting-grid flex min-w-0 flex-col gap-4 border-b px-4 py-6 sm:px-8 lg:col-span-7 lg:border-r lg:border-b-0">
+          <div className="flex flex-col gap-1">
+            <h3 className={CARD_TITLE}>Look it up in the dashboard</h3>
+            <p className="text-muted-foreground text-sm leading-snug">
+              Search by address and see every event, from sent to opened.
+            </p>
+          </div>
+          <div className="flex flex-1 flex-col justify-center">
+            <DashboardView />
+          </div>
+        </div>
+        <div className="flex min-w-0 flex-col lg:col-span-5">
+          <div className="flex flex-1 flex-col gap-4 border-b px-4 py-6 sm:px-8">
+            <h3 className={CARD_TITLE}>Ask your agent with the MCP server</h3>
+            <AgentView />
+          </div>
+          <div className="flex flex-1 flex-col gap-4 px-4 py-6 sm:px-8">
+            <h3 className={CARD_TITLE}>Show it in your admin panel with the API</h3>
+            <ApiView />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
+
+const CARD_TITLE = "font-semibold text-lg tracking-[-0.01em]";
 
 /** coss.com's other products: Shipyard and kloq, each with its own pages. */
 function MoreFromCoss() {
