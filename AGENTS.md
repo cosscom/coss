@@ -726,7 +726,7 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
   `recordOpen`/`recordClick` (from the email's tracking token), `trackingBaseUrlFor` (dispatch; reads domain names
   across orgs like `authorizeLiveSender`), `receiveEmail`/`routeRecipients` (receiving; from the envelope recipients), `recordSmsEvent`/`ingestSmsEvents` (from the `sms_id` of the callback URL), `receiveSms` (from the receiving number), `handleStatusCallback`/`handleInboundCallback` (from the callback's subaccount), `authorizeLiveSmsSender`, `ingestDmarcReports` (from the report address's token), `reencryptWebhookSecrets` (operator script), `authenticateHookPortalSession` (from the session), and the worker scans `runDueWebhookDeliveries`, `runDueLogDrainDeliveries`, `runDueHookDeliveries`, `parkHeldHookDeliveries`, `runDueHookRecoveries`, the Hooks purges, `recheckDueDomains`,
   `recheckDueTrackingDomains`, `recheckDueReceivingDomains`, `reconcileDedicatedIpPools`, `sweepStaleClaims`, `sweepUnclaimedEmails`, `runDueReputationEvaluations`, `runDueOrganizationDeletions`, `runDueDmarcNotifications`, `runDueMigrations`, `EmailService.dispatchDue`,
-  `SmsService.dispatchDue`, `sweepStaleSmsClaims`, `sweepUnclaimedSms`, `advanceDueSmsRegistrations`, `chargeDueSmsFees`, `recordDueVerifySmsUsage` (bills each organization for its codes from coss.com's shared numbers, reading coss.com's messages)
+  `SmsService.dispatchDue`, `sweepStaleSmsClaims`, `sweepUnclaimedSms`, `advanceDueSmsRegistrations`, `chargeDueSmsFees`, `chargeDueInboxFees`, `recordDueVerifySmsUsage` (bills each organization for its codes from coss.com's shared numbers, reading coss.com's messages)
   (and the dispatch jobs, from the job's `organizationId`); `@coss/sms/admin` is platform-level like `@coss/email/admin`. Server actions take only slugs +
   target ids and derive the org from `requireOrgPermission`; every Better Auth organization call passes `organizationId`
   explicitly (never rely on `session.activeOrganizationId`).
@@ -966,8 +966,7 @@ Sign's archival timestamps in seals (PAdES B-LTA: renewing a document timestamp 
 a price for `sign.completed_requests`, Sign in the iOS app, the admin console, the MCP server and the CLI, and Sign
 in production (off until "Going live" in `packages/sign/AGENTS.md` is done),
 sending from inboxes at coss.com's managed inbound domain in live environments (they only receive), inbox
-labels, read state, drafts and per-inbox webhook filters, a plan limit or price for inboxes (a fixed 1,000 per
-environment), inboxes in the iOS app,
+labels, read state, drafts and per-inbox webhook filters, inboxes in the iOS app,
 Universal Link sign-in callbacks, an Android app, App Store (beyond TestFlight) releases of the iOS app, push notifications for other events (or per organization),
 log drain secret rolls and custom request headers (vendor intake APIs that need an API key header take a relay),
 in the generated SDKs (`sdks/*`): auto-pagination, a `COSS_BASE_URL` default and typed events from webhook

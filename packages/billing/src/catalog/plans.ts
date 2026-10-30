@@ -1,14 +1,16 @@
 /**
  * The plans. A plan's monthly fee is credit spendable on any product's usage, so a month costs
  * the larger of the fee and the usage (plus add-ons). Free has no credit but includes 3,000
- * emails a month and blocks usage beyond its allowance. Every plan includes 100 phone checks a
- * month.
+ * emails a month and blocks usage beyond its allowance. Every plan includes 100 phone checks and
+ * 3 inboxes a month.
  */
 import { type Entitlements, perDay, perSecond } from "./entitlements.ts";
 import type { MeterKey } from "./meters.ts";
 
 /** Risk phone checks every plan includes each month. */
 const PHONE_CHECKS_INCLUDED = 100;
+/** Inbox-days every plan includes each month: 3 inboxes for the longest month. */
+const INBOX_DAYS_INCLUDED = 3 * 31;
 
 export const PLAN_KEYS = ["free", "pro", "scale", "enterprise"] as const;
 export type PlanKey = (typeof PLAN_KEYS)[number];
@@ -42,7 +44,12 @@ export const PLANS = {
     rank: 0,
     selfServe: true,
     feeCents: 0n,
-    includedUnits: { "email.recipients": 3_000, "risk.phone_checks": PHONE_CHECKS_INCLUDED },
+    includedUnits: {
+      "email.recipients": 3_000,
+      "email.received": 3_000,
+      "email.inboxes": INBOX_DAYS_INCLUDED,
+      "risk.phone_checks": PHONE_CHECKS_INCLUDED,
+    },
     overage: "blocked",
     termMonths: null,
     entitlements: {
@@ -60,6 +67,7 @@ export const PLANS = {
         webhookEndpointsPerEnvironment: 2,
         contactsPerEnvironment: 1_000,
         smsNumbers: 0,
+        inboxes: 3,
       },
       rateLimits: {
         "email.recipients.second": perSecond(2, 50),
@@ -69,7 +77,7 @@ export const PLANS = {
         "sms.segments.day": perDay(100),
       },
     },
-    highlights: ["3,000 emails per month", "1 domain", "3 team members"],
+    highlights: ["3,000 emails per month", "1 domain", "3 team members", "3 inboxes"],
   },
   pro: {
     key: "pro",
@@ -78,7 +86,10 @@ export const PLANS = {
     rank: 1,
     selfServe: true,
     feeCents: 2_500n,
-    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
+    includedUnits: {
+      "email.inboxes": INBOX_DAYS_INCLUDED,
+      "risk.phone_checks": PHONE_CHECKS_INCLUDED,
+    },
     overage: "billed",
     termMonths: null,
     entitlements: {
@@ -96,6 +107,7 @@ export const PLANS = {
         webhookEndpointsPerEnvironment: 10,
         contactsPerEnvironment: 50_000,
         smsNumbers: 5,
+        inboxes: 1_000,
       },
       rateLimits: {
         "email.recipients.second": perSecond(14, 100),
@@ -121,7 +133,10 @@ export const PLANS = {
     rank: 2,
     selfServe: true,
     feeCents: 25_000n,
-    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
+    includedUnits: {
+      "email.inboxes": INBOX_DAYS_INCLUDED,
+      "risk.phone_checks": PHONE_CHECKS_INCLUDED,
+    },
     overage: "billed",
     termMonths: null,
     entitlements: {
@@ -139,6 +154,7 @@ export const PLANS = {
         webhookEndpointsPerEnvironment: 10,
         contactsPerEnvironment: 250_000,
         smsNumbers: 50,
+        inboxes: 10_000,
       },
       rateLimits: {
         "email.recipients.second": perSecond(50, 200),
@@ -163,7 +179,10 @@ export const PLANS = {
     rank: 3,
     selfServe: false,
     feeCents: 200_000n,
-    includedUnits: { "risk.phone_checks": PHONE_CHECKS_INCLUDED },
+    includedUnits: {
+      "email.inboxes": INBOX_DAYS_INCLUDED,
+      "risk.phone_checks": PHONE_CHECKS_INCLUDED,
+    },
     overage: "billed",
     termMonths: 12,
     entitlements: {
@@ -181,6 +200,7 @@ export const PLANS = {
         webhookEndpointsPerEnvironment: 10,
         contactsPerEnvironment: null,
         smsNumbers: null,
+        inboxes: null,
       },
       rateLimits: {
         "email.recipients.second": perSecond(100, 500),

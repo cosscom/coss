@@ -1,3 +1,4 @@
+import type { UsageGate } from "@coss/billing/gate";
 import {
   createInbox,
   deleteInbox,
@@ -149,12 +150,15 @@ export const createInboxRoute = createRoute({
     201: jsonDoc("The new inbox.", InboxObject),
     200: jsonDoc("The environment's inbox with this `client_id`.", InboxObject),
     ...commonErrors,
+    402: errorDoc(
+      "The organization has its plan's maximum of inboxes (`plan_limit_reached`), or the Free " +
+        "plan's included inbox-days are used up this month (`usage_limit_exceeded`).",
+    ),
     422: errorDoc(
       "The body failed validation (`validation_error`), the address is already an inbox " +
         "(`address_taken`), `domain` is not a receiving domain of the environment " +
-        "(`unknown_domain`), the environment has its maximum of inboxes (`too_many_inboxes`), " +
-        "or the deployment doesn't receive email at coss.com's inbound domain " +
-        "(`receiving_unavailable`).",
+        "(`unknown_domain`), or the deployment doesn't receive email at coss.com's inbound " +
+        "domain (`receiving_unavailable`).",
     ),
   },
 });
@@ -473,6 +477,8 @@ function sendQuota(c: Context<AppEnv>): InboxSendQuota {
 export function createInboxRoutes(deps: {
   emailService: EmailService;
   inbound: InboundRuntime | null;
+  /** Free's allowance: a live inbox reserves its first day, a deleted one its uncharged days. */
+  billing?: UsageGate;
 }): OpenAPIHono<AppEnv> {
   const router = new OpenAPIHono<AppEnv>();
   const env = (c: Context<AppEnv>) => {
@@ -490,7 +496,11 @@ export function createInboxRoutes(deps: {
         displayName: body.display_name,
         clientId: body.client_id,
       },
-      { managedDomain: deps.inbound?.managedDomain ?? null },
+      {
+        managedDomain: deps.inbound?.managedDomain ?? null,
+        plans: c.var.plans ?? undefined,
+        billing: deps.billing,
+      },
     );
     if (!created) return c.json(inbox, 200);
     await recordApiAudit(c, {
@@ -532,7 +542,9 @@ export function createInboxRoutes(deps: {
   router.openapi(deleteInboxRoute, async (c) => {
     const { inbox_id: id } = c.req.valid("param");
     const inbox = await getInbox({ ...env(c), id });
-    if (!inbox || !(await deleteInbox({ ...env(c), id }))) throw notFound(INBOX_NOT_FOUND);
+    if (!inbox || !(await deleteInbox({ ...env(c), id }, { billing: deps.billing }))) {
+      throw notFound(INBOX_NOT_FOUND);
+    }
     await recordApiAudit(c, {
       action: "inbox.deleted",
       target: { type: "inbox", id, label: inbox.address },

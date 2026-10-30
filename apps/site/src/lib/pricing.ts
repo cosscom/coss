@@ -154,6 +154,13 @@ function bandsOf(rate: Rate, per: number): RateTable["bands"] {
   });
 }
 
+/** What a meter's rate card doesn't say on its own. */
+export const METER_NOTES: Partial<Record<MeterKey, string>> = {
+  "email.received": "Mail flagged as spam or carrying a virus is free",
+  "email.inboxes":
+    "30 inbox-days are an inbox for a month, charged by the day; every plan includes 3 inboxes",
+};
+
 /** The current list rates, one table per meter (and per dimension with its own rate). */
 export function rateTables(): RateTable[] {
   const card = RATE_CARDS.at(-1);
@@ -173,7 +180,7 @@ export function rateTables(): RateTable[] {
         ? `With the ${ADD_ONS.dedicated_ips.name} add-on (${formatPrice(ADD_ONS.dedicated_ips.unitAmountCents)}/month), on top of email`
         : byCountry(meter)
           ? "Other countries in the SMS rates below"
-          : null;
+          : (METER_NOTES[meter] ?? null);
     const base = {
       meter,
       product: definition.label,

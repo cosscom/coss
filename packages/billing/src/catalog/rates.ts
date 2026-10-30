@@ -61,6 +61,31 @@ const LAUNCH: RateCard = {
     // $0.10 per 1,000 recipients sent through dedicated IPs (first priced when the meter was added;
     // it had no usage before).
     "email.dedicated_ip": { default: flatRate(100_000n) },
+    // $0.40 per 1,000 received emails, tiered like sending (first priced when the meter was
+    // added; it had no usage before).
+    "email.received": {
+      default: {
+        mode: "graduated",
+        tiers: [
+          { upTo: 1_000_000, unitNanos: 400_000n },
+          { upTo: 10_000_000, unitNanos: 300_000n },
+          { upTo: null, unitNanos: 220_000n },
+        ],
+      },
+    },
+    // An inbox for 30 days: $0.99 up to 100 inboxes held all month (3,100 inbox-days), $0.24 up
+    // to 1,000 (31,000), $0.045 beyond (first priced when the meter was added). Per day: $0.033,
+    // $0.008, $0.0015.
+    "email.inboxes": {
+      default: {
+        mode: "graduated",
+        tiers: [
+          { upTo: 3_100, unitNanos: 33_000_000n },
+          { upTo: 31_000, unitNanos: 8_000_000n },
+          { upTo: null, unitNanos: 1_500_000n },
+        ],
+      },
+    },
     // US only; other countries are priced per contract.
     "sms.segments": { byDimension: { "country=US": flatRate(13_500_000n) } },
     // $0.01 per phone check (first priced when the meter was added; it had no usage before).

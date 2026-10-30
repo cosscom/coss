@@ -1390,6 +1390,8 @@
                     "enum": [
                       "email.recipients",
                       "email.dedicated_ip",
+                      "email.received",
+                      "email.inboxes",
                       "sms.segments",
                       "sms.received_segments",
                       "sms.numbers",
@@ -2022,6 +2024,8 @@
             "enum": [
               "email.recipients",
               "email.dedicated_ip",
+              "email.received",
+              "email.inboxes",
               "sms.segments",
               "sms.received_segments",
               "sms.numbers",
@@ -2046,6 +2050,8 @@
               "enum": [
                 "email.recipients",
                 "email.dedicated_ip",
+                "email.received",
+                "email.inboxes",
                 "sms.segments",
                 "sms.received_segments",
                 "sms.numbers",
@@ -18219,6 +18225,8 @@
                   "enum": [
                     "email.recipients",
                     "email.dedicated_ip",
+                    "email.received",
+                    "email.inboxes",
                     "sms.segments",
                     "sms.received_segments",
                     "sms.numbers",
@@ -18414,13 +18422,20 @@
                   "integer",
                   "null"
                 ]
+              },
+              "inboxes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
               }
             },
             "required": [
               "domains",
               "members",
               "webhook_endpoints_per_environment",
-              "contacts_per_environment"
+              "contacts_per_environment",
+              "inboxes"
             ],
             "description": "Resource limits (`null`: unlimited)."
           }
@@ -18498,7 +18513,8 @@
               "domains": 10,
               "members": 10,
               "webhook_endpoints_per_environment": 10,
-              "contacts_per_environment": 50000
+              "contacts_per_environment": 50000,
+              "inboxes": 1000
             }
           }
         ]
@@ -18565,6 +18581,8 @@
             "enum": [
               "email.recipients",
               "email.dedicated_ip",
+              "email.received",
+              "email.inboxes",
               "sms.segments",
               "sms.received_segments",
               "sms.numbers",
@@ -18963,6 +18981,8 @@
             "enum": [
               "email.recipients",
               "email.dedicated_ip",
+              "email.received",
+              "email.inboxes",
               "sms.segments",
               "sms.received_segments",
               "sms.numbers",
@@ -66066,6 +66086,8 @@
               "enum": [
                 "email.recipients",
                 "email.dedicated_ip",
+                "email.received",
+                "email.inboxes",
                 "sms.segments",
                 "sms.received_segments",
                 "sms.numbers",
@@ -77459,6 +77481,27 @@
               }
             }
           },
+          "402": {
+            "description": "The organization has its plan's maximum of inboxes (`plan_limit_reached`), or the Free plan's included inbox-days are used up this month (`usage_limit_exceeded`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "403": {
             "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
             "headers": {
@@ -77481,7 +77524,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), the address is already an inbox (`address_taken`), `domain` is not a receiving domain of the environment (`unknown_domain`), the environment has its maximum of inboxes (`too_many_inboxes`), or the deployment doesn't receive email at coss.com's inbound domain (`receiving_unavailable`).",
+            "description": "The body failed validation (`validation_error`), the address is already an inbox (`address_taken`), `domain` is not a receiving domain of the environment (`unknown_domain`), or the deployment doesn't receive email at coss.com's inbound domain (`receiving_unavailable`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",

@@ -673,6 +673,20 @@
       "when": 1793317535785,
       "tag": "0095_blushing_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1793372651610,
+      "tag": "0096_living_chameleon",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1793372660595,
+      "tag": "0097_inbox_fees_backfill",
+      "breakpoints": true
     }
   ]
 }

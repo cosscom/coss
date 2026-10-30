@@ -24,6 +24,11 @@ Usage is counted per product and billed at these rates:
 - **Email** is counted per recipient handed to the email provider: every address in `to`, `cc`
   and `bcc` once, except suppressed addresses. Emails that fail before sending, or are canceled,
   cost nothing. Sandbox environments are never billed.
+- **Received email** is counted per message stored, once for each environment it reaches (sandbox
+  environments too: they receive real mail). Mail flagged as spam or carrying a virus, mail
+  dropped over a limit and the dashboard's test emails cost nothing.
+- **Inboxes** are counted per day each live inbox exists, starting when it's created: 30
+  inbox-days are an inbox for a month. Sandbox inboxes are free. See [inboxes](/docs/inboxes#pricing).
 - **SMS** is counted per segment, by destination country, once a message reaches a carrier;
   received messages by the receiving number's country. Phone numbers and US carrier registration
   fees are passed through at cost. SMS needs a paid plan: see
@@ -73,7 +78,8 @@ after removing it. On a contract, add-ons are part of the contract.
 ## Limits and paused sending
 
 - On **Free**, live sends past the month's allowance are refused with a `402` `billing_error`
-  (`usage_limit_exceeded`) until the next month or an upgrade.
+  (`usage_limit_exceeded`) until the next month or an upgrade, and so are new live inboxes past
+  its inbox-days. Received mail past its allowance is dropped (and counted on **Received emails**).
 - If an invoice can't be collected, we retry it and email your billing contacts. Once it's
   overdue past the grace period (14 days unless your contract says otherwise), live sending is
   paused (`402`, `billing_hold`) until it's paid. Sandbox keys keep working, and scheduled emails

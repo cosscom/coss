@@ -1,0 +1,2 @@
+ALTER TABLE "inbox" ADD COLUMN "next_fee_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "inbox_next_fee_at_idx" ON "inbox" USING btree ("next_fee_at") WHERE "inbox"."next_fee_at" IS NOT NULL;

@@ -16,6 +16,7 @@ export const LIMIT_KEYS = [
   "webhookEndpointsPerEnvironment",
   "contactsPerEnvironment",
   "smsNumbers",
+  "inboxes",
 ] as const;
 export type LimitKey = (typeof LIMIT_KEYS)[number];
 
@@ -60,6 +61,7 @@ export const LIMIT_LABELS: Record<LimitKey, string> = {
   webhookEndpointsPerEnvironment: "Webhook endpoints per environment",
   contactsPerEnvironment: "Contacts per environment",
   smsNumbers: "SMS phone numbers",
+  inboxes: "Inboxes",
 };
 
 const SECOND = 1000;

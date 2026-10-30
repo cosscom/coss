@@ -99,7 +99,8 @@ export default async function ReceivedEmailsPage({
         <Alert variant="warning">
           <AlertDescription>
             {dropped} {dropped === 1 ? "email was" : "emails were"} dropped today because the
-            organization reached its daily limit of received emails. Contact support to raise it.
+            organization reached its daily limit of received emails, or the Free plan's monthly
+            allowance. Upgrade your plan, or contact support to raise the daily limit.
           </AlertDescription>
         </Alert>
       ) : null}

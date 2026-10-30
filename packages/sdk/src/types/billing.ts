@@ -8,6 +8,8 @@ export type PlanKey = "free" | "pro" | "scale" | "enterprise";
 export type Meter =
   | "email.recipients"
   | "email.dedicated_ip"
+  | "email.received"
+  | "email.inboxes"
   | "sms.segments"
   | "sms.received_segments"
   | "sms.numbers"
@@ -83,6 +85,8 @@ export interface Billing {
     members: number | null;
     webhook_endpoints_per_environment: number | null;
     contacts_per_environment: number | null;
+    /** Inboxes across the organization's environments. */
+    inboxes: number | null;
   };
 }
 

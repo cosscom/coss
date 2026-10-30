@@ -153,6 +153,7 @@ export async function billingObject(
       members: entitlements.limits.members,
       webhook_endpoints_per_environment: entitlements.limits.webhookEndpointsPerEnvironment,
       contacts_per_environment: entitlements.limits.contactsPerEnvironment,
+      inboxes: entitlements.limits.inboxes,
     },
   };
 }
