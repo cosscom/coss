@@ -79,6 +79,7 @@ export const SDK_METHODS: Readonly<Record<string, string>> = {
   "PATCH /v1/subaccounts/{subaccount}": "email.subaccounts.update",
   "DELETE /v1/subaccounts/{subaccount}": "email.subaccounts.delete",
   "GET /v1/subaccounts/{subaccount}/stats": "email.subaccounts.stats",
+  "POST /v1/subaccounts/{subaccount}/reinstate": "email.subaccounts.reinstate",
   "POST /v1/suppressions": "email.suppressions.add",
   "GET /v1/suppressions": "email.suppressions.list",
   "GET /v1/suppressions/check": "email.suppressions.check",

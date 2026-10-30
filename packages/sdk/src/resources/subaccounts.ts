@@ -90,6 +90,18 @@ export class SubaccountsResource {
     });
   }
 
+  /**
+   * Lifts its reputation pause (or warning) once you fixed the cause: rates are measured again
+   * from now on. A pause is never lifted on its own.
+   */
+  reinstate(subaccount: string, options?: ReadOptions): Promise<CossResult<Subaccount>> {
+    return this.#http.request<Subaccount>({
+      method: "POST",
+      path: `${subaccountPath(subaccount)}/reinstate`,
+      signal: options?.signal,
+    });
+  }
+
   /** Its sending per UTC day (at most the last 45 days, the emails' retention). */
   stats(
     subaccount: string,

@@ -151,6 +151,7 @@ import type {
   SubaccountList,
   SubaccountStats,
   SubaccountStatsQuery,
+  SubaccountWebhookEvent,
   UpdateSubaccountRequest,
 } from "@coss/email/subaccount-schemas";
 import type {
@@ -394,6 +395,7 @@ import type {
   StorageSettings as SdkStorageSettings,
   Subaccount as SdkSubaccount,
   SubaccountStats as SdkSubaccountStats,
+  SubaccountWebhookEvent as SdkSubaccountWebhookEvent,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -645,6 +647,7 @@ export type Contract = [
     MutuallyAssignable<z.output<typeof EmailWebhookEvent>["data"], SdkEmailWebhookEvent["data"]>
   >,
   Assert<MutuallyAssignable<z.output<typeof AccountWebhookEvent>, SdkAccountWebhookEvent>>,
+  Assert<MutuallyAssignable<z.output<typeof SubaccountWebhookEvent>, SdkSubaccountWebhookEvent>>,
   Assert<
     MutuallyAssignable<z.output<typeof AccountWebhookEvent>["data"], SdkAccountWebhookEvent["data"]>
   >,
@@ -670,6 +673,7 @@ export type Contract = [
       | z.output<typeof ReceivedEmailWebhookEvent>
       | z.output<typeof DomainWebhookEvent>
       | z.output<typeof AccountWebhookEvent>
+      | z.output<typeof SubaccountWebhookEvent>
       | z.output<typeof HookEndpointWebhookEvent>
       | z.output<typeof BillingWebhookEvent>
       | z.output<typeof RiskWebhookEvent>

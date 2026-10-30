@@ -74,6 +74,7 @@ import {
   SubaccountReputation,
   SubaccountStats,
   SubaccountStatsDay,
+  SubaccountWebhookEvent,
   UpdateSubaccountRequest,
 } from "../src/subaccount-schemas.ts";
 import {
@@ -152,6 +153,7 @@ const SCHEMAS: Record<string, z.ZodType> = {
   SubaccountReputation,
   SubaccountStats,
   SubaccountStatsDay,
+  SubaccountWebhookEvent,
 };
 
 for (const [name, schema] of Object.entries(SCHEMAS)) {

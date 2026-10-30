@@ -32,11 +32,13 @@ import {
   ReceivedEmailWebhookEvent,
   WEBHOOK_EVENT_TYPES,
 } from "./schemas.ts";
+import { SUBACCOUNT_EVENT_TYPES } from "./subaccount-schemas.ts";
 
 /** Event types only live environments receive, so a sandbox environment has no test events of them. */
 export const LIVE_ONLY_WEBHOOK_EVENT_TYPES = [
   ...DOMAIN_EVENT_TYPES,
   ...ACCOUNT_EVENT_TYPES,
+  ...SUBACCOUNT_EVENT_TYPES,
   ...BILLING_EVENT_TYPES,
 ] as const;
 
@@ -78,7 +80,7 @@ export const CreateTestWebhookEventRequest = z
   .strictObject({
     type: z.enum(WEBHOOK_EVENT_TYPES).meta({
       description:
-        "The event type. `domain.*`, `account.*` and `billing.*` events only reach live " +
+        "The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live " +
         "environments, so they can't be tested in a sandbox one.",
     }),
     data: z

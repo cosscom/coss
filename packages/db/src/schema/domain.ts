@@ -2310,8 +2310,12 @@ export const contentScreening = pgTable(
     // e.g. `email`; `subject_id` is that product's message id.
     product: text("product").notNull(),
     subjectId: text("subject_id").notNull(),
-    // The message's position among the organization's live messages of this product.
+    // The message's position among the organization's live messages of this product (of its
+    // group's, e.g. an email sub-account's: `group_id`).
     sequence: integer("sequence").notNull(),
+    // A group of the organization sampled and enforced on its own (an email sub-account's id):
+    // its blocks pause the group, never the organization. NULL: the organization's own.
+    groupId: text("group_id"),
     classifier: text("classifier").notNull(),
     model: text("model"),
     verdict: contentScreeningVerdict("verdict").notNull(),
@@ -2348,12 +2352,14 @@ export const contentScreeningCounter = pgTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     product: text("product").notNull(),
+    // `""`: the organization's own messages; else a group's (an email sub-account's id).
+    groupId: text("group_id").notNull().default(""),
     seen: integer("seen").notNull().default(0),
     // A sampled screening failed, so the next message is screened instead.
     owed: boolean("owed").notNull().default(false),
     updatedAt: updatedAt(),
   },
-  (t) => [primaryKey({ columns: [t.organizationId, t.product] })],
+  (t) => [primaryKey({ columns: [t.organizationId, t.product, t.groupId] })],
 );
 
 /**

@@ -65,6 +65,16 @@ export type ScreenInput = {
    * broadcast, screened once for all of them).
    */
   force?: boolean;
+  /**
+   * A group of the organization sampled and enforced on its own (an email sub-account): its
+   * messages are counted apart (so its first ones are always screened), its verdicts are recorded
+   * with its id, and a block calls `onBlock` in the verdict's transaction instead of suspending
+   * the organization. The organization's own screening check leaves group verdicts out.
+   */
+  group?: {
+    id: string;
+    onBlock: (tx: Executor, input: { trigger: string; note: string; now: Date }) => Promise<void>;
+  };
 };
 
 export type ScreenOutcome = {
@@ -88,7 +98,8 @@ export async function screenMessage(
   if (!policy.enabled) return SEND;
 
   const earlier = input.retry ? await earlierSample(input, now()) : null;
-  const { sequence, owed } = earlier ?? (await countMessage(input.organizationId, input.product));
+  const { sequence, owed } =
+    earlier ?? (await countMessage(input.organizationId, input.product, input.group?.id ?? ""));
   if (!earlier && !owed && !input.force && !shouldScreen(sequence, policy, deps.random)) {
     return SEND;
   }
@@ -121,6 +132,7 @@ export async function screenMessage(
             and(
               eq(contentScreeningCounter.organizationId, input.organizationId),
               eq(contentScreeningCounter.product, input.product),
+              eq(contentScreeningCounter.groupId, input.group?.id ?? ""),
             ),
           );
       }
@@ -155,13 +167,21 @@ export async function screenMessage(
       createdAt,
     });
     if (!policy.enforce || outcome === "clean") return row;
+    const note = `${input.product} ${input.subjectId} scored ${top.score.toFixed(2)} for ${top.category} (${row.id}).`;
+    if (input.group) {
+      // The group answers for its own messages; its flags only show in the admin console.
+      if (outcome === "blocked") {
+        await input.group.onBlock(tx, { trigger: CONTENT_SCREENING_TRIGGER, note, now: createdAt });
+      }
+      return row;
+    }
     if (outcome === "blocked") {
       await suspendOrganization(
         {
           organizationId: input.organizationId,
           trigger: CONTENT_SCREENING_TRIGGER,
           actor: { kind: "system" },
-          note: `${input.product} ${input.subjectId} scored ${top.score.toFixed(2)} for ${top.category} (${row.id}).`,
+          note,
           now: createdAt,
         },
         tx,
@@ -218,11 +238,12 @@ async function earlierSample(
 async function countMessage(
   organizationId: string,
   product: ScreeningProduct,
+  groupId: string,
 ): Promise<{ sequence: number; owed: boolean }> {
   const result = await db.execute<{ seen: number; owed: boolean | null }>(sql`
-    INSERT INTO ${contentScreeningCounter} (organization_id, product, seen, owed)
-    VALUES (${organizationId}, ${product}, 1, false)
-    ON CONFLICT (organization_id, product)
+    INSERT INTO ${contentScreeningCounter} (organization_id, product, group_id, seen, owed)
+    VALUES (${organizationId}, ${product}, ${groupId}, 1, false)
+    ON CONFLICT (organization_id, product, group_id)
     DO UPDATE SET seen = ${contentScreeningCounter}.seen + 1, owed = false, updated_at = now()
     RETURNING new.seen AS seen, old.owed AS owed
   `);
@@ -246,6 +267,7 @@ async function insertScreening(
       environmentId: input.environmentId,
       product: input.product,
       subjectId: input.subjectId,
+      groupId: input.group?.id ?? null,
       ...values,
     })
     .returning();

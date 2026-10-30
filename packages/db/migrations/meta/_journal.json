@@ -708,6 +708,13 @@
       "when": 1793375411932,
       "tag": "0100_bored_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1793375420678,
+      "tag": "0101_striped_electro",
+      "breakpoints": true
     }
   ]
 }

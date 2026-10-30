@@ -59,6 +59,7 @@ import {
 import { emailScreeningContent } from "./screening.ts";
 import { type Skip, skippedRecipients } from "./send-eligibility.ts";
 import { resolveStoreContent } from "./storage-settings.ts";
+import { pauseSubaccount } from "./subaccount-reputation.ts";
 import { assertSubaccountStillSends, sendingSubaccount } from "./subaccounts.ts";
 import { renderTemplateForSend, type TemplateVersionCache } from "./templates.ts";
 import { topicsByKey } from "./topics.ts";
@@ -605,6 +606,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
     // with contact values (which could carry any text or link) is sampled like any send.
     const personalized = Object.keys(row.variables ?? {}).length > 0;
     if (sandbox || !opts.screen || (row.broadcastId && !personalized)) return null;
+    const { subaccountId } = row;
     try {
       const outcome = await opts.screen({
         organizationId: row.organizationId,
@@ -613,6 +615,21 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         subjectId: row.id,
         content: () => emailScreeningContent(row),
         retry: row.errorCode === SCREENING_UNAVAILABLE.code,
+        // A sub-account is screened on its own: a block pauses it, never the organization.
+        ...(subaccountId
+          ? {
+              group: {
+                id: subaccountId,
+                onBlock: (tx, block) =>
+                  pauseSubaccount(tx, {
+                    organizationId: row.organizationId,
+                    subaccountId,
+                    trigger: block.trigger,
+                    now: block.now,
+                  }),
+              },
+            }
+          : {}),
       });
       if (outcome.action !== "block") return null;
       return outcome.screening?.verdict === "error" ? SCREENING_UNAVAILABLE : CONTENT_REJECTED;

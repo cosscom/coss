@@ -23,6 +23,10 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "account.reinstated",
   "account.marketing_paused",
   "account.marketing_reinstated",
+  "subaccount.reputation_warning",
+  "subaccount.reputation_recovered",
+  "subaccount.paused",
+  "subaccount.reinstated",
   "hook_endpoint.disabled",
   "billing.invoice_finalized",
   "billing.invoice_paid",
@@ -71,9 +75,14 @@ export const WEBHOOK_EVENT_TYPES: readonly WebhookEventType[] = [
   "verification.blocked",
 ];
 
-/** Types only live environments receive: `domain.*`, `account.*` and `billing.*`. */
+/** Types only live environments receive: `domain.*`, `account.*`, `subaccount.*` and `billing.*`. */
 export function isLiveOnlyEventType(type: string): boolean {
-  return type.startsWith("domain.") || type.startsWith("account.") || type.startsWith("billing.");
+  return (
+    type.startsWith("domain.") ||
+    type.startsWith("account.") ||
+    type.startsWith("subaccount.") ||
+    type.startsWith("billing.")
+  );
 }
 
 /** What `coss.webhookEvents.test()` can send: every type but the live-only ones. */

@@ -25,6 +25,7 @@ import {
   MARKETING_STREAM_SCOPE,
   type StoredEmailWebhookEvent,
 } from "./schemas.ts";
+import { markSubaccountReputationDue } from "./subaccount-reputation.ts";
 import { autoSuppress } from "./suppressions.ts";
 import { recordEmailUsage } from "./usage.ts";
 
@@ -336,8 +337,9 @@ export async function recordProviderEvent(
         ? "bounce"
         : null;
   if (suppressReason && target.mode === "live") {
-    // The reputation guard re-checks the organization's rates (worker).
+    // The reputation guard re-checks the organization's rates (worker), and its sub-account's.
     await markReputationDue(tx, target.organizationId);
+    if (target.subaccountId) await markSubaccountReputationDue(tx, target.subaccountId);
   }
   if ((suppressReason || recipientsChanged) && target.mode === "live") {
     await invalidateReputationRollup(tx, target.organizationId, target.id);

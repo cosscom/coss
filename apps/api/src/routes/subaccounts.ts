@@ -3,6 +3,7 @@ import {
   deleteSubaccount,
   MAX_SANDBOX_SUBACCOUNTS,
   pageSubaccounts,
+  reinstateSubaccount,
   requireSubaccount,
   type SubaccountRow,
   subaccountStats,
@@ -170,6 +171,26 @@ export const deleteSubaccountRoute = createRoute({
   },
 });
 
+export const reinstateSubaccountRoute = createRoute({
+  method: "post",
+  path: "/subaccounts/{subaccount}/reinstate",
+  operationId: "reinstateSubaccount",
+  tags: [TAG],
+  summary: "Reinstate a sub-account",
+  description:
+    "Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its " +
+    "rates are measured again from now on. A pause is never lifted on its own. Repeating the call " +
+    "returns it as it is. Your organization's own reputation still counts its sending.",
+  security: [{ bearerAuth: [] }],
+  middleware: [requireApiKey({ subaccount: ["update"] }), rateLimit("api.write")],
+  request: { params: SubaccountParams },
+  responses: {
+    200: jsonDoc("The sub-account.", Subaccount),
+    ...commonErrors,
+    404: subaccountNotFound,
+  },
+});
+
 export const getSubaccountStatsRoute = createRoute({
   method: "get",
   path: "/subaccounts/{subaccount}/stats",
@@ -252,6 +273,22 @@ export function createSubaccountRoutes(): OpenAPIHono<AppEnv> {
 
   router.openapi(getSubaccountRoute, async (c) => {
     const row = await requirePathSubaccount(c.var.auth, c.req.valid("param").subaccount);
+    return c.json(toSubaccountObject(row), 200);
+  });
+
+  router.openapi(reinstateSubaccountRoute, async (c) => {
+    const existing = await requirePathSubaccount(c.var.auth, c.req.valid("param").subaccount);
+    const { row, changed } = await reinstateSubaccount({
+      organizationId: existing.organizationId,
+      id: existing.id,
+    });
+    if (changed) {
+      await recordApiAudit(c, {
+        action: "subaccount.reinstated",
+        target: { type: "subaccount", id: row.id, label: label(row) },
+        metadata: { previous_status: existing.reputationStatus },
+      });
+    }
     return c.json(toSubaccountObject(row), 200);
   });
 

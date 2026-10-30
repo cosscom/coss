@@ -20,6 +20,8 @@ import type {
   HookOperationalEventType,
   ReceivedEmailEventType,
   RiskEventType,
+  SubaccountEventType,
+  SubaccountWebhookEvent,
   WebhookEvent,
 } from "./webhook.ts";
 
@@ -29,6 +31,7 @@ export type WebhookEventType =
   | ReceivedEmailEventType
   | DomainEventType
   | AccountEventType
+  | SubaccountEventType
   | BillingEventType
   | RiskEventType
   | HookOperationalEventType
@@ -208,7 +211,7 @@ export interface ListWebhookDeliveriesParams {
 /** Event types a sandbox environment can send test events of: every one but the live-only ones. */
 export type TestWebhookEventType = Exclude<
   WebhookEventType,
-  DomainEventType | AccountEventType | BillingEventType
+  DomainEventType | AccountEventType | SubaccountEventType | BillingEventType
 >;
 
 /** Body of `coss.webhookEvents.test()` (`POST /v1/webhook_events/test`). */
@@ -225,7 +228,7 @@ export interface SendTestWebhookEventParams {
 /** A test event's body: any event but the live-only ones. */
 export type TestWebhookEvent = Exclude<
   WebhookEvent,
-  DomainWebhookEvent | AccountWebhookEvent | BillingWebhookEvent
+  DomainWebhookEvent | AccountWebhookEvent | SubaccountWebhookEvent | BillingWebhookEvent
 >;
 
 /** What `coss.webhookEvents.test()` sent, and to how many receivers. */

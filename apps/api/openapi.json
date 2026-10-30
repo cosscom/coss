@@ -1092,6 +1092,133 @@
           "paused_at"
         ]
       },
+      "SubaccountWebhookEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The event id, also sent as the `webhook-id` header."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "event"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "subaccount.reputation_warning",
+              "subaccount.reputation_recovered",
+              "subaccount.paused",
+              "subaccount.reinstated"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "description": "The API version (`Coss-Version`) this event is rendered in: the receiving endpoint's `api_version`."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "subaccount_id": {
+                "type": "string"
+              },
+              "uid": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "warning",
+                  "paused"
+                ]
+              },
+              "previous_status": {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "warning",
+                  "paused"
+                ]
+              },
+              "trigger": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "What changed it: a check (`bounce_rate`, `complaint_rate`), `content_screening` or `reinstated`."
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "checks": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ReputationCheck"
+                },
+                "description": "The measurements behind the change (empty for reinstatements and screening)."
+              }
+            },
+            "required": [
+              "subaccount_id",
+              "uid",
+              "status",
+              "previous_status",
+              "trigger",
+              "occurred_at",
+              "checks"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "api_version",
+          "created_at",
+          "data"
+        ],
+        "examples": [
+          {
+            "id": "evt_01k7c8m4q2f3e9v6t5r1n0p8yz",
+            "object": "event",
+            "type": "subaccount.paused",
+            "api_version": "2026-10-01",
+            "created_at": "2026-01-15T09:30:00.000Z",
+            "data": {
+              "subaccount_id": "sub_01k7c8m4q2f3e9v6t5r1n0p8yz",
+              "uid": "user_8812",
+              "status": "paused",
+              "previous_status": "warning",
+              "trigger": "bounce_rate",
+              "occurred_at": "2026-01-15T09:30:00.000Z",
+              "checks": [
+                {
+                  "trigger": "bounce_rate",
+                  "severity": "suspend",
+                  "message": "Bounce rate 9.50% is at or above the 8.00% suspension threshold.",
+                  "rate": 0.095,
+                  "count": 19,
+                  "volume": 200,
+                  "warning_threshold": 0.04,
+                  "suspend_threshold": 0.08,
+                  "minimum_volume": 200
+                }
+              ]
+            }
+          }
+        ]
+      },
       "BillingWebhookEvent": {
         "oneOf": [
           {
@@ -8547,6 +8674,10 @@
                 "account.reinstated",
                 "account.marketing_paused",
                 "account.marketing_reinstated",
+                "subaccount.reputation_warning",
+                "subaccount.reputation_recovered",
+                "subaccount.paused",
+                "subaccount.reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -8595,7 +8726,7 @@
                 "verification.blocked"
               ]
             },
-            "maxItems": 67,
+            "maxItems": 71,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later. Defaults to every event type."
           },
           "api_version": {
@@ -8843,6 +8974,10 @@
                 "account.reinstated",
                 "account.marketing_paused",
                 "account.marketing_reinstated",
+                "subaccount.reputation_warning",
+                "subaccount.reputation_recovered",
+                "subaccount.paused",
+                "subaccount.reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -8891,7 +9026,7 @@
                 "verification.blocked"
               ]
             },
-            "maxItems": 67,
+            "maxItems": 71,
             "description": "Event types delivered to this endpoint. An empty array means every event type, including ones added later."
           },
           "api_version": {
@@ -9388,6 +9523,10 @@
                 "account.reinstated",
                 "account.marketing_paused",
                 "account.marketing_reinstated",
+                "subaccount.reputation_warning",
+                "subaccount.reputation_recovered",
+                "subaccount.paused",
+                "subaccount.reinstated",
                 "hook_endpoint.disabled",
                 "billing.invoice_finalized",
                 "billing.invoice_paid",
@@ -9436,7 +9575,7 @@
                 "verification.blocked"
               ]
             },
-            "maxItems": 67,
+            "maxItems": 71,
             "description": "Event types to receive. Defaults to every event type."
           },
           "api_version": {
@@ -10136,6 +10275,10 @@
               "account.reinstated",
               "account.marketing_paused",
               "account.marketing_reinstated",
+              "subaccount.reputation_warning",
+              "subaccount.reputation_recovered",
+              "subaccount.paused",
+              "subaccount.reinstated",
               "hook_endpoint.disabled",
               "billing.invoice_finalized",
               "billing.invoice_paid",
@@ -10183,7 +10326,7 @@
               "verification.failed",
               "verification.blocked"
             ],
-            "description": "The event type. `domain.*`, `account.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
+            "description": "The event type. `domain.*`, `account.*`, `subaccount.*` and `billing.*` events only reach live environments, so they can't be tested in a sandbox one."
           },
           "data": {
             "type": "object",
@@ -43249,6 +43392,224 @@
         "responses": {
           "202": {
             "description": "The sub-account, being deleted.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subaccount"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No sub-account with this id or uid exists in the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subaccounts/{subaccount}/reinstate": {
+      "post": {
+        "operationId": "reinstateSubaccount",
+        "tags": [
+          "Sub-accounts"
+        ],
+        "summary": "Reinstate a sub-account",
+        "description": "Lifts the sub-account's reputation pause (or warning) once you fixed what caused it: its rates are measured again from now on. A pause is never lifted on its own. Repeating the call returns it as it is. Your organization's own reputation still counts its sending.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The sub-account's `id` (`sub_…`) or your `uid` for it.",
+              "examples": [
+                "user_8812"
+              ]
+            },
+            "required": true,
+            "description": "The sub-account's `id` (`sub_…`) or your `uid` for it.",
+            "name": "subaccount",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The sub-account.",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
