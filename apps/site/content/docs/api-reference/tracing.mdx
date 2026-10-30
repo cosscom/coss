@@ -32,8 +32,9 @@ message with the `traceparent` of the request that created it.
 
 When [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/api) is installed (an
 optional peer dependency; OpenTelemetry's and Sentry's SDKs bring it along), every call gets a
-client span named after its method and path (`POST /v1/emails`, ids as `{id}`) and sends the span's
-context through your app's propagator. Retries share the span, so whichever attempt the API stores
+client span named after its method and route (`POST /v1/emails/{id}/cancel`, never an id) and sends
+the span's W3C trace context (`traceparent`, `tracestate`) from your app's propagator; other
+propagated headers, such as `baggage`, stay in your app. Retries share the span, so whichever attempt the API stores
 names the call. Without a registered tracer provider nothing is recorded or sent. Turn it off with
 `tracing: false`:
 

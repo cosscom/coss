@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { HttpClient } from "../src/core/http.ts";
-import { loadOpenTelemetry, type OpenTelemetryApi, pathTemplate } from "../src/core/tracing.ts";
+import { loadOpenTelemetry, type OpenTelemetryApi, routeTemplate } from "../src/core/tracing.ts";
 import { Coss } from "../src/index.ts";
 import { apiError, json, mockFetch, networkError, sampleEmail } from "./helpers.ts";
 
@@ -76,15 +76,26 @@ function client(fetch: ReturnType<typeof mockFetch>["fetch"], api: OpenTelemetry
   });
 }
 
-describe("pathTemplate", () => {
+describe("routeTemplate", () => {
   test.each([
     ["/v1/emails", "/v1/emails"],
     ["/v1/emails/email_01k7c8m4q2f3e9v6t5r1n0p8yz/cancel", "/v1/emails/{id}/cancel"],
-    ["/v1/email_templates/welcome-email", "/v1/email_templates/{id}"],
-    ["/v1/contacts/user@example.com", "/v1/contacts/{id}"],
+    // A literal segment wins over a parameter in the same place.
+    ["/v1/emails/batch", "/v1/emails/batch"],
+    ["/v1/emails/batch/batch_01k7c8m4q2f3e9v6t5r1n0p8yz", "/v1/emails/batch/{id}"],
+    // Ids that look like words are still ids.
+    ["/v1/hooks/applications/alice", "/v1/hooks/applications/{application}"],
+    ["/v1/hooks/applications/alice/endpoints", "/v1/hooks/applications/{application}/endpoints"],
     ["/v1/tracking_settings/default", "/v1/tracking_settings/default"],
+    ["/v1/tracking_settings/categories/receipts", "/v1/tracking_settings/categories/{category}"],
+    ["/v1/emails?limit=10", "/v1/emails"],
   ])("%s → %s", (path, template) => {
-    expect(pathTemplate(path)).toBe(template);
+    expect(routeTemplate(path)).toBe(template);
+  });
+
+  test("paths the API doesn't document have none", () => {
+    expect(routeTemplate("/v1/not_yet/alice")).toBeNull();
+    expect(routeTemplate("/v1/emails/a/b/c/d")).toBeNull();
   });
 });
 
@@ -155,18 +166,40 @@ describe("tracing", () => {
     expect(spans[0]?.attributes["http.response.status_code"]).toBeUndefined();
   });
 
-  test("propagated headers never replace the SDK's own, and invalid ones are dropped", async () => {
+  test("only W3C trace context goes out, never over the SDK's own headers", async () => {
     const { fetch, calls } = mockFetch(json(200, sampleEmail));
     const { api } = fakeOtel((carrier) => {
       carrier.authorization = "Bearer stolen";
       carrier.traceparent = TRACEPARENT;
-      carrier.baggage = "bad\nvalue";
+      carrier.tracestate = "vendor=value";
+      carrier.baggage = "user.id=42";
+      carrier["sentry-trace"] = "4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-1";
     });
     const result = await client(fetch, api).request({ method: "GET", path: "/v1/emails" });
     expect(result.error).toBeNull();
     expect(calls[0]?.headers.get("authorization")).toBe("Bearer coss_test_key");
     expect(calls[0]?.headers.get("traceparent")).toBe(TRACEPARENT);
+    expect(calls[0]?.headers.get("tracestate")).toBe("vendor=value");
     expect(calls[0]?.headers.get("baggage")).toBeNull();
+    expect(calls[0]?.headers.get("sentry-trace")).toBeNull();
+  });
+
+  test("an invalid trace header is dropped", async () => {
+    const { fetch, calls } = mockFetch(json(200, sampleEmail));
+    const { api } = fakeOtel((carrier) => {
+      carrier.traceparent = "bad\nvalue";
+    });
+    const result = await client(fetch, api).request({ method: "GET", path: "/v1/emails" });
+    expect(result.error).toBeNull();
+    expect(calls[0]?.headers.get("traceparent")).toBeNull();
+  });
+
+  test("a call to an undocumented path is named by its method alone", async () => {
+    const { fetch } = mockFetch(json(200, {}));
+    const { api, spans } = fakeOtel();
+    await client(fetch, api).request({ method: "GET", path: "/v1/not_yet/alice" });
+    expect(spans[0]?.name).toBe("GET");
+    expect(spans[0]?.attributes).not.toHaveProperty("url.template");
   });
 
   test("a throwing propagator sends the call without trace headers", async () => {

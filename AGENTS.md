@@ -367,9 +367,11 @@ are never inlined into builds (no `NEXT_PUBLIC_*`), which is what makes pass-thr
   hand mirrors of `API_VERSION` and `RESERVED_HEADERS`. Releases: `.github/workflows/release-integrations.yml` (below).
 - **Tracing** (`src/core/tracing.ts`): `@opentelemetry/api` is an optional peer loaded like React Email's renderer
   (literal `import()` in try/catch, described structurally; `test/integration-types.ts` checks the real API fits).
-  One client span per call, retries included, named `<METHOD> <path template>` (`pathTemplate`: ids become `{id}`;
-  no `url.full`, its query and path can name people); its context goes out through the app's propagator and never
-  replaces one of the SDK's own headers. `tracing: false` turns it off.
+  One client span per call, retries included, named `<METHOD> <route>` (`routeTemplate` matches the API's own
+  templates, `src/core/routes.generated.ts`, written by `bun run openapi:generate` from `apps/api/openapi.json`;
+  an undocumented path is `<METHOD>` alone; no `url.full`, its query and path can name people). Only the W3C trace
+  headers the propagator writes go out (`traceparent`, `tracestate`: the API's CORS allows nothing else, and
+  `baggage` is the app's own data), never over one of the SDK's own. `tracing: false` turns it off.
 - Error types are listed in three places: `ERROR_TYPES` (`apps/api/src/errors.ts`) and `CossErrorType` +
   `API_ERROR_TYPES` (`packages/sdk/src/core/errors.ts`).
 - The api contract tests import the SDK's built `dist`: turbo builds it first, but outside turbo run
@@ -705,7 +707,8 @@ notification emails) and, if there is useful advice, to `ADVICE` (`packages/repu
 ## Generated / managed files — don't hand-edit
 
 - `packages/db/src/schema/auth.ts` (`bun run auth:generate`) and `packages/db/migrations/**` (`bun run db:generate`).
-- `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome).
+- `apps/api/openapi.json` (`bun run openapi:generate`; excluded from Biome) and `packages/sdk/src/core/routes.generated.ts`
+  (the same command).
 - `infra/terraform/spec.json` (`bun run --cwd infra aws:spec:write`; excluded from Biome).
 - `packages/sdk/package.json` `exports`/`main`/`module`/`types` (rewritten by the SDK build — commit the result).
 - `sdks/<language>/**` (`bun run sdks:generate`; excluded from Biome) except the files its `.fernignore` lists,

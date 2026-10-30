@@ -34,6 +34,7 @@
   },
   "scripts": {
     "build": "tsdown",
+    "routes:generate": "bun scripts/routes.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "bun test"
   },

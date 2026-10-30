@@ -7,6 +7,8 @@
  * call below is a no-op.
  */
 
+import { ROUTES } from "./routes.generated.ts";
+
 /** Attribute values the SDK sets. */
 type AttributeValue = string | number | boolean;
 
@@ -62,23 +64,57 @@ export function loadOpenTelemetry(): Promise<OpenTelemetryApi | null> {
   return api;
 }
 
-const PLAIN_SEGMENT = /^[a-z_]+$/;
+/** A route template split into segments; `null` stands for a parameter. */
+interface Route {
+  template: string;
+  segments: (string | null)[];
+}
+
+let routesBySize: Map<number, Route[]> | undefined;
+
+/** Routes by segment count, the most specific first: more literal segments, then earlier ones. */
+function compiledRoutes(): Map<number, Route[]> {
+  if (routesBySize) return routesBySize;
+  const routes = ROUTES.map((template) => ({
+    template,
+    segments: template.split("/").map((segment) => (segment.startsWith("{") ? null : segment)),
+  }));
+  const rank = (route: Route) =>
+    route.segments.map((segment) => (segment === null ? 1 : 0)).join("");
+  routes.sort((a, b) => {
+    const literals = (route: Route) => route.segments.filter((segment) => segment !== null).length;
+    return literals(b) - literals(a) || rank(a).localeCompare(rank(b));
+  });
+  routesBySize = new Map();
+  for (const route of routes) {
+    const size = routesBySize.get(route.segments.length) ?? [];
+    size.push(route);
+    routesBySize.set(route.segments.length, size);
+  }
+  return routesBySize;
+}
 
 /**
- * The span name's path: segments that aren't plain lowercase words (ids, aliases, addresses) become
- * `{id}`, so names stay low-cardinality and never carry identifiers. `/v1/emails/email_01k…/cancel`
- * → `/v1/emails/{id}/cancel`.
+ * The API route a path is (`/v1/emails/email_01k…/cancel` → `/v1/emails/{id}/cancel`), from the
+ * API's own templates, so a span never names an id, alias or address; `null` for a path the API
+ * doesn't document (`coss.request()` to a newer endpoint).
  */
-export function pathTemplate(path: string): string {
-  return path
-    .split("/")
-    .map((segment, index) =>
-      index === 0 || segment === "" || PLAIN_SEGMENT.test(segment) || /^v\d+$/.test(segment)
-        ? segment
-        : "{id}",
-    )
-    .join("/");
+export function routeTemplate(path: string): string | null {
+  const segments = path.split("?")[0]?.split("/") ?? [];
+  const match = compiledRoutes()
+    .get(segments.length)
+    ?.find((route) =>
+      route.segments.every((segment, index) => segment === null || segment === segments[index]),
+    );
+  return match?.template ?? null;
 }
+
+/**
+ * The headers of W3C Trace Context, the only ones the API reads (and allows from browsers). Other
+ * propagators' (`baggage`, B3, vendors') would fail a browser's preflight, and carry the app's own
+ * data to coss.com.
+ */
+const TRACE_HEADERS: ReadonlySet<string> = new Set(["traceparent", "tracestate"]);
 
 /** How a traced request went, reported by the request pipeline. */
 export interface TracedOutcome {
@@ -89,9 +125,9 @@ export interface TracedOutcome {
 }
 
 /**
- * Runs `send` inside a client span named `<METHOD> <path template>`, handing it the headers the
- * span's context propagates as (`traceparent`, `tracestate`, or whatever the app's propagator
- * writes). Without the API (or with `loader` `null`) `send` runs untraced with no extra headers.
+ * Runs `send` inside a client span named `<METHOD> <route>` (just `<METHOD>` for an unknown path),
+ * handing it the W3C trace headers the app's propagator writes for the span's context. Without the
+ * API (or with `loader` `null`) `send` runs untraced with no extra headers.
  */
 export async function traced<T>(
   loader: TracingLoader | null,
@@ -100,7 +136,7 @@ export async function traced<T>(
 ): Promise<T> {
   const otel = loader ? await loader() : null;
   if (!otel) return (await send({})).value;
-  const template = pathTemplate(request.path);
+  const template = routeTemplate(request.path);
   // A malformed base URL fails in `fetch` (a `connection_error`), never here.
   let server: Record<string, AttributeValue> = {};
   try {
@@ -112,23 +148,26 @@ export async function traced<T>(
   }
   const span = otel.trace
     .getTracer("coss", request.version)
-    .startSpan(`${request.method} ${template}`, {
+    .startSpan(template ? `${request.method} ${template}` : request.method, {
       kind: otel.SpanKind.CLIENT,
       // HTTP client semantic conventions, minus `url.full`: its query (an address filter) and path
       // (an alias, an address) can name people.
       attributes: {
         "http.request.method": request.method,
         ...server,
-        "url.template": template,
+        ...(template ? { "url.template": template } : {}),
       },
     });
   const context = otel.trace.setSpan(otel.context.active() as never, span as never);
-  const headers: Record<string, string> = {};
+  const carrier: Record<string, string> = {};
   try {
-    otel.propagation.inject(context as never, headers);
+    otel.propagation.inject(context as never, carrier);
   } catch {
     // A broken propagator must not break the call: it goes out without trace headers.
   }
+  const headers = Object.fromEntries(
+    Object.entries(carrier).filter(([name]) => TRACE_HEADERS.has(name.toLowerCase())),
+  );
   try {
     const { value, outcome } = await otel.context.with(context as never, () => send(headers));
     if (outcome.status !== null) span.setAttribute("http.response.status_code", outcome.status);
