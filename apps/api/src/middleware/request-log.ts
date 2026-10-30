@@ -46,6 +46,8 @@ function skipped(method: string, path: string): boolean {
  * the environment's log and its drains. Error envelopes are still kept.
  */
 const CONTENT_RESPONSES = ["/v1/received_emails", "/v1/inboxes", "/v1/sms/received"];
+/** Form submissions: what people typed into a customer's form (`/v1/forms/{id}/submissions…`). */
+const FORM_SUBMISSIONS = /^\/v1\/forms\/[^/]+\/submissions(\/|$)/;
 /**
  * Responses that are capabilities: preference links change a contact's consent and need
  * `contact:update`, and Sign's session links (the token is in the URL's fragment too) sign as a
@@ -107,6 +109,7 @@ function keepsResponseBody(path: string, status: number): boolean {
   if (CONTENT_REQUESTS.includes(path)) return false;
   if (status >= 400) return true;
   if (CAPABILITY_RESPONSES.some((pattern) => pattern.test(path))) return false;
+  if (FORM_SUBMISSIONS.test(path)) return false;
   return !CONTENT_RESPONSES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 

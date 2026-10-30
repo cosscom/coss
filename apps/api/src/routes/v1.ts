@@ -1,6 +1,7 @@
 import type { UsageGate } from "@coss/billing/gate";
 import type { DomainDeps, EmailService, LinkKeyRing } from "@coss/email";
 import type { InboundRuntime } from "@coss/email/runtime";
+import type { FormFileStore } from "@coss/forms";
 import type { RiskDeps } from "@coss/risk";
 import type { SignService } from "@coss/sign";
 import type { SmsService } from "@coss/sms";
@@ -18,6 +19,7 @@ import { createDomainRoutes } from "./domains.ts";
 import { createEmailTemplateRoutes } from "./email-templates.ts";
 import { createEmailRoutes } from "./emails.ts";
 import { createEnvironmentRoutes } from "./environment.ts";
+import { createFormRoutes } from "./forms.ts";
 import { createHookRoutes } from "./hooks/index.ts";
 import { createInboxRoutes } from "./inboxes.ts";
 import { createLogDrainRoutes } from "./log-drains.ts";
@@ -54,6 +56,10 @@ export type V1Dependencies = {
   portalUrl: string | null;
   /** Where signing session links point (`SIGN_PUBLIC_URL`); `null`: the signing app isn't deployed. */
   signUrl: string | null;
+  /** Where forms are served (`FORMS_PUBLIC_URL`); `null`: Forms isn't available. */
+  formsUrl: string | null;
+  /** Forms' uploads; `null`: no store (files can't be read). */
+  formsStore: FormFileStore | null;
   /** Receiving (`EmailRuntime.inbound`); `null` when the deployment doesn't receive email. */
   inbound: InboundRuntime | null;
   riskDeps: RiskDeps;
@@ -96,6 +102,16 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   );
   v1.route("/", createSignTemplateRoutes({ signService: deps.signService, signUrl: deps.signUrl }));
   v1.route("/", createVerifyRoutes(deps.verifyService));
+  v1.route(
+    "/",
+    createFormRoutes({
+      formsUrl: deps.formsUrl,
+      store: deps.formsStore,
+      riskDeps: deps.riskDeps,
+      liveProvider: deps.domainDeps.identity.name,
+      billing: deps.billing,
+    }),
+  );
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(

@@ -7,6 +7,7 @@ import { BillingResource } from "./resources/billing.ts";
 import { DomainsResource } from "./resources/domains.ts";
 import { EmailResource } from "./resources/email.ts";
 import { EnvironmentResource } from "./resources/environment.ts";
+import { FormsResource } from "./resources/forms.ts";
 import { HooksResource } from "./resources/hooks.ts";
 import { InboxesResource } from "./resources/inboxes.ts";
 import { listQuery } from "./resources/list-query.ts";
@@ -123,6 +124,8 @@ export class Coss {
   readonly inboxes: InboxesResource;
   /** One-time codes by SMS or email (`coss.verify.start()`, `coss.verify.check()`). */
   readonly verify: VerifyResource;
+  /** Hosted form endpoints and their submissions (`coss.forms.create()`). */
+  readonly forms: FormsResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
   /** The client's own API key (`coss.apiKey.revoke()`). */
@@ -204,6 +207,7 @@ export class Coss {
     this.sign = new SignResource(http);
     this.inboxes = new InboxesResource(http);
     this.verify = new VerifyResource(http);
+    this.forms = new FormsResource(http);
   }
 
   /**

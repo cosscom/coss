@@ -14,6 +14,7 @@ import {
   InboxError,
   SubaccountError,
 } from "@coss/email";
+import { FormError } from "@coss/forms";
 import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { SignError } from "@coss/sign";
@@ -387,6 +388,34 @@ function fromVerifyError(error: VerifyError): ApiError {
   }
 }
 
+function fromFormError(error: FormError): ApiError {
+  switch (error.code) {
+    case "not_found":
+      return new ApiError(404, {
+        type: "not_found_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "account_suspended":
+      return new ApiError(403, {
+        type: "permission_error",
+        code: error.code,
+        message: error.message,
+      });
+    case "forms_unavailable":
+      return new ApiError(503, { type: "api_error", code: error.code, message: error.message });
+    case "form_conflict":
+      // Concurrent updates of the same form kept racing; the SDK retries after Retry-After.
+      return new ApiError(
+        409,
+        { type: "api_error", code: error.code, message: error.message },
+        { "Retry-After": "1" },
+      );
+    default:
+      return invalidRequest(error.code, error.message, error.param);
+  }
+}
+
 function invalidRequest(code: string, message: string, param?: string): ApiError {
   return new ApiError(422, {
     type: "invalid_request_error",
@@ -599,6 +628,7 @@ export function toApiError(error: unknown): ApiError | null {
   if (error instanceof SmsError) return fromSmsError(error);
   if (error instanceof SignError) return fromSignError(error);
   if (error instanceof VerifyError) return fromVerifyError(error);
+  if (error instanceof FormError) return fromFormError(error);
   // A 5xx exception is a server fault: left to the caller to log and answer with a generic 500.
   if (error instanceof HTTPException && error.status < 500) return fromHttpException(error);
   return null;
