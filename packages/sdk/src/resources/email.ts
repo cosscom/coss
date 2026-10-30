@@ -25,6 +25,7 @@ import { EmailTemplatesResource } from "./email-templates.ts";
 import { listQuery } from "./list-query.ts";
 import { ReceivedEmailsResource } from "./received-emails.ts";
 import { StorageResource } from "./storage.ts";
+import { SubaccountsResource } from "./subaccounts.ts";
 import { SuppressionResource } from "./suppressions.ts";
 import { TrackingResource } from "./tracking.ts";
 
@@ -55,6 +56,8 @@ export class EmailResource {
   readonly marketingSettings: MarketingSettingsResource;
   /** Marketing emails to an audience or a segment. */
   readonly broadcasts: BroadcastsResource;
+  /** Your users' sub-accounts (email for platforms). */
+  readonly subaccounts: SubaccountsResource;
 
   /** @internal Use `new Coss().email`. */
   constructor(http: HttpClient) {
@@ -71,6 +74,7 @@ export class EmailResource {
     this.topics = new TopicsResource(http);
     this.marketingSettings = new MarketingSettingsResource(http);
     this.broadcasts = new BroadcastsResource(http);
+    this.subaccounts = new SubaccountsResource(http);
   }
 
   /**

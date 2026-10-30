@@ -230,6 +230,8 @@ export {
   type EmailErrorCode,
   InboxError,
   type InboxErrorCode,
+  SubaccountError,
+  type SubaccountErrorCode,
 } from "./errors.ts";
 export {
   COSS_EVENT_SOURCE,
@@ -607,6 +609,23 @@ export {
   toStorageSettingsObject,
   updateStorageSettings,
 } from "./storage-settings.ts";
+export {
+  createSubaccount,
+  deleteSubaccount,
+  findSubaccount,
+  getSubaccount,
+  hasLiveSubaccounts,
+  MAX_SANDBOX_SUBACCOUNTS,
+  pageSubaccounts,
+  requireSubaccount,
+  runDueSubaccountDeletions,
+  type SubaccountDeletionDeps,
+  type SubaccountQuotasInput,
+  type SubaccountRow,
+  searchSubaccounts,
+  toSubaccountObject,
+  updateSubaccount,
+} from "./subaccounts.ts";
 export {
   csvRecords,
   parseSuppressionCsv,

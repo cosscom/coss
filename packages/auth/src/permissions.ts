@@ -33,6 +33,9 @@ export const orgStatements = {
   suppression: ["create", "read", "delete"],
   contact: ["create", "read", "update", "delete"],
   broadcast: ["create", "read", "update", "delete", "send"],
+  // Email sub-accounts (email for platforms): the customer's end users, each with their own
+  // domains, suppressions, quotas and reputation; `update` also reinstates a paused one.
+  subaccount: ["create", "read", "update", "delete"],
   // `require` turns the organization's SSO requirement on/off: owners only, because owners keep
   // password (break-glass) access while it is on.
   sso: ["read", "update", "require"],
@@ -83,6 +86,7 @@ const fullCossAccess = {
   suppression: ["create", "read", "delete"],
   contact: ["create", "read", "update", "delete"],
   broadcast: ["create", "read", "update", "delete", "send"],
+  subaccount: ["create", "read", "update", "delete"],
   reputation: ["read"],
   log: ["read"],
   logDrain: ["create", "read", "update", "delete"],
@@ -109,6 +113,7 @@ const readOnlyCossAccess = {
   suppression: ["read"],
   contact: ["read"],
   broadcast: ["read"],
+  subaccount: ["read"],
   reputation: ["read"],
   log: ["read"],
   logDrain: ["read"],

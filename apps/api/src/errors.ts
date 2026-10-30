@@ -6,7 +6,14 @@
  */
 
 import { BillingError } from "@coss/billing";
-import { BroadcastError, ContactError, DomainError, EmailError, InboxError } from "@coss/email";
+import {
+  BroadcastError,
+  ContactError,
+  DomainError,
+  EmailError,
+  InboxError,
+  SubaccountError,
+} from "@coss/email";
 import { HookError } from "@coss/hooks";
 import { RiskError } from "@coss/risk";
 import { SignError } from "@coss/sign";
@@ -553,12 +560,25 @@ function fromHookError(error: HookError): ApiError {
   return invalidRequest(error.code, error.message, error.param);
 }
 
+function fromSubaccountError(error: SubaccountError): ApiError {
+  if (error.status === 404) {
+    return new ApiError(404, {
+      type: "not_found_error",
+      code: error.code,
+      message: error.message,
+      ...(error.param !== undefined && { param: error.param }),
+    });
+  }
+  return invalidRequest(error.code, error.message, error.param);
+}
+
 /** Maps known error classes to their envelope; `null` means unexpected (a bug or an outage). */
 export function toApiError(error: unknown): ApiError | null {
   if (error instanceof ApiError) return error;
   if (error instanceof BillingError) return fromBillingError(error);
   if (error instanceof EmailError) return fromEmailError(error);
   if (error instanceof HookError) return fromHookError(error);
+  if (error instanceof SubaccountError) return fromSubaccountError(error);
   if (error instanceof DomainError) return fromDomainError(error);
   if (error instanceof ContactError) return fromContactError(error);
   if (error instanceof BroadcastError) return fromBroadcastError(error);

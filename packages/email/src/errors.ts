@@ -172,3 +172,38 @@ export class InboxError extends Error {
     this.param = opts?.param;
   }
 }
+
+export type SubaccountErrorCode =
+  | "subaccount_not_found"
+  | "uid_taken"
+  | "invalid_uid"
+  | "too_many_subaccounts"
+  | "subaccount_deleting"
+  | "invalid_quotas";
+
+const SUBACCOUNT_STATUS_BY_CODE = {
+  subaccount_not_found: 404,
+  // Not 409: the SDK retries those, and these conflicts never resolve on their own.
+  uid_taken: 422,
+  invalid_uid: 422,
+  too_many_subaccounts: 422,
+  subaccount_deleting: 422,
+  invalid_quotas: 422,
+} as const satisfies Record<SubaccountErrorCode, number>;
+
+/** Expected failures of sub-account management; messages are safe to show. */
+export class SubaccountError extends Error {
+  readonly code: SubaccountErrorCode;
+  readonly param: string | undefined;
+
+  constructor(code: SubaccountErrorCode, message: string, opts?: { param?: string }) {
+    super(message);
+    this.name = "SubaccountError";
+    this.code = code;
+    this.param = opts?.param;
+  }
+
+  get status(): (typeof SUBACCOUNT_STATUS_BY_CODE)[SubaccountErrorCode] {
+    return SUBACCOUNT_STATUS_BY_CODE[this.code];
+  }
+}

@@ -143,6 +143,13 @@ import type {
   UpdateTrackingRuleRequest,
 } from "@coss/email/schemas";
 import type {
+  CreateSubaccountRequest,
+  ListSubaccountsQuery,
+  Subaccount,
+  SubaccountList,
+  UpdateSubaccountRequest,
+} from "@coss/email/subaccount-schemas";
+import type {
   CreateTestWebhookEventRequest,
   WebhookTestEventObject,
 } from "@coss/email/test-event-schemas";
@@ -249,6 +256,7 @@ import type {
   CreateRiskListEntryParams,
   CreateRiskRuleParams,
   CreateSegmentParams,
+  CreateSubaccountParams,
   CreateSuppressionParams,
   CreateTopicParams,
   CreateTrackingDomainParams,
@@ -277,6 +285,7 @@ import type {
   ListReceivedEmailsParams,
   ListRiskAssessmentsParams,
   ListRiskListEntriesParams,
+  ListSubaccountsParams,
   ListSuppressionsParams,
   ListUsageParams,
   ListWebhookDeliveriesParams,
@@ -378,6 +387,7 @@ import type {
   RiskWebhookEvent as SdkRiskWebhookEvent,
   Segment as SdkSegment,
   StorageSettings as SdkStorageSettings,
+  Subaccount as SdkSubaccount,
   Suppression as SdkSuppression,
   SuppressionCheck as SdkSuppressionCheck,
   SuppressionImport as SdkSuppressionImport,
@@ -411,6 +421,7 @@ import type {
   UpdateRiskSettingsParams,
   UpdateSegmentParams,
   UpdateStorageSettingsParams,
+  UpdateSubaccountParams,
   UpdateTopicParams,
   UpdateTrackingRuleParams,
   UpdateWebhookEndpointParams,
@@ -936,4 +947,20 @@ export type BroadcastContract = [
   Assert<MutuallyAssignable<z.output<typeof BroadcastTest>, SdkBroadcastTest>>,
   Assert<MutuallyAssignable<z.output<typeof DeletedBroadcast>, SdkDeletedBroadcast>>,
   Assert<MutuallyAssignable<z.output<typeof BroadcastWebhookEvent>, SdkBroadcastWebhookEvent>>,
+];
+
+export type SubaccountContract = [
+  Assert<MutuallyAssignable<z.output<typeof Subaccount>, SdkSubaccount>>,
+  Assert<MutuallyAssignable<z.output<typeof SubaccountList>, List<SdkSubaccount>>>,
+  Assert<MutuallyAssignable<z.input<typeof CreateSubaccountRequest>, CreateSubaccountParams>>,
+  Assert<Equals<keyof z.input<typeof CreateSubaccountRequest>, keyof CreateSubaccountParams>>,
+  Assert<MutuallyAssignable<z.input<typeof UpdateSubaccountRequest>, UpdateSubaccountParams>>,
+  Assert<Equals<keyof z.input<typeof UpdateSubaccountRequest>, keyof UpdateSubaccountParams>>,
+  // `limit` is coerced from the query string; the SDK sends a number.
+  Assert<
+    MutuallyAssignable<
+      Omit<z.output<typeof ListSubaccountsQuery>, "limit">,
+      Omit<ListSubaccountsParams, "limit">
+    >
+  >,
 ];

@@ -33,6 +33,7 @@ import { createSignRoutes } from "./sign.ts";
 import { createSignTemplateRoutes } from "./sign-templates.ts";
 import { createSmsRoutes } from "./sms.ts";
 import { createStorageSettingsRoutes } from "./storage-settings.ts";
+import { createSubaccountRoutes } from "./subaccounts.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTopicRoutes } from "./topics.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
@@ -83,6 +84,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   );
   v1.route("/", createWebhookEventRoutes());
   v1.route("/", createSuppressionRoutes());
+  v1.route("/", createSubaccountRoutes());
   v1.route("/", createSmsRoutes(deps.smsService));
   v1.route(
     "/",
