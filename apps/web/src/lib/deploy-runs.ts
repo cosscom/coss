@@ -101,9 +101,13 @@ export const CANCELABLE_PHASES: DeployPhase[] = ["queued", "waiting", "building"
 
 const ROLLOUT_STEP = "Roll out";
 
-/** What a run is doing, from its jobs (`prepare`, `gate`, `build (…)`, `deploy`). */
+/**
+ * What a run is doing, from its jobs (`prepare`, `gate`, `build (…)`, `migrate`, `deploy`). A
+ * migration still waiting for its runner changed nothing yet.
+ */
 export function deployRunPhase(run: GitHubRun, jobs: GitHubJob[]): DeployPhase {
   const deploy = jobs.find((job) => job.name === "deploy");
+  const migrate = jobs.find((job) => job.name === "migrate");
   const builds = jobs.filter((job) => job.name.startsWith("build"));
   const gate = jobs.find((job) => job.name === "gate");
   const running = (job: GitHubJob | undefined) => job !== undefined && job.status !== "completed";
@@ -111,6 +115,12 @@ export function deployRunPhase(run: GitHubRun, jobs: GitHubJob[]): DeployPhase {
   // A job waiting for its runner (or the deploy job for its turn) already counts as its phase.
   if (run.status !== "completed") {
     if (running(gate)) return gate?.status === "in_progress" ? "waiting" : "queued";
+    // Migrations run while the Next.js apps still build: once one started, production has changed,
+    // so "Deploy now" must not cancel the run (even while a build is still going).
+    const migrated =
+      migrate?.status === "in_progress" ||
+      (migrate?.status === "completed" && migrate.conclusion !== "skipped");
+    if (migrated) return "deploying";
     if (builds.some(running)) return "building";
     if (deploy) return "deploying";
     return "queued";
@@ -292,12 +302,15 @@ export function batchShipsAt(pushedAt: Date, lastDeployAt: Date | null): Date {
 }
 
 /**
- * When a run's latest `production` job started (its `build`/`deploy` jobs that ran), if one did:
+ * When a run's latest `production` job started (its `build`/`migrate`/`deploy` jobs that ran), if
+ * one did:
  * every such job records a GitHub deployment, and the gate counts from the latest one.
  */
 export function latestProductionJobAt(jobs: GitHubJob[]): Date | null {
   const starts = jobs
-    .filter((job) => job.name === "deploy" || job.name.startsWith("build"))
+    .filter(
+      (job) => job.name === "deploy" || job.name === "migrate" || job.name.startsWith("build"),
+    )
     .filter((job) => job.conclusion !== "skipped")
     .map((job) => (job.started_at ? Date.parse(job.started_at) : Number.NaN))
     .filter((time) => !Number.isNaN(time));
@@ -327,13 +340,15 @@ export function stepState(item: { status: string; conclusion: string | null }): 
 }
 
 /**
- * What an active run is doing right now: the running step of its running job (the deploy job
- * first, it is the one that matters while builds overlap), e.g. `{ job: "deploy", step: "Migrate" }`.
+ * What an active run is doing right now: the running step of its running job (the deploy job, then
+ * the migrate job, first: they are what matters while builds overlap), e.g.
+ * `{ job: "migrate", step: "Migrate" }`.
  */
 export function currentStep(jobs: GitHubJob[]): { job: string; step: string } | null {
+  const rank = (job: GitHubJob) => (job.name === "deploy" ? 2 : job.name === "migrate" ? 1 : 0);
   const running = jobs
     .filter((job) => job.status === "in_progress")
-    .sort((a, b) => Number(b.name === "deploy") - Number(a.name === "deploy"));
+    .sort((a, b) => rank(b) - rank(a));
   for (const job of running) {
     const step = job.steps?.find((candidate) => candidate.status === "in_progress");
     if (step) return { job: job.name, step: step.name };
