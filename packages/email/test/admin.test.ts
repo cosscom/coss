@@ -20,7 +20,10 @@ const service = dispatchingEmailService({ liveProvider: provider, sandboxProvide
 async function fixture() {
   const customer = await createTestTenant();
   const coss = await createTestTenant();
+  // A window around the test: `now` defaults to the app's clock (milliseconds), so a row Postgres
+  // stamps (microseconds) in the same millisecond as the read would fall outside it.
   const since = new Date(Date.now() - 60_000);
+  const now = new Date(Date.now() + 60_000);
   const from = await verifiedFrom(customer.organization.id);
   const live = [];
   for (const subject of ["Win a prize", "Claim now"]) {
@@ -51,14 +54,15 @@ async function fixture() {
   const [first, second] = live;
   if (!first || !second) throw new Error("expected two live emails");
   const scope = { organizationIds: [customer.organization.id, coss.organization.id] };
-  return { customer, coss, since, live: [first, second] as const, sandbox, cossLive, scope };
+  return { customer, coss, since, now, live: [first, second] as const, sandbox, cossLive, scope };
 }
 
 describe("platformEmailStats", () => {
   test("counts live and sandbox emails, coss.com's own apart", async () => {
-    const { coss, since, scope } = await fixture();
+    const { coss, since, now, scope } = await fixture();
     const stats = await platformEmailStats({
       since,
+      now,
       systemOrganizationId: coss.organization.id,
       scope,
     });
@@ -68,7 +72,7 @@ describe("platformEmailStats", () => {
     expect(stats.coss.live.sent).toBe(1);
     expect(stats.coss.liveSenders).toBe(1);
 
-    const unsplit = await platformEmailStats({ since, systemOrganizationId: null, scope });
+    const unsplit = await platformEmailStats({ since, now, systemOrganizationId: null, scope });
     expect(unsplit.customers.live.sent).toBe(3);
     expect(unsplit.customers.liveSenders).toBe(2);
     expect(unsplit.coss.live.sent).toBe(0);
@@ -77,7 +81,7 @@ describe("platformEmailStats", () => {
 
 describe("listSendersForAdmin", () => {
   test("ranks organizations by live emails sent, with their standing and screenings", async () => {
-    const { customer, coss, since, live, scope } = await fixture();
+    const { customer, coss, since, now, live, scope } = await fixture();
     await db.insert(schema.contentScreening).values({
       organizationId: customer.organization.id,
       environmentId: customer.production.id,
@@ -91,7 +95,7 @@ describe("listSendersForAdmin", () => {
       latencyMs: 1,
     });
 
-    const senders = await listSendersForAdmin({ since, scope });
+    const senders = await listSendersForAdmin({ since, now, scope });
     expect(senders.map((row) => row.organizationId)).toEqual([
       customer.organization.id,
       coss.organization.id,
@@ -113,11 +117,16 @@ describe("listSendersForAdmin", () => {
 
     expect(
       (
-        await listSendersForAdmin({ since, excludeOrganizationId: coss.organization.id, scope })
+        await listSendersForAdmin({
+          since,
+          now,
+          excludeOrganizationId: coss.organization.id,
+          scope,
+        })
       ).map((row) => row.organizationId),
     ).toEqual([customer.organization.id]);
     expect(
-      (await listSendersForAdmin({ since, organizationId: coss.organization.id, scope })).map(
+      (await listSendersForAdmin({ since, now, organizationId: coss.organization.id, scope })).map(
         (row) => row.organizationId,
       ),
     ).toEqual([coss.organization.id]);

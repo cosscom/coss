@@ -58,7 +58,7 @@ export function DeployRunStatus(props: { run: DeployRun; now: Date }) {
         <span className="text-muted-foreground" title={formatDateTime(run.shipsAt)}>
           {" "}
           · ships{" "}
-          {new Date(run.shipsAt) > now ? formatRelative(run.shipsAt, now) : "once CI passes"}
+          {new Date(run.shipsAt) > now ? formatRelative(run.shipsAt, now) : "within a minute"}
         </span>
       ) : null}
     </StatusDot>

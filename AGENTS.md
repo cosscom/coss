@@ -149,14 +149,23 @@ bun run billing:close-period --org acme [--at 2026-11-01T00:20:00Z]
 Single package: `bun run --cwd <pkg> test [filter]` (after `bun run db:migrate:test` once). Don't run bare `bun test`
 from the root or a package — the package script is what loads `.env` and the test-DB preload.
 
-**Before committing**, run what CI (`.github/workflows/ci.yml`, Postgres 18, no `.env`) runs:
-`bun run lint && bun run typecheck && bun run test && bun run build`. After changing `integrations/<driver>` also
-run its own lint and tests (CI's `integrations` job): `composer lint && composer test` (Laravel),
-`bundle exec rubocop && bundle exec rake test` (Rails), `uv run ruff check && uv run ruff format --check && uv run
-pytest` (Django); their end-to-end tests run when `COSS_E2E` holds the line `bun run --cwd apps/api serve:test` prints.
+**Before pushing**, run `bun run verify` (`git fetch origin main` first): lint, then typecheck and tests of the
+packages your change reaches (`turbo --affected` against `origin/main`). Don't run the whole suite locally: CI
+(`.github/workflows/ci.yml`, Postgres 18, no `.env`, on Blacksmith's runners) does that in the merge queue. Only the
+queue lands commits on main (main's ruleset; its one required check is CI's `ci` job). Pull requests get quick
+feedback (lint, then typecheck, tests and builds of the affected packages, and the SDK and driver matrices only when
+`sdks/`, `integrations/`, `apps/api/openapi.json` or the workflow changed), and the queue runs everything on the
+exact commit main becomes. Merge with `gh pr merge <number>` (no method flag): it joins the queue, or waits for the
+pull request's checks first; `--admin` would skip the queue — never use it. A pull request leaves the queue when
+its run fails: read the merge group's run (`gh run list --workflow ci.yml --event merge_group`), fix, push, merge
+again. After changing `integrations/<driver>` also run its own lint and tests (CI's `integrations` job): `composer
+lint && composer test` (Laravel), `bundle exec rubocop && bundle exec rake test` (Rails), `uv run ruff check && uv
+run ruff format --check && uv run pytest` (Django); their end-to-end tests run when `COSS_E2E` holds the line `bun
+run --cwd apps/api serve:test` prints.
 
 **Remote cache** (README, "Remote cache"): `typecheck` and `build` results are uploaded to Turbo's Vercel Remote Cache
-(team `cal`, signed) and CI replays any task whose hash it finds, so running the commands above also makes CI fast.
+(team `cal`, signed) and the merge queue replays any task whose hash it finds (pull request runs get no cache
+credentials: whatever reads the signed cache can also write to it).
 Each machine is set up once by a human (`turbo login`, `~/.config/coss/turbo.env` loaded from the shell profile). If
 a `turbo` run's header says `Remote caching disabled` or `unavailable`, tell the user the machine isn't set up and
 point them at that README section — never run `turbo login`, create Vercel tokens, or write `TURBO_*` values into

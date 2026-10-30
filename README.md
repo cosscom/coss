@@ -179,12 +179,12 @@ resets) are printed to the dashboard's server console in development.
 
 `typecheck` and `build` results are shared through Turborepo's [Vercel Remote Cache](https://vercel.com/docs/monorepos/remote-caching)
 (Vercel team **`cal`**) by everyone's machines, agents and CI. Turbo fingerprints each task's inputs (source,
-lockfile, `turbo.json`, `NODE_ENV`, `NEXT_DEPLOYMENT_ID`); when CI computes a fingerprint someone already built, it
-downloads that result instead of building again, so running `bun run typecheck && bun run build` before pushing
-makes CI's check and build jobs near-instant. On pull requests those two jobs check out the pushed commit (what you
-built), while the test job runs on GitHub's merge with `main`; `main`'s own run covers the merged result. Any change
-to the inputs is a miss and CI runs the task itself, so nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a shared key; Turbo ignores
-(rebuilds) anything that doesn't verify.
+lockfile, `turbo.json`, `NODE_ENV`, `NEXT_DEPLOYMENT_ID`); when CI's merge queue run computes a fingerprint
+someone already built, it downloads that result instead of building again, so packages a merge doesn't touch cost
+almost nothing. Pull request runs get no cache credentials (whatever can read the signed cache can also write to it)
+and check only the packages a change reaches instead. Any change to the inputs is a miss and CI runs the task
+itself, so nothing goes unchecked. Tests are never cached. Artifacts are HMAC-signed with a shared key; Turbo
+ignores (rebuilds) anything that doesn't verify.
 
 **One-time setup per machine** (a laptop, or a box agents run on; every worktree on it picks it up):
 
@@ -729,13 +729,12 @@ wrong. AWS credentials come from the task role.
 deployment. This applies even when `WEBHOOK_SECRETS_KEY` is unchanged.
 
 The Deploy workflow does this for pushes to main in batches: its `gate` job (on GitHub's runners, which cost
-nothing here, unlike CodeBuild's minutes) waits until the push's CI passed and then until main has had no newer
-push for 20 minutes or production's last deploy is an hour old, so the first push after a quiet spell ships right
-after CI and a busy stretch ships about hourly. A push that's superseded while it waits isn't built (the newer
-push's run ships it). Run it by hand from the admin console's Deploys page or the Actions tab (`gh workflow run
-deploy.yml`) to ship main at once; with
-`image_tag` it redeploys an earlier commit's images, e.g. a rollback. When CI failed and a re-run passed, re-run
-the Deploy run's failed jobs. A deploy job whose commit production already includes (a newer deploy went first)
+nothing here, unlike CodeBuild's minutes) waits until main has had no newer push for 20 minutes or production's
+last deploy is an hour old, so the first push after a quiet spell ships at once and a busy stretch ships about
+hourly. It doesn't wait for CI: only the merge queue lands commits on main (main's ruleset), and CI already checked
+each one there. A push that's superseded while it waits isn't built (the newer push's run ships it). Run it by
+hand from the admin console's Deploys page or the Actions tab (`gh workflow run deploy.yml`) to ship main at once;
+with `image_tag` it redeploys an earlier commit's images, e.g. a rollback. A deploy job whose commit production already includes (a newer deploy went first)
 skips, so production never goes back to an older commit unless you dispatch one:
 
 1. Build and push the seven images, tagged with the commit (`docker buildx build --platform linux/arm64 -f

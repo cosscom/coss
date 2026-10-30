@@ -272,10 +272,13 @@ async function mainSha(): Promise<string> {
   return (await github<{ sha: string }>(`${REPO}/commits/${DEPLOY_BRANCH}`)).sha;
 }
 
-/** CI's latest push run for each of main's recent commits. */
+/**
+ * CI's latest merge queue run for each of main's recent commits: only the queue lands commits on
+ * main, and main becomes exactly the commit it checked (same sha).
+ */
 async function ciRunsBySha(): Promise<Map<string, GitHubRun>> {
   const ci = await github<{ workflow_runs: GitHubRun[] }>(
-    `${REPO}/actions/workflows/${CI_WORKFLOW}/runs?branch=${DEPLOY_BRANCH}&event=push&per_page=50`,
+    `${REPO}/actions/workflows/${CI_WORKFLOW}/runs?event=merge_group&per_page=50`,
   );
   const bySha = new Map<string, GitHubRun>();
   for (const run of ci.workflow_runs) if (!bySha.has(run.head_sha)) bySha.set(run.head_sha, run);

@@ -1,9 +1,19 @@
 name: CI
 
+# Only the merge queue lands commits on main (main's ruleset), so this is the one place they're
+# checked:
+# - pull requests get quick feedback: lint, then typecheck, tests and builds of the packages the
+#   change reaches (`turbo --affected`), and the SDK and driver matrices only when the change
+#   touches them or the API's contract;
+# - the merge queue (`merge_group`) runs everything on the exact commit main becomes, so main
+#   itself isn't checked again and Deploy doesn't wait for CI;
+# - a dispatch runs everything on any branch.
+# `ci`, the last job, is the ruleset's one required check. Every job runs on Blacksmith's runners
+# (GitHub's free ones allow 20 jobs at once, which one run of this workflow nearly fills).
 on:
-  push:
-    branches: [main]
   pull_request:
+  merge_group:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,7 +22,7 @@ concurrency:
 permissions:
   contents: read
 
-# CI-only values. No .env file exists in CI; turbo passes these via globalEnv.
+# CI-only values. No .env file exists in CI; turbo passes these via globalPassThroughEnv.
 env:
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/coss_test
   TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/coss_test
@@ -24,25 +34,49 @@ env:
   EMAIL_PROVIDER: fake
   WEBHOOK_SECRETS_KEY: Y2ktb25seS13ZWJob29rLXNlY3JldHMta2V5LTMyYnk=
   TEST_VALKEY_URL: redis://localhost:6379
+  # Pull requests run on GitHub's merge with main: its first parent is main, so `--affected` sees
+  # exactly the pull request's changes (the checkouts fetch that one parent too).
+  AFFECTED: ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+  TURBO_SCM_BASE: HEAD^1
 
 # check, test and build run in parallel. Tests are never cached (turbo.json).
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # Pull-request code never receives remote-cache credentials. Protected main pushes populate
-    # the shared signed cache after review.
-    env:
-      TURBO_TOKEN: ${{ github.event_name == 'push' && secrets.TURBO_TOKEN || '' }}
-      TURBO_TEAM: ${{ github.event_name == 'push' && vars.TURBO_TEAM || '' }}
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ github.event_name == 'push' && secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY || '' }}
+  # Whether a pull request touches what the SDK and driver matrices check: their own code, the
+  # API's contract or this file. The merge queue runs them whatever changed.
+  changes:
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 5
+    outputs:
+      contract: ${{ steps.diff.outputs.contract }}
     steps:
-      # The pushed commit, not GitHub's merge with main: that's what people typecheck and build
-      # locally, so the remote cache replays their results. Tests still run on the merge, and
-      # main's own run catches what only breaks once merged.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != pull_request ] || git diff --name-only HEAD^1 HEAD \
+            | grep -qE '^(sdks/|integrations/|apps/api/openapi\.json$|apps/api/test/serve\.ts$|\.github/workflows/ci\.yml$)'; then
+            echo "contract=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "contract=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  check:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 15
+    # Pull-request code never receives remote-cache credentials: anything that can read the signed
+    # cache can also write to it. Merge queue runs (enqueued only by people who can merge) and
+    # dispatches populate it.
+    env:
+      TURBO_TOKEN: ${{ github.event_name != 'pull_request' && secrets.TURBO_TOKEN || '' }}
+      TURBO_TEAM: ${{ github.event_name != 'pull_request' && vars.TURBO_TEAM || '' }}
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ github.event_name != 'pull_request' && secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY || '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -51,10 +85,10 @@ jobs:
           node-version: 24
       - run: bun install --frozen-lockfile
       - run: bun run lint
-      - run: bun run typecheck
+      - run: bun run typecheck $AFFECTED
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 15
     services:
       postgres:
@@ -79,6 +113,8 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -86,22 +122,22 @@ jobs:
         with:
           node-version: 24
       - run: bun install --frozen-lockfile
-      - run: bun run test
+      - run: bun run test $AFFECTED
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-8vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       # The check job typechecks both Next apps; `next build` skips its own copy of that check.
       SKIP_BUILD_TYPECHECK: "1"
-      TURBO_TOKEN: ${{ github.event_name == 'push' && secrets.TURBO_TOKEN || '' }}
-      TURBO_TEAM: ${{ github.event_name == 'push' && vars.TURBO_TEAM || '' }}
-      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ github.event_name == 'push' && secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY || '' }}
+      # Like the check job's.
+      TURBO_TOKEN: ${{ github.event_name != 'pull_request' && secrets.TURBO_TOKEN || '' }}
+      TURBO_TEAM: ${{ github.event_name != 'pull_request' && vars.TURBO_TEAM || '' }}
+      TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ github.event_name != 'pull_request' && secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY || '' }}
     steps:
-      # The pushed commit, like the check job.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version-file: package.json
@@ -118,14 +154,16 @@ jobs:
           key: next-${{ hashFiles('bun.lock') }}-${{ github.sha }}
           restore-keys: next-${{ hashFiles('bun.lock') }}-
       - run: bun install --frozen-lockfile
-      - run: bun run build
+      - run: bun run build $AFFECTED
 
   # The framework drivers (integrations/*: not workspaces, so turbo never runs them): lint and
   # tests against the newest and the oldest framework each supports, plus, on the newest, an
   # end-to-end run against the API's test app (`apps/api/test/serve.ts`) on this job's Postgres.
   integrations:
     name: integrations (${{ matrix.driver }}, ${{ matrix.versions }})
-    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.contract == 'true'
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -225,7 +263,10 @@ jobs:
   # test app. Regenerating them needs Docker and runs on main (sdks-regenerate.yml), not here.
   sdks:
     name: sdks (${{ matrix.sdk }}, ${{ matrix.versions }})
-    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.contract == 'true'
+    # Gradle, .NET and Go builds want more than the drivers' two cores.
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -366,7 +407,7 @@ jobs:
   # nothing user-facing changed. Everything else in the repo is private and never versioned.
   changeset:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -380,3 +421,20 @@ jobs:
           node-version: 24
       - run: bun install --frozen-lockfile
       - run: bunx changeset status --since=origin/${{ github.base_ref }}
+
+  # The one check main's ruleset requires, on pull requests and in the merge queue: every job
+  # above passed or was skipped on purpose (the matrices also skip when `changes` failed, which
+  # fails this too).
+  ci:
+    if: ${{ !cancelled() }}
+    needs: [changes, check, test, build, integrations, sdks, changeset]
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Jobs: $RESULTS"
+          case " $RESULTS " in
+            *" failure "* | *" cancelled "*) exit 1 ;;
+          esac
