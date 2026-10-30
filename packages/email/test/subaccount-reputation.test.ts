@@ -12,8 +12,11 @@ import { ingestProviderEvents } from "../src/events.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import {
   decideSubaccount,
+  evaluateSubaccount,
+  markSubaccountReputationDue,
   reinstateSubaccount,
   runDueSubaccountEvaluations,
+  SUBACCOUNT_WARNING_RECHECK_MS,
 } from "../src/subaccount-reputation.ts";
 import { createSubaccount, getSubaccount } from "../src/subaccounts.ts";
 import { createVerifiedDomain, dispatchingEmailService } from "../src/testing.ts";
@@ -151,6 +154,49 @@ describe("sub-account reputation", () => {
     // Measured from the reinstatement: the old bounces no longer count.
     expect((await send("a", "after@example.com")).email.status).toBe("sent");
     expect((await reinstateSubaccount({ organizationId, id: a.id })).changed).toBe(false);
+  });
+
+  test("unhealthy rates below the minimum volume are checked again", async () => {
+    const { organizationId, a, send } = await setup();
+    const emails = [];
+    for (let index = 0; index < 2; index++) {
+      emails.push((await send("a", `user${index}@example.com`)).email);
+    }
+    await ingestProviderEvents([bounce(emails[0]?.id ?? "", "user0@example.com")]);
+    const now = new Date();
+    expect(
+      await runDueSubaccountEvaluations({ now, scope: { organizationIds: [organizationId] } }),
+    ).toBe(1);
+    // 1 of 2 bounced is too few to act on (4 at least), but more sending can change that.
+    expect(await getSubaccount({ organizationId, id: a.id })).toMatchObject({
+      reputationStatus: "good",
+      nextEvaluationAt: new Date(now.getTime() + SUBACCOUNT_WARNING_RECHECK_MS),
+    });
+    await send("a", "user2@example.com");
+    await send("a", "user3@example.com");
+    expect(
+      await runDueSubaccountEvaluations({
+        now: new Date(now.getTime() + SUBACCOUNT_WARNING_RECHECK_MS),
+        scope: { organizationIds: [organizationId] },
+      }),
+    ).toBe(1);
+    expect((await getSubaccount({ organizationId, id: a.id }))?.reputationStatus).not.toBe("good");
+  });
+
+  test("evidence that arrives during an evaluation keeps the sub-account due", async () => {
+    const { organizationId, a } = await setup();
+    // Warned, and healthy now: the evaluation moves it back to good.
+    await db
+      .update(schema.emailSubaccount)
+      .set({ reputationStatus: "warning", reputationTrigger: "bounce_rate" })
+      .where(eq(schema.emailSubaccount.id, a.id));
+    const claimed = await getSubaccount({ organizationId, id: a.id });
+    if (!claimed) throw new Error("expected the sub-account");
+    // A bounce lands after the worker claimed it (and read its counts).
+    const later = new Date(Date.now() + 1000);
+    await markSubaccountReputationDue(db, a.id, later);
+    expect(await evaluateSubaccount(claimed)).toBe("good");
+    expect((await getSubaccount({ organizationId, id: a.id }))?.nextEvaluationAt).toEqual(later);
   });
 
   test("a screening block pauses the sub-account, never the organization", async () => {

@@ -212,28 +212,53 @@ export async function evaluateSubaccount(
     checks,
   };
   const decision = decideSubaccount(row.reputationStatus, checks);
+  // Unhealthy rates below the minimum volume decide nothing yet, but more sending can carry them
+  // over it without a new bounce or complaint to mark the sub-account due: re-check them too.
+  const belowMinimumUnhealthy = checks.some(
+    (check) =>
+      check.minimumVolume !== null &&
+      check.volume < check.minimumVolume &&
+      check.rate !== null &&
+      check.warningThreshold !== null &&
+      check.rate >= check.warningThreshold,
+  );
   return db.transaction(async (tx) => {
-    if (decision) {
-      const moved = await applySubaccountTransition(tx, row, { ...decision, checks, now });
-      if (moved) {
-        await tx
-          .update(emailSubaccount)
-          .set({ metrics, evaluationLeaseUntil: null })
-          .where(eq(emailSubaccount.id, row.id));
-        return moved.reputationStatus;
-      }
+    const [latest] = await tx
+      .select()
+      .from(emailSubaccount)
+      .where(
+        and(eq(emailSubaccount.id, row.id), eq(emailSubaccount.organizationId, row.organizationId)),
+      )
+      .for("update");
+    if (!latest) return row.reputationStatus;
+    // The claim consumed its due marker: one set since is newer evidence, and stays.
+    const pending = latest.nextEvaluationAt;
+    if (latest.revision !== row.revision) {
+      // Reinstated or paused meanwhile: decide again on what it is now.
+      await tx
+        .update(emailSubaccount)
+        .set({ evaluationLeaseUntil: null, nextEvaluationAt: pending ?? now })
+        .where(eq(emailSubaccount.id, row.id));
+      return latest.reputationStatus;
     }
+    const moved = decision
+      ? await applySubaccountTransition(tx, latest, { ...decision, checks, now })
+      : null;
+    const status = moved?.reputationStatus ?? latest.reputationStatus;
+    const scheduledAt =
+      status === "warning" || (status === "good" && belowMinimumUnhealthy)
+        ? new Date(now.getTime() + SUBACCOUNT_WARNING_RECHECK_MS)
+        : null;
     await tx
       .update(emailSubaccount)
       .set({
         metrics,
         evaluationLeaseUntil: null,
-        ...(row.reputationStatus === "warning"
-          ? { nextEvaluationAt: new Date(now.getTime() + SUBACCOUNT_WARNING_RECHECK_MS) }
-          : {}),
+        nextEvaluationAt:
+          pending && (!scheduledAt || pending < scheduledAt) ? pending : scheduledAt,
       })
-      .where(and(eq(emailSubaccount.id, row.id), eq(emailSubaccount.revision, row.revision)));
-    return row.reputationStatus;
+      .where(eq(emailSubaccount.id, row.id));
+    return status;
   });
 }
 
