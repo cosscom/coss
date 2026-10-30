@@ -221,6 +221,14 @@ describe("sub-accounts API", () => {
       body: { uid: "sub_custom" },
     });
     expect(updated.status).toBe(422);
+    // Path segments resolve to another URL.
+    for (const uid of [".", ".."]) {
+      const dots = await apiRequest(app, "PATCH", `/v1/subaccounts/${id}`, {
+        key: tenant.sandboxKey,
+        body: { uid },
+      });
+      expect(dots.status).toBe(422);
+    }
   });
 
   test("keys need the subaccount permission", async () => {

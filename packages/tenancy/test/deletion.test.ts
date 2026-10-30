@@ -111,6 +111,9 @@ async function seedOrganizationData(tenant: TestTenant) {
       reason: "manual" as const,
     })),
   );
+  await db
+    .insert(schema.emailSubaccount)
+    .values(Array.from({ length: 3 }, (_, index) => ({ ...scope, name: `Sub-account ${index}` })));
   await db.insert(schema.contact).values(
     Array.from({ length: 3 }, (_, index) => ({
       ...scope,
@@ -339,6 +342,7 @@ describe("runDueOrganizationDeletions", () => {
       schema.emailRecipient,
       schema.emailEvent,
       schema.emailSuppression,
+      schema.emailSubaccount,
       schema.contact,
       schema.webhookDelivery,
       schema.contentScreening,

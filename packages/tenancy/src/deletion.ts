@@ -21,6 +21,7 @@ const {
   contact,
   email,
   emailBatch,
+  emailSubaccount,
   emailSuppression,
   signFakeObject,
   signRequest,
@@ -507,6 +508,16 @@ async function deleteOrganizationData(
         and(
           eq(emailSuppression.environmentId, environmentId),
           eq(emailSuppression.organizationId, organizationId),
+        ),
+      ],
+      // Email sub-accounts: their suppressions went above, their domains and tenants with the
+      // provider resources.
+      [
+        emailSubaccount,
+        emailSubaccount.id,
+        and(
+          eq(emailSubaccount.environmentId, environmentId),
+          eq(emailSubaccount.organizationId, organizationId),
         ),
       ],
       [
