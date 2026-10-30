@@ -27,7 +27,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import {
@@ -66,6 +66,7 @@ function BuyNumber(props: {
   const [searchedKind, setSearchedKind] = useState(kind);
   const [state, buyAction, buying] = useActionToast(buyNumberAction, { success: "Number bought" });
   const [chosen, setChosen] = useState<string | null>(null);
+  const buyFormId = useId();
   const { onDone } = props;
   useEffect(() => {
     if (state?.ok) onDone();
@@ -127,7 +128,7 @@ function BuyNumber(props: {
           <p className="text-muted-foreground text-sm">No numbers found. Try another area code.</p>
         ) : null}
         {results.length > 0 ? (
-          <form action={buyAction} className="flex flex-col gap-4">
+          <form action={buyAction} className="flex flex-col gap-4" id={buyFormId}>
             <input name="orgSlug" type="hidden" value={props.orgSlug} />
             <input name="kind" type="hidden" value={kind} />
             <fieldset className="flex flex-col gap-1.5">
@@ -167,15 +168,21 @@ function BuyNumber(props: {
               <FieldDescription>STOP and START are honored either way.</FieldDescription>
             </Field>
             {state && !state.ok ? <FormError message={state.error} /> : null}
-            <DialogFooter className="px-0 pb-0">
-              <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
-              <Button disabled={!chosen} loading={buying} type="submit">
-                Buy number
-              </Button>
-            </DialogFooter>
           </form>
         ) : null}
       </DialogPanel>
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Cancel</DialogClose>
+        {/* Outside the panel (and so the form) to span the popup; tied back with `form`. */}
+        <Button
+          disabled={results.length === 0 || !chosen}
+          form={buyFormId}
+          loading={buying}
+          type="submit"
+        >
+          Buy number
+        </Button>
+      </DialogFooter>
     </>
   );
 }
