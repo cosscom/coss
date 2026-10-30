@@ -88,6 +88,7 @@ export function RegistrationForm(props: {
 }) {
   const [kind, setKind] = useState(props.canRegister10dlc ? "us_10dlc" : "toll_free");
   const [brandType, setBrandType] = useState("low_volume_standard");
+  const [companyType, setCompanyType] = useState("PRIVATE_PROFIT");
   // Carriers take only the low-volume mixed use case from a low-volume standard brand.
   const useCases =
     kind === "us_10dlc" && brandType === "low_volume_standard"
@@ -173,7 +174,13 @@ export function RegistrationForm(props: {
           <TextField label="Legal name" name="legalName" placeholder="Acme, Inc." />
           <Field>
             <FieldLabel>Company type</FieldLabel>
-            <select aria-label="Company type" className={SELECT_CLASS} name="companyType">
+            <select
+              aria-label="Company type"
+              className={SELECT_CLASS}
+              name="companyType"
+              onChange={(event) => setCompanyType(event.target.value)}
+              value={companyType}
+            >
               <option value="PRIVATE_PROFIT">Private company</option>
               <option value="PUBLIC_PROFIT">Public company</option>
               <option value="NON_PROFIT">Non-profit</option>
@@ -196,12 +203,12 @@ export function RegistrationForm(props: {
           <TextField label="State or region" name="region" placeholder="CA" />
           <TextField label="Postal code" name="postalCode" />
           <TextField label="Country" name="country" placeholder="US" />
-          <TextField
-            label="Stock exchange (public companies)"
-            name="stockExchange"
-            required={false}
-          />
-          <TextField label="Stock ticker (public companies)" name="stockTicker" required={false} />
+          {companyType === "PUBLIC_PROFIT" ? (
+            <>
+              <TextField label="Stock exchange" name="stockExchange" placeholder="NASDAQ" />
+              <TextField label="Stock ticker" name="stockTicker" placeholder="ACME" />
+            </>
+          ) : null}
         </PanelBody>
       </Panel>
 
