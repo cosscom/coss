@@ -6,6 +6,7 @@
  * member a notification is also for (`user_id`: their budget), while they are still a member.
  */
 import { db, type Executor, schema } from "@coss/db";
+import { type EmailBlock, oneLine, renderEmail } from "@coss/email-layout";
 import { enqueuePush, type PushKind } from "@coss/push";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { formatCents } from "./money.ts";
@@ -276,15 +277,7 @@ async function memberEmail(organizationId: string, userId: string): Promise<stri
   return row?.email ?? null;
 }
 
-type Block = { paragraph: string } | { list: string[] } | { link: { label: string; url: string } };
 type Message = Pick<BillingNotice, "subject" | "text" | "html">;
-
-function oneLine(value: string): string {
-  return value
-    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
 
 async function renderBillingNotification(
   row: NotificationRow,
@@ -296,7 +289,7 @@ async function renderBillingNotification(
   const billingUrl = new URL(`/${org.slug}/settings/billing`, dashboardUrl).toString();
   const spendUrl = new URL(`/${org.slug}/spend`, dashboardUrl).toString();
   let link = { label: "Open billing", url: billingUrl };
-  const blocks: Block[] = [];
+  const blocks: EmailBlock[] = [];
   let subject: string;
   const invoice = payload.invoiceId
     ? (
@@ -345,7 +338,7 @@ async function renderBillingNotification(
         paragraph: `Your bank needs you to confirm the payment of ${due} for ${invoiceLabel}.`,
       });
       if (invoice?.hostedUrl)
-        blocks.push({ link: { label: "Confirm the payment", url: invoice.hostedUrl } });
+        blocks.push({ button: { label: "Confirm the payment", url: invoice.hostedUrl } });
       break;
     case "invoice_issued":
       subject = `Invoice ${invoiceLabel} from coss.com (${name})`;
@@ -353,7 +346,7 @@ async function renderBillingNotification(
         paragraph: `Invoice ${invoiceLabel} for ${due} is due ${invoice?.dueAt?.toISOString().slice(0, 10) ?? "now"}.`,
       });
       if (invoice?.hostedUrl)
-        blocks.push({ link: { label: "View and pay the invoice", url: invoice.hostedUrl } });
+        blocks.push({ button: { label: "View and pay the invoice", url: invoice.hostedUrl } });
       break;
     case "invoice_reminder":
       subject = `Reminder: ${invoiceLabel} is ${payload.overdue === "true" ? "overdue" : "due soon"} (${name})`;
@@ -361,7 +354,7 @@ async function renderBillingNotification(
         paragraph: `${invoiceLabel} for ${due} ${payload.overdue === "true" ? "is overdue" : `is due ${invoice?.dueAt?.toISOString().slice(0, 10) ?? "soon"}`}.`,
       });
       if (invoice?.hostedUrl)
-        blocks.push({ link: { label: "Pay the invoice", url: invoice.hostedUrl } });
+        blocks.push({ button: { label: "Pay the invoice", url: invoice.hostedUrl } });
       break;
     case "hold_placed":
       subject = `Live sending is paused for ${name}: an invoice is overdue`;
@@ -406,47 +399,13 @@ async function renderBillingNotification(
     default:
       subject = `Billing update for ${name}`;
   }
-  blocks.push({ link });
-  blocks.push({
-    paragraph: row.userId
+  // The invoice's own page, when there is one, is the call to action; billing is then a link.
+  blocks.push(blocks.some((block) => "button" in block) ? { link } : { button: link });
+  return renderEmail({
+    subject,
+    blocks,
+    reason: row.userId
       ? `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com, or the member the budget is for.`
       : `You're receiving this because you're the billing contact, an owner or an admin of ${name} on coss.com.`,
   });
-  subject = oneLine(subject);
-  return { subject, text: toText(blocks), html: toHtml(subject, blocks) };
-}
-
-function toText(blocks: Block[]): string {
-  return blocks
-    .map((block) => {
-      if ("paragraph" in block) return block.paragraph;
-      if ("list" in block) return block.list.map((item) => `- ${item}`).join("\n");
-      return `${block.link.label}: ${block.link.url}`;
-    })
-    .join("\n\n");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function toHtml(subject: string, blocks: Block[]): string {
-  const body = blocks
-    .map((block) => {
-      if ("paragraph" in block) return `<p>${escapeHtml(block.paragraph)}</p>`;
-      if ("list" in block) {
-        return `<ul>${block.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
-      }
-      return `<p><a href="${escapeHtml(block.link.url)}">${escapeHtml(block.link.label)}</a></p>`;
-    })
-    .join("\n");
-  return (
-    `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(subject)}</title></head>` +
-    `<body style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#111">\n${body}\n</body></html>`
-  );
 }

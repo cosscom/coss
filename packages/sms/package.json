@@ -21,7 +21,9 @@
   "dependencies": {
     "@coss/billing": "workspace:*",
     "@coss/db": "workspace:*",
+    "@coss/email-layout": "workspace:*",
     "@coss/logs": "workspace:*",
+    "@coss/notifications": "workspace:*",
     "@coss/reputation": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/screening": "workspace:*",

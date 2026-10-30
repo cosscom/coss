@@ -7,6 +7,7 @@
  * address, not to an organization.
  */
 import { db, schema } from "@coss/db";
+import { type EmailBlock, oneLine, renderEmail } from "@coss/email-layout";
 import { and, asc, desc, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 
 const { authEmail, invitation, user } = schema;
@@ -220,14 +221,6 @@ async function skipReason(row: AuthEmailRow, now: Date): Promise<string | null> 
 // ---------------------------------------------------------------------------------------------
 
 type Message = Pick<AuthEmailMessage, "subject" | "text" | "html">;
-type Block = { paragraph: string } | { link: { label: string; url: string } };
-
-function oneLine(value: string): string {
-  return value
-    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
 
 const EXPIRY_FORMAT = new Intl.DateTimeFormat("en-US", {
   dateStyle: "long",
@@ -239,9 +232,9 @@ export function renderAuthEmail(
   kind: AuthEmailKind,
   input: { to: string; url: string; data: Partial<Record<string, string>> },
 ): Message {
-  const link = (label: string): Block => ({ link: { label, url: input.url } });
+  const button = (label: string): EmailBlock => ({ button: { label, url: input.url } });
   let subject: string;
-  let blocks: Block[];
+  let blocks: EmailBlock[];
   switch (kind) {
     case "verify_email":
       subject = "Verify your email address for coss.com";
@@ -249,7 +242,7 @@ export function renderAuthEmail(
         {
           paragraph: `Confirm that ${input.to} is your email address to finish setting up coss.com.`,
         },
-        link("Verify email address"),
+        button("Verify email address"),
         {
           paragraph:
             "The link expires in an hour. If you didn't sign up for coss.com, you can ignore this email.",
@@ -260,7 +253,7 @@ export function renderAuthEmail(
       subject = "Reset your coss.com password";
       blocks = [
         { paragraph: `Someone asked to reset the password of the coss.com account ${input.to}.` },
-        link("Choose a new password"),
+        button("Choose a new password"),
         {
           paragraph:
             "The link expires in an hour and works once. If you didn't ask for this, you can " +
@@ -280,7 +273,7 @@ export function renderAuthEmail(
             `${inviter ? `${inviter} (${inviterEmail})` : inviterEmail} invited you to join the ` +
             `organization "${organization}" on coss.com as ${role}.`,
         },
-        link("View the invitation"),
+        button("View the invitation"),
         {
           paragraph:
             `Sign in or sign up with ${input.to} to accept it.` +
@@ -293,36 +286,5 @@ export function renderAuthEmail(
       break;
     }
   }
-  return { subject, text: toText(blocks), html: toHtml(subject, blocks) };
-}
-
-function toText(blocks: Block[]): string {
-  return blocks
-    .map((block) =>
-      "paragraph" in block ? block.paragraph : `${block.link.label}: ${block.link.url}`,
-    )
-    .join("\n\n");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function toHtml(subject: string, blocks: Block[]): string {
-  const body = blocks
-    .map((block) =>
-      "paragraph" in block
-        ? `<p>${escapeHtml(block.paragraph)}</p>`
-        : `<p><a href="${escapeHtml(block.link.url)}">${escapeHtml(block.link.label)}</a></p>`,
-    )
-    .join("\n");
-  return (
-    `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(subject)}</title></head>` +
-    `<body style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#111">\n${body}\n</body></html>`
-  );
+  return renderEmail({ subject, blocks });
 }

@@ -73,7 +73,11 @@ senders (US A2P 10DLC brands and campaigns, toll-free verification) and its phon
   number's verification rejected for an earlier registration is resubmitted with the new details. Only Twilio's 400/422
   answers reject a registration (the business's details); anything else is retried. Numbers and
   subaccounts at a provider other than `SMS_PROVIDER` are never released or replaced (that would
-  orphan them at Twilio): they wait for a deployment with their provider. Monthly fees:
+  orphan them at Twilio): they wait for a deployment with their provider. Owners and admins are
+  emailed (`notifications.ts`, `@coss/notifications`): a reminder an hour after buying a number
+  whose sender isn't registered (toll-free: per number; local: at most one a day), and when a
+  registration is submitted, approved or rejected — each queued in its deciding transaction and
+  skipped when stale at send time. Monthly fees:
   `chargeDueSmsFees`; organization deletion: `releaseOrganizationSmsResources`.
 - **Reputation** (`smsReputationChecks`): `sms_opt_out_rate` (distinct numbers that opted out —
   STOP receipts and sends refused as `opted_out`, never the suppression list, which START or a

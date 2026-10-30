@@ -6,6 +6,7 @@
  * every read and write is scoped by the notification's own organization.
  */
 import { db, type Executor, schema } from "@coss/db";
+import { type EmailBlock, oneLine, renderEmail } from "@coss/email-layout";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import type { CheckResult } from "./checks.ts";
 import { triggerLabel } from "./schemas.ts";
@@ -305,8 +306,6 @@ const ADVICE: Record<string, string> = {
     "Most Hooks messages fail at your applications' endpoints: check that they are your users' real URLs, and disable or delete the ones that no longer answer.",
 };
 
-type Block = { paragraph: string } | { list: string[] } | { link: { label: string; url: string } };
-
 export function renderNotification(input: {
   type: "warning" | "suspended" | "marketing_paused";
   organizationName: string;
@@ -316,13 +315,10 @@ export function renderNotification(input: {
   url: string;
 }): Message {
   const { organizationName: name } = input;
-  const subjectName = name
-    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
-    .replace(/\s+/gu, " ")
-    .trim();
+  const subjectName = oneLine(name);
   const label = triggerLabel(input.trigger);
   const advice = ADVICE[input.trigger];
-  const blocks: Block[] = [];
+  const blocks: EmailBlock[] = [];
   let subject: string;
   if (input.type === "marketing_paused") {
     subject = `Marketing sending is paused for ${subjectName}`;
@@ -369,44 +365,10 @@ export function renderNotification(input: {
         "Nothing is blocked yet. The warning clears on its own once your rates are healthy again.",
     });
   }
-  blocks.push({ link: { label: "View your reputation", url: input.url } });
-  blocks.push({
-    paragraph: `You're receiving this because you're an owner or admin of ${name} on coss.com.`,
+  blocks.push({ button: { label: "View your reputation", url: input.url } });
+  return renderEmail({
+    subject,
+    blocks,
+    reason: `You're receiving this because you're an owner or admin of ${name} on coss.com.`,
   });
-  return { subject, text: toText(blocks), html: toHtml(subject, blocks) };
-}
-
-function toText(blocks: Block[]): string {
-  return blocks
-    .map((block) => {
-      if ("paragraph" in block) return block.paragraph;
-      if ("list" in block) return block.list.map((item) => `- ${item}`).join("\n");
-      return `${block.link.label}: ${block.link.url}`;
-    })
-    .join("\n\n");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function toHtml(subject: string, blocks: Block[]): string {
-  const body = blocks
-    .map((block) => {
-      if ("paragraph" in block) return `<p>${escapeHtml(block.paragraph)}</p>`;
-      if ("list" in block) {
-        return `<ul>${block.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
-      }
-      return `<p><a href="${escapeHtml(block.link.url)}">${escapeHtml(block.link.label)}</a></p>`;
-    })
-    .join("\n");
-  return (
-    `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(subject)}</title></head>` +
-    `<body style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#111">\n${body}\n</body></html>`
-  );
 }

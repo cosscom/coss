@@ -9,6 +9,7 @@ export * from "./dispatch.ts";
 export * from "./errors.ts";
 export * from "./events.ts";
 export * from "./failures.ts";
+export * from "./notifications.ts";
 export * from "./numbers.ts";
 export * from "./phone.ts";
 export * from "./provider.ts";

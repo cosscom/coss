@@ -117,6 +117,8 @@ export const ID_PREFIXES = {
   hookEndpointRecovery: "hrec",
   pushDevice: "pushdev",
   pushNotification: "pushntf",
+  // coss.com's notification emails to organizations (`@coss/notifications`).
+  notification: "ntf",
   // SMS.
   smsMessage: "sms",
   smsEvent: "smsevt",

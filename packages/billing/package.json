@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@coss/db": "workspace:*",
+    "@coss/email-layout": "workspace:*",
     "@coss/push": "workspace:*",
     "@coss/retention": "workspace:*",
     "@coss/versioning": "workspace:*",

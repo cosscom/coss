@@ -34,6 +34,7 @@
     "@better-auth/scim": "catalog:",
     "@better-auth/sso": "catalog:",
     "@coss/db": "workspace:*",
+    "@coss/email-layout": "workspace:*",
     "@coss/signals": "workspace:*",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:"
