@@ -8,11 +8,11 @@ import { eq } from "drizzle-orm";
 import { handleInboundCallback, handleStatusCallback } from "../src/callbacks.ts";
 import { SmsRejectedError, UncertainSendError } from "../src/provider.ts";
 import { getSms } from "../src/read.ts";
-import { SendSmsRequest } from "../src/schemas.ts";
+import { SendSmsRequest, SmsCampaignInput } from "../src/schemas.ts";
 import { createSmsService } from "../src/service.ts";
 import { checkSmsSuppression } from "../src/suppressions.ts";
 import { createTestSmsNumber, memorySmsDispatchQueue, testPhoneNumber } from "../src/testing.ts";
-import { createTwilioApi } from "../src/twilio/api.ts";
+import { createTwilioApi, messageVolume } from "../src/twilio/api.ts";
 import { inboundMessage, statusCallbackEvent } from "../src/twilio/callbacks.ts";
 import { createTwilioClient } from "../src/twilio/client.ts";
 import { TwilioSmsProvider } from "../src/twilio/provider.ts";
@@ -191,6 +191,31 @@ describe("TwilioSmsProvider", () => {
     expect(await garbled.provider.send(OUTBOUND).catch((caught) => caught)).toBeInstanceOf(
       UncertainSendError,
     );
+  });
+});
+
+describe("toll-free message volume", () => {
+  const campaign = {
+    useCase: "2FA",
+    description: "One-time codes for people signing in to Acme's app, sent on request.",
+    messageFlow: "People type their number into Acme's sign-in form and press Send code.",
+    samples: ["Your Acme code is 123456.", "Your Acme code is 654321."],
+    hasEmbeddedLinks: false,
+    hasEmbeddedPhone: false,
+  };
+
+  test("the form takes only Twilio's MessageVolume values", () => {
+    expect(SmsCampaignInput.safeParse({ ...campaign, monthlyVolume: "10,000" }).success).toBe(true);
+    expect(SmsCampaignInput.safeParse({ ...campaign, monthlyVolume: "1000" }).success).toBe(false);
+  });
+
+  test("stored free text becomes the smallest listed volume covering it", () => {
+    expect(messageVolume(null)).toBe("1,000");
+    expect(messageVolume("250,000")).toBe("250,000");
+    expect(messageVolume("1000")).toBe("1,000");
+    expect(messageVolume("2,500")).toBe("10,000");
+    expect(messageVolume("20000000")).toBe("10,000,000+");
+    expect(messageVolume("lots")).toBe("1,000");
   });
 });
 

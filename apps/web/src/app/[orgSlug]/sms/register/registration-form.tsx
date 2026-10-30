@@ -1,6 +1,6 @@
 "use client";
 
-import { SMS_USE_CASE_LABELS, SMS_USE_CASES } from "@coss/sms/schemas";
+import { SMS_MONTHLY_VOLUMES, SMS_USE_CASE_LABELS, SMS_USE_CASES } from "@coss/sms/schemas";
 import { Button } from "@coss/ui/components/button";
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
@@ -292,12 +292,21 @@ export function RegistrationForm(props: {
                 name="optInProofUrl"
                 type="url"
               />
-              <TextField
-                label="Messages a month"
-                name="monthlyVolume"
-                placeholder="1,000"
-                required={false}
-              />
+              <Field>
+                <FieldLabel>Messages a month</FieldLabel>
+                <select
+                  aria-label="Messages a month"
+                  className={SELECT_CLASS}
+                  defaultValue="1,000"
+                  name="monthlyVolume"
+                >
+                  {SMS_MONTHLY_VOLUMES.map((volume) => (
+                    <option key={volume} value={volume}>
+                      {volume}
+                    </option>
+                  ))}
+                </select>
+              </Field>
             </>
           ) : null}
           <label className="flex items-center gap-2 text-sm">

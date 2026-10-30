@@ -8,6 +8,7 @@
  * trust product, the brand, then one messaging service and campaign per registration.
  */
 import type { SmsBusinessProfile, SmsCampaignDetails } from "@coss/db/schema";
+import { SMS_MONTHLY_VOLUMES } from "../schemas.ts";
 import {
   TWILIO_API,
   TWILIO_MESSAGING,
@@ -177,6 +178,22 @@ const REGISTRATION_AUTHORITIES: ReadonlySet<string> = new Set([
   "NEQ",
 ]);
 
+/**
+ * Twilio refuses any `MessageVolume` outside its list. Registrations stored before the form
+ * offered only that list may hold free text ("1000"): read it as a number and take the smallest
+ * listed volume that covers it.
+ */
+export function messageVolume(stored: string | null | undefined): string {
+  if (!stored) return "1,000";
+  if ((SMS_MONTHLY_VOLUMES as readonly string[]).includes(stored)) return stored;
+  const wanted = Number(stored.replace(/[^\d]/g, ""));
+  if (!Number.isFinite(wanted) || wanted <= 0) return "1,000";
+  return (
+    SMS_MONTHLY_VOLUMES.find((volume) => Number(volume.replace(/[^\d]/g, "")) >= wanted) ??
+    "10,000,000+"
+  );
+}
+
 /** What a toll-free verification says about the business and its messages. */
 function tollFreeForm({
   profile,
@@ -194,7 +211,7 @@ function tollFreeForm({
     ProductionMessageSample: campaign.samples[0] ?? "",
     OptInImageUrls: campaign.optInProofUrl ? [campaign.optInProofUrl] : [],
     OptInType: "WEB_FORM",
-    MessageVolume: campaign.monthlyVolume ?? "1,000",
+    MessageVolume: messageVolume(campaign.monthlyVolume),
     AdditionalInformation: campaign.messageFlow,
     BusinessStreetAddress: profile.street,
     BusinessCity: profile.city,
