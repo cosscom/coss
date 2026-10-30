@@ -5,6 +5,7 @@ import {
   type AvailableNumber,
   buySmsNumber,
   createSmsRegistration,
+  listSmsNumbers,
   releaseSmsNumber,
   SmsError,
   searchSmsNumbers,
@@ -19,6 +20,7 @@ import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
 import { requireOrgPermission } from "@/lib/session";
 import { smsSenderDeps } from "@/lib/sms";
+import { registerSenderHref } from "@/lib/sms-registration";
 
 /** SMS and plan refusals carry messages written for customers. */
 async function friendly<T>(body: () => Promise<T>): Promise<T> {
@@ -54,10 +56,17 @@ export async function searchNumbersAction(
   });
 }
 
+/** A bought number and where to register its sender (`null`: nothing to register yet). */
+export type BoughtNumber = {
+  phoneNumber: string;
+  kind: "local" | "toll_free";
+  registerHref: string | null;
+};
+
 export async function buyNumberAction(
-  _previous: ActionResult | null,
+  _previous: ActionResult<BoughtNumber> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<BoughtNumber>> {
   return runAction(async () => {
     const context = await requireOrgPermission(formString(formData, "orgSlug"), {
       smsSender: ["create"],
@@ -81,8 +90,22 @@ export async function buyNumberAction(
       target: { type: "sms_number", id: number.id, label: number.phoneNumber },
       metadata: { kind: number.kind },
     });
+    // Read back with its registration: a local number joins a 10DLC registration already under way.
+    const bought = (await listSmsNumbers(context.organization.id)).find(
+      (row) => row.number.id === number.id,
+    );
     refresh();
-    return null;
+    return {
+      phoneNumber: number.phoneNumber,
+      kind: number.kind,
+      registerHref: bought
+        ? registerSenderHref(
+            context.organization.slug,
+            bought.number,
+            bought.registration?.status ?? null,
+          )
+        : null,
+    };
   });
 }
 
@@ -165,7 +188,7 @@ export async function createRegistrationAction(
   formData: FormData,
 ): Promise<ActionResult> {
   const orgSlug = formString(formData, "orgSlug");
-  const result = await runAction(async () => {
+  const result = await runAction<string>(async () => {
     const context = await requireOrgPermission(orgSlug, { smsSender: ["create"] });
     let raw: unknown;
     try {
@@ -190,8 +213,9 @@ export async function createRegistrationAction(
       environmentId: null,
       target: { type: "sms_registration", id: registration.id, label: registration.kind },
     });
-    return null;
+    return registration.id;
   });
-  if (result?.ok) redirect(`/${orgSlug}/sms`);
+  // The SMS page shows what was submitted and what happens next.
+  if (result.ok) redirect(`/${orgSlug}/sms?registered=${encodeURIComponent(result.data)}`);
   return result;
 }

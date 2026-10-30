@@ -27,10 +27,13 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@coss/ui/components/field";
 import { Input } from "@coss/ui/components/input";
 import { Label } from "@coss/ui/components/label";
+import { ShieldCheckIcon } from "lucide-react";
+import Link from "next/link";
 import { useActionState, useEffect, useId, useState } from "react";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
 import {
+  type BoughtNumber,
   buyNumberAction,
   releaseNumberAction,
   searchNumbersAction,
@@ -68,10 +71,15 @@ function BuyNumber(props: {
   const [chosen, setChosen] = useState<string | null>(null);
   const buyFormId = useId();
   const { onDone } = props;
+  // A number that still needs its sender registered says so before the dialog closes.
   useEffect(() => {
-    if (state?.ok) onDone();
+    if (state?.ok && !state.data.registerHref) onDone();
   }, [state, onDone]);
   const results: AvailableNumber[] = search?.ok && searchedKind === kind ? search.data : [];
+
+  if (state?.ok && state.data.registerHref) {
+    return <RegisterBoughtNumber bought={state.data} registerHref={state.data.registerHref} />;
+  }
 
   return (
     <>
@@ -182,6 +190,40 @@ function BuyNumber(props: {
         >
           Buy number
         </Button>
+      </DialogFooter>
+    </>
+  );
+}
+
+function RegisterBoughtNumber(props: { bought: BoughtNumber; registerHref: string }) {
+  const local = props.bought.kind === "local";
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Register {props.bought.phoneNumber} to send</DialogTitle>
+        <DialogDescription>
+          The number is yours, but carriers only deliver messages from registered senders.
+        </DialogDescription>
+      </DialogHeader>
+      <DialogPanel>
+        <div className="flex gap-3 rounded-lg border bg-muted/40 p-3.5 text-sm">
+          <ShieldCheckIcon
+            aria-hidden
+            className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+            strokeWidth={1.75}
+          />
+          <p className="text-muted-foreground">
+            {local
+              ? "Local numbers send under your business's US A2P 10DLC registration: one registration covers every local number you buy."
+              : "Each toll-free number is verified on its own before it can send."}{" "}
+            Tell us about your business and the messages you'll send; carriers usually review it
+            within a few days, and the number starts sending once it's approved.
+          </p>
+        </div>
+      </DialogPanel>
+      <DialogFooter>
+        <DialogClose render={<Button variant="ghost" />}>Later</DialogClose>
+        <Button render={<Link href={props.registerHref} />}>Register sender</Button>
       </DialogFooter>
     </>
   );
