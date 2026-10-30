@@ -491,6 +491,16 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       if (claimed) await complete(claimed, provider, sandbox);
       return currentEmail(row);
     }
+    if (row.subaccountId) {
+      // Turned off, paused or deleted since it was accepted: its backlog stops with it.
+      try {
+        await assertSubaccountStillSends(row.organizationId, row.subaccountId);
+      } catch (error) {
+        if (!(error instanceof EmailError)) throw error;
+        await failUnclaimed(row, error);
+        return currentEmail(row);
+      }
+    }
     const [claimed] = await db
       .update(email)
       .set({
@@ -1064,6 +1074,9 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
    * and preference links; `marketing-footer.ts`). On the provider's copy only.
    */
   async function withMarketing(row: EmailRow, message: OutboundEmail): Promise<OutboundEmail> {
+    // Topics and the preference center are the environment's own audience: a sub-account's email
+    // keeps its per-category unsubscribe, which suppresses for that sub-account (`instrument`).
+    if (row.subaccountId) return message;
     const marketing = row.stream === "marketing";
     const env = { organizationId: row.organizationId, environmentId: row.environmentId };
     const topic = row.category ? (await topicsByKey(env, [row.category])).get(row.category) : null;
