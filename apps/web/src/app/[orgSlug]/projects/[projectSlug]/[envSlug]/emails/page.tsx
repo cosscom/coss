@@ -1,4 +1,4 @@
-import { listDomains, listEmailsPage } from "@coss/email";
+import { findSubaccount, listDomains, listEmailsPage } from "@coss/email";
 import { formatRetentionDays, RETENTION_DAYS } from "@coss/retention";
 import { getEnvironment } from "@coss/tenancy";
 import { Button } from "@coss/ui/components/button";
@@ -41,9 +41,10 @@ export default async function EmailsPage({
   const filters = emailFilterParams((name) => stringParam(search[name]));
   const before = stringParam(search.before) || undefined;
   const scope = { organizationId: organization.id, environmentId: environment.id };
-  const [page, domains] = await Promise.all([
+  const [page, domains, subaccount] = await Promise.all([
     listEmailsPage({ ...scope, limit: PAGE_SIZE, ...toEmailListFilters(filters), before }),
     listDomains({ organizationId: organization.id }),
+    filters.subaccount ? findSubaccount({ ...scope, ref: filters.subaccount }) : null,
   ]);
 
   const base = environmentPath(organization.slug, project.slug, environment.slug);
@@ -71,7 +72,12 @@ export default async function EmailsPage({
         title="Emails"
       />
 
-      <EmailFilterBar domains={domains.map((domain) => domain.name)} params={filters} path={path} />
+      <EmailFilterBar
+        domains={domains.map((domain) => domain.name)}
+        params={filters}
+        path={path}
+        subaccountLabel={subaccount ? (subaccount.uid ?? subaccount.name) : undefined}
+      />
 
       <Panel
         footer={

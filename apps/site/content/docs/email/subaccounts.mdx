@@ -1,0 +1,145 @@
+---
+title: Email for platforms
+description: Sub-accounts give each of your users their own domains, reputation, quotas and suppressions.
+---
+
+If you run a platform whose users send email (a website builder, a CRM, a store builder), give each
+of those users a **sub-account**. A sub-account has its own:
+
+- **domains** and sending reputation at the mail provider (its own SES tenant),
+- **reputation** at coss.com: its bounces, complaints and blocked content pause it, not you,
+- **quotas** you set on it,
+- **suppression list**, and
+- **stats**.
+
+Your organization stays accountable for its sub-accounts. They are billed to you, your own
+[reputation](/docs/email/delivery) still counts everything they send, and if your organization is
+suspended, all of them stop.
+
+Live sub-accounts need a plan with sub-accounts (Scale or Enterprise). Sandbox ones are free, so you
+can build your integration first. Sub-accounts send transactional email only.
+
+## Create a sub-account
+
+Create one per user, and give it a `uid` (your own id for that user). Every call that takes a
+sub-account accepts its `id` (`sub_…`) or its `uid`.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: subaccount } = await coss.email.subaccounts.create({
+  name: "Acme Bakery",
+  uid: "user_8812",
+  quotas: { recipients_per_day: 5000 },
+});
+```
+
+Sub-accounts belong to the API key's environment. A `coss_test_…` key only sees sandbox ones, and a
+`coss_live_…` key only sees production ones.
+
+## Send for a sub-account
+
+Name the sub-account with `subaccount`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.email.send({
+  subaccount: "user_8812",
+  from: "Acme Bakery <orders@acmebakery.com>",
+  to: "customer@example.com",
+  subject: "Your order is ready",
+  html: "<p>Come and pick it up.</p>",
+});
+```
+
+Over [SMTP](/docs/email/smtp), use the `X-Coss-Subaccount` header. In a batch, each email can name
+its own sub-account. The email's `subaccount_id`, and the `subaccount_id` in its webhook events, tell
+you which user it was for.
+
+## Domains
+
+A live sub-account sends from:
+
+- **its own domains.** Add them with `subaccount`. Only that sub-account can send from them, through
+  its own sending reputation at the mail provider. If the provider pauses that reputation, only that
+  sub-account stops (`sending_paused`).
+- **domains you share with your sub-accounts.** For users who don't have a domain of their own, share
+  one of yours. They then send from it through your organization's sending reputation, and your
+  [dedicated IPs](/docs/email/dedicated-ips) if you have them. Sub-accounts' own domains send from
+  shared IPs.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const yourDomainId: string;
+// ---cut---
+// The user's own domain: publish its DNS records, like any domain.
+const { data: domain } = await coss.domains.create({
+  name: "acmebakery.com",
+  subaccount: "user_8812",
+});
+
+// Or let every sub-account send from one of your own domains.
+await coss.domains.update(yourDomainId, { shared_with_subaccounts: true });
+```
+
+Nobody else can send from a sub-account's domain. Your own sends can't either: name the sub-account
+instead. A sub-account can have up to 10 domains, and up to 5 awaiting verification at once. They
+don't count toward your plan's domain limit. Sub-accounts' domains don't have custom tracking or
+receiving domains yet.
+
+## Quotas
+
+Set a daily quota, a per-second quota, or both. A send over one is refused with `429`
+`quota_exceeded`, and your other sub-accounts go on sending. Your organization's own quotas apply
+too. Change them with `coss.email.subaccounts.update`. `null` removes a quota.
+
+## Reputation
+
+coss.com measures each sub-account's permanent bounce and complaint rates on its own. It uses your
+organization's window and thresholds (see [delivery](/docs/email/delivery)). At the warning threshold
+the sub-account's reputation becomes `warning`, and it clears once the rates recover. At the
+suspension threshold, or when [content screening](/docs/email/delivery) blocks one of its emails, it
+becomes `paused`: its live sends are refused with `403` `subaccount_paused`.
+
+A pause is never lifted on its own. Once you've dealt with the cause, reinstate the sub-account. Its
+rates are then measured again from that moment.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data } = await coss.email.subaccounts.get("user_8812");
+if (data?.reputation.status === "paused") {
+  await coss.email.subaccounts.reinstate("user_8812");
+}
+```
+
+Subscribe a [webhook endpoint](/docs/webhooks) to these events to hear about changes:
+`subaccount.reputation_warning`, `subaccount.reputation_recovered`, `subaccount.paused` and
+`subaccount.reinstated`. They are sent for live sub-accounts only.
+
+Every new sub-account's first emails are always screened for spam and phishing, so a bad actor who
+signs up to your platform is caught early.
+
+## Suppressions
+
+A sub-account's sends skip addresses on its own suppression list and on your environment's list.
+Its permanent bounces, complaints and one-click unsubscribes go on its own list only, so one user's
+bounces never block another's mail. Manage a sub-account's list by passing `subaccount` to the
+[suppression](/docs/email/suppressions) calls.
+
+## Stats and emails
+
+`coss.email.subaccounts.stats("user_8812")` returns its recipients per day: sent, delivered, bounced,
+complained, failed and suppressed, for up to the last 45 days. `coss.email.list({ subaccount })` lists
+its emails.
+
+## Disable or delete
+
+`status: "disabled"` refuses a sub-account's sends until you set it back to `active`. Deleting a
+sub-account refuses its sends at once. Its domains are then released and it is removed with its
+suppression list. Its emails stay, with its id.

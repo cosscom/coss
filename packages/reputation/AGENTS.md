@@ -49,3 +49,14 @@ repository root.
   `next_attempt_at` out by a 5-minute lease; failures back off 1, 2, 4… min and become `failed` after 8 attempts.
   Content is customer-facing: trigger label, the checks' messages, advice and a dashboard link — never screening
   scores or admin notes. Recoveries and reinstatements send no email (`NOTIFIED_TRANSITIONS`).
+- **Email sub-accounts' own standing** (`packages/email/src/subaccount-reputation.ts`, columns on `email_subaccount`):
+  not part of this package's tables. A sub-account's live transactional bounce and complaint rates use the
+  organization's policy (`policyOf`) and window (never before its `reinstated_at`), counted live from its emails
+  (`countSlices({ subaccountId })`; no rollups yet); `markSubaccountReputationDue` is called next to
+  `markReputationDue` by `recordProviderEvent`, and the worker's `reputation` loop also runs
+  `runDueSubaccountEvaluations` (warned ones, and unhealthy rates below minimum volume, re-checked hourly; a marker
+  set during an evaluation is kept). `decideSubaccount`: `good` ⇄ `warning`, `suspend` → `paused`, never lifted
+  automatically (only `reinstateSubaccount`: the customer, from the API or dashboard). Transitions bump `revision`
+  (stale evaluations write nothing) and send `subaccount.*` webhooks to the sub-account's environment (live only). A
+  paused sub-account never moves the organization's standing, which still counts all its sending.
+

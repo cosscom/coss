@@ -11,9 +11,16 @@ import {
   AlertDialogTrigger,
 } from "@coss/ui/components/alert-dialog";
 import { Button } from "@coss/ui/components/button";
+import { Switch } from "@coss/ui/components/switch";
+import { useRef } from "react";
 import { FormError } from "@/components/form-error";
 import { useActionToast } from "@/lib/toast";
-import { deleteDomainAction, type VerifyOutcome, verifyDomainAction } from "../actions";
+import {
+  deleteDomainAction,
+  shareDomainWithSubaccountsAction,
+  type VerifyOutcome,
+  verifyDomainAction,
+} from "../actions";
 
 type Target = { orgSlug: string; domainId: string };
 
@@ -89,5 +96,32 @@ export function DeleteDomainButton(props: Target & { name: string }) {
         </form>
       </AlertDialogPopup>
     </AlertDialog>
+  );
+}
+
+/** Shares the domain with the organization's sub-accounts (saves on change). */
+export function ShareWithSubaccountsSwitch(props: {
+  orgSlug: string;
+  domainId: string;
+  shared: boolean;
+  disabled: boolean;
+}) {
+  const [, formAction, pending] = useActionToast(shareDomainWithSubaccountsAction, {
+    success: props.shared ? "No longer shared with sub-accounts" : "Shared with sub-accounts",
+    errors: "toast",
+  });
+  const form = useRef<HTMLFormElement>(null);
+  return (
+    <form action={formAction} className="flex items-center gap-2" ref={form}>
+      <input name="orgSlug" type="hidden" value={props.orgSlug} />
+      <input name="domainId" type="hidden" value={props.domainId} />
+      <input name="shared" type="hidden" value={String(!props.shared)} />
+      <Switch
+        aria-label="Share with sub-accounts"
+        checked={pending ? !props.shared : props.shared}
+        disabled={props.disabled || pending}
+        onCheckedChange={() => form.current?.requestSubmit()}
+      />
+    </form>
   );
 }

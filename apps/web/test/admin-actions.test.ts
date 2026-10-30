@@ -9,6 +9,7 @@ mock.module("@coss/email", () => ({
   DomainError: class extends Error {},
   EmailError: class extends Error {},
   InboxError: class extends Error {},
+  SubaccountError: class extends Error {},
 }));
 mock.module("@coss/tenancy", () => ({ TenancyError: class extends Error {} }));
 const audit = mock(async () => {});

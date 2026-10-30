@@ -78,6 +78,7 @@ export const ENVIRONMENT_NAV: NavGroup[] = [
       { label: "Received", path: "/received", icon: InboxIcon },
       { label: "Inboxes", path: "/inboxes", icon: BotIcon },
       { label: "Suppressions", path: "/suppressions", icon: BanIcon },
+      { label: "Sub-accounts", path: "/subaccounts", icon: UsersIcon },
       { label: "Tracking", path: "/tracking", icon: MousePointerClickIcon },
       { label: "Content storage", path: "/content-storage", icon: DatabaseIcon },
     ],

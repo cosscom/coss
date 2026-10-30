@@ -22,7 +22,10 @@ repository root.
   Highest category score ≥ `blockThreshold` → `blocked`: the email fails `content_rejected` and
   `suspendOrganization(trigger "content_screening")` in the verdict's transaction; ≥ `flagThreshold` → `flagged`
   (sent, `markReputationDue`); `contentScreeningCheck` turns enforced verdicts in the window into `suspend`/`warning`.
-  `enforce: false` is shadow mode (record only); `enabled: false` screens nothing. Verdict rows never store content;
+  A **group** (`ScreenInput.group`, an email sub-account) is sampled on its own counter row
+  (`content_screening_counter.group_id`, so its first messages are always screened), its verdicts carry `group_id`, and
+  a block calls the group's `onBlock` (email pauses the sub-account) instead of suspending the organization;
+  `contentScreeningCheck` leaves group verdicts out. `enforce: false` is shadow mode (record only); `enabled: false` screens nothing. Verdict rows never store content;
   scores are admin-only (customers see `content_rejected` and the standing, never an oracle). The AI adapter asks one
   boolean question per category with `experimental_decide` (renamed from `experimental_evaluate`), passes the message
   as JSON state with "untrusted data" in every instruction, and always requests Gateway `zeroDataRetention`.

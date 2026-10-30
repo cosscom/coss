@@ -29,6 +29,8 @@ export type EmailFilterParams = {
   since: string;
   /** Created on or before this UTC day (`YYYY-MM-DD`). */
   until: string;
+  /** Only one sub-account's emails (its id; linked from its page). */
+  subaccount: string;
 };
 
 /** The filters besides the search and the status: what the filter popover edits. */
@@ -63,6 +65,7 @@ export function emailFilterParams(get: (name: string) => string): EmailFilterPar
     domain: get("domain"),
     since: dayStart(since) ? since : "",
     until: dayStart(until) ? until : "",
+    subaccount: /^sub_[0-9a-z]{26}$/.test(get("subaccount")) ? get("subaccount") : "",
   };
 }
 
@@ -84,12 +87,16 @@ export function toEmailListFilters(params: EmailFilterParams): EmailListFilters 
     createdAfter: dayStart(params.since),
     // The whole `until` day is included.
     createdBefore: until ? new Date(until.getTime() + 86_400_000) : undefined,
+    subaccountId: params.subaccount || undefined,
   };
 }
 
 export function hasEmailFilters(params: EmailFilterParams): boolean {
   return (
-    Boolean(params.q) || params.status !== "all" || EMAIL_DETAIL_FILTERS.some((key) => params[key])
+    Boolean(params.q) ||
+    params.status !== "all" ||
+    Boolean(params.subaccount) ||
+    EMAIL_DETAIL_FILTERS.some((key) => params[key])
   );
 }
 
