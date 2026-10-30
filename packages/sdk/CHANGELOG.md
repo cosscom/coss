@@ -1,5 +1,26 @@
 # coss
 
+## 0.10.0
+
+### Minor Changes
+
+- 0464e77: Email for platforms: `coss.email.subaccounts` creates, reads, updates and deletes sub-accounts, one per user of your platform, each with its own quotas, suppression list and reputation (addressed by id or your own `uid`), and reports their sending per day (`stats`). Sends, batch sends and suppression calls take a `subaccount`, `coss.email.list` filters by it, and emails, suppressions and email webhook events carry `subaccount_id`. Domains can belong to a sub-account (`coss.domains.create({ name, subaccount })`, `coss.domains.list({ subaccount })`), and `coss.domains.update(id, { shared_with_subaccounts })` shares one of your own domains with your sub-accounts; domains carry `subaccount_id` and `shared_with_subaccounts`. `coss.email.subaccounts.reinstate()` lifts a sub-account's reputation pause, and `subaccount.reputation_warning`, `subaccount.reputation_recovered`, `subaccount.paused` and `subaccount.reinstated` webhook events (`SubaccountWebhookEvent`, live only) announce its standing changes.
+- 80a9c6f: Inboxes: `coss.inboxes` gives an AI agent its own email address (`create`, `list`, `get`, `update`, `delete`), with received mail kept as threads (`coss.inboxes.threads`) and messages sent and replied from the address (`coss.inboxes.messages.send`, `.reply`). New webhook event `inbox.message.received`.
+- 62cdc89: Risk: `coss.risk.checkPhone(phone)` checks a phone number on its own: whether it exists, its line type (mobile, landline, fixed or non-fixed VoIP…), carrier and, where carriers share it, a recent SIM swap.
+- 9d4c942: Sign: `coss.sign.requests.remove(id)` deletes a request that isn't `sent`, with its audit trail, signatures and signed document. Billing usage gains the `sign.completed_requests` meter.
+- f9f26a4: Add `coss.sign`: upload PDFs (`coss.sign.documents`) and create, send, cancel and read signature requests with their signers, fields (placed by position or text anchor) and hash-chained audit trail (`coss.sign.requests`).
+- d55a308: Sign: signers with `delivery: "email"` get their invitation, reminders and signed copy by email. `coss.sign.requests.remind(id)` asks for a reminder now, requests take `reminder_interval_days` and report `expired_at`, settings gain `email_from` and `reminder_interval_days`, and webhooks gain `sign_request.expired`.
+- 7e77a8e: Sign: `coss.sign.sessions.create()` makes a signing link for a signer who signs in your app, `coss.sign.settings` reads and changes the signing page's settings (embedding origins, branding, consent text), the new `coss/sign` entry's `mountSigning()` embeds the signing page in an iframe, and webhooks gain the `sign_request.*` events (`SignRequestWebhookEvent`).
+- 0718160: Sign: completed requests get a sealed, signed PDF (the documents as signed and a certificate of completion). `SignRequest.signed_document` says when it is ready, `coss.sign.requests.signedDocument(id)` downloads it, and the `sign_request.completed` webhook now arrives once it is ready. The audit trail gains the `sealed` event.
+- c0e5c69: Sign: templates (`coss.sign.templates`: documents with fields for roles and merge fields, `createRequest()` to make a request by naming a signer per role) and the embedded template builder (`coss.sign.templates.createBuilderSession()`, `mountBuilder()` from `coss/sign`).
+- a85e735: Verify: one-time codes by SMS or email. `coss.verify.start({ to })` sends a code (behind a fraud guard that stops SMS pumping before anything is sent), `coss.verify.check({ to, code })` checks the one the end user typed; also `get`, `list` and `cancel`.
+- a4e2b6a: Verify's types: `Verification`, `VerificationCheck` and the `verification.approved`, `verification.failed` and `verification.blocked` webhook events (also in `WEBHOOK_EVENT_TYPES`), and the `verify` log source.
+
+### Patch Changes
+
+- e97dd14: Billing: the `email.received` and `email.inboxes` meters, and the plan's `limits.inboxes`.
+- fbdc39f: Billing: the `Meter` type gains `risk.phone_checks` (live phone checks, $0.01 each; every plan includes 100 a month). `coss.risk.checkPhone()` is no longer retried automatically: each answered live check is billed.
+
 ## 0.9.0
 
 ### Minor Changes
