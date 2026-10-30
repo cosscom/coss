@@ -7,6 +7,7 @@
  * spans organizations, and every read and write is scoped by the row's own organization.
  */
 import { db, schema } from "@coss/db";
+import { type EmailBlock, oneLine, renderEmail } from "@coss/email-layout";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
 import { DMARC_READINESS } from "./dmarc-guidance.ts";
 import { dmarcReadyRecord } from "./dmarc-reports.ts";
@@ -206,15 +207,6 @@ async function notificationContent(
 // never source addresses from the reports.
 // ---------------------------------------------------------------------------------------------
 
-type Block = { paragraph: string } | { code: string } | { link: { label: string; url: string } };
-
-function oneLine(value: string): string {
-  return value
-    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ")
-    .replace(/\s+/gu, " ")
-    .trim();
-}
-
 export function renderDmarcNotification(input: {
   kind: DmarcNotificationRow["kind"];
   domain: string;
@@ -223,7 +215,7 @@ export function renderDmarcNotification(input: {
   url: string;
 }): Message {
   const { domain: name } = input;
-  const blocks: Block[] = [];
+  const blocks: EmailBlock[] = [];
   let subject: string;
   const record = typeof input.detail.record === "string" ? input.detail.record : null;
   if (input.kind === "ready_quarantine" || input.kind === "ready_reject") {
@@ -256,48 +248,10 @@ export function renderDmarcNotification(input: {
         "Check the domain's DKIM and MAIL FROM records in the dashboard, and that the From address of your emails is on this domain.",
     });
   }
-  blocks.push({ link: { label: "View the DMARC reports", url: input.url } });
-  blocks.push({
-    paragraph: `You're receiving this because you're an owner or admin of ${oneLine(input.organizationName)} on coss.com.`,
+  blocks.push({ button: { label: "View the DMARC reports", url: input.url } });
+  return renderEmail({
+    subject,
+    blocks,
+    reason: `You're receiving this because you're an owner or admin of ${oneLine(input.organizationName)} on coss.com.`,
   });
-  return {
-    subject: oneLine(subject),
-    text: toText(blocks),
-    html: toHtml(oneLine(subject), blocks),
-  };
-}
-
-function toText(blocks: Block[]): string {
-  return blocks
-    .map((block) => {
-      if ("paragraph" in block) return block.paragraph;
-      if ("code" in block) return `    ${block.code}`;
-      return `${block.link.label}: ${block.link.url}`;
-    })
-    .join("\n\n");
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function toHtml(subject: string, blocks: Block[]): string {
-  const body = blocks
-    .map((block) => {
-      if ("paragraph" in block) return `<p>${escapeHtml(block.paragraph)}</p>`;
-      if ("code" in block) {
-        return `<pre style="background:#f4f4f5;padding:12px;white-space:pre-wrap;word-break:break-all"><code>${escapeHtml(block.code)}</code></pre>`;
-      }
-      return `<p><a href="${escapeHtml(block.link.url)}">${escapeHtml(block.link.label)}</a></p>`;
-    })
-    .join("\n");
-  return (
-    `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(subject)}</title></head>` +
-    `<body style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#111">\n${body}\n</body></html>`
-  );
 }

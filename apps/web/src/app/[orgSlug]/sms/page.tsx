@@ -8,7 +8,7 @@ import {
   listSmsRegistrations,
 } from "@coss/sms";
 import { listProjectsWithEnvironments } from "@coss/tenancy";
-import { Alert, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@coss/ui/components/alert";
 import { Button } from "@coss/ui/components/button";
 import {
   Table,
@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
-import { MessageSquareIcon, ShieldCheckIcon } from "lucide-react";
+import { MessageSquareIcon, ShieldAlertIcon, ShieldCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -30,6 +30,8 @@ import { StatusDot } from "@/components/status-dot";
 import { formatDateTime } from "@/lib/format";
 import { requireOrgMember } from "@/lib/session";
 import { smsProvisioningEnabled } from "@/lib/sms";
+import { needsSenderRegistration, registerSenderHref } from "@/lib/sms-registration";
+import { RegistrationSubmittedPanel } from "./registration-submitted";
 import {
   BuyNumberDialog,
   CountriesForm,
@@ -73,8 +75,54 @@ function pricedCountries(): { code: string; price: string }[] {
 
 const KIND_LABEL = { us_10dlc: "US A2P 10DLC", toll_free: "Toll-free verification" } as const;
 
-export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSlug]/sms">) {
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+/** What the numbers still waiting on a registration need, and the one place to start it. */
+function registrationPrompt(
+  orgSlug: string,
+  unregistered: { kind: "local" | "toll_free"; href: string | null }[],
+): { description: string; href: string } | null {
+  const local = unregistered.filter((row) => row.kind === "local");
+  const tollFree = unregistered.filter((row) => row.kind === "toll_free");
+  if (local.length === 0 && tollFree.length === 0) return null;
+  const which = [
+    local.length > 0 ? plural(local.length, "local number", "local numbers") : null,
+    tollFree.length > 0 ? plural(tollFree.length, "toll-free number", "toll-free numbers") : null,
+  ]
+    .filter(Boolean)
+    .join(" and ");
+  const steps = [
+    local.length > 0
+      ? "Register your business for US A2P 10DLC (one registration covers every local number)"
+      : null,
+    tollFree.length > 0
+      ? `${local.length > 0 ? "verify" : "Verify"} ${tollFree.length === 1 ? "the toll-free number" : "each toll-free number"}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(", then ");
+  // Local numbers first: one registration unblocks all of them.
+  const [only] = tollFree;
+  const href =
+    local.length > 0
+      ? `/${orgSlug}/sms/register?kind=us_10dlc`
+      : tollFree.length === 1 && only?.href
+        ? only.href
+        : `/${orgSlug}/sms/register?kind=toll_free`;
+  return {
+    description: `Carriers only deliver messages from registered senders, so your ${which} can't send yet. ${steps}; carriers usually review it within a few days.`,
+    href,
+  };
+}
+
+export default async function OrganizationSmsPage({
+  params,
+  searchParams,
+}: PageProps<"/[orgSlug]/sms">) {
   const { orgSlug } = await params;
+  const query = await searchParams;
   const { organization, can } = await requireOrgMember(orgSlug);
   if (!can({ smsSender: ["read"] })) notFound();
   const [numbers, registrations, account, projects] = await Promise.all([
@@ -84,6 +132,9 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
     listProjectsWithEnvironments({ organizationId: organization.id }),
   ]);
   const sendable = numbers.map((row) => row.canSend);
+  const registerHrefs = numbers.map((row) =>
+    registerSenderHref(organization.slug, row.number, row.registration?.status ?? null),
+  );
   const environments: EnvironmentOption[] = projects.flatMap(({ project, environments: list }) =>
     list
       .filter((environment) => environment.mode === "live")
@@ -108,8 +159,26 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
       locked: HIGH_RISK_SMS_COUNTRIES.includes(country.code) && !unlocked.includes(country.code),
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
-  const tenDlc = registrations.find(
-    (row) => row.kind === "us_10dlc" && row.status !== "rejected" && row.status !== "failed",
+  const submitted =
+    typeof query.registered === "string"
+      ? registrations.find((row) => row.id === query.registered)
+      : undefined;
+  const submittedNumbers = submitted
+    ? numbers
+        .filter((row) =>
+          submitted.kind === "toll_free"
+            ? row.number.id === submitted.numberId
+            : row.number.kind === "local" && row.number.registrationId === submitted.id,
+        )
+        .map((row) => row.number.phoneNumber)
+    : [];
+  const prompt = registrationPrompt(
+    organization.slug,
+    numbers.flatMap((row, index) =>
+      needsSenderRegistration(row.number, row.registration?.status ?? null)
+        ? [{ kind: row.number.kind, href: registerHrefs[index] ?? null }]
+        : [],
+    ),
   );
 
   return (
@@ -133,6 +202,14 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
         title="SMS"
       />
 
+      {submitted ? (
+        <RegistrationSubmittedPanel
+          numbers={submittedNumbers}
+          orgSlug={organization.slug}
+          registration={submitted}
+        />
+      ) : null}
+
       {!enabled ? (
         <Alert>
           <AlertTitle>SMS senders aren't available yet</AlertTitle>
@@ -141,13 +218,22 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
             with live SMS.
           </AlertDescription>
         </Alert>
-      ) : !tenDlc && numbers.some((row) => row.number.kind === "local") ? (
+      ) : prompt ? (
         <Alert variant="warning">
-          <AlertTitle>Register your business to send from local numbers</AlertTitle>
+          <ShieldAlertIcon />
+          <AlertTitle>Register a sender to start sending</AlertTitle>
           <AlertDescription>
-            US carriers block A2P traffic from unregistered 10DLC numbers. Registration takes a few
-            days; your numbers start sending once it is approved.
+            {canCreate
+              ? prompt.description
+              : `${prompt.description} Ask an organization admin to register it.`}
           </AlertDescription>
+          {canCreate ? (
+            <AlertAction>
+              <Button render={<Link href={prompt.href} />} size="sm">
+                Register sender
+              </Button>
+            </AlertAction>
+          ) : null}
         </Alert>
       ) : null}
 
@@ -161,6 +247,11 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
         {numbers.length === 0 ? (
           <PanelBody flush>
             <EmptyState
+              action={
+                canCreate ? (
+                  <BuyNumberDialog environments={environments} orgSlug={organization.slug} />
+                ) : null
+              }
               compact
               description="Buy a local number (registered for US A2P 10DLC) or a toll-free one (verified on its own)."
               icon={MessageSquareIcon}
@@ -188,6 +279,19 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
                   <TableCell>
                     {sendable[index] ? (
                       <StatusDot tone="success">Can send</StatusDot>
+                    ) : registerHrefs[index] ? (
+                      <span className="inline-flex items-center gap-3">
+                        <RegistrationStatusDot status={row.registration?.status ?? null} />
+                        {canCreate ? (
+                          <Button
+                            render={<Link href={registerHrefs[index]} />}
+                            size="xs"
+                            variant="outline"
+                          >
+                            {row.registration ? "Register again" : "Register"}
+                          </Button>
+                        ) : null}
+                      </span>
                     ) : row.number.status === "pending" ? (
                       <StatusDot tone="warning">Setting up</StatusDot>
                     ) : (
@@ -234,6 +338,16 @@ export default async function OrganizationSmsPage({ params }: PageProps<"/[orgSl
         {registrations.length === 0 ? (
           <PanelBody flush>
             <EmptyState
+              action={
+                canCreate && numbers.length > 0 ? (
+                  <Button
+                    render={<Link href={prompt?.href ?? `/${organization.slug}/sms/register`} />}
+                    size="sm"
+                  >
+                    Register a sender
+                  </Button>
+                ) : null
+              }
               compact
               description="Register your business for US A2P 10DLC, or verify a toll-free number."
               icon={ShieldCheckIcon}

@@ -310,6 +310,7 @@
         "@coss/hooks": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/migrate": "workspace:*",
+        "@coss/notifications": "workspace:*",
         "@coss/observability": "workspace:*",
         "@coss/push": "workspace:*",
         "@coss/ratelimit": "workspace:*",
@@ -366,6 +367,7 @@
         "@better-auth/scim": "catalog:",
         "@better-auth/sso": "catalog:",
         "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
         "@coss/signals": "workspace:*",
         "better-auth": "catalog:",
         "drizzle-orm": "catalog:",
@@ -382,6 +384,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
         "@coss/push": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/versioning": "workspace:*",
@@ -447,6 +450,7 @@
         "@aws-sdk/client-sesv2": "catalog:",
         "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
         "@coss/forms": "workspace:*",
         "@coss/logs": "workspace:*",
         "@coss/reputation": "workspace:*",
@@ -471,6 +475,15 @@
         "@types/bun": "catalog:",
         "@types/nodemailer": "catalog:",
         "nodemailer": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/email-layout": {
+      "name": "@coss/email-layout",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -598,6 +611,22 @@
         "typescript": "catalog:",
       },
     },
+    "packages/notifications": {
+      "name": "@coss/notifications",
+      "version": "0.0.0",
+      "dependencies": {
+        "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
+        "@coss/retention": "workspace:*",
+        "drizzle-orm": "catalog:",
+      },
+      "devDependencies": {
+        "@coss/tenancy": "workspace:*",
+        "@coss/tsconfig": "workspace:*",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/observability": {
       "name": "@coss/observability",
       "version": "0.0.0",
@@ -650,6 +679,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
         "@coss/push": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/webhooks": "workspace:*",
@@ -790,7 +820,9 @@
       "dependencies": {
         "@coss/billing": "workspace:*",
         "@coss/db": "workspace:*",
+        "@coss/email-layout": "workspace:*",
         "@coss/logs": "workspace:*",
+        "@coss/notifications": "workspace:*",
         "@coss/reputation": "workspace:*",
         "@coss/retention": "workspace:*",
         "@coss/screening": "workspace:*",
@@ -1316,6 +1348,8 @@
 
     "@coss/email": ["@coss/email@workspace:packages/email"],
 
+    "@coss/email-layout": ["@coss/email-layout@workspace:packages/email-layout"],
+
     "@coss/forms": ["@coss/forms@workspace:packages/forms"],
 
     "@coss/hooks": ["@coss/hooks@workspace:packages/hooks"],
@@ -1327,6 +1361,8 @@
     "@coss/migrate": ["@coss/migrate@workspace:packages/migrate"],
 
     "@coss/mobile": ["@coss/mobile@workspace:apps/mobile"],
+
+    "@coss/notifications": ["@coss/notifications@workspace:packages/notifications"],
 
     "@coss/observability": ["@coss/observability@workspace:packages/observability"],
 

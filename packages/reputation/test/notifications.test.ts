@@ -342,6 +342,6 @@ describe("renderNotification", () => {
     expect(message.html).not.toContain("<b>Acme</b>");
     expect(message.html).toContain("&lt;b&gt;Acme&lt;/b&gt; &amp; &quot;Co&quot;");
     expect(message.html).toContain('href="https://coss.com/acme/reputation?a=1&amp;b=2"');
-    expect(message.html).toContain("<li>2 messages look like spam or phishing");
+    expect(message.html).toMatch(/<li[^>]*>2 messages look like spam or phishing/);
   });
 });

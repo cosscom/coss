@@ -55,6 +55,7 @@ import {
 } from "@coss/hooks";
 import { dropExpiredLogPartitions, ensureLogPartitions } from "@coss/logs";
 import { type MigrationWorkerDeps, runDueMigrations } from "@coss/migrate";
+import { runDueNotifications } from "@coss/notifications";
 import { type PushDeps, runDuePushNotifications } from "@coss/push";
 import {
   type ReputationNotificationDeps,
@@ -96,6 +97,7 @@ import {
 import { pollSesInbound, type SesInboundDeps } from "./inbound.ts";
 import type { Loop } from "./loop.ts";
 import { startLoop } from "./loop.ts";
+import { NOTIFICATION_KINDS } from "./notification-kinds.ts";
 import { runRetention } from "./retention.ts";
 import { pollSesEvents, type SqsApi } from "./sqs.ts";
 
@@ -208,7 +210,7 @@ export type WorkerDeps = {
 /**
  * Every loop (and pg-boss's email dispatch, one queue per stream), by name, for `WORKER_LOOPS`. The
  * conditional ones (`billing-notifications`, `auth-emails`, `reputation-notifications`,
- * `dmarc-notifications`, `push-notifications`, `sign-completions`, `sign-notifications`, `sign-cleanup`, `forms`, `ses-events`,
+ * `dmarc-notifications`, `notifications`, `push-notifications`, `sign-completions`, `sign-notifications`, `sign-cleanup`, `forms`, `ses-events`,
  * `ses-inbound`) also need their
  * configuration.
  */
@@ -249,6 +251,7 @@ export const WORKER_LOOP_NAMES = [
   "auth-emails",
   "reputation-notifications",
   "dmarc-notifications",
+  "notifications",
   "push-notifications",
   "sign-completions",
   "sign-notifications",
@@ -640,6 +643,16 @@ export function startJobs(deps: WorkerDeps): Loop[] {
           (await runDueDmarcNotifications(
             { limit: NOTIFICATION_BATCH },
             { ...notifications, dmarcReportDomain: deps.domains.dmarcReportDomain ?? null },
+          )) === NOTIFICATION_BATCH,
+      }),
+      start({
+        // Next steps and outcomes (an SMS sender's registration): `@coss/notifications`.
+        name: "notifications",
+        intervalMs: 5000,
+        run: async () =>
+          (await runDueNotifications(
+            { limit: NOTIFICATION_BATCH },
+            { ...notifications, kinds: NOTIFICATION_KINDS },
           )) === NOTIFICATION_BATCH,
       }),
     );

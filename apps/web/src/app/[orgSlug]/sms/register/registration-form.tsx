@@ -85,8 +85,10 @@ export function RegistrationForm(props: {
   orgSlug: string;
   tollFreeNumbers: { id: string; phoneNumber: string }[];
   canRegister10dlc: boolean;
+  initialKind: "us_10dlc" | "toll_free";
+  initialNumberId: string | null;
 }) {
-  const [kind, setKind] = useState(props.canRegister10dlc ? "us_10dlc" : "toll_free");
+  const [kind, setKind] = useState<string>(props.initialKind);
   const [brandType, setBrandType] = useState("low_volume_standard");
   const [companyType, setCompanyType] = useState("PRIVATE_PROFIT");
   // Carriers take only the low-volume mixed use case from a low-volume standard brand.
@@ -151,7 +153,12 @@ export function RegistrationForm(props: {
           ) : (
             <Field>
               <FieldLabel>Toll-free number</FieldLabel>
-              <select aria-label="Toll-free number" className={SELECT_CLASS} name="numberId">
+              <select
+                aria-label="Toll-free number"
+                className={SELECT_CLASS}
+                defaultValue={props.initialNumberId ?? undefined}
+                name="numberId"
+              >
                 {props.tollFreeNumbers.map((number) => (
                   <option key={number.id} value={number.id}>
                     {number.phoneNumber}

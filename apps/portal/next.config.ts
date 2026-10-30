@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
     "@coss/retention",
     "@coss/webhooks",
     "@coss/versioning",
+    "@coss/email-layout",
   ],
   // A self-contained server (.next/standalone) for the container image, traced from the monorepo
   // root so Bun's isolated node_modules (node_modules/.bun) are copied in.

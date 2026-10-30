@@ -30,6 +30,7 @@ import {
 } from "drizzle-orm";
 import { ensureSmsAccountRow } from "./accounts.ts";
 import { SmsError } from "./errors.ts";
+import { enqueueSmsNumberReminder, enqueueSmsRegistrationNotice } from "./notifications.ts";
 import { isTollFreeNumber, parsePhoneNumber } from "./phone.ts";
 import type { SmsRegistrationInputOutput } from "./schemas.ts";
 import type { AvailableNumber, ReviewStatus, TwilioApi } from "./twilio/api.ts";
@@ -260,6 +261,7 @@ export async function createSmsRegistration(
       })
       .returning();
     if (!row) throw new Error("Registration insert returned no row.");
+    await enqueueSmsRegistrationNotice(tx, row, "submitted", row.submittedAt ?? new Date());
     if (numberId) {
       await tx
         .update(smsNumber)
@@ -602,6 +604,7 @@ export async function advanceSmsRegistration(
           ),
         )
         .returning();
+      if (rejected) await enqueueSmsRegistrationNotice(tx, rejected, "rejected", now);
       return rejected ?? null;
     }
     const done = outcome.next.step === "done";
@@ -650,6 +653,7 @@ export async function advanceSmsRegistration(
         ),
       )
       .returning();
+    if (updated && done) await enqueueSmsRegistrationNotice(tx, updated, "approved", now);
     return updated ?? null;
   });
 }
@@ -858,6 +862,10 @@ async function completePurchase(
       .returning();
     if (!row) return null;
     await recordFee(tx, intent.organizationId, "sms.numbers", { type: intent.kind });
+    // Not sending until its sender is registered: remind the organization if it doesn't.
+    if (intent.kind === "toll_free" || !registration) {
+      await enqueueSmsNumberReminder(tx, row, new Date());
+    }
     return { row, attachTo };
   });
 }

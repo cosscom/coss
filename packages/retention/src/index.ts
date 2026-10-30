@@ -56,6 +56,8 @@ export const RETENTION_DAYS = {
   billingProviderEvents: 30,
   /** Settled billing notification emails (usage alerts, payment reminders). */
   billingNotifications: 90,
+  /** Settled notification emails to owners and admins (e.g. an SMS sender's registration). */
+  notifications: 90,
   /** Settled push notifications to the iOS app (what was sent, not its text). */
   pushNotifications: 30,
   /**
@@ -286,6 +288,13 @@ export const RETENTION_POLICY: readonly RetentionRule[] = [
     label: "Billing notification emails",
     description: "Records of usage alerts and payment reminders sent to your billing contacts.",
     period: { days: RETENTION_DAYS.billingNotifications, after: "creation" },
+  },
+  {
+    id: "notifications",
+    label: "Notification emails",
+    description:
+      "Records of the emails sent to owners and admins about what to do next, such as registering an SMS sender and the outcome of its review.",
+    period: { days: RETENTION_DAYS.notifications, after: "creation" },
   },
   {
     id: "push_notifications",

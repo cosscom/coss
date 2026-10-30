@@ -1,0 +1,26 @@
+{
+  "name": "@coss/notifications",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun --env-file=../../.env test"
+  },
+  "dependencies": {
+    "@coss/db": "workspace:*",
+    "@coss/email-layout": "workspace:*",
+    "@coss/retention": "workspace:*",
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@coss/tenancy": "workspace:*",
+    "@coss/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  }
+}
