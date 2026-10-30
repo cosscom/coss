@@ -1,0 +1,84 @@
+---
+title: Destinations
+description: Where accepted submissions go, to webhooks, notification emails and contacts.
+---
+
+An accepted submission (at once, after the submitter confirmed, or released by you) goes to every
+destination the form has. Each is retried on its own if it fails.
+
+## Webhooks
+
+Your environment's [webhook endpoints](/docs/webhooks) subscribed to them get:
+
+| Type                       | Sent when                                                                 |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `form.submission.received` | A submission was accepted                                                 |
+| `form.submission.flagged`  | Risk or the content check flagged one as `held` or `spam` (never the honeypot's catches) |
+
+```json
+{
+  "id": "evt_01k…",
+  "object": "event",
+  "type": "form.submission.received",
+  "api_version": "2026-10-10",
+  "created_at": "2026-10-29T10:00:00.100Z",
+  "data": {
+    "form_id": "form_01k…",
+    "form_name": "Contact us",
+    "submission_id": "fsub_01k…",
+    "status": "accepted",
+    "data": { "name": "Ada Lovelace", "email": "ada@example.com", "message": "Hello!" },
+    "submitter_email": "ada@example.com",
+    "files": [],
+    "spam_reason": null,
+    "sandbox": false,
+    "occurred_at": "2026-10-29T10:00:00.000Z"
+  }
+}
+```
+
+The payload carries what was submitted; uploaded files are listed, never included: download them
+with `coss.forms.submissions.file()`. Treat submitted values as untrusted input.
+
+## Notification emails
+
+`notifications.recipients` (up to 5) get an email for each accepted submission, with every field and
+a link to it in the dashboard, replying to the submitter. In live environments, recipients must be
+members of your organization or addresses on its verified domains.
+
+They come from `notifications.from` when you set one (an address on a verified domain), else from
+coss.com as `<form name> via coss.com`. Opens and clicks aren't tracked, and coss.com doesn't keep
+their bodies once sent.
+
+## Contacts
+
+With `contacts.enabled`, the submitter becomes a [contact](/docs/email/contacts) of the
+environment (`source: "form"`), added to `contacts.audience_ids` and opted into `contacts.topics`:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const audienceId: string;
+// ---cut---
+await coss.forms.create({
+  name: "Newsletter",
+  fields: [
+    { name: "email", type: "email", required: true },
+    { name: "first_name", type: "text" },
+    { name: "company", type: "text" },
+  ],
+  contacts: {
+    enabled: true,
+    audience_ids: [audienceId],
+    topics: ["newsletter"],
+    first_name_field: "first_name",
+    // Contact property key → the field it takes its value from.
+    properties: { company: "company" },
+    double_opt_in: true,
+  },
+});
+```
+
+Property values are converted to the property's type (numbers, `true`/`on`/`yes`/`1` for booleans,
+dates); one that doesn't fit is left out. [Double opt-in](/docs/forms/double-opt-in) decides whether
+new contacts are `subscribed` or `pending`.

@@ -6,6 +6,7 @@
     "sms",
     "sign",
     "verify",
+    "forms",
     "hooks",
     "risk",
     "(platform)",

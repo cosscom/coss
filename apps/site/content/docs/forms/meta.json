@@ -1,0 +1,17 @@
+{
+  "title": "Forms",
+  "description": "Hosted form endpoints for your site, screened by Risk and delivered to webhooks, email and contacts.",
+  "root": true,
+  "icon": "Form",
+  "pages": [
+    "index",
+    "html-forms",
+    "javascript",
+    "hosted-pages",
+    "spam-filtering",
+    "double-opt-in",
+    "destinations",
+    "file-uploads",
+    "testing"
+  ]
+}

@@ -1,0 +1,54 @@
+---
+title: Hosted pages
+description: A page coss.com renders from your form's fields, to link to or embed.
+---
+
+Turn on `hosted` and the form's endpoint also serves a page: the form rendered from its `fields`,
+with a honeypot, posting to itself. Link to it (`hosted_url`) from an email or a social post, or
+embed it in an iframe.
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+const { data: form } = await coss.forms.create({
+  name: "Waitlist",
+  fields: [
+    { name: "email", type: "email", label: "Email", required: true },
+    { name: "company", type: "text", label: "Company" },
+    { name: "role", type: "select", label: "Role", options: ["Engineering", "Product", "Other"] },
+  ],
+  hosted: {
+    enabled: true,
+    title: "Join the waitlist",
+    description: "We'll email you when your spot is ready.",
+    submit_label: "Join",
+    success_message: "You're on the list.",
+  },
+});
+// form?.hosted_url: https://…/f/form_01k…
+```
+
+The page is plain HTML and needs no JavaScript. A submission it refuses shows the page again, with
+what was entered and what to fix; an accepted one goes to `redirect_url`, else shows
+`success_message`.
+
+- **Captcha.** With `spam.captcha: "required"` and `spam.captcha_site_key`, the page shows the
+  widget of the captcha in the environment's [risk settings](/docs/risk/settings) (Turnstile or
+  hCaptcha). Its script is the only one on the page.
+- **Embedding.** The page may be framed by the form's `allowed_origins` only; without any, it can't
+  be embedded at all.
+- **Links.** The page is `noindex` and has a "Report abuse" link.
+
+## What a page can't do
+
+Hosted pages are where phishing would happen, so:
+
+- A page needs fields (not only hidden ones), and none may ask for a password, a one-time or
+  security code, a card number, a CVV, a social security number or a recovery phrase (checked
+  against each field's name and label).
+- In live environments, the page's text (title, description, labels, options, messages) is
+  screened when it is published (turning it on, or changing what it shows). Text that looks like
+  phishing or spam isn't published (`hosted_content_refused`).
+- coss.com can disable a form that is misused (`disabled_by_admin`); its endpoint then answers
+  `404`.

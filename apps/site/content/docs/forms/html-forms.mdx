@@ -1,0 +1,115 @@
+---
+title: HTML forms
+description: Post any HTML form to its endpoint, with or without field definitions.
+---
+
+A form's `endpoint` takes `application/x-www-form-urlencoded` and `multipart/form-data` posts (the
+two encodings browsers use) and JSON bodies. Every field you post is stored as you named it; a name
+posted several times (checkboxes) becomes a list.
+
+```html
+<form action="https://…/f/form_01k…" method="post">
+  <label>Email <input type="email" name="email" required></label>
+  <label>Company <input type="text" name="company"></label>
+  <label><input type="checkbox" name="interests" value="email"> Email</label>
+  <label><input type="checkbox" name="interests" value="sms"> SMS</label>
+  <textarea name="message"></textarea>
+  <input type="hidden" name="_next" value="https://www.example.com/thanks">
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+  <button>Send</button>
+</form>
+```
+
+## Special fields
+
+Names starting with `_` are never stored. These ones mean something:
+
+| Field                   | What it does                                                                |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `_gotcha`               | The honeypot (rename it with `spam.honeypot_field`): a filled one is spam   |
+| `_next`                 | Where to send the browser afterwards, if its origin is allowed (below)     |
+| `_coss_device`          | A [`coss/device`](/docs/risk/devices) token (`coss/forms` adds it for you) |
+| `cf-turnstile-response` | A Cloudflare Turnstile token (the widget adds it)                           |
+| `h-captcha-response`    | An hCaptcha token (the widget adds it)                                      |
+
+The field named by `submitter.email_field` (`email` unless you change it) is the submitter's
+address: Risk checks it, notifications reply to it and contacts are made from it.
+
+## After the post
+
+An accepted post redirects the browser (`303`) to `_next` when its origin is one of the form's
+`allowed_origins` (or, if the form lists none, any `https://` URL), else to the form's
+`redirect_url`, else shows coss.com's thank-you page. A form that verifies submitters shows "Check
+your email" instead.
+
+A refused post shows a page listing what to fix, with a link back to the page it came from (`422`).
+Posts from a site the form doesn't allow get `403`, an unknown or disabled form `404`, and too many
+submissions `429`.
+
+## Fields and validation
+
+Without `fields`, a form takes any fields, up to 100 per submission, 10,000 characters a value and
+64 KB of text in all. Define `fields` to validate them:
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+await coss.forms.create({
+  name: "Demo request",
+  fields: [
+    { name: "email", type: "email", required: true },
+    { name: "company", type: "text", max_length: 100 },
+    { name: "seats", type: "number" },
+    { name: "plan", type: "select", options: ["Starter", "Business"] },
+  ],
+  // Refuse fields the form doesn't define.
+  strict_fields: true,
+});
+```
+
+| Type                         | Accepts                                                     |
+| ---------------------------- | ----------------------------------------------------------- |
+| `text`, `textarea`, `hidden` | Any text (`max_length` caps it)                             |
+| `email`                      | An email address                                            |
+| `number`                     | A number                                                    |
+| `tel`                        | A phone number (digits, spaces, `+ ( ) . -`)                |
+| `url`                        | An `http://` or `https://` link                             |
+| `date`                       | `YYYY-MM-DD`                                                |
+| `select`, `radio`            | One of `options`                                            |
+| `checkbox`                   | Any of `options` (several), or `on` without options         |
+| `file`                       | An upload ([file uploads](/docs/forms/file-uploads))       |
+
+## Origins
+
+`allowed_origins` limits which sites may post (`https://www.example.com`, no path; sandbox
+environments also accept `http://localhost:<port>`). A post is checked by its `Origin` header, else
+its `Referer`; with origins listed, a post that has neither is refused. Leave the list empty to take
+posts from anywhere. Anyone can post with a script whatever the list says, so spam filtering still
+applies to every submission.
+
+## JSON answers
+
+Send `Accept: application/json` (or a JSON body) and the endpoint answers JSON instead of pages,
+with CORS for any origin (or, with `allowed_origins`, the matching one; never with credentials):
+
+```json
+{ "ok": true, "status": "received" }
+```
+
+`status` is `pending_confirmation` when the submitter has to confirm their address. A refused
+submission is `422` with what to fix, per field (`field: null` for the whole submission):
+
+```json
+{ "ok": false, "errors": [{ "field": "email", "code": "required", "message": "Email is required." }] }
+```
+
+Anything else that refuses a post is `{ "ok": false, "error": "…" }` with its status. Codes: `required`,
+`invalid`, `too_long`, `unknown_field`, `too_many_fields`, `too_large`, `file_type`,
+`too_many_files`, `files_not_accepted`, `captcha`. [`coss/forms`](/docs/forms/javascript) does
+all this for you.
+
+## Limits
+
+Each form takes 10 submissions a second (bursts of 50), each client IP 20 a minute, and an
+organization 10,000 a day across its forms (contact support for more).

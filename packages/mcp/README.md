@@ -47,6 +47,7 @@ can ask before calling the ones that change something.
 | Templates | `pull_email_template`, `push_email_template`, `publish_email_template` |
 | Hooks | `list_hook_applications`, `send_hook_message`, `list_hook_deliveries` |
 | Risk | `assess_risk`, `list_risk_assessments`, `list_risk_rules`, `list_risk_list_entries` |
+| Forms | `list_forms`, `list_form_submissions`, `get_form_submission` |
 | Account | `get_account_status` |
 
 ## As a library

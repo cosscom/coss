@@ -63,6 +63,8 @@ const secret = endpoint?.secret;
 | `verification.approved`  | The right code was checked (billed once)                |
 | `verification.failed`    | Too many wrong codes, or the code couldn't be sent (`data.failure`) |
 | `verification.blocked`   | The fraud guard stopped it before a code was sent (`data.reasons`) |
+| `form.submission.received` | A [form](/docs/forms) submission was accepted (`data.data`: what was submitted) |
+| `form.submission.flagged` | Risk held a submission for review or refused it as spam (`data.spam_reason`) |
 | `risk.assessment.review` | A [risk assessment](/docs/risk) decided `review`        |
 | `risk.assessment.reviewed` | Feedback resolved a `review`                          |
 

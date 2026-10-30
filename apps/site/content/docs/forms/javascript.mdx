@@ -1,0 +1,49 @@
+---
+title: JavaScript
+description: Submit forms from the browser with coss/forms, without a page load.
+---
+
+`coss/forms` is the SDK's browser entry for Forms. `attachForm` takes over a form's submit: it posts
+the fields (files and captcha tokens included) to the form's `action`, adds a
+[`coss/device`](/docs/risk/devices) token so Risk recognizes the browser, and gives you the answer.
+
+```ts twoslash
+import { attachForm } from "coss/forms";
+// ---cut---
+const form = document.querySelector<HTMLFormElement>("#contact");
+if (form) {
+  attachForm(form, {
+    onResult(result) {
+      if (result.ok) {
+        // "received", or "pending_confirmation" when the submitter must confirm their email.
+        console.log(result.status);
+      } else if (result.errors) {
+        for (const error of result.errors) console.log(error.field, error.message);
+      } else {
+        console.log(result.error);
+      }
+    },
+  });
+}
+```
+
+The form is reset after a success and its submit buttons are disabled while it is on its way.
+`attachForm` returns a function that detaches it.
+
+To post yourself (a framework's submit handler, say), call `submitForm` with the form element, a
+`FormData` or a plain object:
+
+```ts twoslash
+import { submitForm } from "coss/forms";
+// ---cut---
+const result = await submitForm(
+  { email: "ada@example.com", message: "Hello" },
+  { endpoint: "https://…/f/form_01k…" },
+);
+```
+
+Neither throws: a network failure is `{ ok: false, error }`. Pass `device: false` to leave the device
+token out. Requests are sent without cookies (`credentials: "omit"`).
+
+Without JavaScript the same form still works as a plain [HTML form](/docs/forms/html-forms), so
+`coss/forms` is safe to add as an enhancement.
