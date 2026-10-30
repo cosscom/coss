@@ -117,6 +117,28 @@ describe("sub-accounts API", () => {
     });
   });
 
+  test("a list's cursor is a sub-account of the key's environment", async () => {
+    const tenant = await createTestTenant();
+    const { app } = createTestApp();
+    // An older sandbox one, which a cursor resolved in the live environment would page to.
+    await json(
+      await apiRequest(app, "POST", "/v1/subaccounts", {
+        key: tenant.sandboxKey,
+        body: { name: "Sandbox" },
+      }),
+    );
+    const live = await json<SubaccountOutput>(
+      await apiRequest(app, "POST", "/v1/subaccounts", {
+        key: tenant.liveKey,
+        body: { name: "Live" },
+      }),
+    );
+    const page = await json<{ data: SubaccountOutput[] }>(
+      await apiRequest(app, "GET", `/v1/subaccounts?after=${live.id}`, { key: tenant.sandboxKey }),
+    );
+    expect(page.data).toEqual([]);
+  });
+
   test("uids are unique per environment; environments never see each other's", async () => {
     const tenant = await createTestTenant();
     const { app } = createTestApp();

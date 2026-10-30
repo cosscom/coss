@@ -279,7 +279,7 @@ export async function pageSubaccounts(input: {
   const afterCursor =
     input.after === undefined
       ? undefined
-      : sql`(${emailSubaccount.createdAt}, ${emailSubaccount.id}) < (select created_at, id from email_subaccount where id = ${input.after} and organization_id = ${input.organizationId})`;
+      : sql`(${emailSubaccount.createdAt}, ${emailSubaccount.id}) < (select created_at, id from email_subaccount where id = ${input.after} and organization_id = ${input.organizationId} and environment_id = ${input.environmentId})`;
   const rows = await db
     .select()
     .from(emailSubaccount)
