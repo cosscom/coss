@@ -154,7 +154,7 @@ export const METERS = {
     requires: "plan",
   },
   // Forms: a submission accepted for delivery (spam, held and unconfirmed ones aren't counted
-  // until released or confirmed). Not priced yet, like Sign's meter.
+  // until released or confirmed). Priced from the 2026-12-01 rate card.
   "forms.submissions": {
     product: "forms",
     label: "Form submissions",

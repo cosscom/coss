@@ -97,38 +97,49 @@ const LAUNCH: RateCard = {
   },
 };
 
+const NOVEMBER_2026: RateCard = {
+  // SMS in every country Twilio prices (a country without a rate can't be sent to), with
+  // numbers and US carrier registration fees passed through at cost.
+  effectiveFrom: new Date("2026-11-01T00:00:00Z"),
+  rates: {
+    ...LAUNCH.rates,
+    "sms.segments": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
+    "sms.received_segments": {
+      byDimension: flatRates("country", SMS_PRICES_2026_11_01.inbound),
+    },
+    // Verify: $0.05 per approved verification; codes from coss.com's shared numbers at the SMS
+    // price of their country.
+    "verify.verifications": { default: flatRate(50_000_000n) },
+    "verify.sms": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
+    // $1.15 a month for a local number, $2.15 for a toll-free one.
+    "sms.numbers": {
+      byDimension: flatRates("type", { local: 1_150_000_000n, toll_free: 2_150_000_000n }),
+    },
+    // A2P 10DLC: brand $4.50 (+ $41.50 secondary vetting for standard brands), $15 per campaign
+    // vetted, then $10 a month per campaign ($1.50 for low-volume mixed campaigns).
+    "sms.registrations": {
+      byDimension: flatRates("fee", {
+        brand: 4_500_000_000n,
+        brand_vetting: 41_500_000_000n,
+        campaign_vetting: 15_000_000_000n,
+        campaign_monthly: 10_000_000_000n,
+        campaign_monthly_low_volume: 1_500_000_000n,
+      }),
+    },
+  },
+};
+
 /** In ascending `effectiveFrom` order. */
 export const RATE_CARDS: readonly RateCard[] = [
   LAUNCH,
+  NOVEMBER_2026,
   {
-    // SMS in every country Twilio prices (a country without a rate can't be sent to), with
-    // numbers and US carrier registration fees passed through at cost.
-    effectiveFrom: new Date("2026-11-01T00:00:00Z"),
+    // Forms: $1 per 1,000 accepted submissions (spam, held and unconfirmed ones are free); first
+    // priced from this card (earlier usage stays uncharged).
+    effectiveFrom: new Date("2026-12-01T00:00:00Z"),
     rates: {
-      ...LAUNCH.rates,
-      "sms.segments": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
-      "sms.received_segments": {
-        byDimension: flatRates("country", SMS_PRICES_2026_11_01.inbound),
-      },
-      // Verify: $0.05 per approved verification; codes from coss.com's shared numbers at the SMS
-      // price of their country.
-      "verify.verifications": { default: flatRate(50_000_000n) },
-      "verify.sms": { byDimension: flatRates("country", SMS_PRICES_2026_11_01.outbound) },
-      // $1.15 a month for a local number, $2.15 for a toll-free one.
-      "sms.numbers": {
-        byDimension: flatRates("type", { local: 1_150_000_000n, toll_free: 2_150_000_000n }),
-      },
-      // A2P 10DLC: brand $4.50 (+ $41.50 secondary vetting for standard brands), $15 per campaign
-      // vetted, then $10 a month per campaign ($1.50 for low-volume mixed campaigns).
-      "sms.registrations": {
-        byDimension: flatRates("fee", {
-          brand: 4_500_000_000n,
-          brand_vetting: 41_500_000_000n,
-          campaign_vetting: 15_000_000_000n,
-          campaign_monthly: 10_000_000_000n,
-          campaign_monthly_low_volume: 1_500_000_000n,
-        }),
-      },
+      ...NOVEMBER_2026.rates,
+      "forms.submissions": { default: flatRate(1_000_000n) },
     },
   },
 ];

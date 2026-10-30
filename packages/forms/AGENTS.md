@@ -121,8 +121,8 @@ injected `FormMailer` and `FormContactSink`, which the worker implements.
   (`/admin/forms`, `listFormsForAdmin`, `setFormDisabledByAdmin`): every organization's forms
   (hosted pages first) and "Disable form", recorded as `form.disable`/`form.enable` in the admin
   audit log in the same transaction; a disabled form and its page answer like missing ones.
-- **Billing**: meter `forms.submissions` (accepted submissions, live), no rate yet: an uncharged
-  line until a rate card prices it.
+- **Billing**: meter `forms.submissions` (accepted submissions, live): $1 per 1,000 from the
+  2026-12-01 rate card, 1,000 a month included on Free (whose cap the `UsageGate` enforces).
 
 ## Production
 
@@ -131,8 +131,7 @@ apex → the ALB's `/f/*` rule to the api with `X-Forms-Origin-Verify`, its ACM 
 listener; README, "Deploying to AWS"), uploads in `FORMS_FILES_BUCKET` (SSE-KMS, no public
 access, objects expire after `RETENTION_DAYS.formSubmissions` + 1 days), IAM for api, worker and
 web. Never move it to a coss.com subdomain: phishing reports would land on coss.com.
-`FORMS_NOTIFICATIONS_FROM` (worker) is optional. Still to do:
-
-1. **Abuse**: the `abuse@coss.com` mailbox the pages link to, watched; the admin console's
-   "Disable form" takes a form down.
-2. **Pricing**: a rate card for `forms.submissions`.
+`FORMS_NOTIFICATIONS_FROM` (worker) is optional. Anything on the domain outside `/f/*` (the apex
+included) redirects to `https://coss.com/docs/forms` (a Cloudflare redirect rule). Still to do:
+the `abuse@coss.com` mailbox the pages link to, watched (the admin console's "Disable form"
+takes a form down), and a way to bill uploads' storage (a submission can keep 25 MB for 90 days).
