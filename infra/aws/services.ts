@@ -748,7 +748,8 @@ export const SERVICES: Service[] = [
     healthCheckPath: "/api/health",
     stopTimeout: 30,
     cpu: 256,
-    memory: 512,
+    // At 512 MB a task settled at ~85% within a day or two of each deploy (peaks of 96%).
+    memory: 1024,
     minTasks: 2,
     needsInternet: false,
     env: [

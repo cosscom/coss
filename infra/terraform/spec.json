@@ -396,7 +396,7 @@
       "healthCheckPath": "/api/health",
       "stopTimeout": 30,
       "cpu": 256,
-      "memory": 512,
+      "memory": 1024,
       "minTasks": 2,
       "needsInternet": false,
       "env": [
