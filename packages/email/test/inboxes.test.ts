@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { BillingError, createPlanGate, createUsageGate, periodOf } from "@coss/billing";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
-import { eq } from "drizzle-orm";
+import { and, eq, sum } from "drizzle-orm";
 import { InboxError } from "../src/errors.ts";
 import { receiveFakeEmail } from "../src/inbound.ts";
 import { buildTestMessage } from "../src/inbound-mime.ts";
@@ -18,6 +19,7 @@ import {
 import { replyReferences, replyToInboxMessage, sendInboxMessage } from "../src/inbox-send.ts";
 import { extractReplyText, normalizeSubject, replySubject } from "../src/inbox-text.ts";
 import {
+  chargeDueInboxFees,
   createInbox,
   deleteInbox,
   deleteInboxThread,
@@ -67,6 +69,28 @@ function live(tenant: TestTenant): InboxEnvironment {
     environmentId: tenant.production.id,
     mode: "live",
   };
+}
+
+async function inboxDays(organizationId: string): Promise<number> {
+  const [row] = await db
+    .select({ total: sum(schema.billingUsage.quantity) })
+    .from(schema.billingUsage)
+    .where(
+      and(
+        eq(schema.billingUsage.organizationId, organizationId),
+        eq(schema.billingUsage.meter, "email.inboxes"),
+      ),
+    );
+  return Number(row?.total ?? 0);
+}
+
+async function billingRefusal(promise: Promise<unknown>): Promise<BillingError> {
+  const error = await promise.then(
+    () => null,
+    (error: unknown) => error,
+  );
+  if (!(error instanceof BillingError)) throw new Error(`expected a BillingError, got ${error}`);
+  return error;
 }
 
 async function refusal(promise: Promise<unknown>): Promise<InboxError> {
@@ -723,5 +747,56 @@ describe("inboxes", () => {
       .from(schema.receivedEmail)
       .where(eq(schema.receivedEmail.environmentId, tenant.development.id));
     expect(received).toHaveLength(1);
+  });
+
+  test("live inboxes are charged a day at a time; sandbox ones are free", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const scope = { organizationIds: [org] };
+    const hours = (n: number) => new Date(Date.now() + n * 60 * 60 * 1000);
+    const { inbox } = await createInbox(live(tenant), { username: "billed" }, deps);
+    const { inbox: gone } = await createInbox(live(tenant), { username: "brief" }, deps);
+    await createInbox(sandbox(tenant), { username: "free" }, deps);
+    // The first day of each live inbox is charged at creation.
+    expect(await inboxDays(org)).toBe(2);
+    expect(await chargeDueInboxFees({ scope })).toBe(0);
+    await deleteInbox({ ...live(tenant), id: gone.id });
+    expect(await chargeDueInboxFees({ now: hours(25), scope })).toBe(1);
+    expect(await chargeDueInboxFees({ now: hours(25), scope })).toBe(0);
+    expect(await inboxDays(org)).toBe(3);
+    // Behind by two days: one per run until caught up.
+    expect(await chargeDueInboxFees({ now: hours(73), scope })).toBe(1);
+    expect(await chargeDueInboxFees({ now: hours(73), scope })).toBe(1);
+    expect(await chargeDueInboxFees({ now: hours(73), scope })).toBe(0);
+    expect(await inboxDays(org)).toBe(5);
+    const [row] = await db
+      .select({ nextFeeAt: schema.inbox.nextFeeAt })
+      .from(schema.inbox)
+      .where(eq(schema.inbox.id, inbox.id));
+    expect(row?.nextFeeAt?.getTime()).toBeGreaterThan(hours(73).getTime());
+  });
+
+  test("the plan limits an organization's inboxes; Free's inbox-days are capped", async () => {
+    const tenant = await createTestTenant();
+    const gated = { ...deps, plans: createPlanGate(), billing: createUsageGate() };
+    // Free: 3 inboxes, sandbox ones included.
+    await createInbox(sandbox(tenant), {}, gated);
+    await createInbox(sandbox(tenant), {}, gated);
+    await createInbox(live(tenant), {}, gated);
+    const full = await billingRefusal(createInbox(live(tenant), {}, gated));
+    expect(full.code).toBe("plan_limit_reached");
+
+    const churned = await createTestTenant();
+    await db.insert(schema.billingQuota).values({
+      organizationId: churned.organization.id,
+      meter: "email.inboxes",
+      periodStart: periodOf(new Date()).start,
+      reserved: 93,
+    });
+    const used = await billingRefusal(createInbox(live(churned), { username: "late" }, gated));
+    expect(used.code).toBe("usage_limit_exceeded");
+    // Refused before anything was kept; sandbox inboxes aren't charged, so not capped.
+    expect(await listInboxes({ ...live(churned), limit: 10 })).toMatchObject({ data: [] });
+    await createInbox(sandbox(churned), { username: "late" }, gated);
   });
 });

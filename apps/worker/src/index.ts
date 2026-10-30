@@ -99,25 +99,6 @@ const rateLimits = createRateLimitRuntime(
   },
 );
 await rateLimits.ready();
-let sesInbound: SesInboundDeps | undefined;
-if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
-  if (!env.SES_INBOUND_QUEUE_URL) {
-    throw new Error(
-      "Receiving with EMAIL_PROVIDER=ses requires SES_INBOUND_QUEUE_URL (see `bun run ses:bootstrap`).",
-    );
-  }
-  sesInbound = {
-    sqs: createSqsApi(config.ses.region, env.SES_INBOUND_QUEUE_URL, "ses-inbound"),
-    s3: createS3Api(config.ses.region),
-    bucket: config.inbound.bucket,
-    inbound: {
-      store: email.inbound.store,
-      managedDomain: email.inbound.managedDomain,
-      quota: inboundQuota(rateLimits.limiter),
-      dmarcQuota: dmarcReportQuota(rateLimits.limiter),
-    },
-  };
-}
 if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
   throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
 }
@@ -136,6 +117,27 @@ const screen = classifier
   ? (input: ScreenInput) => screenMessage(input, { classifier, systemOrganizationId })
   : undefined;
 const usage = createUsageGate({ systemOrganizationId });
+let sesInbound: SesInboundDeps | undefined;
+if (config.provider === "ses" && email.inbound && config.inbound?.bucket) {
+  if (!env.SES_INBOUND_QUEUE_URL) {
+    throw new Error(
+      "Receiving with EMAIL_PROVIDER=ses requires SES_INBOUND_QUEUE_URL (see `bun run ses:bootstrap`).",
+    );
+  }
+  sesInbound = {
+    sqs: createSqsApi(config.ses.region, env.SES_INBOUND_QUEUE_URL, "ses-inbound"),
+    s3: createS3Api(config.ses.region),
+    bucket: config.inbound.bucket,
+    inbound: {
+      store: email.inbound.store,
+      managedDomain: email.inbound.managedDomain,
+      quota: inboundQuota(rateLimits.limiter),
+      dmarcQuota: dmarcReportQuota(rateLimits.limiter),
+      // Free's allowance of received email.
+      billing: usage,
+    },
+  };
+}
 const emailService = createEmailService({
   liveProvider: email.liveProvider,
   sandboxProvider: email.sandboxProvider,

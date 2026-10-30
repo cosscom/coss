@@ -13,12 +13,17 @@
  *
  * Messages own no content: they point at the received email or the email, and are deleted with
  * it (retention, deletes); `purgeEmptyInboxThreads` drops threads with no message left.
+ *
+ * Live inboxes are charged per day they exist (`email.inboxes`): the first day at creation, then
+ * every day by the worker (`chargeDueInboxFees`). The plan limits inboxes per organization.
  */
 import { createHash, randomInt } from "node:crypto";
+import type { PlanGate, UsageGate } from "@coss/billing/gate";
+import { recordUsage } from "@coss/billing/metering";
 import { db, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { enqueueWebhookMessage } from "@coss/webhooks";
-import { and, asc, count, desc, eq, gt, inArray, lt, max, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, inArray, lt, lte, max, or, sql } from "drizzle-orm";
 import { InboxError } from "./errors.ts";
 import { htmlToText } from "./html-text.ts";
 import { inboundAddressFor } from "./inbound-address.ts";
@@ -51,8 +56,8 @@ export type InboxThreadRow = typeof inboxThread.$inferSelect;
 type Scope = { organizationId: string; environmentId: string };
 export type InboxEnvironment = Scope & { projectId: string; mode: "live" | "sandbox" };
 
-/** Inboxes an environment can have. */
-export const MAX_INBOXES_PER_ENVIRONMENT = 1_000;
+/** How often a live inbox is charged: one `email.inboxes` unit per day it exists. */
+export const INBOX_FEE_INTERVAL_MS = 24 * 60 * 60 * 1000;
 /** How recent a thread must be for a reply without references to join it by subject. */
 export const SUBJECT_MATCH_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_PARTICIPANTS = 50;
@@ -202,11 +207,15 @@ async function resolveDomain(
  * (`created: false`). Addresses are unique per environment: mail is routed to an environment
  * first, so another environment's inbox at an address (a receiving domain that moved) never
  * receives anything and doesn't block it.
+ *
+ * The plan's `inboxes` limit counts the organization's inboxes (sandbox ones too) under an
+ * organization-wide lock. A live inbox reserves its first day against a capped plan's allowance
+ * and is charged for it in the insert's transaction; the worker charges the days after.
  */
 export async function createInbox(
   env: InboxEnvironment,
   input: { username?: string; domain?: string; displayName?: string; clientId?: string },
-  deps: { managedDomain: string | null },
+  deps: { managedDomain: string | null; plans?: PlanGate; billing?: UsageGate },
 ): Promise<{ inbox: InboxObjectOutput; created: boolean }> {
   const sandbox = env.mode === "sandbox";
   if (input.clientId) {
@@ -223,17 +232,16 @@ export async function createInbox(
     if (problem)
       throw new InboxError("invalid_address", `${address}: ${problem}`, { param: "username" });
     const inserted = await db.transaction(async (tx) => {
-      // One creation at a time per environment, so the count holds.
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtext(${`inbox:${env.environmentId}`}))`,
-      );
-      const [total] = await tx.select({ value: count() }).from(inbox).where(scoped(env));
-      if ((total?.value ?? 0) >= MAX_INBOXES_PER_ENVIRONMENT) {
-        throw new InboxError(
-          "too_many_inboxes",
-          `An environment can have at most ${MAX_INBOXES_PER_ENVIRONMENT} inboxes. Delete ` +
-            "inboxes you no longer use.",
+      if (deps.plans) {
+        // One creation at a time per organization, so the count holds.
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtext(${`inbox:${env.organizationId}`}))`,
         );
+        const [total] = await tx
+          .select({ value: count() })
+          .from(inbox)
+          .where(eq(inbox.organizationId, env.organizationId));
+        await deps.plans.requireCapacity(env.organizationId, "inboxes", total?.value ?? 0);
       }
       const [row] = await tx
         .insert(inbox)
@@ -247,10 +255,28 @@ export async function createInbox(
           address,
           displayName: input.displayName ?? null,
           clientId: input.clientId ?? null,
+          nextFeeAt: sandbox
+            ? null
+            : sql`transaction_timestamp() + ${`${INBOX_FEE_INTERVAL_MS} milliseconds`}::interval`,
         })
         .onConflictDoNothing()
         .returning();
-      return row ?? null;
+      if (!row) return null;
+      if (!sandbox) {
+        await deps.billing?.reserve(tx, {
+          organizationId: env.organizationId,
+          meter: "email.inboxes",
+          quantity: 1,
+        });
+        await recordUsage(tx, {
+          organizationId: env.organizationId,
+          environmentId: env.environmentId,
+          projectId: env.projectId,
+          meter: "email.inboxes",
+          quantity: 1,
+        });
+      }
+      return row;
     });
     if (inserted) return { inbox: toInboxObject(inserted, sandbox), created: true };
     // Lost to a concurrent create with the same client id, or the address is taken.
@@ -265,6 +291,54 @@ export async function createInbox(
     }
   }
   throw new Error(`Could not pick a free username in ${target.domain}.`);
+}
+
+/**
+ * The worker's `inbox-fees` loop: one day of every live inbox whose next day has started
+ * (`next_fee_at`), moved on a day in the transaction that records it. An inbox behind by
+ * several days (a worker outage) is charged one day per run until it catches up. Returns how many
+ * inbox-days were charged.
+ */
+export async function chargeDueInboxFees(
+  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+): Promise<number> {
+  const now = opts.now ?? new Date();
+  const limit = opts.limit ?? 1000;
+  return db.transaction(async (tx) => {
+    const due = tx
+      .select({ id: inbox.id })
+      .from(inbox)
+      .where(
+        and(
+          lte(inbox.nextFeeAt, now),
+          opts.scope ? inArray(inbox.organizationId, opts.scope.organizationIds) : undefined,
+        ),
+      )
+      .orderBy(asc(inbox.nextFeeAt))
+      .limit(limit)
+      .for("update", { skipLocked: true });
+    const charged = await tx
+      .update(inbox)
+      .set({
+        nextFeeAt: sql`${inbox.nextFeeAt} + ${`${INBOX_FEE_INTERVAL_MS} milliseconds`}::interval`,
+      })
+      .where(and(inArray(inbox.id, due), lte(inbox.nextFeeAt, now)))
+      .returning({
+        organizationId: inbox.organizationId,
+        projectId: inbox.projectId,
+        environmentId: inbox.environmentId,
+      });
+    const byEnvironment = new Map<string, { source: (typeof charged)[number]; days: number }>();
+    for (const row of charged) {
+      const entry = byEnvironment.get(row.environmentId) ?? { source: row, days: 0 };
+      entry.days++;
+      byEnvironment.set(row.environmentId, entry);
+    }
+    for (const { source, days } of byEnvironment.values()) {
+      await recordUsage(tx, { ...source, meter: "email.inboxes", quantity: days });
+    }
+    return charged.length;
+  });
 }
 
 export async function getInboxRow(scope: Scope & { id: string }): Promise<InboxRow | null> {

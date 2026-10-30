@@ -115,6 +115,8 @@ describe("terms", () => {
     expect(free.usageCaps).toEqual({
       "email.recipients": 3000,
       "email.dedicated_ip": 0,
+      "email.received": 3000,
+      "email.inboxes": 93,
       "sms.segments": 0,
       "sms.received_segments": 0,
       "sms.numbers": 0,
@@ -243,6 +245,26 @@ describe("month invoice", () => {
       ["credit", -400n],
     ]);
     expect(invoice.totalCents).toBe(2_500n);
+  });
+
+  test("Pro, inboxes: 3 included, $0.99 a month up to 100, $0.24 beyond", () => {
+    const pro = segment({ version: 1, plan: "pro" });
+    // 150 inboxes all of October: 4,650 inbox-days, 93 of them included.
+    const invoice = composePeriodInvoice({
+      closed: {
+        period: OCT,
+        segments: [pro],
+        usage: [usage(150 * 31, { meter: "email.inboxes" })],
+      },
+      next: { period: NOV, segment: { ...pro, interval: NOV } },
+      grants: [feeGrant(2500n)],
+    });
+    // 3,007 days at $0.033 + 1,550 at $0.008 = $99.231 + $12.40
+    expect(amounts(invoice.lines)).toEqual([
+      ["usage", 11_163n],
+      ["plan_fee", 2_500n],
+      ["credit", -2_500n],
+    ]);
   });
 
   test("Free within its allowance costs nothing; beyond it, usage is written off", () => {

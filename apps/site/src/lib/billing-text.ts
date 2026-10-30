@@ -18,7 +18,15 @@ import {
   type Rate,
 } from "@coss/billing/catalog";
 import { formatUnitPrice } from "@coss/billing/money";
-import { formatPrice } from "./pricing";
+import { formatPrice, METER_NOTES } from "./pricing";
+
+/** "3,000 email recipients a month"; inbox-days read as the inboxes they cover. */
+function includedText(meter: MeterKey, n: number): string {
+  if (meter === "email.inboxes") return `${Math.floor(n / 31).toLocaleString("en-US")} inboxes`;
+  if (meter === "email.received") return `${n.toLocaleString("en-US")} received emails a month`;
+  const { label, units } = METERS[meter];
+  return `${n.toLocaleString("en-US")} ${label.toLowerCase()} ${units} a month`;
+}
 
 /** The plans and their features, as rows (shared by the MDX table and the Markdown for /llms*.txt). */
 export function planRows(): { label: string; values: string[] }[] {
@@ -26,9 +34,8 @@ export function planRows(): { label: string; values: string[] }[] {
   const included = (key: (typeof PLAN_KEYS)[number]) => {
     const plan = PLANS[key];
     if (key === "enterprise") return "Per contract";
-    const units = Object.entries(plan.includedUnits).map(
-      ([meter, n]) =>
-        `${n.toLocaleString("en-US")} ${METERS[meter as keyof typeof METERS].label.toLowerCase()} ${METERS[meter as keyof typeof METERS].units} a month`,
+    const units = Object.entries(plan.includedUnits).map(([meter, n]) =>
+      includedText(meter as MeterKey, n),
     );
     if (plan.feeCents > 0n) units.unshift(`${formatPrice(plan.feeCents)} of usage`);
     return units.join(", ") || "None";
@@ -128,17 +135,25 @@ function describeRate(rate: Rate, per: number, unit: string): string {
     .join("; ");
 }
 
-/** The list usage rates per meter (the current rate card), optionally of one product only. */
-export function rateRows(only?: Product): { product: string; rate: string; note: string }[] {
+/**
+ * The list usage rates per meter (the current rate card), optionally of one product only or of
+ * the meters listed.
+ */
+export function rateRows(
+  only?: Product | readonly MeterKey[],
+): { product: string; rate: string; note: string }[] {
   const card = RATE_CARDS.at(-1);
   if (!card) return [];
   return METER_KEYS.flatMap((meter) => {
     const definition = METERS[meter];
-    if (only && definition.product !== only) return [];
+    if (typeof only === "string" && definition.product !== only) return [];
+    if (Array.isArray(only) && !only.includes(meter)) return [];
     const rates = card.rates[meter];
     if (!rates) return [];
     const addOn = meter === "email.dedicated_ip" ? ADD_ONS.dedicated_ips : null;
-    const note = addOn ? `With the ${addOn.name} add-on, on top of Email` : "";
+    const note = addOn
+      ? `With the ${addOn.name} add-on, on top of Email`
+      : (METER_NOTES[meter] ?? "");
     if (rates.default) {
       return [
         {
@@ -208,7 +223,7 @@ export function renderBillingComponents(markdown: string): string {
     `| --- | ${plans.map(() => "---").join(" | ")} |`,
     ...planRows().map((row) => `| ${row.label} | ${row.values.join(" | ")} |`),
   ].join("\n");
-  const rateTable = (only?: Product) =>
+  const rateTable = (only?: Product | readonly MeterKey[]) =>
     [
       "| Product | Rate | |",
       "| --- | --- | --- |",
@@ -227,5 +242,8 @@ export function renderBillingComponents(markdown: string): string {
     .replaceAll("<PlanTable />", planTable)
     .replaceAll("<UsageRates />", rateTable())
     .replace(/<UsageRates product="([a-z]+)" \/>/g, (_, product: Product) => rateTable(product))
+    .replace(/<UsageRates meters="([a-z_.,]+)" \/>/g, (_, meters: string) =>
+      rateTable(meters.split(",") as MeterKey[]),
+    )
     .replaceAll("<AddOns />", addOnTable);
 }

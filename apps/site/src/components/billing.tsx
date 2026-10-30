@@ -1,4 +1,4 @@
-import { PLAN_KEYS, PLANS, type Product } from "@coss/billing/catalog";
+import { type MeterKey, PLAN_KEYS, PLANS, type Product } from "@coss/billing/catalog";
 import { addOnRows, planRows, rateRows } from "@/lib/billing-text";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
@@ -28,8 +28,8 @@ export function PlanTable() {
   );
 }
 
-/** The list usage rates per product (or of one `product`'s meters). */
-export function UsageRates({ product }: { product?: Product }) {
+/** The list usage rates per product (or of one `product`'s meters, or of `meters`: comma-separated). */
+export function UsageRates({ product, meters }: { product?: Product; meters?: string }) {
   return (
     <DocsTable>
       <thead>
@@ -40,7 +40,7 @@ export function UsageRates({ product }: { product?: Product }) {
         </DocsTr>
       </thead>
       <tbody>
-        {rateRows(product).map((row) => (
+        {rateRows(meters ? (meters.split(",") as MeterKey[]) : product).map((row) => (
           <DocsTr key={row.product}>
             <DocsTd>{row.product}</DocsTd>
             <DocsTd>{row.rate}</DocsTd>

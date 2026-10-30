@@ -49,6 +49,8 @@ export const inbox = pgTable(
     displayName: text("display_name"),
     // The customer's own id for the inbox (e.g. their user's or agent's): creating it again returns it.
     clientId: text("client_id"),
+    // When the next day of a live inbox is charged (`email.inboxes`; NULL in sandbox environments).
+    nextFeeAt: timestamp("next_fee_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -64,6 +66,7 @@ export const inbox = pgTable(
     unique("inbox_id_organization_unique").on(t.id, t.organizationId),
     index("inbox_environment_id_idx").on(t.environmentId, t.id.desc()),
     index("inbox_organization_idx").on(t.organizationId),
+    index("inbox_next_fee_at_idx").on(t.nextFeeAt).where(sql`${t.nextFeeAt} IS NOT NULL`),
   ],
 );
 

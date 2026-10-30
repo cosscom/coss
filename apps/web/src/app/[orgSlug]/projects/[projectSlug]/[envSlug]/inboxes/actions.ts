@@ -18,6 +18,8 @@ import { redirect } from "next/navigation";
 import type { ActionResult } from "@/lib/action-result";
 import { ActionError, formString, runAction } from "@/lib/actions";
 import { recordAudit } from "@/lib/audit";
+import { planGate } from "@/lib/billing";
+import { usageGate } from "@/lib/broadcasts";
 import { emailRuntime } from "@/lib/email-runtime";
 import { emailService } from "@/lib/email-service";
 import { rateLimitRuntime } from "@/lib/rate-limit-runtime";
@@ -99,7 +101,11 @@ export async function createInboxAction(
         displayName: parsed.data.display_name,
         clientId: parsed.data.client_id,
       },
-      { managedDomain: emailRuntime().inbound?.managedDomain ?? null },
+      {
+        managedDomain: emailRuntime().inbound?.managedDomain ?? null,
+        plans: planGate(),
+        billing: await usageGate(),
+      },
     );
     if (!created) throw new ActionError("An inbox with this client ID already exists.");
     await audit(

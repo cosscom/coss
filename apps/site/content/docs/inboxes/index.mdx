@@ -102,7 +102,20 @@ console.log(message?.thread_id, message?.email_id);
 - Messages from an inbox are ordinary emails: they count against the send quota and your plan's
   emails, appear in the environment's emails and logs, and are never tracked (no pixel, no
   rewritten links).
-- An environment can have up to 1,000 inboxes.
+
+## Pricing
+
+<UsageRates meters="email.inboxes,email.received" />
+
+- A live inbox is charged for each day it exists, from the moment it's created: one kept all month
+  costs the price for 30 inbox-days, one deleted after an hour costs a day. Every plan includes a
+  few inboxes. Inboxes in sandbox environments are free.
+- Mail an inbox receives is billed like any [received email](/docs/email/receiving#limits-and-retention),
+  and what it sends like any email.
+- Your plan limits how many inboxes your organization has across its environments, sandbox ones
+  included (see [plans](/docs/billing)). One more is refused with a `402` `billing_error`
+  (`plan_limit_reached`). On Free, a live inbox past the month's included inbox-days is refused
+  with `usage_limit_exceeded`.
 
 ## Inboxes and received emails
 

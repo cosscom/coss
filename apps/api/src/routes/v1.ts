@@ -61,7 +61,7 @@ export type V1Dependencies = {
   listenerPollIntervalMs?: number;
   /** Marketing email's links: the key ring and their origin (`TRACKING_PUBLIC_URL`). */
   links: { keys: LinkKeyRing; baseUrl?: string };
-  /** What canceled and paused broadcasts give back of their usage reservation. */
+  /** Capped plans' allowance: new live inboxes reserve from it, canceled and paused broadcasts give back. */
   billing?: UsageGate;
 };
 
@@ -126,7 +126,14 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
   // Hooks endpoint secrets use the same key ring too.
   v1.route("/", createHookRoutes({ ...deps.webhookDeps, portalUrl: deps.portalUrl }));
   v1.route("/", createReceivedEmailRoutes(deps.inbound));
-  v1.route("/", createInboxRoutes({ emailService: deps.emailService, inbound: deps.inbound }));
+  v1.route(
+    "/",
+    createInboxRoutes({
+      emailService: deps.emailService,
+      inbound: deps.inbound,
+      billing: deps.billing,
+    }),
+  );
   v1.route("/", createRiskRoutes(deps.riskDeps));
   v1.route("/", createRiskConfigRoutes(deps.riskDeps));
   v1.route("/", createRiskLookupRoutes(deps.riskDeps));

@@ -276,6 +276,7 @@ export {
 } from "./inbox-send.ts";
 export { extractReplyText, normalizeSubject, replySubject } from "./inbox-text.ts";
 export {
+  chargeDueInboxFees,
   createInbox,
   deleteInbox,
   deleteInboxThread,
@@ -284,12 +285,12 @@ export {
   getInboxMessageAttachmentKey,
   getInboxRow,
   getInboxThread,
+  INBOX_FEE_INTERVAL_MS,
   type InboxEnvironment,
   type InboxRow,
   listInboxes,
   listInboxMessages,
   listInboxThreads,
-  MAX_INBOXES_PER_ENVIRONMENT,
   purgeEmptyInboxThreads,
   toInboxObject,
   updateInbox,

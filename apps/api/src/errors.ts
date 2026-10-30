@@ -433,7 +433,7 @@ function fromInboxError(error: InboxError): ApiError {
       message: error.message,
     });
   }
-  // Conflicts (`address_taken`, `too_many_inboxes`) are 422, not 409: the SDK retries those.
+  // Conflicts (`address_taken`) are 422, not 409: the SDK retries those.
   return invalidRequest(error.code, error.message, error.param);
 }
 

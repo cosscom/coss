@@ -38,6 +38,28 @@ export const METERS = {
     dimensions: [],
     requires: "plan",
   },
+  // Mail received through the receiving provider (SES), in any environment: routed messages
+  // stored (not dropped), except those with a spam or virus verdict.
+  "email.received": {
+    product: "email",
+    label: "Received email",
+    unit: "email",
+    units: "emails",
+    displayPer: 1000,
+    dimensions: [],
+    requires: "plan",
+  },
+  // Live inboxes, per day each one exists (a day is charged when it starts: on creation, then
+  // daily). Priced per 30 inbox-days, an inbox for a month.
+  "email.inboxes": {
+    product: "email",
+    label: "Inboxes",
+    unit: "inbox-day",
+    units: "inbox-days",
+    displayPer: 30,
+    dimensions: [],
+    requires: "plan",
+  },
   // Priced by destination country; a country without a rate can't be sent to.
   "sms.segments": {
     product: "sms",

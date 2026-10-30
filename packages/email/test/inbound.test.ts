@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test";
+import { createUsageGate, periodOf } from "@coss/billing";
 import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant, type TestTenant } from "@coss/tenancy/testing";
 import { LATEST_API_VERSION } from "@coss/versioning";
 import { createWebhookEndpoint, renderWebhookPayload } from "@coss/webhooks";
 import { testManagementDeps } from "@coss/webhooks/testing";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sum } from "drizzle-orm";
 import {
   fakeVerdicts,
   type InboundMessage,
@@ -69,6 +70,19 @@ function message(overrides: Partial<InboundMessage> & { rawBytes?: Uint8Array } 
     receivedAt: new Date(),
     ...overrides,
   } satisfies InboundMessage;
+}
+
+async function receivedUsage(organizationId: string): Promise<number> {
+  const [row] = await db
+    .select({ total: sum(schema.billingUsage.quantity) })
+    .from(schema.billingUsage)
+    .where(
+      and(
+        eq(schema.billingUsage.organizationId, organizationId),
+        eq(schema.billingUsage.meter, "email.received"),
+      ),
+    );
+  return Number(row?.total ?? 0);
 }
 
 async function rowsFor(environmentId: string) {
@@ -422,6 +436,61 @@ describe("receiveEmail", () => {
     expect(outcomes).toEqual([expect.objectContaining({ kind: "over_limit" })]);
     expect(await rowsFor(tenant.production.id)).toEqual([]);
     expect(await inboundDropCount(tenant.organization.id, now.toISOString().slice(0, 10))).toBe(1);
+  });
+
+  test("bills every stored copy the provider took, except spam, viruses and test emails", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const live = await managedAddress(tenant);
+    const sandbox = await managedAddress(tenant, tenant.development);
+    // One message for both environments: two stored copies, both billed (sandbox mail is real).
+    const both = message({ provider: "ses", recipients: [live, sandbox] });
+    expect(await receiveEmail(both, deps)).toHaveLength(2);
+    expect(await receivedUsage(org)).toBe(2);
+    // A repeated notification stores nothing more, so bills nothing more.
+    await receiveEmail(both, deps);
+    expect(await receivedUsage(org)).toBe(2);
+    // Spam and viruses are free (the sender chose to send them); so is the fake provider's mail.
+    await receiveEmail(
+      message({ provider: "ses", recipients: [live], verdicts: { ...NO_VERDICTS, spam: "fail" } }),
+      deps,
+    );
+    await receiveEmail(
+      message({ provider: "ses", recipients: [live], verdicts: { ...NO_VERDICTS, virus: "fail" } }),
+      deps,
+    );
+    await receiveEmail(message({ recipients: [live] }), deps);
+    expect(await rowsFor(tenant.production.id)).toHaveLength(4);
+    expect(await receivedUsage(org)).toBe(2);
+  });
+
+  test("past Free's allowance, received mail is dropped and counted", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const billing = { ...deps, billing: createUsageGate() };
+    await db.insert(schema.billingQuota).values({
+      organizationId: tenant.organization.id,
+      meter: "email.received",
+      periodStart: periodOf(new Date()).start,
+      reserved: 2_999,
+    });
+    const now = new Date();
+    const [first] = await receiveEmail(
+      message({ provider: "ses", recipients: [to], receivedAt: now }),
+      billing,
+    );
+    expect(first?.kind).toBe("received");
+    const [second] = await receiveEmail(
+      message({ provider: "ses", recipients: [to], receivedAt: now }),
+      billing,
+    );
+    expect(second?.kind).toBe("over_limit");
+    expect(await inboundDropCount(tenant.organization.id, now.toISOString().slice(0, 10))).toBe(1);
+    // What isn't billed isn't capped.
+    const [test] = await receiveEmail(message({ recipients: [to], receivedAt: now }), billing);
+    expect(test?.kind).toBe("received");
+    expect(await rowsFor(tenant.production.id)).toHaveLength(2);
+    expect(await receivedUsage(tenant.organization.id)).toBe(1);
   });
 
   test("organizations being deleted receive nothing; suspended ones still do", async () => {

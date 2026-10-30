@@ -42,7 +42,9 @@ repository root.
     `USAGE_SETTLE_MS`. Email is metered at `sent` (all four paths: `complete`, both `recordProviderEvent` transitions,
     `sweepStaleClaims`) for its `billable_recipients` (non-suppressed, frozen at claim), once
     (`usage_recorded_at` compare-and-set), and on `email.dedicated_ip` too when it went through the organization's
-    dedicated IPs (`email.dedicated_pool`); sandbox never.
+    dedicated IPs (`email.dedicated_pool`); sandbox never. Received email is `email.received` when it is stored
+    (sandbox too: it is real mail; not the fake provider's, spam or viruses), inboxes `email.inboxes` per day a live
+    one exists (priced per 30 inbox-days; see `packages/email/AGENTS.md`).
   - **Attribution and spend** (`billing_usage_attribution`, `./spend`): `recordUsage` also writes who caused the usage
     (project, API key, and the member a personal key belongs to — `email.api_key_owner_id`, captured at
     acceptance, so revoking a key never erases a member's spend), same hour and shard as `billing_usage`, which

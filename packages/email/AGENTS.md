@@ -275,7 +275,11 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   type `email.received`) and the `email.received` webhook in one transaction; `(environment, provider, provider
   message id)` is unique, so redelivered notifications record once (written content is deleted again). A virus
   verdict stores a `blocked` row (envelope, sender, subject, verdicts; no content, no webhook); spam and auth
-  failures are stored and flagged. The `email.received` payload is metadata only (no bodies, headers or cc).
+  failures are stored and flagged. **Billing**: every stored copy is `email.received` (`recordUsage` in the insert's
+  transaction, any environment: sandbox ones receive real mail) unless its provider is `fake` (the dashboard's test
+  emails) or it has a spam or virus verdict (`isBillableReceipt`); `InboundDeps.billing` (the worker's `UsageGate`)
+  reserves Free's allowance before content is written, and past it the copy is dropped and counted like one over
+  the daily limit (`over_limit`). The `email.received` payload is metadata only (no bodies, headers or cc).
   `received_email.text`/`html` are cut at 2 MB and headers at 64 KB (`truncated`); the raw message is whole. The
   dashboard previews received HTML with `UNTRUSTED_PREVIEW_HEAD` (`apps/web/src/lib/email-preview.ts`; `img-src data:` only — no remote images, they are
   tracking pixels) and serves raw/attachment downloads as `attachment` + `nosniff` + `CSP: sandbox`; the API
@@ -292,7 +296,11 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   receiving domain that moves takes its addresses along and the old environment's inboxes keep their threads), the domain being the
   environment's managed one (`inboundAddressFor`, kind `managed`) or one of **its** receiving domains (`domain`);
   `username+tag@` reaches the inbox (`inboxAddressOf`). `client_id` (unique per environment) makes create return
-  the existing inbox (200); at most `MAX_INBOXES_PER_ENVIRONMENT`, counted under a per-environment advisory lock.
+  the existing inbox (200); at most the plan's `inboxes` (`PlanGate`, the organization's inboxes in every environment, counted under an
+  organization-wide advisory lock). **Billing**: a live inbox is `email.inboxes`, one unit per day it exists — the first in
+  the insert's transaction (reserved first through the `UsageGate`: Free's included inbox-days), then the worker's
+  `inbox-fees` loop (`chargeDueInboxFees`: `next_fee_at` moves a day per charge, one day per run, so a backlog catches up
+  run by run); sandbox inboxes have no `next_fee_at`.
   Receiving is `receiveEmail`'s: in its transaction, after `email.received`, `recordInboundInboxMessages` files the
   row into every inbox of that environment among the **envelope** recipients (never parsed `To`) and enqueues
   `inbox.message.received` (metadata only, like `email.received`; blocked messages never reach an inbox).

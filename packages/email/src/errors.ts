@@ -152,7 +152,6 @@ export type InboxErrorCode =
   | "unknown_domain"
   | "address_taken"
   | "invalid_address"
-  | "too_many_inboxes"
   | "inbox_cannot_send"
   | "no_reply_recipient"
   | "invalid_message";

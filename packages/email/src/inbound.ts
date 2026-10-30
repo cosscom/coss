@@ -15,10 +15,17 @@
  * Inboxes among an environment's recipients file the message into a thread in the same
  * transaction (`inboxes.ts`).
  *
+ * Every stored copy of a message the receiving provider took is billed (`email.received`, in any
+ * environment: it is real mail), unless it has a spam or virus verdict. The fake provider's (the
+ * dashboard's test emails) are free. A capped plan's allowance is reserved before the content is
+ * written; past it the copy is dropped and counted like one over the daily limit.
+ *
  * Recipients that are DMARC report addresses (`dmarc-<token>@<managed domain>`) are split off
  * first and ingested as reports (`dmarc-reports.ts`); they never become received emails.
  */
 import { randomBytes } from "node:crypto";
+import type { UsageGate } from "@coss/billing/gate";
+import { recordUsage } from "@coss/billing/metering";
 import { db, schema } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { appendLogEntries } from "@coss/logs";
@@ -96,7 +103,32 @@ export type InboundDeps = {
   quota?: InboundQuota | null;
   /** Each organization's daily DMARC report budget (the worker wires `email.dmarc_reports.day`). */
   dmarcQuota?: InboundQuota | null;
+  /** Capped plans' allowance of received email (`createUsageGate`). Defaults to none. */
+  billing?: UsageGate | null;
 };
+
+/** Whether a stored copy of `message` is billed as `email.received` (see the module comment). */
+export function isBillableReceipt(message: Pick<InboundMessage, "provider" | "verdicts">): boolean {
+  return (
+    message.provider !== "fake" &&
+    message.verdicts.virus !== "fail" &&
+    message.verdicts.spam !== "fail"
+  );
+}
+
+/** Reserves one received email of a capped plan's allowance; `false` when it is used up. */
+async function reserveReceipt(gate: UsageGate, organizationId: string): Promise<boolean> {
+  try {
+    await db.transaction((tx) =>
+      gate.reserve(tx, { organizationId, meter: "email.received", quantity: 1 }),
+    );
+    return true;
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "usage_limit_exceeded" || code === "plan_feature_unavailable") return false;
+    throw error;
+  }
+}
 
 export type ReceiveOutcome =
   | {
@@ -314,6 +346,7 @@ async function receiveRouted(
   const routes = await routeRecipients(message.recipients, deps.managedDomain);
   if (routes.length === 0) return [];
   const blocked = message.verdicts.virus === "fail";
+  const billable = isBillableReceipt(message);
   let raw: Uint8Array | null = null;
   let parsed: ParsedInboundMessage | null = null;
   const outcomes: ReceiveOutcome[] = [];
@@ -336,6 +369,16 @@ async function receiveRouted(
         JSON.stringify([route.environmentId, message.provider, message.providerMessageId]),
       ))
     ) {
+      await countDrop(route.organizationId, message.receivedAt);
+      outcomes.push({
+        kind: "over_limit",
+        environmentId: route.environmentId,
+        recipients: route.recipients,
+      });
+      continue;
+    }
+    const reserved = billable && deps.billing ? deps.billing : null;
+    if (reserved && !(await reserveReceipt(reserved, route.organizationId))) {
       await countDrop(route.organizationId, message.receivedAt);
       outcomes.push({
         kind: "over_limit",
@@ -421,6 +464,15 @@ async function receiveRouted(
         .onConflictDoNothing()
         .returning({ id: receivedEmail.id });
       if (!inserted) return null;
+      if (billable) {
+        await recordUsage(tx, {
+          organizationId: route.organizationId,
+          environmentId: route.environmentId,
+          projectId: route.projectId,
+          meter: "email.received",
+          quantity: 1,
+        });
+      }
       if (attachments.length > 0) {
         await tx.insert(receivedEmailAttachment).values(
           attachments.map((attachment) => ({
@@ -523,8 +575,18 @@ async function receiveRouted(
     });
 
     if (!insertedId) {
-      // A concurrent notification for the same message won: drop this copy's content.
+      // A concurrent notification for the same message won: drop this copy's content (and give
+      // back its reservation: the winner made its own).
       await deps.store.delete(written);
+      if (reserved?.release) {
+        await db.transaction(async (tx) => {
+          await reserved.release?.(tx, {
+            organizationId: route.organizationId,
+            meter: "email.received",
+            quantity: 1,
+          });
+        });
+      }
       const winner = await findExisting(route, message);
       outcomes.push({
         kind: "duplicate",

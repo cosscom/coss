@@ -98,8 +98,9 @@ export type CreateAppOptions = {
   /** Plan features and limits (`createPlanGate` from `@coss/billing`). Defaults to none (no limits). */
   plans?: PlanGate;
   /**
-   * Hard usage caps (`createUsageGate`): what a canceled or paused broadcast gives back of its
-   * reservation. Must match the email service's. Defaults to none.
+   * Hard usage caps (`createUsageGate`): what a new live inbox reserves, and what a canceled or
+   * paused broadcast gives back of its reservation. Must match the email service's. Defaults to
+   * none.
    */
   billing?: UsageGate;
   /** The caller's address for per-IP limits (`CLIENT_IP_HEADER`). Defaults to none. */

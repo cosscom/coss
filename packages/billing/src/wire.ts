@@ -61,6 +61,7 @@ const BILLING_EXAMPLE = {
     members: 10,
     webhook_endpoints_per_environment: 10,
     contacts_per_environment: 50_000,
+    inboxes: 1_000,
   },
 } as const;
 
@@ -151,6 +152,7 @@ export const BillingObject = z
         members: z.int().nullable(),
         webhook_endpoints_per_environment: z.int().nullable(),
         contacts_per_environment: z.int().nullable(),
+        inboxes: z.int().nullable(),
       })
       .meta({ description: "Resource limits (`null`: unlimited)." }),
   })
