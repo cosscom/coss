@@ -13,6 +13,7 @@ import {
   METER_KEYS,
   METERS,
   type MeterKey,
+  meterAmount,
   PLAN_KEYS,
   PLANS,
   type PlanKey,
@@ -27,11 +28,7 @@ import { emailTierCharges, formatPrice, METER_NOTES } from "./pricing";
 function includedText(meter: MeterKey, n: number): string {
   if (meter === "email.inboxes") return `${Math.floor(n / 31).toLocaleString("en-US")} inboxes`;
   if (meter === "email.received") return `${n.toLocaleString("en-US")} received emails a month`;
-  const { label, units } = METERS[meter];
-  // A label that already names the unit ("Form submissions") isn't followed by it again.
-  const name = label.toLowerCase();
-  const thing = name.endsWith(units) ? name : `${name} ${units}`;
-  return `${n.toLocaleString("en-US")} ${thing} a month`;
+  return `${meterAmount(meter, n)} a month`;
 }
 
 /** The plans and their features, as rows (shared by the MDX table and the Markdown for /llms*.txt). */
@@ -121,8 +118,9 @@ export function planRows(): { label: string; values: string[] }[] {
   ];
 }
 
-function describeRate(rate: Rate, per: number, unit: string): string {
-  const perLabel = per === 1 ? unit : `${per.toLocaleString("en-US")} ${unit}s`;
+function describeRate(rate: Rate, meter: MeterKey): string {
+  const { displayPer: per, unit, units } = METERS[meter];
+  const perLabel = per === 1 ? unit : `${per.toLocaleString("en-US")} ${units}`;
   const price = (unitNanos: bigint) => `${formatUnitPrice(unitNanos, per)} per ${perLabel}`;
   const [only] = rate.tiers;
   if (rate.tiers.length === 1 && only) return price(only.unitNanos);
@@ -164,7 +162,7 @@ export function rateRows(
       return [
         {
           product: definition.label,
-          rate: describeRate(rates.default, definition.displayPer, definition.unit),
+          rate: describeRate(rates.default, meter),
           note,
         },
       ];
@@ -181,7 +179,7 @@ export function rateRows(
         ? [
             {
               product: `${definition.label} (US)`,
-              rate: describeRate(us, definition.displayPer, definition.unit),
+              rate: describeRate(us, meter),
               note: "",
             },
           ]
@@ -200,9 +198,7 @@ export function rateRows(
     const fee = definition.unit === "fee";
     return entries.map(([dimension, rate]) => ({
       product: `${definition.label} (${formatDimension(dimension)})`,
-      rate: fee
-        ? formatUnitPrice(rate.tiers[0]?.unitNanos ?? 0n)
-        : describeRate(rate, definition.displayPer, definition.unit),
+      rate: fee ? formatUnitPrice(rate.tiers[0]?.unitNanos ?? 0n) : describeRate(rate, meter),
       note: fee ? "Passed through at cost" : "",
     }));
   });

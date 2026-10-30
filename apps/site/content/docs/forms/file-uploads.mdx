@@ -42,6 +42,15 @@ files.
 Files are kept with their submission (deleted with it, and like it after
 <RetentionPeriod of="form_submissions" />). Spam caught by the honeypot keeps none.
 
+## Pricing
+
+An accepted live submission's files are billed with it, <Rate meter="forms.file_uploads" />, which
+covers keeping them: each submission's files are added up and rounded up to the next MB (1 MB =
+1,048,576 bytes). Spam, held and unconfirmed submissions' files cost nothing unless you release
+them or the submitter confirms, and sandbox forms bill nothing. The Free plan includes
+<Included meter="forms.file_uploads" />; past it, a post with files is refused with an error on the
+file field (the submitter can send the form without them) until the month resets or you upgrade.
+
 ## Downloading
 
 Webhooks and the API list a submission's files (`files[]`: id, field, filename, type, size); fetch

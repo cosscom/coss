@@ -812,7 +812,7 @@ const FORMSPREE: Competitor = {
     },
     {
       label: "File uploads",
-      coss: "Up to 25 MB per submission",
+      coss: `Up to 25 MB per submission, ${rateText("forms.file_uploads")}; ${includedUnitsText("forms.file_uploads")} on Free`,
       them: "1, 5 or 10 GB of storage by plan; none on Free",
     },
     {

@@ -121,8 +121,13 @@ injected `FormMailer` and `FormContactSink`, which the worker implements.
   (`/admin/forms`, `listFormsForAdmin`, `setFormDisabledByAdmin`): every organization's forms
   (hosted pages first) and "Disable form", recorded as `form.disable`/`form.enable` in the admin
   audit log in the same transaction; a disabled form and its page answer like missing ones.
-- **Billing**: meter `forms.submissions` (accepted submissions, live): $1 per 1,000 from the
-  2026-12-01 rate card, 1,000 a month included on Free (whose cap the `UsageGate` enforces).
+- **Billing**: meters `forms.submissions` (accepted submissions, live; $1 per 1,000, 1,000 a month
+  on Free) and `forms.file_uploads` (their files in whole MB of 2^20 bytes, rounded up per
+  submission, `uploadMegabytes`; $0.25 per 1,000 MB, which pays for the 90 days they're kept;
+  1,000 MB a month on Free), both recorded by `recordAccepted` once and reserved there through the
+  `UsageGate` (Free's caps). Past the uploads cap a post with files is `invalid` with
+  `files_not_accepted` on the file field (`isUploadLimitError`), so the form still takes it
+  without them; past the submissions cap the form answers `unavailable`.
 
 ## Production
 
@@ -134,4 +139,4 @@ web. Never move it to a coss.com subdomain: phishing reports would land on coss.
 `FORMS_NOTIFICATIONS_FROM` (worker) is optional. Anything on the domain outside `/f/*` (the apex
 included) redirects to `https://coss.com/docs/forms` (a Cloudflare redirect rule). Still to do:
 the `abuse@coss.com` mailbox the pages link to, watched (the admin console's "Disable form"
-takes a form down), and a way to bill uploads' storage (a submission can keep 25 MB for 90 days).
+takes a form down).

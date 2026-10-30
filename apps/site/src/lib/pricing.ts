@@ -15,6 +15,7 @@ import {
 } from "@coss/billing/catalog";
 import { chargeRange } from "@coss/billing/engine";
 import { formatUnitPrice, nanosToCents } from "@coss/billing/money";
+import { RETENTION_DAYS } from "@coss/retention";
 
 const EMAIL: MeterKey = "email.recipients";
 
@@ -159,6 +160,7 @@ export const METER_NOTES: Partial<Record<MeterKey, string>> = {
   "email.received": "Mail flagged as spam or carrying a virus is free",
   "email.inboxes":
     "30 inbox-days are an inbox for a month, charged by the day; every plan includes 3 inboxes",
+  "forms.file_uploads": `The files of accepted submissions, kept ${RETENTION_DAYS.formSubmissions} days; rounded up to the MB per submission`,
 };
 
 /** The current list rates, one table per meter (and per dimension with its own rate). */

@@ -13,6 +13,10 @@ describe("renderBillingComponents", () => {
     expect(text).toContain("1,000 form submissions a month");
     expect(text).not.toContain("submissions submissions");
     expect(text).toContain("| Form submissions | $1.00 per 1,000 submissions | |");
+    expect(text).toContain("1,000 MB of form uploads a month");
+    expect(text).toContain(
+      "| Form uploads | $0.25 per 1,000 MB | The files of accepted submissions, kept 90 days; rounded up to the MB per submission |",
+    );
     expect(text).toContain(
       "| Sending rate | 2 emails a second, 3,000 a day | 14 emails a second, 100,000 a day | 50 emails a second, 1,000,000 a day | Custom |",
     );

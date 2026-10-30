@@ -346,6 +346,82 @@ describe("submitForm", () => {
     expect(after).toEqual(before);
   });
 
+  test("live: files are metered in whole MB; a capped plan's uploads used up refuse the files", async () => {
+    // A tenant of its own: other tests count this organization's submissions.
+    const own = await createTestTenant();
+    const env: FormEnvironment = {
+      organizationId: own.organization.id,
+      projectId: own.project.id,
+      environmentId: own.production.id,
+      mode: "live",
+    };
+    const created = await form(env, { files: { enabled: true } });
+    // 1.5 MB in two files: billed as 2 MB.
+    const files = [512 * 1024, 1024 * 1024].map((size, index) => ({
+      field: "cv",
+      filename: `cv-${index}.pdf`,
+      contentType: "application/pdf",
+      content: new Uint8Array(size),
+    }));
+    const reserved: { meter: string; quantity: number }[] = [];
+    const gated = {
+      ...deps,
+      billing: {
+        async reserve(_tx: unknown, input: { meter: string; quantity: number }) {
+          reserved.push({ meter: input.meter, quantity: input.quantity });
+        },
+      },
+    };
+    const result = await submitForm(
+      gated,
+      post(created.id, { email: "ada@example.com" }, { files }),
+    );
+    expect(result.outcome).toBe("accepted");
+    expect(reserved).toEqual([
+      { meter: "forms.submissions", quantity: 1 },
+      { meter: "forms.file_uploads", quantity: 2 },
+    ]);
+    const usage = await db
+      .select({ quantity: schema.billingUsage.quantity })
+      .from(schema.billingUsage)
+      .where(
+        and(
+          eq(schema.billingUsage.organizationId, env.organizationId),
+          eq(schema.billingUsage.meter, "forms.file_uploads"),
+        ),
+      );
+    expect(usage.reduce((sum, row) => sum + row.quantity, 0)).toBe(2);
+
+    const capped = {
+      ...deps,
+      billing: {
+        async reserve(_tx: unknown, input: { meter: string }) {
+          if (input.meter !== "forms.file_uploads") return;
+          throw Object.assign(new Error("Over the plan's uploads."), {
+            code: "usage_limit_exceeded",
+          });
+        },
+      },
+    };
+    const refused = await submitForm(capped, post(created.id, { a: "b" }, { files }));
+    expect(refused.outcome).toBe("invalid");
+    if (refused.outcome !== "invalid") return;
+    expect(refused.errors).toEqual([
+      {
+        field: "cv",
+        code: "files_not_accepted",
+        message: "This form can't take files right now. Send it without them.",
+      },
+    ]);
+    // Without the files it goes through.
+    expect((await submitForm(capped, post(created.id, { a: "b" }))).outcome).toBe("accepted");
+    const rows = await db
+      .select({ id: schema.formSubmission.id })
+      .from(schema.formSubmission)
+      .where(eq(schema.formSubmission.formId, created.id));
+    expect(rows).toHaveLength(2);
+  });
+
   test("live: metered once; disabled forms and suspended organizations take nothing", async () => {
     const created = await form(live);
     const result = await submitForm(deps, post(created.id, { email: "ada@example.com" }));

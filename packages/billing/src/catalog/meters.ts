@@ -24,6 +24,8 @@ export type MeterDefinition = {
   dimensions: readonly string[];
   /** `commitment`: only usable under a contract with a commitment covering this meter. */
   requires: "plan" | "commitment";
+  /** The units measure the usage ("1,000 MB of form uploads") rather than count it. */
+  measure?: true;
 };
 
 export const METERS = {
@@ -154,7 +156,7 @@ export const METERS = {
     requires: "plan",
   },
   // Forms: a submission accepted for delivery (spam, held and unconfirmed ones aren't counted
-  // until released or confirmed). Priced from the 2026-12-01 rate card.
+  // until released or confirmed).
   "forms.submissions": {
     product: "forms",
     label: "Form submissions",
@@ -163,6 +165,18 @@ export const METERS = {
     displayPer: 1000,
     dimensions: [],
     requires: "plan",
+  },
+  // The files of an accepted submission, in MB (2^20 bytes, rounded up per submission), counted
+  // with it: the price covers keeping them for the submissions' retention.
+  "forms.file_uploads": {
+    product: "forms",
+    label: "Form uploads",
+    unit: "MB",
+    units: "MB",
+    displayPer: 1000,
+    dimensions: [],
+    requires: "plan",
+    measure: true,
   },
   "video.participant_minutes": {
     product: "video",
@@ -189,6 +203,22 @@ export const METER_KEYS = Object.keys(METERS) as [MeterKey, ...MeterKey[]];
 
 export function isMeterKey(value: string): value is MeterKey {
   return Object.hasOwn(METERS, value);
+}
+
+/**
+ * What a meter's units are called in a sentence: "email recipients", "form submissions" (a
+ * label that already names them isn't followed by them again), "MB of form uploads".
+ */
+export function meterUnitsName(meter: MeterKey): string {
+  const definition: MeterDefinition = METERS[meter];
+  const name = definition.label.toLowerCase();
+  if (definition.measure) return `${definition.units} of ${name}`;
+  return name.endsWith(definition.units) ? name : `${name} ${definition.units}`;
+}
+
+/** "3,000 email recipients", "1,000 MB of form uploads". */
+export function meterAmount(meter: MeterKey, quantity: number): string {
+  return `${quantity.toLocaleString("en-US")} ${meterUnitsName(meter)}`;
 }
 
 /**

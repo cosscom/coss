@@ -988,7 +988,6 @@ sub-account reputation counts (each evaluation counts its window live), and sub-
 Sign's archival timestamps in seals (PAdES B-LTA: renewing a document timestamp before its TSA certificate expires) and a standalone certificate download,
 a price for `sign.completed_requests`, Sign in the iOS app, the admin console, the MCP server and the CLI, and Sign
 in production (off until "Going live" in `packages/sign/AGENTS.md` is done),
-billing for Forms uploads' storage,
 Forms in the iOS app, malware scanning of form uploads, conditional or multi-page forms, a drag-and-drop form builder,
 per-form webhook URLs (endpoints filter by event type), custom domains for hosted forms,
 sending from inboxes at coss.com's managed inbound domain in live environments (they only receive), inbox

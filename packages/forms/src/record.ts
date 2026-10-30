@@ -33,13 +33,28 @@ export type SubmissionContext = {
     | "contacts"
   >;
   sandbox: boolean;
-  /** Reserves capped plans' `forms.submissions` as a submission is accepted (live only). */
+  /**
+   * Reserves capped plans' `forms.submissions` and `forms.file_uploads` as a submission is
+   * accepted (live only).
+   */
   billing?: UsageGate | undefined;
 };
 
-/** A capped plan's `forms.submissions` are used up (`UsageGate.reserve`'s `BillingError`). */
+/** A capped plan's meter is used up (`UsageGate.reserve`'s `BillingError`). */
 export function isUsageLimitError(error: unknown): boolean {
   return error instanceof Error && (error as { code?: unknown }).code === "usage_limit_exceeded";
+}
+
+const uploadLimitErrors = new WeakSet<object>();
+
+/** The usage limit reached was `forms.file_uploads`' (the submission would fit without its files). */
+export function isUploadLimitError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && uploadLimitErrors.has(error);
+}
+
+/** The `forms.file_uploads` a submission's files bill: whole MB (2^20 bytes), rounded up. */
+export function uploadMegabytes(files: readonly { size: number }[]): number {
+  return Math.ceil(files.reduce((sum, file) => sum + file.size, 0) / 2 ** 20);
 }
 
 function payload(
@@ -119,8 +134,9 @@ function logLine(
 }
 
 /**
- * A submission that became `accepted` (the caller set the status): metered once (live only,
- * compare-and-set on `usage_recorded_at`), announced, logged, and its deliveries queued.
+ * A submission that became `accepted` (the caller set the status): metered once with its files
+ * (live only, compare-and-set on `usage_recorded_at`), announced, logged, and its deliveries
+ * queued.
  */
 export async function recordAccepted(
   tx: Executor,
@@ -128,6 +144,7 @@ export async function recordAccepted(
   submission: FormSubmissionRow,
   input: { occurredAt: Date; message?: string },
 ): Promise<void> {
+  const files = await filesOf(tx, submission);
   if (!context.sandbox) {
     const [metered] = await tx
       .update(formSubmission)
@@ -154,9 +171,30 @@ export async function recordAccepted(
         meter: "forms.submissions",
         quantity: 1,
       });
+      const megabytes = uploadMegabytes(files);
+      if (megabytes > 0) {
+        try {
+          await context.billing?.reserve(tx, {
+            organizationId: context.form.organizationId,
+            meter: "forms.file_uploads",
+            quantity: megabytes,
+          });
+        } catch (error) {
+          if (isUsageLimitError(error) && typeof error === "object" && error !== null) {
+            uploadLimitErrors.add(error);
+          }
+          throw error;
+        }
+        await recordUsage(tx, {
+          organizationId: context.form.organizationId,
+          environmentId: context.form.environmentId,
+          projectId: context.form.projectId,
+          meter: "forms.file_uploads",
+          quantity: megabytes,
+        });
+      }
     }
   }
-  const files = await filesOf(tx, submission);
   const id = newId(ID_PREFIXES.webhookEvent);
   await enqueueWebhookMessage(tx, {
     id,
