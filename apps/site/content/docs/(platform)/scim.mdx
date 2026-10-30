@@ -1,0 +1,62 @@
+---
+title: Directory sync (SCIM)
+description: Let your identity provider add, update and remove your organization's members over SCIM 2.0, and make admins from its groups.
+icon: FolderSync
+---
+
+Directory sync lets your identity provider (Okta, Microsoft Entra ID, JumpCloud…) manage your
+organization's members over SCIM 2.0: people you assign to the coss.com application become members,
+members of a group you map become admins, and people you deactivate or delete lose access. It's part
+of the <PlansWith feature="scim" /> plans.
+
+Directory sync needs [single sign-on](/docs/sso): people it adds sign in through your identity
+provider, and only addresses at the SSO provider's domains can be provisioned.
+
+## Connect your directory
+
+Owners and admins connect it in the organization's settings, under **Directory sync**. The
+organization has one connection. Give your identity provider:
+
+- the **SCIM base URL**: `https://coss.com/api/auth/scim/v2`, and
+- a **bearer token**, created on the same page. Pick how long it lasts (90 days, 1 year or 2 years)
+  and copy it at once: it isn't shown again.
+
+Up to two tokens work at a time, so you can replace one without a gap: create a new token, update
+your identity provider, then revoke the old one. When every token has expired or been revoked,
+syncing stops until you create a new one.
+
+## What your directory controls
+
+Users are matched by their primary email address (or `userName` when they have none).
+
+| In your directory                                  | In coss.com                                                         |
+| -------------------------------------------------- | ------------------------------------------------------------------- |
+| An active user                                     | A member of the organization                                        |
+| An active user in a group mapped to **admin**      | An admin                                                            |
+| A user deactivated or deleted                      | Removed from the organization: their SSO sessions here end and their personal API keys are revoked |
+
+- **Group roles**: map a group's name to the admin or member role. Names are matched without regard
+  to case, and saving the mappings applies them to every directory user at once. Groups do nothing
+  else.
+- **Owners are never changed.** Directory sync never adds, demotes or removes an owner. If your
+  directory deactivates someone who is an owner here, the page warns you; remove or demote them on
+  the **Members** page yourself.
+- Members your directory manages can't be removed or have their role changed in the dashboard
+  (making one an owner is still possible): change them in your directory.
+- An existing coss.com account with a matching, verified address joins as it is. Your directory
+  never rewrites its name or other details.
+- While the directory is connected, signing in with SSO needs an active user in it (owners excepted),
+  so people you deactivate can't sign in again through your identity provider.
+- While the organization is suspended, nobody is added or promoted; removals still apply.
+
+Connecting, disconnecting, tokens and group roles are recorded in the [audit log](/docs/audit-log),
+and the page lists the connection's recent activity.
+
+## Disconnecting
+
+**Disconnect** makes every token stop working at once. Members the directory added stay, as
+ordinary members you manage on the **Members** page, and anyone at your SSO domains can sign in with
+SSO again. Disconnecting a large directory may take more than one step: the page shows
+"Disconnecting" until you finish it.
+
+The SSO provider can't be removed while a directory is connected: disconnect the directory first.

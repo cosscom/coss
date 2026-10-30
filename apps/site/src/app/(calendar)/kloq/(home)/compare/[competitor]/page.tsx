@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ComparePage } from "@/components/calendar/compare/compare-page";
-import { JsonLd } from "@/components/calendar/seo/json-ld";
+import { JsonLd } from "@/components/json-ld";
 import { COMPETITORS, competitorBySlug } from "@/lib/calendar/compare";
 import { abs, canonical } from "@/lib/calendar/site";
 import { compareSchema } from "@/lib/calendar/structured-data";

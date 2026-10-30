@@ -33,9 +33,12 @@ export const SITE_ASSET_PREFIX = "/site-assets";
  * entry here (unless an existing prefix covers it) + the route in apps/site.
  */
 export const ZONE_ROUTES = [
-  // apps/site: landing page, pricing, about, the crowd opinionated source software page, Shipyard's landing page (and its assets), kloq
+  // apps/site: landing page, pricing, about, the crowd opinionated source software page, the
+  // product, comparison and solution pages, Shipyard's landing page (and its assets), kloq
   // kit's pages (landing page, demo, tools, comparisons, docs and its shadcn registry), docs (incl.
-  // their search at /docs/search.json), legal pages, LLM text files.
+  // their search at /docs/search.json), legal pages, LLM text files. Each page route costs one of
+  // the deploy's 15 wildcard invalidations (`infra/aws/routing.ts`): group new pages under a prefix,
+  // and append new entries after the last site entry (see below).
   { zone: "site", path: "/", prefix: false },
   { zone: "site", path: "/pricing", prefix: false },
   { zone: "site", path: "/about", prefix: false },
@@ -53,6 +56,12 @@ export const ZONE_ROUTES = [
   { zone: "site", path: "/robots.txt", prefix: false },
   { zone: "site", path: "/sitemap.xml", prefix: false },
   { zone: "site", path: "/.well-known", prefix: true },
+  // Appended after the routes that were live before them: the load balancer's rules are numbered
+  // in this order, and an entry in the middle would renumber (rewrite) every live rule after it.
+  { zone: "site", path: "/products", prefix: true },
+  { zone: "site", path: "/compare", prefix: true },
+  { zone: "site", path: "/solutions", prefix: true },
+  { zone: "site", path: "/opengraph-image", prefix: false },
   // The coss ui repository's apps, deployed outside AWS (Vercel): coss ui and Origin UI.
   { zone: "ui", path: "/ui", prefix: true },
   { zone: "origin", path: "/origin", prefix: true },
@@ -127,6 +136,7 @@ const FUTURE_SITE_SEGMENTS = [
   "meetings",
   "whatsapp",
   "inbox",
+  "inboxes",
   "ai",
   "agents",
   "hooks",
@@ -140,6 +150,12 @@ const FUTURE_SITE_SEGMENTS = [
   "contracts",
   "forms",
   "surveys",
+  "risk",
+  "fraud",
+  "subaccounts",
+  "sub-accounts",
+  "marketing",
+  "transactional",
   // Marketing and company pages
   "home",
   "pricing",
@@ -183,6 +199,8 @@ const FUTURE_SITE_SEGMENTS = [
   "brand",
   "compare",
   "alternatives",
+  "vs",
+  "platforms",
   "templates",
   "examples",
   "resources",

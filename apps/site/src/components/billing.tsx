@@ -1,5 +1,24 @@
-import { type MeterKey, PLAN_KEYS, PLANS, type Product } from "@coss/billing/catalog";
-import { addOnRows, planRows, rateRows } from "@/lib/billing-text";
+import {
+  type FeatureKey,
+  type LimitKey,
+  type MeterKey,
+  PLAN_KEYS,
+  PLANS,
+  type PlanKey,
+  type Product,
+} from "@coss/billing/catalog";
+import {
+  addOnRows,
+  billingExample,
+  graduatedExampleText,
+  includedUnitsText,
+  limitText,
+  planPriceText,
+  planRows,
+  plansWithText,
+  rateRows,
+  rateText,
+} from "@/lib/billing-text";
 import { DocsTable, DocsTd, DocsTh, DocsTr } from "./docs-table";
 
 /** The plans side by side (from `@coss/billing/catalog`, which billing enforces). */
@@ -75,5 +94,58 @@ export function AddOns() {
         ))}
       </tbody>
     </DocsTable>
+  );
+}
+
+/*
+ * Inline facts for prose, read from the catalog (`renderInlineBillingComponents` writes the same
+ * text into Markdown): `<Rate meter="email.inboxes" />`, `<PlansWith feature="sso" />`,
+ * `<Included meter="email.recipients" />`, `<Limit of="inboxes" plan="pro" />`,
+ * `<PlanPrice plan="pro" />`.
+ */
+
+export function Rate({ meter }: { meter: MeterKey }) {
+  return <>{rateText(meter)}</>;
+}
+
+export function PlansWith({ feature }: { feature: FeatureKey }) {
+  return <>{plansWithText(feature)}</>;
+}
+
+export function Included({ meter, plan = "free" }: { meter: MeterKey; plan?: PlanKey }) {
+  return <>{includedUnitsText(meter, plan)}</>;
+}
+
+export function Limit({ of, plan }: { of: LimitKey; plan: PlanKey }) {
+  return <>{limitText(of, plan)}</>;
+}
+
+export function PlanPrice({ plan }: { plan: PlanKey }) {
+  return <>{planPriceText(plan)}</>;
+}
+
+/** The billing guide's worked example of graduated pricing, in one sentence. */
+export function GraduatedExample() {
+  return <>{graduatedExampleText()}</>;
+}
+
+/** The billing guide's worked example of a month on Pro: fee, usage, credit and the next charge. */
+export function BillingExample() {
+  const { intro, rows, summary } = billingExample();
+  return (
+    <>
+      <p>{intro}</p>
+      <DocsTable>
+        <tbody>
+          {rows.map(({ label, amount, total }) => (
+            <DocsTr key={label}>
+              <DocsTd>{total ? <strong>{label}</strong> : label}</DocsTd>
+              <DocsTd>{total ? <strong>{amount}</strong> : amount}</DocsTd>
+            </DocsTr>
+          ))}
+        </tbody>
+      </DocsTable>
+      <p>{summary}</p>
+    </>
   );
 }

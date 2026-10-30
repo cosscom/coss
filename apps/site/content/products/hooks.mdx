@@ -1,0 +1,132 @@
+---
+title: Hooks
+description: coss.com Hooks is webhooks as a service. Send an event once and coss.com signs, delivers and retries it to every endpoint your customers registered.
+seoTitle: "Webhooks as a service with a customer portal · coss.com"
+headline: Webhooks for your customers, sent once.
+call: coss.hooks
+mark: hooks
+docs: /docs/hooks
+group: Trust
+features:
+  - An application per customer, by id or your own uid
+  - Event types your customers subscribe to
+  - Endpoints with their own secrets, filters and rate limits
+  - Standard Webhooks signatures
+  - Retries for about a day, then recovery
+  - Idempotent sends
+  - A hosted portal you can embed
+related:
+  - platform
+  - subaccounts
+  - risk
+  - sdks
+faq:
+  - question: What is webhooks as a service?
+    answer: A service that sends webhooks to your customers for you. With coss.com Hooks you send an event to one of your customers once, and coss.com delivers it to every URL they registered, signed, retried with backoff and logged.
+  - question: How do my customers add their webhook endpoints?
+    answer: In the Hooks portal, a ready-made page where one customer's users add endpoints, pick event types, reveal and roll secrets, and see and retry every delivery. Your backend creates a portal session and sends the user to its URL or embeds it in an iframe. You can also create endpoints for them with the API.
+  - question: How do my customers verify the webhooks they receive?
+    answer: Every delivery carries Standard Webhooks headers (webhook-id, webhook-timestamp and webhook-signature, an HMAC-SHA256 with the endpoint's own secret). Any Standard Webhooks library verifies them, as does verifyWebhook from the coss package.
+  - question: What happens when a customer's endpoint is down?
+    answer: A failed delivery is retried with backoff for 8 attempts over roughly a day. An endpoint that keeps failing every attempt for 5 days is disabled and you get a hook_endpoint.disabled webhook. Once it is back, a recovery requeues every delivery that failed since a time you choose.
+  - question: Can I move existing webhook endpoints to coss.com without changing their secrets?
+    answer: Yes. Creating an endpoint accepts an existing whsec_ secret of 24 to 64 bytes, so your customers' receivers keep verifying with the secret they already have.
+  - question: Can a webhook be sent twice if my request is retried?
+    answer: No. The SDK sends an Idempotency-Key with every send and reuses it on retries, and you can pass your own key, so a retried send is delivered once. Receivers can still see a message more than once after delivery retries, and use webhook-id to skip duplicates.
+---
+
+<Section title="How it works" lede="Register the event types you send, create an application for each customer, and send messages. coss.com fans each one out to the customer's endpoints.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// Once: the catalog your customers subscribe from.
+await coss.hooks.eventTypes.create({
+  name: "invoice.paid",
+  description: "An invoice was paid in full.",
+});
+
+// For each customer: an application under your own id.
+await coss.hooks.applications.create({ name: "Acme Corp", uid: "customer_8812" });
+
+// Whenever something happens: send it once.
+const { data: message } = await coss.hooks.messages.send(
+  {
+    application: "customer_8812",
+    event_type: "invoice.paid",
+    payload: { invoice_id: "in_1042", amount: 4200, currency: "usd" },
+  },
+  { idempotencyKey: "invoice-1042-paid" },
+);
+
+// Let the customer manage their endpoints in the portal.
+const { data: session } = await coss.hooks.portal.createSession({
+  application: "customer_8812",
+});
+// Redirect the user to session.url, or embed it.
+```
+
+The send answers `202` at once and coss.com delivers the payload to each enabled endpoint subscribed to `invoice.paid`, usually within a second. The [quickstart](/docs/hooks) walks through it, and the [API reference](/docs/api-reference/hooks-messages/send-hook-message) lists every field.
+
+</Section>
+
+<Section title="Webhooks your customers can manage" lede="Hooks is the sending side of webhooks: delivery, signing, retries and a portal, without building any of it.">
+
+<Features>
+
+<Feature title="An application per customer">
+Each of your customers is an application, addressed by its id or by your own `uid`, so you never keep a mapping table. Messages, endpoints and deliveries all belong to it.
+</Feature>
+
+<Feature title="Endpoints with their own rules">
+Every endpoint has its own `whsec_` secret, a filter of event types, an optional rate limit of 1 to 1,000 requests per second, and metadata. Deliveries over the rate wait instead of failing.
+</Feature>
+
+<Feature title="Standard Webhooks signatures">
+Each request carries `webhook-id`, `webhook-timestamp` and `webhook-signature` headers. During a secret roll it is signed with both secrets, so receivers keep working while they switch. [What receivers get](/docs/hooks/receiving).
+</Feature>
+
+<Feature title="Retries, then recovery">
+A failed delivery is retried with backoff, 8 attempts over about a day. After an outage, a recovery requeues every delivery that failed since a time you choose, once each, oldest first. [Delivery and retries](/docs/hooks/delivery).
+</Feature>
+
+<Feature title="Failing endpoints switch off">
+An endpoint whose deliveries fail every attempt for 5 days is disabled, and your own webhook endpoints get `hook_endpoint.disabled`, so you can tell your customer.
+</Feature>
+
+<Feature title="A portal on its own domain">
+Your customers add endpoints, choose event types, roll secrets, send test messages and retry deliveries. Your backend mints the session; its token travels in the URL fragment, never to a server. [Portal](/docs/hooks/portal).
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="The portal" lede="A portal session is a sign-in your backend creates for one application's user, valid for up to a day.">
+
+Create a session from your backend each time a user opens the portal, then redirect them to its `url` or embed it in an iframe on an origin you allowed under **Hooks → Portal settings**. The same settings set the name, accent color and theme the portal shows. Pass `read_only: true` for a user who may look but not change anything.
+
+Everything done in the portal goes through the same rules as the API: endpoint URLs must be public `https://` URLs, filters must name registered event types, and every change appears in your organization's [audit log](/docs/audit-log), labeled with the application.
+
+</Section>
+
+<Section title="Specifications" lede="Delivery rules and limits, copied from the docs. Higher limits are available on request.">
+
+<Specs>
+<Spec label="Signatures">Standard Webhooks, HMAC-SHA256</Spec>
+<Spec label="Attempts per delivery">8, over about a day</Spec>
+<Spec label="Response timeout">15 seconds, any 2xx</Spec>
+<Spec label="Payload size">256 KB of JSON</Spec>
+<Spec label="Endpoints per application">50 live, 5 sandbox</Spec>
+<Spec label="Requests per endpoint">20 per second, or its own limit</Spec>
+<Spec label="Messages per second">50, bursts of 200</Spec>
+<Spec label="Deliveries per day">100,000 per organization</Spec>
+<Spec label="Auto-disable">after 5 days of failures</Spec>
+<Spec label="Portal session">up to 24 hours</Spec>
+<Spec label="Messages kept"><RetentionPeriod of="hook_messages" /></Spec>
+</Specs>
+
+Sandbox keys (`coss_test_…`) deliver to real URLs too, under lower limits: 2,000 deliveries a day per environment and 100 applications. See [pricing](/pricing) for the plans.
+
+</Section>

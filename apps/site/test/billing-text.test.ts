@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import { PLAN_KEYS } from "@coss/billing/catalog";
 import { renderBillingComponents } from "../src/lib/billing-text";
 
@@ -53,5 +54,29 @@ describe("renderBillingComponents", () => {
     expect(text).toContain("| SMS phone numbers (toll-free) | $2.15 per number-month | |");
     expect(text).not.toContain("| Email |");
     expect(text).not.toContain("<UsageRates");
+  });
+
+  test("renders the billing guide's worked example from the rate card", () => {
+    const text = renderBillingComponents("<GraduatedExample />\n\n<BillingExample />");
+    expect(text).toContain(
+      "With 2,000,000 emails in a month, the first 1,000,000 cost $0.40 per 1,000 and the next 1,000,000 $0.30 per 1,000: $700.",
+    );
+    expect(text).toContain("For example, on Pro with 2,000,000 emails in October:");
+    expect(text).toContain("| October fee (charged October 1) | $25.00 |");
+    expect(text).toContain("| October usage | $700.00 |");
+    expect(text).toContain("| October credit | -$25.00 |");
+    expect(text).toContain("| **Charged November 1 (with November's $25 fee)** | **$675.00** |");
+    expect(text).toContain("Over the month you paid $700: the larger of the fee and the usage.");
+  });
+
+  test("the docs never type a price in", () => {
+    // Prices come from the catalog's components; code samples and a bare $0 aren't prices.
+    const dir = `${import.meta.dir}/../content/docs`;
+    const typed = [...new Bun.Glob("**/*.mdx").scanSync(dir)].filter((file) =>
+      /\$\s?(?:[1-9]|0\.\d)/.test(
+        readFileSync(`${dir}/${file}`, "utf8").replace(/^```[\s\S]*?^```/gm, ""),
+      ),
+    );
+    expect(typed).toEqual([]);
   });
 });

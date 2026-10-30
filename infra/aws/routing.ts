@@ -166,8 +166,9 @@ export function albListenerRules(): ListenerRule[] {
   const sitePatterns = (ZONE_ROUTES as readonly ZoneRoute[])
     .filter((route) => route.zone === "site")
     .flatMap(albPathPatterns);
+  const siteRules: Omit<ListenerRule, "priority">[] = [];
   for (let index = 0; index < sitePatterns.length; index += PATHS_PER_RULE) {
-    rules.push({
+    siteRules.push({
       targetGroup: "site",
       conditions: [
         {
@@ -178,7 +179,8 @@ export function albListenerRules(): ListenerRule[] {
       ],
     });
   }
-  rules.push({
+  const tail: Omit<ListenerRule, "priority">[] = [];
+  tail.push({
     targetGroup: "web",
     conditions: [
       { Field: "host-header", HostHeaderConfig: { Values: [DASHBOARD_HOST] } },
@@ -188,7 +190,7 @@ export function albListenerRules(): ListenerRule[] {
   // After the dashboard, not with the other hosts: a rule inserted mid-list renumbers every rule
   // after it, which Terraform rewrites one at a time under live traffic. Its host and header
   // match nothing above, so its place changes nothing else.
-  rules.push({
+  tail.push({
     targetGroup: "api",
     conditions: [
       { Field: "host-header", HostHeaderConfig: { Values: [FORMS_HOST] } },
@@ -202,9 +204,32 @@ export function albListenerRules(): ListenerRule[] {
       },
     ],
   });
-  // Gaps of 10 leave room for manual rules (maintenance pages, …).
-  return rules.map((rule, index) => ({ priority: (index + 1) * 10, ...rule }));
+  // Gaps of 10 leave room for manual rules (maintenance pages, …). Site rules past the first
+  // `SITE_RULES_ON_TENS` take the free priorities just below the dashboard's instead (…, 121, 122):
+  // Terraform keys rules by priority, so renumbering the dashboard's rule would rewrite it in place
+  // into a site rule, and coss.com would answer 403 until the dashboard's new rule was created.
+  const numbered: ListenerRule[] = [];
+  const push = (rule: Omit<ListenerRule, "priority">, priority: number) => {
+    numbered.push({ priority, ...rule });
+  };
+  for (const rule of rules) push(rule, (numbered.length + 1) * 10);
+  const tens = Math.min(siteRules.length, SITE_RULES_ON_TENS);
+  for (const rule of siteRules.slice(0, tens)) push(rule, (numbered.length + 1) * 10);
+  const lastTen = numbered.length * 10;
+  siteRules.slice(tens).forEach((rule, index) => {
+    if (index >= 9) throw new Error("More site rules than the gap below the dashboard's holds.");
+    push(rule, lastTen + index + 1);
+  });
+  const firstTail = (rules.length + tens + 1) * 10;
+  for (const [index, rule] of tail.entries()) push(rule, firstTail + index * 10);
+  return numbered;
 }
+
+/**
+ * How many site rules are numbered in steps of 10 (the ones live when the overflow scheme came
+ * in): the rest go in the gap below the dashboard's rule (`albListenerRules`).
+ */
+const SITE_RULES_ON_TENS = 8;
 
 export type CacheBehaviour = {
   /** CloudFront path pattern. */

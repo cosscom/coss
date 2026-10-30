@@ -1,0 +1,142 @@
+---
+title: SMS
+description: coss.com SMS is an API that sends and receives text messages from your own phone numbers, with US 10DLC and toll-free registration done for you.
+seoTitle: "SMS API with 10DLC registration done for you · coss.com"
+headline: Text messages from your own numbers.
+call: coss.sms
+mark: sms
+docs: /docs/sms
+group: Messaging
+features:
+  - Send, schedule and receive SMS
+  - Numbers bought for you
+  - US A2P 10DLC and toll-free registration
+  - STOP and START honored automatically
+  - Segments counted before you send
+  - Delivery events and signed webhooks
+  - A simulator number for every outcome
+related:
+  - verify
+  - email
+  - risk
+  - platform
+faq:
+  - question: How do I send an SMS with coss.com?
+    answer: Call coss.sms.send() with a from number, a to number in E.164 form and a body. The API returns 202 with the message queued, a background worker hands it to the carrier, and sms.* webhooks report what the carrier did with it.
+  - question: Does coss.com handle US A2P 10DLC registration?
+    answer: Yes. Owners and admins fill in one form on the dashboard, and coss.com submits the business profile, the brand and the campaign to the carriers in order, waiting for each review before the next step. Toll-free numbers go through toll-free verification instead. Reviews usually take a few days.
+  - question: Do I need my own Twilio account?
+    answer: No. coss.com sends through Twilio on its own account, with a subaccount per organization, and buys the numbers and submits the registrations for you. Numbers and US carrier fees appear on your coss.com invoice.
+  - question: What happens when someone replies STOP?
+    answer: The number is suppressed in every live environment of your organization, since your numbers are shared by all of them, and each affected environment gets an sms.opted_out webhook. A reply of START removes the opt-out. The confirmation carriers require is sent automatically.
+  - question: How are SMS messages counted and billed?
+    answer: A message is split into segments of 160 GSM-7 characters, or 70 when it contains any other character such as an emoji, and longer messages take 153 or 67 per segment. A live message is billed per segment at its destination country's rate once it reaches a carrier; failed, suppressed and canceled messages cost nothing. The pricing page lists every country.
+  - question: Can I test SMS without a phone number?
+    answer: Yes. Sandbox keys accept any from number and simulate carriers, with simulator numbers for delivered, invalid, filtered, opted-out and replied messages. Nothing is sent or billed, and the statuses, events, webhooks and logs work as in live environments.
+  - question: Which countries can I send SMS to?
+    answer: Every organization starts with the United States and Canada. Owners and admins can allow other priced countries on the dashboard; a few countries where SMS pumping fraud is common need support to unlock them first. Toll-free numbers only send to the US and Canada.
+---
+
+<Section title="How it works" lede="Send from a registered number, follow the message through its events, and read the replies. One API key covers SMS, email and everything else.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+// ---cut---
+// 1. Send from one of your organization's numbers.
+const { data: sms, error } = await coss.sms.send(
+  {
+    from: "+14155550123",
+    to: "+14155550199",
+    body: "Your Acme order #1042 has shipped.",
+  },
+  { idempotencyKey: "order-1042-shipped" },
+);
+if (sms) console.log(sms.status, sms.segments, sms.encoding); // "queued", 1, "gsm7"
+
+// 2. Follow delivery and replies through webhooks.
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "sms.received" && event.data.received_sms_id) {
+  const { data: reply } = await coss.sms.received.get(event.data.received_sms_id);
+  console.log(reply?.from, reply?.body);
+}
+```
+
+Sends return `202` with `status: "queued"`, and a background worker hands the message to the carrier. Retrying with the same idempotency key returns the first message instead of sending a second one. See [sending SMS](/docs/sms/sending) and the [API reference](/docs/api-reference/sms/send-sms).
+
+</Section>
+
+<Section title="Carrier-ready from day one" lede="The parts of SMS that usually take a week of paperwork and a second vendor are part of the API.">
+
+<Features>
+
+<Feature title="Numbers bought for you">
+Owners and admins buy local or toll-free numbers on the dashboard's organization **SMS** page. Numbers belong to the organization, so every environment's keys send from them, and `coss.sms.numbers.list()` says which can send now. See [numbers and registration](/docs/sms/senders).
+</Feature>
+
+<Feature title="10DLC and toll-free registration">
+One form becomes the business profile, the brand and the campaign US carriers require, each submitted once the previous review passes. Toll-free numbers get toll-free verification. The dashboard shows each status, and why a step was rejected.
+</Feature>
+
+<Feature title="Opt-outs honored everywhere">
+A reply of STOP, UNSUBSCRIBE, CANCEL, END or QUIT suppresses the number in every live environment of the organization, and START lifts it. Each change sends an `sms.opted_out` or `sms.opted_in` webhook. See [receiving](/docs/sms/receiving#stop-start-and-help).
+</Feature>
+
+<Feature title="Segments counted up front">
+Every message says how it was counted: `gsm7` or `ucs2`, and how many segments. Extended characters and emoji are never split across segments, and coss.com counts exactly as the carrier does, so the bill matches what you saw.
+</Feature>
+
+<Feature title="Scheduled sends">
+Pass `scheduled_at` up to 30 days ahead and cancel it any time before. The sender, the country and the suppression list are checked again at send time, so a number that opted out in the meantime is never texted.
+</Feature>
+
+<Feature title="Events, webhooks and logs">
+`sms.sent`, `sms.delivered`, `sms.undelivered`, `sms.failed` and `sms.received` reach your [webhooks](/docs/webhooks), signed and retried, and every event is a line in your environment's [logs](/docs/logs). Payloads never carry the text.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Built to keep your numbers deliverable" lede="Carriers filter senders that text people who didn't ask. coss.com watches the same signals they do.">
+
+Each environment keeps its own SMS suppression list. A send to a suppressed number fails at once with `suppressed` and is never handed to a carrier or billed. Numbers that can't receive SMS and carrier-refused opt-outs are added automatically, and you can add your own with `coss.sms.suppressions.add()`.
+
+A sample of live messages is [screened](/docs/sms/sending#content-screening) for spam, phishing, malware and fraud before it is sent, like email. coss.com also measures each organization's opt-out rate and carrier filtering rate over a rolling window: high rates bring a warning, then a suspension of live sending, before carriers start blocking your numbers. Live keys can text the same number at most 10 times an hour, which stops a looping form or a pumping attack there.
+
+</Section>
+
+<Section title="Specifications" lede="The limits a send is checked against. The docs list each one in context.">
+
+<Specs>
+<Spec label="Number format">E.164, +14155550199</Spec>
+<Spec label="GSM-7 segment">160 characters, 153 when split</Spec>
+<Spec label="UCS-2 segment">70 characters, 67 when split</Spec>
+<Spec label="Longest message">10 segments</Spec>
+<Spec label="Scheduling window">up to 30 days ahead</Spec>
+<Spec label="Messages to one number">10 an hour per organization, live</Spec>
+<Spec label="Number kinds">local (10DLC) and toll-free, US and CA</Spec>
+<Spec label="Default countries">US and Canada</Spec>
+<Spec label="Opt-out rate">warning at 2%, suspension at 5%</Spec>
+<Spec label="Carrier filtering rate">warning at 3%, suspension at 10%</Spec>
+<Spec label="Messages kept"><RetentionPeriod of="sms_messages" /></Spec>
+<Spec label="Sandbox sends">200 segments a day per environment</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Test every outcome in a sandbox" lede="Sandbox keys simulate carriers, so the whole flow works before you own a number.">
+
+Sandbox (`coss_test_…`) keys accept any `from` number and skip the number, country and plan checks. Send to `+15005550006` and the message is delivered, to `+15005550004` and the carrier filters it, to `+15005550009` and the recipient has opted out, to `+15005550008` and a reply arrives in the same environment. Statuses, events, webhooks and logs behave as in live environments, and nothing is sent or billed. See [testing SMS](/docs/sms/testing).
+
+</Section>
+
+<Section title="Pricing" lede="Live messages are billed per segment by destination country, once a carrier has them. Numbers and US carrier fees are passed through at cost.">
+
+<UsageRates product="sms" />
+
+Live SMS needs a paid plan; Free organizations send in sandbox environments. Failed, suppressed and canceled messages cost nothing. Every country's rate per segment, sent and received, is on the [pricing page](/pricing#sms).
+
+</Section>

@@ -1,0 +1,118 @@
+---
+title: Rate limiting
+description: coss.com rate limiting is a hosted rate limiter for your own endpoints. Define buckets once and check any key, a user, email or IP, with one call.
+seoTitle: "Rate limiting API for your own endpoints · coss.com"
+headline: Rate limits without running Redis.
+call: coss.risk.limit
+mark: limits
+docs: /docs/risk/rate-limits
+group: Trust
+features:
+  - Buckets you define, by name
+  - GCRA with a separate burst
+  - Any key, a user, email or IP address
+  - Request costs above one token
+  - Fail open or closed, per bucket
+  - Keys kept only as keyed hashes
+related:
+  - risk
+  - verify
+  - platform
+  - sdks
+faq:
+  - question: How do I rate limit an API endpoint without running Redis?
+    answer: Define a bucket with coss.risk.limitBuckets.create(), such as 5 password resets per hour, then call coss.risk.limit() with the bucket and a key on every request. coss.com counts in its own store and answers whether the request is allowed and when to retry.
+  - question: What algorithm does coss.com use for rate limiting?
+    answer: GCRA, the generic cell rate algorithm, the same engine coss.com limits its own API with. Each key gets a bucket of burst tokens that refills at limit per period, so a key can make a burst of requests at once and then continues at the steady rate.
+  - question: What happens if the rate limiter is unavailable?
+    answer: Each bucket chooses. With on_failure set to allow, the default, checks let requests through; with deny, they refuse them. Either way the answer carries degraded true, so you can tell.
+  - question: Can I rate limit by IP address, user or email?
+    answer: Yes. The key is any string up to 512 characters that identifies who or what you limit, such as a user id, an email address or an IP address. coss.com keeps only a keyed hash of it, never the key itself.
+  - question: Does a retried rate limit check count twice?
+    answer: No. The SDK retries network errors with the same Idempotency-Key, and a retried check is charged once.
+  - question: Is rate limiting part of coss.com Risk?
+    answer: Yes. Rate limiting is one of Risk's building blocks, on the same API key and SDK. Buckets are managed under Risk in the dashboard or with coss.risk.limitBuckets.
+---
+
+<Section title="How it works" lede="Define a bucket once, then check a key against it on every request. A denied check is an answer, not an error.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const form: { email: string };
+// ---cut---
+// Once (or in the dashboard, Risk → Rate limits): 5 password resets per hour per address.
+await coss.risk.limitBuckets.create({
+  name: "password_reset",
+  limit: 5,
+  period_seconds: 3600,
+  on_failure: "deny", // a reset flood matters more than a few failed resets
+});
+
+// On every request:
+const { data } = await coss.risk.limit({ bucket: "password_reset", key: form.email });
+if (data && !data.allowed) {
+  const seconds = Math.ceil((data.retry_after_ms ?? 0) / 1000);
+  throw new Error(`Too many attempts. Try again in ${seconds} seconds.`);
+}
+```
+
+Each answer says whether to let the request through, how many tokens the key has left (`remaining`), when its bucket is full again (`reset_ms`) and, when denied, when the same request would fit (`retry_after_ms`). The [guide](/docs/risk/rate-limits) has every field, and the [API reference](/docs/api-reference/risk/check-risk-limit) the request.
+
+</Section>
+
+<Section title="A limiter you configure, not operate" lede="The store, the algorithm and the failure handling are coss.com's. The rules are yours.">
+
+<Features>
+
+<Feature title="Buckets by name">
+A bucket is a named rule: `limit` tokens per `period_seconds`, from 1 second to 1 day. Change it in the dashboard or with `coss.risk.limitBuckets.update()`, and the next check uses it.
+</Feature>
+
+<Feature title="Bursts and steady rates">
+GCRA gives every key `burst` tokens that refill at the bucket's rate. With `limit: 10`, `period_seconds: 60` and `burst: 30`, a key can make 30 requests at once, then 10 a minute.
+</Feature>
+
+<Feature title="Any key">
+Limit per user id, email address, IP address, API key of your own, or anything else up to 512 characters. Each key has its own bucket, and coss.com stores only a keyed hash of it.
+</Feature>
+
+<Feature title="Costs above one">
+`cost` takes several tokens at once, for requests that are heavier than others: an export, a batch, a search. Denied requests take nothing.
+</Feature>
+
+<Feature title="You choose how it fails">
+`on_failure` is the answer while coss.com can't count: `allow`, the default, keeps your product up; `deny` protects what is expensive. The answer then carries `degraded: true`.
+</Feature>
+
+<Feature title="Retries charged once">
+The SDK retries network errors with the same `Idempotency-Key`, and a retried check is charged once, so a flaky connection never spends a user's tokens twice.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Next to Risk" lede="Rate limiting is one of Risk's building blocks, on the same key and SDK.">
+
+A limit answers "how often", an [assessment](/products/risk) answers "who". Use both at the same endpoint: limit password resets per address and per IP with `coss.risk.limit()`, and assess sign-ups with `coss.risk.assess()`, whose velocity reasons count the same IP address, subnet, mailbox and browser across your environment. One-time codes sent with [Verify](/products/verify) have a fraud guard of their own.
+
+</Section>
+
+<Section title="Specifications" lede="Limits from the code and the docs.">
+
+<Specs>
+<Spec label="Algorithm">GCRA</Spec>
+<Spec label="Buckets per environment">100</Spec>
+<Spec label="Bucket names">1–64 characters, unique, fixed</Spec>
+<Spec label="Period">1 second to 1 day</Spec>
+<Spec label="Tokens per bucket">up to 1,000,000</Spec>
+<Spec label="Key length">up to 512 characters, stored hashed</Spec>
+<Spec label="Failure mode">allow (default) or deny</Spec>
+<Spec label="Checks per API key">500 per second, bursts of 1,000</Spec>
+<Spec label="Denied check">200 with allowed false</Spec>
+</Specs>
+
+Rate limiting is part of every plan; see [pricing](/pricing).
+
+</Section>

@@ -4,9 +4,22 @@ description: One API key and one SDK for every product.
 icon: House
 ---
 
-coss.com puts email, SMS, Hooks (webhooks you send to your customers) and Risk (abuse checks for
-sign-ups, logins and payments) behind a single API key and a single SDK. You create an organization,
-add a project, and call every product with the same key and the same client:
+coss.com puts every product behind a single API key and a single SDK:
+
+- [Email](/docs/email/sending): transactional and marketing email from your own domains, and email you
+  receive.
+- [Inboxes](/docs/inboxes): email addresses for AI agents, with conversations kept as threads.
+- [SMS](/docs/sms): text messages from your own registered numbers, and their replies.
+- [Sign](/docs/sign): e-signatures in your product, embedded or by email.
+- [Verify](/docs/verify): one-time codes by SMS or email, behind a fraud guard.
+- [Forms](/docs/forms): hosted form endpoints for your site, screened for spam.
+- [Hooks](/docs/hooks): webhooks you send to your customers, delivered and retried for you.
+- [Risk](/docs/risk): abuse checks for sign-ups, logins, payments and posts.
+
+What every product shares (webhooks, logs, members and single sign-on, reputation, billing) is
+under [Platform](/docs/webhooks), and the SDKs, framework integrations, CLI and MCP server under
+[SDKs and tools](/docs/sdk). You create an organization, add a project, and call every product with the
+same key and the same client:
 
 ```ts
 import { Coss } from "coss";

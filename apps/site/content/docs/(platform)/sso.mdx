@@ -1,0 +1,88 @@
+---
+title: Single sign-on
+description: Let members sign in to the dashboard through your identity provider with OpenID Connect or SAML 2.0, and require it.
+icon: LogIn
+---
+
+Single sign-on (SSO) lets your organization's people sign in to the coss.com dashboard through your
+identity provider: Okta, Microsoft Entra ID, Google Workspace, or any other OpenID Connect or SAML
+2.0 provider. It's part of the <PlansWith feature="sso" /> plans.
+
+SSO is about the dashboard. API keys keep working the same way whatever you choose here.
+
+## Before you start
+
+- **Verified domains.** SSO signs in people whose address is at one of your organization's
+  [verified domains](/docs/email/domains). Add a domain your people use under **Domains** and verify
+  it first, even if you don't send email from it.
+- **One provider** per organization, using one protocol. Owners and admins set it up in the
+  organization's settings, under **Single sign-on**.
+
+## Set up your identity provider
+
+Create an application in your identity provider with the values the **Single sign-on** page shows
+(they exist before you save anything, so you can create the application first):
+
+| Protocol       | Value                                  | Looks like                                                              |
+| -------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| OpenID Connect | Redirect URI                           | `https://coss.com/api/auth/sso/callback/<provider id>`                  |
+| SAML 2.0       | ACS URL                                | `https://coss.com/api/auth/sso/saml2/sp/acs/<provider id>`              |
+| SAML 2.0       | Entity ID (audience) and metadata URL  | `https://coss.com/api/auth/sso/saml2/sp/metadata?providerId=<provider id>` |
+
+Then fill in your provider's side on coss.com:
+
+- **OpenID Connect**: the issuer URL (coss.com reads its `/.well-known/openid-configuration`; it must
+  be a public `https://` address), the client ID and the client secret.
+- **SAML 2.0**: the identity provider's metadata XML, or its SSO URL, entity ID (issuer) and signing
+  certificate.
+- **Domains**: the verified domains whose people sign in through this provider.
+
+## Signing in
+
+People choose **Sign in with SSO** on the sign-in page and enter their work email (or follow a link
+to `/sso?org=<your organization's slug>`), and coss.com sends them to your identity provider.
+
+- Someone signing in for the first time joins your organization as a **member**. Make them an admin
+  on the **Members** page, or map directory groups to roles with [directory sync](/docs/scim).
+- Someone who already has a coss.com account with that verified address keeps it: SSO is linked to
+  it.
+- Every sign-in is checked again: the address your provider returns must be at one of the
+  provider's domains, and those domains must still be verified.
+- An SSO sign-in through your organization's provider also satisfies its
+  [two-factor requirement](/docs/two-factor#requiring-it-for-an-organization): your identity
+  provider is responsible for multi-factor authentication.
+
+## Requiring SSO
+
+Owners can make SSO the only way **members and admins** open the organization. Anyone who signed in
+another way is sent to your identity provider when they open it. To turn it on you need:
+
+1. an active provider,
+2. to have signed in with SSO yourself, and
+3. a password on your own account.
+
+Owners keep **break-glass access**: they can still sign in with their password (and their
+authenticator code, if two-factor is required) in case the identity provider fails. The settings
+page lists owners without a password, who have no such access. Only owners can turn the requirement
+on or off.
+
+## When SSO stops working
+
+- A provider whose domain is no longer verified becomes **inactive**: nobody can sign in through it
+  until the domain is verified again, or removed from the provider and the provider saved. While SSO
+  is required, members and admins can't open the organization in the meantime; owners still can.
+- A domain the provider lists can't be deleted under **Domains** (`domain_in_use_by_sso`): take it
+  off the provider first.
+- **Removing the provider** turns SSO off, deletes every account's link to it and signs out
+  everyone who signed in with it. It can't be removed while [directory sync](/docs/scim) is connected.
+
+If you're locked out (for example, your identity provider is gone and no owner has a password),
+contact coss.com support.
+
+## Limits
+
+- One provider per organization.
+- Sign-in starts at coss.com (service provider initiated). IdP-initiated SAML and SAML single logout
+  aren't supported.
+- A SAML error that happens after your identity provider's step is shown on the callback URL rather
+  than on the sign-in page.

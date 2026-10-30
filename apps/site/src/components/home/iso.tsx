@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
-import type { PartId } from "./parts";
+import type { Mark } from "@/lib/marks";
 
-/** What a block can carry on its top face: a product, or one of the platform pieces they share. */
-export type Mark = PartId | "webhooks" | "logs" | "domains" | "keys";
+/**
+ * What a block can carry on its top face: a product, or one of the platform pieces they share
+ * (listed in `MARKS`, src/lib/marks.ts, which the pages' frontmatter is checked against).
+ */
+export type { Mark } from "@/lib/marks";
 
 /*
  * Isometric line drawings in the manner of a parts catalog. Geometry is in "catalog units":
@@ -229,6 +232,131 @@ function Engraving({ part }: { part: Mark }): ReactNode {
           <circle cx={32} cy={46} r={4} {...LINE} />
           <path d="M45 46 H76 M68 46 V56 M58 46 V53" {...LINE} />
         </>
+      );
+    case "inboxes":
+      return (
+        <>
+          <path d="M16 50 L26 22 H66 L76 50 V70 H16 Z" {...LINE} />
+          <path d="M16 50 H34 L38 58 H54 L58 50 H76 M34 34 H58" {...LINE} />
+        </>
+      );
+    case "inbound":
+      return (
+        <>
+          <rect height={34} rx={3} width={60} x={16} y={42} {...LINE} />
+          <path d="M16 45 L46 64 L76 45 M46 12 V34 M37 25 L46 34 L55 25" {...LINE} />
+        </>
+      );
+    case "subaccounts":
+      return (
+        <>
+          <rect height={16} rx={2} width={26} x={33} y={14} {...LINE} />
+          <path d="M46 30 V42 M22 42 H70 M22 42 V56 M46 42 V56 M70 42 V56" {...LINE} />
+          <rect height={16} rx={2} width={20} x={12} y={56} {...LINE} />
+          <rect height={16} rx={2} width={20} x={36} y={56} {...LINE} />
+          <rect height={16} rx={2} width={20} x={60} y={56} {...LINE} />
+        </>
+      );
+    case "smtp":
+      return (
+        <>
+          <rect height={50} rx={4} width={64} x={14} y={21} {...LINE} />
+          <path d="M24 37 L34 45 L24 53 M40 55 H58" {...LINE} />
+        </>
+      );
+    case "marketing":
+      return (
+        <>
+          <path d="M16 40 V54 H28 L60 70 V24 L28 40 Z M28 40 V54" {...LINE} />
+          <path d="M30 55 L34 72 H42 L38 56 M68 38 A10 10 0 0 1 68 56" {...LINE} />
+        </>
+      );
+    case "sign":
+      return (
+        <>
+          <path d="M16 64 H78" {...LINE} />
+          <path
+            d="M20 54 C26 30 34 32 34 46 S42 60 48 42 S60 34 62 52 C64 58 70 56 74 50"
+            {...LINE}
+          />
+          <path d="M18 72 L24 78 M24 72 L18 78" {...LINE} />
+        </>
+      );
+    case "verify":
+      return (
+        <>
+          <rect height={66} rx={6} width={36} x={28} y={13} {...LINE} />
+          <path d="M40 70 H52" {...LINE} />
+          <circle cx={37} cy={44} r={2.5} {...LINE} />
+          <circle cx={46} cy={44} r={2.5} {...LINE} />
+          <circle cx={55} cy={44} r={2.5} {...LINE} />
+        </>
+      );
+    case "forms":
+      return (
+        <>
+          <rect height={64} rx={4} width={56} x={18} y={14} {...LINE} />
+          <rect height={8} rx={1.5} width={40} x={26} y={26} {...LINE} />
+          <rect height={8} rx={1.5} width={40} x={26} y={42} {...LINE} />
+          <rect height={8} rx={1.5} width={18} x={26} y={60} {...LINE} />
+        </>
+      );
+    case "hooks":
+      return (
+        <>
+          <circle cx={22} cy={46} r={8} {...LINE} />
+          <path d="M30 46 H60 M29 41 L61 24 M29 51 L61 68" {...LINE} />
+          <circle cx={68} cy={22} r={7} {...LINE} />
+          <circle cx={68} cy={46} r={7} {...LINE} />
+          <circle cx={68} cy={70} r={7} {...LINE} />
+        </>
+      );
+    case "risk":
+      return (
+        <>
+          <path d="M14 62 A32 32 0 0 1 78 62 Z" {...LINE} />
+          <path d="M46 62 L62 38 M22 46 L27 49 M46 30 V36 M70 46 L65 49" {...LINE} />
+          <circle cx={46} cy={62} r={3} {...LINE} />
+        </>
+      );
+    case "limits":
+      return (
+        <>
+          <path d="M28 16 H64 M28 76 H64" {...LINE} />
+          <path d="M32 16 L46 46 L32 76 M60 16 L46 46 L60 76 M38 70 L46 60 L54 70" {...LINE} />
+        </>
+      );
+    case "platform":
+      return (
+        <>
+          <rect height={14} rx={3} width={56} x={18} y={18} {...LINE} />
+          <rect height={14} rx={3} width={56} x={18} y={39} {...LINE} />
+          <rect height={14} rx={3} width={56} x={18} y={60} {...LINE} />
+        </>
+      );
+    case "security":
+      return (
+        <>
+          <path d="M46 14 L74 24 V46 C74 62 62 72 46 78 C30 72 18 62 18 46 V24 Z" {...LINE} />
+          <path d="M34 46 L43 55 L60 37" {...LINE} />
+        </>
+      );
+    case "agents":
+      return (
+        <>
+          <rect height={50} rx={10} width={60} x={16} y={24} {...LINE} />
+          <path d="M46 24 V14 M37 58 H55" {...LINE} />
+          <circle cx={46} cy={12} r={2.5} {...LINE} />
+          <circle cx={35} cy={44} r={4} {...LINE} />
+          <circle cx={57} cy={44} r={4} {...LINE} />
+        </>
+      );
+    case "sdks":
+      return (
+        <path
+          d="M36 18 C26 18 28 34 28 40 C28 44 25 46 20 46 C25 46 28 48 28 52 C28 58 26 74 36 74 M56 18 C66 18 64 34 64 40 C64 44 67 46 72 46 C67 46 64 48 64 52 C64 58 66 74 56 74"
+          {...LINE}
+        />
       );
   }
 }

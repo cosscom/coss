@@ -1,0 +1,54 @@
+---
+title: Two-factor authentication and passkeys
+description: Protect your dashboard sign-in with an authenticator app, backup codes or passkeys, and require two-factor for an organization.
+icon: ShieldCheck
+---
+
+Your coss.com account signs in with a password, a connected Google or GitHub account, a passkey or
+your organization's [single sign-on](/docs/sso). Two-factor authentication and passkeys protect
+those sign-ins. They're set up per person, in your account settings under **Security**.
+
+These protect the dashboard. API keys are separate credentials and aren't affected by any of them.
+
+## Authenticator app
+
+Two-factor authentication on coss.com uses an authenticator app (1Password, Google Authenticator,
+Authy and the like): once it's on, every sign-in with your password or a connected Google or GitHub
+account also asks for the 6-digit code from the app. There are no codes by email or SMS.
+
+1. Under **Security**, set up an authenticator app and confirm your password. An account that only
+   signs in with Google or GitHub sets a password first (with **Forgot password** on the sign-in
+   page).
+2. Scan the QR code (or enter the key) in your app, and confirm a code from it.
+3. Save your **backup codes**. Each one signs you in once if you lose your authenticator.
+
+Create a new set of backup codes whenever yours run out or are lost: the old ones stop working.
+Turning two-factor off needs your password and a recent sign-in. After 10 wrong codes, the account
+is locked for 15 minutes.
+
+## Passkeys
+
+A passkey signs you in with your fingerprint, face or device PIN instead of a password. Add one or
+more under **Security**, and use **Sign in with a passkey** (or your browser's autofill) on the
+sign-in page. A passkey sign-in doesn't ask for an authenticator code: the passkey is already two
+factors, the device and your biometric or PIN, which coss.com requires it to check.
+
+Passkeys don't count as two-factor authentication for an organization that requires it (below):
+your password still works without a code, so the requirement asks for an authenticator app.
+
+## Requiring it for an organization
+
+Owners and admins can require two-factor authentication for everyone in an organization, in its
+**Settings** under **Security**. You need it on your own account first, and the page shows how many
+members don't have it yet.
+
+While it's required, a member without an authenticator app is sent to their **Security** settings
+when they open the organization, until they set one up. Signing in through the organization's own
+[SSO](/docs/sso) counts instead: your identity provider is responsible for multi-factor
+authentication there. SSO through another organization's provider doesn't.
+
+## Lost your authenticator?
+
+Sign in with one of your backup codes, then set up the app again. If you have neither, contact
+coss.com support: after confirming it's you, support can reset two-factor on your account (this is
+recorded), and you set it up again.

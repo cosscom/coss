@@ -1,0 +1,21 @@
+{
+  "pages": [
+    "email",
+    "marketing-email",
+    "inboxes",
+    "inbound-email",
+    "subaccounts",
+    "smtp",
+    "sms",
+    "verify",
+    "sign",
+    "forms",
+    "hooks",
+    "risk",
+    "rate-limiting",
+    "platform",
+    "security",
+    "agents",
+    "sdks"
+  ]
+}

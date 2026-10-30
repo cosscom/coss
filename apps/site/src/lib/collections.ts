@@ -2,6 +2,7 @@ import { metaSchema, pageSchema } from "fumadocs-core/source/schema";
 import { applyMdxPreset } from "fumadocs-mdx/config";
 import { defineDocs } from "fumadocs-mdx/macro";
 import { z } from "zod";
+import { MARKS, PRODUCT_GROUPS } from "./marks.ts";
 import { rehypeNowrapTokens } from "./shipyard/rehype-nowrap-tokens.ts";
 import { rehypeReference } from "./shipyard/rehype-reference.ts";
 import { CODE_THEMES } from "./site.ts";
@@ -61,6 +62,55 @@ export const calendar = defineDocs({
     schema: pageSchema,
     postprocess: { includeProcessedMarkdown: true },
     mdxOptions: applyMdxPreset({ rehypeCodeOptions: { themes: CODE_THEMES } }),
+  },
+  meta: { schema: metaSchema },
+});
+
+/** A page's FAQ: plain strings, so they also feed FAQPage JSON-LD and the `.md` twin. */
+const faq = z.array(z.object({ question: z.string(), answer: z.string() })).default([]);
+
+/**
+ * The product pages at /products/<slug> (src/lib/products.ts). Global MDX options, so their
+ * ```ts twoslash samples are checked against the SDK like the docs'.
+ */
+export const products = defineDocs({
+  dir: "content/products",
+  docs: {
+    schema: pageSchema.extend({
+      /** The page's <title>, written for the query it answers ("Email API for …"). */
+      seoTitle: z.string(),
+      /** The h1. */
+      headline: z.string(),
+      /** The SDK namespace printed on the drawing (`coss.inboxes`). */
+      call: z.string(),
+      mark: z.enum(MARKS),
+      /** The product's guide, the first place its "Read the docs" link goes. */
+      docs: z.string().startsWith("/docs"),
+      /** The menu and index groups. */
+      group: z.enum(PRODUCT_GROUPS),
+      /** Short feature names (the index card and SoftwareApplication `featureList`). */
+      features: z.array(z.string()).min(3).max(8),
+      related: z.array(z.string()).default([]),
+      faq,
+    }),
+    postprocess: { includeProcessedMarkdown: true },
+  },
+  meta: { schema: metaSchema },
+});
+
+/** The solution pages at /solutions/<slug> (src/lib/solutions.ts): products put together for one job. */
+export const solutions = defineDocs({
+  dir: "content/solutions",
+  docs: {
+    schema: pageSchema.extend({
+      seoTitle: z.string(),
+      headline: z.string(),
+      mark: z.enum(MARKS),
+      /** The products it puts together (product slugs). */
+      products: z.array(z.string()).min(1),
+      faq,
+    }),
+    postprocess: { includeProcessedMarkdown: true },
   },
   meta: { schema: metaSchema },
 });

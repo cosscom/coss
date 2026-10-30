@@ -11,7 +11,7 @@ export const CALENDAR = {
   /** The library's name, as the docs and the registry call it. */
   library: "kloq",
   path: "/kloq",
-  url: `${SITE_URL}/calendar`,
+  url: `${SITE_URL}/kloq`,
   title: "kloq - a React calendar obsessed with micro-perfection",
   description:
     "A React calendar obsessed with micro-perfection: hand-tuned drag physics, a design mode that annotates its own craft, and a command palette that reaches everything. One component, on coss ui.",

@@ -182,7 +182,7 @@ sets a category, tags and tracking per message.
   recipient; coss.com won't move Bcc'd addresses into `To`.
 - **Content**: `Subject` is required, plus an HTML part, a text part or both. Attachments keep
   their file names, and parts without one get a generated name. Inline images (`cid:`) stay
-  inline. The [attachment limits](/docs/email/sending) apply: 20 files, 25 MB combined, and no
+  inline. The [attachment limits](/docs/email/sending#attachments) apply: 20 files, 25 MB combined, and no
   executable types.
 - **Headers**: up to 15 custom headers are sent on, such as `In-Reply-To`, `References`,
   `List-Unsubscribe` and `X-…`. Transport headers (`Message-ID`, `Date`, `MIME-Version`,
@@ -202,6 +202,7 @@ These headers set what the API takes as fields. coss.com reads them and doesn't 
 | `X-Coss-Tracking`         | `opens, clicks, unsubscribe` or `none` | `tracking` (the ones listed are on, the rest off) |
 | `X-Coss-Scheduled-At`     | `2026-11-01T09:00:00Z`          | `scheduled_at`             |
 | `X-Coss-Idempotency-Key`  | `welcome-user-123`              | the `Idempotency-Key` header |
+| `X-Coss-Subaccount`       | `sub_01k…` or the sub-account's `uid` | `subaccount` ([sub-accounts](/docs/email/subaccounts)) |
 
 `unsubscribe` adds [one-click unsubscribe](/docs/email/unsubscribe) headers, so it needs an
 `X-Coss-Category` and a single recipient, like the API's `tracking.unsubscribe`.

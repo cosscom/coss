@@ -1,0 +1,123 @@
+---
+title: Inboxes
+description: coss.com Inboxes give every AI agent its own email address. Mail arrives as threads with a webhook per message, and the agent replies from the same address.
+seoTitle: "Email inboxes for AI agents: an inbox API · coss.com"
+headline: Email addresses for your AI agents.
+call: coss.inboxes
+mark: inboxes
+docs: /docs/inboxes
+group: Email
+features:
+  - An address per agent, created with one call
+  - Inbound mail kept as threads
+  - A signed webhook for every message
+  - Replies that thread in every mail client
+  - extracted_text without the quoted history
+  - Your own domain or coss.com's, no DNS needed
+related:
+  - inbound-email
+  - email
+  - agents
+  - risk
+faq:
+  - question: What is an inbox for an AI agent?
+    answer: An email address your agent owns. coss.com receives the mail sent to it, groups it into threads, calls your webhook for each message, and sends the agent's replies from the same address, so the conversation continues in the sender's mail client.
+  - question: Do I need to set up DNS to create an inbox?
+    answer: No. Without a domain, an inbox gets an address at your environment's own subdomain of coss.com's inbound domain, which receives mail straight away. To send from a live inbox, create it on a receiving domain under one of your verified domains, such as agents.example.com.
+  - question: How does the agent know a new email arrived?
+    answer: Each message that arrives sends an inbox.message.received webhook, signed with Standard Webhooks, with the inbox, thread and message ids. During development, coss listen forwards those events to localhost.
+  - question: How are emails grouped into threads?
+    answer: A message joins a thread when its In-Reply-To or References header names a message of the thread, or when it has the thread's subject, its sender is already in the thread and the thread had a message in the last 30 days. Otherwise it starts a new thread.
+  - question: Can an agent safely act on what an email says?
+    answer: Treat every message as untrusted input, never as instructions. Each message carries a spam verdict, and the text is given both whole and as extracted_text, the sender's own words without quoted history or signature. Risk can classify the content before your agent acts on it.
+  - question: How much do inboxes cost?
+    answer: A live inbox is billed per day it exists, mail it receives like any received email, and mail it sends like any email. Every plan includes a few inboxes, and inboxes in sandbox environments are free. The pricing page lists the current rates.
+---
+
+<Section title="How it works" lede="Create an address, get a webhook when mail arrives, reply from the same address. The thread keeps the whole conversation.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const request: Request;
+declare const secret: string;
+declare function askYourAgent(conversation: string): Promise<string>;
+// ---cut---
+// 1. Give the agent an address.
+const { data: inbox } = await coss.inboxes.create({
+  username: "support-agent",
+  client_id: "agent-42", // creating it again returns the same inbox
+});
+
+// 2. When mail arrives, read the thread and reply.
+const event = await verifyWebhook(await request.text(), request.headers, secret);
+if (event.type === "inbox.message.received" && !event.data.spam) {
+  const { inbox_id, thread_id, message_id } = event.data;
+  const { data: thread } = await coss.inboxes.threads.get(inbox_id, thread_id);
+  const conversation = (thread?.messages ?? []).map((m) => m.extracted_text).join("\n\n");
+
+  await coss.inboxes.messages.reply(
+    inbox_id,
+    message_id,
+    { text: await askYourAgent(conversation) },
+    { idempotencyKey: `reply-${message_id}` },
+  );
+}
+```
+
+</Section>
+
+<Section title="Built for agents" lede="Everything an agent needs to hold a conversation over email, and nothing it has to parse itself.">
+
+<Features>
+
+<Feature title="An address per agent">
+One call creates `username@domain`. A `client_id` makes creating idempotent, so every agent, user or task can get its own address without a lookup table. Mail to `username+anything@` reaches the same inbox.
+</Feature>
+
+<Feature title="Threads, not raw mail">
+Messages are grouped by `In-Reply-To` and `References`, or by subject and participants within 30 days. Each thread lists its participants, a preview and when the last inbound message arrived.
+</Feature>
+
+<Feature title="Just the new words">
+Every message has `text`, `html` and `extracted_text`: the sender's own words without the quoted conversation and the signature, ready for a prompt.
+</Feature>
+
+<Feature title="Replies that thread">
+`coss.inboxes.messages.reply()` answers the sender (or everyone, with `reply_all`) with `Re:` and the headers every mail client threads by. The answer to it lands in the same thread.
+</Feature>
+
+<Feature title="A webhook per message">
+`inbox.message.received` carries the inbox, thread and message ids, whether it started a thread, and a spam verdict. Signed like every coss.com webhook, retried until your endpoint takes it.
+</Feature>
+
+<Feature title="Your domain or ours">
+Without DNS, an inbox receives at your environment's subdomain of coss.com's inbound domain. On a receiving domain under one of your verified domains, it also sends from live environments.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Specifications" lede="The numbers your agent can rely on. The docs list each one in context.">
+
+<Specs>
+<Spec label="Thread matching">headers, or subject within 30 days</Spec>
+<Spec label="Messages per thread read">latest 50, oldest first</Spec>
+<Spec label="Body size kept">2 MB each, text and HTML</Spec>
+<Spec label="Address aliases">username+anything@</Spec>
+<Spec label="Inboxes on Free"><Limit of="inboxes" plan="free" /></Spec>
+<Spec label="Inboxes on Pro"><Limit of="inboxes" plan="pro" /></Spec>
+<Spec label="Tracking on inbox mail">never</Spec>
+<Spec label="Sandbox inboxes">free, deliver nothing</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Pricing" lede="Inboxes are billed per day they exist, mail by the message. Sandbox inboxes are free.">
+
+<UsageRates meters="email.inboxes,email.received" />
+
+Every plan includes <Included meter="email.inboxes" /> a month. Mail an inbox sends is billed like any email. See [pricing](/pricing) for the plans.
+
+</Section>

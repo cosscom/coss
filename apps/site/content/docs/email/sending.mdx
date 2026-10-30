@@ -1,6 +1,6 @@
 ---
 title: Sending email
-description: Addresses, content, headers, tags, categories and safe retries.
+description: Addresses, content, attachments, headers, tags, categories and safe retries.
 ---
 
 ```ts twoslash
@@ -115,6 +115,43 @@ If you retry with your own idempotency key, render the same output again: a diff
 
 You can also keep the content in coss.com: send a [template](/docs/email/templates) with `template_id`
 and `variables` instead of `subject`, `html` and `text`. Templates can't be combined with `react`.
+
+## Attachments
+
+Attach files as base64 in `attachments`: up to 20 per email, 25 MB combined (decoded). coss.com
+never fetches files from a URL, so read them yourself:
+
+```ts twoslash
+import { Coss } from "coss";
+import { readFile } from "node:fs/promises";
+const coss = new Coss();
+// ---cut---
+const pdf = await readFile("invoice-123.pdf");
+const logo = await readFile("logo.png");
+
+const { data, error } = await coss.email.send({
+  from: "Acme <billing@acme.com>",
+  to: "ada@example.com",
+  subject: "Your invoice",
+  html: '<img src="cid:logo@acme" alt="Acme"><p>Your invoice is attached.</p>',
+  attachments: [
+    { filename: "invoice-123.pdf", content: pdf.toString("base64") },
+    { filename: "logo.png", content: logo.toString("base64"), content_id: "logo@acme" },
+  ],
+});
+```
+
+- `content` is plain base64: no line breaks and no `data:` prefix.
+- Every `filename` needs an extension. `content_type` defaults from it; pass one to override it.
+- File types that mail providers refuse (executables and scripts such as `.exe`, `.bat`, `.js` or
+  `.vbs`) are rejected with a `422`, before anything is stored.
+- `content_id` makes an attachment inline: reference it from `html` as `cid:<content_id>`.
+
+coss.com keeps an attachment's bytes only while the email waits to be sent (`queued` or
+`scheduled`): they are deleted as soon as it is sent, fails or is canceled. Reading an email
+returns its attachments' `filename`, `content_type`, `content_id` and `size`, never their content,
+and webhooks never include them. A queued email whose attachments are gone fails with
+`attachments_unavailable` instead of going out without them.
 
 ## Headers and tags
 

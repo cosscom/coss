@@ -1,0 +1,136 @@
+---
+title: Authentication
+description: coss.com covers sign-up, login and verification with account emails for Better Auth and Auth.js, one-time codes with a fraud guard, risk checks and rate limits.
+seoTitle: "Sign-up, login and verification for your app · coss.com"
+headline: Sign-up, login and verification.
+mark: verify
+products:
+  - verify
+  - risk
+  - rate-limiting
+  - email
+faq:
+  - question: How do I send Better Auth emails through coss.com?
+    answer: Install coss and pass the callbacks of cossEmail() from coss/better-auth to Better Auth. It sends verification, password reset, magic link, one-time code and invitation emails with default templates you can replace one by one.
+  - question: Does coss.com work with Auth.js (NextAuth)?
+    answer: Yes. coss/authjs is an Auth.js email provider that sends magic sign-in links through coss.com. Add it to your providers with your sender address and set COSS_API_KEY.
+  - question: Why are open and click tracking off on account emails?
+    answer: Click tracking would send secret links, such as password reset links, through a redirect, and an open pixel adds nothing to a sign-in email. The integrations send with category account and tracking off.
+  - question: How do I verify a phone number with a one-time code?
+    answer: Call coss.verify.start() with the number in E.164 form and the user's IP address, then coss.verify.check() with the code they typed. coss.com makes the code, sends it, keeps only a keyed hash of it, counts attempts and expires it.
+  - question: How does coss.com stop SMS pumping?
+    answer: Verify's fraud guard checks every new verification before a code is sent. Premium-rate numbers, Tor exit nodes, entries on your Risk block list and bursts to one number prefix are blocked, and a blocked verification is neither sent nor billed.
+  - question: Can I rate limit my own login and password reset endpoints?
+    answer: Yes. Define a bucket with coss.risk.limitBuckets.create() and check a key, such as an email address or IP address, with coss.risk.limit() on every request. It uses the same GCRA limiter as coss.com's own API.
+---
+
+<Section title="The problem" lede="Every sign-up form is a target: fake accounts, credential stuffing, toll fraud on SMS codes, and emails that have to arrive.">
+
+A sign-up and login flow needs account emails that arrive (verification, password reset, magic links), one-time codes that prove someone has a phone number or mailbox, a way to tell a real sign-up from the hundredth one from the same browser, and limits on the endpoints attackers hammer. Each is usually a separate vendor with its own key, dashboard and bill.
+
+coss.com does all four on one key: [email](/products/email) with drop-in integrations for Better Auth and Auth.js, [Verify](/products/verify) for one-time codes, [Risk](/products/risk) for assessing sign-ups and logins, and [rate limiting](/products/rate-limiting) for your own endpoints.
+
+</Section>
+
+<Section title="How it works" lede="Assess the sign-up, send a code, check it, and limit the endpoints attackers retry.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const form: { email: string; phone: string; device: string };
+declare const request: { ip: string; userAgent: string };
+// ---cut---
+// 1. Is this sign-up abuse? (The device token comes from coss/device in the browser.)
+const { data: assessment } = await coss.risk.assess({
+  event: "signup",
+  user: { email: form.email },
+  ip: request.ip,
+  user_agent: request.userAgent,
+  device: { token: form.device },
+});
+if (assessment?.decision === "block") throw new Error("We couldn't create your account.");
+
+// 2. Prove they have the phone: the fraud guard runs before anything is sent.
+const { error } = await coss.verify.start({ to: form.phone, ip: request.ip });
+if (error?.code === "verification_blocked") throw new Error("We can't send a code right now.");
+
+// 3. Check the code they typed.
+const { data: check } = await coss.verify.check({ to: form.phone, code: "482913" });
+
+// 4. On every login attempt, against a bucket you defined (coss.risk.limitBuckets.create).
+const { data: limit } = await coss.risk.limit({ bucket: "login", key: form.email });
+if (limit && !limit.allowed) throw new Error("Too many attempts. Try again later.");
+```
+
+Account emails go through the [Better Auth](/docs/integrations/better-auth) or [Auth.js](/docs/integrations/authjs) integration:
+
+```ts twoslash
+import { betterAuth } from "better-auth";
+import { cossEmail } from "coss/better-auth";
+
+const email = cossEmail({ from: "Acme <auth@acme.com>", appName: "Acme" });
+
+export const auth = betterAuth({
+  emailVerification: { sendOnSignUp: true, sendVerificationEmail: email.sendVerificationEmail },
+  emailAndPassword: { enabled: true, sendResetPassword: email.sendResetPassword },
+});
+```
+
+Read more in [Risk assessments](/docs/risk), [Verify](/docs/verify) and [rate limiting](/docs/risk/rate-limits).
+
+</Section>
+
+<Section title="What you get" lede="Four parts of one sign-up flow, on the same API key, SDK, webhooks and logs.">
+
+<Features>
+
+<Feature title="Account emails, drop-in">
+`coss/better-auth` covers verification, password reset, email change, account deletion, magic links, one-time codes and invitations. `coss/authjs` sends Auth.js magic links. Both send with `category: "account"` and tracking off.
+</Feature>
+
+<Feature title="One-time codes">
+`coss.verify` sends a code by SMS or email, keeps only a keyed hash of it, and fails the verification on the fifth wrong code. Codes expire after 10 minutes by default. You pay per approved verification.
+</Feature>
+
+<Feature title="A fraud guard on codes">
+Every new verification is checked before a code is sent: premium-rate numbers, Tor exit nodes, your Risk block list, and bursts to one number prefix or from one IP address. Blocked ones are never sent or billed.
+</Feature>
+
+<Feature title="Sign-up and login assessments">
+`coss.risk.assess()` combines email, IP, device and content signals with what the environment has already seen, and returns `allow`, `review` or `block` with a score and its reasons.
+</Feature>
+
+<Feature title="Device tokens">
+`collectDevice()` from `coss/device` recognizes the browser behind sign-ups and logins without cookies or fingerprinting, so one browser signing up account after account is caught.
+</Feature>
+
+<Feature title="Rate limits for your endpoints">
+`coss.risk.limit()` gives your login, sign-up and password reset endpoints coss.com's own GCRA limiter, with buckets per user, address or IP address. Only a keyed hash of each key is kept.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Specifications" lede="The defaults and limits of each part. The docs list each one in context.">
+
+<Specs>
+<Spec label="Code length">6 digits by default</Spec>
+<Spec label="Code lifetime">10 minutes by default</Spec>
+<Spec label="Wrong code that fails it">the fifth</Spec>
+<Spec label="Resends per pending verification">5</Spec>
+<Spec label="Assessment decisions">allow, review, block</Spec>
+<Spec label="Assessments per API key">100 per second, bursts of 200</Spec>
+<Spec label="Rate limit buckets per environment">100</Spec>
+<Spec label="Rate limit checks per API key">500 per second, bursts of 1,000</Spec>
+</Specs>
+
+</Section>
+
+<Section title="Pricing" lede="Verify is billed per approved verification, plus the SMS from coss.com's numbers that carried the code.">
+
+<UsageRates meters="verify.verifications,verify.sms" />
+
+Verifications that are blocked, fail or expire cost only the messages actually sent. Account emails are billed like any email. See [pricing](/pricing) for the plans.
+
+</Section>

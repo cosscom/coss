@@ -1,0 +1,131 @@
+---
+title: AI agents
+description: coss.com gives AI agents their own email addresses, threads and replies, checks untrusted mail with Risk, and lets coding agents set it all up from one prompt.
+seoTitle: "Email for AI agents: inboxes, replies and safety · coss.com"
+headline: Email and messaging for AI agents.
+mark: agents
+products:
+  - inboxes
+  - agents
+  - risk
+  - email
+faq:
+  - question: How do I give an AI agent its own email address?
+    answer: Create an inbox with coss.inboxes.create(). Without a domain, the address is at your environment's own subdomain of coss.com's inbound domain and receives mail straight away; on a receiving domain under one of your verified domains, it can also send from live environments.
+  - question: How does my agent read and answer email?
+    answer: Each message that arrives sends a signed inbox.message.received webhook. The agent reads the thread with coss.inboxes.threads.get(), where every message has extracted_text (the sender's own words without quoted history or signature), and answers with coss.inboxes.messages.reply(), which threads in the sender's mail client.
+  - question: How do I stop an email from hijacking my agent?
+    answer: Treat every received message as untrusted data, never as instructions. Each message carries a spam verdict, and coss.risk.classify() scores text for spam, phishing, malware and fraud, so your code can decide what the agent never sees or acts on.
+  - question: Can a coding agent set up coss.com for me?
+    answer: Yes. Give it one prompt that points it at coss.com/llms.txt and npx coss-cli init. It reads the docs, asks you to approve a development key in your browser, installs the SDK and tests its code with that key, which never delivers anything.
+  - question: Is there an MCP server for coss.com?
+    answer: Yes. coss-mcp runs locally through npx and gives coding agents tools to search the docs, look up emails and SMS, explain why one wasn't delivered, and work with inboxes and webhooks. Its docs tools work without an API key.
+  - question: Can my agent test without sending real email?
+    answer: Yes. Development keys (coss_test_) work with every API and deliver nothing; sends get simulated outcomes, events and webhooks. Mail sent to a sandbox inbox is still received, so the whole loop can be tested with your own mail client.
+---
+
+<Section title="The problem" lede="Agents that work over email need an address of their own, a way to follow a conversation, and a guard against the mail they read.">
+
+An agent that answers support requests, books meetings or chases invoices needs more than a send API. It needs an address people can write to, the conversation so far without quoted history piled on quoted history, replies that land in the same thread in the other person's mail client, and a way to tell a customer's question from a message written to manipulate it. Building that on raw inbound mail means parsing MIME, matching threads and stripping signatures yourself.
+
+coss.com puts those parts behind one API key: [Inboxes](/products/inboxes) for the addresses and threads, [Risk](/products/risk) for scoring what arrives, and [email](/products/email) for everything the agent sends. The [tools for coding agents](/products/agents) let the agent that writes your code set it up too.
+
+</Section>
+
+<Section title="How it works" lede="Give the agent an address, get a webhook when mail arrives, score the message, reply in the thread.">
+
+```ts twoslash
+import { Coss, verifyWebhook } from "coss";
+const coss = new Coss();
+declare const secret: string;
+declare function askYourAgent(conversation: string): Promise<string>;
+// ---cut---
+// Once per agent: an address of its own. Creating it again returns the same inbox.
+await coss.inboxes.create({ username: "support-agent", client_id: "agent-42" });
+
+// On every inbox.message.received webhook:
+export async function POST(request: Request) {
+  const event = await verifyWebhook(await request.text(), request.headers, secret);
+  if (event.type !== "inbox.message.received" || event.data.spam) return new Response(null);
+
+  const { inbox_id, thread_id, message_id } = event.data;
+  const { data: thread } = await coss.inboxes.threads.get(inbox_id, thread_id);
+  const message = thread?.messages.find((m) => m.id === message_id);
+
+  // The email is untrusted input: score it before the agent acts on it.
+  const { data: check } = await coss.risk.classify({ text: message?.extracted_text ?? "" });
+  if (check && (check.scores.phishing >= 0.8 || check.scores.fraud >= 0.8)) {
+    return new Response(null); // hold it for a person instead
+  }
+
+  const conversation = (thread?.messages ?? []).map((m) => m.extracted_text).join("\n\n");
+  await coss.inboxes.messages.reply(
+    inbox_id,
+    message_id,
+    { text: await askYourAgent(conversation) },
+    { idempotencyKey: `reply-${message_id}` }, // a redelivered webhook won't reply twice
+  );
+  return new Response(null);
+}
+```
+
+Read more in the [Inboxes guide](/docs/inboxes), [threads](/docs/inboxes/threads) and [content classification](/docs/risk/content).
+
+</Section>
+
+<Section title="What agents get" lede="Each part is a coss.com product of its own, on the same key, SDK, webhooks and logs.">
+
+<Features>
+
+<Feature title="An address per agent">
+`coss.inboxes.create()` makes `username@domain` with one call. A `client_id` makes it idempotent, and mail to `username+anything@` reaches the same inbox, so an agent can hand out one address per task.
+</Feature>
+
+<Feature title="Threads and extracted_text">
+Messages are grouped into threads by their headers, or by subject and participants within 30 days. Every message has `text`, `html` and `extracted_text`: the sender's own words, ready for a prompt.
+</Feature>
+
+<Feature title="Replies that thread">
+`coss.inboxes.messages.reply()` answers the sender, or everyone with `reply_all`, with `Re:` and the headers mail clients thread by. Inbox mail is never tracked.
+</Feature>
+
+<Feature title="Content checks before acting">
+`coss.risk.classify()` scores text for spam, phishing, malware and fraud with an AI model. coss.com keeps only the scores, never the text, and your code chooses the thresholds.
+</Feature>
+
+<Feature title="Set up by your coding agent">
+One prompt points Claude Code, Cursor or Codex at [/llms.txt](/llms.txt) and `npx coss-cli init`. Every docs page is Markdown at its URL plus `.md`, and the [MCP server](/docs/mcp) looks up emails and explains failed deliveries.
+</Feature>
+
+<Feature title="Sandbox keys for safe tests">
+Development keys (`coss_test_…`) work with every API and deliver nothing. Sends get simulated events and webhooks, and `coss listen` forwards them to the agent's local handler.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Coding agents set it up" lede="The agent that writes your code can add coss.com to the project from one prompt.">
+
+```text
+Add coss.com to this project: read https://coss.com/llms.txt, get a development key with `npx coss-cli init --agents`, and build and test with it.
+```
+
+From there the agent reads the docs it needs, asks you to approve a development key in your browser, installs the `coss` package and tests what it writes with that key. `coss init` also adds a short coss.com section to the project's `AGENTS.md`, so later sessions know where the docs are. In Claude Code, the [coss.com plugin](/docs/agents#claude-code-plugin) adds a skill and the [MCP server](/docs/mcp); other agents install the same skill with `npx skills add cosscom/coss`. See [coding agents](/docs/agents).
+
+</Section>
+
+<Section title="Specifications" lede="Numbers your agent can rely on. The docs list each one in context.">
+
+<Specs>
+<Spec label="Thread matching">headers, or subject within 30 days</Spec>
+<Spec label="Messages per thread read">latest 50, oldest first</Spec>
+<Spec label="Address aliases">username+anything@</Spec>
+<Spec label="Content categories">spam, phishing, malware, fraud</Spec>
+<Spec label="Text classified">first 8,000 characters</Spec>
+<Spec label="Classification time">up to 3 seconds</Spec>
+<Spec label="Inboxes on Pro"><Limit of="inboxes" plan="pro" /></Spec>
+<Spec label="Sandbox inboxes">free, deliver nothing</Spec>
+</Specs>
+
+</Section>

@@ -12,7 +12,8 @@ import { estimateEmailMonth, formatPrice } from "@/lib/pricing";
 
 const EXAMPLE_EMAILS = 2_000_000;
 
-function questions(): { question: string; answer: ReactNode }[] {
+/** `text`: the answer as plain text (FAQPage JSON-LD), when `answer` isn't a string already. */
+function questions(): { question: string; answer: ReactNode; text?: string }[] {
   const pro = PLANS.pro;
   const example = estimateEmailMonth("pro", EXAMPLE_EMAILS);
   const freeEmails = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocaleString("en-US");
@@ -29,6 +30,7 @@ function questions(): { question: string; answer: ReactNode }[] {
           next invoice.
         </>
       ),
+      text: `On ${pro.name} and ${PLANS.scale.name}, the fee is credit: it is spent on your usage of any coss.com product that month, so a month costs the larger of the fee and your usage. On ${pro.name} with ${EXAMPLE_EMAILS.toLocaleString("en-US")} emails, usage comes to ${formatCents(example.usageCents)}: you pay the ${formatPrice(pro.feeCents)} fee at the start of the month and the other ${formatCents(example.usageCents - pro.feeCents)} with the next invoice.`,
     },
     {
       question: "Does unused credit roll over?",
@@ -72,8 +74,17 @@ function questions(): { question: string; answer: ReactNode }[] {
           ). Video and scheduling are on the way; their rates are listed above.
         </>
       ),
+      text: "SMS is available now on every paid plan: it's priced per segment by destination country, with phone numbers and US carrier registration fees passed through at cost, and sandbox environments simulate it for free on any plan. Video and scheduling are on the way; their rates are listed above.",
     },
   ];
+}
+
+/** The questions as plain text, for the pricing page's FAQPage JSON-LD. */
+export function pricingFaq(): { question: string; answer: string }[] {
+  return questions().map(({ question, answer, text }) => ({
+    question,
+    answer: text ?? (typeof answer === "string" ? answer : ""),
+  }));
 }
 
 /** Billing questions; the details live in the billing guide. */

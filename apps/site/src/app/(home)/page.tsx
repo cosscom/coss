@@ -11,27 +11,41 @@ import {
   MinusIcon,
 } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { SampleCalendar } from "@/components/calendar/landing/sample-calendar";
 import { CopyPrompt } from "@/components/home/copy-prompt";
+import type { Mark } from "@/components/home/iso";
 import { PartDrawing } from "@/components/home/part-drawing";
 import { PRODUCTS } from "@/components/home/parts";
 import { PlatformAssembly } from "@/components/home/platform-assembly";
 import { VendorDrawing } from "@/components/home/vendor-drawing";
+import { JsonLd } from "@/components/json-ld";
+import { RuledGrid } from "@/components/marketing-page";
+import { CheckList, SectionHead, SpecList, SpecRow } from "@/components/sheet";
 import { ShipyardHarbour } from "@/components/shipyard/harbour";
 import { ShipyardNewTask } from "@/components/shipyard/new-task";
 import { SignUpButton } from "@/components/sign-up-button";
 import { CALENDAR } from "@/lib/calendar";
+import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
 import { SHIPYARD } from "@/lib/shipyard";
+import { SITE_DESCRIPTION } from "@/lib/site";
 
 const FREE_EMAILS = (PLANS.free.includedUnits["email.recipients"] ?? 0).toLocaleString("en-US");
+
+export const metadata = pageMetadata({
+  title: "coss.com: email, SMS, inboxes, e-signatures and more on one API",
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
 
 export default function HomePage() {
   return (
     // One ruled sheet between the shell's rails (the `container` width plus the rails' 12px offset).
     <main className="mx-auto w-full max-w-[1440px] flex-1">
+      <JsonLd data={organizationSchema()} />
+      <JsonLd data={websiteSchema()} />
       <Hero />
       <Catalog />
+      <SameKey />
       <OneVendor />
       <Agents />
       <Tolerances />
@@ -71,19 +85,6 @@ function Hero() {
   );
 }
 
-function SectionHead({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  return (
-    <div className="grid gap-4 px-4 pt-16 pb-10 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:gap-10">
-      <h2 className="font-semibold text-4xl tracking-[-0.03em] sm:text-5xl lg:col-span-5" id={id}>
-        {title}
-      </h2>
-      <div className="max-w-xl text-lg text-muted-foreground leading-snug lg:col-span-6 lg:col-start-7 lg:pt-2">
-        {children}
-      </div>
-    </div>
-  );
-}
-
 function Catalog() {
   return (
     <section aria-labelledby="catalog-title" className="scroll-mt-14 border-b" id="catalog">
@@ -101,7 +102,7 @@ function Catalog() {
             key={product.id}
           >
             <div className="drafting-grid relative flex h-56 items-center justify-center border-b">
-              <PartDrawing className="w-44" product={product} />
+              <PartDrawing call={product.call} className="w-44" part={product.id} />
               <span className="absolute top-4 left-4 font-mono text-muted-foreground text-xs sm:left-8">
                 {String(index + 1).padStart(2, "0")}
               </span>
@@ -114,18 +115,98 @@ function Catalog() {
                 <code className="font-mono text-muted-foreground text-sm">{product.call}</code>
               </div>
               <p className="max-w-md text-lg leading-snug">{product.summary}</p>
-              <ul className="flex flex-col gap-2 text-muted-foreground text-sm">
-                {product.features.map((feature) => (
-                  <li className="flex items-center gap-2.5" key={feature}>
-                    <CheckIcon aria-hidden className="size-3.5 text-foreground" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+              <CheckList items={product.features} />
+              {product.href ? (
+                <Link
+                  className="mt-auto inline-flex items-center gap-1.5 pt-2 font-medium text-sm hover:underline"
+                  href={product.href}
+                >
+                  About {product.name}
+                  <ArrowRightIcon aria-hidden className="size-3.5" />
+                </Link>
+              ) : null}
             </div>
           </article>
         ))}
       </div>
+    </section>
+  );
+}
+
+/** The products beyond the catalog's parts, each on its own page. */
+const SAME_KEY: { mark: Mark; call: string; name: string; summary: string; href: string }[] = [
+  {
+    mark: "inboxes",
+    call: "coss.inboxes",
+    name: "Inboxes",
+    summary: "Email addresses for AI agents, with threads and replies.",
+    href: "/products/inboxes",
+  },
+  {
+    mark: "sign",
+    call: "coss.sign",
+    name: "Sign",
+    summary: "E-signatures, embedded in your app or sent by email.",
+    href: "/products/sign",
+  },
+  {
+    mark: "verify",
+    call: "coss.verify",
+    name: "Verify",
+    summary: "One-time codes by SMS or email, behind a fraud guard.",
+    href: "/products/verify",
+  },
+  {
+    mark: "forms",
+    call: "coss.forms",
+    name: "Forms",
+    summary: "Form endpoints and hosted forms, screened for spam.",
+    href: "/products/forms",
+  },
+  {
+    mark: "hooks",
+    call: "coss.hooks",
+    name: "Hooks",
+    summary: "Webhooks you send to your own customers, with a portal.",
+    href: "/products/hooks",
+  },
+  {
+    mark: "risk",
+    call: "coss.risk",
+    name: "Risk",
+    summary: "Allow, review or block sign-ups, logins and payments.",
+    href: "/products/risk",
+  },
+];
+
+/** Everything else on the same key: the products without a catalog part, linked to their pages. */
+function SameKey() {
+  return (
+    <section aria-labelledby="same-key-title" className="border-b">
+      <SectionHead id="same-key-title" title="Also on the same key">
+        Agent inboxes, signatures, one-time codes, forms, webhooks for your own users and risk
+        decisions: the same key, SDK, events and logs. <Link href="/products">Every product</Link>.
+      </SectionHead>
+      <RuledGrid>
+        {SAME_KEY.map((product) => (
+          <li key={product.href}>
+            <Link
+              className="group flex h-full items-center gap-5 px-4 py-6 sm:px-8"
+              href={product.href}
+            >
+              <PartDrawing call={product.call} className="w-24 shrink-0" part={product.mark} />
+              <span className="flex flex-col gap-1">
+                <span className="font-semibold text-xl tracking-[-0.01em] group-hover:underline">
+                  {product.name}
+                </span>
+                <span className="text-muted-foreground text-sm leading-snug">
+                  {product.summary}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </RuledGrid>
     </section>
   );
 }
@@ -389,15 +470,13 @@ function Tolerances() {
       <SectionHead id="tolerances-title" title="Tolerances">
         The numbers your code can rely on. The docs list every limit in context.
       </SectionHead>
-      <dl className="grid gap-x-16 border-t px-4 py-10 sm:px-8 md:grid-cols-2">
+      <SpecList>
         {TOLERANCES.map(([label, value]) => (
-          <div className="flex items-baseline gap-3 border-b py-3.5" key={label}>
-            <dt>{label}</dt>
-            <span aria-hidden className="leader" />
-            <dd className="text-right font-mono text-sm">{value}</dd>
-          </div>
+          <SpecRow key={label} label={label}>
+            {value}
+          </SpecRow>
         ))}
-      </dl>
+      </SpecList>
     </section>
   );
 }

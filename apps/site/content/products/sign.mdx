@@ -1,0 +1,146 @@
+---
+title: Sign
+description: coss.com Sign is an e-signature API. People sign PDFs inside your app or from an email, and you get a sealed PDF with a hash-chained audit trail.
+seoTitle: "E-signature API with embedded signing · coss.com"
+headline: E-signatures inside your product.
+call: coss.sign
+mark: sign
+docs: /docs/sign
+group: Messaging
+features:
+  - Embedded signing with mountSigning
+  - Email invitations, reminders and expiry
+  - Fields by position or text anchor
+  - Parallel or sequential signing order
+  - Sealed PDFs, PAdES B-LT with timestamps
+  - Hash-chained audit trail
+  - Templates with roles and merge fields
+  - An embeddable template builder
+related:
+  - email
+  - forms
+  - platform
+  - security
+faq:
+  - question: How do I add e-signatures to my app?
+    answer: Create a signature request with coss.sign.requests.create(), giving the PDFs and each signer with their fields. Signers either get an email with a signing link, or sign inside your app in an iframe you mount with mountSigning from coss/sign. When everyone has signed, a sign_request.completed webhook says the sealed PDF is ready to download.
+  - question: Are coss.com signatures legally binding?
+    answer: They are simple electronic signatures under the US ESIGN Act and UETA and the EU's eIDAS. Each signer agrees to sign electronically, signs with a deliberate act and is identified by the emailed link or by your app, and the audit trail records each step.
+  - question: How do I place signature fields without coordinates?
+    answer: Write anchors such as {{signature:signer_1}} into the document as text, white text included, and give the field by its anchor. coss.com finds every occurrence in the PDF's text and places the field over each one. Fields can also be placed by page and position in PDF points.
+  - question: What does the completed PDF contain?
+    answer: Every document with the signatures and values drawn in, followed by certificate pages listing each signer, how they were identified, when they consented and signed, the address and browser they signed from, each document's SHA-256 and the whole audit trail. It is sealed with a PAdES signature and a trusted timestamp, so any later change shows.
+  - question: Can my own users build templates?
+    answer: Yes. Create a builder session for a template with coss.sign.templates.createBuilderSession() and mount it in your app with mountBuilder from coss/sign. Your users upload PDFs, add signer roles and place fields; a builder session only reaches its own template.
+  - question: How do I test signing without real signatures?
+    answer: Use a sandbox key. Requests work end to end, with the real signing page and a sealed PDF, but emails go to the sandbox's fake provider, the signing page and the certificate say it is a test, and nothing is billed.
+---
+
+<Section title="How it works" lede="Create a request on your server, open the signing page in your app, and download the sealed PDF when the last person signs.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+declare const pdfBase64: string;
+// ---cut---
+// On your server: ask for a signature, then open a session for the signed-in user.
+const { data: request } = await coss.sign.requests.create({
+  title: "Services agreement",
+  documents: [{ filename: "agreement.pdf", content: pdfBase64 }],
+  signers: [
+    {
+      name: "Ada Lovelace",
+      email: "ada@example.com",
+      delivery: "embedded", // or "email": coss.com sends the link
+      client_ref: "user_42",
+      fields: [
+        { type: "signature", anchor: "{{signature:signer_1}}" },
+        { type: "date_signed", anchor: "{{date:signer_1}}" },
+      ],
+    },
+  ],
+});
+
+const signer = request?.signers[0];
+if (request && signer) {
+  const { data: session } = await coss.sign.sessions.create(request.id, signer.id);
+  // Hand session.url to the browser.
+}
+```
+
+```ts twoslash
+import { mountSigning } from "coss/sign";
+declare const sessionUrl: string;
+declare const container: HTMLElement;
+// ---cut---
+// In the browser: the signing page in an iframe on your own page.
+mountSigning({
+  url: sessionUrl,
+  container,
+  onEvent: (event) => {
+    if (event.type === "signed") console.log("Request is", event.request_status);
+  },
+});
+```
+
+When the last signer signs, coss.com seals the completed document and sends `sign_request.completed`; `coss.sign.requests.signedDocument(id)` downloads it. See [embedded signing](/docs/sign/embedded-signing) and the [API reference](/docs/api-reference/signature-requests/create-sign-request).
+
+</Section>
+
+<Section title="Signing, end to end" lede="From the uploaded PDF to the sealed copy, every step is an API call, a webhook and a line in your logs.">
+
+<Features>
+
+<Feature title="Fields by position or anchor">
+Place fields in PDF points on a page, or write `{{signature:signer_1}}` into the document and give the field by its anchor: it covers every occurrence. Signature, initials, date signed, name, email, text and checkbox fields. See [fields and anchors](/docs/sign/fields-and-anchors).
+</Feature>
+
+<Feature title="Embedded or by email">
+Embedded signers sign in your app, in an iframe `mountSigning` opens, with your accent color and theme. Email signers get their link when it's their turn, reminders until they sign, and the signed PDF afterwards. See [email signing](/docs/sign/email-signing).
+</Feature>
+
+<Feature title="Consent, then a signature">
+Before a signer sees a document, they agree to sign electronically, and the SHA-256 of the consent text they saw is recorded. They adopt a typed or drawn signature, or decline with a reason, and nothing they filled in changes after they finish.
+</Feature>
+
+<Feature title="Signing order">
+Signers sign in parallel by default, or one after another with `signing_order: "sequential"`: each is invited, or allowed to sign, once everyone before them has signed. Requests expire when you say, and their links stop working.
+</Feature>
+
+<Feature title="Templates and a builder">
+Templates hold documents and fields for roles instead of people. Name a signer per role and fill `merge_fields` to make a request. Your own users can edit templates in your app, in the builder `mountBuilder` opens. See [templates](/docs/sign/templates).
+</Feature>
+
+<Feature title="Webhooks for every step">
+`sign_request.sent`, `viewed`, `signer_signed`, `declined`, `completed`, `canceled` and `expired` reach your [webhooks](/docs/webhooks), and each is a line in your environment's [logs](/docs/logs). Payloads never include documents or field values.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="A record that proves itself" lede="The completed PDF and its audit trail are built so anyone can check that nothing changed.">
+
+The signed document is every PDF with the signatures and values drawn in, followed by certificate pages: each signer, how they were identified (the emailed link, or your app and its `client_ref`), when they opened, consented and signed, the address and browser they signed from, each document's SHA-256 and the whole audit trail.
+
+coss.com seals it with a PAdES signature and an RFC 3161 timestamp, so PDF viewers show it hasn't changed since. The seal carries the revocation data of every certificate involved (PAdES B-LT), so it still verifies after those certificates expire. The audit trail is append-only: each event's hash covers the event and the previous hash, so the last one vouches for the whole trail. See [completion and the audit trail](/docs/sign/completion-and-audit-trail).
+
+</Section>
+
+<Section title="Specifications" lede="The limits of a request. The API reference lists each one with its field.">
+
+<Specs>
+<Spec label="Document size">25 MB, 500 pages</Spec>
+<Spec label="Documents per request">10</Spec>
+<Spec label="Signers per request">20</Spec>
+<Spec label="Fields per request">500</Spec>
+<Spec label="Request expiry">up to 365 days ahead</Spec>
+<Spec label="Email reminders">up to 3, every 1 to 30 days</Spec>
+<Spec label="Embedded session">1 hour by default, at most 24 hours</Spec>
+<Spec label="Embedding origins">up to 10, https</Spec>
+<Spec label="Seal">PAdES B-LT, RFC 3161 timestamp</Spec>
+<Spec label="Signature types">simple electronic (ESIGN, UETA, eIDAS)</Spec>
+<Spec label="Requests kept">until you delete them</Spec>
+</Specs>
+
+</Section>

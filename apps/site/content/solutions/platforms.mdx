@@ -1,0 +1,124 @@
+---
+title: SaaS platforms
+description: coss.com gives multi-tenant platforms email sub-accounts per customer, webhooks to customers with a hosted portal, budgets, an audit log and SSO.
+seoTitle: "Multi-tenant email and webhooks for SaaS platforms · coss.com"
+headline: Email and webhooks for platforms.
+mark: subaccounts
+products:
+  - subaccounts
+  - hooks
+  - platform
+  - security
+faq:
+  - question: How do I send email on behalf of my customers?
+    answer: Create an email sub-account per customer with coss.email.subaccounts.create() and name it with subaccount when you send. Each sub-account has its own domains, sending reputation at the mail provider, quotas, suppression list and stats.
+  - question: What happens when one of my customers sends spam?
+    answer: Only that sub-account is paused. Its bounces, complaints and blocked content are measured on their own, and its live sends are refused with subaccount_paused until you reinstate it, while your other sub-accounts keep sending. Your organization's own reputation still counts everything they send.
+  - question: How do I send webhooks to my own customers?
+    answer: Use Hooks. Create an application per customer, register your event types, and send each event once with coss.hooks.messages.send(). coss.com delivers it to every endpoint that customer registered, signed and retried for about a day.
+  - question: Do I have to build a UI for my customers' webhook endpoints?
+    answer: No. Hooks includes a portal on its own domain where a customer adds endpoints, picks event types, reveals and rolls secrets, sees every delivery and retries them. Create a portal session from your backend and redirect to it or embed it in your settings page.
+  - question: Can I cap what each project or API key costs?
+    answer: Yes. Owners set monthly budgets per project, per API key and per member on the Spend page. Once spend goes over a budget, live sends from that source are refused until the next month or until an owner raises the budget, and everything else keeps working.
+  - question: Which plans include sub-accounts and single sign-on?
+    answer: Live sub-accounts, SSO and directory sync are included in the higher plans, and sandbox sub-accounts are free on every plan so you can build the integration first. The pricing page lists which plan includes what.
+---
+
+<Section title="The problem" lede="A platform whose customers send email or receive webhooks carries their mistakes unless each one is kept apart.">
+
+When a website builder, CRM or store builder sends email for its users, one user's bounced list or phishing campaign can pause sending for every other user on the same account. When the same platform sends webhooks to its customers, it ends up building endpoint management, signing, retries, a delivery log and a settings page for each customer to manage it all.
+
+coss.com keeps customers apart and does the delivery work: [email sub-accounts](/products/subaccounts) give each customer their own domains, reputation, quotas and suppressions; [Hooks](/products/hooks) delivers your webhooks to your customers with a hosted portal; and the [platform](/products/platform) and [security](/products/security) features (budgets, the audit log, SSO) let your team run it.
+
+</Section>
+
+<Section title="How it works" lede="One sub-account and one Hooks application per customer, both addressed by your own id for that customer.">
+
+```ts twoslash
+import { Coss } from "coss";
+const coss = new Coss();
+// ---cut---
+// When a customer signs up: a sub-account for their email, an application for their webhooks.
+await coss.email.subaccounts.create({
+  name: "Acme Bakery",
+  uid: "user_8812",
+  quotas: { recipients_per_day: 5000 },
+});
+await coss.hooks.applications.create({ name: "Acme Bakery", uid: "user_8812" });
+
+// Their own domain, with its own sending reputation at the mail provider.
+await coss.domains.create({ name: "acmebakery.com", subaccount: "user_8812" });
+
+// Send email for them...
+await coss.email.send({
+  subaccount: "user_8812",
+  from: "Acme Bakery <orders@acmebakery.com>",
+  to: "customer@example.com",
+  subject: "Your order is ready",
+  html: "<p>Come and pick it up.</p>",
+});
+
+// ...and webhooks to them, delivered to every endpoint they registered.
+await coss.hooks.messages.send({
+  application: "user_8812",
+  event_type: "order.ready",
+  payload: { order_id: "ord_1042" },
+});
+
+// Let them manage their endpoints in the portal.
+const { data: session } = await coss.hooks.portal.createSession({ application: "user_8812" });
+// Redirect to session.url, or embed it in your settings page.
+```
+
+Read more in [email for platforms](/docs/email/subaccounts), [Hooks](/docs/hooks) and the [portal](/docs/hooks/portal).
+
+</Section>
+
+<Section title="What platforms get" lede="Isolation per customer, delivery you don't build, and the controls a team needs to run it.">
+
+<Features>
+
+<Feature title="A sub-account per customer">
+Each sub-account has its own domains, its own SES tenant, quotas you set, a suppression list and stats. Every call accepts its `id` or your own `uid`, and its emails and webhook events carry its `subaccount_id`.
+</Feature>
+
+<Feature title="Reputation kept apart">
+A sub-account's bounce and complaint rates are measured on their own. At the suspension threshold, or when content screening blocks one of its emails, it pauses alone, and `subaccount.*` webhooks tell you.
+</Feature>
+
+<Feature title="Webhooks to your customers">
+Hooks sends each event once to an application and delivers it to every subscribed endpoint, signed, retried for about a day and logged. Failing endpoints are disabled after 5 days, and missed deliveries can be recovered.
+</Feature>
+
+<Feature title="A portal you don't build">
+Customers add endpoints, choose event types, roll secrets, browse deliveries and retry them in a portal on its own domain. Embed it on origins you allow, with your name, accent color and theme.
+</Feature>
+
+<Feature title="Budgets and spend">
+The Spend page splits usage by project, environment, API key and member. Monthly budgets on a project, a key or a member refuse live sends from that source once spend goes over.
+</Feature>
+
+<Feature title="Audit log and SSO">
+One [audit log](/docs/audit-log) records who changed what, from the dashboard, the API or the portal. Single sign-on (SAML, OIDC) and directory sync (SCIM) manage your team's access.
+</Feature>
+
+</Features>
+
+</Section>
+
+<Section title="Specifications" lede="Limits that matter when you run many customers. The docs list each one in context.">
+
+<Specs>
+<Spec label="Domains per sub-account">10, up to 5 awaiting verification</Spec>
+<Spec label="Sub-account stats">up to 45 days, per day</Spec>
+<Spec label="Hooks applications per environment">100,000</Spec>
+<Spec label="Endpoints per application">50</Spec>
+<Spec label="Hooks delivery attempts">8 over roughly a day</Spec>
+<Spec label="Hooks payload size">256 KB</Spec>
+<Spec label="Portal session lifetime">at most a day</Spec>
+<Spec label="Budget alert thresholds">80% and 100% by default</Spec>
+<Spec label="Sub-accounts on plans"><PlansWith feature="subaccounts" /></Spec>
+<Spec label="SSO on plans"><PlansWith feature="sso" /></Spec>
+</Specs>
+
+</Section>

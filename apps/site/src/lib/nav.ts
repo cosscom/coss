@@ -1,29 +1,37 @@
 import {
   ApiIcon,
   BookOpen02Icon,
+  Building03Icon,
   Calendar03Icon,
   CalendarCheckIn01Icon,
   ClipboardPenLineIcon,
   CommandLineIcon,
+  DashboardSpeed01Icon,
   DashboardSquare01Icon,
   File01Icon,
-  FileSearchIcon,
   FilterIcon,
   GitBranchIcon,
   Globe02Icon,
+  InboxDownloadIcon,
   InboxIcon,
+  Layers01Icon,
   LicenseIcon,
   Mail01Icon,
   McpServerIcon,
+  Megaphone01Icon,
   Message01Icon,
   Notification03Icon,
+  PasswordValidationIcon,
+  Plug01Icon,
   Robot01Icon,
   RocketIcon,
+  SecurityCheckIcon,
+  ServerStack01Icon,
   Shield01Icon,
   ShipIcon,
+  SignatureIcon,
   SourceCodeIcon,
   TextIcon,
-  UnavailableIcon,
   Video01Icon,
   WebhookIcon,
   WorkHistoryIcon,
@@ -74,26 +82,139 @@ function api(key: (typeof PRODUCTS)[number]["key"], link: Omit<MenuLink, "label"
 
 export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
   {
-    title: "Communication",
+    title: "Email",
     links: [
       api("email", {
         description: "Transactional email from your own domains.",
         icon: Mail01Icon,
-        href: "/#email",
+        href: "/products/email",
       }),
+      {
+        label: "Marketing email",
+        description: "Contacts, segments and broadcasts.",
+        icon: Megaphone01Icon,
+        href: "/products/marketing-email",
+      },
       {
         label: "Inboxes",
         description: "Email addresses for AI agents.",
         icon: InboxIcon,
-        href: `${DOCS_ROUTE}/inboxes`,
+        href: "/products/inboxes",
         badge: "New",
       },
-      api("sms", { description: "Text messages worldwide.", icon: Message01Icon, href: "/#sms" }),
+      {
+        label: "Inbound email",
+        description: "Receive mail on your domains.",
+        icon: InboxDownloadIcon,
+        href: "/products/inbound-email",
+      },
+      {
+        label: "Email for platforms",
+        description: "Sub-accounts for your customers.",
+        icon: Building03Icon,
+        href: "/products/subaccounts",
+        badge: "New",
+      },
+      {
+        label: "SMTP relay",
+        description: "Send from any app that speaks SMTP.",
+        icon: ServerStack01Icon,
+        href: "/products/smtp",
+      },
+    ],
+  },
+  {
+    title: "Messaging and identity",
+    links: [
+      api("sms", {
+        description: "Text messages worldwide.",
+        icon: Message01Icon,
+        href: "/products/sms",
+      }),
+      {
+        label: "Verify",
+        description: "One-time codes by SMS or email.",
+        icon: PasswordValidationIcon,
+        href: "/products/verify",
+        badge: "New",
+      },
+      {
+        label: "Sign",
+        description: "E-signatures in your app.",
+        icon: SignatureIcon,
+        href: "/products/sign",
+        badge: "New",
+      },
+      {
+        label: "Forms",
+        description: "Form endpoints and hosted forms.",
+        icon: ClipboardPenLineIcon,
+        href: "/products/forms",
+        badge: "New",
+      },
       api("video", { description: "Rooms and recordings.", icon: Video01Icon, href: "/#video" }),
     ],
   },
   {
-    title: "Scheduling",
+    title: "Events and trust",
+    links: [
+      {
+        label: "Hooks",
+        description: "Webhooks you send to your customers.",
+        icon: WebhookIcon,
+        href: "/products/hooks",
+      },
+      {
+        label: "Risk",
+        description: "Abuse checks for sign-ups and payments.",
+        icon: Shield01Icon,
+        href: "/products/risk",
+      },
+      {
+        label: "Rate limiting",
+        description: "Limits for your own endpoints.",
+        icon: DashboardSpeed01Icon,
+        href: "/products/rate-limiting",
+      },
+    ],
+  },
+  {
+    title: "Platform",
+    links: [
+      {
+        label: "Platform",
+        description: "Webhooks, logs, keys and billing.",
+        icon: Layers01Icon,
+        href: "/products/platform",
+      },
+      {
+        label: "Security",
+        description: "SSO, SCIM, audit log, reputation.",
+        icon: SecurityCheckIcon,
+        href: "/products/security",
+      },
+      {
+        label: "Logs and drains",
+        description: "Every request and event.",
+        icon: WorkHistoryIcon,
+        href: `${DOCS_ROUTE}/logs`,
+      },
+      {
+        label: "Domains",
+        description: "Verified sending domains.",
+        icon: Globe02Icon,
+        href: `${DOCS_ROUTE}/email/domains`,
+      },
+      {
+        label: "Solutions",
+        description: "Agents, platforms, sign-ups.",
+        icon: Notification03Icon,
+        href: "/solutions",
+      },
+    ],
+  },
+  {
+    title: "More from coss.com",
     links: [
       api("scheduling", {
         description: "Availability and bookings.",
@@ -107,34 +228,6 @@ export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
         href: CALENDAR.path,
         badge: "New",
       },
-    ],
-  },
-  {
-    title: "Events and trust",
-    links: [
-      {
-        label: "Hooks",
-        description: "Webhooks you send to your customers.",
-        icon: WebhookIcon,
-        href: `${DOCS_ROUTE}/hooks`,
-      },
-      {
-        label: "Risk",
-        description: "Abuse checks for sign-ups and payments.",
-        icon: Shield01Icon,
-        href: `${DOCS_ROUTE}/risk`,
-      },
-      {
-        label: "Forms",
-        description: "Form endpoints for your site, screened for spam.",
-        icon: ClipboardPenLineIcon,
-        href: `${DOCS_ROUTE}/forms`,
-      },
-    ],
-  },
-  {
-    title: "Developer tools",
-    links: [
       {
         label: "coss.com ui",
         description: "React components built on Base UI.",
@@ -159,41 +252,6 @@ export const PRODUCT_COLUMNS: readonly MenuColumn[] = [
       },
     ],
   },
-  {
-    title: "Platform",
-    links: [
-      {
-        label: "Webhooks",
-        description: "Signed events, retried.",
-        icon: Notification03Icon,
-        href: `${DOCS_ROUTE}/webhooks`,
-      },
-      {
-        label: "Logs and drains",
-        description: "Every request and event.",
-        icon: WorkHistoryIcon,
-        href: `${DOCS_ROUTE}/logs`,
-      },
-      {
-        label: "Domains",
-        description: "Verified sending domains.",
-        icon: Globe02Icon,
-        href: `${DOCS_ROUTE}/email/domains`,
-      },
-      {
-        label: "Suppressions",
-        description: "Bounces and opt-outs.",
-        icon: UnavailableIcon,
-        href: `${DOCS_ROUTE}/email/suppressions`,
-      },
-      {
-        label: "Audit log",
-        description: "Who changed what.",
-        icon: FileSearchIcon,
-        href: `${DOCS_ROUTE}/audit-log`,
-      },
-    ],
-  },
 ];
 
 export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
@@ -213,10 +271,10 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         href: DOCS_ROUTE,
       },
       {
-        label: "TypeScript SDK",
-        description: "Install and configure the client.",
+        label: "SDKs",
+        description: "TypeScript, Python, Go, Ruby, PHP, Java, .NET.",
         icon: SourceCodeIcon,
-        href: `${DOCS_ROUTE}/sdk`,
+        href: "/products/sdks",
       },
       {
         label: "API reference",
@@ -247,6 +305,12 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         icon: File01Icon,
         href: `${DOCS_ROUTE}/api-reference/changelog`,
       },
+      {
+        label: "Compare",
+        description: "coss.com next to the alternatives.",
+        icon: Plug01Icon,
+        href: "/compare",
+      },
     ],
   },
   {
@@ -256,7 +320,7 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         label: "Agent setup",
         description: "One prompt that sets coss.com up.",
         icon: Robot01Icon,
-        href: "/#agents",
+        href: "/products/agents",
       },
       {
         label: "CLI",
@@ -282,6 +346,74 @@ export const DEVELOPER_COLUMNS: readonly MenuColumn[] = [
         icon: CommandLineIcon,
         href: "/llms-full.txt",
       },
+    ],
+  },
+];
+
+/** The site footer's link columns (`SiteFooter`); every link is checked by test/marketing.test.ts. */
+export const FOOTER_COLUMNS: readonly { title: string; links: readonly [string, string][] }[] = [
+  {
+    title: "Products",
+    links: [
+      ["Email", "/products/email"],
+      ["Marketing email", "/products/marketing-email"],
+      ["Inboxes for agents", "/products/inboxes"],
+      ["Inbound email", "/products/inbound-email"],
+      ["Email for platforms", "/products/subaccounts"],
+      ["SMTP relay", "/products/smtp"],
+      ["SMS", "/products/sms"],
+      ["Verify", "/products/verify"],
+      ["Sign", "/products/sign"],
+      ["Forms", "/products/forms"],
+      ["Hooks", "/products/hooks"],
+      ["Risk", "/products/risk"],
+      ["Rate limiting", "/products/rate-limiting"],
+      ["All products", "/products"],
+    ],
+  },
+  {
+    title: "Solutions",
+    links: [
+      ["AI agents", "/solutions/ai-agents"],
+      ["Platforms", "/solutions/platforms"],
+      ["Authentication", "/solutions/authentication"],
+      ["Notifications", "/solutions/notifications"],
+      ["All solutions", "/solutions"],
+    ],
+  },
+  {
+    title: "Compare",
+    links: [
+      ["vs Resend", "/compare/resend"],
+      ["vs SendGrid", "/compare/sendgrid"],
+      ["vs Postmark", "/compare/postmark"],
+      ["vs Mailgun", "/compare/mailgun"],
+      ["vs Amazon SES", "/compare/amazon-ses"],
+      ["vs Twilio", "/compare/twilio"],
+      ["vs Svix", "/compare/svix"],
+      ["All comparisons", "/compare"],
+    ],
+  },
+  {
+    title: "Developers",
+    links: [
+      ["Docs", DOCS_ROUTE],
+      ["Quickstart", `${DOCS_ROUTE}/quickstart`],
+      ["API reference", `${DOCS_ROUTE}/api-reference`],
+      ["SDKs", "/products/sdks"],
+      ["For coding agents", "/products/agents"],
+      ["CLI", `${DOCS_ROUTE}/cli`],
+      ["MCP server", `${DOCS_ROUTE}/mcp`],
+      ["llms.txt", "/llms.txt"],
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      ["Pricing", "/pricing"],
+      ["About", "/about"],
+      ["Platform", "/products/platform"],
+      ["Security", "/products/security"],
     ],
   },
 ];

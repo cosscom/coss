@@ -127,6 +127,14 @@ another endpoint. Listing endpoints never returns secrets.
 
 **Receiving**: `get_inbound_address`, `list_received_emails`, `get_received_email`.
 
+**Inboxes**: `create_inbox` gives an agent its own address (at the environment's inbound domain,
+or at one of its receiving domains; a `client_id` that already has an inbox returns it),
+`list_inboxes`, `list_inbox_threads` (latest activity first, each with a preview and whether it
+awaits a reply), `get_inbox_thread` (each message's own text without the quoted conversation,
+labelled as untrusted), `send_inbox_message` (starts a thread) and `reply_to_inbox_message`
+(replies in the message's thread, optionally to everyone on it). Live inboxes at coss.com's inbound
+domain only receive. See [Inboxes](/docs/inboxes).
+
 **SMS**: `diagnose_sms` (by message id, or by recipient number: a verdict, what the status or
 failure code means, the carrier's error code, problems with the sender's registration,
 suppressions, reputation or billing, and what to do next), `find_sms`, `get_sms` (with its full
