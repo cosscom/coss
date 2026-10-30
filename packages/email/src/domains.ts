@@ -260,20 +260,32 @@ export async function ensureSubaccountTenant(
     subaccountId,
     stream: "transactional",
   });
-  await db
-    .insert(emailTenant)
-    .values({
-      organizationId,
-      subaccountId,
-      stream: "transactional",
-      provider: identity.name,
-      ...tenant,
-      suppressionMigratedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [emailTenant.organizationId, emailTenant.subaccountId, emailTenant.stream],
-      set: { provider: identity.name, ...tenant },
-    });
+  try {
+    await db
+      .insert(emailTenant)
+      .values({
+        organizationId,
+        subaccountId,
+        stream: "transactional",
+        provider: identity.name,
+        ...tenant,
+        suppressionMigratedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [emailTenant.organizationId, emailTenant.subaccountId, emailTenant.stream],
+        set: { provider: identity.name, ...tenant },
+      });
+  } catch (error) {
+    // The sub-account was deleted meanwhile (its teardown found no tenant row): nothing else
+    // would ever find this tenant, so it goes now.
+    if (isForeignKeyViolation(error)) {
+      await identity.deleteTenant(tenant).catch((cleanup) => {
+        console.error(`[domains] releasing orphaned tenant ${tenant.tenantName} failed:`, cleanup);
+      });
+      throw new DomainError("subaccount_not_found", "Sub-account not found.");
+    }
+    throw error;
+  }
   return tenant;
 }
 
@@ -446,6 +458,11 @@ export async function requireDomain(input: {
   const row = await getDomain(input);
   if (!row) throw new DomainError("not_found", "Domain not found.");
   return row;
+}
+
+function isForeignKeyViolation(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string } }).cause;
+  return (error as { code?: string }).code === "23503" || cause?.code === "23503";
 }
 
 export function isUniqueViolation(error: unknown): boolean {

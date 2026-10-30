@@ -9,6 +9,7 @@ import {
   checkDomain,
   createDomain,
   type DomainDeps,
+  ensureSubaccountTenant,
   MAX_SUBACCOUNT_DOMAINS,
   releaseOrganizationEmailResources,
   releaseSubaccountEmailResources,
@@ -16,6 +17,7 @@ import {
   setDomainSharedWithSubaccounts,
 } from "../src/domains.ts";
 import { DomainError } from "../src/errors.ts";
+import type { ProviderTenant } from "../src/provider.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
 import { FakeDedicatedIpProvider } from "../src/providers/fake-dedicated-ips.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
@@ -108,6 +110,21 @@ describe("sub-account domains", () => {
     expect(
       await refusal(restartDomainVerification({ organizationId, id: failed.id }, domainDeps)),
     ).toMatchObject({ code: "too_many_subaccount_domains" });
+  });
+
+  test("a tenant made for a sub-account deleted meanwhile is released at once", async () => {
+    const { organizationId, a } = await setup();
+    // Gone (its teardown found no tenant row) while the provider made its tenant.
+    await db.delete(schema.emailSubaccount).where(eq(schema.emailSubaccount.id, a.id));
+    const identity = new FakeIdentityProvider();
+    const released: string[] = [];
+    identity.deleteTenant = async (tenant: ProviderTenant) => {
+      released.push(tenant.tenantName);
+    };
+    expect(await refusal(ensureSubaccountTenant(organizationId, a.id, identity))).toMatchObject({
+      code: "subaccount_not_found",
+    });
+    expect(released).toEqual([`fake-${a.id}`]);
   });
 
   test("only its sub-account sends from a sub-account's domain", async () => {
