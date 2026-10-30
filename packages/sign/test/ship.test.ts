@@ -220,6 +220,11 @@ describe("S3 store", () => {
 });
 
 describe("deletion cleanup", () => {
+  // The cleanup loop runs rows due by `now`, which defaults to the app's clock (milliseconds), while
+  // Postgres stamps a row due at once in microseconds: one scheduled in the same millisecond as the
+  // run wouldn't be due yet.
+  const later = () => new Date(Date.now() + 1_000);
+
   test("store objects a failed deletion left behind are deleted by the retry", async () => {
     const { tenant, env } = await environment("sandbox");
     const request = await signed(env);
@@ -240,7 +245,7 @@ describe("deletion cleanup", () => {
     expect(pending.length).toBe(2);
     for (const row of pending) expect(await store.get(row.key)).not.toBeNull();
     const scope = { organizationIds: [tenant.organization.id] };
-    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(2);
+    expect(await runDueSignCleanup({ limit: 10, now: later(), scope }, store)).toBe(2);
     for (const row of pending) expect(await store.get(row.key)).toBeNull();
     expect(
       await db
@@ -272,7 +277,7 @@ describe("deletion cleanup", () => {
     const key = pending[0]?.key ?? "";
     expect(await store.get(key)).not.toBeNull();
     const scope = { organizationIds: [tenant.organization.id] };
-    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(1);
+    expect(await runDueSignCleanup({ limit: 10, now: later(), scope }, store)).toBe(1);
     expect(await store.get(key)).toBeNull();
   });
 
@@ -315,7 +320,7 @@ describe("deletion cleanup", () => {
     await discardUnstoredDocuments(stubborn, [prepared]);
     expect(await store.get(prepared.storeKey)).not.toBeNull();
     const scope = { organizationIds: [tenant.organization.id] };
-    expect(await runDueSignCleanup({ limit: 10, scope }, store)).toBe(1);
+    expect(await runDueSignCleanup({ limit: 10, now: later(), scope }, store)).toBe(1);
     expect(await store.get(prepared.storeKey)).toBeNull();
   });
 
@@ -344,7 +349,7 @@ describe("deletion cleanup", () => {
       .from(schema.signStoreCleanup)
       .where(eq(schema.signStoreCleanup.organizationId, tenant.organization.id));
     expect(pending.some((row) => row.key.includes("/requests/"))).toBe(true);
-    await runDueSignCleanup({ limit: 10, scope }, store);
+    await runDueSignCleanup({ limit: 10, now: later(), scope }, store);
     const objects = await db
       .select({ key: schema.signFakeObject.key })
       .from(schema.signFakeObject)

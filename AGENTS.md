@@ -155,9 +155,10 @@ from the root or a package — the package script is what loads `.env` and the t
 packages your change reaches (`turbo --affected` against `origin/main`). Don't run the whole suite locally: CI
 (`.github/workflows/ci.yml`, Postgres 18, no `.env`, on Blacksmith's runners) does that in the merge queue. Only the
 queue lands commits on main (main's ruleset; its one required check is CI's `ci` job). Pull requests get quick
-feedback (lint, then typecheck, tests and builds of the affected packages, and the SDK and driver matrices only when
-`sdks/`, `integrations/`, `apps/api/openapi.json` or the workflow changed), and the queue runs everything on the
-exact commit main becomes. Merge with `gh pr merge <number>` (no method flag): it joins the queue, or waits for the
+feedback (lint, then typecheck, tests and builds of the affected packages), and the queue runs those for every
+package on the exact commit main becomes. Both run an SDK's or driver's jobs only when its own directory, the API's
+contract (`apps/api/openapi.json`, `apps/api/test/serve.ts`), its conformance files or the workflow changed; a
+nightly run on main checks all of them (a failure there is a regression to fix first). Merge with `gh pr merge <number>` (no method flag): it joins the queue, or waits for the
 pull request's checks first; `--admin` would skip the queue — never use it. A pull request leaves the queue when
 its run fails: read the merge group's run (`gh run list --workflow ci.yml --event merge_group`), fix, push, merge
 again. After changing `integrations/<driver>` also run its own lint and tests (CI's `integrations` job): `composer

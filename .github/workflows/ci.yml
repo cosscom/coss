@@ -3,17 +3,21 @@ name: CI
 # Only the merge queue lands commits on main (main's ruleset), so this is the one place they're
 # checked:
 # - pull requests get quick feedback: lint, then typecheck, tests and builds of the packages the
-#   change reaches (`turbo --affected`), and the SDK and driver matrices only when the change
-#   touches them or the API's contract;
-# - the merge queue (`merge_group`) runs everything on the exact commit main becomes, so main
-#   itself isn't checked again and Deploy doesn't wait for CI;
-# - a dispatch runs everything on any branch.
+#   change reaches (`turbo --affected`);
+# - the merge queue (`merge_group`) runs lint, typecheck, tests and builds of every package (the
+#   remote cache replays what didn't change) on the exact commit main becomes, so main itself
+#   isn't checked again and Deploy doesn't wait for CI;
+# - both run only the SDK and driver entries the change can reach (`changes`), so a nightly run
+#   (and any dispatch) checks everything, on main.
 # `ci`, the last job, is the ruleset's one required check. Every job runs on Blacksmith's runners
 # (GitHub's free ones allow 20 jobs at once, which one run of this workflow nearly fills).
 on:
   pull_request:
   merge_group:
   workflow_dispatch:
+  # GitHub emails a failure to whoever last changed this line.
+  schedule:
+    - cron: "17 5 * * *"
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -41,27 +45,82 @@ env:
 
 # check, test and build run in parallel. Tests are never cached (turbo.json).
 jobs:
-  # Whether a pull request touches what the SDK and driver matrices check: their own code, the
-  # API's contract or this file. The merge queue runs them whatever changed.
+  # Which entries of the SDK and driver matrices this change needs, on pull requests and in the
+  # merge queue alike: an SDK or driver only when its own directory changed, or what it's tested
+  # against: the API's contract (`openapi.json`, which the API's responses are built from), the
+  # test app (`serve.ts`), its conformance files, or this file. API behaviour behind an unchanged
+  # contract is the API's own tests' (the TypeScript SDK and the drivers' JS siblings run against
+  # it in-process); the nightly run checks every entry anyway. Matrix entries live here because
+  # a static matrix can't be filtered.
   changes:
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 5
     outputs:
-      contract: ${{ steps.diff.outputs.contract }}
+      sdks: ${{ steps.plan.outputs.sdks }}
+      integrations: ${{ steps.plan.outputs.integrations }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 2
-      - id: diff
+      - id: plan
         env:
           EVENT: ${{ github.event_name }}
+          # main when the merge group was made: the diff covers the group's earlier entries too.
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+          # Each driver against the newest and the oldest framework it supports.
+          INTEGRATIONS: |
+            [
+              { "driver": "laravel", "versions": "PHP 8.5, latest", "php": "8.5", "e2e": true, "lint": true },
+              { "driver": "laravel", "versions": "PHP 8.2, lowest", "php": "8.2", "composer": "--prefer-lowest" },
+              { "driver": "rails", "versions": "Ruby 3.4, Rails 8.1", "ruby": "3.4", "rails": "8.1", "e2e": true },
+              { "driver": "rails", "versions": "Ruby 3.2, Rails 7.2", "ruby": "3.2", "rails": "7.2" },
+              { "driver": "django", "versions": "Python 3.14, Django 6.1", "python": "3.14", "django": "django>=6.1,<6.2", "e2e": true },
+              { "driver": "django", "versions": "Python 3.10, Django 5.2", "python": "3.10", "django": "django>=5.2,<5.3" }
+            ]
+          # Each SDK on the newest and the oldest runtime it supports. PHPUnit 12 needs PHP 8.3, so
+          # on 8.1 (the oldest supported) only the syntax check runs. Gradle runs on 17+; the jar
+          # targets Java 8. The .NET test project targets .NET 9; the package also builds for .NET
+          # Framework and Standard.
+          SDKS: |
+            [
+              { "sdk": "python", "versions": "Python 3.14", "python": "3.14", "e2e": true },
+              { "sdk": "python", "versions": "Python 3.10", "python": "3.10" },
+              { "sdk": "go", "versions": "Go stable", "go": "stable", "e2e": true },
+              { "sdk": "go", "versions": "Go 1.21", "go": "1.21" },
+              { "sdk": "ruby", "versions": "Ruby 3.4", "ruby": "3.4", "e2e": true },
+              { "sdk": "ruby", "versions": "Ruby 3.3", "ruby": "3.3" },
+              { "sdk": "php", "versions": "PHP 8.5", "php": "8.5", "e2e": true },
+              { "sdk": "php", "versions": "PHP 8.1", "php": "8.1", "syntax-only": true },
+              { "sdk": "java", "versions": "Java 21", "java": "21", "e2e": true },
+              { "sdk": "java", "versions": "Java 17", "java": "17" },
+              { "sdk": "dotnet", "versions": ".NET 10", "dotnet": "10.0.x", "e2e": true },
+              { "sdk": "dotnet", "versions": ".NET 9", "dotnet": "9.0.x" }
+            ]
         run: |
-          if [ "$EVENT" != pull_request ] || git diff --name-only HEAD^1 HEAD \
-            | grep -qE '^(sdks/|integrations/|apps/api/openapi\.json$|apps/api/test/serve\.ts$|\.github/workflows/ci\.yml$)'; then
-            echo "contract=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "contract=false" >> "$GITHUB_OUTPUT"
-          fi
+          case "$EVENT" in
+            pull_request) changed="$(git diff --name-only HEAD^1 HEAD)" ;;
+            merge_group)
+              git fetch --quiet --depth=1 origin "$MERGE_GROUP_BASE"
+              changed="$(git diff --name-only "$MERGE_GROUP_BASE" HEAD)"
+              ;;
+            # The nightly run and dispatches: everything.
+            *) changed="*" ;;
+          esac
+          # $1: the entries, $2: the key naming each one's directory under $3, $4: what every entry
+          # is tested against.
+          pick() {
+            jq --compact-output --arg changed "$changed" --arg key "$2" --arg dir "$3" --arg shared "$4" '
+              ($changed | split("\n") | map(select(. != ""))) as $files
+              | map(select(. as $entry | $files | any(
+                  . == "*" or test($shared) or startswith("\($dir)/\($entry[$key])/"))))' <<<"$1"
+          }
+          contract='^(apps/api/openapi\.json|apps/api/test/serve\.ts|\.github/workflows/ci\.yml)$'
+          integrations="$(pick "$INTEGRATIONS" driver integrations "$contract|^integrations/conformance/(http|message)\.json$")"
+          sdks="$(pick "$SDKS" sdk sdks "$contract|^integrations/conformance/webhooks\.json$")"
+          echo "integrations=$integrations" >> "$GITHUB_OUTPUT"
+          echo "sdks=$sdks" >> "$GITHUB_OUTPUT"
+          echo "Drivers: $(jq --raw-output 'map("\(.driver) (\(.versions))") | join(", ") | if . == "" then "none" else . end' <<<"$integrations")"
+          echo "SDKs: $(jq --raw-output 'map("\(.sdk) (\(.versions))") | join(", ") | if . == "" then "none" else . end' <<<"$sdks")"
 
   check:
     runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -157,27 +216,22 @@ jobs:
       - run: bun run build $AFFECTED
 
   # The framework drivers (integrations/*: not workspaces, so turbo never runs them): lint and
-  # tests against the newest and the oldest framework each supports, plus, on the newest, an
-  # end-to-end run against the API's test app (`apps/api/test/serve.ts`) on this job's Postgres.
+  # tests (the entries `changes` picked), plus, on the newest framework, an end-to-end run against
+  # the API's test app (`apps/api/test/serve.ts`) on this job's Postgres.
   integrations:
     name: integrations (${{ matrix.driver }}, ${{ matrix.versions }})
     needs: changes
-    if: needs.changes.outputs.contract == 'true'
+    if: needs.changes.outputs.integrations != '[]'
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { driver: laravel, versions: "PHP 8.5, latest", php: "8.5", e2e: true, lint: true }
-          - { driver: laravel, versions: "PHP 8.2, lowest", php: "8.2", composer: "--prefer-lowest" }
-          - { driver: rails, versions: "Ruby 3.4, Rails 8.1", ruby: "3.4", rails: "8.1", e2e: true }
-          - { driver: rails, versions: "Ruby 3.2, Rails 7.2", ruby: "3.2", rails: "7.2" }
-          - { driver: django, versions: "Python 3.14, Django 6.1", python: "3.14", django: "django>=6.1,<6.2", e2e: true }
-          - { driver: django, versions: "Python 3.10, Django 5.2", python: "3.10", django: "django>=5.2,<5.3" }
+        include: ${{ fromJSON(needs.changes.outputs.integrations) }}
     services:
       postgres:
-        image: postgres:18
+        # Only the end-to-end entries use it: an empty image starts no container.
+        image: ${{ matrix.e2e && 'postgres:18' || '' }}
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -258,38 +312,24 @@ jobs:
           uvx twine check dist/*
 
   # The generated SDKs (sdks/*: not workspaces, so turbo never runs them): each one's tests (its
-  # generated ones and our own: the webhook and HTTP conformance, sdks/AGENTS.md) on the oldest
-  # and newest runtime it supports, plus, on the newest, the end-to-end tests against the API's
-  # test app. Regenerating them needs Docker and runs on main (sdks-regenerate.yml), not here.
+  # generated ones and our own: the webhook and HTTP conformance, sdks/AGENTS.md) on the runtimes
+  # `changes` picked, plus, on the newest, the end-to-end tests against the API's test app.
+  # Regenerating them needs Docker and runs on main (sdks-regenerate.yml), not here.
   sdks:
     name: sdks (${{ matrix.sdk }}, ${{ matrix.versions }})
     needs: changes
-    if: needs.changes.outputs.contract == 'true'
+    if: needs.changes.outputs.sdks != '[]'
     # Gradle, .NET and Go builds want more than the drivers' two cores.
     runs-on: blacksmith-4vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { sdk: python, versions: "Python 3.14", python: "3.14", e2e: true }
-          - { sdk: python, versions: "Python 3.10", python: "3.10" }
-          - { sdk: go, versions: "Go stable", go: "stable", e2e: true }
-          - { sdk: go, versions: "Go 1.21", go: "1.21" }
-          - { sdk: ruby, versions: "Ruby 3.4", ruby: "3.4", e2e: true }
-          - { sdk: ruby, versions: "Ruby 3.3", ruby: "3.3" }
-          # PHPUnit 12 needs PHP 8.3; on 8.1 (the oldest supported) only the syntax check runs.
-          - { sdk: php, versions: "PHP 8.5", php: "8.5", e2e: true }
-          - { sdk: php, versions: "PHP 8.1", php: "8.1", syntax-only: true }
-          # Gradle runs on 17+; the jar targets Java 8.
-          - { sdk: java, versions: "Java 21", java: "21", e2e: true }
-          - { sdk: java, versions: "Java 17", java: "17" }
-          # The test project targets .NET 9; the package also builds for .NET Framework and Standard.
-          - { sdk: dotnet, versions: ".NET 10", dotnet: "10.0.x", e2e: true }
-          - { sdk: dotnet, versions: ".NET 9", dotnet: "9.0.x" }
+        include: ${{ fromJSON(needs.changes.outputs.sdks) }}
     services:
       postgres:
-        image: postgres:18
+        # Like the drivers': only the end-to-end entries use it.
+        image: ${{ matrix.e2e && 'postgres:18' || '' }}
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
