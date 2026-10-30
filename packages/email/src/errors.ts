@@ -102,7 +102,12 @@ export type DomainErrorCode =
   | "receiving_unavailable"
   | "not_found"
   | "domain_in_use_by_sso"
-  | "provider_error";
+  | "provider_error"
+  | "subaccount_not_found"
+  | "subaccount_not_live"
+  | "too_many_subaccount_domains"
+  | "subaccount_domain"
+  | "not_shareable";
 
 /** Expected failures of domain management; messages are safe to show to the user. */
 export class DomainError extends Error {

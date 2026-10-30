@@ -142,6 +142,8 @@ export const sampleDomain: Domain = {
   failed_at: null,
   tracking: null,
   receiving: null,
+  subaccount_id: null,
+  shared_with_subaccounts: false,
   bimi: {
     status: "not_checked",
     name: "default._bimi.acme.com",

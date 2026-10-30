@@ -160,7 +160,8 @@ export function isSesError(error: unknown, name: string): boolean {
  * `<prefix>-<organization id>` (transactional) or `<prefix>-<organization id>-marketing`: at most
  * 64 characters of [A-Za-z0-9_-] (the prefix is at most 23, `SES_TENANT_PREFIX_PATTERN`). Also
  * names the organization's dedicated IP pool (the transactional name) and the configuration set of
- * each stream that sends through it.
+ * each stream that sends through it. An email sub-account's tenant is named the same way after the
+ * sub-account's id (`sub_…`, as long as an organization's): ids never collide.
  */
 export function tenantNameFor(
   prefix: string,

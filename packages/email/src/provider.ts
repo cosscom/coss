@@ -20,6 +20,11 @@ export type OutboundEmail = {
   attachments: OutboundAttachment[];
   /** Send through the organization's dedicated IP pool (see `DedicatedIpProvider`). */
   dedicatedPool?: boolean;
+  /**
+   * Send in this sub-account's own tenant (its From domain is the sub-account's); else the
+   * organization's.
+   */
+  tenantSubaccountId?: string | null;
 };
 
 export type OutboundAttachment = {
@@ -127,8 +132,15 @@ export type ProviderTenant = { tenantName: string; tenantArn: string | null };
  */
 export interface IdentityProvider {
   readonly name: string;
-  /** Creates (or finds) the organization's tenant for one stream. Idempotent. */
-  ensureTenant(input: { organizationId: string; stream: EmailStream }): Promise<ProviderTenant>;
+  /**
+   * Creates (or finds) the organization's tenant for one stream, or one of its email
+   * sub-accounts' (`subaccountId`: their own reputation and pausing). Idempotent.
+   */
+  ensureTenant(input: {
+    organizationId: string;
+    stream: EmailStream;
+    subaccountId?: string | null;
+  }): Promise<ProviderTenant>;
   /**
    * Creates the domain identity with Easy DKIM and the custom MAIL FROM subdomain, associated with
    * the organization's tenants. Throws `IdentityTakenError` when a tenant outside `tenants`

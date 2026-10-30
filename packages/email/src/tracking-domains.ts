@@ -256,6 +256,12 @@ export async function createTrackingDomain(
       `${parent.name} is not active: restart its verification first.`,
     );
   }
+  if (parent.subaccountId) {
+    throw new DomainError(
+      "subaccount_domain",
+      "Sub-accounts' domains don't have tracking domains yet.",
+    );
+  }
   const hostname = normalizeTrackingHostname(input.hostname, parent);
   if (await getTrackingDomain(input)) {
     throw new DomainError(

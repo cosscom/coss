@@ -600,7 +600,11 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "domains.create",
     args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
   },
-  "GET /v1/domains": { method: "domains.list", args: () => [] },
+  "GET /v1/domains": { method: "domains.list", args: (request) => [queryParams(request)] },
+  "PATCH /v1/domains/{id}": {
+    method: "domains.update",
+    args: (request) => [pathId(request), tsValue(request.body ?? {})],
+  },
   "GET /v1/dedicated_ips": { method: "email.dedicatedIps.get", args: () => [] },
   "GET /v1/domains/{id}": { method: "domains.get", args: (r) => [pathId(r)] },
   "POST /v1/domains/{id}/verify": {

@@ -424,6 +424,13 @@ function fromDomainError(error: DomainError): ApiError {
     case "provider_error":
       // The delivery provider, not the caller, is at fault: retryable.
       return new ApiError(502, { type: "api_error", code: error.code, message: error.message });
+    case "subaccount_not_found":
+    case "subaccount_not_live":
+      return invalidRequest(error.code, error.message, "subaccount");
+    case "too_many_subaccount_domains":
+    case "subaccount_domain":
+    case "not_shareable":
+      return invalidRequest(error.code, error.message);
   }
 }
 

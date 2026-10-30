@@ -21,6 +21,7 @@ import {
   ne,
   notInArray,
   or,
+  type SQL,
   sql,
 } from "drizzle-orm";
 import { checkBimi, organizationalDomain, toBimiObject } from "./bimi.ts";
@@ -47,7 +48,7 @@ import {
 } from "./schemas.ts";
 import type { TrackingHostnameProvider } from "./tracking-hostnames.ts";
 
-const { domain, emailTenant, ssoProvider, trackingDomain } = schema;
+const { domain, emailSubaccount, emailTenant, environment, ssoProvider, trackingDomain } = schema;
 
 export type DomainRow = typeof domain.$inferSelect;
 export type EmailTenantRow = typeof emailTenant.$inferSelect;
@@ -157,6 +158,8 @@ export function toDomainObject(
     tracking,
     receiving,
     bimi: toBimiObject(row),
+    subaccount_id: row.subaccountId,
+    shared_with_subaccounts: row.sharedWithSubaccounts,
   };
 }
 
@@ -178,25 +181,48 @@ export function nextCheckAt(
   }
 }
 
-/** The organization's provider tenant of one stream (default: the transactional one). */
+/** Tenants of the organization itself (`null`), or of one of its sub-accounts. */
+function tenantOwner(subaccountId: string | null | undefined) {
+  return subaccountId
+    ? eq(emailTenant.subaccountId, subaccountId)
+    : isNull(emailTenant.subaccountId);
+}
+
+/**
+ * The organization's provider tenant of one stream (default: the transactional one), or a
+ * sub-account's (`subaccountId`).
+ */
 export async function getEmailTenant(
   organizationId: string,
   stream: EmailStream = "transactional",
+  subaccountId: string | null = null,
 ): Promise<EmailTenantRow | null> {
   const [row] = await db
     .select()
     .from(emailTenant)
-    .where(and(eq(emailTenant.organizationId, organizationId), eq(emailTenant.stream, stream)))
+    .where(
+      and(
+        eq(emailTenant.organizationId, organizationId),
+        tenantOwner(subaccountId),
+        eq(emailTenant.stream, stream),
+      ),
+    )
     .limit(1);
   return row ?? null;
 }
 
-/** Every provider tenant of the organization (one per stream once both exist). */
-export async function listEmailTenants(organizationId: string): Promise<EmailTenantRow[]> {
+/**
+ * Every provider tenant of the organization itself (one per stream once both exist), or of one
+ * of its sub-accounts.
+ */
+export async function listEmailTenants(
+  organizationId: string,
+  subaccountId: string | null = null,
+): Promise<EmailTenantRow[]> {
   return db
     .select()
     .from(emailTenant)
-    .where(eq(emailTenant.organizationId, organizationId))
+    .where(and(eq(emailTenant.organizationId, organizationId), tenantOwner(subaccountId)))
     .orderBy(asc(emailTenant.stream));
 }
 
@@ -204,13 +230,63 @@ function tenantOf(row: EmailTenantRow): ProviderTenant {
   return { tenantName: row.tenantName, tenantArn: row.tenantArn };
 }
 
-/** The organization's tenants known to `provider`, for identity associations. */
+/**
+ * The tenants known to `provider` a domain's identity is associated with: its sub-account's own,
+ * else the organization's.
+ */
 async function providerTenants(
   organizationId: string,
   provider: string,
+  subaccountId: string | null = null,
 ): Promise<ProviderTenant[]> {
-  const rows = await listEmailTenants(organizationId);
+  const rows = await listEmailTenants(organizationId, subaccountId);
   return rows.filter((row) => row.provider === provider).map(tenantOf);
+}
+
+/**
+ * A sub-account's own (transactional) provider tenant, created with its first domain. Born
+ * without the provider's suppression like every new tenant (`suppression_migrated_at` set):
+ * coss.com keeps the sub-account's list.
+ */
+export async function ensureSubaccountTenant(
+  organizationId: string,
+  subaccountId: string,
+  identity: IdentityProvider,
+): Promise<ProviderTenant> {
+  const existing = await getEmailTenant(organizationId, "transactional", subaccountId);
+  if (existing?.provider === identity.name) return tenantOf(existing);
+  const tenant = await identity.ensureTenant({
+    organizationId,
+    subaccountId,
+    stream: "transactional",
+  });
+  try {
+    await db
+      .insert(emailTenant)
+      .values({
+        organizationId,
+        subaccountId,
+        stream: "transactional",
+        provider: identity.name,
+        ...tenant,
+        suppressionMigratedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [emailTenant.organizationId, emailTenant.subaccountId, emailTenant.stream],
+        set: { provider: identity.name, ...tenant },
+      });
+  } catch (error) {
+    // The sub-account was deleted meanwhile (its teardown found no tenant row): nothing else
+    // would ever find this tenant, so it goes now.
+    if (isForeignKeyViolation(error)) {
+      await identity.deleteTenant(tenant).catch((cleanup) => {
+        console.error(`[domains] releasing orphaned tenant ${tenant.tenantName} failed:`, cleanup);
+      });
+      throw new DomainError("subaccount_not_found", "Sub-account not found.");
+    }
+    throw error;
+  }
+  return tenant;
 }
 
 /** The organization's provider tenant of one stream, created on first use. */
@@ -253,7 +329,7 @@ async function storeOrgTenant(
       suppressionMigratedAt: stream === "transactional" ? null : new Date(),
     })
     .onConflictDoUpdate({
-      target: [emailTenant.organizationId, emailTenant.stream],
+      target: [emailTenant.organizationId, emailTenant.subaccountId, emailTenant.stream],
       set: { provider: identity.name, ...tenant },
     })
     .returning({ created: sql<boolean>`xmax = 0` });
@@ -274,6 +350,8 @@ async function associateOrgDomains(
     .where(
       and(
         eq(domain.organizationId, organizationId),
+        // A sub-account's domains send only through its own tenant.
+        isNull(domain.subaccountId),
         eq(domain.provider, identity.name),
         notInArray(domain.status, ["failed", "deleting"]),
         sql`cardinality(${domain.dkimTokens}) > 0`,
@@ -316,6 +394,7 @@ export async function ensureMissingStreamTenants(
     .where(
       and(
         eq(emailTenant.provider, identity.name),
+        isNull(emailTenant.subaccountId),
         opts.scope ? inArray(emailTenant.organizationId, opts.scope.organizationIds) : undefined,
       ),
     )
@@ -335,11 +414,27 @@ export async function ensureMissingStreamTenants(
   return created;
 }
 
-export async function listDomains(input: { organizationId: string }): Promise<DomainRow[]> {
+/**
+ * The organization's domains (name order), optionally only one sub-account's (`subaccountId`) or
+ * only its own (`subaccountId: null`).
+ */
+export async function listDomains(input: {
+  organizationId: string;
+  subaccountId?: string | null;
+}): Promise<DomainRow[]> {
   return db
     .select()
     .from(domain)
-    .where(eq(domain.organizationId, input.organizationId))
+    .where(
+      and(
+        eq(domain.organizationId, input.organizationId),
+        input.subaccountId === undefined
+          ? undefined
+          : input.subaccountId === null
+            ? isNull(domain.subaccountId)
+            : eq(domain.subaccountId, input.subaccountId),
+      ),
+    )
     .orderBy(asc(domain.name));
 }
 
@@ -363,6 +458,11 @@ export async function requireDomain(input: {
   const row = await getDomain(input);
   if (!row) throw new DomainError("not_found", "Domain not found.");
   return row;
+}
+
+function isForeignKeyViolation(error: unknown): boolean {
+  const cause = (error as { cause?: { code?: string } }).cause;
+  return (error as { code?: string }).code === "23503" || cause?.code === "23503";
 }
 
 export function isUniqueViolation(error: unknown): boolean {
@@ -393,10 +493,11 @@ async function provision(
   deps: DomainDeps,
   onFailure: "delete" | "fail",
 ): Promise<DomainRow> {
+  let tenants: ProviderTenant[] = [];
   try {
-    const tenants = await ensureOrgTenants(row.organizationId, deps.identity, {
-      provisioning: row.name,
-    });
+    tenants = row.subaccountId
+      ? [await ensureSubaccountTenant(row.organizationId, row.subaccountId, deps.identity)]
+      : await ensureOrgTenants(row.organizationId, deps.identity, { provisioning: row.name });
     const identity = await deps.identity.createDomainIdentity({
       tenants,
       domain: row.name,
@@ -418,12 +519,18 @@ async function provision(
     return updated;
   } catch (error) {
     const scope = and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId));
-    if (onFailure === "delete") await db.delete(domain).where(scope);
-    else {
-      await db
-        .update(domain)
-        .set({ status: "failed", failedAt: new Date(), nextCheckAt: null })
-        .where(scope);
+    const [kept] =
+      onFailure === "delete"
+        ? await db.delete(domain).where(scope).returning({ id: domain.id })
+        : await db
+            .update(domain)
+            .set({ status: "failed", failedAt: new Date(), nextCheckAt: null })
+            .where(scope)
+            .returning({ id: domain.id });
+    // The claim was gone already (its owner's teardown ran meanwhile, before the identity
+    // existed): no cleanup would ever find an identity made for it, so it goes now.
+    if (!kept && !(error instanceof IdentityTakenError)) {
+      await releaseUnclaimedIdentity(row.name, tenants, deps.identity);
     }
     if (error instanceof DomainError) throw error;
     if (error instanceof IdentityTakenError) {
@@ -434,20 +541,98 @@ async function provision(
   }
 }
 
-async function assertPendingCapacity(organizationId: string): Promise<void> {
+/** Deletes the identity of a name nobody claims (any more), best effort. */
+async function releaseUnclaimedIdentity(
+  name: string,
+  tenants: ProviderTenant[],
+  identity: IdentityProvider,
+): Promise<void> {
+  const [claimed] = await db
+    .select({ id: domain.id })
+    .from(domain)
+    .where(eq(domain.name, name))
+    .limit(1);
+  if (claimed) return;
+  await identity.deleteDomainIdentity({ tenants, domain: name }).catch((cleanup) => {
+    console.error(`[email:domains] releasing the unclaimed identity ${name} failed:`, cleanup);
+  });
+}
+
+/** Domains one sub-account may have (failed ones aside), and awaiting verification at once. */
+export const MAX_SUBACCOUNT_DOMAINS = 10;
+export const MAX_PENDING_SUBACCOUNT_DOMAINS = 5;
+
+/**
+ * At most `MAX_PENDING_DOMAINS` of the organization's own domains await verification at once;
+ * a sub-account's count on their own (`MAX_PENDING_SUBACCOUNT_DOMAINS`), so a platform onboarding
+ * many users at once isn't held up.
+ */
+async function assertPendingCapacity(
+  organizationId: string,
+  subaccountId: string | null = null,
+): Promise<void> {
   const [pending] = await db
     .select({ value: count() })
     .from(domain)
     .where(
       and(
         eq(domain.organizationId, organizationId),
+        subaccountId ? eq(domain.subaccountId, subaccountId) : isNull(domain.subaccountId),
         inArray(domain.status, ["pending", "temporary_failure"]),
       ),
     );
-  if ((pending?.value ?? 0) >= MAX_PENDING_DOMAINS) {
+  const max = subaccountId ? MAX_PENDING_SUBACCOUNT_DOMAINS : MAX_PENDING_DOMAINS;
+  if ((pending?.value ?? 0) >= max) {
     throw new DomainError(
       "too_many_pending_domains",
-      `You can have at most ${MAX_PENDING_DOMAINS} domains awaiting verification.`,
+      subaccountId
+        ? `A sub-account can have at most ${max} domains awaiting verification.`
+        : `You can have at most ${max} domains awaiting verification.`,
+    );
+  }
+}
+
+/** A sub-account's domain needs a live, active sub-account with room for one more. */
+async function assertSubaccountDomainCapacity(
+  organizationId: string,
+  subaccountId: string,
+): Promise<void> {
+  const [row] = await db
+    .select({ status: emailSubaccount.status, mode: environment.mode })
+    .from(emailSubaccount)
+    .innerJoin(
+      environment,
+      and(
+        eq(environment.id, emailSubaccount.environmentId),
+        eq(environment.organizationId, emailSubaccount.organizationId),
+      ),
+    )
+    .where(
+      and(eq(emailSubaccount.id, subaccountId), eq(emailSubaccount.organizationId, organizationId)),
+    );
+  if (!row || row.status === "deleting") {
+    throw new DomainError("subaccount_not_found", "Sub-account not found.");
+  }
+  if (row.mode !== "live") {
+    throw new DomainError(
+      "subaccount_not_live",
+      "Only live sub-accounts have domains: sandbox sends need none.",
+    );
+  }
+  const [existing] = await db
+    .select({ value: count() })
+    .from(domain)
+    .where(
+      and(
+        eq(domain.organizationId, organizationId),
+        eq(domain.subaccountId, subaccountId),
+        ne(domain.status, "failed"),
+      ),
+    );
+  if ((existing?.value ?? 0) >= MAX_SUBACCOUNT_DOMAINS) {
+    throw new DomainError(
+      "too_many_subaccount_domains",
+      `A sub-account can have at most ${MAX_SUBACCOUNT_DOMAINS} domains.`,
     );
   }
 }
@@ -460,16 +645,28 @@ export async function createDomain(
     userId: string | null;
     /** Platform admins only (the dashboard checks): see `normalizeDomainName`. */
     allowReserved?: boolean;
+    /** The email sub-account it belongs to (already checked to be the caller's). */
+    subaccountId?: string | null;
   },
   deps: DomainDeps,
 ): Promise<DomainRow> {
   const name = normalizeDomainName(input.name, { allowReserved: input.allowReserved });
-  await assertPendingCapacity(input.organizationId);
-  if (deps.plans) {
+  const subaccountId = input.subaccountId ?? null;
+  await assertPendingCapacity(input.organizationId, subaccountId);
+  if (subaccountId) {
+    // Its own caps: the plan's `domains` counts the organization's own domains.
+    await assertSubaccountDomainCapacity(input.organizationId, subaccountId);
+  } else if (deps.plans) {
     const [existing] = await db
       .select({ value: count() })
       .from(domain)
-      .where(and(eq(domain.organizationId, input.organizationId), ne(domain.status, "failed")));
+      .where(
+        and(
+          eq(domain.organizationId, input.organizationId),
+          isNull(domain.subaccountId),
+          ne(domain.status, "failed"),
+        ),
+      );
     await deps.plans.requireCapacity(input.organizationId, "domains", existing?.value ?? 0);
   }
   let claimed: DomainRow | undefined;
@@ -482,6 +679,7 @@ export async function createDomain(
         provider: deps.identity.name,
         mailFromDomain: `${MAIL_FROM_SUBDOMAIN}.${name}`,
         createdByUserId: input.userId,
+        subaccountId,
       })
       .returning();
   } catch (error) {
@@ -499,7 +697,10 @@ export async function restartDomainVerification(
 ): Promise<DomainRow> {
   const row = await requireDomain(input);
   if (row.status !== "failed") return row;
-  await assertPendingCapacity(input.organizationId);
+  await assertPendingCapacity(input.organizationId, row.subaccountId);
+  // A failed domain doesn't count toward its sub-account's domains; a restarted one does again.
+  if (row.subaccountId)
+    await assertSubaccountDomainCapacity(input.organizationId, row.subaccountId);
   let claimed: DomainRow | undefined;
   try {
     [claimed] = await db
@@ -591,7 +792,7 @@ export async function checkDomain(
   if (status === "failed" && state) {
     try {
       await deps.identity.deleteDomainIdentity({
-        tenants: await providerTenants(row.organizationId, deps.identity.name),
+        tenants: await providerTenants(row.organizationId, deps.identity.name, row.subaccountId),
         domain: row.name,
       });
     } catch (error) {
@@ -693,7 +894,7 @@ export async function deleteDomain(
     await db.update(domain).set({ status: "deleting", canSend: false }).where(scope);
     try {
       await deps.identity.deleteDomainIdentity({
-        tenants: await providerTenants(row.organizationId, deps.identity.name),
+        tenants: await providerTenants(row.organizationId, deps.identity.name, row.subaccountId),
         domain: row.name,
       });
     } catch (error) {
@@ -706,6 +907,75 @@ export async function deleteDomain(
     }
   }
   await db.delete(domain).where(scope);
+}
+
+/**
+ * Lets the organization's sub-accounts send from one of its own domains (through its tenant), or
+ * stops them. A sub-account's own domain is never shared.
+ */
+export async function setDomainSharedWithSubaccounts(input: {
+  organizationId: string;
+  id: string;
+  shared: boolean;
+}): Promise<DomainRow> {
+  const row = await requireDomain(input);
+  if (row.subaccountId) {
+    throw new DomainError("not_shareable", "A sub-account's domain can't be shared.");
+  }
+  const [updated] = await db
+    .update(domain)
+    .set({ sharedWithSubaccounts: input.shared })
+    .where(and(eq(domain.id, row.id), eq(domain.organizationId, row.organizationId)))
+    .returning();
+  if (!updated) throw new DomainError("not_found", "Domain not found.");
+  return updated;
+}
+
+/**
+ * A sub-account's deletion (worker, `runDueSubaccountDeletions`): removes its domains' provider
+ * identities and the domains, then its tenant. Idempotent; a failure leaves the rest for the
+ * retry. Its sends were refused since it started deleting.
+ */
+export async function releaseSubaccountEmailResources(
+  row: { organizationId: string; id: string },
+  deps: Pick<DomainDeps, "identity" | "tracking">,
+): Promise<void> {
+  const owner = and(eq(domain.organizationId, row.organizationId), eq(domain.subaccountId, row.id));
+  await db
+    .update(domain)
+    .set({ status: "deleting", canSend: false })
+    .where(and(owner, ne(domain.status, "failed")));
+  const tenantRows = await listEmailTenants(row.organizationId, row.id);
+  const tenants = tenantRows
+    .filter((tenant) => tenant.provider === deps.identity.name)
+    .map(tenantOf);
+  const domains = await db
+    .select({ id: domain.id, name: domain.name, status: domain.status, provider: domain.provider })
+    .from(domain)
+    .where(owner);
+  for (const entry of domains) {
+    await releaseTrackingHostname({ id: entry.id, organizationId: row.organizationId }, deps);
+    // Identities of another provider (e.g. fake domains in an SES deployment) aren't ours to touch.
+    if (entry.status !== "failed" && entry.provider === deps.identity.name) {
+      await deps.identity.deleteDomainIdentity({ tenants, domain: entry.name });
+    }
+    await db
+      .delete(domain)
+      .where(and(eq(domain.id, entry.id), eq(domain.organizationId, row.organizationId)));
+  }
+  for (const tenantRow of tenantRows) {
+    if (tenantRow.provider === deps.identity.name) {
+      await deps.identity.deleteTenant(tenantOf(tenantRow));
+    }
+    await db
+      .delete(emailTenant)
+      .where(
+        and(
+          eq(emailTenant.organizationId, row.organizationId),
+          eq(emailTenant.tenantName, tenantRow.tenantName),
+        ),
+      );
+  }
 }
 
 /**
@@ -736,10 +1006,24 @@ export async function releaseOrganizationEmailResources(
   }
   // In batches, before the domains: deleting a domain would cascade into all its report rows.
   await deleteOrganizationDmarcReports(organizationId, assertLease);
-  const tenantRows = await listEmailTenants(organizationId);
-  const tenants = tenantRows.filter((row) => row.provider === deps.identity.name).map(tenantOf);
+  // The organization's own tenants and its sub-accounts'.
+  const tenantRows = await db
+    .select()
+    .from(emailTenant)
+    .where(eq(emailTenant.organizationId, organizationId))
+    .orderBy(asc(emailTenant.tenantName));
+  const tenantsOf = (subaccountId: string | null) =>
+    tenantRows
+      .filter((row) => row.provider === deps.identity.name && row.subaccountId === subaccountId)
+      .map(tenantOf);
   const rows = await db
-    .select({ id: domain.id, name: domain.name, status: domain.status, provider: domain.provider })
+    .select({
+      id: domain.id,
+      name: domain.name,
+      status: domain.status,
+      provider: domain.provider,
+      subaccountId: domain.subaccountId,
+    })
     .from(domain)
     .where(eq(domain.organizationId, organizationId));
   for (const row of rows) {
@@ -748,7 +1032,10 @@ export async function releaseOrganizationEmailResources(
     await assertLease();
     // Identities of another provider (e.g. fake domains in an SES deployment) aren't ours to touch.
     if (row.status !== "failed" && row.provider === deps.identity.name) {
-      await deps.identity.deleteDomainIdentity({ tenants, domain: row.name });
+      await deps.identity.deleteDomainIdentity({
+        tenants: tenantsOf(row.subaccountId),
+        domain: row.name,
+      });
     }
     await assertLease();
     await db
@@ -769,7 +1056,7 @@ export async function releaseOrganizationEmailResources(
       .where(
         and(
           eq(emailTenant.organizationId, organizationId),
-          eq(emailTenant.stream, tenantRow.stream),
+          eq(emailTenant.tenantName, tenantRow.tenantName),
         ),
       );
   }
@@ -836,6 +1123,38 @@ export function domainSuffixes(name: string): string[] {
 }
 
 /**
+ * At a dispatch claim: whether an email sent for `subaccountId` goes through the sub-account's own
+ * tenant, i.e. its From domain's most specific domain is the sub-account's and that tenant exists.
+ * Otherwise (a domain the organization shares with its sub-accounts) it goes through the
+ * organization's.
+ */
+export function subaccountTenantSql(input: {
+  organizationId: string;
+  subaccountId: string | null;
+  from: string;
+  provider: string;
+}): SQL<boolean> | false {
+  if (!input.subaccountId) return false;
+  const address = parseEmailAddress(input.from).address.toLowerCase();
+  const fromDomain = address.slice(address.lastIndexOf("@") + 1);
+  const suffixes = domainSuffixes(fromDomain);
+  if (suffixes.length === 0) return false;
+  return sql<boolean>`coalesce((
+    select ${domain.subaccountId} = ${input.subaccountId}
+    from ${domain}
+    where ${inArray(domain.name, suffixes)} and ${domain.status} <> 'failed'
+    order by length(${domain.name}) desc
+    limit 1
+  ), false) and exists (
+    select 1 from ${emailTenant}
+    where ${emailTenant.organizationId} = ${input.organizationId}
+      and ${emailTenant.subaccountId} = ${input.subaccountId}
+      and ${emailTenant.provider} = ${input.provider}
+      and ${emailTenant.stream} = 'transactional'
+  )`;
+}
+
+/**
  * The most specific domain across organizations decides who owns a hostname, as it does for
  * senders: a tracking or receiving domain can't sit under another organization's (more specific)
  * domain.
@@ -880,6 +1199,12 @@ export async function authorizeLiveSender(input: {
   provider: string;
   /** Whose tenant must not be paused (default: transactional). */
   stream?: EmailStream;
+  /**
+   * The email sub-account the email is sent for: it may send from its own domains (through its
+   * own tenant) and from the organization's domains shared with sub-accounts; nobody else may send
+   * from its domains.
+   */
+  subaccountId?: string | null;
 }): Promise<void> {
   // Checked first: a suspended organization is told so whatever it sends from.
   if (await isSuspended(input.organizationId)) {
@@ -907,10 +1232,13 @@ export async function authorizeLiveSender(input: {
       canSend: domain.canSend,
       provider: domain.provider,
       mailFromDomain: domain.mailFromDomain,
+      subaccountId: domain.subaccountId,
+      sharedWithSubaccounts: domain.sharedWithSubaccounts,
     })
     .from(domain)
     .where(and(inArray(domain.name, domainSuffixes(fromDomain)), ne(domain.status, "failed")));
   const match = candidates.sort((a, b) => b.name.length - a.name.length)[0];
+  const subaccountId = input.subaccountId ?? null;
   const usable =
     match &&
     match.organizationId === input.organizationId &&
@@ -926,12 +1254,37 @@ export async function authorizeLiveSender(input: {
         "Domains in the dashboard, or use a sandbox key to test.",
     );
   }
+  // A sub-account's domain is its own; the organization's domains are for sub-accounts only when
+  // shared with them.
+  if (match.subaccountId !== null && match.subaccountId !== subaccountId) {
+    throw new EmailError(
+      "domain_not_verified",
+      subaccountId
+        ? `${fromDomain} belongs to another sub-account.`
+        : `${fromDomain} belongs to a sub-account: send for it (\`subaccount\`).`,
+    );
+  }
+  if (match.subaccountId === null && subaccountId && !match.sharedWithSubaccounts) {
+    throw new EmailError(
+      "domain_not_verified",
+      `${fromDomain} isn't shared with sub-accounts. Add it to the sub-account, or share it ` +
+        "(PATCH /v1/domains/{id} with `shared_with_subaccounts`).",
+    );
+  }
   const stream = input.stream ?? "transactional";
   // The marketing stream's own pause (its bounce or complaint rate); transactional mail goes on.
   if (stream === "marketing" && (await isMarketingPaused(input.organizationId))) {
     throw marketingPausedError();
   }
-  const tenant = await getEmailTenant(input.organizationId, stream);
+  // The tenant it goes out through: the sub-account's own for its domains.
+  const tenant = await getEmailTenant(input.organizationId, stream, match.subaccountId);
+  if (tenant?.sendingStatus === "disabled" && match.subaccountId) {
+    throw new EmailError(
+      "sending_paused",
+      "The provider paused sending for this sub-account because of its sending reputation. " +
+        "Sending resumes once it lifts the pause.",
+    );
+  }
   if (tenant?.sendingStatus === "disabled") {
     throw new EmailError(
       "sending_paused",

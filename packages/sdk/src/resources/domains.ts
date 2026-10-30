@@ -1,8 +1,15 @@
 import type { CossResult } from "../core/errors.ts";
 import type { HttpClient, RequestOptions } from "../core/http.ts";
-import type { CreateDomainParams, DeletedDomain, Domain } from "../types/domain.ts";
+import type {
+  CreateDomainParams,
+  DeletedDomain,
+  Domain,
+  ListDomainsParams,
+  UpdateDomainParams,
+} from "../types/domain.ts";
 import type { List } from "../types/email.ts";
 import { DmarcResource } from "./dmarc.ts";
+import { listQuery } from "./list-query.ts";
 import { ReceivingDomainsResource } from "./receiving-domains.ts";
 import { TrackingDomainsResource } from "./tracking-domains.ts";
 
@@ -43,11 +50,27 @@ export class DomainsResource {
     });
   }
 
-  /** Lists the organization's domains, ordered by name. */
-  list(options?: ReadOptions): Promise<CossResult<List<Domain>>> {
+  /** Lists the organization's domains (or one sub-account's), ordered by name. */
+  list(params: ListDomainsParams & ReadOptions = {}): Promise<CossResult<List<Domain>>> {
+    const { signal, ...query } = params;
     return this.#http.request<List<Domain>>({
       method: "GET",
       path: "/v1/domains",
+      query: listQuery(query),
+      signal,
+    });
+  }
+
+  /** Shares one of your own domains with your sub-accounts, or stops sharing it. */
+  update(
+    id: string,
+    params: UpdateDomainParams,
+    options?: ReadOptions,
+  ): Promise<CossResult<Domain>> {
+    return this.#http.request<Domain>({
+      method: "PATCH",
+      path: `/v1/domains/${encodeURIComponent(id)}`,
+      body: params,
       signal: options?.signal,
     });
   }

@@ -115,7 +115,12 @@ export class SesEmailProvider implements EmailProvider {
       ConfigurationSetName: message.dedicatedPool
         ? tenantNameFor(this.#config.tenantPrefix, message.organizationId, message.stream)
         : this.#config.configurationSets[message.stream],
-      TenantName: tenantNameFor(this.#config.tenantPrefix, message.organizationId, message.stream),
+      // A sub-account's own tenant when the email goes out from its domain (never with a pool).
+      TenantName: tenantNameFor(
+        this.#config.tenantPrefix,
+        message.tenantSubaccountId ?? message.organizationId,
+        message.stream,
+      ),
       EmailTags: [{ Name: EMAIL_ID_TAG, Value: message.emailId }],
     };
     for (let attempt = 0; ; attempt++) {

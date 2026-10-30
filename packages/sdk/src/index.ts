@@ -204,12 +204,14 @@ export type {
   DomainRecordPurpose,
   DomainRecordStatus,
   DomainStatus,
+  ListDomainsParams,
   MailFromStatus,
   ReceivingDomain,
   ReceivingDomainRecord,
   TrackingDomain,
   TrackingDomainRecord,
   TrackingDomainStatus,
+  UpdateDomainParams,
 } from "./types/domain.ts";
 export type {
   ContentStorageMode,

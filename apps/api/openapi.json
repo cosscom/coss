@@ -6311,6 +6311,17 @@
           },
           "bimi": {
             "$ref": "#/components/schemas/DomainBimi"
+          },
+          "subaccount_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The sub-account the domain belongs to (only it sends from it, with its own reputation); `null` for the organization's own."
+          },
+          "shared_with_subaccounts": {
+            "type": "boolean",
+            "description": "An organization's domain its sub-accounts may send from too."
           }
         },
         "required": [
@@ -6329,7 +6340,9 @@
           "failed_at",
           "tracking",
           "receiving",
-          "bimi"
+          "bimi",
+          "subaccount_id",
+          "shared_with_subaccounts"
         ],
         "examples": [
           {
@@ -6412,7 +6425,9 @@
               "certificate_url": "https://acme.com/brand/vmc.pem",
               "dmarc_policy": "reject",
               "issues": []
-            }
+            },
+            "subaccount_id": null,
+            "shared_with_subaccounts": false
           }
         ]
       },
@@ -6841,6 +6856,15 @@
             "examples": [
               "acme.com"
             ]
+          },
+          "subaccount": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Add it for one of your live sub-accounts (its id or your uid): only that sub-account sends from it, through its own reputation.",
+            "examples": [
+              "user_8812"
+            ]
           }
         },
         "required": [
@@ -6850,6 +6874,24 @@
         "examples": [
           {
             "name": "acme.com"
+          }
+        ]
+      },
+      "UpdateDomainRequest": {
+        "type": "object",
+        "properties": {
+          "shared_with_subaccounts": {
+            "type": "boolean",
+            "description": "Let your sub-accounts send from this domain of yours (through your organization's reputation)."
+          }
+        },
+        "required": [
+          "shared_with_subaccounts"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "shared_with_subaccounts": true
           }
         ]
       },
@@ -6961,7 +7003,9 @@
                   "certificate_url": "https://acme.com/brand/vmc.pem",
                   "dmarc_policy": "reject",
                   "issues": []
-                }
+                },
+                "subaccount_id": null,
+                "shared_with_subaccounts": false
               }
             ],
             "has_more": false
@@ -33455,7 +33499,7 @@
             }
           },
           "422": {
-            "description": "The body failed validation (`validation_error`), the name is not a usable domain (`invalid_domain`), it is already in use here or by another account (`domain_taken`), or The organization already has 5 domains awaiting verification (`too_many_pending_domains`).",
+            "description": "The body failed validation (`validation_error`), the name is not a usable domain (`invalid_domain`), it is already in use here or by another account (`domain_taken`), or The organization already has 5 domains awaiting verification (`too_many_pending_domains`). For a sub-account: it doesn't exist in the API key's environment (`subaccount_not_found`), isn't live (`subaccount_not_live`), or has 10 domains already (`too_many_subaccount_domains`).",
             "headers": {
               "X-Request-Id": {
                 "description": "Unique id of this request. Include it when contacting support.",
@@ -33584,6 +33628,23 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "Only this sub-account's domains (its id or your uid)."
+            },
+            "required": false,
+            "description": "Only this sub-account's domains (its id or your uid).",
+            "name": "subaccount",
+            "in": "query"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
         "responses": {
           "200": {
             "description": "The organization's domains.",
@@ -33678,6 +33739,27 @@
               }
             }
           },
+          "422": {
+            "description": "`subaccount` names no sub-account of the API key's environment (`subaccount_not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
             "headers": {
@@ -33747,15 +33829,299 @@
               }
             }
           }
-        },
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/CossVersion"
-          }
-        ]
+        }
       }
     },
     "/v1/domains/{id}": {
+      "patch": {
+        "operationId": "updateDomain",
+        "tags": [
+          "Domains"
+        ],
+        "summary": "Update a sending domain",
+        "description": "Shares one of the organization's own domains with its sub-accounts (they may then send from it, through the organization's reputation), or stops sharing it.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "The domain's id.",
+              "examples": [
+                "dom_01k7c8m4q2f3e9v6t5r1n0p8yz"
+              ]
+            },
+            "required": true,
+            "description": "The domain's id.",
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "$ref": "#/components/parameters/CossVersion"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDomainRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The domain.",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Coss-Version": {
+                "description": "The API version this response is rendered in.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "2026-10-10"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Domain"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body is not valid JSON (`invalid_json`). Also when the `Coss-Version` header names an unknown API version (`invalid_api_version`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The API key is missing, invalid, revoked or expired (`authentication_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The API key lacks the permission this endpoint needs (`permission_error`), or its organization is suspended (`organization_suspended`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No domain with this id exists in this organization (`not_found`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The request body is larger than 5 MB (`payload_too_large`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not sent as `application/json` (`unsupported_media_type`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The body failed validation (`validation_error`), or the domain is a sub-account's (`not_shareable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests with this API key (`rate_limited`), or too many requests with invalid keys from this address (`too_many_failed_authentications`). Retry after `Retry-After` seconds. Successful responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds until the limit is fully restored).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              },
+              "Retry-After": {
+                "description": "Seconds to wait before retrying.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error (`api_error` / `internal_error`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The API key could not be verified right now; retry (`service_unavailable`).",
+            "headers": {
+              "X-Request-Id": {
+                "description": "Unique id of this request. Include it when contacting support.",
+                "schema": {
+                  "type": "string",
+                  "examples": [
+                    "req_01k7c8m4q2f3e9v6t5r1n0p8yz"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "operationId": "getDomain",
         "tags": [

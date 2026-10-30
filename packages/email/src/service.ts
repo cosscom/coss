@@ -23,7 +23,7 @@ import { bumpBroadcastStat } from "./broadcast-stats.ts";
 import { assertWithinBudget } from "./budgets.ts";
 import { dedicatedPoolSql } from "./dedicated-ips.ts";
 import type { EmailDispatchQueue } from "./dispatch.ts";
-import { authorizeLiveSender, marketingPausedError } from "./domains.ts";
+import { authorizeLiveSender, marketingPausedError, subaccountTenantSql } from "./domains.ts";
 import { EmailError } from "./errors.ts";
 import { COSS_EVENT_SOURCE, recordProviderEvent } from "./events.ts";
 import { htmlToText } from "./html-text.ts";
@@ -245,6 +245,28 @@ function bareAddress(value: string): string {
  * The message for the provider, without the recipients coss.com suppressed. An email with only HTML
  * gets a plain-text part generated from it (never stored: the email keeps what was sent to coss.com).
  */
+/**
+ * What a dispatch claim decides about how a live email goes out: through its sub-account's own
+ * tenant (its domain; never with the organization's dedicated IP pool, whose configuration set
+ * that tenant can't use), else through the organization's tenant like the organization's own
+ * mail (a domain it shares included), with its dedicated IP pool when it has one.
+ */
+function claimRouting(row: EmailRow, provider: string, sandbox: boolean) {
+  if (sandbox) return { dedicatedPool: false, subaccountTenant: false };
+  const pool = dedicatedPoolSql(row.organizationId, provider, row.stream);
+  const subaccountTenant = subaccountTenantSql({
+    organizationId: row.organizationId,
+    subaccountId: row.subaccountId,
+    from: row.from,
+    provider,
+  });
+  return {
+    dedicatedPool:
+      subaccountTenant === false ? pool : sql<boolean>`(not (${subaccountTenant}) and ${pool})`,
+    subaccountTenant,
+  };
+}
+
 function toOutbound(
   row: EmailRow,
   suppressed: ReadonlySet<string>,
@@ -267,6 +289,7 @@ function toOutbound(
     tags: row.tags,
     attachments,
     dedicatedPool: row.dedicatedPool,
+    tenantSubaccountId: row.subaccountTenant ? row.subaccountId : null,
   };
 }
 
@@ -475,12 +498,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       const claimed = await db.transaction(async (tx) => {
         const [claimedRow] = await tx
           .update(email)
-          .set({
-            provider: provider.name,
-            dedicatedPool: sandbox
-              ? false
-              : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
-          })
+          .set({ provider: provider.name, ...claimRouting(row, provider.name, sandbox) })
           .where(unclaimed)
           .returning();
         if (!claimedRow) return undefined;
@@ -506,14 +524,20 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
       .set({
         provider: provider.name,
         billableRecipients: billableRecipientsSql(row),
-        dedicatedPool: sandbox
-          ? false
-          : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
+        ...claimRouting(row, provider.name, sandbox),
       })
       .where(unclaimed)
-      .returning({ id: email.id, dedicatedPool: email.dedicatedPool });
+      .returning({
+        id: email.id,
+        dedicatedPool: email.dedicatedPool,
+        subaccountTenant: email.subaccountTenant,
+      });
     if (!claimed) return currentEmail(row);
-    await complete({ ...row, dedicatedPool: claimed.dedicatedPool }, provider, sandbox);
+    await complete(
+      { ...row, dedicatedPool: claimed.dedicatedPool, subaccountTenant: claimed.subaccountTenant },
+      provider,
+      sandbox,
+    );
     return currentEmail(row);
   }
 
@@ -927,6 +951,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           organizationId: row.organizationId,
           from: row.from,
           stream: row.stream,
+          subaccountId: row.subaccountId,
         });
       } catch (error) {
         if (!(error instanceof EmailError)) throw error;
@@ -945,9 +970,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
         .set({
           status: "queued",
           provider: provider.name,
-          dedicatedPool: sandbox
-            ? false
-            : dedicatedPoolSql(row.organizationId, provider.name, row.stream),
+          ...claimRouting(row, provider.name, sandbox),
         })
         .where(stillDue)
         .returning();
@@ -1419,6 +1442,7 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
           organizationId: environment.organizationId,
           from: params.from,
           stream: params.stream ?? "transactional",
+          subaccountId: prepared.values.subaccountId,
         });
         await assertWithinBudget({
           organizationId: environment.organizationId,
@@ -1509,20 +1533,25 @@ export function createEmailService(opts: EmailServiceOptions): EmailService {
 
     if (!sandbox) {
       // Every sender is checked before anything is stored: the batch is accepted as a whole.
-      const senders = new Map<string, { from: string; stream: EmailStream; index: number }>();
+      const senders = new Map<
+        string,
+        { from: string; stream: EmailStream; subaccountId: string | null; index: number }
+      >();
       items.forEach((params, index) => {
         const stream = params.stream ?? "transactional";
-        const key = `${stream}\0${params.from}`;
-        if (!senders.has(key)) senders.set(key, { from: params.from, stream, index });
+        const subaccountId = prepared[index]?.values.subaccountId ?? null;
+        const key = `${stream}\0${params.from}\0${subaccountId ?? ""}`;
+        if (!senders.has(key)) senders.set(key, { from: params.from, stream, subaccountId, index });
       });
       try {
-        for (const { from, stream, index } of senders.values()) {
+        for (const { from, stream, subaccountId, index } of senders.values()) {
           try {
             await authorizeLiveSender({
               provider: opts.liveProvider.name,
               organizationId: environment.organizationId,
               from,
               stream,
+              subaccountId,
             });
           } catch (error) {
             if (error instanceof EmailError && error.code === "domain_not_verified") {
