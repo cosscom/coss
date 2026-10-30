@@ -799,4 +799,58 @@ describe("inboxes", () => {
     expect(await listInboxes({ ...live(churned), limit: 10 })).toMatchObject({ data: [] });
     await createInbox(sandbox(churned), { username: "late" }, gated);
   });
+
+  test("charged days count toward Free's inbox-days, so churn can't outlast them", async () => {
+    const tenant = await createTestTenant();
+    const org = tenant.organization.id;
+    const scope = { organizationIds: [org] };
+    const billing = createUsageGate();
+    const gated = { ...deps, plans: createPlanGate(), billing };
+    const created = [];
+    for (const username of ["a", "b", "c"]) {
+      created.push((await createInbox(live(tenant), { username }, gated)).inbox);
+    }
+    const quota = () =>
+      db
+        .select({ reserved: schema.billingQuota.reserved })
+        .from(schema.billingQuota)
+        .where(
+          and(
+            eq(schema.billingQuota.organizationId, org),
+            eq(schema.billingQuota.meter, "email.inboxes"),
+          ),
+        )
+        .then((rows) => rows[0]?.reserved);
+    expect(await quota()).toBe(3);
+    // Nearly a month in: the next days use up the allowance; the days past it still count as usage.
+    await db
+      .update(schema.billingQuota)
+      .set({ reserved: 92 })
+      .where(
+        and(
+          eq(schema.billingQuota.organizationId, org),
+          eq(schema.billingQuota.meter, "email.inboxes"),
+        ),
+      );
+    const tomorrow = new Date(Date.now() + 25 * 60 * 60 * 1000);
+    expect(await chargeDueInboxFees({ now: tomorrow, scope, billing })).toBe(3);
+    expect(await quota()).toBe(93);
+    expect(await inboxDays(org)).toBe(6);
+    await deleteInbox({ ...live(tenant), id: created[0]?.id ?? "" });
+    const refused = await billingRefusal(createInbox(live(tenant), { username: "d" }, gated));
+    expect(refused.code).toBe("usage_limit_exceeded");
+  });
+
+  test("concurrent creates with one client id at the plan's limit return the same inbox", async () => {
+    const tenant = await createTestTenant();
+    const gated = { ...deps, plans: createPlanGate() };
+    await createInbox(sandbox(tenant), {}, gated);
+    await createInbox(sandbox(tenant), {}, gated);
+    const [first, second] = await Promise.all([
+      createInbox(sandbox(tenant), { clientId: "last-slot" }, gated),
+      createInbox(sandbox(tenant), { clientId: "last-slot" }, gated),
+    ]);
+    expect(first?.inbox.id).toBe(second?.inbox.id ?? "");
+    expect([first?.created, second?.created].sort()).toEqual([false, true]);
+  });
 });

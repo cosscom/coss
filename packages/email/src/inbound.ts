@@ -17,8 +17,9 @@
  *
  * Every stored copy of a message the receiving provider took is billed (`email.received`, in any
  * environment: it is real mail), unless it has a spam or virus verdict. The fake provider's (the
- * dashboard's test emails) are free. A capped plan's allowance is reserved before the content is
- * written; past it the copy is dropped and counted like one over the daily limit.
+ * dashboard's test emails) are free. A capped plan's allowance is reserved in the transaction that
+ * stores the copy, so a failed attempt reserves nothing; past it the copy (and the content written
+ * for it) is dropped and counted like one over the daily limit.
  *
  * Recipients that are DMARC report addresses (`dmarc-<token>@<managed domain>`) are split off
  * first and ingested as reports (`dmarc-reports.ts`); they never become received emails.
@@ -116,18 +117,10 @@ export function isBillableReceipt(message: Pick<InboundMessage, "provider" | "ve
   );
 }
 
-/** Reserves one received email of a capped plan's allowance; `false` when it is used up. */
-async function reserveReceipt(gate: UsageGate, organizationId: string): Promise<boolean> {
-  try {
-    await db.transaction((tx) =>
-      gate.reserve(tx, { organizationId, meter: "email.received", quantity: 1 }),
-    );
-    return true;
-  } catch (error) {
-    const code = (error as { code?: string }).code;
-    if (code === "usage_limit_exceeded" || code === "plan_feature_unavailable") return false;
-    throw error;
-  }
+/** A capped plan's allowance refused the copy (a `BillingError` from `UsageGate.reserve`). */
+function isAllowanceRefusal(error: unknown): boolean {
+  const code = (error as { code?: string } | null)?.code;
+  return code === "usage_limit_exceeded" || code === "plan_feature_unavailable";
 }
 
 export type ReceiveOutcome =
@@ -377,17 +370,6 @@ async function receiveRouted(
       });
       continue;
     }
-    const reserved = billable && deps.billing ? deps.billing : null;
-    if (reserved && !(await reserveReceipt(reserved, route.organizationId))) {
-      await countDrop(route.organizationId, message.receivedAt);
-      outcomes.push({
-        kind: "over_limit",
-        environmentId: route.environmentId,
-        recipients: route.recipients,
-      });
-      continue;
-    }
-
     raw ??= await message.raw();
     parsed ??= await parseInboundMessage(raw);
     const id = newId(ID_PREFIXES.receivedEmail);
@@ -424,169 +406,178 @@ async function receiveRouted(
     }
 
     const content = blocked ? null : parsed;
-    const insertedId = await db.transaction(async (tx) => {
-      const [inserted] = await tx
-        .insert(receivedEmail)
-        .values({
-          id,
-          organizationId: route.organizationId,
-          projectId: route.projectId,
-          environmentId: route.environmentId,
-          status: blocked ? "blocked" : "received",
-          blockedReason: blocked ? "virus" : null,
-          provider: message.provider,
-          providerMessageId: message.providerMessageId,
-          mailFrom: message.mailFrom,
-          recipients: route.recipients,
-          from: parsed?.from ?? null,
-          to: parsed?.to ?? [],
-          cc: content?.cc ?? [],
-          replyTo: content?.replyTo ?? [],
-          subject: parsed?.subject ?? null,
-          messageId: parsed?.messageId ?? null,
-          inReplyTo: content?.inReplyTo ?? null,
-          references: content?.references ?? [],
-          sentAt: content?.sentAt ?? null,
-          headers: content ? scrubParsedHeaders(content.headers, route.recipients) : [],
-          text: content?.text ?? null,
-          html: content?.html ?? null,
-          truncated: content?.truncated ?? false,
-          spamVerdict: message.verdicts.spam,
-          virusVerdict: message.verdicts.virus,
-          spfVerdict: message.verdicts.spf,
-          dkimVerdict: message.verdicts.dkim,
-          dmarcVerdict: message.verdicts.dmarc,
-          dmarcPolicy: message.verdicts.dmarcPolicy,
-          size: raw?.byteLength ?? 0,
-          rawKey,
-          receivedAt: message.receivedAt,
-        })
-        .onConflictDoNothing()
-        .returning({ id: receivedEmail.id });
-      if (!inserted) return null;
-      if (billable) {
-        await recordUsage(tx, {
-          organizationId: route.organizationId,
-          environmentId: route.environmentId,
-          projectId: route.projectId,
-          meter: "email.received",
-          quantity: 1,
-        });
-      }
-      if (attachments.length > 0) {
-        await tx.insert(receivedEmailAttachment).values(
-          attachments.map((attachment) => ({
-            id: attachment.id,
+    let insertedId: string | null;
+    try {
+      insertedId = await db.transaction(async (tx) => {
+        const [inserted] = await tx
+          .insert(receivedEmail)
+          .values({
+            id,
             organizationId: route.organizationId,
-            receivedEmailId: id,
-            position: attachment.position,
-            filename: attachment.filename,
-            contentType: attachment.contentType,
-            contentId: attachment.contentId,
-            disposition: attachment.disposition,
-            size: attachment.size,
-            sha256: attachment.sha256,
-            contentKey: attachment.key,
-          })),
-        );
-      }
-      const sender = describeSender(parsed, message.mailFrom);
-      await appendLogEntries(tx, [
-        {
-          organizationId: route.organizationId,
-          projectId: route.projectId,
-          environmentId: route.environmentId,
-          occurredAt: message.receivedAt,
-          source: "email",
-          level: blocked ? "warning" : "info",
-          type: "email.received",
-          message: blocked
-            ? `Blocked a message with a virus from ${sender}`
-            : `Received from ${sender}`,
-          errorCode: blocked ? "virus" : null,
-          resourceType: "received_email",
-          resourceId: id,
-          recipient: route.recipients.length === 1 ? (route.recipients[0] ?? null) : null,
-          attributes: {
+            projectId: route.projectId,
+            environmentId: route.environmentId,
+            status: blocked ? "blocked" : "received",
+            blockedReason: blocked ? "virus" : null,
             provider: message.provider,
-            provider_message_id: message.providerMessageId,
+            providerMessageId: message.providerMessageId,
+            mailFrom: message.mailFrom,
             recipients: route.recipients,
-            size: raw?.byteLength ?? 0,
-            spam_verdict: message.verdicts.spam,
-            virus_verdict: message.verdicts.virus,
-          },
-        },
-      ]);
-      if (!blocked) {
-        const payload: StoredReceivedEmailWebhookEvent = {
-          id: newId(ID_PREFIXES.webhookEvent),
-          object: "event",
-          type: "email.received",
-          created_at: new Date().toISOString(),
-          data: {
-            received_email_id: id,
             from: parsed?.from ?? null,
             to: parsed?.to ?? [],
-            recipients: route.recipients,
+            cc: content?.cc ?? [],
+            replyTo: content?.replyTo ?? [],
             subject: parsed?.subject ?? null,
-            message_id: parsed?.messageId ?? null,
-            attachment_count: attachments.length,
+            messageId: parsed?.messageId ?? null,
+            inReplyTo: content?.inReplyTo ?? null,
+            references: content?.references ?? [],
+            sentAt: content?.sentAt ?? null,
+            headers: content ? scrubParsedHeaders(content.headers, route.recipients) : [],
+            text: content?.text ?? null,
+            html: content?.html ?? null,
+            truncated: content?.truncated ?? false,
+            spamVerdict: message.verdicts.spam,
+            virusVerdict: message.verdicts.virus,
+            spfVerdict: message.verdicts.spf,
+            dkimVerdict: message.verdicts.dkim,
+            dmarcVerdict: message.verdicts.dmarc,
+            dmarcPolicy: message.verdicts.dmarcPolicy,
             size: raw?.byteLength ?? 0,
-            spam: message.verdicts.spam === "fail",
-            verdicts: {
-              spam: message.verdicts.spam,
-              virus: message.verdicts.virus,
-              spf: message.verdicts.spf,
-              dkim: message.verdicts.dkim,
-              dmarc: message.verdicts.dmarc,
-              dmarc_policy: message.verdicts.dmarcPolicy,
-            },
-            sandbox: route.mode === "sandbox",
-            received_at: message.receivedAt.toISOString(),
-          },
-        };
-        await enqueueWebhookMessage(tx, {
-          id: payload.id,
-          organizationId: route.organizationId,
-          environmentId: route.environmentId,
-          type: payload.type,
-          payload,
-        });
-        // Inboxes among the recipients get it in a thread (and their own webhook).
-        await recordInboundInboxMessages(tx, {
-          organizationId: route.organizationId,
-          environmentId: route.environmentId,
-          sandbox: route.mode === "sandbox",
-          receivedEmailId: id,
-          recipients: route.recipients,
-          from: parsed?.from ?? null,
-          to: parsed?.to ?? [],
-          cc: content?.cc ?? [],
-          subject: parsed?.subject ?? null,
-          messageId: parsed?.messageId ?? null,
-          inReplyTo: content?.inReplyTo ?? null,
-          references: content?.references ?? [],
-          attachmentCount: attachments.length,
-          spam: message.verdicts.spam === "fail",
-          receivedAt: message.receivedAt,
-        });
-      }
-      return inserted.id;
-    });
-
-    if (!insertedId) {
-      // A concurrent notification for the same message won: drop this copy's content (and give
-      // back its reservation: the winner made its own).
-      await deps.store.delete(written);
-      if (reserved?.release) {
-        await db.transaction(async (tx) => {
-          await reserved.release?.(tx, {
+            rawKey,
+            receivedAt: message.receivedAt,
+          })
+          .onConflictDoNothing()
+          .returning({ id: receivedEmail.id });
+        if (!inserted) return null;
+        if (billable) {
+          // Throws past a capped plan's allowance, rolling the copy back with it.
+          await deps.billing?.reserve(tx, {
             organizationId: route.organizationId,
             meter: "email.received",
             quantity: 1,
           });
-        });
-      }
+          await recordUsage(tx, {
+            organizationId: route.organizationId,
+            environmentId: route.environmentId,
+            projectId: route.projectId,
+            meter: "email.received",
+            quantity: 1,
+          });
+        }
+        if (attachments.length > 0) {
+          await tx.insert(receivedEmailAttachment).values(
+            attachments.map((attachment) => ({
+              id: attachment.id,
+              organizationId: route.organizationId,
+              receivedEmailId: id,
+              position: attachment.position,
+              filename: attachment.filename,
+              contentType: attachment.contentType,
+              contentId: attachment.contentId,
+              disposition: attachment.disposition,
+              size: attachment.size,
+              sha256: attachment.sha256,
+              contentKey: attachment.key,
+            })),
+          );
+        }
+        const sender = describeSender(parsed, message.mailFrom);
+        await appendLogEntries(tx, [
+          {
+            organizationId: route.organizationId,
+            projectId: route.projectId,
+            environmentId: route.environmentId,
+            occurredAt: message.receivedAt,
+            source: "email",
+            level: blocked ? "warning" : "info",
+            type: "email.received",
+            message: blocked
+              ? `Blocked a message with a virus from ${sender}`
+              : `Received from ${sender}`,
+            errorCode: blocked ? "virus" : null,
+            resourceType: "received_email",
+            resourceId: id,
+            recipient: route.recipients.length === 1 ? (route.recipients[0] ?? null) : null,
+            attributes: {
+              provider: message.provider,
+              provider_message_id: message.providerMessageId,
+              recipients: route.recipients,
+              size: raw?.byteLength ?? 0,
+              spam_verdict: message.verdicts.spam,
+              virus_verdict: message.verdicts.virus,
+            },
+          },
+        ]);
+        if (!blocked) {
+          const payload: StoredReceivedEmailWebhookEvent = {
+            id: newId(ID_PREFIXES.webhookEvent),
+            object: "event",
+            type: "email.received",
+            created_at: new Date().toISOString(),
+            data: {
+              received_email_id: id,
+              from: parsed?.from ?? null,
+              to: parsed?.to ?? [],
+              recipients: route.recipients,
+              subject: parsed?.subject ?? null,
+              message_id: parsed?.messageId ?? null,
+              attachment_count: attachments.length,
+              size: raw?.byteLength ?? 0,
+              spam: message.verdicts.spam === "fail",
+              verdicts: {
+                spam: message.verdicts.spam,
+                virus: message.verdicts.virus,
+                spf: message.verdicts.spf,
+                dkim: message.verdicts.dkim,
+                dmarc: message.verdicts.dmarc,
+                dmarc_policy: message.verdicts.dmarcPolicy,
+              },
+              sandbox: route.mode === "sandbox",
+              received_at: message.receivedAt.toISOString(),
+            },
+          };
+          await enqueueWebhookMessage(tx, {
+            id: payload.id,
+            organizationId: route.organizationId,
+            environmentId: route.environmentId,
+            type: payload.type,
+            payload,
+          });
+          // Inboxes among the recipients get it in a thread (and their own webhook).
+          await recordInboundInboxMessages(tx, {
+            organizationId: route.organizationId,
+            environmentId: route.environmentId,
+            sandbox: route.mode === "sandbox",
+            receivedEmailId: id,
+            recipients: route.recipients,
+            from: parsed?.from ?? null,
+            to: parsed?.to ?? [],
+            cc: content?.cc ?? [],
+            subject: parsed?.subject ?? null,
+            messageId: parsed?.messageId ?? null,
+            inReplyTo: content?.inReplyTo ?? null,
+            references: content?.references ?? [],
+            attachmentCount: attachments.length,
+            spam: message.verdicts.spam === "fail",
+            receivedAt: message.receivedAt,
+          });
+        }
+        return inserted.id;
+      });
+    } catch (error) {
+      if (!isAllowanceRefusal(error)) throw error;
+      await deps.store.delete(written);
+      await countDrop(route.organizationId, message.receivedAt);
+      outcomes.push({
+        kind: "over_limit",
+        environmentId: route.environmentId,
+        recipients: route.recipients,
+      });
+      continue;
+    }
+
+    if (!insertedId) {
+      // A concurrent notification for the same message won: drop this copy's content.
+      await deps.store.delete(written);
       const winner = await findExisting(route, message);
       outcomes.push({
         kind: "duplicate",

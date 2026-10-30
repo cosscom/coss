@@ -493,6 +493,32 @@ describe("receiveEmail", () => {
     expect(await receivedUsage(tenant.organization.id)).toBe(1);
   });
 
+  test("a failed attempt reserves nothing of Free's allowance, so its retry is received", async () => {
+    const tenant = await createTestTenant();
+    const to = await managedAddress(tenant);
+    const billing = createUsageGate();
+    await db.insert(schema.billingQuota).values({
+      organizationId: tenant.organization.id,
+      meter: "email.received",
+      periodStart: periodOf(new Date()).start,
+      reserved: 2_999,
+    });
+    const once = message({ provider: "ses", recipients: [to] });
+    const down = {
+      name: store.name,
+      put: () => Promise.reject(new Error("store unavailable")),
+      get: (key: string) => store.get(key),
+      delete: (keys: readonly string[]) => store.delete(keys),
+      deleteOrganization: (id: string) => store.deleteOrganization(id),
+    };
+    await expect(receiveEmail(once, { ...deps, store: down, billing })).rejects.toThrow(
+      "store unavailable",
+    );
+    const [retried] = await receiveEmail(once, { ...deps, billing });
+    expect(retried?.kind).toBe("received");
+    expect(await receivedUsage(tenant.organization.id)).toBe(1);
+  });
+
   test("organizations being deleted receive nothing; suspended ones still do", async () => {
     const deleting = await createTestTenant();
     const toDeleting = await managedAddress(deleting);

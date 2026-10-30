@@ -318,6 +318,7 @@ const loops = startJobs({
     defaultProvider: billing.defaultProvider,
     dashboardUrl: env.BETTER_AUTH_URL ?? "http://localhost:3000",
     notifier: billingNotifier,
+    usage,
   },
   loops: env.WORKER_LOOPS,
 });

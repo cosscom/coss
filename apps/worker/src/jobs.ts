@@ -17,6 +17,7 @@ import {
   runDueBillingSync,
   runDueCreditNoteSync,
 } from "@coss/billing";
+import type { UsageGate } from "@coss/billing/gate";
 import { dropExpiredPartitions, ensurePartitions, HOOK_PARTITIONS } from "@coss/db/partitions";
 import {
   type BroadcastWorkerDeps,
@@ -177,6 +178,8 @@ export type WorkerDeps = {
     dashboardUrl: string;
     /** Billing emails (usage alerts, payment failures); `null`: held until configured. */
     notifier: BillingNotifier | null;
+    /** Capped plans' allowance: the inbox-days the `inbox-fees` loop charges count toward it. */
+    usage?: UsageGate;
   };
   /**
    * Aborted on shutdown: ends the SQS long poll and stops long runs between items. Each loop's
@@ -376,7 +379,9 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       // A day of every live inbox (`email.inboxes`), charged when the day starts.
       name: "inbox-fees",
       intervalMs: 10 * 60_000,
-      run: async () => (await chargeDueInboxFees({ limit: INBOX_FEE_BATCH })) >= INBOX_FEE_BATCH,
+      run: async () =>
+        (await chargeDueInboxFees({ limit: INBOX_FEE_BATCH, billing: deps.billing.usage })) >=
+        INBOX_FEE_BATCH,
     }),
     start({
       // Imports from other providers: each run works on a few for a step (they take turns).

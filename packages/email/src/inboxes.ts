@@ -20,7 +20,7 @@
 import { createHash, randomInt } from "node:crypto";
 import type { PlanGate, UsageGate } from "@coss/billing/gate";
 import { recordUsage } from "@coss/billing/metering";
-import { db, schema, type Transaction } from "@coss/db";
+import { db, type Executor, schema, type Transaction } from "@coss/db";
 import { ID_PREFIXES, newId } from "@coss/db/id";
 import { enqueueWebhookMessage } from "@coss/webhooks";
 import { and, asc, count, desc, eq, gt, inArray, lt, lte, max, or, sql } from "drizzle-orm";
@@ -149,8 +149,12 @@ function scoped(scope: Scope) {
   );
 }
 
-async function findByClientId(scope: Scope, clientId: string): Promise<InboxRow | null> {
-  const [row] = await db
+async function findByClientId(
+  scope: Scope,
+  clientId: string,
+  executor: Executor = db,
+): Promise<InboxRow | null> {
+  const [row] = await executor
     .select()
     .from(inbox)
     .where(and(scoped(scope), eq(inbox.clientId, clientId)))
@@ -231,12 +235,16 @@ export async function createInbox(
     const problem = emailAddressProblem(address);
     if (problem)
       throw new InboxError("invalid_address", `${address}: ${problem}`, { param: "username" });
-    const inserted = await db.transaction(async (tx) => {
+    const outcome = await db.transaction(async (tx) => {
       if (deps.plans) {
         // One creation at a time per organization, so the count holds.
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtext(${`inbox:${env.organizationId}`}))`,
         );
+        // A concurrent create with the same client id may have committed while this one waited:
+        // return it rather than count it against the limit.
+        const existing = input.clientId ? await findByClientId(env, input.clientId, tx) : null;
+        if (existing) return { row: existing, created: false };
         const [total] = await tx
           .select({ value: count() })
           .from(inbox)
@@ -276,9 +284,9 @@ export async function createInbox(
           quantity: 1,
         });
       }
-      return row;
+      return { row, created: true };
     });
-    if (inserted) return { inbox: toInboxObject(inserted, sandbox), created: true };
+    if (outcome) return { inbox: toInboxObject(outcome.row, sandbox), created: outcome.created };
     // Lost to a concurrent create with the same client id, or the address is taken.
     if (input.clientId) {
       const existing = await findByClientId(env, input.clientId);
@@ -296,11 +304,18 @@ export async function createInbox(
 /**
  * The worker's `inbox-fees` loop: one day of every live inbox whose next day has started
  * (`next_fee_at`), moved on a day in the transaction that records it. An inbox behind by
- * several days (a worker outage) is charged one day per run until it catches up. Returns how many
- * inbox-days were charged.
+ * several days (a worker outage) is charged one day per run until it catches up. Each day also
+ * counts toward a capped plan's allowance (`billing`), which new live inboxes are checked
+ * against; days past it are still recorded (and written off). Returns how many inbox-days were
+ * charged.
  */
 export async function chargeDueInboxFees(
-  opts: { now?: Date; limit?: number; scope?: { organizationIds: string[] } } = {},
+  opts: {
+    now?: Date;
+    limit?: number;
+    scope?: { organizationIds: string[] };
+    billing?: UsageGate;
+  } = {},
 ): Promise<number> {
   const now = opts.now ?? new Date();
   const limit = opts.limit ?? 1000;
@@ -335,10 +350,31 @@ export async function chargeDueInboxFees(
       byEnvironment.set(row.environmentId, entry);
     }
     for (const { source, days } of byEnvironment.values()) {
+      if (opts.billing) await countTowardAllowance(tx, opts.billing, source.organizationId, days);
       await recordUsage(tx, { ...source, meter: "email.inboxes", quantity: days });
     }
     return charged.length;
   });
+}
+
+/** Reserves `days` inbox-days one by one (each in a savepoint) until the allowance refuses one. */
+async function countTowardAllowance(
+  tx: Transaction,
+  gate: UsageGate,
+  organizationId: string,
+  days: number,
+): Promise<void> {
+  for (let day = 0; day < days; day++) {
+    try {
+      await tx.transaction((savepoint) =>
+        gate.reserve(savepoint, { organizationId, meter: "email.inboxes", quantity: 1 }),
+      );
+    } catch (error) {
+      const code = (error as { code?: string } | null)?.code;
+      if (code === "usage_limit_exceeded" || code === "plan_feature_unavailable") return;
+      throw error;
+    }
+  }
 }
 
 export async function getInboxRow(scope: Scope & { id: string }): Promise<InboxRow | null> {
