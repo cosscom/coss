@@ -83,6 +83,7 @@
     "typecheck": "turbo run typecheck",
     "test": "bun run db:migrate:test && turbo run test",
     "lint": "biome ci .",
+    "verify": "biome ci . && bun run db:migrate:test && TURBO_SCM_BASE=origin/main turbo run typecheck test --affected",
     "format": "biome check --write .",
     "db:generate": "bun run --cwd packages/db db:generate",
     "db:migrate": "bun run --cwd packages/db db:migrate",

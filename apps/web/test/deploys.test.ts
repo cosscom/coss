@@ -192,7 +192,7 @@ describe("batch timing", () => {
     );
   });
 
-  test("as soon as CI passes when no earlier deploy is known", () => {
+  test("at once when no earlier deploy is known", () => {
     expect(batchShipsAt(pushed, null).toISOString()).toBe(pushed.toISOString());
   });
 
