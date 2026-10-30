@@ -19,8 +19,11 @@ import { webhookEnvShape } from "@coss/webhooks/env";
 import {
   albListenerRules,
   cossComCacheBehaviours,
+  DASHBOARD_HOST,
   deployInvalidationPaths,
   EXTERNAL_ZONES,
+  FORMS_HOST,
+  FORMS_ORIGIN_VERIFY_HEADER,
   TRACKING_HOST,
   TRACKING_ORIGIN_VERIFY_HEADER,
 } from "../aws/routing.ts";
@@ -181,7 +184,19 @@ describe("routing", () => {
 
   test("the API host first, the dashboard last, site paths in between", () => {
     expect(rules[0]?.targetGroup).toBe("api");
-    expect(rules.at(-1)?.targetGroup).toBe("web");
+    // Last of coss.com's rules: after it, only hosts of their own (appended there so a new one
+    // never renumbers the live rules).
+    const dashboard = rules.findIndex((rule) => rule.targetGroup === "web");
+    expect(rules.filter((rule) => rule.targetGroup === "web")).toHaveLength(1);
+    for (const rule of rules.slice(dashboard + 1)) {
+      expect(
+        rule.conditions.some(
+          (condition) =>
+            condition.Field === "host-header" &&
+            !condition.HostHeaderConfig.Values.includes(DASHBOARD_HOST),
+        ),
+      ).toBe(true);
+    }
     const sitePaths = rules
       .filter((rule) => rule.targetGroup === "site")
       .flatMap((rule) =>
@@ -214,6 +229,21 @@ describe("routing", () => {
     expect(rules.indexOf(tracking as (typeof rules)[number])).toBe(1);
     const worker = SERVICES.find((service) => service.name === "worker");
     expect(worker?.env.find((v) => v.name === "TRACKING_CNAME_TARGET")?.value).toBe(TRACKING_HOST);
+  });
+
+  test("the forms host reaches the API, only on /f/* and only with Cloudflare's header", () => {
+    const forms = rules.find((rule) =>
+      rule.conditions.some(
+        (condition) =>
+          condition.Field === "http-header" &&
+          condition.HttpHeaderConfig.HttpHeaderName === FORMS_ORIGIN_VERIFY_HEADER,
+      ),
+    );
+    expect(forms?.targetGroup).toBe("api");
+    expect(forms?.conditions.slice(0, 2)).toEqual([
+      { Field: "host-header", HostHeaderConfig: { Values: [FORMS_HOST] } },
+      { Field: "path-pattern", PathPatternConfig: { Values: ["/f/*"] } },
+    ]);
   });
 
   test("CloudFront caches site paths and hashed assets, never the dashboard or auth", () => {

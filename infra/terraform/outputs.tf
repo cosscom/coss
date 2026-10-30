@@ -16,6 +16,11 @@ output "sign_certificate_validation_records" {
   value       = [for option in aws_acm_certificate.sign.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
 }
 
+output "forms_certificate_validation_records" {
+  description = "CNAMEs to add (DNS only) in Forms' Cloudflare zone."
+  value       = [for option in aws_acm_certificate.forms.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]
+}
+
 output "smtp_certificate_validation_records" {
   description = "CNAMEs to add (DNS only) in the coss.com Cloudflare zone for the SMTP relay's certificate."
   value       = [for option in aws_acm_certificate.smtp.domain_validation_options : { name = option.resource_record_name, value = option.resource_record_value }]

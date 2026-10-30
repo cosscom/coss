@@ -124,17 +124,15 @@ injected `FormMailer` and `FormContactSink`, which the worker implements.
 - **Billing**: meter `forms.submissions` (accepted submissions, live), no rate yet: an uncharged
   line until a rate card prices it.
 
-## Going live (production)
+## Production
 
-Forms is off in production (`FORMS_PUBLIC_URL` unset) until:
+Live at `https://cossforms.com` (`FORMS_PUBLIC_URL`; Cloudflare's self-serve account, a proxied
+apex → the ALB's `/f/*` rule to the api with `X-Forms-Origin-Verify`, its ACM certificate on the
+listener; README, "Deploying to AWS"), uploads in `FORMS_FILES_BUCKET` (SSE-KMS, no public
+access, objects expire after `RETENTION_DAYS.formSubmissions` + 1 days), IAM for api, worker and
+web. Never move it to a coss.com subdomain: phishing reports would land on coss.com.
+`FORMS_NOTIFICATIONS_FROM` (worker) is optional. Still to do:
 
-1. **Domain**: buy one of its own (never a coss.com subdomain: phishing reports would land on
-   coss.com), proxied by Cloudflare → an ALB host rule to the `api` service with an origin-verify
-   header (like `cosssign.com`, `infra/aws/routing.ts`), its ACM certificate on the listener.
-2. **Bucket**: `FORMS_FILES_BUCKET` (SSE-KMS, no public access, lifecycle expiring objects after
-   `RETENTION_DAYS.formSubmissions` + 1 days), IAM for api, worker and web.
-3. **Env**: `FORMS_PUBLIC_URL` (api, worker, web), `FORMS_FILES_BUCKET` (api, worker, web),
-   optionally `FORMS_NOTIFICATIONS_FROM` (worker).
-4. **Abuse**: the `abuse@coss.com` mailbox the pages link to, watched; the admin console's
-   "Disable form".
-5. **Pricing**: a rate card for `forms.submissions`.
+1. **Abuse**: the `abuse@coss.com` mailbox the pages link to, watched; the admin console's
+   "Disable form" takes a form down.
+2. **Pricing**: a rate card for `forms.submissions`.
