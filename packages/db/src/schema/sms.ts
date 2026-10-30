@@ -105,6 +105,9 @@ export type SmsCampaignDetails = {
   optInProofUrl?: string | null;
   /** Expected messages a month (toll-free verification). */
   monthlyVolume?: string | null;
+  /** The business's privacy policy and terms (toll-free verification). */
+  privacyPolicyUrl?: string | null;
+  termsUrl?: string | null;
 };
 
 /**

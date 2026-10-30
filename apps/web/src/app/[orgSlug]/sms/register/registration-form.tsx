@@ -53,11 +53,16 @@ function registrationOf(form: FormData) {
     hasEmbeddedPhone: form.get("hasEmbeddedPhone") === "on",
     optInProofUrl: text(form, "optInProofUrl") || null,
     monthlyVolume: text(form, "monthlyVolume") || null,
+    privacyPolicyUrl: text(form, "privacyPolicyUrl") || null,
+    termsUrl: text(form, "termsUrl") || null,
   };
   return text(form, "kind") === "toll_free"
     ? { kind: "toll_free", numberId: text(form, "numberId"), profile, campaign }
     : { kind: "us_10dlc", brandType: text(form, "brandType"), profile, campaign };
 }
+
+/** A rejected registration's answers by field name, to fix and submit again. */
+export type RegistrationDefaults = Readonly<Record<string, string | boolean>>;
 
 function TextField(props: {
   name: string;
@@ -66,11 +71,14 @@ function TextField(props: {
   type?: string;
   description?: string;
   required?: boolean;
+  defaults?: RegistrationDefaults;
 }) {
+  const value = props.defaults?.[props.name];
   return (
     <Field>
       <FieldLabel>{props.label}</FieldLabel>
       <Input
+        defaultValue={typeof value === "string" ? value : undefined}
         name={props.name}
         placeholder={props.placeholder}
         required={props.required ?? true}
@@ -87,10 +95,16 @@ export function RegistrationForm(props: {
   canRegister10dlc: boolean;
   initialKind: "us_10dlc" | "toll_free";
   initialNumberId: string | null;
+  defaults?: RegistrationDefaults;
 }) {
+  const defaults = props.defaults ?? {};
+  const pick = (name: string, fallback: string): string => {
+    const value = defaults[name];
+    return typeof value === "string" && value ? value : fallback;
+  };
   const [kind, setKind] = useState<string>(props.initialKind);
-  const [brandType, setBrandType] = useState("low_volume_standard");
-  const [companyType, setCompanyType] = useState("PRIVATE_PROFIT");
+  const [brandType, setBrandType] = useState(pick("brandType", "low_volume_standard"));
+  const [companyType, setCompanyType] = useState(pick("companyType", "PRIVATE_PROFIT"));
   // Carriers take only the low-volume mixed use case from a low-volume standard brand.
   const useCases =
     kind === "us_10dlc" && brandType === "low_volume_standard"
@@ -178,7 +192,12 @@ export function RegistrationForm(props: {
           </PanelDescription>
         </PanelHeader>
         <PanelBody className="grid gap-4 sm:grid-cols-2">
-          <TextField label="Legal name" name="legalName" placeholder="Acme, Inc." />
+          <TextField
+            defaults={defaults}
+            label="Legal name"
+            name="legalName"
+            placeholder="Acme, Inc."
+          />
           <Field>
             <FieldLabel>Company type</FieldLabel>
             <select
@@ -193,27 +212,58 @@ export function RegistrationForm(props: {
               <option value="NON_PROFIT">Non-profit</option>
             </select>
           </Field>
-          <TextField description="US: your EIN (12-3456789)." label="Tax ID" name="taxId" />
+          <TextField
+            defaults={defaults}
+            description="US: your EIN (12-3456789)."
+            label="Tax ID"
+            name="taxId"
+          />
           <Field>
             <FieldLabel>Tax ID type</FieldLabel>
-            <select aria-label="Tax ID type" className={SELECT_CLASS} name="taxIdType">
+            <select
+              aria-label="Tax ID type"
+              className={SELECT_CLASS}
+              defaultValue={pick("taxIdType", "EIN")}
+              name="taxIdType"
+            >
               <option value="EIN">EIN (US)</option>
               <option value="CBN">Business number (Canada)</option>
               <option value="VAT">VAT</option>
               <option value="DUNS">DUNS</option>
             </select>
           </Field>
-          <TextField label="Industry" name="industry" placeholder="TECHNOLOGY" />
-          <TextField label="Website" name="website" placeholder="https://acme.com" type="url" />
-          <TextField label="Street" name="street" />
-          <TextField label="City" name="city" />
-          <TextField label="State or region" name="region" placeholder="CA" />
-          <TextField label="Postal code" name="postalCode" />
-          <TextField label="Country" name="country" placeholder="US" />
+          <TextField
+            defaults={defaults}
+            label="Industry"
+            name="industry"
+            placeholder="TECHNOLOGY"
+          />
+          <TextField
+            defaults={defaults}
+            label="Website"
+            name="website"
+            placeholder="https://acme.com"
+            type="url"
+          />
+          <TextField defaults={defaults} label="Street" name="street" />
+          <TextField defaults={defaults} label="City" name="city" />
+          <TextField defaults={defaults} label="State or region" name="region" placeholder="CA" />
+          <TextField defaults={defaults} label="Postal code" name="postalCode" />
+          <TextField defaults={defaults} label="Country" name="country" placeholder="US" />
           {companyType === "PUBLIC_PROFIT" ? (
             <>
-              <TextField label="Stock exchange" name="stockExchange" placeholder="NASDAQ" />
-              <TextField label="Stock ticker" name="stockTicker" placeholder="ACME" />
+              <TextField
+                defaults={defaults}
+                label="Stock exchange"
+                name="stockExchange"
+                placeholder="NASDAQ"
+              />
+              <TextField
+                defaults={defaults}
+                label="Stock ticker"
+                name="stockTicker"
+                placeholder="ACME"
+              />
             </>
           ) : null}
         </PanelBody>
@@ -224,14 +274,25 @@ export function RegistrationForm(props: {
           <PanelTitle>Authorized representative</PanelTitle>
         </PanelHeader>
         <PanelBody className="grid gap-4 sm:grid-cols-2">
-          <TextField label="First name" name="firstName" />
-          <TextField label="Last name" name="lastName" />
-          <TextField label="Email" name="email" type="email" />
-          <TextField label="Phone" name="phone" placeholder="+14155550123" type="tel" />
-          <TextField label="Title" name="title" placeholder="CTO" />
+          <TextField defaults={defaults} label="First name" name="firstName" />
+          <TextField defaults={defaults} label="Last name" name="lastName" />
+          <TextField defaults={defaults} label="Email" name="email" type="email" />
+          <TextField
+            defaults={defaults}
+            label="Phone"
+            name="phone"
+            placeholder="+14155550123"
+            type="tel"
+          />
+          <TextField defaults={defaults} label="Title" name="title" placeholder="CTO" />
           <Field>
             <FieldLabel>Position</FieldLabel>
-            <select aria-label="Position" className={SELECT_CLASS} name="jobPosition">
+            <select
+              aria-label="Position"
+              className={SELECT_CLASS}
+              defaultValue={pick("jobPosition", "Director")}
+              name="jobPosition"
+            >
               {["Director", "GM", "VP", "CEO", "CFO", "General Counsel", "Other"].map(
                 (position) => (
                   <option key={position} value={position}>
@@ -258,6 +319,7 @@ export function RegistrationForm(props: {
             <select
               aria-label="Use case"
               className={SELECT_CLASS}
+              defaultValue={pick("useCase", useCases[0] ?? "LOW_VOLUME")}
               key={useCases.length}
               name="useCase"
             >
@@ -271,6 +333,7 @@ export function RegistrationForm(props: {
           <Field>
             <FieldLabel>Description</FieldLabel>
             <Textarea
+              defaultValue={pick("description", "")}
               name="description"
               placeholder="Acme sends sign-in codes and account alerts to its customers."
               required
@@ -279,21 +342,29 @@ export function RegistrationForm(props: {
           <Field>
             <FieldLabel>How people opt in</FieldLabel>
             <Textarea
+              defaultValue={pick("messageFlow", "")}
               name="messageFlow"
               placeholder="Customers enter their number on acme.com/settings and tick a box agreeing to texts; message and data rates may apply; reply STOP to opt out."
               required
             />
           </Field>
           <TextField
+            defaults={defaults}
             label="Sample message"
             name="sample1"
             placeholder="Acme: your code is 123456. Reply STOP to opt out."
           />
-          <TextField label="Another sample" name="sample2" />
-          <TextField label="Another sample (optional)" name="sample3" required={false} />
+          <TextField defaults={defaults} label="Another sample" name="sample2" />
+          <TextField
+            defaults={defaults}
+            label="Another sample (optional)"
+            name="sample3"
+            required={false}
+          />
           {kind === "toll_free" ? (
             <>
               <TextField
+                defaults={defaults}
                 description="A public screenshot or page of where people give their number and consent."
                 label="Opt-in proof URL"
                 name="optInProofUrl"
@@ -304,7 +375,7 @@ export function RegistrationForm(props: {
                 <select
                   aria-label="Messages a month"
                   className={SELECT_CLASS}
-                  defaultValue="1,000"
+                  defaultValue={pick("monthlyVolume", "1,000")}
                   name="monthlyVolume"
                 >
                   {SMS_MONTHLY_VOLUMES.map((volume) => (
@@ -314,13 +385,39 @@ export function RegistrationForm(props: {
                   ))}
                 </select>
               </Field>
+              <TextField
+                defaults={defaults}
+                description="Public, and it should say you never share phone numbers or opt-in consent with third parties for marketing."
+                label="Privacy policy URL"
+                name="privacyPolicyUrl"
+                placeholder="https://acme.com/privacy"
+                type="url"
+              />
+              <TextField
+                defaults={defaults}
+                label="Terms URL"
+                name="termsUrl"
+                placeholder="https://acme.com/terms"
+                required={false}
+                type="url"
+              />
             </>
           ) : null}
           <label className="flex items-center gap-2 text-sm">
-            <input name="hasEmbeddedLinks" type="checkbox" /> Messages contain links
+            <input
+              defaultChecked={defaults.hasEmbeddedLinks === true}
+              name="hasEmbeddedLinks"
+              type="checkbox"
+            />{" "}
+            Messages contain links
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input name="hasEmbeddedPhone" type="checkbox" /> Messages contain phone numbers
+            <input
+              defaultChecked={defaults.hasEmbeddedPhone === true}
+              name="hasEmbeddedPhone"
+              type="checkbox"
+            />{" "}
+            Messages contain phone numbers
           </label>
         </PanelBody>
       </Panel>

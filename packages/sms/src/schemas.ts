@@ -769,6 +769,9 @@ export const SmsCampaignInput = z.object({
   hasEmbeddedPhone: z.boolean(),
   optInProofUrl: z.url().nullish(),
   monthlyVolume: z.enum(SMS_MONTHLY_VOLUMES).nullish(),
+  /** The business's privacy policy (toll-free verification requires one). */
+  privacyPolicyUrl: z.url().max(2048).nullish(),
+  termsUrl: z.url().max(2048).nullish(),
 });
 
 export const SmsRegistrationInput = z
@@ -786,6 +789,7 @@ export const SmsRegistrationInput = z
       profile: SmsBusinessProfileInput,
       campaign: SmsCampaignInput.extend({
         optInProofUrl: z.url("A public URL showing where people opt in."),
+        privacyPolicyUrl: z.url("A public URL of your privacy policy.").max(2048),
       }),
     }),
   ])

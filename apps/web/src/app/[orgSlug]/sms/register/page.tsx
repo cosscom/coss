@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { Panel, PanelBody } from "@/components/panel";
 import { requireOrgMember } from "@/lib/session";
 import { smsProvisioningEnabled } from "@/lib/sms";
-import { RegistrationForm } from "./registration-form";
+import { type RegistrationDefaults, RegistrationForm } from "./registration-form";
 
 export const metadata: Metadata = { title: "Register a sender" };
 
@@ -39,13 +39,30 @@ export default async function RegisterSmsSenderPage({
     )
     .map((row) => ({ id: row.number.id, phoneNumber: row.number.phoneNumber }));
   const canRegister10dlc = !active.some((row) => row.kind === "us_10dlc");
+  // Fixing a rejected registration (`?from=`): its answers fill the form again.
+  const from = registrations.find(
+    (row) => row.id === query.from && (row.status === "rejected" || row.status === "failed"),
+  );
+  const defaults: RegistrationDefaults | undefined = from
+    ? {
+        ...Object.fromEntries(
+          Object.entries({ ...from.profile, ...from.profile.contact, ...from.campaign }).filter(
+            (entry): entry is [string, string | boolean] =>
+              typeof entry[1] === "string" || typeof entry[1] === "boolean",
+          ),
+        ),
+        ...Object.fromEntries(from.campaign.samples.map((sample, i) => [`sample${i + 1}`, sample])),
+        ...(from.brandType ? { brandType: from.brandType } : {}),
+      }
+    : undefined;
   // Opened for one number (`?number=`) or one kind (`?kind=`), e.g. from the SMS page's prompts.
-  const numberParam = typeof query.number === "string" ? query.number : null;
+  const numberParam = from?.numberId ?? (typeof query.number === "string" ? query.number : null);
   const initialNumberId = tollFreeNumbers.some((number) => number.id === numberParam)
     ? numberParam
     : null;
   const initialKind =
-    initialNumberId || (query.kind === "toll_free" && tollFreeNumbers.length > 0)
+    initialNumberId ||
+    (from ? from.kind === "toll_free" : query.kind === "toll_free" && tollFreeNumbers.length > 0)
       ? "toll_free"
       : canRegister10dlc
         ? "us_10dlc"
@@ -60,6 +77,7 @@ export default async function RegisterSmsSenderPage({
       {canRegister10dlc || tollFreeNumbers.length > 0 ? (
         <RegistrationForm
           canRegister10dlc={canRegister10dlc}
+          defaults={defaults}
           initialKind={initialKind}
           initialNumberId={initialNumberId}
           orgSlug={organization.slug}
