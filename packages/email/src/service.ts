@@ -246,26 +246,24 @@ function bareAddress(value: string): string {
  * gets a plain-text part generated from it (never stored: the email keeps what was sent to coss.com).
  */
 /**
- * What a dispatch claim decides about how a live email goes out: through the organization's
- * dedicated IP pool, or through its sub-account's own tenant (its domain; never with the
- * organization's pool, whose configuration set the sub-account's tenant can't use).
+ * What a dispatch claim decides about how a live email goes out: through its sub-account's own
+ * tenant (its domain; never with the organization's dedicated IP pool, whose configuration set
+ * that tenant can't use), else through the organization's tenant like the organization's own
+ * mail (a domain it shares included), with its dedicated IP pool when it has one.
  */
 function claimRouting(row: EmailRow, provider: string, sandbox: boolean) {
   if (sandbox) return { dedicatedPool: false, subaccountTenant: false };
-  if (row.subaccountId) {
-    return {
-      dedicatedPool: false,
-      subaccountTenant: subaccountTenantSql({
-        organizationId: row.organizationId,
-        subaccountId: row.subaccountId,
-        from: row.from,
-        provider,
-      }),
-    };
-  }
+  const pool = dedicatedPoolSql(row.organizationId, provider, row.stream);
+  const subaccountTenant = subaccountTenantSql({
+    organizationId: row.organizationId,
+    subaccountId: row.subaccountId,
+    from: row.from,
+    provider,
+  });
   return {
-    dedicatedPool: dedicatedPoolSql(row.organizationId, provider, row.stream),
-    subaccountTenant: false,
+    dedicatedPool:
+      subaccountTenant === false ? pool : sql<boolean>`(not (${subaccountTenant}) and ${pool})`,
+    subaccountTenant,
   };
 }
 

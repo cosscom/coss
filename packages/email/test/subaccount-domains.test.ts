@@ -3,17 +3,21 @@ import { db, schema } from "@coss/db";
 import { uniqueSuffix } from "@coss/db/testing";
 import { createTestTenant } from "@coss/tenancy/testing";
 import { and, eq } from "drizzle-orm";
+import { reconcileDedicatedIpPools } from "../src/dedicated-ips.ts";
 import {
   applyTenantStatus,
   checkDomain,
   createDomain,
   type DomainDeps,
+  MAX_SUBACCOUNT_DOMAINS,
   releaseOrganizationEmailResources,
   releaseSubaccountEmailResources,
+  restartDomainVerification,
   setDomainSharedWithSubaccounts,
 } from "../src/domains.ts";
 import { DomainError } from "../src/errors.ts";
 import { FakeEmailProvider } from "../src/providers/fake.ts";
+import { FakeDedicatedIpProvider } from "../src/providers/fake-dedicated-ips.ts";
 import { FakeIdentityProvider } from "../src/providers/fake-identity.ts";
 import { FakeTrackingHostnameProvider } from "../src/providers/fake-tracking-hostnames.ts";
 import { createSubaccount } from "../src/subaccounts.ts";
@@ -75,6 +79,35 @@ describe("sub-account domains", () => {
     const { email } = await send(domain.name, "a");
     expect(email.status).toBe("sent");
     expect(provider.sent.at(-1)).toMatchObject({ tenantSubaccountId: a.id, dedicatedPool: false });
+  });
+
+  test("through a shared domain a sub-account's mail is the organization's, dedicated IPs included", async () => {
+    const { organizationId, a, verified, domainDeps, provider, send } = await setup();
+    const own = await verified(a.id);
+    const shared = await verified(null);
+    await setDomainSharedWithSubaccounts({ organizationId, id: shared.id, shared: true });
+    await reconcileDedicatedIpPools(
+      { entitled: [organizationId], scope: { organizationIds: [organizationId] } },
+      { identity: domainDeps.identity, dedicatedIps: new FakeDedicatedIpProvider() },
+    );
+    await send(shared.name, "a");
+    expect(provider.sent.at(-1)).toMatchObject({ tenantSubaccountId: null, dedicatedPool: true });
+    // Its own tenant can't use the organization's pool (its configuration set).
+    await send(own.name, "a");
+    expect(provider.sent.at(-1)).toMatchObject({ tenantSubaccountId: a.id, dedicatedPool: false });
+  });
+
+  test("restarting a failed domain's verification counts toward the sub-account's domains", async () => {
+    const { organizationId, a, verified, domainDeps } = await setup();
+    const failed = await verified(a.id);
+    await db
+      .update(schema.domain)
+      .set({ status: "failed", canSend: false })
+      .where(eq(schema.domain.id, failed.id));
+    for (let i = 0; i < MAX_SUBACCOUNT_DOMAINS; i++) await verified(a.id);
+    expect(
+      await refusal(restartDomainVerification({ organizationId, id: failed.id }, domainDeps)),
+    ).toMatchObject({ code: "too_many_subaccount_domains" });
   });
 
   test("only its sub-account sends from a sub-account's domain", async () => {

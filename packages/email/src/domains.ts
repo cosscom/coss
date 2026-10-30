@@ -657,6 +657,9 @@ export async function restartDomainVerification(
   const row = await requireDomain(input);
   if (row.status !== "failed") return row;
   await assertPendingCapacity(input.organizationId, row.subaccountId);
+  // A failed domain doesn't count toward its sub-account's domains; a restarted one does again.
+  if (row.subaccountId)
+    await assertSubaccountDomainCapacity(input.organizationId, row.subaccountId);
   let claimed: DomainRow | undefined;
   try {
     [claimed] = await db
