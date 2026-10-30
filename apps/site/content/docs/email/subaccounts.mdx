@@ -67,7 +67,9 @@ A live sub-account sends from:
   its own sending reputation at the mail provider. If the provider pauses that reputation, only that
   sub-account stops (`sending_paused`).
 - **domains you share with your sub-accounts.** For users who don't have a domain of their own, share
-  one of yours. They then send from it through your organization's sending reputation.
+  one of yours. They then send from it through your organization's sending reputation, and your
+  [dedicated IPs](/docs/email/dedicated-ips) if you have them. Sub-accounts' own domains send from
+  shared IPs.
 
 ```ts twoslash
 import { Coss } from "coss";

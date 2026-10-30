@@ -444,8 +444,9 @@ Sending (SES, suppressions, tracking, unsubscribe, scheduled and batch sends, at
   too), and sub-accounts send from the organization's domains only with `shared_with_subaccounts` (`PATCH
   /v1/domains/{id}`, never on a sub-account's domain); the matching tenant's pause applies. The claim decides
   `subaccount_tenant` (`subaccountTenantSql`: the From domain's most specific domain is the sub-account's and its
-  tenant exists) and sub-account email never uses the organization's dedicated pool (`claimRouting`);
-  `SesEmailProvider` sends `TenantName` of the sub-account then. Sub-account domains never count for SSO and have no
+  tenant exists; `claimRouting`): `SesEmailProvider` then sends `TenantName` of the sub-account, on shared IPs (the
+  organization's dedicated pool's configuration set can't take that tenant); otherwise (a shared domain) it goes
+  out like the organization's own mail, through its dedicated pool when it has one. Sub-account domains never count for SSO and have no
   tracking or receiving domains. **Suppressions**: `email_suppression.subaccount_id`; management functions work on
   exactly one list (`inList`), sends and `check` apply the sub-account's list plus the environment's
   (`inSendLists`), and its bounces, complaints and one-click unsubscribes go on its list only (`autoSuppress` skips

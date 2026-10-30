@@ -26,9 +26,20 @@ const LABELS: Record<Exclude<DetailFilter, "since" | "until">, string> = {
   domain: "Sender domain",
 };
 
-/** The removable chips of the active detail filters (the created range is one chip). */
-function activeChips(params: EmailFilterParams): { label: string; drop: DetailFilter[] }[] {
-  const chips: { label: string; drop: DetailFilter[] }[] = [];
+type Chip = { label: string; drop: (keyof EmailFilterParams)[] };
+
+/**
+ * The removable chips of the active filters besides the search and the status (the created
+ * range is one chip, and so is the sub-account a sub-account's page linked to).
+ */
+function activeChips(params: EmailFilterParams, subaccountLabel?: string): Chip[] {
+  const chips: Chip[] = [];
+  if (params.subaccount) {
+    chips.push({
+      label: `Sub-account: ${subaccountLabel ?? params.subaccount}`,
+      drop: ["subaccount"],
+    });
+  }
   for (const key of ["recipient", "tag", "category", "domain"] as const) {
     if (params[key]) chips.push({ label: `${LABELS[key]}: ${params[key]}`, drop: [key] });
   }
@@ -81,11 +92,13 @@ export function EmailFilterBar(props: {
   params: EmailFilterParams;
   /** The organization's domains, suggested for the sender domain. */
   domains: string[];
+  /** The filtered sub-account's uid or name, when there is one. */
+  subaccountLabel?: string;
 }) {
   const { path, params } = props;
   const href = (overrides: Partial<EmailFilterParams>) =>
     listHref(path, emailFilterQuery({ ...params, ...overrides }));
-  const chips = activeChips(params);
+  const chips = activeChips(params, props.subaccountLabel);
   const detailCount = EMAIL_DETAIL_FILTERS.filter((key) => params[key]).length;
   const cleared = Object.fromEntries(EMAIL_DETAIL_FILTERS.map((key) => [key, ""]));
   // The inputs are uncontrolled: a new key remounts them when the URL's filters change (Reset,
@@ -134,9 +147,14 @@ export function EmailFilterBar(props: {
                   }
                 }}
               >
-                {Object.entries(emailFilterQuery({ q: params.q, status: params.status })).map(
-                  ([name, value]) =>
-                    value ? <input key={name} name={name} type="hidden" value={value} /> : null,
+                {Object.entries(
+                  emailFilterQuery({
+                    q: params.q,
+                    status: params.status,
+                    subaccount: params.subaccount,
+                  }),
+                ).map(([name, value]) =>
+                  value ? <input key={name} name={name} type="hidden" value={value} /> : null,
                 )}
                 <FilterInput
                   label="Recipient"
@@ -213,7 +231,7 @@ export function EmailFilterBar(props: {
           {chips.length > 1 ? (
             <Link
               className="px-1 text-muted-foreground text-sm hover:text-foreground"
-              href={href(cleared)}
+              href={href({ ...cleared, subaccount: "" })}
             >
               Clear all
             </Link>
