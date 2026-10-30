@@ -18,6 +18,7 @@ import { type FormLinks, type FormRow, hostedOf } from "./forms.ts";
 import { type FieldError, parseSubmission, type SubmittedFile, submissionText } from "./parse.ts";
 import {
   type FormSubmissionRow,
+  isUploadLimitError,
   isUsageLimitError,
   recordAccepted,
   recordFlagged,
@@ -418,6 +419,20 @@ export async function submitForm(
         row.organizationId,
         files.map((file) => file.key),
       );
+    }
+    // The plan's uploads for the period are used up: the form still takes posts without files.
+    if (isUploadLimitError(error)) {
+      return {
+        outcome: "invalid",
+        form: shown,
+        errors: [
+          {
+            field: files[0]?.field ?? null,
+            code: "files_not_accepted",
+            message: "This form can't take files right now. Send it without them.",
+          },
+        ],
+      };
     }
     // The plan's submissions for the period are used up: the form takes none until it resets.
     if (isUsageLimitError(error)) return { outcome: "unavailable" };

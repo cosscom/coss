@@ -10,6 +10,7 @@ import {
   listInvoices,
   METERS,
   type MeterKey,
+  meterUnitsName,
   PAYMENT_METHOD_LABELS,
   type PaymentMethodType,
   PLANS,
@@ -426,9 +427,7 @@ export default async function BillingPage({
           return (
             <div className="flex flex-col gap-2 border-t px-5 py-4" key={meter}>
               <div className="flex justify-between gap-4 text-sm">
-                <span className="font-medium">
-                  {METERS[meter].label} {METERS[meter].units} included
-                </span>
+                <span className="font-medium">{sentenceCase(meterUnitsName(meter))} included</span>
                 <span className="font-mono text-muted-foreground text-xs tabular-nums">
                   {used.toLocaleString("en-US")} / {cap.toLocaleString("en-US")}
                 </span>
@@ -704,4 +703,8 @@ function BillingFigure(props: { label: ReactNode; value: ReactNode; detail: Reac
       <div className="truncate text-muted-foreground text-xs">{props.detail}</div>
     </div>
   );
+}
+
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

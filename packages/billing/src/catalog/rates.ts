@@ -90,6 +90,11 @@ const LAUNCH: RateCard = {
     "sms.segments": { byDimension: { "country=US": flatRate(14_200_000n) } },
     // $0.01 per phone check (first priced when the meter was added; it had no usage before).
     "risk.phone_checks": { default: flatRate(10_000_000n) },
+    // Forms: $1 per 1,000 accepted submissions (spam, held and unconfirmed ones are free), and
+    // $0.25 per 1,000 MB of their files, kept for the submissions' 90 days (first priced when the
+    // meters were added; no organization had used them).
+    "forms.submissions": { default: flatRate(1_000_000n) },
+    "forms.file_uploads": { default: flatRate(250_000n) },
     // $1.50 per 1,000 participant-minutes.
     "video.participant_minutes": { default: flatRate(1_500_000n) },
     // $0.10 per booking.
@@ -130,19 +135,7 @@ const NOVEMBER_2026: RateCard = {
 };
 
 /** In ascending `effectiveFrom` order. */
-export const RATE_CARDS: readonly RateCard[] = [
-  LAUNCH,
-  NOVEMBER_2026,
-  {
-    // Forms: $1 per 1,000 accepted submissions (spam, held and unconfirmed ones are free); first
-    // priced from this card (earlier usage stays uncharged).
-    effectiveFrom: new Date("2026-12-01T00:00:00Z"),
-    rates: {
-      ...NOVEMBER_2026.rates,
-      "forms.submissions": { default: flatRate(1_000_000n) },
-    },
-  },
-];
+export const RATE_CARDS: readonly RateCard[] = [LAUNCH, NOVEMBER_2026];
 
 /** The list prices in effect at `at` (the first card for earlier dates). */
 export function rateCardAt(at: Date, cards: readonly RateCard[] = RATE_CARDS): RateCard {

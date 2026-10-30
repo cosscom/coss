@@ -14,7 +14,7 @@ import {
   RATE_LIMIT_KEYS,
   type RateLimitRule,
 } from "./catalog/entitlements.ts";
-import { formatDimension, METERS, type MeterKey } from "./catalog/meters.ts";
+import { formatDimension, METERS, type MeterKey, meterAmount } from "./catalog/meters.ts";
 import { PLAN_KEYS, PLANS, type PlanKey } from "./catalog/plans.ts";
 import { meterAvailability, resolveTermsAt } from "./engine/terms.ts";
 import { BillingError } from "./errors.ts";
@@ -184,7 +184,7 @@ async function reserveUnderCap(
     "usage_limit_exceeded",
     input.cap === 0
       ? `${meter.label} isn't included in the ${PLANS[input.plan].name} plan. Upgrade to use it.`
-      : `The ${PLANS[input.plan].name} plan includes ${input.cap.toLocaleString("en-US")} ${meter.label.toLowerCase()} ${meter.units} a month, and this would go past it. Upgrade to keep sending.`,
+      : `The ${PLANS[input.plan].name} plan includes ${meterAmount(input.meter, input.cap)} a month, and this would go past it. Upgrade to keep sending.`,
   );
 }
 

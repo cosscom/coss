@@ -1,8 +1,8 @@
 /**
  * The plans. A plan's monthly fee is credit spendable on any product's usage, so a month costs
  * the larger of the fee and the usage (plus add-ons). Free has no credit but includes 3,000
- * emails and 1,000 form submissions a month and blocks usage beyond its allowance. Every plan includes 100 phone checks and
- * 3 inboxes a month.
+ * emails, 1,000 form submissions and 1,000 MB of their uploads a month and blocks usage beyond
+ * its allowance. Every plan includes 100 phone checks and 3 inboxes a month.
  */
 import { type Entitlements, perDay, perSecond } from "./entitlements.ts";
 import type { MeterKey } from "./meters.ts";
@@ -48,6 +48,7 @@ export const PLANS = {
       "email.recipients": 3_000,
       "email.received": 3_000,
       "forms.submissions": 1_000,
+      "forms.file_uploads": 1_000,
       "email.inboxes": INBOX_DAYS_INCLUDED,
       "risk.phone_checks": PHONE_CHECKS_INCLUDED,
     },

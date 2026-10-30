@@ -6,8 +6,8 @@ import {
   type FeatureKey,
   getBillingAccount,
   holdsOf,
-  METERS,
   type MeterKey,
+  meterUnitsName,
   type PlanGate,
   type ProviderName,
   planRateLimits,
@@ -100,7 +100,7 @@ export async function billingBannerState(organizationId: string): Promise<Billin
     const used = await reservedThisPeriod(organizationId, meter, now);
     if (used / cap >= 0.8 && (!allowance || used / cap > allowance.used / allowance.cap)) {
       allowance = {
-        label: `${METERS[meter].label.toLowerCase()} ${METERS[meter].units}`,
+        label: meterUnitsName(meter),
         used,
         cap,
       };
