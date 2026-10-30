@@ -4,6 +4,7 @@ import type { InboundRuntime } from "@coss/email/runtime";
 import type { RiskDeps } from "@coss/risk";
 import type { SignService } from "@coss/sign";
 import type { SmsService } from "@coss/sms";
+import type { VerifyService } from "@coss/verify";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppEnv } from "../types.ts";
@@ -35,6 +36,7 @@ import { createStorageSettingsRoutes } from "./storage-settings.ts";
 import { createSuppressionRoutes } from "./suppressions.ts";
 import { createTopicRoutes } from "./topics.ts";
 import { createTrackingSettingsRoutes } from "./tracking-settings.ts";
+import { createVerifyRoutes } from "./verify.ts";
 import { createWebhookEndpointRoutes } from "./webhook-endpoints.ts";
 import { createWebhookEventRoutes } from "./webhook-events.ts";
 import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
@@ -42,6 +44,7 @@ import { createWebhookListenerRoutes } from "./webhook-listeners.ts";
 export type V1Dependencies = {
   emailService: EmailService;
   smsService: SmsService;
+  verifyService: VerifyService;
   /** Sign's writes (documents' bytes); `null`: Sign isn't available in this deployment. */
   signService: SignService | null;
   domainDeps: DomainDeps;
@@ -90,6 +93,7 @@ export function createV1Router(deps: V1Dependencies): OpenAPIHono<AppEnv> {
     }),
   );
   v1.route("/", createSignTemplateRoutes({ signService: deps.signService, signUrl: deps.signUrl }));
+  v1.route("/", createVerifyRoutes(deps.verifyService));
   v1.route("/", createTrackingSettingsRoutes());
   v1.route("/", createStorageSettingsRoutes());
   v1.route(

@@ -8,9 +8,10 @@ import {
   MemoryStore,
   type RateLimiter,
 } from "@coss/ratelimit";
-import type { RiskDeps } from "@coss/risk";
+import { DEVELOPMENT_HASH_KEY, type RiskDeps } from "@coss/risk";
 import { createSignService, FakeDocumentStore, type SignService } from "@coss/sign";
 import type { SmsService } from "@coss/sms";
+import { createVerifyService, type SharedSmsSender, verifyCodeKey } from "@coss/verify";
 import { versioning as apiVersioning, type Versioning } from "@coss/versioning";
 import type { WebhookManagementDeps } from "@coss/webhooks";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -31,6 +32,7 @@ import { createV1Router } from "./routes/v1.ts";
 import { createDefaultEmailRuntime } from "./runtime.ts";
 import type { AppEnv } from "./types.ts";
 import { validationHook } from "./validation.ts";
+import { type CossVerifySender, verifyEmailSender } from "./verify-email.ts";
 import { registerWebhookEvents } from "./webhook-events.ts";
 
 export type CreateAppOptions = {
@@ -43,6 +45,16 @@ export type CreateAppOptions = {
    * fake store (Postgres rows); `null` turns uploads and new requests off (`sign_unavailable`).
    */
   signService?: SignService | null;
+  /**
+   * Verify: the code key (`verifyCodeKey` of `RISK_HASH_KEY`; defaults to the development key's),
+   * coss.com's shared numbers (`VERIFY_SMS_*`; none by default: live SMS codes need the
+   * environment's own number) and coss.com's email sender (`NOTIFICATIONS_*`; none by default).
+   */
+  verify?: {
+    codeKey?: Uint8Array;
+    sharedSms?: SharedSmsSender | null;
+    cossEmail?: CossVerifySender | null;
+  };
   /** Identity provider and DNS resolver for domain management. Defaults to the fake provider. */
   domainDeps?: DomainDeps;
   /**
@@ -207,6 +219,18 @@ export function createApp(opts: CreateAppOptions) {
     createV1Router({
       emailService,
       smsService: opts.smsService,
+      verifyService: createVerifyService({
+        risk: opts.riskDeps,
+        codeKey: opts.verify?.codeKey ?? verifyCodeKey(DEVELOPMENT_HASH_KEY),
+        sms: opts.smsService,
+        sharedSms: opts.verify?.sharedSms ?? null,
+        sendEmail: verifyEmailSender({
+          service: emailService,
+          coss: opts.verify?.cossEmail ?? null,
+        }),
+        billing: opts.billing,
+        limiter: rateLimiter,
+      }),
       signService:
         opts.signService === undefined
           ? createSignService({ store: new FakeDocumentStore() })
@@ -308,6 +332,11 @@ export function openApiDocumentConfig(serverUrl: string) {
         name: "Sign settings",
         description:
           "Which sites may embed the signing page, how it looks, and what signers consent to.",
+      },
+      {
+        name: "Verifications",
+        description:
+          "One-time codes by SMS or email, checked against what the end user typed, behind a fraud guard.",
       },
       {
         name: "Receiving",

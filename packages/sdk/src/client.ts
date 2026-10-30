@@ -16,6 +16,7 @@ import { ReputationResource } from "./resources/reputation.ts";
 import { RiskResource } from "./resources/risk.ts";
 import { SignResource } from "./resources/sign.ts";
 import { SmsResource } from "./resources/sms.ts";
+import { VerifyResource } from "./resources/verify.ts";
 import { WebhookEndpointsResource } from "./resources/webhook-endpoints.ts";
 import { WebhookEventsResource } from "./resources/webhook-events.ts";
 import { WebhookListenersResource } from "./resources/webhook-listeners.ts";
@@ -120,6 +121,8 @@ export class Coss {
   readonly sign: SignResource;
   /** Email addresses for agents, with threads and replies (`coss.inboxes.create()`). */
   readonly inboxes: InboxesResource;
+  /** One-time codes by SMS or email (`coss.verify.start()`, `coss.verify.check()`). */
+  readonly verify: VerifyResource;
   /** The API key's environment, project and organization (`coss.environment.get()`). */
   readonly environment: EnvironmentResource;
   /** The client's own API key (`coss.apiKey.revoke()`). */
@@ -200,6 +203,7 @@ export class Coss {
     this.sms = new SmsResource(http);
     this.sign = new SignResource(http);
     this.inboxes = new InboxesResource(http);
+    this.verify = new VerifyResource(http);
   }
 
   /**

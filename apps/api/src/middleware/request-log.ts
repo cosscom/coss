@@ -64,6 +64,9 @@ const CAPABILITY_RESPONSES = [
 const STATELESS_LOOKUPS = ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/risk/phone/check"];
 const CONTENT_REQUESTS = ["/v1/risk/content/classify", ...STATELESS_LOOKUPS];
 
+/** One-time codes the end user typed (Verify's checks) never enter request logs, even refused. */
+const SECRET_REQUESTS = ["/v1/verifications/check"];
+
 /**
  * Requests and responses that carry emails' content (sends, batches, reads, cancel, reschedule,
  * inboxes' sends and replies):
@@ -97,7 +100,7 @@ async function contentKeysFor(
 }
 
 function keepsRequestBody(path: string): boolean {
-  return !CONTENT_REQUESTS.includes(path);
+  return !CONTENT_REQUESTS.includes(path) && !SECRET_REQUESTS.includes(path);
 }
 
 function keepsResponseBody(path: string, status: number): boolean {

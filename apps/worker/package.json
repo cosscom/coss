@@ -38,6 +38,7 @@
     "@coss/sign": "workspace:*",
     "@coss/sms": "workspace:*",
     "@coss/tenancy": "workspace:*",
+    "@coss/verify": "workspace:*",
     "@coss/webhooks": "workspace:*",
     "@sentry/bun": "catalog:",
     "@t3-oss/env-core": "catalog:",

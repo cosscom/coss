@@ -551,10 +551,39 @@ const notificationsEnvironment: EnvVar = {
   value: "env_… (a live environment of coss.com's own organization)",
   description:
     "Sends account emails (sign-up verification, password resets, invitations) and " +
-    "reputation notifications through coss.com itself (worker); neither the worker nor admins " +
+    "reputation notifications through coss.com itself (worker), and Verify's email codes for " +
+    "environments without a sender of their own (api); neither the worker nor admins " +
     "(dashboard) may suspend its organization. Unset until coss.com's organization has a " +
     "verified domain: both are held, and nobody can verify their email address.",
 };
+
+/** coss.com's sender for the API's Verify codes and the worker's notifications. */
+const notificationsFrom: EnvVar = {
+  name: "NOTIFICATIONS_FROM",
+  kind: "plain",
+  required: false,
+  value: "coss.com <notifications@coss.com>",
+  description: "Sender of notification emails, on a verified domain of that organization.",
+};
+
+/** Verify's shared numbers (api): coss.com's numbers registered for one-time codes. */
+const verifySms: EnvVar[] = [
+  {
+    name: "VERIFY_SMS_ENVIRONMENT_ID",
+    kind: "plain",
+    required: false,
+    value: "env_… (a live environment of coss.com's own organization)",
+    description:
+      "Where Verify's codes from coss.com's shared numbers are sent (and billed to each customer as verify.sms). Unset: live SMS codes need the environment's own number.",
+  },
+  {
+    name: "VERIFY_SMS_FROM",
+    kind: "plain",
+    required: false,
+    value: "+1888…,+1415… (approved numbers of that environment's organization)",
+    description: "coss.com's shared numbers, comma-separated E.164, registered for one-time codes.",
+  },
+];
 
 export const SERVICES: Service[] = [
   {
@@ -824,6 +853,9 @@ export const SERVICES: Service[] = [
       portalPublicUrl,
       signDocumentsBucket,
       signPublicUrl,
+      notificationsEnvironment,
+      notificationsFrom,
+      ...verifySms,
       riskHashKey,
       ...riskClassifier,
       ...riskIpPrivacy,
@@ -919,13 +951,7 @@ export const SERVICES: Service[] = [
         description: "The dashboard's origin, for links in reputation notification emails.",
       },
       notificationsEnvironment,
-      {
-        name: "NOTIFICATIONS_FROM",
-        kind: "plain",
-        required: false,
-        value: "coss.com <notifications@coss.com>",
-        description: "Sender of notification emails, on a verified domain of that organization.",
-      },
+      notificationsFrom,
       {
         name: "APNS_KEY_ID",
         kind: "plain",

@@ -76,6 +76,7 @@ import {
   sweepUnclaimedSms,
 } from "@coss/sms";
 import { runDueOrganizationDeletions } from "@coss/tenancy/deletion";
+import { recordDueVerifySmsUsage } from "@coss/verify";
 import {
   runDueLogDrainDeliveries,
   runDueWebhookDeliveries,
@@ -206,6 +207,7 @@ export const WORKER_LOOP_NAMES = [
   "sms-sweeps",
   "sms-registrations",
   "sms-fees",
+  "verify-usage",
   "broadcasts",
   "migrations",
   "stale-claims",
@@ -359,6 +361,13 @@ export function startJobs(deps: WorkerDeps): Loop[] {
       name: "sms-fees",
       intervalMs: 10 * 60_000,
       run: async () => (await chargeDueSmsFees({ limit: SWEEP_BATCH })) >= SWEEP_BATCH,
+    }),
+    start({
+      // Verify's codes from coss.com's shared numbers, billed to each organization once the SMS
+      // reached a carrier (as SMS bills its own).
+      name: "verify-usage",
+      intervalMs: 60_000,
+      run: async () => (await recordDueVerifySmsUsage({ limit: SWEEP_BATCH })) >= SWEEP_BATCH,
     }),
     start({
       // Imports from other providers: each run works on a few for a step (they take turns).

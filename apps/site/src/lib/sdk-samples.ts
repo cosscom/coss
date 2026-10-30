@@ -339,6 +339,18 @@ export const SDK_SAMPLES: Record<string, SdkSample> = {
     method: "sign.settings.update",
     args: (r) => [tsValue(r.body ?? {})],
   },
+  // Verify. Static paths before `/v1/verifications/{id}`.
+  "POST /v1/verifications": {
+    method: "verify.start",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "POST /v1/verifications/check": {
+    method: "verify.check",
+    args: (request) => [tsValue(request.body ?? {}), requestOptions(request)],
+  },
+  "GET /v1/verifications": { method: "verify.list", args: (r) => [queryParams(r)] },
+  "GET /v1/verifications/{id}": { method: "verify.get", args: (r) => [pathId(r)] },
+  "POST /v1/verifications/{id}/cancel": { method: "verify.cancel", args: (r) => [pathId(r)] },
   "GET /v1/sms/{id}": { method: "sms.get", args: (r) => [pathId(r)] },
   "GET /v1/sms/{id}/events": { method: "sms.listEvents", args: (r) => [pathId(r)] },
   "POST /v1/sms/{id}/cancel": { method: "sms.cancel", args: (r) => [pathId(r)] },

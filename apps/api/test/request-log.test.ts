@@ -111,6 +111,24 @@ for (const path of ["/v1/risk/email/check", "/v1/risk/ip/check", "/v1/risk/conte
   }
 }
 
+for (const status of [200, 422]) {
+  test(`/v1/verifications/check never logs the code (status ${status})`, async () => {
+    const { app, writer } = loggedApp(() => Response.json({}));
+    app.post("/v1/verifications/check", async (c) => {
+      await c.req.json();
+      return Response.json({ object: "verification_check", valid: false }, { status });
+    });
+    await app.request("/v1/verifications/check", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ to: "+14155550123", code: "482913" }),
+    });
+    const [line] = await waitForLogLines(writer, 1);
+    expect(line?.attributes?.request).not.toHaveProperty("body");
+    expect(JSON.stringify(line)).not.toContain("482913");
+  });
+}
+
 describe("email content", () => {
   test("an email's own discard snapshot redacts the request, even when its response is too big to read", async () => {
     const writer = memoryLogWriter();

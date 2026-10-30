@@ -25,13 +25,18 @@ import { MemoryVelocityStore, ValkeyVelocityStore } from "./velocity.ts";
 export { type RiskEnv, riskEnvShape, riskPhoneEnvShape } from "./env.ts";
 
 /** The identifier hasher; production refuses to run without `RISK_HASH_KEY`. */
-export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } = {}): RiskHasher {
+/** `RISK_HASH_KEY`'s bytes (the development key outside production). */
+export function riskHashKeyFromEnv(env: RiskEnv, opts: { production?: boolean } = {}): Uint8Array {
   const production = opts.production ?? process.env.NODE_ENV === "production";
-  if (env.RISK_HASH_KEY) return riskHasher(Buffer.from(env.RISK_HASH_KEY, "base64"));
+  if (env.RISK_HASH_KEY) return Buffer.from(env.RISK_HASH_KEY, "base64");
   if (production) {
     throw new Error("RISK_HASH_KEY is required in production (openssl rand -base64 32).");
   }
-  return riskHasher(DEVELOPMENT_HASH_KEY);
+  return DEVELOPMENT_HASH_KEY;
+}
+
+export function riskHasherFromEnv(env: RiskEnv, opts: { production?: boolean } = {}): RiskHasher {
+  return riskHasher(riskHashKeyFromEnv(env, opts));
 }
 
 /** The IP privacy provider, or `null` when off; `ipinfo` without its token is a startup error. */

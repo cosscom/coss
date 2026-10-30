@@ -5,16 +5,17 @@ import "./instrument.ts";
 import { createPlanGate, createUsageGate, planRateLimits } from "@coss/billing";
 import { closeDb } from "@coss/db";
 import { startJobBoss } from "@coss/db/jobs";
-import { createEmailService } from "@coss/email";
+import { createEmailService, notificationEnvironment } from "@coss/email";
 import { ensureEmailDispatchQueues, pgBossDispatchQueue } from "@coss/email/dispatch";
 import { linkKeysFromEnv } from "@coss/email/runtime";
 import { createLogWriter } from "@coss/logs";
 import { createRateLimitRuntime } from "@coss/ratelimit";
-import { createRiskDeps } from "@coss/risk/runtime";
+import { createRiskDeps, riskHashKeyFromEnv } from "@coss/risk/runtime";
 import { createSignService } from "@coss/sign";
 import { signStoreFromEnv } from "@coss/sign/runtime";
 import { createSmsService } from "@coss/sms";
 import { ensureSmsDispatchQueue, pgBossSmsDispatchQueue } from "@coss/sms/dispatch";
+import { verifyCodeKey } from "@coss/verify";
 import { parseSecretsKeys } from "@coss/webhooks";
 import * as Sentry from "@sentry/bun";
 import { createApp } from "./app.ts";
@@ -23,8 +24,33 @@ import { createDefaultEmailRuntime } from "./runtime.ts";
 import { startServer } from "./server.ts";
 
 const publicUrl = env.API_PUBLIC_URL ?? `http://localhost:${env.API_PORT}`;
+if (!env.NOTIFICATIONS_ENVIRONMENT_ID !== !env.NOTIFICATIONS_FROM) {
+  throw new Error("Set both NOTIFICATIONS_ENVIRONMENT_ID and NOTIFICATIONS_FROM, or neither.");
+}
+if (!env.VERIFY_SMS_ENVIRONMENT_ID !== !env.VERIFY_SMS_FROM?.length) {
+  throw new Error("Set both VERIFY_SMS_ENVIRONMENT_ID and VERIFY_SMS_FROM, or neither.");
+}
+// coss.com's own environments: its email sender and its shared numbers (Verify), both of its own
+// organization, which plans and caps never limit.
+const cossEnvironment = env.NOTIFICATIONS_ENVIRONMENT_ID
+  ? await notificationEnvironment(env.NOTIFICATIONS_ENVIRONMENT_ID)
+  : null;
+const verifySmsEnvironment = env.VERIFY_SMS_ENVIRONMENT_ID
+  ? await notificationEnvironment(env.VERIFY_SMS_ENVIRONMENT_ID)
+  : null;
+if (
+  cossEnvironment &&
+  verifySmsEnvironment &&
+  cossEnvironment.organizationId !== verifySmsEnvironment.organizationId
+) {
+  throw new Error(
+    "VERIFY_SMS_ENVIRONMENT_ID must be an environment of coss.com's own organization.",
+  );
+}
+const systemOrganizationId =
+  cossEnvironment?.organizationId ?? verifySmsEnvironment?.organizationId ?? null;
 // Plans: features and resource limits, Free's capped allowance, and plan rate limits.
-const plans = createPlanGate();
+const plans = createPlanGate({ systemOrganizationId });
 const email = createDefaultEmailRuntime(env, { plans });
 // Sends only enqueue (the worker dispatches).
 const jobs = await startJobBoss();
@@ -42,7 +68,7 @@ const shutdown = new AbortController();
 const linkKeys = linkKeysFromEnv(env);
 const trackingUrl = env.TRACKING_PUBLIC_URL ?? publicUrl;
 
-const usage = createUsageGate();
+const usage = createUsageGate({ systemOrganizationId });
 const signStore = signStoreFromEnv(env);
 const app = createApp({
   emailService: createEmailService({
@@ -61,6 +87,17 @@ const app = createApp({
     queue: pgBossSmsDispatchQueue(jobs),
     billing: usage,
   }),
+  verify: {
+    codeKey: verifyCodeKey(riskHashKeyFromEnv(env)),
+    sharedSms:
+      verifySmsEnvironment && env.VERIFY_SMS_FROM
+        ? { environment: verifySmsEnvironment, numbers: env.VERIFY_SMS_FROM }
+        : null,
+    cossEmail:
+      cossEnvironment && env.NOTIFICATIONS_FROM
+        ? { environment: cossEnvironment, address: addressOf(env.NOTIFICATIONS_FROM) }
+        : null,
+  },
   // Documents live in SIGN_DOCUMENTS_BUCKET; production without it has no Sign (never Postgres).
   signService: signStore ? createSignService({ store: signStore }) : null,
   billing: usage,
@@ -92,6 +129,11 @@ const app = createApp({
   logWriter,
   shutdownSignal: shutdown.signal,
 });
+
+/** The bare address of `Name <address>` or `address`. */
+function addressOf(from: string): string {
+  return /<([^>]+)>/.exec(from)?.[1]?.trim() ?? from.trim();
+}
 
 const server = startServer({
   fetch: app.fetch,

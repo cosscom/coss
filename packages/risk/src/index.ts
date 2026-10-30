@@ -27,7 +27,12 @@ export {
 export { type DomainAge, type DomainAgeLookup, domainAge } from "./domain-age.ts";
 export { RiskError, type RiskErrorCode } from "./errors.ts";
 export { forgetRiskUser, type RiskFeedbackActor, recordRiskFeedback } from "./feedback.ts";
-export { type RiskHasher, type RiskHashKind, riskHasher } from "./hash.ts";
+export {
+  DEVELOPMENT_HASH_KEY,
+  type RiskHasher,
+  type RiskHashKind,
+  riskHasher,
+} from "./hash.ts";
 export {
   checkRiskLimit,
   createRiskLimitBucket,
