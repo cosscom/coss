@@ -12,6 +12,7 @@ export const metadata = pageMetadata({
   title: "Compare coss.com: alternatives to Resend, SendGrid, Twilio and more",
   description: DESCRIPTION,
   path: COMPARE_ROUTE,
+  ownImage: true,
 });
 
 export default function CompareIndex() {

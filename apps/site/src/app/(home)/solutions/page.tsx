@@ -11,6 +11,7 @@ export const metadata = pageMetadata({
   title: "Solutions: what you can build with coss.com",
   description: DESCRIPTION,
   path: SOLUTIONS_ROUTE,
+  ownImage: true,
 });
 
 export default function SolutionsPage() {

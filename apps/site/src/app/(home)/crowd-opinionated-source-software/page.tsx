@@ -23,6 +23,7 @@ import { UnreadDiff } from "@/components/coss-landing/unread-diff";
 import { Exposure, Volume } from "@/components/coss-landing/why-oss-died";
 import { SignUpButton } from "@/components/sign-up-button";
 import { YouTubeEmbed } from "@/components/youtube-embed";
+import { DEFAULT_IMAGE } from "@/lib/seo";
 import { SHIPYARD } from "@/lib/shipyard";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -41,6 +42,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     type: "website",
     url: `${SITE_URL}${PATH}`,
+    images: [DEFAULT_IMAGE],
   },
 };
 

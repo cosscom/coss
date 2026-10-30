@@ -123,5 +123,6 @@ export async function generateMetadata({
     description: page.data.description ?? "",
     path: page.url,
     markdown: marketingMarkdownUrl(page.url),
+    ownImage: true,
   });
 }

@@ -301,3 +301,22 @@ describe("the pages as Markdown", () => {
     }
   });
 });
+
+describe("share images", () => {
+  // An image named in `openGraph` replaces a segment's own opengraph-image file, and a page that
+  // sets `openGraph` drops its parents' image: pageMetadata names the default card unless told the
+  // segment has its own.
+  test("pages pass ownImage exactly where their segment has an opengraph-image", () => {
+    const app = path.join(ROOT, "src/app");
+    const pagesUsingMetadata = [...new Bun.Glob("**/page.tsx").scanSync(app)].filter((file) =>
+      readFileSync(path.join(app, file), "utf8").includes("pageMetadata("),
+    );
+    expect(pagesUsingMetadata.length).toBeGreaterThan(5);
+    for (const file of pagesUsingMetadata) {
+      const dir = path.dirname(path.join(app, file));
+      const own = readdirSync(dir).some((name) => name.startsWith("opengraph-image"));
+      const passes = readFileSync(path.join(app, file), "utf8").includes("ownImage: true");
+      expect({ file, ownImage: passes }).toEqual({ file, ownImage: own });
+    }
+  });
+});

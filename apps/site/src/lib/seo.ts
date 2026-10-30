@@ -14,10 +14,17 @@ export function abs(path: string): string {
 }
 
 /**
+ * coss.com's default card (`src/app/opengraph-image.tsx`). A page that sets `openGraph` replaces
+ * its parents' whole object, image included, so pages name it themselves. Images named here also
+ * replace a segment's own `opengraph-image` file: pages that have one pass `ownImage`.
+ */
+export const DEFAULT_IMAGE = "/opengraph-image";
+
+/**
  * A page's metadata: an absolute title (pages here are written for their search query, so the
  * root layout's `· coss.com` template would only repeat it), the description, the canonical URL,
- * Open Graph and Twitter. The image comes from the nearest `opengraph-image` file, so it isn't set
- * here. `markdown` is the page's `.md` twin, for agents.
+ * Open Graph and Twitter with the default card (unless `ownImage`: the segment's
+ * `opengraph-image` file). `markdown` is the page's `.md` twin, for agents.
  */
 export function pageMetadata({
   title,
@@ -25,13 +32,16 @@ export function pageMetadata({
   path,
   type = "website",
   markdown,
+  ownImage = false,
 }: {
   title: string;
   description: string;
   path: string;
   type?: "website" | "article";
   markdown?: string;
+  ownImage?: boolean;
 }): Metadata {
+  const images = ownImage ? {} : { images: [DEFAULT_IMAGE] };
   return {
     title: { absolute: title },
     description,
@@ -39,8 +49,8 @@ export function pageMetadata({
       canonical: path,
       ...(markdown ? { types: { "text/markdown": markdown } } : {}),
     },
-    openGraph: { type, url: path, siteName: SITE_NAME, title, description },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { type, url: path, siteName: SITE_NAME, title, description, ...images },
+    twitter: { card: "summary_large_image", title, description, ...images },
   };
 }
 

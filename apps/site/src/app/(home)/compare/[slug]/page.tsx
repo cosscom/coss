@@ -30,5 +30,6 @@ export async function generateMetadata({
     path,
     type: "article",
     markdown: `${path}.md`,
+    ownImage: true,
   });
 }

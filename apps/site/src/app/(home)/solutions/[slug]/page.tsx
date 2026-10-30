@@ -85,5 +85,6 @@ export async function generateMetadata({
     path: page.url,
     type: "article",
     markdown: marketingMarkdownUrl(page.url),
+    ownImage: true,
   });
 }
