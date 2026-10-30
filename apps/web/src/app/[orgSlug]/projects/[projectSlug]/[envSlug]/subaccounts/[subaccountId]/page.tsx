@@ -1,5 +1,6 @@
 import { findSubaccount, listDomains, subaccountStats } from "@coss/email";
 import type { CheckResult } from "@coss/reputation";
+import { Button } from "@coss/ui/components/button";
 import {
   Table,
   TableBody,
@@ -8,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@coss/ui/components/table";
-import { BarChart3Icon, GlobeIcon } from "lucide-react";
+import { ArrowRightIcon, BarChart3Icon, GlobeIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -55,6 +56,7 @@ export default async function SubaccountPage({
     }),
   ]);
   const rowTarget = { ...target, subaccountId: row.id };
+  const emailsHref = `${envPath}/emails?${new URLSearchParams({ subaccount: row.id })}`;
   const editable = row.status !== "deleting" && can({ subaccount: ["update"] });
   const [statusTone, statusLabel] = STATUS_TONE[row.status];
   const [reputationTone, reputationLabel] = REPUTATION_TONE[row.reputationStatus];
@@ -173,6 +175,12 @@ export default async function SubaccountPage({
       </Panel>
 
       <Panel
+        action={
+          <Button render={<Link href={emailsHref} />} size="sm" variant="ghost">
+            View emails
+            <ArrowRightIcon />
+          </Button>
+        }
         description="Recipients per day over the last 14 days, by their current status."
         title="Sending"
       >
@@ -183,10 +191,7 @@ export default async function SubaccountPage({
               description={
                 <>
                   Its emails show up here, and under{" "}
-                  <Link
-                    className="underline"
-                    href={`${envPath}/emails?${new URLSearchParams({ subaccount: row.id })}`}
-                  >
+                  <Link className="underline" href={emailsHref}>
                     Emails
                   </Link>
                   .
