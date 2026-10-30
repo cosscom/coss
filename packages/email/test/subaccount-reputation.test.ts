@@ -199,6 +199,24 @@ describe("sub-account reputation", () => {
     expect((await getSubaccount({ organizationId, id: a.id }))?.nextEvaluationAt).toEqual(later);
   });
 
+  test("an evaluation whose lease was taken over writes nothing", async () => {
+    const { organizationId, a } = await setup();
+    const takenOver = new Date(Date.now() + 10 * 60 * 1000);
+    await db
+      .update(schema.emailSubaccount)
+      .set({ reputationStatus: "warning", evaluationLeaseUntil: takenOver })
+      .where(eq(schema.emailSubaccount.id, a.id));
+    const current = await getSubaccount({ organizationId, id: a.id });
+    if (!current) throw new Error("expected the sub-account");
+    // The stale worker's claim had an older lease.
+    const stale = { ...current, evaluationLeaseUntil: new Date(Date.now() - 1000) };
+    expect(await evaluateSubaccount(stale)).toBe("warning");
+    expect(await getSubaccount({ organizationId, id: a.id })).toMatchObject({
+      reputationStatus: "warning",
+      evaluationLeaseUntil: takenOver,
+    });
+  });
+
   test("a screening block pauses the sub-account, never the organization", async () => {
     const { organizationId, a, send } = await setup({ screen: true });
     const blocked = await send("a", "victim@example.com", "<p>[coss-test:phishing] Log in</p>");

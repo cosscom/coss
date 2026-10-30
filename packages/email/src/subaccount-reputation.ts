@@ -231,6 +231,13 @@ export async function evaluateSubaccount(
       )
       .for("update");
     if (!latest) return row.reputationStatus;
+    // A claim that outlived its lease was taken over: the newer worker decides.
+    if (
+      row.evaluationLeaseUntil &&
+      latest.evaluationLeaseUntil?.getTime() !== row.evaluationLeaseUntil.getTime()
+    ) {
+      return latest.reputationStatus;
+    }
     // The claim consumed its due marker: one set since is newer evidence, and stays.
     const pending = latest.nextEvaluationAt;
     if (latest.revision !== row.revision) {
