@@ -25,7 +25,7 @@ public partial class CossClient : ICossClient
                 { "X-Fern-Language", "C#" },
                 { "X-Fern-SDK-Name", "Coss" },
                 { "X-Fern-SDK-Version", global::Coss.Version.Current },
-                { "User-Agent", "coss-dotnet/0.2.0" },
+                { "User-Agent", "coss-dotnet/0.3.0" },
             }
         );
         foreach (var header in platformHeaders)

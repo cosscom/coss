@@ -15,6 +15,8 @@ public final class UsageMeter {
     public static final UsageMeter VIDEO_PARTICIPANT_MINUTES =
             new UsageMeter(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
 
+    public static final UsageMeter FORMS_FILE_UPLOADS = new UsageMeter(Value.FORMS_FILE_UPLOADS, "forms.file_uploads");
+
     public static final UsageMeter FORMS_SUBMISSIONS = new UsageMeter(Value.FORMS_SUBMISSIONS, "forms.submissions");
 
     public static final UsageMeter EMAIL_INBOXES = new UsageMeter(Value.EMAIL_INBOXES, "email.inboxes");
@@ -79,6 +81,8 @@ public final class UsageMeter {
                 return visitor.visitSmsReceivedSegments();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case FORMS_FILE_UPLOADS:
+                return visitor.visitFormsFileUploads();
             case FORMS_SUBMISSIONS:
                 return visitor.visitFormsSubmissions();
             case EMAIL_INBOXES:
@@ -118,6 +122,8 @@ public final class UsageMeter {
                 return SMS_RECEIVED_SEGMENTS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "forms.file_uploads":
+                return FORMS_FILE_UPLOADS;
             case "forms.submissions":
                 return FORMS_SUBMISSIONS;
             case "email.inboxes":
@@ -174,6 +180,8 @@ public final class UsageMeter {
 
         FORMS_SUBMISSIONS,
 
+        FORMS_FILE_UPLOADS,
+
         VIDEO_PARTICIPANT_MINUTES,
 
         SCHEDULING_BOOKINGS,
@@ -207,6 +215,8 @@ public final class UsageMeter {
         T visitVerifySms();
 
         T visitFormsSubmissions();
+
+        T visitFormsFileUploads();
 
         T visitVideoParticipantMinutes();
 

@@ -57,6 +57,13 @@ public record SmsWebhookEventData : IJsonOnDeserialized
     [JsonPropertyName("occurred_at")]
     public required DateTime OccurredAt { get; set; }
 
+    /// <summary>
+    /// Only for a message sent with a W3C `traceparent` header: that trace context (normalized to version `00`), also sent as this request's `traceparent` header, so handling the event joins the sender's trace.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("traceparent")]
+    public string? Traceparent { get; set; }
+
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();
 

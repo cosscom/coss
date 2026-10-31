@@ -17,6 +17,7 @@ BillingUsageItemMeter = typing.Union[
         "verify.verifications",
         "verify.sms",
         "forms.submissions",
+        "forms.file_uploads",
         "video.participant_minutes",
         "scheduling.bookings",
     ],

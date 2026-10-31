@@ -49,6 +49,8 @@ public final class SmsWebhookEventData {
 
     private final OffsetDateTime occurredAt;
 
+    private final Optional<String> traceparent;
+
     private final Map<String, Object> additionalProperties;
 
     private SmsWebhookEventData(
@@ -63,6 +65,7 @@ public final class SmsWebhookEventData {
             List<SmsWebhookEventDataTagsItem> tags,
             boolean sandbox,
             OffsetDateTime occurredAt,
+            Optional<String> traceparent,
             Map<String, Object> additionalProperties) {
         this.failure = failure;
         this.providerErrorCode = providerErrorCode;
@@ -75,6 +78,7 @@ public final class SmsWebhookEventData {
         this.tags = tags;
         this.sandbox = sandbox;
         this.occurredAt = occurredAt;
+        this.traceparent = traceparent;
         this.additionalProperties = additionalProperties;
     }
 
@@ -146,6 +150,14 @@ public final class SmsWebhookEventData {
         return occurredAt;
     }
 
+    /**
+     * @return Only for a message sent with a W3C <code>traceparent</code> header: that trace context (normalized to version <code>00</code>), also sent as this request's <code>traceparent</code> header, so handling the event joins the sender's trace.
+     */
+    @JsonProperty("traceparent")
+    public Optional<String> getTraceparent() {
+        return traceparent;
+    }
+
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("provider_error_code")
     private OptionalNullable<String> _getProviderErrorCode() {
@@ -174,7 +186,8 @@ public final class SmsWebhookEventData {
                 && segments == other.segments
                 && tags.equals(other.tags)
                 && sandbox == other.sandbox
-                && occurredAt.equals(other.occurredAt);
+                && occurredAt.equals(other.occurredAt)
+                && traceparent.equals(other.traceparent);
     }
 
     @java.lang.Override
@@ -190,7 +203,8 @@ public final class SmsWebhookEventData {
                 this.segments,
                 this.tags,
                 this.sandbox,
-                this.occurredAt);
+                this.occurredAt,
+                this.traceparent);
     }
 
     @java.lang.Override
@@ -269,6 +283,13 @@ public final class SmsWebhookEventData {
         _FinalStage addTags(SmsWebhookEventDataTagsItem tags);
 
         _FinalStage addAllTags(List<SmsWebhookEventDataTagsItem> tags);
+
+        /**
+         * <p>Only for a message sent with a W3C <code>traceparent</code> header: that trace context (normalized to version <code>00</code>), also sent as this request's <code>traceparent</code> header, so handling the event joins the sender's trace.</p>
+         */
+        _FinalStage traceparent(Optional<String> traceparent);
+
+        _FinalStage traceparent(String traceparent);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -294,6 +315,8 @@ public final class SmsWebhookEventData {
         private boolean sandbox;
 
         private OffsetDateTime occurredAt;
+
+        private Optional<String> traceparent = Optional.empty();
 
         private List<SmsWebhookEventDataTagsItem> tags = new ArrayList<>();
 
@@ -321,6 +344,7 @@ public final class SmsWebhookEventData {
             tags(other.getTags());
             sandbox(other.getSandbox());
             occurredAt(other.getOccurredAt());
+            traceparent(other.getTraceparent());
             return this;
         }
 
@@ -370,6 +394,26 @@ public final class SmsWebhookEventData {
         @JsonSetter("occurred_at")
         public _FinalStage occurredAt(@NotNull OffsetDateTime occurredAt) {
             this.occurredAt = Objects.requireNonNull(occurredAt, "occurredAt must not be null");
+            return this;
+        }
+
+        /**
+         * <p>Only for a message sent with a W3C <code>traceparent</code> header: that trace context (normalized to version <code>00</code>), also sent as this request's <code>traceparent</code> header, so handling the event joins the sender's trace.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage traceparent(String traceparent) {
+            this.traceparent = Optional.ofNullable(traceparent);
+            return this;
+        }
+
+        /**
+         * <p>Only for a message sent with a W3C <code>traceparent</code> header: that trace context (normalized to version <code>00</code>), also sent as this request's <code>traceparent</code> header, so handling the event joins the sender's trace.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "traceparent", nulls = Nulls.SKIP)
+        public _FinalStage traceparent(Optional<String> traceparent) {
+            this.traceparent = traceparent;
             return this;
         }
 
@@ -501,6 +545,7 @@ public final class SmsWebhookEventData {
                     tags,
                     sandbox,
                     occurredAt,
+                    traceparent,
                     additionalProperties);
         }
 

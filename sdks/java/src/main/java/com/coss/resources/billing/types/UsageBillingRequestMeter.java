@@ -16,6 +16,9 @@ public final class UsageBillingRequestMeter {
     public static final UsageBillingRequestMeter VIDEO_PARTICIPANT_MINUTES =
             new UsageBillingRequestMeter(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
 
+    public static final UsageBillingRequestMeter FORMS_FILE_UPLOADS =
+            new UsageBillingRequestMeter(Value.FORMS_FILE_UPLOADS, "forms.file_uploads");
+
     public static final UsageBillingRequestMeter FORMS_SUBMISSIONS =
             new UsageBillingRequestMeter(Value.FORMS_SUBMISSIONS, "forms.submissions");
 
@@ -91,6 +94,8 @@ public final class UsageBillingRequestMeter {
                 return visitor.visitSmsReceivedSegments();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case FORMS_FILE_UPLOADS:
+                return visitor.visitFormsFileUploads();
             case FORMS_SUBMISSIONS:
                 return visitor.visitFormsSubmissions();
             case EMAIL_INBOXES:
@@ -130,6 +135,8 @@ public final class UsageBillingRequestMeter {
                 return SMS_RECEIVED_SEGMENTS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "forms.file_uploads":
+                return FORMS_FILE_UPLOADS;
             case "forms.submissions":
                 return FORMS_SUBMISSIONS;
             case "email.inboxes":
@@ -186,6 +193,8 @@ public final class UsageBillingRequestMeter {
 
         FORMS_SUBMISSIONS,
 
+        FORMS_FILE_UPLOADS,
+
         VIDEO_PARTICIPANT_MINUTES,
 
         SCHEDULING_BOOKINGS,
@@ -219,6 +228,8 @@ public final class UsageBillingRequestMeter {
         T visitVerifySms();
 
         T visitFormsSubmissions();
+
+        T visitFormsFileUploads();
 
         T visitVideoParticipantMinutes();
 

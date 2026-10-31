@@ -3787,6 +3787,7 @@ const (
 	BillingWebhookEventThreeDataMeterVerifyVerifications     BillingWebhookEventThreeDataMeter = "verify.verifications"
 	BillingWebhookEventThreeDataMeterVerifySms               BillingWebhookEventThreeDataMeter = "verify.sms"
 	BillingWebhookEventThreeDataMeterFormsSubmissions        BillingWebhookEventThreeDataMeter = "forms.submissions"
+	BillingWebhookEventThreeDataMeterFormsFileUploads        BillingWebhookEventThreeDataMeter = "forms.file_uploads"
 	BillingWebhookEventThreeDataMeterVideoParticipantMinutes BillingWebhookEventThreeDataMeter = "video.participant_minutes"
 	BillingWebhookEventThreeDataMeterSchedulingBookings      BillingWebhookEventThreeDataMeter = "scheduling.bookings"
 )
@@ -3819,6 +3820,8 @@ func NewBillingWebhookEventThreeDataMeterFromString(s string) (BillingWebhookEve
 		return BillingWebhookEventThreeDataMeterVerifySms, nil
 	case "forms.submissions":
 		return BillingWebhookEventThreeDataMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return BillingWebhookEventThreeDataMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return BillingWebhookEventThreeDataMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -8630,6 +8633,7 @@ const (
 	CreditMeterVerifyVerifications     CreditMeter = "verify.verifications"
 	CreditMeterVerifySms               CreditMeter = "verify.sms"
 	CreditMeterFormsSubmissions        CreditMeter = "forms.submissions"
+	CreditMeterFormsFileUploads        CreditMeter = "forms.file_uploads"
 	CreditMeterVideoParticipantMinutes CreditMeter = "video.participant_minutes"
 	CreditMeterSchedulingBookings      CreditMeter = "scheduling.bookings"
 )
@@ -8662,6 +8666,8 @@ func NewCreditMeterFromString(s string) (CreditMeter, error) {
 		return CreditMeterVerifySms, nil
 	case "forms.submissions":
 		return CreditMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return CreditMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return CreditMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -8692,6 +8698,7 @@ const (
 	CreditMetersItemVerifyVerifications     CreditMetersItem = "verify.verifications"
 	CreditMetersItemVerifySms               CreditMetersItem = "verify.sms"
 	CreditMetersItemFormsSubmissions        CreditMetersItem = "forms.submissions"
+	CreditMetersItemFormsFileUploads        CreditMetersItem = "forms.file_uploads"
 	CreditMetersItemVideoParticipantMinutes CreditMetersItem = "video.participant_minutes"
 	CreditMetersItemSchedulingBookings      CreditMetersItem = "scheduling.bookings"
 )
@@ -8724,6 +8731,8 @@ func NewCreditMetersItemFromString(s string) (CreditMetersItem, error) {
 		return CreditMetersItemVerifySms, nil
 	case "forms.submissions":
 		return CreditMetersItemFormsSubmissions, nil
+	case "forms.file_uploads":
+		return CreditMetersItemFormsFileUploads, nil
 	case "video.participant_minutes":
 		return CreditMetersItemVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -28177,6 +28186,7 @@ const (
 	InvoiceLineMeterVerifyVerifications     InvoiceLineMeter = "verify.verifications"
 	InvoiceLineMeterVerifySms               InvoiceLineMeter = "verify.sms"
 	InvoiceLineMeterFormsSubmissions        InvoiceLineMeter = "forms.submissions"
+	InvoiceLineMeterFormsFileUploads        InvoiceLineMeter = "forms.file_uploads"
 	InvoiceLineMeterVideoParticipantMinutes InvoiceLineMeter = "video.participant_minutes"
 	InvoiceLineMeterSchedulingBookings      InvoiceLineMeter = "scheduling.bookings"
 )
@@ -28209,6 +28219,8 @@ func NewInvoiceLineMeterFromString(s string) (InvoiceLineMeter, error) {
 		return InvoiceLineMeterVerifySms, nil
 	case "forms.submissions":
 		return InvoiceLineMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return InvoiceLineMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return InvoiceLineMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -29731,7 +29743,7 @@ type LogDrainBatch struct {
 	ID      string              `json:"id" url:"id"`
 	DrainID string              `json:"drain_id" url:"drain_id"`
 	Status  LogDrainBatchStatus `json:"status" url:"status"`
-	// Lines in the batch (one per NDJSON line).
+	// Lines in the batch.
 	LineCount int64 `json:"line_count" url:"line_count"`
 	// Size of the request body in bytes.
 	ByteSize     int64 `json:"byte_size" url:"byte_size"`

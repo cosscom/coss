@@ -35,7 +35,7 @@ class LogDrainBatch extends JsonSerializableType
     public string $status;
 
     /**
-     * @var int $lineCount Lines in the batch (one per NDJSON line).
+     * @var int $lineCount Lines in the batch.
      */
     #[JsonProperty('line_count')]
     public int $lineCount;

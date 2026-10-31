@@ -2587,6 +2587,14 @@ func TestSettersEmailWebhookEventData(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetTraceparent", func(t *testing.T) {
+		obj := &EmailWebhookEventData{}
+		var fernTestValueTraceparent *string
+		obj.SetTraceparent(fernTestValueTraceparent)
+		assert.Equal(t, fernTestValueTraceparent, obj.Traceparent)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 }
 
 func TestGettersEmailWebhookEventData(t *testing.T) {
@@ -3200,6 +3208,39 @@ func TestGettersEmailWebhookEventData(t *testing.T) {
 		_ = obj.GetSubaccountID() // Should return zero value
 	})
 
+	t.Run("GetTraceparent", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EmailWebhookEventData{}
+		var expected *string
+		obj.Traceparent = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetTraceparent(), "getter should return the property value")
+	})
+
+	t.Run("GetTraceparent_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EmailWebhookEventData{}
+		obj.Traceparent = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetTraceparent(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetTraceparent_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *EmailWebhookEventData
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetTraceparent() // Should return zero value
+	})
+
 }
 
 func TestSettersMarkExplicitEmailWebhookEventData(t *testing.T) {
@@ -3800,6 +3841,37 @@ func TestSettersMarkExplicitEmailWebhookEventData(t *testing.T) {
 
 		// Act
 		obj.SetSubaccountID(fernTestValueSubaccountID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetTraceparent_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &EmailWebhookEventData{}
+		var fernTestValueTraceparent *string
+
+		// Act
+		obj.SetTraceparent(fernTestValueTraceparent)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -13378,6 +13450,14 @@ func TestSettersSmsWebhookEventData(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetTraceparent", func(t *testing.T) {
+		obj := &SmsWebhookEventData{}
+		var fernTestValueTraceparent *string
+		obj.SetTraceparent(fernTestValueTraceparent)
+		assert.Equal(t, fernTestValueTraceparent, obj.Traceparent)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 }
 
 func TestGettersSmsWebhookEventData(t *testing.T) {
@@ -13672,6 +13752,39 @@ func TestGettersSmsWebhookEventData(t *testing.T) {
 			}
 		}()
 		_ = obj.GetOccurredAt() // Should return zero value
+	})
+
+	t.Run("GetTraceparent", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SmsWebhookEventData{}
+		var expected *string
+		obj.Traceparent = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetTraceparent(), "getter should return the property value")
+	})
+
+	t.Run("GetTraceparent_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SmsWebhookEventData{}
+		obj.Traceparent = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetTraceparent(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetTraceparent_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *SmsWebhookEventData
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetTraceparent() // Should return zero value
 	})
 
 }
@@ -13995,6 +14108,37 @@ func TestSettersMarkExplicitSmsWebhookEventData(t *testing.T) {
 
 		// Act
 		obj.SetOccurredAt(fernTestValueOccurredAt)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetTraceparent_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &SmsWebhookEventData{}
+		var fernTestValueTraceparent *string
+
+		// Act
+		obj.SetTraceparent(fernTestValueTraceparent)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)

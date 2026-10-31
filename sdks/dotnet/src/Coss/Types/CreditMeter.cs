@@ -34,6 +34,8 @@ public readonly record struct CreditMeter : IStringEnum
 
     public static readonly CreditMeter FormsSubmissions = new(Values.FormsSubmissions);
 
+    public static readonly CreditMeter FormsFileUploads = new(Values.FormsFileUploads);
+
     public static readonly CreditMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -161,6 +163,8 @@ public readonly record struct CreditMeter : IStringEnum
         public const string VerifySms = "verify.sms";
 
         public const string FormsSubmissions = "forms.submissions";
+
+        public const string FormsFileUploads = "forms.file_uploads";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

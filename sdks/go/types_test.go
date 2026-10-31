@@ -123797,6 +123797,13 @@ func TestEnumBillingWebhookEventThreeDataMeter(t *testing.T) {
 		assert.Equal(t, BillingWebhookEventThreeDataMeter("forms.submissions"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewBillingWebhookEventThreeDataMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, BillingWebhookEventThreeDataMeter("forms.file_uploads"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewBillingWebhookEventThreeDataMeterFromString("video.participant_minutes")
@@ -124815,6 +124822,13 @@ func TestEnumCreditMeter(t *testing.T) {
 		assert.Equal(t, CreditMeter("forms.submissions"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreditMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreditMeter("forms.file_uploads"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewCreditMeterFromString("video.participant_minutes")
@@ -124933,6 +124947,13 @@ func TestEnumCreditMetersItem(t *testing.T) {
 		val, err := NewCreditMetersItemFromString("forms.submissions")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, CreditMetersItem("forms.submissions"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewCreditMetersItemFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, CreditMetersItem("forms.file_uploads"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
@@ -128332,6 +128353,13 @@ func TestEnumInvoiceLineMeter(t *testing.T) {
 		val, err := NewInvoiceLineMeterFromString("forms.submissions")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, InvoiceLineMeter("forms.submissions"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewInvoiceLineMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, InvoiceLineMeter("forms.file_uploads"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {

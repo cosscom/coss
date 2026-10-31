@@ -46,6 +46,7 @@ if typing.TYPE_CHECKING:
         UpdateFormRequestSpamOnReview,
         UpdateFormRequestSubmitter,
     )
+    from .log_drains import CreateLogDrainRequestFormat
     from .risk import (
         CreateRiskAssessmentRequestCaptcha,
         CreateRiskAssessmentRequestContent,
@@ -71,6 +72,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateFormRequestSpamCaptcha": ".forms",
     "CreateFormRequestSpamOnReview": ".forms",
     "CreateFormRequestSubmitter": ".forms",
+    "CreateLogDrainRequestFormat": ".log_drains",
     "CreateRiskAssessmentRequestCaptcha": ".risk",
     "CreateRiskAssessmentRequestContent": ".risk",
     "CreateRiskAssessmentRequestDevice": ".risk",
@@ -149,6 +151,7 @@ __all__ = [
     "CreateFormRequestSpamCaptcha",
     "CreateFormRequestSpamOnReview",
     "CreateFormRequestSubmitter",
+    "CreateLogDrainRequestFormat",
     "CreateRiskAssessmentRequestCaptcha",
     "CreateRiskAssessmentRequestContent",
     "CreateRiskAssessmentRequestDevice",

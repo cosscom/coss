@@ -110,7 +110,7 @@ public final class LogDrainBatch {
     }
 
     /**
-     * @return Lines in the batch (one per NDJSON line).
+     * @return Lines in the batch.
      */
     @JsonProperty("line_count")
     public long getLineCount() {
@@ -273,7 +273,7 @@ public final class LogDrainBatch {
 
     public interface LineCountStage {
         /**
-         * <p>Lines in the batch (one per NDJSON line).</p>
+         * <p>Lines in the batch.</p>
          */
         ByteSizeStage lineCount(long lineCount);
     }
@@ -435,7 +435,7 @@ public final class LogDrainBatch {
         }
 
         /**
-         * <p>Lines in the batch (one per NDJSON line).</p>
+         * <p>Lines in the batch.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override

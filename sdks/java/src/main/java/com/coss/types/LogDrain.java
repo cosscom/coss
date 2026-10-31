@@ -37,6 +37,10 @@ public final class LogDrain {
 
     private final List<LogDrainSource> sources;
 
+    private final LogDrainFormat format;
+
+    private final OptionalNullable<String> authHeaderName;
+
     private final boolean enabled;
 
     private final OptionalNullable<LogDrainDisabledReason> disabledReason;
@@ -55,6 +59,8 @@ public final class LogDrain {
             String url,
             OptionalNullable<String> description,
             List<LogDrainSource> sources,
+            LogDrainFormat format,
+            OptionalNullable<String> authHeaderName,
             boolean enabled,
             OptionalNullable<LogDrainDisabledReason> disabledReason,
             OptionalNullable<OffsetDateTime> disabledAt,
@@ -66,6 +72,8 @@ public final class LogDrain {
         this.url = url;
         this.description = description;
         this.sources = sources;
+        this.format = format;
+        this.authHeaderName = authHeaderName;
         this.enabled = enabled;
         this.disabledReason = disabledReason;
         this.disabledAt = disabledAt;
@@ -104,6 +112,23 @@ public final class LogDrain {
     @JsonProperty("sources")
     public List<LogDrainSource> getSources() {
         return sources;
+    }
+
+    @JsonProperty("format")
+    public LogDrainFormat getFormat() {
+        return format;
+    }
+
+    /**
+     * @return The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("auth_header_name")
+    public OptionalNullable<String> getAuthHeaderName() {
+        if (authHeaderName == null) {
+            return OptionalNullable.absent();
+        }
+        return authHeaderName;
     }
 
     /**
@@ -152,6 +177,12 @@ public final class LogDrain {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("auth_header_name")
+    private OptionalNullable<String> _getAuthHeaderName() {
+        return authHeaderName;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("disabled_reason")
     private OptionalNullable<LogDrainDisabledReason> _getDisabledReason() {
         return disabledReason;
@@ -180,6 +211,8 @@ public final class LogDrain {
                 && url.equals(other.url)
                 && description.equals(other.description)
                 && sources.equals(other.sources)
+                && format.equals(other.format)
+                && authHeaderName.equals(other.authHeaderName)
                 && enabled == other.enabled
                 && disabledReason.equals(other.disabledReason)
                 && disabledAt.equals(other.disabledAt)
@@ -195,6 +228,8 @@ public final class LogDrain {
                 this.url,
                 this.description,
                 this.sources,
+                this.format,
+                this.authHeaderName,
                 this.enabled,
                 this.disabledReason,
                 this.disabledAt,
@@ -222,7 +257,11 @@ public final class LogDrain {
     }
 
     public interface UrlStage {
-        EnabledStage url(@NotNull String url);
+        FormatStage url(@NotNull String url);
+    }
+
+    public interface FormatStage {
+        EnabledStage format(@NotNull LogDrainFormat format);
     }
 
     public interface EnabledStage {
@@ -265,6 +304,17 @@ public final class LogDrain {
         _FinalStage addAllSources(List<LogDrainSource> sources);
 
         /**
+         * <p>The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.</p>
+         */
+        _FinalStage authHeaderName(OptionalNullable<String> authHeaderName);
+
+        _FinalStage authHeaderName(String authHeaderName);
+
+        _FinalStage authHeaderName(Optional<String> authHeaderName);
+
+        _FinalStage authHeaderName(Nullable<String> authHeaderName);
+
+        /**
          * <p><code>manual</code>: someone disabled it. <code>failing</code>: a batch failed every attempt, so coss.com disabled it. <code>null</code> while enabled.</p>
          */
         _FinalStage disabledReason(OptionalNullable<LogDrainDisabledReason> disabledReason);
@@ -286,12 +336,21 @@ public final class LogDrain {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
-            implements ObjectStage, IdStage, UrlStage, EnabledStage, CreatedAtStage, UpdatedAtStage, _FinalStage {
+            implements ObjectStage,
+                    IdStage,
+                    UrlStage,
+                    FormatStage,
+                    EnabledStage,
+                    CreatedAtStage,
+                    UpdatedAtStage,
+                    _FinalStage {
         private LogDrainObject object;
 
         private String id;
 
         private String url;
+
+        private LogDrainFormat format;
 
         private boolean enabled;
 
@@ -302,6 +361,8 @@ public final class LogDrain {
         private OptionalNullable<OffsetDateTime> disabledAt = OptionalNullable.absent();
 
         private OptionalNullable<LogDrainDisabledReason> disabledReason = OptionalNullable.absent();
+
+        private OptionalNullable<String> authHeaderName = OptionalNullable.absent();
 
         private List<LogDrainSource> sources = new ArrayList<>();
 
@@ -319,6 +380,8 @@ public final class LogDrain {
             url(other.getUrl());
             description(other.getDescription());
             sources(other.getSources());
+            format(other.getFormat());
+            authHeaderName(other.getAuthHeaderName());
             enabled(other.getEnabled());
             disabledReason(other.getDisabledReason());
             disabledAt(other.getDisabledAt());
@@ -343,8 +406,15 @@ public final class LogDrain {
 
         @java.lang.Override
         @JsonSetter("url")
-        public EnabledStage url(@NotNull String url) {
+        public FormatStage url(@NotNull String url) {
             this.url = Objects.requireNonNull(url, "url must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("format")
+        public EnabledStage format(@NotNull LogDrainFormat format) {
+            this.format = Objects.requireNonNull(format, "format must not be null");
             return this;
         }
 
@@ -459,6 +529,56 @@ public final class LogDrain {
         }
 
         /**
+         * <p>The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage authHeaderName(Nullable<String> authHeaderName) {
+            if (authHeaderName.isNull()) {
+                this.authHeaderName = OptionalNullable.ofNull();
+            } else if (authHeaderName.isEmpty()) {
+                this.authHeaderName = OptionalNullable.absent();
+            } else {
+                this.authHeaderName = OptionalNullable.of(authHeaderName.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage authHeaderName(Optional<String> authHeaderName) {
+            if (authHeaderName.isPresent()) {
+                this.authHeaderName = OptionalNullable.of(authHeaderName.get());
+            } else {
+                this.authHeaderName = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        /**
+         * <p>The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage authHeaderName(String authHeaderName) {
+            this.authHeaderName = OptionalNullable.of(authHeaderName);
+            return this;
+        }
+
+        /**
+         * <p>The header sent with every batch to authenticate it (e.g. <code>Authorization</code>, <code>DD-API-KEY</code>), or <code>null</code>. Its value is never returned.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "auth_header_name", nulls = Nulls.SKIP)
+        public _FinalStage authHeaderName(OptionalNullable<String> authHeaderName) {
+            this.authHeaderName = authHeaderName;
+            return this;
+        }
+
+        /**
          * <p>What the drain forwards: <code>api</code> (requests made with the environment's API keys), <code>email</code> (email events), <code>webhook</code> (webhook delivery attempts) and <code>audit</code> (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
@@ -536,6 +656,8 @@ public final class LogDrain {
                     url,
                     description,
                     sources,
+                    format,
+                    authHeaderName,
                     enabled,
                     disabledReason,
                     disabledAt,

@@ -40,6 +40,8 @@ public readonly record struct UsageBillingRequestMeter : IStringEnum
 
     public static readonly UsageBillingRequestMeter FormsSubmissions = new(Values.FormsSubmissions);
 
+    public static readonly UsageBillingRequestMeter FormsFileUploads = new(Values.FormsFileUploads);
+
     public static readonly UsageBillingRequestMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -169,6 +171,8 @@ public readonly record struct UsageBillingRequestMeter : IStringEnum
         public const string VerifySms = "verify.sms";
 
         public const string FormsSubmissions = "forms.submissions";
+
+        public const string FormsFileUploads = "forms.file_uploads";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 
