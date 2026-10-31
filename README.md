@@ -713,7 +713,10 @@ wrong. AWS credentials come from the task role.
   forbids IAM identity providers, so GitHub OIDC isn't available; the runners are started by a webhook (through the
   `coss-production-github` CodeConnections connection to the AWS Connector app on `cosscom`) only for jobs of the
   workflow named `Deploy`, and only when the job's actor is on `deploy_actor_ids` (`production.tfvars`: the
-  numeric GitHub ids of the people with write access; add a new maintainer there, or their merges won't deploy).
+  numeric GitHub ids of the people with write access, plus `github-merge-queue[bot]`, the actor of every push to
+  main since merges land only through the merge queue — without it no merge deploys; add a new maintainer there,
+  or their dispatches won't deploy). The bot also runs the queue's `merge_group` checks, so a pull request a
+  maintainer has queued could get a runner; that is the same trust as merging it.
   The repository is public, so that allow-list is what keeps a stranger's pull request (with its own workflow
   named `Deploy`) off this role, which can read every production secret (it passes the execution role); verified
   by excluding an actor and dispatching (no runner started). Fork pull requests also need a maintainer's approval
