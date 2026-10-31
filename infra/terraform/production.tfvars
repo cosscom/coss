@@ -20,9 +20,10 @@ external_origin_hosts = {
 ses_name          = "coss"
 github_repository = "cosscom/coss"
 # Who may start the deploy runner (people with write access): keithwillcode, PeerRich, pumfleet,
-# sean-brydon; and coss-com-deploy[bot], the coss.com Deploy GitHub App that the admin console deploys with
-# (README, "Deploying from the admin console"). Add a new maintainer here before their merges can deploy.
-deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169"]
+# sean-brydon; coss-com-deploy[bot], the coss.com Deploy GitHub App that the admin console deploys with
+# (README, "Deploying from the admin console"); and github-merge-queue[bot], which makes every push to main
+# (merges land only through the merge queue). Add a new maintainer here before their dispatches can deploy.
+deploy_actor_ids = ["2538462", "8019099", "25907159", "55134778", "343308169", "118344674"]
 # Optional secrets not stored in coss/production: take a name out once put-secret.sh has set it.
 unset_secrets = [
   "IPINFO_PRIVACY_TOKEN",
