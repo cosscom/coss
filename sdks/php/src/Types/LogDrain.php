@@ -41,6 +41,18 @@ class LogDrain extends JsonSerializableType
     public array $sources;
 
     /**
+     * @var value-of<LogDrainFormat> $format
+     */
+    #[JsonProperty('format')]
+    public string $format;
+
+    /**
+     * @var ?string $authHeaderName The header sent with every batch to authenticate it (e.g. `Authorization`, `DD-API-KEY`), or `null`. Its value is never returned.
+     */
+    #[JsonProperty('auth_header_name')]
+    public ?string $authHeaderName;
+
+    /**
      * @var bool $enabled A disabled drain receives nothing, and lines logged while it is disabled are not kept for it.
      */
     #[JsonProperty('enabled')]
@@ -76,10 +88,12 @@ class LogDrain extends JsonSerializableType
      *   id: string,
      *   url: string,
      *   sources: array<value-of<LogDrainSource>>,
+     *   format: value-of<LogDrainFormat>,
      *   enabled: bool,
      *   createdAt: DateTime,
      *   updatedAt: DateTime,
      *   description?: ?string,
+     *   authHeaderName?: ?string,
      *   disabledReason?: ?value-of<LogDrainDisabledReason>,
      *   disabledAt?: ?DateTime,
      * } $values
@@ -95,6 +109,11 @@ class LogDrain extends JsonSerializableType
             $this->_setField('description');
         }
         $this->sources = $values['sources'];
+        $this->format = $values['format'];
+        $this->authHeaderName = $values['authHeaderName'] ?? null;
+        if (array_key_exists('authHeaderName', $values)) {
+            $this->_setField('authHeaderName');
+        }
         $this->enabled = $values['enabled'];
         $this->disabledReason = $values['disabledReason'] ?? null;
         if (array_key_exists('disabledReason', $values)) {

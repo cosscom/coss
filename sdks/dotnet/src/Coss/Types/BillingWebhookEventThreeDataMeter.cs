@@ -56,6 +56,10 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
         Values.FormsSubmissions
     );
 
+    public static readonly BillingWebhookEventThreeDataMeter FormsFileUploads = new(
+        Values.FormsFileUploads
+    );
+
     public static readonly BillingWebhookEventThreeDataMeter VideoParticipantMinutes = new(
         Values.VideoParticipantMinutes
     );
@@ -186,6 +190,8 @@ public readonly record struct BillingWebhookEventThreeDataMeter : IStringEnum
         public const string VerifySms = "verify.sms";
 
         public const string FormsSubmissions = "forms.submissions";
+
+        public const string FormsFileUploads = "forms.file_uploads";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

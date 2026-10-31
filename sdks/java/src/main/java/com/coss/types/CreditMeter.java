@@ -16,6 +16,9 @@ public final class CreditMeter {
     public static final CreditMeter VIDEO_PARTICIPANT_MINUTES =
             new CreditMeter(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
 
+    public static final CreditMeter FORMS_FILE_UPLOADS =
+            new CreditMeter(Value.FORMS_FILE_UPLOADS, "forms.file_uploads");
+
     public static final CreditMeter FORMS_SUBMISSIONS = new CreditMeter(Value.FORMS_SUBMISSIONS, "forms.submissions");
 
     public static final CreditMeter EMAIL_INBOXES = new CreditMeter(Value.EMAIL_INBOXES, "email.inboxes");
@@ -80,6 +83,8 @@ public final class CreditMeter {
                 return visitor.visitSmsReceivedSegments();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case FORMS_FILE_UPLOADS:
+                return visitor.visitFormsFileUploads();
             case FORMS_SUBMISSIONS:
                 return visitor.visitFormsSubmissions();
             case EMAIL_INBOXES:
@@ -119,6 +124,8 @@ public final class CreditMeter {
                 return SMS_RECEIVED_SEGMENTS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "forms.file_uploads":
+                return FORMS_FILE_UPLOADS;
             case "forms.submissions":
                 return FORMS_SUBMISSIONS;
             case "email.inboxes":
@@ -175,6 +182,8 @@ public final class CreditMeter {
 
         FORMS_SUBMISSIONS,
 
+        FORMS_FILE_UPLOADS,
+
         VIDEO_PARTICIPANT_MINUTES,
 
         SCHEDULING_BOOKINGS,
@@ -208,6 +217,8 @@ public final class CreditMeter {
         T visitVerifySms();
 
         T visitFormsSubmissions();
+
+        T visitFormsFileUploads();
 
         T visitVideoParticipantMinutes();
 

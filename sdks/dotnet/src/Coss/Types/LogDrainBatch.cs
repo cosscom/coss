@@ -27,7 +27,7 @@ public record LogDrainBatch : IJsonOnDeserialized
     public required LogDrainBatchStatus Status { get; set; }
 
     /// <summary>
-    /// Lines in the batch (one per NDJSON line).
+    /// Lines in the batch.
     /// </summary>
     [JsonPropertyName("line_count")]
     public required long LineCount { get; set; }

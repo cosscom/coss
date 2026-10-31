@@ -21,7 +21,7 @@ class LogDrainBatch(UniversalBaseModel):
     status: LogDrainBatchStatus
     line_count: int = pydantic.Field()
     """
-    Lines in the batch (one per NDJSON line).
+    Lines in the batch.
     """
 
     byte_size: int = pydantic.Field()

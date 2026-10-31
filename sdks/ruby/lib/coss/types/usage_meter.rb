@@ -18,6 +18,7 @@ module Coss
       VERIFY_VERIFICATIONS = "verify.verifications"
       VERIFY_SMS = "verify.sms"
       FORMS_SUBMISSIONS = "forms.submissions"
+      FORMS_FILE_UPLOADS = "forms.file_uploads"
       VIDEO_PARTICIPANT_MINUTES = "video.participant_minutes"
       SCHEDULING_BOOKINGS = "scheduling.bookings"
     end

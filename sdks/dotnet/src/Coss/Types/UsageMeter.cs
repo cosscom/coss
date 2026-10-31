@@ -34,6 +34,8 @@ public readonly record struct UsageMeter : IStringEnum
 
     public static readonly UsageMeter FormsSubmissions = new(Values.FormsSubmissions);
 
+    public static readonly UsageMeter FormsFileUploads = new(Values.FormsFileUploads);
+
     public static readonly UsageMeter VideoParticipantMinutes = new(Values.VideoParticipantMinutes);
 
     public static readonly UsageMeter SchedulingBookings = new(Values.SchedulingBookings);
@@ -158,6 +160,8 @@ public readonly record struct UsageMeter : IStringEnum
         public const string VerifySms = "verify.sms";
 
         public const string FormsSubmissions = "forms.submissions";
+
+        public const string FormsFileUploads = "forms.file_uploads";
 
         public const string VideoParticipantMinutes = "video.participant_minutes";
 

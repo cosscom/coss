@@ -17,6 +17,7 @@ enum BillingUsageItemMeter: string
     case VerifyVerifications = "verify.verifications";
     case VerifySms = "verify.sms";
     case FormsSubmissions = "forms.submissions";
+    case FormsFileUploads = "forms.file_uploads";
     case VideoParticipantMinutes = "video.participant_minutes";
     case SchedulingBookings = "scheduling.bookings";
 }

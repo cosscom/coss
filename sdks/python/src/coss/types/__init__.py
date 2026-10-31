@@ -474,12 +474,14 @@ if typing.TYPE_CHECKING:
     from .log_drain import LogDrain
     from .log_drain_attempt import LogDrainAttempt
     from .log_drain_attempt_object import LogDrainAttemptObject
+    from .log_drain_auth_header import LogDrainAuthHeader
     from .log_drain_batch import LogDrainBatch
     from .log_drain_batch_list import LogDrainBatchList
     from .log_drain_batch_list_object import LogDrainBatchListObject
     from .log_drain_batch_object import LogDrainBatchObject
     from .log_drain_batch_status import LogDrainBatchStatus
     from .log_drain_disabled_reason import LogDrainDisabledReason
+    from .log_drain_format import LogDrainFormat
     from .log_drain_list import LogDrainList
     from .log_drain_list_object import LogDrainListObject
     from .log_drain_object import LogDrainObject
@@ -1394,12 +1396,14 @@ _dynamic_imports: typing.Dict[str, str] = {
     "LogDrain": ".log_drain",
     "LogDrainAttempt": ".log_drain_attempt",
     "LogDrainAttemptObject": ".log_drain_attempt_object",
+    "LogDrainAuthHeader": ".log_drain_auth_header",
     "LogDrainBatch": ".log_drain_batch",
     "LogDrainBatchList": ".log_drain_batch_list",
     "LogDrainBatchListObject": ".log_drain_batch_list_object",
     "LogDrainBatchObject": ".log_drain_batch_object",
     "LogDrainBatchStatus": ".log_drain_batch_status",
     "LogDrainDisabledReason": ".log_drain_disabled_reason",
+    "LogDrainFormat": ".log_drain_format",
     "LogDrainList": ".log_drain_list",
     "LogDrainListObject": ".log_drain_list_object",
     "LogDrainObject": ".log_drain_object",
@@ -2310,12 +2314,14 @@ __all__ = [
     "LogDrain",
     "LogDrainAttempt",
     "LogDrainAttemptObject",
+    "LogDrainAuthHeader",
     "LogDrainBatch",
     "LogDrainBatchList",
     "LogDrainBatchListObject",
     "LogDrainBatchObject",
     "LogDrainBatchStatus",
     "LogDrainDisabledReason",
+    "LogDrainFormat",
     "LogDrainList",
     "LogDrainListObject",
     "LogDrainObject",

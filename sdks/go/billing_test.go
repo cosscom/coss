@@ -6088,6 +6088,13 @@ func TestEnumBillingUsageItemMeter(t *testing.T) {
 		assert.Equal(t, BillingUsageItemMeter("forms.submissions"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewBillingUsageItemMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, BillingUsageItemMeter("forms.file_uploads"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewBillingUsageItemMeterFromString("video.participant_minutes")
@@ -6287,6 +6294,13 @@ func TestEnumUsageBillingRequestMeter(t *testing.T) {
 		assert.Equal(t, UsageBillingRequestMeter("forms.submissions"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageBillingRequestMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageBillingRequestMeter("forms.file_uploads"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {
 		t.Parallel()
 		val, err := NewUsageBillingRequestMeterFromString("video.participant_minutes")
@@ -6427,6 +6441,13 @@ func TestEnumUsageMeter(t *testing.T) {
 		val, err := NewUsageMeterFromString("forms.submissions")
 		assert.NoError(t, err, "valid enum value should not return error")
 		assert.Equal(t, UsageMeter("forms.submissions"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_forms_file_uploads", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewUsageMeterFromString("forms.file_uploads")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, UsageMeter("forms.file_uploads"), val, "enum value should match expected wire value")
 	})
 
 	t.Run("NewFromString_video_participant_minutes", func(t *testing.T) {

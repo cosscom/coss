@@ -30,6 +30,16 @@ public record LogDrain : IJsonOnDeserialized
     [JsonPropertyName("sources")]
     public IEnumerable<LogDrainSource> Sources { get; set; } = new List<LogDrainSource>();
 
+    [JsonPropertyName("format")]
+    public required LogDrainFormat Format { get; set; }
+
+    /// <summary>
+    /// The header sent with every batch to authenticate it (e.g. `Authorization`, `DD-API-KEY`), or `null`. Its value is never returned.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("auth_header_name")]
+    public string? AuthHeaderName { get; set; }
+
     /// <summary>
     /// A disabled drain receives nothing, and lines logged while it is disabled are not kept for it.
     /// </summary>

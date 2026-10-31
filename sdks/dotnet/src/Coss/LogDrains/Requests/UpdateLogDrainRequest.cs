@@ -34,6 +34,14 @@ public record UpdateLogDrainRequest
     public IEnumerable<LogDrainSource>? Sources { get; set; }
 
     [Optional]
+    [JsonPropertyName("format")]
+    public LogDrainFormat? Format { get; set; }
+
+    [Nullable, Optional]
+    [JsonPropertyName("auth_header")]
+    public Optional<LogDrainAuthHeader?> AuthHeader { get; set; }
+
+    [Optional]
     [JsonPropertyName("enabled")]
     public bool? Enabled { get; set; }
 

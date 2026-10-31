@@ -12,7 +12,7 @@ module Coss
       @raw_client = Coss::Internal::Http::RawClient.new(
         base_url: base_url || Coss::Environment::DEFAULT,
         headers: {
-          "User-Agent" => "coss-ruby/0.2.0",
+          "User-Agent" => "coss-ruby/0.3.0",
           "X-Fern-Language" => "Ruby",
           Authorization: "Bearer #{api_key}",
           "Coss-Version" => api_version.to_s

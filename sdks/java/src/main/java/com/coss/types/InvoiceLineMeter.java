@@ -16,6 +16,9 @@ public final class InvoiceLineMeter {
     public static final InvoiceLineMeter VIDEO_PARTICIPANT_MINUTES =
             new InvoiceLineMeter(Value.VIDEO_PARTICIPANT_MINUTES, "video.participant_minutes");
 
+    public static final InvoiceLineMeter FORMS_FILE_UPLOADS =
+            new InvoiceLineMeter(Value.FORMS_FILE_UPLOADS, "forms.file_uploads");
+
     public static final InvoiceLineMeter FORMS_SUBMISSIONS =
             new InvoiceLineMeter(Value.FORMS_SUBMISSIONS, "forms.submissions");
 
@@ -85,6 +88,8 @@ public final class InvoiceLineMeter {
                 return visitor.visitSmsReceivedSegments();
             case VIDEO_PARTICIPANT_MINUTES:
                 return visitor.visitVideoParticipantMinutes();
+            case FORMS_FILE_UPLOADS:
+                return visitor.visitFormsFileUploads();
             case FORMS_SUBMISSIONS:
                 return visitor.visitFormsSubmissions();
             case EMAIL_INBOXES:
@@ -124,6 +129,8 @@ public final class InvoiceLineMeter {
                 return SMS_RECEIVED_SEGMENTS;
             case "video.participant_minutes":
                 return VIDEO_PARTICIPANT_MINUTES;
+            case "forms.file_uploads":
+                return FORMS_FILE_UPLOADS;
             case "forms.submissions":
                 return FORMS_SUBMISSIONS;
             case "email.inboxes":
@@ -180,6 +187,8 @@ public final class InvoiceLineMeter {
 
         FORMS_SUBMISSIONS,
 
+        FORMS_FILE_UPLOADS,
+
         VIDEO_PARTICIPANT_MINUTES,
 
         SCHEDULING_BOOKINGS,
@@ -213,6 +222,8 @@ public final class InvoiceLineMeter {
         T visitVerifySms();
 
         T visitFormsSubmissions();
+
+        T visitFormsFileUploads();
 
         T visitVideoParticipantMinutes();
 

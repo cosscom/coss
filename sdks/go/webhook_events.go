@@ -1474,6 +1474,7 @@ var (
 	emailWebhookEventDataFieldRecipient    = big.NewInt(1 << 17)
 	emailWebhookEventDataFieldOccurredAt   = big.NewInt(1 << 18)
 	emailWebhookEventDataFieldSubaccountID = big.NewInt(1 << 19)
+	emailWebhookEventDataFieldTraceparent  = big.NewInt(1 << 20)
 )
 
 // emailWebhookEventDataNullableFields maps the wire names of EmailWebhookEventData's nullable fields (required or optional) to their field bits.
@@ -1509,6 +1510,8 @@ type EmailWebhookEventData struct {
 	OccurredAt time.Time                        `json:"occurred_at" url:"occurred_at"`
 	// Only for an email sent for a sub-account: its id.
 	SubaccountID *string `json:"subaccount_id,omitempty" url:"subaccount_id,omitempty"`
+	// Only for an email sent with a W3C `traceparent` header: that trace context (normalized to version `00`), also sent as this request's `traceparent` header, so handling the event joins the sender's trace.
+	Traceparent *string `json:"traceparent,omitempty" url:"traceparent,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1655,6 +1658,13 @@ func (e *EmailWebhookEventData) GetSubaccountID() *string {
 		return nil
 	}
 	return e.SubaccountID
+}
+
+func (e *EmailWebhookEventData) GetTraceparent() *string {
+	if e == nil {
+		return nil
+	}
+	return e.Traceparent
 }
 
 func (e *EmailWebhookEventData) GetExtraProperties() map[string]interface{} {
@@ -1811,6 +1821,13 @@ func (e *EmailWebhookEventData) SetOccurredAt(occurredAt time.Time) {
 func (e *EmailWebhookEventData) SetSubaccountID(subaccountID *string) {
 	e.SubaccountID = subaccountID
 	e.require(emailWebhookEventDataFieldSubaccountID)
+}
+
+// SetTraceparent sets the Traceparent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (e *EmailWebhookEventData) SetTraceparent(traceparent *string) {
+	e.Traceparent = traceparent
+	e.require(emailWebhookEventDataFieldTraceparent)
 }
 
 func (e *EmailWebhookEventData) UnmarshalJSON(data []byte) error {
@@ -7036,6 +7053,7 @@ var (
 	smsWebhookEventDataFieldTags              = big.NewInt(1 << 8)
 	smsWebhookEventDataFieldSandbox           = big.NewInt(1 << 9)
 	smsWebhookEventDataFieldOccurredAt        = big.NewInt(1 << 10)
+	smsWebhookEventDataFieldTraceparent       = big.NewInt(1 << 11)
 )
 
 // smsWebhookEventDataNullableFields maps the wire names of SmsWebhookEventData's nullable fields (required or optional) to their field bits.
@@ -7058,6 +7076,8 @@ type SmsWebhookEventData struct {
 	Tags        []*SmsWebhookEventDataTagsItem  `json:"tags" url:"tags"`
 	Sandbox     bool                            `json:"sandbox" url:"sandbox"`
 	OccurredAt  time.Time                       `json:"occurred_at" url:"occurred_at"`
+	// Only for a message sent with a W3C `traceparent` header: that trace context (normalized to version `00`), also sent as this request's `traceparent` header, so handling the event joins the sender's trace.
+	Traceparent *string `json:"traceparent,omitempty" url:"traceparent,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -7141,6 +7161,13 @@ func (s *SmsWebhookEventData) GetOccurredAt() time.Time {
 		return time.Time{}
 	}
 	return s.OccurredAt
+}
+
+func (s *SmsWebhookEventData) GetTraceparent() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Traceparent
 }
 
 func (s *SmsWebhookEventData) GetExtraProperties() map[string]interface{} {
@@ -7234,6 +7261,13 @@ func (s *SmsWebhookEventData) SetSandbox(sandbox bool) {
 func (s *SmsWebhookEventData) SetOccurredAt(occurredAt time.Time) {
 	s.OccurredAt = occurredAt
 	s.require(smsWebhookEventDataFieldOccurredAt)
+}
+
+// SetTraceparent sets the Traceparent field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SmsWebhookEventData) SetTraceparent(traceparent *string) {
+	s.Traceparent = traceparent
+	s.require(smsWebhookEventDataFieldTraceparent)
 }
 
 func (s *SmsWebhookEventData) UnmarshalJSON(data []byte) error {

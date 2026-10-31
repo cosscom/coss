@@ -2011,6 +2011,7 @@ const (
 	BillingUsageItemMeterVerifyVerifications     BillingUsageItemMeter = "verify.verifications"
 	BillingUsageItemMeterVerifySms               BillingUsageItemMeter = "verify.sms"
 	BillingUsageItemMeterFormsSubmissions        BillingUsageItemMeter = "forms.submissions"
+	BillingUsageItemMeterFormsFileUploads        BillingUsageItemMeter = "forms.file_uploads"
 	BillingUsageItemMeterVideoParticipantMinutes BillingUsageItemMeter = "video.participant_minutes"
 	BillingUsageItemMeterSchedulingBookings      BillingUsageItemMeter = "scheduling.bookings"
 )
@@ -2043,6 +2044,8 @@ func NewBillingUsageItemMeterFromString(s string) (BillingUsageItemMeter, error)
 		return BillingUsageItemMeterVerifySms, nil
 	case "forms.submissions":
 		return BillingUsageItemMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return BillingUsageItemMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return BillingUsageItemMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2474,6 +2477,7 @@ const (
 	UsageMeterVerifyVerifications     UsageMeter = "verify.verifications"
 	UsageMeterVerifySms               UsageMeter = "verify.sms"
 	UsageMeterFormsSubmissions        UsageMeter = "forms.submissions"
+	UsageMeterFormsFileUploads        UsageMeter = "forms.file_uploads"
 	UsageMeterVideoParticipantMinutes UsageMeter = "video.participant_minutes"
 	UsageMeterSchedulingBookings      UsageMeter = "scheduling.bookings"
 )
@@ -2506,6 +2510,8 @@ func NewUsageMeterFromString(s string) (UsageMeter, error) {
 		return UsageMeterVerifySms, nil
 	case "forms.submissions":
 		return UsageMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return UsageMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return UsageMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":
@@ -2610,6 +2616,7 @@ const (
 	UsageBillingRequestMeterVerifyVerifications     UsageBillingRequestMeter = "verify.verifications"
 	UsageBillingRequestMeterVerifySms               UsageBillingRequestMeter = "verify.sms"
 	UsageBillingRequestMeterFormsSubmissions        UsageBillingRequestMeter = "forms.submissions"
+	UsageBillingRequestMeterFormsFileUploads        UsageBillingRequestMeter = "forms.file_uploads"
 	UsageBillingRequestMeterVideoParticipantMinutes UsageBillingRequestMeter = "video.participant_minutes"
 	UsageBillingRequestMeterSchedulingBookings      UsageBillingRequestMeter = "scheduling.bookings"
 )
@@ -2642,6 +2649,8 @@ func NewUsageBillingRequestMeterFromString(s string) (UsageBillingRequestMeter, 
 		return UsageBillingRequestMeterVerifySms, nil
 	case "forms.submissions":
 		return UsageBillingRequestMeterFormsSubmissions, nil
+	case "forms.file_uploads":
+		return UsageBillingRequestMeterFormsFileUploads, nil
 	case "video.participant_minutes":
 		return UsageBillingRequestMeterVideoParticipantMinutes, nil
 	case "scheduling.bookings":

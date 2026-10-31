@@ -6,6 +6,7 @@ import typing
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .log_drain_disabled_reason import LogDrainDisabledReason
+from .log_drain_format import LogDrainFormat
 from .log_drain_object import LogDrainObject
 from .log_drain_source import LogDrainSource
 
@@ -18,6 +19,12 @@ class LogDrain(UniversalBaseModel):
     sources: typing.List[LogDrainSource] = pydantic.Field()
     """
     What the drain forwards: `api` (requests made with the environment's API keys), `email` (email events), `webhook` (webhook delivery attempts) and `audit` (changes to the environment, from the organization's audit log). An empty array means every source, including ones added later.
+    """
+
+    format: LogDrainFormat
+    auth_header_name: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The header sent with every batch to authenticate it (e.g. `Authorization`, `DD-API-KEY`), or `null`. Its value is never returned.
     """
 
     enabled: bool = pydantic.Field()
