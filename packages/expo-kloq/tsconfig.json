@@ -1,0 +1,14 @@
+{
+  "extends": "@coss/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "ESNext"],
+    "jsx": "react-jsx",
+    "noUncheckedIndexedAccess": false,
+    // kloq is vendored TypeScript that this package imports directly. It is not
+    // written with verbatimModuleSyntax, so the flag stays off for the whole
+    // program (it applies to imported sources, not only our files).
+    "verbatimModuleSyntax": false,
+    "customConditions": ["react-native"]
+  },
+  "include": ["src", "examples"]
+}
