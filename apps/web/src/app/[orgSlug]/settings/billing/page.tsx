@@ -630,7 +630,9 @@ export default async function BillingPage({
               ? `Invoiced directly${account?.collectionMethod === "send_invoice" ? `, due ${account.netTermsDays} days after issue` : ""}. Contact billing to change how you pay.`
               : account?.collectionMethod === "send_invoice"
                 ? `Invoices are emailed and due ${account.netTermsDays} days after issue.`
-                : "Invoices are charged to your default payment method."
+                : provider === "stripe" && account?.paymentMethod
+                  ? "Invoices are charged to your default payment method. Add a VAT or tax ID under Manage billing details."
+                  : "Invoices are charged to your default payment method."
           }
           label={
             account?.paymentMethod ? (

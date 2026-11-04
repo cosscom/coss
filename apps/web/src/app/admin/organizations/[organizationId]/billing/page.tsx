@@ -184,7 +184,7 @@ export default async function AdminOrganizationBillingPage({
               netTermsDays: account?.netTermsDays ?? 30,
               allowedPaymentMethods: account?.allowedPaymentMethods ?? ["card"],
               requiredPaymentMethods: account?.requiredPaymentMethods ?? [],
-              taxMode: account?.taxMode ?? "none",
+              taxMode: account?.taxMode ?? "stripe_automatic",
               billingEmail: account?.billingEmail ?? "",
               billingCc: account?.billingCc.join(", ") ?? "",
               billingName: account?.billingName ?? "",

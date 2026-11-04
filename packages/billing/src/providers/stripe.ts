@@ -44,6 +44,26 @@ export function createStripeClient(opts: StripeOptions): Stripe {
 
 const seconds = (date: Date) => Math.floor(date.getTime() / 1000);
 
+/** An address in Stripe's shape, or `null` without the country Stripe Tax needs at the least. */
+function stripeAddress(address: {
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+}): Stripe.AddressParam | null {
+  if (!address.country) return null;
+  return {
+    country: address.country,
+    ...(address.line1 ? { line1: address.line1 } : {}),
+    ...(address.line2 ? { line2: address.line2 } : {}),
+    ...(address.city ? { city: address.city } : {}),
+    ...(address.state ? { state: address.state } : {}),
+    ...(address.postal_code ? { postal_code: address.postal_code } : {}),
+  };
+}
+
 function customerIdOf(value: string | { id: string } | null | undefined): string | null {
   if (!value) return null;
   return typeof value === "string" ? value : value.id;
@@ -129,8 +149,49 @@ export class StripeBillingProvider implements BillingProvider {
   ) {
     await this.#stripe.customers.update(customerId, {
       name: account.billingName ?? organizationName,
-      // Without a billing email of coss.com's, keep the customer's (set in the Customer Portal).
+      // Without a billing email or address of coss.com's, keep the customer's (from Checkout or
+      // the Customer Portal).
       ...(account.billingEmail ? { email: account.billingEmail } : {}),
+      ...(account.billingAddress
+        ? {
+            address: {
+              line1: account.billingAddress.line1,
+              line2: account.billingAddress.line2 ?? "",
+              city: account.billingAddress.city,
+              state: account.billingAddress.state ?? "",
+              postal_code: account.billingAddress.postalCode,
+              country: account.billingAddress.country,
+            },
+          }
+        : {}),
+    });
+  }
+
+  /**
+   * Whether this invoice collects tax, asked of Stripe each time: only where it reports a tax
+   * registration (`supported`), so nothing else pays Stripe Tax's fee, and an unknown location
+   * (where finalizing with tax on is refused) goes out untaxed instead of never going out.
+   */
+  async #collectsTax(customerId: string, account: BillingAccount | null): Promise<boolean> {
+    if (account?.taxMode !== "stripe_automatic") return false;
+    const customer = await this.#stripe.customers.retrieve(customerId, { expand: ["tax"] });
+    if (customer.deleted) return false;
+    const status = customer.tax?.automatic_tax;
+    // Stripe's temporary failure: an invoice sent now could miss tax it owes. The sync retries.
+    if (status === "failed") throw new Error(`Stripe couldn't locate customer ${customerId}.`);
+    return status === "supported";
+  }
+
+  /** A finished setup: its method becomes the default, its address the customer's if it has none. */
+  async #adoptSetupMethod(customerId: string, method: Stripe.PaymentMethod) {
+    const customer = await this.#stripe.customers.retrieve(customerId);
+    const address =
+      customer.deleted || customer.address
+        ? null
+        : stripeAddress(method.billing_details?.address ?? {});
+    await this.#stripe.customers.update(customerId, {
+      invoice_settings: { default_payment_method: method.id },
+      ...(address ? { address } : {}),
     });
   }
 
@@ -156,7 +217,9 @@ export class StripeBillingProvider implements BillingProvider {
             pending_invoice_items_behavior: "exclude",
             ...(invoice.number ? { number: invoice.number } : {}),
             ...(invoice.memo ? { description: invoice.memo } : {}),
-            automatic_tax: { enabled: account?.taxMode === "stripe_automatic" },
+            // Decided on the draft below: what Stripe reports can change between retries, and a
+            // retry of this request must keep its exact parameters.
+            automatic_tax: { enabled: false },
             ...(account?.allowedPaymentMethods.length
               ? {
                   payment_settings: {
@@ -170,6 +233,12 @@ export class StripeBillingProvider implements BillingProvider {
           { idempotencyKey: `${key}:create` },
         );
     if (stripeInvoice.status === "draft") {
+      const collectsTax = await this.#collectsTax(customer, account);
+      if (stripeInvoice.automatic_tax?.enabled !== collectsTax) {
+        stripeInvoice = await this.#stripe.invoices.update(stripeInvoice.id, {
+          automatic_tax: { enabled: collectsTax },
+        });
+      }
       for (const line of lines) {
         if (line.amountCents === 0n) continue;
         await this.#stripe.invoiceItems.create(
@@ -179,6 +248,8 @@ export class StripeBillingProvider implements BillingProvider {
             currency: invoice.currency,
             amount: Number(line.amountCents),
             description: line.description,
+            // coss.com's prices exclude tax, whatever the Stripe account's default.
+            tax_behavior: "exclusive",
             period: { start: seconds(line.periodStart), end: seconds(line.periodEnd) },
             metadata: { coss_line_id: line.id },
           },
@@ -364,6 +435,9 @@ export class StripeBillingProvider implements BillingProvider {
       payment_method_types: (methods.length
         ? methods
         : ["card"]) as Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
+      // Where the customer is, for tax. Tax IDs are added in the Customer Portal: Stripe's docs have
+      // said Checkout's setup mode doesn't collect them.
+      billing_address_collection: "required",
       // Checkout percent-encodes the placeholder otherwise.
       success_url: success.toString().replace("%7BCHECKOUT_SESSION_ID%7D", "{CHECKOUT_SESSION_ID}"),
       cancel_url: opts.cancelUrl,
@@ -389,9 +463,7 @@ export class StripeBillingProvider implements BillingProvider {
     const intent = session.setup_intent;
     const method = intent && typeof intent !== "string" ? intent.payment_method : null;
     if (!method || typeof method === "string") return null;
-    await this.#stripe.customers.update(customerIdOf(session.customer) ?? "", {
-      invoice_settings: { default_payment_method: method.id },
-    });
+    await this.#adoptSetupMethod(customerIdOf(session.customer) ?? "", method);
     return summarizePaymentMethod(method);
   }
 
@@ -487,9 +559,7 @@ export class StripeBillingProvider implements BillingProvider {
             method &&
             typeof method !== "string"
           ) {
-            await this.#stripe.customers.update(customerId, {
-              invoice_settings: { default_payment_method: method.id },
-            });
+            await this.#adoptSetupMethod(customerId, method);
           }
         }
         const customer = await this.#stripe.customers.retrieve(customerId, {

@@ -552,3 +552,139 @@ test("a delayed invoice push retries with the original net terms", async () => {
     clock.mockRestore();
   }
 });
+
+describe("tax", () => {
+  const organization = { id: "org_1", name: "Acme", slug: "acme" };
+
+  async function taxable() {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), organization);
+    const taxed = account({ providerCustomerId: customerId, taxMode: "stripe_automatic" });
+    const push = (id = "inv_1") =>
+      stripe.pushInvoice({
+        invoice: invoice({ id, providerCustomerId: customerId }),
+        lines: [line(`${id}_line`, 10_000n, "Pro plan")],
+        account: taxed,
+      });
+    return { api, stripe, customerId, taxed, push };
+  }
+
+  test("a customer a registration covers pays tax, on top of a price that excludes it", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
+      enabled: true,
+    });
+    const item = api.requests.find((request) => request.path === "/v1/invoiceitems");
+    expect(item?.params).toMatchObject({ amount: "10000", tax_behavior: "exclusive" });
+  });
+
+  test("anywhere without a registration, automatic tax stays off, so Stripe charges no fee", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "not_collecting";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
+      enabled: false,
+    });
+  });
+
+  test("an unknown location goes out untaxed instead of failing to finalize", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "unrecognized_location";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.status).toBe("open");
+  });
+
+  test("Stripe's temporary failure retries, and the retry can still add tax", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "failed";
+    await expect(push()).rejects.toThrow("couldn't locate");
+    // The draft exists, and its create request replays unchanged although the answer changed.
+    expect([...api.invoices.values()].map((created) => created.status)).toEqual(["draft"]);
+    api.taxStatus = "supported";
+    expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoices.size).toBe(1);
+  });
+
+  test("an account with tax off never asks Stripe where its customer is", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), organization);
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 10_000n, "Pro plan")],
+      account: account({ providerCustomerId: customerId }),
+    });
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.requests.some((request) => request.params["expand[0]"] === "tax")).toBe(false);
+  });
+
+  test("Checkout requires an address, which only fills in a customer without one", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const start = () =>
+      stripe.createSetupSession(taxed, organization, {
+        returnUrl: "https://coss.test/acme/settings/billing",
+        cancelUrl: "https://coss.test/acme/settings/billing",
+        methods: ["card"],
+      });
+    const first = await start();
+    const created = api.requests.find((request) => request.path === "/v1/checkout/sessions");
+    expect(created?.params.billing_address_collection).toBe("required");
+    api.completeSession(first.sessionId, {
+      line1: "1 Main St",
+      line2: null,
+      city: "Austin",
+      state: "TX",
+      postal_code: "78701",
+      country: "US",
+    });
+    await stripe.completeSetup(taxed, first.sessionId);
+    const expected = {
+      line1: "1 Main St",
+      city: "Austin",
+      state: "TX",
+      postal_code: "78701",
+      country: "US",
+    };
+    expect(api.customers.get(customerId)?.address).toEqual(expected);
+
+    // A later card's address doesn't replace it: the customer's own stays (Portal or Checkout).
+    const second = await start();
+    api.completeSession(second.sessionId, { country: "DE", postal_code: "10115" });
+    await stripe.completeSetup(taxed, second.sessionId);
+    expect(api.customers.get(customerId)?.address).toEqual(expected);
+  });
+
+  test("the account's own address is sent to Stripe, and without one the customer's stays", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const customer = api.customers.get(customerId);
+    if (customer) customer.address = { country: "US", postal_code: "78701" };
+    await stripe.ensureCustomer(taxed, organization);
+    expect(api.customers.get(customerId)?.address).toEqual({
+      country: "US",
+      postal_code: "78701",
+    });
+    await stripe.ensureCustomer(
+      {
+        ...taxed,
+        billingAddress: {
+          line1: "2 Bridge Rd",
+          city: "Berlin",
+          postalCode: "10115",
+          country: "DE",
+        },
+      },
+      organization,
+    );
+    expect(api.customers.get(customerId)?.address).toMatchObject({
+      line1: "2 Bridge Rd",
+      city: "Berlin",
+      postal_code: "10115",
+      country: "DE",
+    });
+  });
+});

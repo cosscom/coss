@@ -212,3 +212,47 @@ test("a retry of an invoice the customer already paid on the hosted page records
   expect(row.status).toBe("paid");
   expect(await notifications(f.organizationId, "payment_failed")).toHaveLength(1);
 });
+
+test("a new account collects tax where it's registered: the invoice and its charge include it", async () => {
+  const f = await fixture();
+  f.api.taxStatus = "supported";
+  const { invoice } = await startUpgrade({
+    organizationId: f.organizationId,
+    plan: "pro",
+    userId: f.tenant.owner.id,
+    defaultProvider: "stripe",
+    now,
+  });
+  if (!invoice) throw new Error("missing invoice");
+  expect((await getBillingAccount(f.organizationId))?.taxMode).toBe("stripe_automatic");
+  const subtotal = invoice.totalCents;
+  const setup = await paymentSetupSession({
+    organizationId: f.organizationId,
+    defaultProvider: "stripe",
+    providers: f.providers,
+    returnUrl: "https://coss.test/acme/settings/billing",
+    cancelUrl: "https://coss.test/acme/settings/billing",
+  });
+  expect(setup?.url).toBeDefined();
+  const [sessionId] = [...f.api.sessions.keys()];
+  if (!sessionId) throw new Error("missing session");
+  f.api.completeSession(sessionId, { country: "US", postal_code: "78701" });
+  await completePaymentSetup({
+    organizationId: f.organizationId,
+    defaultProvider: "stripe",
+    providers: f.providers,
+    sessionId,
+  });
+  await runDueBillingSync({ now, scope: f.scope }, f.deps);
+  await runDueBillingSync({ now, scope: f.scope }, f.deps);
+  const tax = subtotal / 10n;
+  const row = await invoiceRow(f.organizationId, invoice.id);
+  expect(row).toMatchObject({
+    status: "paid",
+    taxCents: tax,
+    totalCents: subtotal + tax,
+    amountPaidCents: subtotal + tax,
+    amountDueCents: 0n,
+  });
+  expect((await contractAt(f.organizationId, now))?.terms.plan).toBe("pro");
+});

@@ -95,7 +95,7 @@ export const billingAccount = pgTable("billing_account", {
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
-  taxMode: billingTaxMode("tax_mode").notNull().default("none"),
+  taxMode: billingTaxMode("tax_mode").notNull().default("stripe_automatic"),
   // Where invoices and billing emails go (`null`: the organization's owners).
   billingEmail: text("billing_email"),
   billingCc: text("billing_cc").array().notNull().default(sql`'{}'::text[]`),

@@ -96,6 +96,13 @@ repository root.
     it. Holds are independent of reputation suspensions: never fold one into the other. Spend limits place a
     `spend_limit` hold (worker `billing-usage`), lifted by the next month or a higher limit. coss.com's own organization is
     never held or capped (`systemOrganizationId`).
+  - **Tax**: Stripe calculates it, and only on an account with `tax_mode = stripe_automatic` (the default) whose customer
+    Stripe reports as `supported`: that means a tax registration covers them, and only those invoices pay Stripe Tax's
+    fee. `pushInvoice` decides on the draft at each attempt, never in the invoice's create request (its idempotency key
+    needs identical parameters). An unknown location goes out untaxed (Stripe refuses to finalize it with tax on), and
+    Stripe's temporary `failed` is retried. Checkout requires a billing address, which becomes the customer's if it
+    has none; tax IDs are added in the Customer Portal (Stripe's docs have said Checkout's setup mode doesn't collect them). Tax is added to
+    `tax_cents`/`total_cents` when the push returns; a line's amount never includes it.
   - **Provider events**: the dashboard's `/api/billing/webhook` (public) verifies Stripe's signature and only stores the
     event (`billing_provider_event`); the worker's `billing-events` loop re-reads each object from Stripe and moves
     states forward only (`paid` is final). `billing-reconcile` re-checks quiet open invoices hourly.

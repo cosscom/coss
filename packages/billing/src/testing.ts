@@ -123,6 +123,10 @@ export class FakeStripeApi {
   readonly paymentMethods = new Map<string, StripeObject>();
   /** How the next `pay` calls end (then `paid`). */
   readonly payOutcomes: ("paid" | "declined" | "authentication_required" | "processing")[] = [];
+  /** What `customer.tax.automatic_tax` reports, as if the account's registrations decided it. */
+  taxStatus: "failed" | "not_collecting" | "supported" | "unrecognized_location" = "not_collecting";
+  /** The tax a finalized invoice with automatic tax adds, in basis points of its total. */
+  taxBasisPoints = 1_000;
   #replies = new Map<string, { status: number; body: unknown; params: string }>();
   #ids = 0;
   // Ids are unique across instances: the test database is shared and provider ids are unique.
@@ -149,7 +153,10 @@ export class FakeStripeApi {
   }
 
   /** Completes a setup session as if the customer added a card in Checkout. */
-  completeSession(sessionId: string): StripeObject {
+  completeSession(
+    sessionId: string,
+    billingAddress: Record<string, string | null> | null = null,
+  ): StripeObject {
     const session = this.sessions.get(sessionId);
     if (!session) throw new Error(`No session ${sessionId}`);
     const method = {
@@ -157,6 +164,7 @@ export class FakeStripeApi {
       object: "payment_method",
       type: "card",
       card: { brand: "visa", last4: "4242", exp_month: 12, exp_year: 2030 },
+      billing_details: { address: billingAddress },
     };
     this.paymentMethods.set(method.id, method);
     session.status = "complete";
@@ -228,6 +236,7 @@ export class FakeStripeApi {
           object: "customer",
           name: params.name ?? null,
           email: params.email ?? null,
+          address: null as unknown,
           metadata: metadata(),
           invoice_settings: { default_payment_method: null as unknown },
           // The invoice balance: a debit (positive) is added to the next finalized invoice.
@@ -243,6 +252,8 @@ export class FakeStripeApi {
         if (params.email !== undefined) customer.email = params.email || null;
         if (params.name !== undefined) customer.name = params.name;
         if (pm) customer.invoice_settings = { default_payment_method: pm };
+        const address = metadata("address");
+        if (Object.keys(address).length > 0) customer.address = address;
         return ok(customer);
       }
       const settings = customer.invoice_settings as { default_payment_method: unknown };
@@ -250,7 +261,12 @@ export class FakeStripeApi {
         typeof settings.default_payment_method === "string"
           ? this.paymentMethods.get(settings.default_payment_method)
           : null;
-      return ok({ ...customer, invoice_settings: { default_payment_method: pm ?? null } });
+      return ok({
+        ...customer,
+        invoice_settings: { default_payment_method: pm ?? null },
+        // As Stripe: only when asked for.
+        ...(params["expand[0]"] === "tax" ? { tax: { automatic_tax: this.taxStatus } } : {}),
+      });
     }
 
     if (resource === "invoices") {
@@ -272,7 +288,7 @@ export class FakeStripeApi {
           hosted_invoice_url: null as string | null,
           invoice_pdf: null as string | null,
           auto_advance: params.auto_advance === "true",
-          automatic_tax: params["automatic_tax[enabled]"] === "true",
+          automatic_tax: { enabled: params["automatic_tax[enabled]"] === "true" },
         };
         this.invoices.set(invoice.id, invoice);
         return ok(invoice);
@@ -284,8 +300,34 @@ export class FakeStripeApi {
         return ok({ id: invoice.id, object: "invoice", deleted: true });
       }
       if (method === "GET") return ok(invoice);
+      if (method === "POST" && !action) {
+        if (params["automatic_tax[enabled]"] !== undefined) {
+          invoice.automatic_tax = { enabled: params["automatic_tax[enabled]"] === "true" };
+        }
+        return ok(invoice);
+      }
       switch (action) {
         case "finalize": {
+          if ((invoice.automatic_tax as { enabled: boolean }).enabled) {
+            // As Stripe: tax on an invoice needs a location it recognizes.
+            if (this.taxStatus === "unrecognized_location") {
+              return {
+                status: 400,
+                body: {
+                  error: {
+                    type: "invalid_request_error",
+                    code: "customer_tax_location_invalid",
+                    message: "The customer's location isn't recognized.",
+                  },
+                },
+              };
+            }
+            if (this.taxStatus === "supported") {
+              const tax = Math.round(((invoice.total as number) * this.taxBasisPoints) / 10_000);
+              invoice.total_taxes = [{ amount: tax }];
+              invoice.total = (invoice.total as number) + tax;
+            }
+          }
           // Stripe applies the customer's invoice balance at finalization (a debit in full).
           const customer = this.customers.get(String(invoice.customer));
           const balance = Number(customer?.balance ?? 0);
