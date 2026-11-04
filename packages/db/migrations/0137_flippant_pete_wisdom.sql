@@ -1,0 +1,1 @@
+ALTER TABLE "billing_account" ALTER COLUMN "tax_mode" SET DEFAULT 'stripe_automatic';

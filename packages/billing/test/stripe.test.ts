@@ -1,7 +1,11 @@
 import { describe, expect, spyOn, test } from "bun:test";
 import type { BillingAccount } from "../src/accounts.ts";
 import type { InvoiceLineRow, InvoiceRow } from "../src/invoices.ts";
-import { StripeBillingProvider } from "../src/providers/stripe.ts";
+import {
+  createStripeClient,
+  StripeBillingProvider,
+  stripeInvoiceItems,
+} from "../src/providers/stripe.ts";
 import { FakeStripeApi } from "../src/testing.ts";
 
 function account(overrides: Partial<BillingAccount> = {}): BillingAccount {
@@ -113,7 +117,7 @@ function setup() {
 }
 
 describe("StripeBillingProvider", () => {
-  test("pushes an invoice: customer, numbered draft, one item per line, finalized without auto-advance", async () => {
+  test("pushes an invoice: customer, numbered draft, one item per charge, finalized without auto-advance", async () => {
     const { api, stripe } = setup();
     const customerId = await stripe.ensureCustomer(account(), {
       id: "org_1",
@@ -143,13 +147,14 @@ describe("StripeBillingProvider", () => {
       status: "open",
       metadata: { coss_invoice_id: "inv_1" },
     });
-    const items = api.requests.filter((request) => request.path === "/v1/invoiceitems");
+    const items = api.requests.filter(
+      (request) => request.path === "/v1/invoiceitems" && request.method === "POST",
+    );
     expect(items.map((request) => [request.params.amount, request.idempotencyKey])).toEqual([
-      ["70000", "coss:invoice:inv_1:line:invl_1"],
-      ["2500", "coss:invoice:inv_1:line:invl_2"],
-      ["-2500", "coss:invoice:inv_1:line:invl_3"],
+      ["67586", "coss:invoice:inv_1:item:invl_1"],
+      ["2414", "coss:invoice:inv_1:item:invl_2"],
     ]);
-    // A retry after a crash replays the same requests (idempotency keys) instead of duplicating.
+    // A retry after a crash finds the invoice already finalized instead of duplicating anything.
     const again = await stripe.pushInvoice({
       invoice: invoice({
         providerCustomerId: customerId,
@@ -235,7 +240,8 @@ describe("StripeBillingProvider", () => {
       account: null,
     });
     expect(
-      api.requests.find((request) => request.path === "/v1/invoices")?.params.collection_method,
+      api.requests.find((request) => request.method === "POST" && request.path === "/v1/invoices")
+        ?.params.collection_method,
     ).toBe("send_invoice");
     const result = await stripe.collect({
       invoice: { ...target, providerInvoiceId: pushed.providerInvoiceId },
@@ -545,11 +551,310 @@ test("a delayed invoice push retries with the original net terms", async () => {
     const creates = api.requests.filter(
       (request) => request.method === "POST" && request.path === "/v1/invoices",
     );
+    // The retry found the invoice instead of asking again.
     expect(creates.map((request) => request.params.due_date)).toEqual([
-      String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
       String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
     ]);
   } finally {
     clock.mockRestore();
   }
+});
+
+describe("tax", () => {
+  const organization = { id: "org_1", name: "Acme", slug: "acme" };
+
+  async function taxable() {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), organization);
+    const taxed = account({ providerCustomerId: customerId, taxMode: "stripe_automatic" });
+    const push = (id = "inv_1") =>
+      stripe.pushInvoice({
+        invoice: invoice({ id, providerCustomerId: customerId }),
+        lines: [line(`${id}_line`, 10_000n, "Pro plan")],
+        account: taxed,
+      });
+    return { api, stripe, customerId, taxed, push };
+  }
+
+  test("a customer a registration covers pays tax, on top of a price that excludes it", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
+      enabled: true,
+    });
+    const item = api.requests.find(
+      (request) => request.path === "/v1/invoiceitems" && request.method === "POST",
+    );
+    expect(item?.params).toMatchObject({ amount: "10000", tax_behavior: "exclusive" });
+  });
+
+  test("anywhere without a registration, automatic tax stays off, so Stripe charges no fee", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "not_collecting";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
+      enabled: false,
+    });
+  });
+
+  test("an unknown location goes out untaxed instead of failing to finalize", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "unrecognized_location";
+    const pushed = await push();
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.status).toBe("open");
+  });
+
+  test("Stripe's temporary failure retries, and the retry can still add tax", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "failed";
+    await expect(push()).rejects.toThrow("couldn't locate");
+    // The draft exists, and its create request replays unchanged although the answer changed.
+    expect([...api.invoices.values()].map((created) => created.status)).toEqual(["draft"]);
+    api.taxStatus = "supported";
+    expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoices.size).toBe(1);
+  });
+
+  test("credits and discounts come off the charges: Stripe refuses negative items with tax", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId, totalCents: 9_000n }),
+      lines: [
+        line("invl_fee", 10_000n, "Pro plan"),
+        line("invl_usage", 5_000n, "Email"),
+        line("invl_credit", -6_000n, "Credit applied"),
+      ],
+      account: taxed,
+    });
+    expect(pushed).toMatchObject({ taxCents: 900n, totalCents: 9_900n });
+    expect([...api.invoiceItems.values()]).toMatchObject([
+      { amount: 6_000, description: "Pro plan (after credits and discounts)" },
+      { amount: 3_000, description: "Email (after credits and discounts)" },
+    ]);
+  });
+
+  test("a retry resumes a draft's items, whichever release left them", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const target = invoice({ providerCustomerId: customerId, totalCents: 9_000n });
+    const lines = [
+      line("invl_fee", 10_000n, "Pro plan"),
+      line("invl_usage", 5_000n, "Email"),
+      line("invl_credit", -6_000n, "Credit applied"),
+    ];
+    // The last release's request for the first line and the credit: a key of its own, the tax
+    // behavior left to the account, the amount as coss.com has it, and then it died.
+    const client = createStripeClient({ secretKey: "sk_test_fake", fetch: api.fetch });
+    const draft = await client.invoices.create(
+      { customer: customerId, automatic_tax: { enabled: false } },
+      { idempotencyKey: "coss:invoice:inv_1:create-old" },
+    );
+    for (const old of [lines[0], lines[2]]) {
+      if (!old) throw new Error("missing line");
+      await client.invoiceItems.create(
+        {
+          customer: customerId,
+          invoice: draft.id,
+          currency: "usd",
+          amount: Number(old.amountCents),
+          description: old.description,
+          // The Stripe account's default at the time, which can't be changed afterwards.
+          tax_behavior: "inclusive",
+          metadata: { coss_line_id: old.id },
+        },
+        { idempotencyKey: `coss:invoice:inv_1:line:${old.id}` },
+      );
+    }
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: { ...target, providerInvoiceId: draft.id },
+      lines,
+      account: taxed,
+    });
+    expect(pushed).toMatchObject({ taxCents: 900n, totalCents: 9_900n });
+    expect([...api.invoiceItems.values()]).toMatchObject([
+      { amount: 6_000, tax_behavior: "exclusive", metadata: { coss_line_id: "invl_fee" } },
+      { amount: 3_000, tax_behavior: "exclusive", metadata: { coss_line_id: "invl_usage" } },
+    ]);
+  });
+
+  test("tax stays off until Stripe reports a registration, so an inactive Stripe Tax blocks nothing", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "not_collecting";
+    await push();
+    const taxRequests = api.requests.filter(
+      (request) => request.params["automatic_tax[enabled]"] === "true",
+    );
+    expect(taxRequests).toEqual([]);
+  });
+
+  test("a draft an earlier release made with tax on, its id never saved, is taken over", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const client = createStripeClient({ secretKey: "sk_test_fake", fetch: api.fetch });
+    const earlier = await client.invoices.create(
+      {
+        customer: customerId,
+        automatic_tax: { enabled: true },
+        metadata: { coss_invoice_id: "inv_1" },
+      },
+      { idempotencyKey: "coss:invoice:inv_1:create" },
+    );
+    await client.invoices.create({ customer: customerId, metadata: { coss_invoice_id: "inv_2" } });
+    api.taxStatus = "not_collecting";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 10_000n, "Pro plan")],
+      account: taxed,
+    });
+    expect(pushed.providerInvoiceId).toBe(earlier.id);
+    expect(api.invoices.size).toBe(2);
+    expect(api.invoices.get(earlier.id)).toMatchObject({
+      status: "open",
+      automatic_tax: { enabled: false },
+    });
+  });
+
+  test("a retry leaves an invoice an earlier attempt finalized alone", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await push();
+    const requests = api.requests.length;
+    // The response was lost, so coss.com has no invoice id and looks for it.
+    expect(await push()).toMatchObject({
+      providerInvoiceId: pushed.providerInvoiceId,
+      taxCents: 1_000n,
+      totalCents: 11_000n,
+    });
+    expect(api.requests.slice(requests).map((request) => request.method)).not.toContain("DELETE");
+    expect(api.invoiceItems.size).toBe(1);
+  });
+
+  test("a push that failed partway finishes without duplicating an item", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "failed";
+    await expect(push()).rejects.toThrow("couldn't locate");
+    expect(api.invoiceItems.size).toBe(1);
+    api.taxStatus = "supported";
+    expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoiceItems.size).toBe(1);
+    expect(api.requests.some((request) => request.method === "DELETE")).toBe(false);
+  });
+
+  test("an account with tax off never asks Stripe where its customer is", async () => {
+    const { api, stripe } = setup();
+    const customerId = await stripe.ensureCustomer(account(), organization);
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 10_000n, "Pro plan")],
+      account: account({ providerCustomerId: customerId }),
+    });
+    expect(pushed).toMatchObject({ taxCents: 0n, totalCents: 10_000n });
+    expect(api.requests.some((request) => request.params["expand[0]"] === "tax")).toBe(false);
+  });
+
+  test("Checkout requires an address, which only fills in a customer without one", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const start = () =>
+      stripe.createSetupSession(taxed, organization, {
+        returnUrl: "https://coss.test/acme/settings/billing",
+        cancelUrl: "https://coss.test/acme/settings/billing",
+        methods: ["card"],
+      });
+    const first = await start();
+    const created = api.requests.find((request) => request.path === "/v1/checkout/sessions");
+    expect(created?.params.billing_address_collection).toBe("required");
+    api.completeSession(first.sessionId, {
+      line1: "1 Main St",
+      line2: null,
+      city: "Austin",
+      state: "TX",
+      postal_code: "78701",
+      country: "US",
+    });
+    await stripe.completeSetup(taxed, first.sessionId);
+    const expected = {
+      line1: "1 Main St",
+      city: "Austin",
+      state: "TX",
+      postal_code: "78701",
+      country: "US",
+    };
+    expect(api.customers.get(customerId)?.address).toEqual(expected);
+
+    // A later card's address doesn't replace it: the customer's own stays (Portal or Checkout).
+    const second = await start();
+    api.completeSession(second.sessionId, { country: "DE", postal_code: "10115" });
+    await stripe.completeSetup(taxed, second.sessionId);
+    expect(api.customers.get(customerId)?.address).toEqual(expected);
+  });
+
+  test("the account's own address is sent to Stripe, and without one the customer's stays", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const customer = api.customers.get(customerId);
+    if (customer) customer.address = { country: "US", postal_code: "78701" };
+    await stripe.ensureCustomer(taxed, organization);
+    expect(api.customers.get(customerId)?.address).toEqual({
+      country: "US",
+      postal_code: "78701",
+    });
+    await stripe.ensureCustomer(
+      {
+        ...taxed,
+        billingAddress: {
+          line1: "2 Bridge Rd",
+          city: "Berlin",
+          postalCode: "10115",
+          country: "DE",
+        },
+      },
+      organization,
+    );
+    expect(api.customers.get(customerId)?.address).toMatchObject({
+      line1: "2 Bridge Rd",
+      city: "Berlin",
+      postal_code: "10115",
+      country: "DE",
+    });
+  });
+});
+
+describe("stripeInvoiceItems", () => {
+  const amounts = (lines: InvoiceLineRow[]) =>
+    stripeInvoiceItems(lines).map(({ amountCents }) => amountCents);
+
+  test("without credits, every charge as it is; zero lines stay out", () => {
+    expect(amounts([line("a", 100n, "A"), line("b", 0n, "B"), line("c", 250n, "C")])).toEqual([
+      100n,
+      250n,
+    ]);
+    expect(stripeInvoiceItems([line("a", 100n, "A")])[0]?.line.description).toBe("A");
+  });
+
+  test("the total never changes, and no amount is negative", () => {
+    for (const lines of [
+      [line("a", 1n, "A"), line("b", 1n, "B"), line("c", 1n, "C"), line("d", -2n, "D")],
+      [line("a", 3_333n, "A"), line("b", 6_667n, "B"), line("c", -1_111n, "C")],
+      [line("a", 99n, "A"), line("b", -33n, "B"), line("c", 1n, "C"), line("d", -33n, "D")],
+    ]) {
+      const total = lines.reduce((sum, row) => sum + row.amountCents, 0n);
+      const items = amounts(lines);
+      expect(items.reduce((sum, amount) => sum + amount, 0n)).toBe(total);
+      expect(items.every((amount) => amount > 0n)).toBe(true);
+    }
+  });
+
+  test("rounding goes to the largest remainders, the same each time", () => {
+    const lines = [line("a", 1n, "A"), line("b", 2n, "B"), line("c", 4n, "C"), line("d", -3n, "D")];
+    expect(amounts(lines)).toEqual([1n, 1n, 2n]);
+    expect(amounts(lines)).toEqual(amounts(lines));
+  });
+
+  test("nothing left to charge means no items", () => {
+    expect(amounts([line("a", 100n, "A"), line("b", -100n, "B")])).toEqual([]);
+  });
 });

@@ -76,6 +76,8 @@ export interface BillingProvider {
   readonly name: BillingAccount["provider"];
   /** The account's customer at the provider, created if needed (`null`: the provider has none). */
   ensureCustomer(account: BillingAccount, organization: OrganizationLabel): Promise<string | null>;
+  /** Whether a pending upgrade's invoice should wait for the customer, who is adding their details. */
+  awaitsCustomerDetails?(input: ProviderInvoice): Promise<boolean>;
   /** Creates the invoice with its lines, numbered as coss.com numbered it, and finalizes it. Idempotent. */
   pushInvoice(input: ProviderInvoice): Promise<PushResult>;
   /** Charges the default payment method, or sends the invoice (`send_invoice`). */

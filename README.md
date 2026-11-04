@@ -488,7 +488,13 @@ customers and payment methods, issues the invoices coss.com pushes and collects 
    Stripe are fine to keep.
 5. Enable the payment method types you offer (cards; ACH Direct Debit, SEPA and Bacs Direct Debit for accounts that
    need them; bank transfers for invoices with payment terms). Each account's allowed and required types are set in
-   the admin console. Stripe Tax is used only for accounts set to `stripe_automatic` tax.
+   the admin console.
+6. Activate Stripe Tax (Tax → Settings): the head office address and a preset tax code, which apply to every invoice
+   line, since coss.com's lines have no Stripe products. Then add each registration under Tax → Registrations once you
+   hold it. Accounts default to `stripe_automatic` (changeable in the admin console), but an invoice turns automatic
+   tax on only when Stripe reports a registration covering the customer (`customer.tax.automatic_tax` is `supported`),
+   so before any registration exists nothing is collected and Stripe Tax's fee isn't charged. Threshold monitoring is
+   free and shows where to register next. Accounts created before this default stay on `none` until changed.
 
 Sales deals, credits and invoice adjustments are made in the admin console (`/admin/organizations/<id>/billing`);
 deals invoiced off-Stripe use an account's `manual` provider (coss.com emails the invoice; an admin records payments).

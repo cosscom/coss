@@ -143,6 +143,21 @@ async function syncInvoice(
     const input = await providerInput(invoice);
     switch (invoice.syncAction) {
       case "push": {
+        if (
+          (await contractPendingOn(invoice.id)) &&
+          (await provider.awaitsCustomerDetails?.(input))
+        ) {
+          // Not an attempt: nothing went to the provider (voiding the invoice reads this count).
+          await db
+            .update(billingInvoice)
+            .set({
+              nextSyncAt: new Date(now.getTime() + PAYMENT_METHOD_RECHECK_MS),
+              syncAttempts: Math.max(invoice.syncAttempts - 1, 0),
+              syncError: "Waiting for a payment method.",
+            })
+            .where(eq(billingInvoice.id, invoice.id));
+          return null;
+        }
         if (!invoice.providerCustomerId && input.account) {
           const organization = await organizationLabel(invoice.organizationId);
           const customerId = organization
