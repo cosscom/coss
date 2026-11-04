@@ -1,12 +1,13 @@
 /**
  * Stripe as the payment rail: customers and their payment methods (Checkout in setup mode, the
- * Customer Portal), invoices coss.com computed (one invoice item per coss.com line, numbered as coss.com
- * numbered them, finalized with `auto_advance: false` so coss.com decides when to charge), charges,
+ * Customer Portal), invoices coss.com computed (one invoice item per coss.com charge, net of its
+ * credits and discounts, numbered as coss.com numbered them, finalized with `auto_advance: false` so coss.com decides when to charge), charges,
  * and webhooks. Every write carries an idempotency key derived from coss.com ids. Server-only.
  */
 import type { PaymentMethodSummary } from "@coss/db/schema";
 import Stripe from "stripe";
 import type { BillingAccount, OrganizationLabel } from "../accounts.ts";
+import type { InvoiceLineRow } from "../invoices.ts";
 import type {
   BillingProvider,
   CollectResult,
@@ -43,6 +44,47 @@ export function createStripeClient(opts: StripeOptions): Stripe {
 }
 
 const seconds = (date: Date) => Math.floor(date.getTime() / 1000);
+
+/**
+ * What Stripe bills for an invoice's lines: one amount per charge, with its credits, discounts and
+ * unused time taken off the charges in proportion, the invoice's total unchanged. Stripe refuses
+ * negative items on an invoice with automatic tax, and this way tax is on what the customer pays
+ * (a month's fee becomes credit: taxing the usage it pays for as well would tax it twice). A pure
+ * function of the lines, on every invoice, so an item's request is the same at each attempt,
+ * whatever Stripe reports about tax by then. Rounding goes to the largest remainders.
+ */
+export function stripeInvoiceItems(lines: readonly InvoiceLineRow[]) {
+  const charges = lines.filter((line) => line.amountCents > 0n);
+  const gross = charges.reduce((sum, line) => sum + line.amountCents, 0n);
+  const off = lines.reduce(
+    (sum, line) => (line.amountCents < 0n ? sum - line.amountCents : sum),
+    0n,
+  );
+  if (off === 0n) return charges.map((line) => ({ line, amountCents: line.amountCents }));
+  const net = gross > off ? gross - off : 0n;
+  const items = charges.map((line, index) => {
+    const scaled = line.amountCents * net;
+    return { line, index, amountCents: scaled / gross, remainder: scaled % gross };
+  });
+  let left = net - items.reduce((sum, item) => sum + item.amountCents, 0n);
+  const byRemainder = [...items].sort((a, b) =>
+    a.remainder === b.remainder ? a.index - b.index : a.remainder > b.remainder ? -1 : 1,
+  );
+  for (const item of byRemainder) {
+    if (left <= 0n) break;
+    item.amountCents += 1n;
+    left -= 1n;
+  }
+  return items
+    .filter((item) => item.amountCents > 0n)
+    .map((item) => ({
+      line: {
+        ...item.line,
+        description: `${item.line.description} (after credits and discounts)`,
+      },
+      amountCents: item.amountCents,
+    }));
+}
 
 /** An address in Stripe's shape, or `null` without the country Stripe Tax needs at the least. */
 function stripeAddress(address: {
@@ -195,15 +237,76 @@ export class StripeBillingProvider implements BillingProvider {
     });
   }
 
+  /**
+   * Makes a draft's items what `stripeInvoiceItems` says. An earlier attempt may have left some,
+   * perhaps from a release that sent other parameters, which their idempotency keys would refuse.
+   */
+  async #syncInvoiceItems(
+    invoiceId: string,
+    customer: string,
+    key: string,
+    lines: readonly InvoiceLineRow[],
+    currency: string,
+  ) {
+    const existing = new Map<string, string>();
+    for await (const item of this.#stripe.invoiceItems.list({ invoice: invoiceId, limit: 100 })) {
+      const lineId = item.metadata?.coss_line_id;
+      if (lineId) existing.set(lineId, item.id);
+    }
+    const items = stripeInvoiceItems(lines);
+    const wanted = new Set(items.map(({ line }) => line.id));
+    for (const [lineId, itemId] of existing) {
+      if (!wanted.has(lineId)) await this.#stripe.invoiceItems.del(itemId);
+    }
+    for (const { line, amountCents } of items) {
+      const details = {
+        amount: Number(amountCents),
+        description: line.description,
+        // coss.com's prices exclude tax, whatever the Stripe account's default.
+        tax_behavior: "exclusive" as const,
+      };
+      const itemId = existing.get(line.id);
+      if (itemId) {
+        await this.#stripe.invoiceItems.update(itemId, details);
+        continue;
+      }
+      await this.#stripe.invoiceItems.create(
+        {
+          ...details,
+          customer,
+          invoice: invoiceId,
+          currency,
+          period: { start: seconds(line.periodStart), end: seconds(line.periodEnd) },
+          metadata: { coss_line_id: line.id },
+        },
+        { idempotencyKey: `${key}:item:${line.id}` },
+      );
+    }
+  }
+
+  /**
+   * An upgrade's invoice is taxed where its customer is, which Stripe learns from the Checkout the
+   * customer is in while this waits for a payment method. Finalized before that, it can't add tax.
+   */
+  async awaitsCustomerDetails({ invoice, account }: ProviderInvoice): Promise<boolean> {
+    return (
+      invoice.collectionMethod === "charge_automatically" &&
+      account?.taxMode === "stripe_automatic" &&
+      !account.paymentMethod &&
+      !(await this.paymentMethod(account))
+    );
+  }
+
   async pushInvoice({ invoice, lines, account }: ProviderInvoice): Promise<PushResult> {
     const customer = invoice.providerCustomerId;
     if (!customer) throw new Error(`Invoice ${invoice.id} has no Stripe customer.`);
     if (account) await this.#syncCustomerDetails(customer, account, invoice.organizationName);
     const key = `coss:invoice:${invoice.id}`;
     const sendInvoice = invoice.collectionMethod === "send_invoice";
-    let stripeInvoice = invoice.providerInvoiceId
-      ? await this.#stripe.invoices.retrieve(invoice.providerInvoiceId)
-      : await this.#stripe.invoices.create(
+    const invoiceId =
+      invoice.providerInvoiceId ??
+      (
+        await this.#stripe.invoices.create(
           {
             customer,
             currency: invoice.currency,
@@ -231,30 +334,19 @@ export class StripeBillingProvider implements BillingProvider {
             metadata: { coss_invoice_id: invoice.id, coss_organization_id: invoice.organizationId },
           },
           { idempotencyKey: `${key}:create` },
-        );
+        )
+      ).id;
+    // Read back even after that create: a replay of it answers with the draft it first made, and
+    // an earlier attempt may have finalized that since.
+    let stripeInvoice = await this.#stripe.invoices.retrieve(invoiceId);
     if (stripeInvoice.status === "draft") {
+      await this.#syncInvoiceItems(stripeInvoice.id, customer, key, lines, invoice.currency);
+      // After the items: an earlier attempt's may have been ones automatic tax refuses.
       const collectsTax = await this.#collectsTax(customer, account);
       if (stripeInvoice.automatic_tax?.enabled !== collectsTax) {
         stripeInvoice = await this.#stripe.invoices.update(stripeInvoice.id, {
           automatic_tax: { enabled: collectsTax },
         });
-      }
-      for (const line of lines) {
-        if (line.amountCents === 0n) continue;
-        await this.#stripe.invoiceItems.create(
-          {
-            customer,
-            invoice: stripeInvoice.id,
-            currency: invoice.currency,
-            amount: Number(line.amountCents),
-            description: line.description,
-            // coss.com's prices exclude tax, whatever the Stripe account's default.
-            tax_behavior: "exclusive",
-            period: { start: seconds(line.periodStart), end: seconds(line.periodEnd) },
-            metadata: { coss_line_id: line.id },
-          },
-          { idempotencyKey: `${key}:line:${line.id}` },
-        );
       }
       stripeInvoice = await this.#stripe.invoices.finalizeInvoice(
         stripeInvoice.id,

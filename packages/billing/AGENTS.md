@@ -104,7 +104,11 @@ repository root.
     Stripe reports as `supported`: that means a tax registration covers them, and only those invoices pay Stripe Tax's
     fee. `pushInvoice` decides on the draft at each attempt, never in the invoice's create request (its idempotency key
     needs identical parameters). An unknown location goes out untaxed (Stripe refuses to finalize it with tax on), and
-    Stripe's temporary `failed` is retried. Checkout requires a billing address, which becomes the customer's if it
+    Stripe's temporary `failed` is retried. A pending upgrade's invoice on such an account waits for its payment method
+    before it is pushed: its customer is in Checkout, giving the address its tax depends on. Stripe refuses negative
+    items on an invoice with automatic tax, so Stripe gets one item per charge with credits, discounts and unused time
+    taken off in proportion (`stripeInvoiceItems`, on every invoice; coss.com's own invoice keeps every line), and tax
+    is on what the customer pays. A retry makes a draft's items match, whatever an earlier attempt left. Checkout requires a billing address, which becomes the customer's if it
     has none; tax IDs are added in the Customer Portal (Stripe's docs have said Checkout's setup mode doesn't collect them). Tax is added to
     `tax_cents`/`total_cents` when the push returns; a line's amount never includes it.
   - **Provider events**: the dashboard's `/api/billing/webhook` (public) verifies Stripe's signature and only stores the

@@ -1,7 +1,11 @@
 import { describe, expect, spyOn, test } from "bun:test";
 import type { BillingAccount } from "../src/accounts.ts";
 import type { InvoiceLineRow, InvoiceRow } from "../src/invoices.ts";
-import { StripeBillingProvider } from "../src/providers/stripe.ts";
+import {
+  createStripeClient,
+  StripeBillingProvider,
+  stripeInvoiceItems,
+} from "../src/providers/stripe.ts";
 import { FakeStripeApi } from "../src/testing.ts";
 
 function account(overrides: Partial<BillingAccount> = {}): BillingAccount {
@@ -112,7 +116,7 @@ function setup() {
 }
 
 describe("StripeBillingProvider", () => {
-  test("pushes an invoice: customer, numbered draft, one item per line, finalized without auto-advance", async () => {
+  test("pushes an invoice: customer, numbered draft, one item per charge, finalized without auto-advance", async () => {
     const { api, stripe } = setup();
     const customerId = await stripe.ensureCustomer(account(), {
       id: "org_1",
@@ -142,13 +146,14 @@ describe("StripeBillingProvider", () => {
       status: "open",
       metadata: { coss_invoice_id: "inv_1" },
     });
-    const items = api.requests.filter((request) => request.path === "/v1/invoiceitems");
+    const items = api.requests.filter(
+      (request) => request.path === "/v1/invoiceitems" && request.method === "POST",
+    );
     expect(items.map((request) => [request.params.amount, request.idempotencyKey])).toEqual([
-      ["70000", "coss:invoice:inv_1:line:invl_1"],
-      ["2500", "coss:invoice:inv_1:line:invl_2"],
-      ["-2500", "coss:invoice:inv_1:line:invl_3"],
+      ["67586", "coss:invoice:inv_1:item:invl_1"],
+      ["2414", "coss:invoice:inv_1:item:invl_2"],
     ]);
-    // A retry after a crash replays the same requests (idempotency keys) instead of duplicating.
+    // A retry after a crash finds the invoice already finalized instead of duplicating anything.
     const again = await stripe.pushInvoice({
       invoice: invoice({
         providerCustomerId: customerId,
@@ -577,7 +582,9 @@ describe("tax", () => {
     expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
       enabled: true,
     });
-    const item = api.requests.find((request) => request.path === "/v1/invoiceitems");
+    const item = api.requests.find(
+      (request) => request.path === "/v1/invoiceitems" && request.method === "POST",
+    );
     expect(item?.params).toMatchObject({ amount: "10000", tax_behavior: "exclusive" });
   });
 
@@ -608,6 +615,92 @@ describe("tax", () => {
     api.taxStatus = "supported";
     expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
     expect(api.invoices.size).toBe(1);
+  });
+
+  test("credits and discounts come off the charges: Stripe refuses negative items with tax", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId, totalCents: 9_000n }),
+      lines: [
+        line("invl_fee", 10_000n, "Pro plan"),
+        line("invl_usage", 5_000n, "Email"),
+        line("invl_credit", -6_000n, "Credit applied"),
+      ],
+      account: taxed,
+    });
+    expect(pushed).toMatchObject({ taxCents: 900n, totalCents: 9_900n });
+    expect([...api.invoiceItems.values()]).toMatchObject([
+      { amount: 6_000, description: "Pro plan (after credits and discounts)" },
+      { amount: 3_000, description: "Email (after credits and discounts)" },
+    ]);
+  });
+
+  test("a retry resumes a draft's items, whichever release left them", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const target = invoice({ providerCustomerId: customerId, totalCents: 9_000n });
+    const lines = [
+      line("invl_fee", 10_000n, "Pro plan"),
+      line("invl_usage", 5_000n, "Email"),
+      line("invl_credit", -6_000n, "Credit applied"),
+    ];
+    // The last release's request for the first line and the credit: a key of its own, no tax
+    // behavior, the amount as coss.com has it, and then it died.
+    const client = createStripeClient({ secretKey: "sk_test_fake", fetch: api.fetch });
+    const draft = await client.invoices.create(
+      { customer: customerId, automatic_tax: { enabled: false } },
+      { idempotencyKey: "coss:invoice:inv_1:create-old" },
+    );
+    for (const old of [lines[0], lines[2]]) {
+      if (!old) throw new Error("missing line");
+      await client.invoiceItems.create(
+        {
+          customer: customerId,
+          invoice: draft.id,
+          currency: "usd",
+          amount: Number(old.amountCents),
+          description: old.description,
+          metadata: { coss_line_id: old.id },
+        },
+        { idempotencyKey: `coss:invoice:inv_1:line:${old.id}` },
+      );
+    }
+    api.taxStatus = "supported";
+    const pushed = await stripe.pushInvoice({
+      invoice: { ...target, providerInvoiceId: draft.id },
+      lines,
+      account: taxed,
+    });
+    expect(pushed).toMatchObject({ taxCents: 900n, totalCents: 9_900n });
+    expect([...api.invoiceItems.values()]).toMatchObject([
+      { amount: 6_000, tax_behavior: "exclusive", metadata: { coss_line_id: "invl_fee" } },
+      { amount: 3_000, tax_behavior: "exclusive", metadata: { coss_line_id: "invl_usage" } },
+    ]);
+  });
+
+  test("a retry whose create replays a stale draft leaves the finalized invoice alone", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "supported";
+    const pushed = await push();
+    const requests = api.requests.length;
+    // The response was lost, so coss.com has no invoice id and asks to create it again.
+    expect(await push()).toMatchObject({
+      providerInvoiceId: pushed.providerInvoiceId,
+      taxCents: 1_000n,
+      totalCents: 11_000n,
+    });
+    expect(api.requests.slice(requests).map((request) => request.method)).not.toContain("DELETE");
+    expect(api.invoiceItems.size).toBe(1);
+  });
+
+  test("a push that failed partway finishes without duplicating an item", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "failed";
+    await expect(push()).rejects.toThrow("couldn't locate");
+    expect(api.invoiceItems.size).toBe(1);
+    api.taxStatus = "supported";
+    expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
+    expect(api.invoiceItems.size).toBe(1);
   });
 
   test("an account with tax off never asks Stripe where its customer is", async () => {
@@ -686,5 +779,41 @@ describe("tax", () => {
       postal_code: "10115",
       country: "DE",
     });
+  });
+});
+
+describe("stripeInvoiceItems", () => {
+  const amounts = (lines: InvoiceLineRow[]) =>
+    stripeInvoiceItems(lines).map(({ amountCents }) => amountCents);
+
+  test("without credits, every charge as it is; zero lines stay out", () => {
+    expect(amounts([line("a", 100n, "A"), line("b", 0n, "B"), line("c", 250n, "C")])).toEqual([
+      100n,
+      250n,
+    ]);
+    expect(stripeInvoiceItems([line("a", 100n, "A")])[0]?.line.description).toBe("A");
+  });
+
+  test("the total never changes, and no amount is negative", () => {
+    for (const lines of [
+      [line("a", 1n, "A"), line("b", 1n, "B"), line("c", 1n, "C"), line("d", -2n, "D")],
+      [line("a", 3_333n, "A"), line("b", 6_667n, "B"), line("c", -1_111n, "C")],
+      [line("a", 99n, "A"), line("b", -33n, "B"), line("c", 1n, "C"), line("d", -33n, "D")],
+    ]) {
+      const total = lines.reduce((sum, row) => sum + row.amountCents, 0n);
+      const items = amounts(lines);
+      expect(items.reduce((sum, amount) => sum + amount, 0n)).toBe(total);
+      expect(items.every((amount) => amount > 0n)).toBe(true);
+    }
+  });
+
+  test("rounding goes to the largest remainders, the same each time", () => {
+    const lines = [line("a", 1n, "A"), line("b", 2n, "B"), line("c", 4n, "C"), line("d", -3n, "D")];
+    expect(amounts(lines)).toEqual([1n, 1n, 2n]);
+    expect(amounts(lines)).toEqual(amounts(lines));
+  });
+
+  test("nothing left to charge means no items", () => {
+    expect(amounts([line("a", 100n, "A"), line("b", -100n, "B")])).toEqual([]);
   });
 });

@@ -119,6 +119,7 @@ export class FakeStripeApi {
   readonly creditNotes = new Map<string, StripeObject>();
   readonly customers = new Map<string, StripeObject>();
   readonly invoices = new Map<string, StripeObject>();
+  readonly invoiceItems = new Map<string, StripeObject>();
   readonly sessions = new Map<string, StripeObject>();
   readonly paymentMethods = new Map<string, StripeObject>();
   /** How the next `pay` calls end (then `paid`). */
@@ -220,6 +221,17 @@ export class FakeStripeApi {
       status: 404,
       body: { error: { type: "invalid_request_error", message: `No such object: ${path}` } },
     };
+    const refuseItem = {
+      status: 400,
+      body: {
+        error: {
+          type: "invalid_request_error",
+          message: "Automatic tax doesn't support this invoice item.",
+        },
+      },
+    };
+    const taxableItem = (item: StripeObject) =>
+      Number(item.amount) >= 0 && item.tax_behavior !== "unspecified";
     const parts = path.split("/").filter(Boolean).slice(1); // drop "v1"
     const [resource, id, action] = parts;
     const metadata = (prefix = "metadata") =>
@@ -302,7 +314,27 @@ export class FakeStripeApi {
       if (method === "GET") return ok(invoice);
       if (method === "POST" && !action) {
         if (params["automatic_tax[enabled]"] !== undefined) {
-          invoice.automatic_tax = { enabled: params["automatic_tax[enabled]"] === "true" };
+          const enabled = params["automatic_tax[enabled]"] === "true";
+          if (invoice.status !== "draft") {
+            return {
+              status: 400,
+              body: {
+                error: {
+                  type: "invalid_request_error",
+                  message: "A finalized invoice's automatic tax can't change.",
+                },
+              },
+            };
+          }
+          if (
+            enabled &&
+            [...this.invoiceItems.values()].some(
+              (item) => item.invoice === invoice.id && !taxableItem(item),
+            )
+          ) {
+            return refuseItem;
+          }
+          invoice.automatic_tax = { enabled };
         }
         return ok(invoice);
       }
@@ -406,16 +438,43 @@ export class FakeStripeApi {
       }
     }
 
-    if (resource === "invoiceitems" && method === "POST") {
-      const invoice = this.invoices.get(params.invoice ?? "");
-      if (invoice?.status !== "draft") return notFound;
-      invoice.total = (invoice.total as number) + Number(params.amount ?? 0);
-      return ok({
-        id: this.#id("ii"),
-        object: "invoiceitem",
-        invoice: invoice.id,
-        amount: Number(params.amount),
-      });
+    if (resource === "invoiceitems") {
+      if (method === "GET" && !id) {
+        const data = [...this.invoiceItems.values()].filter(
+          (item) => item.invoice === params.invoice,
+        );
+        return ok({ object: "list", data, has_more: false, url: "/v1/invoiceitems" });
+      }
+      const existing = id ? this.invoiceItems.get(id) : undefined;
+      const invoice = this.invoices.get(String(existing?.invoice ?? params.invoice ?? ""));
+      if (invoice?.status !== "draft" || (id && !existing)) return notFound;
+      const automaticTax = (invoice.automatic_tax as { enabled: boolean }).enabled;
+      if (method === "DELETE" && existing) {
+        invoice.total = (invoice.total as number) - (existing.amount as number);
+        this.invoiceItems.delete(existing.id as string);
+        return ok({ id: existing.id, object: "invoiceitem", deleted: true });
+      }
+      if (method === "POST") {
+        const item = {
+          ...(existing ?? {
+            id: this.#id("ii"),
+            object: "invoiceitem",
+            invoice: invoice.id,
+            metadata: metadata(),
+            tax_behavior: "unspecified",
+          }),
+          ...(params.amount !== undefined ? { amount: Number(params.amount) } : {}),
+          ...(params.description !== undefined ? { description: params.description } : {}),
+          ...(params.tax_behavior !== undefined ? { tax_behavior: params.tax_behavior } : {}),
+        };
+        // As Stripe: automatic tax refuses negative items and an unspecified tax behavior.
+        if (automaticTax && !taxableItem(item)) return refuseItem;
+        invoice.total =
+          (invoice.total as number) + Number(item.amount) - Number(existing?.amount ?? 0);
+        this.invoiceItems.set(item.id as string, item);
+        return ok(item);
+      }
+      return notFound;
     }
 
     if (resource === "invoice_payments" && method === "GET") {
