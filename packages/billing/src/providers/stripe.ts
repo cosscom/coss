@@ -320,9 +320,10 @@ export class StripeBillingProvider implements BillingProvider {
             pending_invoice_items_behavior: "exclude",
             ...(invoice.number ? { number: invoice.number } : {}),
             ...(invoice.memo ? { description: invoice.memo } : {}),
-            // Decided on the draft below: what Stripe reports can change between retries, and a
-            // retry of this request must keep its exact parameters.
-            automatic_tax: { enabled: false },
+            // Only a first guess, decided on the draft below: what Stripe reports can change
+            // between retries, and a retry of this request must keep its exact parameters (a
+            // draft from before that decision was made there has this one too).
+            automatic_tax: { enabled: account?.taxMode === "stripe_automatic" },
             ...(account?.allowedPaymentMethods.length
               ? {
                   payment_settings: {

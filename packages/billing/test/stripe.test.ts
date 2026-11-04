@@ -678,6 +678,20 @@ describe("tax", () => {
     ]);
   });
 
+  test("the create request keeps the parameters of a draft an earlier release left", async () => {
+    const { api, push } = await taxable();
+    api.taxStatus = "not_collecting";
+    const pushed = await push();
+    const create = api.requests.find(
+      (request) => request.method === "POST" && request.path === "/v1/invoices",
+    );
+    expect(create?.params["automatic_tax[enabled]"]).toBe("true");
+    // The draft's real answer: no registration here, so no fee.
+    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
+      enabled: false,
+    });
+  });
+
   test("a retry whose create replays a stale draft leaves the finalized invoice alone", async () => {
     const { api, push } = await taxable();
     api.taxStatus = "supported";
