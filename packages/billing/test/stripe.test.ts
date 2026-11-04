@@ -239,7 +239,8 @@ describe("StripeBillingProvider", () => {
       account: null,
     });
     expect(
-      api.requests.find((request) => request.path === "/v1/invoices")?.params.collection_method,
+      api.requests.find((request) => request.method === "POST" && request.path === "/v1/invoices")
+        ?.params.collection_method,
     ).toBe("send_invoice");
     const result = await stripe.collect({
       invoice: { ...target, providerInvoiceId: pushed.providerInvoiceId },
@@ -549,8 +550,8 @@ test("a delayed invoice push retries with the original net terms", async () => {
     const creates = api.requests.filter(
       (request) => request.method === "POST" && request.path === "/v1/invoices",
     );
+    // The retry found the invoice instead of asking again.
     expect(creates.map((request) => request.params.due_date)).toEqual([
-      String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
       String(Math.floor((finalizedAt.getTime() + 30 * 86400000) / 1000)),
     ]);
   } finally {
@@ -678,26 +679,48 @@ describe("tax", () => {
     ]);
   });
 
-  test("the create request keeps the parameters of a draft an earlier release left", async () => {
+  test("tax stays off until Stripe reports a registration, so an inactive Stripe Tax blocks nothing", async () => {
     const { api, push } = await taxable();
     api.taxStatus = "not_collecting";
-    const pushed = await push();
-    const create = api.requests.find(
-      (request) => request.method === "POST" && request.path === "/v1/invoices",
+    await push();
+    const taxRequests = api.requests.filter(
+      (request) => request.params["automatic_tax[enabled]"] === "true",
     );
-    expect(create?.params["automatic_tax[enabled]"]).toBe("true");
-    // The draft's real answer: no registration here, so no fee.
-    expect(api.invoices.get(pushed.providerInvoiceId ?? "")?.automatic_tax).toEqual({
-      enabled: false,
+    expect(taxRequests).toEqual([]);
+  });
+
+  test("a draft an earlier release made with tax on, its id never saved, is taken over", async () => {
+    const { api, stripe, customerId, taxed } = await taxable();
+    const client = createStripeClient({ secretKey: "sk_test_fake", fetch: api.fetch });
+    const earlier = await client.invoices.create(
+      {
+        customer: customerId,
+        automatic_tax: { enabled: true },
+        metadata: { coss_invoice_id: "inv_1" },
+      },
+      { idempotencyKey: "coss:invoice:inv_1:create" },
+    );
+    await client.invoices.create({ customer: customerId, metadata: { coss_invoice_id: "inv_2" } });
+    api.taxStatus = "not_collecting";
+    const pushed = await stripe.pushInvoice({
+      invoice: invoice({ providerCustomerId: customerId }),
+      lines: [line("invl_1", 10_000n, "Pro plan")],
+      account: taxed,
+    });
+    expect(pushed.providerInvoiceId).toBe(earlier.id);
+    expect(api.invoices.size).toBe(2);
+    expect(api.invoices.get(earlier.id)).toMatchObject({
+      status: "open",
+      automatic_tax: { enabled: false },
     });
   });
 
-  test("a retry whose create replays a stale draft leaves the finalized invoice alone", async () => {
+  test("a retry leaves an invoice an earlier attempt finalized alone", async () => {
     const { api, push } = await taxable();
     api.taxStatus = "supported";
     const pushed = await push();
     const requests = api.requests.length;
-    // The response was lost, so coss.com has no invoice id and asks to create it again.
+    // The response was lost, so coss.com has no invoice id and looks for it.
     expect(await push()).toMatchObject({
       providerInvoiceId: pushed.providerInvoiceId,
       taxCents: 1_000n,

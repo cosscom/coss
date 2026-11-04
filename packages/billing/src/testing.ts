@@ -282,6 +282,12 @@ export class FakeStripeApi {
     }
 
     if (resource === "invoices") {
+      if (method === "GET" && !id) {
+        const data = [...this.invoices.values()]
+          .filter((invoice) => invoice.customer === params.customer)
+          .reverse();
+        return ok({ object: "list", data, has_more: false, url: "/v1/invoices" });
+      }
       if (method === "POST" && !id) {
         const invoice = {
           id: this.#id("in"),

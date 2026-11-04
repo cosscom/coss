@@ -7,7 +7,7 @@
 import type { PaymentMethodSummary } from "@coss/db/schema";
 import Stripe from "stripe";
 import type { BillingAccount, OrganizationLabel } from "../accounts.ts";
-import type { InvoiceLineRow } from "../invoices.ts";
+import type { InvoiceLineRow, InvoiceRow } from "../invoices.ts";
 import type {
   BillingProvider,
   CollectResult,
@@ -285,6 +285,22 @@ export class StripeBillingProvider implements BillingProvider {
   }
 
   /**
+   * The Stripe invoice an attempt made before its id was saved. Idempotency keys alone won't do:
+   * they expire, and a release that created this invoice with other parameters has its key refused.
+   */
+  async #earlierAttempt(customer: string, invoice: InvoiceRow): Promise<string | null> {
+    for await (const found of this.#stripe.invoices.list({
+      customer,
+      // Stripe's clock and ours needn't agree.
+      created: { gte: seconds(invoice.createdAt) - 3600 },
+      limit: 100,
+    })) {
+      if (found.metadata?.coss_invoice_id === invoice.id) return found.id;
+    }
+    return null;
+  }
+
+  /**
    * An upgrade's invoice is taxed where its customer is, which Stripe learns from the Checkout the
    * customer is in while this waits for a payment method. Finalized before that, it can't add tax.
    */
@@ -305,6 +321,7 @@ export class StripeBillingProvider implements BillingProvider {
     const sendInvoice = invoice.collectionMethod === "send_invoice";
     const invoiceId =
       invoice.providerInvoiceId ??
+      (await this.#earlierAttempt(customer, invoice)) ??
       (
         await this.#stripe.invoices.create(
           {
@@ -320,10 +337,9 @@ export class StripeBillingProvider implements BillingProvider {
             pending_invoice_items_behavior: "exclude",
             ...(invoice.number ? { number: invoice.number } : {}),
             ...(invoice.memo ? { description: invoice.memo } : {}),
-            // Only a first guess, decided on the draft below: what Stripe reports can change
-            // between retries, and a retry of this request must keep its exact parameters (a
-            // draft from before that decision was made there has this one too).
-            automatic_tax: { enabled: account?.taxMode === "stripe_automatic" },
+            // Decided on the draft below: what Stripe reports can change between retries, and a
+            // retry of this request must keep its exact parameters.
+            automatic_tax: { enabled: false },
             ...(account?.allowedPaymentMethods.length
               ? {
                   payment_settings: {
@@ -334,7 +350,7 @@ export class StripeBillingProvider implements BillingProvider {
               : {}),
             metadata: { coss_invoice_id: invoice.id, coss_organization_id: invoice.organizationId },
           },
-          { idempotencyKey: `${key}:create` },
+          { idempotencyKey: `${key}:draft` },
         )
       ).id;
     // Read back even after that create: a replay of it answers with the draft it first made, and
