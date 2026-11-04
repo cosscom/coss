@@ -1,5 +1,5 @@
 {
-  "id": "8366a32e-e085-4137-b31b-8bba537d216f",
+  "id": "36d2ddc7-5c99-47e2-8e85-77f6398e5d4f",
   "prevId": "d8546727-50d2-4b17-baf2-f02a5519c1b5",
   "version": "7",
   "dialect": "postgresql",
@@ -2689,7 +2689,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'stripe_automatic'"
+          "default": "'none'"
         },
         "billing_email": {
           "name": "billing_email",
@@ -23637,6 +23637,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "next_fee_at": {
+          "name": "next_fee_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -23694,6 +23700,38 @@
           "isUnique": false,
           "concurrently": false,
           "method": "gin",
+          "with": {}
+        },
+        "scheduling_host_next_fee_at_idx": {
+          "name": "scheduling_host_next_fee_at_idx",
+          "columns": [
+            {
+              "expression": "next_fee_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"scheduling_host\".\"next_fee_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "scheduling_host_live_organization_idx": {
+          "name": "scheduling_host_live_organization_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"scheduling_host\".\"next_fee_at\" IS NOT NULL",
+          "concurrently": false,
+          "method": "btree",
           "with": {}
         }
       },
