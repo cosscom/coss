@@ -460,24 +460,20 @@ export class FakeStripeApi {
         this.invoiceItems.delete(existing.id as string);
         return ok({ id: existing.id, object: "invoiceitem", deleted: true });
       }
-      if (method === "POST") {
+      if (method === "POST" && !existing) {
         const item = {
-          ...(existing ?? {
-            id: this.#id("ii"),
-            object: "invoiceitem",
-            invoice: invoice.id,
-            metadata: metadata(),
-            tax_behavior: "unspecified",
-          }),
-          ...(params.amount !== undefined ? { amount: Number(params.amount) } : {}),
-          ...(params.description !== undefined ? { description: params.description } : {}),
-          ...(params.tax_behavior !== undefined ? { tax_behavior: params.tax_behavior } : {}),
+          id: this.#id("ii"),
+          object: "invoiceitem",
+          invoice: invoice.id,
+          metadata: metadata(),
+          amount: Number(params.amount),
+          description: params.description,
+          tax_behavior: params.tax_behavior ?? "unspecified",
         };
         // As Stripe: automatic tax refuses negative items and an unspecified tax behavior.
         if (automaticTax && !taxableItem(item)) return refuseItem;
-        invoice.total =
-          (invoice.total as number) + Number(item.amount) - Number(existing?.amount ?? 0);
-        this.invoiceItems.set(item.id as string, item);
+        invoice.total = (invoice.total as number) + item.amount;
+        this.invoiceItems.set(item.id, item);
         return ok(item);
       }
       return notFound;

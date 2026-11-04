@@ -645,8 +645,8 @@ describe("tax", () => {
       line("invl_usage", 5_000n, "Email"),
       line("invl_credit", -6_000n, "Credit applied"),
     ];
-    // The last release's request for the first line and the credit: a key of its own, no tax
-    // behavior, the amount as coss.com has it, and then it died.
+    // The last release's request for the first line and the credit: a key of its own, the tax
+    // behavior left to the account, the amount as coss.com has it, and then it died.
     const client = createStripeClient({ secretKey: "sk_test_fake", fetch: api.fetch });
     const draft = await client.invoices.create(
       { customer: customerId, automatic_tax: { enabled: false } },
@@ -661,6 +661,8 @@ describe("tax", () => {
           currency: "usd",
           amount: Number(old.amountCents),
           description: old.description,
+          // The Stripe account's default at the time, which can't be changed afterwards.
+          tax_behavior: "inclusive",
           metadata: { coss_line_id: old.id },
         },
         { idempotencyKey: `coss:invoice:inv_1:line:${old.id}` },
@@ -738,6 +740,7 @@ describe("tax", () => {
     api.taxStatus = "supported";
     expect(await push()).toMatchObject({ taxCents: 1_000n, totalCents: 11_000n });
     expect(api.invoiceItems.size).toBe(1);
+    expect(api.requests.some((request) => request.method === "DELETE")).toBe(false);
   });
 
   test("an account with tax off never asks Stripe where its customer is", async () => {

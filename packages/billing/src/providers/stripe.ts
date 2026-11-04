@@ -45,6 +45,9 @@ export function createStripeClient(opts: StripeOptions): Stripe {
 
 const seconds = (date: Date) => Math.floor(date.getTime() / 1000);
 
+/** Marks the invoice items made as `stripeInvoiceItems` says, in their metadata. */
+const ITEM_VERSION = "net";
+
 /**
  * What Stripe bills for an invoice's lines: one amount per charge, with its credits, discounts and
  * unused time taken off the charges in proportion, the invoice's total unchanged. Stripe refuses
@@ -238,8 +241,9 @@ export class StripeBillingProvider implements BillingProvider {
   }
 
   /**
-   * Makes a draft's items what `stripeInvoiceItems` says. An earlier attempt may have left some,
-   * perhaps from a release that sent other parameters, which their idempotency keys would refuse.
+   * Makes a draft's items what `stripeInvoiceItems` says. An attempt of this kind left items that
+   * already match, being a pure function of the lines. A release before it left others: they go,
+   * since their tax behavior can't be changed once set (and Stripe doesn't report it).
    */
   async #syncInvoiceItems(
     invoiceId: string,
@@ -248,36 +252,28 @@ export class StripeBillingProvider implements BillingProvider {
     lines: readonly InvoiceLineRow[],
     currency: string,
   ) {
-    const existing = new Map<string, string>();
+    const kept = new Set<string>();
+    const stale: string[] = [];
     for await (const item of this.#stripe.invoiceItems.list({ invoice: invoiceId, limit: 100 })) {
       const lineId = item.metadata?.coss_line_id;
-      if (lineId) existing.set(lineId, item.id);
+      if (!lineId) continue;
+      if (item.metadata?.coss_item === ITEM_VERSION) kept.add(lineId);
+      else stale.push(item.id);
     }
-    const items = stripeInvoiceItems(lines);
-    const wanted = new Set(items.map(({ line }) => line.id));
-    for (const [lineId, itemId] of existing) {
-      if (!wanted.has(lineId)) await this.#stripe.invoiceItems.del(itemId);
-    }
-    for (const { line, amountCents } of items) {
-      const details = {
-        amount: Number(amountCents),
-        description: line.description,
-        // coss.com's prices exclude tax, whatever the Stripe account's default.
-        tax_behavior: "exclusive" as const,
-      };
-      const itemId = existing.get(line.id);
-      if (itemId) {
-        await this.#stripe.invoiceItems.update(itemId, details);
-        continue;
-      }
+    for (const itemId of stale) await this.#stripe.invoiceItems.del(itemId);
+    for (const { line, amountCents } of stripeInvoiceItems(lines)) {
+      if (kept.has(line.id)) continue;
       await this.#stripe.invoiceItems.create(
         {
-          ...details,
           customer,
           invoice: invoiceId,
           currency,
+          amount: Number(amountCents),
+          description: line.description,
+          // coss.com's prices exclude tax, whatever the Stripe account's default.
+          tax_behavior: "exclusive",
           period: { start: seconds(line.periodStart), end: seconds(line.periodEnd) },
-          metadata: { coss_line_id: line.id },
+          metadata: { coss_line_id: line.id, coss_item: ITEM_VERSION },
         },
         { idempotencyKey: `${key}:item:${line.id}` },
       );
