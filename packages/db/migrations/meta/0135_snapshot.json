@@ -1,5 +1,5 @@
 {
-  "id": "8b4de12a-fd6b-497c-9b0b-9e03625e2bff",
+  "id": "d8546727-50d2-4b17-baf2-f02a5519c1b5",
   "prevId": "84dbeb6d-7ad4-42b3-8ea8-e63022265290",
   "version": "7",
   "dialect": "postgresql",
@@ -2689,7 +2689,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'stripe_automatic'"
+          "default": "'none'"
         },
         "billing_email": {
           "name": "billing_email",
@@ -2724,6 +2724,12 @@
         },
         "spend_limit_cents": {
           "name": "spend_limit_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "credit_limit_cents": {
+          "name": "credit_limit_cents",
           "type": "bigint",
           "primaryKey": false,
           "notNull": false
@@ -30213,7 +30219,8 @@
         "support",
         "promotion",
         "refund",
-        "sla"
+        "sla",
+        "threshold"
       ]
     },
     "public.billing_hold_reason": {
@@ -30222,6 +30229,7 @@
       "values": [
         "delinquent",
         "spend_limit",
+        "credit_limit",
         "admin"
       ]
     },
@@ -30232,7 +30240,8 @@
         "period",
         "plan_change",
         "one_off",
-        "final"
+        "final",
+        "threshold"
       ]
     },
     "public.billing_invoice_status": {
