@@ -246,6 +246,47 @@ const slots: Command = defineCommand({
   },
 });
 
+const EXPLAIN_FLAGS = {
+  start: { type: "string", value: "<time>", description: "The ISO 8601 instant to explain" },
+  host: { type: "string", value: "<host>", description: "Only this host (id or uid)" },
+  json: { type: "boolean", description: "Print the explanation as JSON" },
+} as const satisfies Flags;
+
+const explain: Command = defineCommand({
+  name: "scheduling slots explain",
+  summary: "Explain why one start can or can't be booked",
+  usage: "<event-type> --start <time>",
+  description:
+    "Says whether one start can be booked right now and, host by host, why not, decided the same way a booking is.",
+  flags: EXPLAIN_FLAGS,
+  positionals: true,
+  run: async ({ values, positionals, context }: CommandInput<typeof EXPLAIN_FLAGS>) => {
+    const [eventType] = requireArgs(positionals, 1, "scheduling slots explain <event-type>") as [
+      string,
+    ];
+    if (!values.start) throw new UsageError("Pass --start.");
+    const coss = await client(context);
+    const { data, error } = await coss.scheduling.slots.explain(eventType, {
+      start: values.start,
+      ...(values.host !== undefined && { host: values.host }),
+    });
+    if (error) throw apiError("Couldn't explain the slot", error);
+    const { out } = context;
+    if (out.json) {
+      out.data(data);
+      return 0;
+    }
+    out.line(
+      `${when(data.start)}  ${data.available ? "available" : (data.reason ?? "unavailable")}`,
+    );
+    for (const host of data.hosts) {
+      const why = host.calendar_reason ?? host.reason ?? "free";
+      out.line(`  ${host.host}  ${host.role}  ${why}`);
+    }
+    return 0;
+  },
+});
+
 const BOOKING_FLAGS = {
   json: { type: "boolean", description: "Print the booking as JSON" },
 } as const satisfies Flags;
@@ -282,18 +323,58 @@ const booking: Command = defineCommand({
   },
 });
 
+const CANCEL_FLAGS = {
+  ...BOOKING_FLAGS,
+  reason: { type: "string", value: "<text>", description: "Why it's being cancelled" },
+} as const satisfies Flags;
+
+const EVENTS_FLAGS = {
+  json: { type: "boolean", description: "One event per line, as JSON" },
+} as const satisfies Flags;
+
+const bookingEvents: Command = defineCommand({
+  name: "scheduling booking-events",
+  summary: "Show what's happened to a booking",
+  usage: "<booking>",
+  description: "Lists a booking's history, oldest first, and who did each thing.",
+  flags: EVENTS_FLAGS,
+  positionals: true,
+  run: async ({ positionals, context }: CommandInput<typeof EVENTS_FLAGS>) => {
+    const [id] = requireArgs(positionals, 1, "scheduling booking-events <booking>") as [string];
+    const coss = await client(context);
+    const { out } = context;
+    let after: string | undefined;
+    do {
+      const { data, error } = await coss.scheduling.bookings.events(id, {
+        limit: 100,
+        ...(after ? { after } : {}),
+      });
+      if (error) throw apiError("Couldn't list the booking's history", error);
+      for (const event of data.data) {
+        if (out.json) out.data(event);
+        else out.line(`${when(event.occurred_at)}  ${event.type}  ${event.actor.kind}`);
+      }
+      after = data.has_more ? data.data.at(-1)?.id : undefined;
+    } while (after);
+    return 0;
+  },
+});
+
 const cancel: Command = defineCommand({
   name: "scheduling cancel",
   summary: "Cancel a booking and tell the attendee",
-  usage: "<booking>",
+  usage: "<booking> [--reason <text>]",
   description:
     "Frees the time, removes the calendar event and tells the attendee. It can't be undone.",
-  flags: BOOKING_FLAGS,
+  flags: CANCEL_FLAGS,
   positionals: true,
-  run: async ({ positionals, context }: CommandInput<typeof BOOKING_FLAGS>) => {
+  run: async ({ values, positionals, context }: CommandInput<typeof CANCEL_FLAGS>) => {
     const [id] = requireArgs(positionals, 1, "scheduling cancel <booking>") as [string];
     const coss = await client(context);
-    const { data, error } = await coss.scheduling.bookings.cancel(id);
+    const { data, error } = await coss.scheduling.bookings.cancel(
+      id,
+      values.reason ? { reason: values.reason } : {},
+    );
     if (error) throw apiError("Couldn't cancel the booking", error);
     printBooking(context, data);
     return 0;
@@ -1065,10 +1146,12 @@ export const SCHEDULING_COMMANDS: readonly Command[] = [
   { ...eventTypes, name: "scheduling event-types list" },
   eventTypesCreate,
   eventTypesUpdate,
+  explain,
   slots,
   book,
   bookings,
   booking,
+  bookingEvents,
   reschedule,
   approve,
   decline,

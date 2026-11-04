@@ -4,14 +4,17 @@ import { db, type Executor, schema } from "@coss/db";
 import { ID_PREFIXES, isId } from "@coss/db/id";
 import { and, asc, desc, eq, gt, inArray, isNull, lt, notInArray, or, sql } from "drizzle-orm";
 import { notZoomMeeting } from "./calendar/zoom.ts";
+import { startingUnits } from "./engine/rank.ts";
 import { SchedulingError } from "./errors.ts";
-import { checkTimeZone, type HostRow, resolveHost } from "./hosts.ts";
+import { attributesMatch, checkTimeZone, type HostRow, resolveHost } from "./hosts.ts";
 import type {
   CreateEventTypeRequestOutput,
   EventTypeObjectOutput,
   UpdateEventTypeRequestOutput,
 } from "./schemas.ts";
 import {
+  isWithinDomains,
+  linkedHosts,
   locationText,
   refuseLinks,
   refuseLinksInAddresses,
@@ -42,6 +45,7 @@ export function toEventTypeObject(
     id: row.id,
     uid: row.uid,
     title: row.title,
+    description: row.description,
     kind: row.kind,
     status: row.status,
     duration_minutes: row.durationMinutes,
@@ -60,6 +64,7 @@ export function toEventTypeObject(
     cancel_notice_minutes: row.cancelNoticeMinutes,
     reschedule_notice_minutes: row.rescheduleNoticeMinutes,
     max_guests: row.maxGuests,
+    max_active_bookings_per_attendee: row.maxActiveBookingsPerAttendee,
     host_calendar_details: row.hostCalendarDetails,
     questions: row.questions,
     locations: row.locations as EventTypeObjectOutput["locations"],
@@ -215,9 +220,19 @@ async function replaceHosts(
     }
   }
   // Waits for bookers holding `key share`, so a removal can't slip past one choosing the host.
-  await tx
-    .select({ hostId: schedulingEventTypeHost.hostId })
+  const current = await tx
+    .select({
+      hostId: schedulingEventTypeHost.hostId,
+      role: schedulingEventTypeHost.role,
+      weight: schedulingEventTypeHost.weight,
+      fairUnits: schedulingEventTypeHost.fairUnits,
+      assigned: schedulingEventTypeHost.assigned,
+      removedAt: schedulingEventTypeHost.removedAt,
+      hostStatus: schema.schedulingHost.status,
+      attributes: schema.schedulingHost.attributes,
+    })
     .from(schedulingEventTypeHost)
+    .innerJoin(schema.schedulingHost, eq(schema.schedulingHost.id, schedulingEventTypeHost.hostId))
     .where(
       and(
         eq(schedulingEventTypeHost.eventTypeId, row.id),
@@ -225,7 +240,7 @@ async function replaceHosts(
       ),
     )
     .orderBy(asc(schedulingEventTypeHost.hostId))
-    .for("update");
+    .for("update", { of: schedulingEventTypeHost });
   const keep = resolved.map(({ host }) => host.id);
   await tx
     .update(schedulingEventTypeHost)
@@ -239,13 +254,36 @@ async function replaceHosts(
         keep.length > 0 ? notInArray(schedulingEventTypeHost.hostId, keep) : undefined,
       ),
     );
+  const before = new Map(current.map((entry) => [entry.hostId, entry]));
+  const wanted = new Map(resolved.map(({ input, host }) => [host.id, input]));
+  // Who's in the pool once this is saved, decided before anyone's counter is, so it can't depend on
+  // the order hosts are written in.
+  const staying = current.filter((entry) => {
+    if (entry.hostStatus !== "active" || entry.removedAt || entry.role !== "member") return false;
+    const input = wanted.get(entry.hostId);
+    if (input) return input.role === "member";
+    return (
+      !entry.assigned &&
+      row.kind === "pool" &&
+      Boolean(row.hostFilter) &&
+      attributesMatch(entry.attributes, row.hostFilter)
+    );
+  });
   for (const { input, host } of resolved.sort((a, b) => (a.host.id < b.host.id ? -1 : 1))) {
+    const existing = before.get(host.id);
+    const continuing = existing && !existing.removedAt && existing.role === "member";
+    // Coming back, or newly taking bookings, is joining. A new weight applies from now on, so it
+    // keeps their place rather than leaving them with a backlog to catch up on.
+    const fairUnits = continuing
+      ? (existing.fairUnits * input.weight) / existing.weight
+      : startingUnits(staying, input.weight);
     const values = {
       role: input.role,
       weight: input.weight,
       scheduleId: input.schedule,
       assigned: true,
       removedAt: null,
+      fairUnits,
     };
     await tx
       .insert(schedulingEventTypeHost)
@@ -257,7 +295,16 @@ async function replaceHosts(
       })
       .onConflictDoUpdate({
         target: [schedulingEventTypeHost.eventTypeId, schedulingEventTypeHost.hostId],
-        set: values,
+        set: {
+          ...values,
+          // Not there when this read: a booker just made it for a host its filter found, and it
+          // already holds their counter.
+          ...(existing
+            ? {}
+            : {
+                fairUnits: sql`scheduling_event_type_host.fair_units * ${input.weight}::double precision / scheduling_event_type_host.weight`,
+              }),
+        },
       });
   }
 }
@@ -272,6 +319,44 @@ const uidTaken = (uid: string | null | undefined) =>
     param: "uid",
   });
 
+/** A description is shown on hosted pages, so its links can only go somewhere the customer owns. */
+async function checkDescription(
+  organizationId: string,
+  description: string | null | undefined,
+): Promise<void> {
+  if (!description) return;
+  const hosts = linkedHosts(description);
+  if (!hosts) {
+    throw new SchedulingError(
+      "content_refused",
+      "Links in a description must use https and a plain address, with no `user@`.",
+      {
+        param: "description",
+      },
+    );
+  }
+  if (hosts.length === 0) return;
+  const verified = await db
+    .select({ name: schema.domain.name })
+    .from(schema.domain)
+    .where(
+      and(
+        eq(schema.domain.organizationId, organizationId),
+        eq(schema.domain.status, "verified"),
+        isNull(schema.domain.subaccountId),
+      ),
+    );
+  const domains = verified.map((row) => row.name);
+  const outside = hosts.find((host) => !isWithinDomains(host, domains));
+  if (outside) {
+    throw new SchedulingError(
+      "content_refused",
+      `A description can only link to your organization's verified domains, and ${outside} isn't one.`,
+      { param: "description" },
+    );
+  }
+}
+
 /** Addresses and links land in attendees' emails, where nothing screens them per email. */
 function locationsText(locations: readonly Parameters<typeof locationText>[0][] | undefined) {
   return (locations ?? []).map(locationText).filter(Boolean).join("\n");
@@ -279,10 +364,12 @@ function locationsText(locations: readonly Parameters<typeof locationText>[0][] 
 
 function setupText(values: {
   title?: string | undefined;
+  description?: string | null | undefined;
   questions?: readonly { label: string; options: readonly string[] }[] | undefined;
 }): string {
   return [
     values.title ?? "",
+    ...(values.description ? [values.description] : []),
     ...(values.questions ?? []).flatMap((question) => [question.label, ...question.options]),
   ].join("\n");
 }
@@ -353,6 +440,7 @@ export async function createEventType(
   opts: { screen?: SetupScreening | undefined } = {},
 ): Promise<EventTypeObjectOutput> {
   refuseLinks(params.title, "title");
+  await checkDescription(env.organizationId, params.description);
   refuseLinksInAddresses(params.locations);
   await screenSetup(env, setupText(params), opts.screen, "title");
   await screenSetup(env, locationsText(params.locations), opts.screen, "locations");
@@ -381,6 +469,7 @@ export async function createEventType(
           environmentId: env.environmentId,
           uid: params.uid ?? null,
           title: params.title,
+          description: params.description ?? null,
           kind: params.kind,
           durationMinutes: params.duration_minutes,
           durationOptions: params.duration_options ?? [],
@@ -402,6 +491,7 @@ export async function createEventType(
           cancelNoticeMinutes: params.cancel_notice_minutes ?? 0,
           rescheduleNoticeMinutes: params.reschedule_notice_minutes ?? 0,
           maxGuests: params.max_guests ?? 0,
+          maxActiveBookingsPerAttendee: params.max_active_bookings_per_attendee ?? null,
           hostCalendarDetails: params.host_calendar_details ?? "neutral",
           questions: params.questions ?? [],
           locations: (params.locations ?? []) as EventTypeRow["locations"],
@@ -503,9 +593,15 @@ export async function updateEventType(
   opts: { screen?: SetupScreening | undefined } = {},
 ): Promise<EventTypeObjectOutput> {
   refuseLinks(params.title, "title");
+  await checkDescription(scope.organizationId, params.description);
   refuseLinksInAddresses(params.locations);
   await checkHostCalendarDetails(scope.environmentId, params.host_calendar_details);
-  if (scope.mode && (params.title !== undefined || params.questions !== undefined)) {
+  if (
+    scope.mode &&
+    (params.title !== undefined ||
+      params.description !== undefined ||
+      params.questions !== undefined)
+  ) {
     await screenSetup(
       { organizationId: scope.organizationId, mode: scope.mode },
       setupText(params),
@@ -527,6 +623,7 @@ export async function updateEventType(
       const set = {
         ...(params.uid !== undefined ? { uid: params.uid } : {}),
         ...(params.title !== undefined ? { title: params.title } : {}),
+        ...(params.description !== undefined ? { description: params.description } : {}),
         ...(params.status !== undefined ? { status: params.status } : {}),
         ...(params.duration_minutes !== undefined
           ? { durationMinutes: params.duration_minutes }
@@ -564,6 +661,9 @@ export async function updateEventType(
           ? { rescheduleNoticeMinutes: params.reschedule_notice_minutes }
           : {}),
         ...(params.max_guests !== undefined ? { maxGuests: params.max_guests } : {}),
+        ...(params.max_active_bookings_per_attendee !== undefined
+          ? { maxActiveBookingsPerAttendee: params.max_active_bookings_per_attendee }
+          : {}),
         ...(params.host_calendar_details !== undefined
           ? { hostCalendarDetails: params.host_calendar_details }
           : {}),

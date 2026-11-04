@@ -44,6 +44,7 @@ import {
 } from "@coss/scheduling";
 import {
   AuthorizeCalendarRequest,
+  CancelBookingRequest,
   CreateBookingRequest,
   CreateCalendarConnectionRequest,
   RescheduleBookingRequest,
@@ -82,6 +83,32 @@ async function parsed<T extends z.ZodType>(c: Context<ClientEnv>, schema: T): Pr
     throw invalidBody(issue?.message ?? "The body is invalid.", issue?.path.join("."));
   }
   return result.data;
+}
+
+/** The same, for a body that's optional: a page from before it existed sends none. */
+async function parsedOrEmpty<T extends z.ZodType>(
+  c: Context<ClientEnv>,
+  schema: T,
+): Promise<z.output<T>> {
+  const text = await c.req.text();
+  const result = schema.safeParse(text.trim() ? parseJson(text) : {});
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    throw invalidBody(issue?.message ?? "The body is invalid.", issue?.path.join("."));
+  }
+  return result.data;
+}
+
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new ApiError(400, {
+      type: "invalid_request_error",
+      code: "invalid_json",
+      message: "The body is not valid JSON.",
+    });
+  }
 }
 
 const notFound = () => new SchedulingError("not_found", "That isn't available from this link.");
@@ -213,6 +240,7 @@ export function createSchedulingClientRoutes(opts: {
     return {
       id: eventType.id,
       title: eventType.title,
+      description: eventType.description,
       kind: eventType.kind,
       duration_minutes: eventType.duration_minutes,
       duration_options: eventType.duration_options,
@@ -277,11 +305,18 @@ export function createSchedulingClientRoutes(opts: {
     };
   };
 
-  /** An attendee sees times, never who else could take them. */
-  const slotList = (c: Context<ClientEnv>, slots: { startMs: number; endMs: number }[]) =>
+  /** An attendee sees times and free seats, never who else could take them. */
+  const slotList = (
+    c: Context<ClientEnv>,
+    slots: { startMs: number; endMs: number; seatsLeft?: number | null }[],
+  ) =>
     c.json({
       object: "list" as const,
-      data: slots.map((slot) => ({ start: iso(slot.startMs), end: iso(slot.endMs) })),
+      data: slots.map((slot) => ({
+        start: iso(slot.startMs),
+        end: iso(slot.endMs),
+        seats_left: slot.seatsLeft ?? null,
+      })),
       has_more: false,
     });
 
@@ -387,8 +422,10 @@ export function createSchedulingClientRoutes(opts: {
   router.post("/booking/cancel", async (c) => {
     const id = bookingOf(c);
     const { env, session } = c.var.session;
+    const { reason } = await parsedOrEmpty(c, CancelBookingRequest);
     const booking = await cancelBooking(env, id, deps, sessionActor(session), {
       enforceCutoffs: session.createdByUserId === null,
+      reason,
     });
     return c.json(clientBooking(booking));
   });

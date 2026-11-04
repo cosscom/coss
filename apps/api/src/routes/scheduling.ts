@@ -2,6 +2,7 @@
  * Scheduling over the public API (`/v1/scheduling/*`): hosts, their schedules, event types, slots,
  * bookings, holds and series. Tenancy comes only from the API key.
  */
+
 import {
   approveBooking,
   type BookingActor,
@@ -13,6 +14,7 @@ import {
   connectSimulated,
   createBookerSession,
   createBooking,
+  createCalendarDelegation,
   createEventType,
   createHold,
   createHost,
@@ -21,19 +23,24 @@ import {
   createSchedule,
   createSeries,
   declineBooking,
+  deleteCalendarDelegation,
   deleteHold,
   deleteHost,
   deleteSchedule,
   disconnectCalendar,
   eraseAttendee,
   eraseAttendeeByEmail,
+  explainSlot,
   getBooking,
+  getCalendarDelegation,
   getEventType,
   getHost,
   getSchedule,
   getSettings,
   getSettingsRow,
+  listBookingEvents,
   listBookings,
+  listCalendarDelegations,
   listConnections,
   listEventTypeSlots,
   listEventTypes,
@@ -50,30 +57,38 @@ import {
   toConnectionObject,
   updateBookingLocation,
   updateCalendar,
+  updateCalendarDelegation,
   updateEventType,
   updateHost,
   updateSchedule,
   updateSettings,
+  verifyCalendarDelegation,
 } from "@coss/scheduling";
 import {
   AuthorizeCalendarRequest,
   AvailabilitySearchRequest,
   AvailabilitySearchResult,
+  BookingEventList,
   BookingList,
   BookingObject,
   CalendarAuthorization,
   CalendarConnectionList,
   CalendarConnectionObject,
+  CalendarDelegationList,
+  CalendarDelegationObject,
+  CancelBookingRequest,
   CancelledSeries,
   CancelSeriesRequest,
   ConfirmHoldRequest,
   CreateBookingRequest,
   CreateCalendarConnectionRequest,
+  CreateCalendarDelegationRequest,
   CreateEventTypeRequest,
   CreateHoldRequest,
   CreateHostRequest,
   CreateSeriesRequest,
   DeletedCalendarConnection,
+  DeletedCalendarDelegation,
   DeletedHost,
   DeletedSchedule,
   EraseAttendeeByEmailRequest,
@@ -81,8 +96,10 @@ import {
   ErasedAttendeeByEmail,
   EventTypeList,
   EventTypeObject,
+  ExplainSlotQuery,
   HostList,
   HostObject,
+  ListBookingEventsQuery,
   ListBookingsQuery,
   PageQuery,
   RescheduleBookingRequest,
@@ -92,17 +109,21 @@ import {
   SeriesResult,
   SetSimulatedBusyRequest,
   SettingsObject,
+  SlotExplanation,
   SlotList,
   SlotsQuery,
   UpdateBookingLocationRequest,
+  UpdateCalendarDelegationRequest,
   UpdateCalendarRequest,
   UpdateEventTypeRequest,
   UpdateHostRequest,
   UpdateSettingsRequest,
   UpsertScheduleRequest,
+  VerifyCalendarDelegationRequest,
 } from "@coss/scheduling/schemas";
 import { secretsKeyRing } from "@coss/webhooks";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { createMiddleware } from "hono/factory";
 import { z } from "zod";
 import { recordApiAudit } from "../audit.ts";
 import { ApiError } from "../errors.ts";
@@ -158,6 +179,9 @@ const ConnectionParams = HostParams.extend({
 });
 const CalendarParams = HostParams.extend({
   calendar_id: param("The calendar's id.", "cal_01kd2m9a0b1c2d3e4f5g6h7j8m"),
+});
+const DelegationParams = z.object({
+  id: param("The delegation's id.", "caldlg_01kd2m9a0b1c2d3e4f5g6h7j8m"),
 });
 const AttendeeParams = z.object({ uid: param("Your id for the attendee.", "patient_77") });
 
@@ -494,6 +518,26 @@ export const listSlotsRoute = createRoute({
   },
 });
 
+export const explainSlotRoute = createRoute({
+  method: "get",
+  path: "/scheduling/event_types/{event_type}/slots/explain",
+  operationId: "explainSchedulingSlot",
+  tags: [TAG_AVAILABILITY],
+  summary: "Explain a slot",
+  description:
+    "Why one start can or can't be booked right now, host by host, decided the same way a booking is. " +
+    "For support and debugging: it says when a host is busy, so don't show it to attendees.",
+  security: [{ bearerAuth: [] }],
+  middleware: read(),
+  request: { params: EventTypeParams, query: ExplainSlotQuery },
+  responses: {
+    200: jsonDoc("Whether it can be booked, and why.", SlotExplanation),
+    ...commonErrors,
+    404: notFound,
+    422: invalidWindow,
+  },
+});
+
 export const searchAvailabilityRoute = createRoute({
   method: "post",
   path: "/scheduling/availability/search",
@@ -597,6 +641,19 @@ export const rescheduleBookingRoute = createRoute({
   },
 });
 
+/**
+ * This route's body came later, and callers that send a JSON content type with no body have always
+ * been fine. Hono parses by the header, even with `required: false`, so an empty body is `{}` here.
+ */
+const emptyBodyIsAllowed = createMiddleware(async (c, next) => {
+  if (c.req.header("Content-Type")?.includes("json") && !(await c.req.text()).trim()) {
+    const { url, method, headers } = c.req.raw;
+    c.req.raw = new Request(url, { method, headers, body: "{}" });
+    c.req.bodyCache = {};
+  }
+  await next();
+});
+
 export const cancelBookingRoute = createRoute({
   method: "post",
   path: "/scheduling/bookings/{id}/cancel",
@@ -605,13 +662,37 @@ export const cancelBookingRoute = createRoute({
   summary: "Cancel a booking",
   description: "Frees the time and removes the calendar event. A cancelled booking stays charged.",
   security: [{ bearerAuth: [] }],
-  middleware: acting("update"),
-  request: { params: BookingParams },
+  middleware: [...acting("update"), emptyBodyIsAllowed],
+  request: {
+    params: BookingParams,
+    body: {
+      content: { "application/json": { schema: CancelBookingRequest } },
+      required: false,
+    },
+  },
   responses: {
     200: jsonDoc("The booking.", BookingObject),
     ...commonErrors,
     404: notFound,
     422: refusedChange,
+  },
+});
+
+export const listBookingEventsRoute = createRoute({
+  method: "get",
+  path: "/scheduling/bookings/{id}/events",
+  operationId: "listSchedulingBookingEvents",
+  tags: [TAG_BOOKINGS],
+  summary: "List a booking's history",
+  description:
+    "What's happened to a booking, oldest first, and who did it. There's no personal data in here.",
+  security: [{ bearerAuth: [] }],
+  middleware: read(),
+  request: { params: BookingParams, query: ListBookingEventsQuery },
+  responses: {
+    200: jsonDoc("The events.", BookingEventList),
+    ...commonErrors,
+    404: notFound,
   },
 });
 
@@ -946,7 +1027,9 @@ export const deleteCalendarConnectionRoute = createRoute({
   operationId: "deleteSchedulingCalendarConnection",
   tags: [TAG_CALENDARS],
   summary: "Disconnect a calendar",
-  description: "Revokes coss.com's access and deletes every busy time read through it.",
+  description:
+    "Revokes coss.com's access and deletes every busy time read through it. One a calendar " +
+    "delegation manages is refused (`calendar_managed`).",
   security: [{ bearerAuth: [] }],
   middleware: acting("update"),
   request: { params: ConnectionParams },
@@ -954,6 +1037,7 @@ export const deleteCalendarConnectionRoute = createRoute({
     200: jsonDoc("Disconnected.", DeletedCalendarConnection),
     ...commonErrors,
     404: notFound,
+    422: invalid,
   },
 });
 
@@ -974,6 +1058,141 @@ export const updateCalendarRoute = createRoute({
     200: jsonDoc("The host's connections.", CalendarConnectionList),
     ...commonErrors,
     ...bodyErrors,
+    404: notFound,
+  },
+});
+
+const refusedDelegation = errorDoc(
+  "The credentials or mailbox aren't valid (`invalid_calendar_delegation`), or the provider refused " +
+    "them (`calendar_delegation_refused`, and `message` says what to fix).",
+);
+
+export const createCalendarDelegationRoute = createRoute({
+  method: "post",
+  path: "/scheduling/calendar_delegations",
+  operationId: "createSchedulingCalendarDelegation",
+  tags: [TAG_CALENDARS],
+  summary: "Add a calendar delegation",
+  description:
+    "An admin authorizes once, and every host on the domain gets their calendar with no consent " +
+    "screen. It stays `pending`: authorize what it returns, then verify it. Credentials are never returned.",
+  security: [{ bearerAuth: [] }],
+  middleware: writing("update", "POST /v1/scheduling/calendar_delegations"),
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: CreateCalendarDelegationRequest } },
+    },
+  },
+  responses: {
+    201: jsonDoc("The delegation.", CalendarDelegationObject),
+    ...commonErrors,
+    ...bodyErrors,
+    422: refusedDelegation,
+  },
+});
+
+export const listCalendarDelegationsRoute = createRoute({
+  method: "get",
+  path: "/scheduling/calendar_delegations",
+  operationId: "listSchedulingCalendarDelegations",
+  tags: [TAG_CALENDARS],
+  summary: "List calendar delegations",
+  description: "With how many hosts each has connected.",
+  security: [{ bearerAuth: [] }],
+  middleware: read(),
+  responses: {
+    200: jsonDoc("The delegations.", CalendarDelegationList),
+    ...commonErrors,
+  },
+});
+
+export const getCalendarDelegationRoute = createRoute({
+  method: "get",
+  path: "/scheduling/calendar_delegations/{id}",
+  operationId: "getSchedulingCalendarDelegation",
+  tags: [TAG_CALENDARS],
+  summary: "Get a calendar delegation",
+  description: "Its status, what to authorize, and how many hosts it has connected.",
+  security: [{ bearerAuth: [] }],
+  middleware: read(),
+  request: { params: DelegationParams },
+  responses: {
+    200: jsonDoc("The delegation.", CalendarDelegationObject),
+    ...commonErrors,
+    404: notFound,
+  },
+});
+
+export const updateCalendarDelegationRoute = createRoute({
+  method: "patch",
+  path: "/scheduling/calendar_delegations/{id}",
+  operationId: "updateSchedulingCalendarDelegation",
+  tags: [TAG_CALENDARS],
+  summary: "Update a calendar delegation",
+  description:
+    "New credentials are tried on the verified mailbox before they replace the old ones, and end an " +
+    "outage if they work.",
+  security: [{ bearerAuth: [] }],
+  middleware: writing("update", "PATCH /v1/scheduling/calendar_delegations/{id}"),
+  request: {
+    params: DelegationParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: UpdateCalendarDelegationRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The delegation.", CalendarDelegationObject),
+    ...commonErrors,
+    ...bodyErrors,
+    404: notFound,
+    422: refusedDelegation,
+  },
+});
+
+export const verifyCalendarDelegationRoute = createRoute({
+  method: "post",
+  path: "/scheduling/calendar_delegations/{id}/verify",
+  operationId: "verifySchedulingCalendarDelegation",
+  tags: [TAG_CALENDARS],
+  summary: "Verify a calendar delegation",
+  description:
+    "Tries one real mailbox. Passing makes it `active`, and its hosts start connecting. Google can " +
+    "take up to 24 hours to apply a new authorization, so a refusal may just need time.",
+  security: [{ bearerAuth: [] }],
+  middleware: writing("update", "POST /v1/scheduling/calendar_delegations/{id}/verify"),
+  request: {
+    params: DelegationParams,
+    body: {
+      required: true,
+      content: { "application/json": { schema: VerifyCalendarDelegationRequest } },
+    },
+  },
+  responses: {
+    200: jsonDoc("The delegation.", CalendarDelegationObject),
+    ...commonErrors,
+    ...bodyErrors,
+    404: notFound,
+    422: refusedDelegation,
+  },
+});
+
+export const deleteCalendarDelegationRoute = createRoute({
+  method: "delete",
+  path: "/scheduling/calendar_delegations/{id}",
+  operationId: "deleteSchedulingCalendarDelegation",
+  tags: [TAG_CALENDARS],
+  summary: "Delete a calendar delegation",
+  description:
+    "Its hosts lose these calendars within minutes. They stay bookable with no conflict check, and " +
+    "events already written stay on their calendars, out of reach of later moves or cancellations.",
+  security: [{ bearerAuth: [] }],
+  middleware: acting("update"),
+  request: { params: DelegationParams },
+  responses: {
+    200: jsonDoc("Being removed.", DeletedCalendarDelegation),
+    ...commonErrors,
     404: notFound,
   },
 });
@@ -1351,8 +1570,38 @@ export function createSchedulingRoutes(configured: SchedulingDeps | null): OpenA
           start: iso(slot.startMs),
           end: iso(slot.endMs),
           hosts: slot.hostIds,
+          seats_left: slot.seatsLeft,
         })),
         has_more: false as const,
+      },
+      200,
+    );
+  });
+
+  router.openapi(explainSlotRoute, async (c) => {
+    const query = c.req.valid("query");
+    const explained = await explainSlot(c.var.auth, {
+      eventTypeRef: c.req.valid("param").event_type,
+      startMs: instant(query.start, "start"),
+      nowMs: (deps.now?.() ?? new Date()).getTime(),
+      hostRef: query.host,
+      attributes: attributesParam(query.attributes),
+      durationMinutes: query.duration_minutes,
+    });
+    return c.json(
+      {
+        object: "scheduling.slot_explanation" as const,
+        start: iso(explained.startMs),
+        end: iso(explained.endMs),
+        available: explained.available,
+        reason: explained.reason,
+        hosts: explained.hosts.map((host) => ({
+          host: host.hostId,
+          role: host.required ? ("required" as const) : ("member" as const),
+          available: host.available,
+          reason: host.reason,
+          calendar_reason: host.calendarReason,
+        })),
       },
       200,
     );
@@ -1459,12 +1708,24 @@ export function createSchedulingRoutes(configured: SchedulingDeps | null): OpenA
     );
   });
 
-  router.openapi(cancelBookingRoute, async (c) =>
-    c.json(
-      await cancelBooking(c.var.auth, c.req.valid("param").id, deps, actorOf(c.var.auth)),
+  router.openapi(cancelBookingRoute, async (c) => {
+    const body = c.req.valid("json") as { reason?: string } | undefined;
+    return c.json(
+      await cancelBooking(c.var.auth, c.req.valid("param").id, deps, actorOf(c.var.auth), {
+        reason: body?.reason,
+      }),
       200,
-    ),
-  );
+    );
+  });
+
+  router.openapi(listBookingEventsRoute, async (c) => {
+    const { data, hasMore } = await listBookingEvents(
+      c.var.auth,
+      c.req.valid("param").id,
+      c.req.valid("query"),
+    );
+    return c.json({ object: "list" as const, data, has_more: hasMore }, 200);
+  });
 
   router.openapi(approveBookingRoute, async (c) =>
     c.json(
@@ -1682,6 +1943,78 @@ export function createSchedulingRoutes(configured: SchedulingDeps | null): OpenA
     const { host, calendar_id } = c.req.valid("param");
     const data = await updateCalendar(c.var.auth, host, calendar_id, c.req.valid("json"));
     return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(createCalendarDelegationRoute, async (c) => {
+    const delegation = await createCalendarDelegation(c.var.auth, c.req.valid("json"), calendars());
+    await recordApiAudit(c, {
+      action: "scheduling_calendar_delegation.created",
+      target: {
+        type: "scheduling_calendar_delegation",
+        id: delegation.id,
+        label: delegation.domain,
+      },
+    });
+    return c.json(delegation, 201);
+  });
+
+  router.openapi(listCalendarDelegationsRoute, async (c) => {
+    const data = await listCalendarDelegations(c.var.auth);
+    return c.json({ object: "list" as const, data, has_more: false }, 200);
+  });
+
+  router.openapi(getCalendarDelegationRoute, async (c) =>
+    c.json(await getCalendarDelegation(c.var.auth, c.req.valid("param").id), 200),
+  );
+
+  router.openapi(updateCalendarDelegationRoute, async (c) => {
+    const delegation = await updateCalendarDelegation(
+      c.var.auth,
+      c.req.valid("param").id,
+      c.req.valid("json"),
+      calendars(),
+    );
+    await recordApiAudit(c, {
+      action: "scheduling_calendar_delegation.updated",
+      target: {
+        type: "scheduling_calendar_delegation",
+        id: delegation.id,
+        label: delegation.domain,
+      },
+    });
+    return c.json(delegation, 200);
+  });
+
+  router.openapi(verifyCalendarDelegationRoute, async (c) => {
+    const delegation = await verifyCalendarDelegation(
+      c.var.auth,
+      c.req.valid("param").id,
+      c.req.valid("json"),
+      calendars(),
+    );
+    await recordApiAudit(c, {
+      action: "scheduling_calendar_delegation.verified",
+      target: {
+        type: "scheduling_calendar_delegation",
+        id: delegation.id,
+        label: delegation.domain,
+      },
+    });
+    return c.json(delegation, 200);
+  });
+
+  router.openapi(deleteCalendarDelegationRoute, async (c) => {
+    const { id } = await deleteCalendarDelegation(c.var.auth, c.req.valid("param").id, {
+      now: deps.now,
+    });
+    await recordApiAudit(c, {
+      action: "scheduling_calendar_delegation.deleted",
+      target: { type: "scheduling_calendar_delegation", id },
+    });
+    return c.json(
+      { object: "scheduling.calendar_delegation" as const, id, deleted: true as const },
+      200,
+    );
   });
 
   router.openapi(setSimulatedBusyRoute, async (c) => {
