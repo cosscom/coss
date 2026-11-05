@@ -378,6 +378,168 @@ func TestSettersMarkExplicitCreateSchedulingHostSessionRequest(t *testing.T) {
 
 }
 
+func TestSettersCreateSchedulingManagerSessionRequest(t *testing.T) {
+	t.Run("SetHosts", func(t *testing.T) {
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueHosts []string
+		obj.SetHosts(fernTestValueHosts)
+		assert.Equal(t, fernTestValueHosts, obj.Hosts)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetHostFilter", func(t *testing.T) {
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueHostFilter map[string]*CreateSchedulingManagerSessionRequestHostFilterValue
+		obj.SetHostFilter(fernTestValueHostFilter)
+		assert.Equal(t, fernTestValueHostFilter, obj.HostFilter)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetExpiresIn", func(t *testing.T) {
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueExpiresIn *int
+		obj.SetExpiresIn(fernTestValueExpiresIn)
+		assert.Equal(t, fernTestValueExpiresIn, obj.ExpiresIn)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetReadOnly", func(t *testing.T) {
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueReadOnly *bool
+		obj.SetReadOnly(fernTestValueReadOnly)
+		assert.Equal(t, fernTestValueReadOnly, obj.ReadOnly)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestSettersMarkExplicitCreateSchedulingManagerSessionRequest(t *testing.T) {
+	t.Run("SetHosts_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueHosts []string
+
+		// Act
+		obj.SetHosts(fernTestValueHosts)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetHostFilter_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueHostFilter map[string]*CreateSchedulingManagerSessionRequestHostFilterValue
+
+		// Act
+		obj.SetHostFilter(fernTestValueHostFilter)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetExpiresIn_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueExpiresIn *int
+
+		// Act
+		obj.SetExpiresIn(fernTestValueExpiresIn)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetReadOnly_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequest{}
+		var fernTestValueReadOnly *bool
+
+		// Act
+		obj.SetReadOnly(fernTestValueReadOnly)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersCreateSchedulingBookerSessionRequestAttendee(t *testing.T) {
 	t.Run("SetUID", func(t *testing.T) {
 		obj := &CreateSchedulingBookerSessionRequestAttendee{}
@@ -857,6 +1019,65 @@ func TestGettersCreateSchedulingBookerSessionRequestAttributesValue(t *testing.T
 	t.Run("GetStringList_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *CreateSchedulingBookerSessionRequestAttributesValue
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetStringList() // Should return zero value
+	})
+
+}
+
+func TestGettersCreateSchedulingManagerSessionRequestHostFilterValue(t *testing.T) {
+	t.Run("GetString", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequestHostFilterValue{}
+		var expected string
+		obj.String = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetString(), "getter should return the property value")
+	})
+
+	t.Run("GetString_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CreateSchedulingManagerSessionRequestHostFilterValue
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetString() // Should return zero value
+	})
+
+	t.Run("GetStringList", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequestHostFilterValue{}
+		var expected []string
+		obj.StringList = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetStringList(), "getter should return the property value")
+	})
+
+	t.Run("GetStringList_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &CreateSchedulingManagerSessionRequestHostFilterValue{}
+		obj.StringList = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetStringList(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetStringList_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *CreateSchedulingManagerSessionRequestHostFilterValue
 		// Should not panic - getters should handle nil receiver gracefully
 		defer func() {
 			if r := recover(); r != nil {

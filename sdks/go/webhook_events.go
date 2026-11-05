@@ -6261,17 +6261,19 @@ func (r RiskWebhookEventType) Ptr() *RiskWebhookEventType {
 }
 
 var (
-	schedulingBookingWebhookDataFieldBookingID     = big.NewInt(1 << 0)
-	schedulingBookingWebhookDataFieldEventTypeID   = big.NewInt(1 << 1)
-	schedulingBookingWebhookDataFieldStatus        = big.NewInt(1 << 2)
-	schedulingBookingWebhookDataFieldStart         = big.NewInt(1 << 3)
-	schedulingBookingWebhookDataFieldEnd           = big.NewInt(1 << 4)
-	schedulingBookingWebhookDataFieldHostIDs       = big.NewInt(1 << 5)
-	schedulingBookingWebhookDataFieldAttendeeUIDs  = big.NewInt(1 << 6)
-	schedulingBookingWebhookDataFieldSeriesID      = big.NewInt(1 << 7)
-	schedulingBookingWebhookDataFieldPreviousStart = big.NewInt(1 << 8)
-	schedulingBookingWebhookDataFieldReminder      = big.NewInt(1 << 9)
-	schedulingBookingWebhookDataFieldOccurredAt    = big.NewInt(1 << 10)
+	schedulingBookingWebhookDataFieldBookingID       = big.NewInt(1 << 0)
+	schedulingBookingWebhookDataFieldEventTypeID     = big.NewInt(1 << 1)
+	schedulingBookingWebhookDataFieldStatus          = big.NewInt(1 << 2)
+	schedulingBookingWebhookDataFieldStart           = big.NewInt(1 << 3)
+	schedulingBookingWebhookDataFieldEnd             = big.NewInt(1 << 4)
+	schedulingBookingWebhookDataFieldHostIDs         = big.NewInt(1 << 5)
+	schedulingBookingWebhookDataFieldAttendeeUIDs    = big.NewInt(1 << 6)
+	schedulingBookingWebhookDataFieldSeriesID        = big.NewInt(1 << 7)
+	schedulingBookingWebhookDataFieldPreviousStart   = big.NewInt(1 << 8)
+	schedulingBookingWebhookDataFieldPreviousHostIDs = big.NewInt(1 << 9)
+	schedulingBookingWebhookDataFieldReassignmentID  = big.NewInt(1 << 10)
+	schedulingBookingWebhookDataFieldReminder        = big.NewInt(1 << 11)
+	schedulingBookingWebhookDataFieldOccurredAt      = big.NewInt(1 << 12)
 )
 
 // schedulingBookingWebhookDataNullableFields maps the wire names of SchedulingBookingWebhookData's nullable fields (required or optional) to their field bits.
@@ -6299,6 +6301,10 @@ type SchedulingBookingWebhookData struct {
 	SeriesID *string `json:"series_id,omitempty" url:"series_id,omitempty"`
 	// `scheduling.booking.rescheduled`: when it used to start.
 	PreviousStart *string `json:"previous_start,omitempty" url:"previous_start,omitempty"`
+	// On `scheduling.booking.reassigned`: who had it before.
+	PreviousHostIDs []string `json:"previous_host_ids,omitempty" url:"previous_host_ids,omitempty"`
+	// On `scheduling.booking.reassigned`: the bulk reassignment it was part of.
+	ReassignmentID *string `json:"reassignment_id,omitempty" url:"reassignment_id,omitempty"`
 	// `scheduling.booking.reminder`: which reminder this is.
 	Reminder *SchedulingBookingWebhookDataReminder `json:"reminder,omitempty" url:"reminder,omitempty"`
 	// When this happened.
@@ -6372,6 +6378,20 @@ func (s *SchedulingBookingWebhookData) GetPreviousStart() *string {
 		return nil
 	}
 	return s.PreviousStart
+}
+
+func (s *SchedulingBookingWebhookData) GetPreviousHostIDs() []string {
+	if s == nil {
+		return nil
+	}
+	return s.PreviousHostIDs
+}
+
+func (s *SchedulingBookingWebhookData) GetReassignmentID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.ReassignmentID
 }
 
 func (s *SchedulingBookingWebhookData) GetReminder() *SchedulingBookingWebhookDataReminder {
@@ -6465,6 +6485,20 @@ func (s *SchedulingBookingWebhookData) SetSeriesID(seriesID *string) {
 func (s *SchedulingBookingWebhookData) SetPreviousStart(previousStart *string) {
 	s.PreviousStart = previousStart
 	s.require(schedulingBookingWebhookDataFieldPreviousStart)
+}
+
+// SetPreviousHostIDs sets the PreviousHostIDs field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingBookingWebhookData) SetPreviousHostIDs(previousHostIDs []string) {
+	s.PreviousHostIDs = previousHostIDs
+	s.require(schedulingBookingWebhookDataFieldPreviousHostIDs)
+}
+
+// SetReassignmentID sets the ReassignmentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingBookingWebhookData) SetReassignmentID(reassignmentID *string) {
+	s.ReassignmentID = reassignmentID
+	s.require(schedulingBookingWebhookDataFieldReassignmentID)
 }
 
 // SetReminder sets the Reminder field and marks it as non-optional;
@@ -6983,6 +7017,7 @@ const (
 	SchedulingBookingWebhookEventTypeSchedulingBookingExternalConflict    SchedulingBookingWebhookEventType = "scheduling.booking.external_conflict"
 	SchedulingBookingWebhookEventTypeSchedulingBookingCalendarWriteFailed SchedulingBookingWebhookEventType = "scheduling.booking.calendar_write_failed"
 	SchedulingBookingWebhookEventTypeSchedulingBookingLocationReady       SchedulingBookingWebhookEventType = "scheduling.booking.location_ready"
+	SchedulingBookingWebhookEventTypeSchedulingBookingReassigned          SchedulingBookingWebhookEventType = "scheduling.booking.reassigned"
 	SchedulingBookingWebhookEventTypeSchedulingBookingStarted             SchedulingBookingWebhookEventType = "scheduling.booking.started"
 	SchedulingBookingWebhookEventTypeSchedulingBookingEnded               SchedulingBookingWebhookEventType = "scheduling.booking.ended"
 	SchedulingBookingWebhookEventTypeSchedulingBookingReminder            SchedulingBookingWebhookEventType = "scheduling.booking.reminder"
@@ -7010,6 +7045,8 @@ func NewSchedulingBookingWebhookEventTypeFromString(s string) (SchedulingBooking
 		return SchedulingBookingWebhookEventTypeSchedulingBookingCalendarWriteFailed, nil
 	case "scheduling.booking.location_ready":
 		return SchedulingBookingWebhookEventTypeSchedulingBookingLocationReady, nil
+	case "scheduling.booking.reassigned":
+		return SchedulingBookingWebhookEventTypeSchedulingBookingReassigned, nil
 	case "scheduling.booking.started":
 		return SchedulingBookingWebhookEventTypeSchedulingBookingStarted, nil
 	case "scheduling.booking.ended":
@@ -7766,6 +7803,1359 @@ func NewSchedulingCalendarWebhookEventTypeFromString(s string) (SchedulingCalend
 }
 
 func (s SchedulingCalendarWebhookEventType) Ptr() *SchedulingCalendarWebhookEventType {
+	return &s
+}
+
+var (
+	schedulingOauthAppWebhookEventFieldID         = big.NewInt(1 << 0)
+	schedulingOauthAppWebhookEventFieldObject     = big.NewInt(1 << 1)
+	schedulingOauthAppWebhookEventFieldAPIVersion = big.NewInt(1 << 2)
+	schedulingOauthAppWebhookEventFieldCreatedAt  = big.NewInt(1 << 3)
+	schedulingOauthAppWebhookEventFieldType       = big.NewInt(1 << 4)
+	schedulingOauthAppWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type SchedulingOauthAppWebhookEvent struct {
+	// The event id.
+	ID     string                               `json:"id" url:"id"`
+	Object SchedulingOauthAppWebhookEventObject `json:"object" url:"object"`
+	// The API version this payload is rendered in: the endpoint's.
+	APIVersion string `json:"api_version" url:"api_version"`
+	// When the event was created.
+	CreatedAt time.Time                           `json:"created_at" url:"created_at"`
+	Type      SchedulingOauthAppWebhookEventType  `json:"type" url:"type"`
+	Data      *SchedulingOauthAppWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetObject() SchedulingOauthAppWebhookEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetAPIVersion() string {
+	if s == nil {
+		return ""
+	}
+	return s.APIVersion
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetType() SchedulingOauthAppWebhookEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetData() *SchedulingOauthAppWebhookEventData {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SchedulingOauthAppWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingOauthAppWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetID(id string) {
+	s.ID = id
+	s.require(schedulingOauthAppWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetObject(object SchedulingOauthAppWebhookEventObject) {
+	s.Object = object
+	s.require(schedulingOauthAppWebhookEventFieldObject)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetAPIVersion(apiVersion string) {
+	s.APIVersion = apiVersion
+	s.require(schedulingOauthAppWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(schedulingOauthAppWebhookEventFieldCreatedAt)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetType(type_ SchedulingOauthAppWebhookEventType) {
+	s.Type = type_
+	s.require(schedulingOauthAppWebhookEventFieldType)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEvent) SetData(data *SchedulingOauthAppWebhookEventData) {
+	s.Data = data
+	s.require(schedulingOauthAppWebhookEventFieldData)
+}
+
+func (s *SchedulingOauthAppWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed SchedulingOauthAppWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SchedulingOauthAppWebhookEvent(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingOauthAppWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed SchedulingOauthAppWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingOauthAppWebhookEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	schedulingOauthAppWebhookEventDataFieldOauthAppID = big.NewInt(1 << 0)
+	schedulingOauthAppWebhookEventDataFieldProvider   = big.NewInt(1 << 1)
+	schedulingOauthAppWebhookEventDataFieldCode       = big.NewInt(1 << 2)
+	schedulingOauthAppWebhookEventDataFieldOccurredAt = big.NewInt(1 << 3)
+)
+
+// schedulingOauthAppWebhookEventDataNullableFields maps the wire names of SchedulingOauthAppWebhookEventData's nullable fields (required or optional) to their field bits.
+var schedulingOauthAppWebhookEventDataNullableFields = map[string]*big.Int{
+	"code": schedulingOauthAppWebhookEventDataFieldCode,
+}
+
+type SchedulingOauthAppWebhookEventData struct {
+	OauthAppID string `json:"oauth_app_id" url:"oauth_app_id"`
+	Provider   string `json:"provider" url:"provider"`
+	// What the provider said, when it refused.
+	Code       *string `json:"code,omitempty" url:"code,omitempty"`
+	OccurredAt string  `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingOauthAppWebhookEventData) GetOauthAppID() string {
+	if s == nil {
+		return ""
+	}
+	return s.OauthAppID
+}
+
+func (s *SchedulingOauthAppWebhookEventData) GetProvider() string {
+	if s == nil {
+		return ""
+	}
+	return s.Provider
+}
+
+func (s *SchedulingOauthAppWebhookEventData) GetCode() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Code
+}
+
+func (s *SchedulingOauthAppWebhookEventData) GetOccurredAt() string {
+	if s == nil {
+		return ""
+	}
+	return s.OccurredAt
+}
+
+func (s *SchedulingOauthAppWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingOauthAppWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetOauthAppID sets the OauthAppID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEventData) SetOauthAppID(oauthAppID string) {
+	s.OauthAppID = oauthAppID
+	s.require(schedulingOauthAppWebhookEventDataFieldOauthAppID)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEventData) SetProvider(provider string) {
+	s.Provider = provider
+	s.require(schedulingOauthAppWebhookEventDataFieldProvider)
+}
+
+// SetCode sets the Code field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEventData) SetCode(code *string) {
+	s.Code = code
+	s.require(schedulingOauthAppWebhookEventDataFieldCode)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOauthAppWebhookEventData) SetOccurredAt(occurredAt string) {
+	s.OccurredAt = occurredAt
+	s.require(schedulingOauthAppWebhookEventDataFieldOccurredAt)
+}
+
+func (s *SchedulingOauthAppWebhookEventData) UnmarshalJSON(data []byte) error {
+	type unmarshaler SchedulingOauthAppWebhookEventData
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SchedulingOauthAppWebhookEventData(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, schedulingOauthAppWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingOauthAppWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed SchedulingOauthAppWebhookEventData
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingOauthAppWebhookEventData) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SchedulingOauthAppWebhookEventObject string
+
+const (
+	SchedulingOauthAppWebhookEventObjectEvent SchedulingOauthAppWebhookEventObject = "event"
+)
+
+func NewSchedulingOauthAppWebhookEventObjectFromString(s string) (SchedulingOauthAppWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return SchedulingOauthAppWebhookEventObjectEvent, nil
+	}
+	var t SchedulingOauthAppWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingOauthAppWebhookEventObject) Ptr() *SchedulingOauthAppWebhookEventObject {
+	return &s
+}
+
+type SchedulingOauthAppWebhookEventType string
+
+const (
+	SchedulingOauthAppWebhookEventTypeSchedulingOauthAppFailing  SchedulingOauthAppWebhookEventType = "scheduling.oauth_app.failing"
+	SchedulingOauthAppWebhookEventTypeSchedulingOauthAppRestored SchedulingOauthAppWebhookEventType = "scheduling.oauth_app.restored"
+)
+
+func NewSchedulingOauthAppWebhookEventTypeFromString(s string) (SchedulingOauthAppWebhookEventType, error) {
+	switch s {
+	case "scheduling.oauth_app.failing":
+		return SchedulingOauthAppWebhookEventTypeSchedulingOauthAppFailing, nil
+	case "scheduling.oauth_app.restored":
+		return SchedulingOauthAppWebhookEventTypeSchedulingOauthAppRestored, nil
+	}
+	var t SchedulingOauthAppWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingOauthAppWebhookEventType) Ptr() *SchedulingOauthAppWebhookEventType {
+	return &s
+}
+
+var (
+	schedulingOutOfOfficeWebhookEventFieldID         = big.NewInt(1 << 0)
+	schedulingOutOfOfficeWebhookEventFieldObject     = big.NewInt(1 << 1)
+	schedulingOutOfOfficeWebhookEventFieldAPIVersion = big.NewInt(1 << 2)
+	schedulingOutOfOfficeWebhookEventFieldCreatedAt  = big.NewInt(1 << 3)
+	schedulingOutOfOfficeWebhookEventFieldType       = big.NewInt(1 << 4)
+	schedulingOutOfOfficeWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type SchedulingOutOfOfficeWebhookEvent struct {
+	// The event id.
+	ID     string                                  `json:"id" url:"id"`
+	Object SchedulingOutOfOfficeWebhookEventObject `json:"object" url:"object"`
+	// The API version this payload is rendered in: the endpoint's.
+	APIVersion string `json:"api_version" url:"api_version"`
+	// When the event was created.
+	CreatedAt time.Time                              `json:"created_at" url:"created_at"`
+	Type      SchedulingOutOfOfficeWebhookEventType  `json:"type" url:"type"`
+	Data      *SchedulingOutOfOfficeWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetObject() SchedulingOutOfOfficeWebhookEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetAPIVersion() string {
+	if s == nil {
+		return ""
+	}
+	return s.APIVersion
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetType() SchedulingOutOfOfficeWebhookEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetData() *SchedulingOutOfOfficeWebhookEventData {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetID(id string) {
+	s.ID = id
+	s.require(schedulingOutOfOfficeWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetObject(object SchedulingOutOfOfficeWebhookEventObject) {
+	s.Object = object
+	s.require(schedulingOutOfOfficeWebhookEventFieldObject)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetAPIVersion(apiVersion string) {
+	s.APIVersion = apiVersion
+	s.require(schedulingOutOfOfficeWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(schedulingOutOfOfficeWebhookEventFieldCreatedAt)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetType(type_ SchedulingOutOfOfficeWebhookEventType) {
+	s.Type = type_
+	s.require(schedulingOutOfOfficeWebhookEventFieldType)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEvent) SetData(data *SchedulingOutOfOfficeWebhookEventData) {
+	s.Data = data
+	s.require(schedulingOutOfOfficeWebhookEventFieldData)
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed SchedulingOutOfOfficeWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SchedulingOutOfOfficeWebhookEvent(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed SchedulingOutOfOfficeWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingOutOfOfficeWebhookEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	schedulingOutOfOfficeWebhookEventDataFieldOutOfOfficeID = big.NewInt(1 << 0)
+	schedulingOutOfOfficeWebhookEventDataFieldHostID        = big.NewInt(1 << 1)
+	schedulingOutOfOfficeWebhookEventDataFieldStart         = big.NewInt(1 << 2)
+	schedulingOutOfOfficeWebhookEventDataFieldEnd           = big.NewInt(1 << 3)
+	schedulingOutOfOfficeWebhookEventDataFieldGroup         = big.NewInt(1 << 4)
+	schedulingOutOfOfficeWebhookEventDataFieldOccurredAt    = big.NewInt(1 << 5)
+)
+
+// schedulingOutOfOfficeWebhookEventDataNullableFields maps the wire names of SchedulingOutOfOfficeWebhookEventData's nullable fields (required or optional) to their field bits.
+var schedulingOutOfOfficeWebhookEventDataNullableFields = map[string]*big.Int{
+	"group": schedulingOutOfOfficeWebhookEventDataFieldGroup,
+}
+
+type SchedulingOutOfOfficeWebhookEventData struct {
+	OutOfOfficeID string  `json:"out_of_office_id" url:"out_of_office_id"`
+	HostID        string  `json:"host_id" url:"host_id"`
+	Start         string  `json:"start" url:"start"`
+	End           string  `json:"end" url:"end"`
+	Group         *string `json:"group,omitempty" url:"group,omitempty"`
+	OccurredAt    string  `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetOutOfOfficeID() string {
+	if s == nil {
+		return ""
+	}
+	return s.OutOfOfficeID
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetHostID() string {
+	if s == nil {
+		return ""
+	}
+	return s.HostID
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetStart() string {
+	if s == nil {
+		return ""
+	}
+	return s.Start
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetEnd() string {
+	if s == nil {
+		return ""
+	}
+	return s.End
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetGroup() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Group
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetOccurredAt() string {
+	if s == nil {
+		return ""
+	}
+	return s.OccurredAt
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetOutOfOfficeID sets the OutOfOfficeID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetOutOfOfficeID(outOfOfficeID string) {
+	s.OutOfOfficeID = outOfOfficeID
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldOutOfOfficeID)
+}
+
+// SetHostID sets the HostID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetHostID(hostID string) {
+	s.HostID = hostID
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldHostID)
+}
+
+// SetStart sets the Start field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetStart(start string) {
+	s.Start = start
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldStart)
+}
+
+// SetEnd sets the End field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetEnd(end string) {
+	s.End = end
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldEnd)
+}
+
+// SetGroup sets the Group field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetGroup(group *string) {
+	s.Group = group
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldGroup)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingOutOfOfficeWebhookEventData) SetOccurredAt(occurredAt string) {
+	s.OccurredAt = occurredAt
+	s.require(schedulingOutOfOfficeWebhookEventDataFieldOccurredAt)
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) UnmarshalJSON(data []byte) error {
+	type unmarshaler SchedulingOutOfOfficeWebhookEventData
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SchedulingOutOfOfficeWebhookEventData(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, schedulingOutOfOfficeWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed SchedulingOutOfOfficeWebhookEventData
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingOutOfOfficeWebhookEventData) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SchedulingOutOfOfficeWebhookEventObject string
+
+const (
+	SchedulingOutOfOfficeWebhookEventObjectEvent SchedulingOutOfOfficeWebhookEventObject = "event"
+)
+
+func NewSchedulingOutOfOfficeWebhookEventObjectFromString(s string) (SchedulingOutOfOfficeWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return SchedulingOutOfOfficeWebhookEventObjectEvent, nil
+	}
+	var t SchedulingOutOfOfficeWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingOutOfOfficeWebhookEventObject) Ptr() *SchedulingOutOfOfficeWebhookEventObject {
+	return &s
+}
+
+type SchedulingOutOfOfficeWebhookEventType string
+
+const (
+	SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeCreated SchedulingOutOfOfficeWebhookEventType = "scheduling.out_of_office.created"
+	SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeUpdated SchedulingOutOfOfficeWebhookEventType = "scheduling.out_of_office.updated"
+	SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeDeleted SchedulingOutOfOfficeWebhookEventType = "scheduling.out_of_office.deleted"
+	SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeStarted SchedulingOutOfOfficeWebhookEventType = "scheduling.out_of_office.started"
+	SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeEnded   SchedulingOutOfOfficeWebhookEventType = "scheduling.out_of_office.ended"
+)
+
+func NewSchedulingOutOfOfficeWebhookEventTypeFromString(s string) (SchedulingOutOfOfficeWebhookEventType, error) {
+	switch s {
+	case "scheduling.out_of_office.created":
+		return SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeCreated, nil
+	case "scheduling.out_of_office.updated":
+		return SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeUpdated, nil
+	case "scheduling.out_of_office.deleted":
+		return SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeDeleted, nil
+	case "scheduling.out_of_office.started":
+		return SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeStarted, nil
+	case "scheduling.out_of_office.ended":
+		return SchedulingOutOfOfficeWebhookEventTypeSchedulingOutOfOfficeEnded, nil
+	}
+	var t SchedulingOutOfOfficeWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingOutOfOfficeWebhookEventType) Ptr() *SchedulingOutOfOfficeWebhookEventType {
+	return &s
+}
+
+var (
+	schedulingReassignmentWebhookEventFieldID         = big.NewInt(1 << 0)
+	schedulingReassignmentWebhookEventFieldObject     = big.NewInt(1 << 1)
+	schedulingReassignmentWebhookEventFieldAPIVersion = big.NewInt(1 << 2)
+	schedulingReassignmentWebhookEventFieldCreatedAt  = big.NewInt(1 << 3)
+	schedulingReassignmentWebhookEventFieldType       = big.NewInt(1 << 4)
+	schedulingReassignmentWebhookEventFieldData       = big.NewInt(1 << 5)
+)
+
+type SchedulingReassignmentWebhookEvent struct {
+	// The event id.
+	ID     string                                   `json:"id" url:"id"`
+	Object SchedulingReassignmentWebhookEventObject `json:"object" url:"object"`
+	// The API version this payload is rendered in: the endpoint's.
+	APIVersion string `json:"api_version" url:"api_version"`
+	// When the event was created.
+	CreatedAt time.Time                               `json:"created_at" url:"created_at"`
+	Type      SchedulingReassignmentWebhookEventType  `json:"type" url:"type"`
+	Data      *SchedulingReassignmentWebhookEventData `json:"data" url:"data"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ID
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetObject() SchedulingReassignmentWebhookEventObject {
+	if s == nil {
+		return ""
+	}
+	return s.Object
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetAPIVersion() string {
+	if s == nil {
+		return ""
+	}
+	return s.APIVersion
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetCreatedAt() time.Time {
+	if s == nil {
+		return time.Time{}
+	}
+	return s.CreatedAt
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetType() SchedulingReassignmentWebhookEventType {
+	if s == nil {
+		return ""
+	}
+	return s.Type
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetData() *SchedulingReassignmentWebhookEventData {
+	if s == nil {
+		return nil
+	}
+	return s.Data
+}
+
+func (s *SchedulingReassignmentWebhookEvent) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingReassignmentWebhookEvent) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetID(id string) {
+	s.ID = id
+	s.require(schedulingReassignmentWebhookEventFieldID)
+}
+
+// SetObject sets the Object field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetObject(object SchedulingReassignmentWebhookEventObject) {
+	s.Object = object
+	s.require(schedulingReassignmentWebhookEventFieldObject)
+}
+
+// SetAPIVersion sets the APIVersion field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetAPIVersion(apiVersion string) {
+	s.APIVersion = apiVersion
+	s.require(schedulingReassignmentWebhookEventFieldAPIVersion)
+}
+
+// SetCreatedAt sets the CreatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetCreatedAt(createdAt time.Time) {
+	s.CreatedAt = createdAt
+	s.require(schedulingReassignmentWebhookEventFieldCreatedAt)
+}
+
+// SetType sets the Type field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetType(type_ SchedulingReassignmentWebhookEventType) {
+	s.Type = type_
+	s.require(schedulingReassignmentWebhookEventFieldType)
+}
+
+// SetData sets the Data field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEvent) SetData(data *SchedulingReassignmentWebhookEventData) {
+	s.Data = data
+	s.require(schedulingReassignmentWebhookEventFieldData)
+}
+
+func (s *SchedulingReassignmentWebhookEvent) UnmarshalJSON(data []byte) error {
+	type embed SchedulingReassignmentWebhookEvent
+	var unmarshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed: embed(*s),
+	}
+	if err := json.Unmarshal(data, &unmarshaler); err != nil {
+		return err
+	}
+	*s = SchedulingReassignmentWebhookEvent(unmarshaler.embed)
+	s.CreatedAt = unmarshaler.CreatedAt.Time()
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingReassignmentWebhookEvent) MarshalJSON() ([]byte, error) {
+	type embed SchedulingReassignmentWebhookEvent
+	var marshaler = struct {
+		embed
+		CreatedAt *internal.DateTime `json:"created_at"`
+	}{
+		embed:     embed(*s),
+		CreatedAt: internal.NewDateTime(s.CreatedAt),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingReassignmentWebhookEvent) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	schedulingReassignmentWebhookEventDataFieldReassignmentID = big.NewInt(1 << 0)
+	schedulingReassignmentWebhookEventDataFieldStatus         = big.NewInt(1 << 1)
+	schedulingReassignmentWebhookEventDataFieldOutOfOfficeID  = big.NewInt(1 << 2)
+	schedulingReassignmentWebhookEventDataFieldCounts         = big.NewInt(1 << 3)
+	schedulingReassignmentWebhookEventDataFieldOccurredAt     = big.NewInt(1 << 4)
+)
+
+// schedulingReassignmentWebhookEventDataNullableFields maps the wire names of SchedulingReassignmentWebhookEventData's nullable fields (required or optional) to their field bits.
+var schedulingReassignmentWebhookEventDataNullableFields = map[string]*big.Int{
+	"out_of_office_id": schedulingReassignmentWebhookEventDataFieldOutOfOfficeID,
+}
+
+type SchedulingReassignmentWebhookEventData struct {
+	ReassignmentID string                                        `json:"reassignment_id" url:"reassignment_id"`
+	Status         SchedulingReassignmentWebhookEventDataStatus  `json:"status" url:"status"`
+	OutOfOfficeID  *string                                       `json:"out_of_office_id,omitempty" url:"out_of_office_id,omitempty"`
+	Counts         *SchedulingReassignmentWebhookEventDataCounts `json:"counts" url:"counts"`
+	OccurredAt     string                                        `json:"occurred_at" url:"occurred_at"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetReassignmentID() string {
+	if s == nil {
+		return ""
+	}
+	return s.ReassignmentID
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetStatus() SchedulingReassignmentWebhookEventDataStatus {
+	if s == nil {
+		return ""
+	}
+	return s.Status
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetOutOfOfficeID() *string {
+	if s == nil {
+		return nil
+	}
+	return s.OutOfOfficeID
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetCounts() *SchedulingReassignmentWebhookEventDataCounts {
+	if s == nil {
+		return nil
+	}
+	return s.Counts
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetOccurredAt() string {
+	if s == nil {
+		return ""
+	}
+	return s.OccurredAt
+}
+
+func (s *SchedulingReassignmentWebhookEventData) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingReassignmentWebhookEventData) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetReassignmentID sets the ReassignmentID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventData) SetReassignmentID(reassignmentID string) {
+	s.ReassignmentID = reassignmentID
+	s.require(schedulingReassignmentWebhookEventDataFieldReassignmentID)
+}
+
+// SetStatus sets the Status field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventData) SetStatus(status SchedulingReassignmentWebhookEventDataStatus) {
+	s.Status = status
+	s.require(schedulingReassignmentWebhookEventDataFieldStatus)
+}
+
+// SetOutOfOfficeID sets the OutOfOfficeID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventData) SetOutOfOfficeID(outOfOfficeID *string) {
+	s.OutOfOfficeID = outOfOfficeID
+	s.require(schedulingReassignmentWebhookEventDataFieldOutOfOfficeID)
+}
+
+// SetCounts sets the Counts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventData) SetCounts(counts *SchedulingReassignmentWebhookEventDataCounts) {
+	s.Counts = counts
+	s.require(schedulingReassignmentWebhookEventDataFieldCounts)
+}
+
+// SetOccurredAt sets the OccurredAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventData) SetOccurredAt(occurredAt string) {
+	s.OccurredAt = occurredAt
+	s.require(schedulingReassignmentWebhookEventDataFieldOccurredAt)
+}
+
+func (s *SchedulingReassignmentWebhookEventData) UnmarshalJSON(data []byte) error {
+	type unmarshaler SchedulingReassignmentWebhookEventData
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SchedulingReassignmentWebhookEventData(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, schedulingReassignmentWebhookEventDataNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		s.require(presentFields)
+	}
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingReassignmentWebhookEventData) MarshalJSON() ([]byte, error) {
+	type embed SchedulingReassignmentWebhookEventData
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingReassignmentWebhookEventData) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+var (
+	schedulingReassignmentWebhookEventDataCountsFieldTotal       = big.NewInt(1 << 0)
+	schedulingReassignmentWebhookEventDataCountsFieldPending     = big.NewInt(1 << 1)
+	schedulingReassignmentWebhookEventDataCountsFieldReassigned  = big.NewInt(1 << 2)
+	schedulingReassignmentWebhookEventDataCountsFieldSkipped     = big.NewInt(1 << 3)
+	schedulingReassignmentWebhookEventDataCountsFieldNoCandidate = big.NewInt(1 << 4)
+	schedulingReassignmentWebhookEventDataCountsFieldFailed      = big.NewInt(1 << 5)
+	schedulingReassignmentWebhookEventDataCountsFieldCancelled   = big.NewInt(1 << 6)
+)
+
+type SchedulingReassignmentWebhookEventDataCounts struct {
+	Total      float64 `json:"total" url:"total"`
+	Pending    float64 `json:"pending" url:"pending"`
+	Reassigned float64 `json:"reassigned" url:"reassigned"`
+	// They'd moved on since it was selected.
+	Skipped float64 `json:"skipped" url:"skipped"`
+	// Nobody could take them: they stayed.
+	NoCandidate float64 `json:"no_candidate" url:"no_candidate"`
+	Failed      float64 `json:"failed" url:"failed"`
+	Cancelled   float64 `json:"cancelled" url:"cancelled"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetTotal() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Total
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetPending() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Pending
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetReassigned() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Reassigned
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetSkipped() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Skipped
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetNoCandidate() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.NoCandidate
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetFailed() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Failed
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetCancelled() float64 {
+	if s == nil {
+		return 0
+	}
+	return s.Cancelled
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) GetExtraProperties() map[string]interface{} {
+	if s == nil {
+		return nil
+	}
+	return s.extraProperties
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) require(field *big.Int) {
+	next := new(big.Int)
+	if s.explicitFields != nil {
+		next.Set(s.explicitFields)
+	}
+	next.Or(next, field)
+	s.explicitFields = next
+}
+
+// SetTotal sets the Total field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetTotal(total float64) {
+	s.Total = total
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldTotal)
+}
+
+// SetPending sets the Pending field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetPending(pending float64) {
+	s.Pending = pending
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldPending)
+}
+
+// SetReassigned sets the Reassigned field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetReassigned(reassigned float64) {
+	s.Reassigned = reassigned
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldReassigned)
+}
+
+// SetSkipped sets the Skipped field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetSkipped(skipped float64) {
+	s.Skipped = skipped
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldSkipped)
+}
+
+// SetNoCandidate sets the NoCandidate field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetNoCandidate(noCandidate float64) {
+	s.NoCandidate = noCandidate
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldNoCandidate)
+}
+
+// SetFailed sets the Failed field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetFailed(failed float64) {
+	s.Failed = failed
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldFailed)
+}
+
+// SetCancelled sets the Cancelled field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (s *SchedulingReassignmentWebhookEventDataCounts) SetCancelled(cancelled float64) {
+	s.Cancelled = cancelled
+	s.require(schedulingReassignmentWebhookEventDataCountsFieldCancelled)
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) UnmarshalJSON(data []byte) error {
+	type unmarshaler SchedulingReassignmentWebhookEventDataCounts
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SchedulingReassignmentWebhookEventDataCounts(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) MarshalJSON() ([]byte, error) {
+	type embed SchedulingReassignmentWebhookEventDataCounts
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*s),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (s *SchedulingReassignmentWebhookEventDataCounts) String() string {
+	if s == nil {
+		return "<nil>"
+	}
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SchedulingReassignmentWebhookEventDataStatus string
+
+const (
+	SchedulingReassignmentWebhookEventDataStatusCompleted SchedulingReassignmentWebhookEventDataStatus = "completed"
+	SchedulingReassignmentWebhookEventDataStatusCancelled SchedulingReassignmentWebhookEventDataStatus = "cancelled"
+)
+
+func NewSchedulingReassignmentWebhookEventDataStatusFromString(s string) (SchedulingReassignmentWebhookEventDataStatus, error) {
+	switch s {
+	case "completed":
+		return SchedulingReassignmentWebhookEventDataStatusCompleted, nil
+	case "cancelled":
+		return SchedulingReassignmentWebhookEventDataStatusCancelled, nil
+	}
+	var t SchedulingReassignmentWebhookEventDataStatus
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingReassignmentWebhookEventDataStatus) Ptr() *SchedulingReassignmentWebhookEventDataStatus {
+	return &s
+}
+
+type SchedulingReassignmentWebhookEventObject string
+
+const (
+	SchedulingReassignmentWebhookEventObjectEvent SchedulingReassignmentWebhookEventObject = "event"
+)
+
+func NewSchedulingReassignmentWebhookEventObjectFromString(s string) (SchedulingReassignmentWebhookEventObject, error) {
+	switch s {
+	case "event":
+		return SchedulingReassignmentWebhookEventObjectEvent, nil
+	}
+	var t SchedulingReassignmentWebhookEventObject
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingReassignmentWebhookEventObject) Ptr() *SchedulingReassignmentWebhookEventObject {
+	return &s
+}
+
+type SchedulingReassignmentWebhookEventType string
+
+const (
+	SchedulingReassignmentWebhookEventTypeSchedulingReassignmentCompleted SchedulingReassignmentWebhookEventType = "scheduling.reassignment.completed"
+)
+
+func NewSchedulingReassignmentWebhookEventTypeFromString(s string) (SchedulingReassignmentWebhookEventType, error) {
+	switch s {
+	case "scheduling.reassignment.completed":
+		return SchedulingReassignmentWebhookEventTypeSchedulingReassignmentCompleted, nil
+	}
+	var t SchedulingReassignmentWebhookEventType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SchedulingReassignmentWebhookEventType) Ptr() *SchedulingReassignmentWebhookEventType {
 	return &s
 }
 
@@ -10327,7 +11717,10 @@ type WebhookTestEventEvent struct {
 	FormSubmissionWebhookEvent               *FormSubmissionWebhookEvent
 	SchedulingBookingWebhookEvent            *SchedulingBookingWebhookEvent
 	SchedulingCalendarWebhookEvent           *SchedulingCalendarWebhookEvent
+	SchedulingOutOfOfficeWebhookEvent        *SchedulingOutOfOfficeWebhookEvent
+	SchedulingReassignmentWebhookEvent       *SchedulingReassignmentWebhookEvent
 	SchedulingCalendarDelegationWebhookEvent *SchedulingCalendarDelegationWebhookEvent
+	SchedulingOauthAppWebhookEvent           *SchedulingOauthAppWebhookEvent
 
 	typ string
 }
@@ -10430,11 +11823,32 @@ func (w *WebhookTestEventEvent) GetSchedulingCalendarWebhookEvent() *SchedulingC
 	return w.SchedulingCalendarWebhookEvent
 }
 
+func (w *WebhookTestEventEvent) GetSchedulingOutOfOfficeWebhookEvent() *SchedulingOutOfOfficeWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.SchedulingOutOfOfficeWebhookEvent
+}
+
+func (w *WebhookTestEventEvent) GetSchedulingReassignmentWebhookEvent() *SchedulingReassignmentWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.SchedulingReassignmentWebhookEvent
+}
+
 func (w *WebhookTestEventEvent) GetSchedulingCalendarDelegationWebhookEvent() *SchedulingCalendarDelegationWebhookEvent {
 	if w == nil {
 		return nil
 	}
 	return w.SchedulingCalendarDelegationWebhookEvent
+}
+
+func (w *WebhookTestEventEvent) GetSchedulingOauthAppWebhookEvent() *SchedulingOauthAppWebhookEvent {
+	if w == nil {
+		return nil
+	}
+	return w.SchedulingOauthAppWebhookEvent
 }
 
 func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
@@ -10551,10 +11965,34 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingOutOfOfficeWebhookEvent := new(SchedulingOutOfOfficeWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingOutOfOfficeWebhookEvent); err == nil {
+			w.typ = "SchedulingOutOfOfficeWebhookEvent"
+			w.SchedulingOutOfOfficeWebhookEvent = valueSchedulingOutOfOfficeWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingReassignmentWebhookEvent := new(SchedulingReassignmentWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingReassignmentWebhookEvent); err == nil {
+			w.typ = "SchedulingReassignmentWebhookEvent"
+			w.SchedulingReassignmentWebhookEvent = valueSchedulingReassignmentWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
 		valueSchedulingCalendarDelegationWebhookEvent := new(SchedulingCalendarDelegationWebhookEvent)
 		if err := json.Unmarshal(data, &valueSchedulingCalendarDelegationWebhookEvent); err == nil {
 			w.typ = "SchedulingCalendarDelegationWebhookEvent"
 			w.SchedulingCalendarDelegationWebhookEvent = valueSchedulingCalendarDelegationWebhookEvent
+			return nil
+		}
+	}
+	if internal.MatchesObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingOauthAppWebhookEvent := new(SchedulingOauthAppWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingOauthAppWebhookEvent); err == nil {
+			w.typ = "SchedulingOauthAppWebhookEvent"
+			w.SchedulingOauthAppWebhookEvent = valueSchedulingOauthAppWebhookEvent
 			return nil
 		}
 	}
@@ -10671,10 +12109,34 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingOutOfOfficeWebhookEvent := new(SchedulingOutOfOfficeWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingOutOfOfficeWebhookEvent); err == nil {
+			w.typ = "SchedulingOutOfOfficeWebhookEvent"
+			w.SchedulingOutOfOfficeWebhookEvent = valueSchedulingOutOfOfficeWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingReassignmentWebhookEvent := new(SchedulingReassignmentWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingReassignmentWebhookEvent); err == nil {
+			w.typ = "SchedulingReassignmentWebhookEvent"
+			w.SchedulingReassignmentWebhookEvent = valueSchedulingReassignmentWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
 		valueSchedulingCalendarDelegationWebhookEvent := new(SchedulingCalendarDelegationWebhookEvent)
 		if err := json.Unmarshal(data, &valueSchedulingCalendarDelegationWebhookEvent); err == nil {
 			w.typ = "SchedulingCalendarDelegationWebhookEvent"
 			w.SchedulingCalendarDelegationWebhookEvent = valueSchedulingCalendarDelegationWebhookEvent
+			return nil
+		}
+	}
+	if internal.HasObjectKeys(data, []string{"id", "object", "api_version", "created_at", "type", "data"}) {
+		valueSchedulingOauthAppWebhookEvent := new(SchedulingOauthAppWebhookEvent)
+		if err := json.Unmarshal(data, &valueSchedulingOauthAppWebhookEvent); err == nil {
+			w.typ = "SchedulingOauthAppWebhookEvent"
+			w.SchedulingOauthAppWebhookEvent = valueSchedulingOauthAppWebhookEvent
 			return nil
 		}
 	}
@@ -10762,10 +12224,28 @@ func (w *WebhookTestEventEvent) UnmarshalJSON(data []byte) error {
 		w.SchedulingCalendarWebhookEvent = valueSchedulingCalendarWebhookEvent
 		return nil
 	}
+	valueSchedulingOutOfOfficeWebhookEvent := new(SchedulingOutOfOfficeWebhookEvent)
+	if err := json.Unmarshal(data, &valueSchedulingOutOfOfficeWebhookEvent); err == nil {
+		w.typ = "SchedulingOutOfOfficeWebhookEvent"
+		w.SchedulingOutOfOfficeWebhookEvent = valueSchedulingOutOfOfficeWebhookEvent
+		return nil
+	}
+	valueSchedulingReassignmentWebhookEvent := new(SchedulingReassignmentWebhookEvent)
+	if err := json.Unmarshal(data, &valueSchedulingReassignmentWebhookEvent); err == nil {
+		w.typ = "SchedulingReassignmentWebhookEvent"
+		w.SchedulingReassignmentWebhookEvent = valueSchedulingReassignmentWebhookEvent
+		return nil
+	}
 	valueSchedulingCalendarDelegationWebhookEvent := new(SchedulingCalendarDelegationWebhookEvent)
 	if err := json.Unmarshal(data, &valueSchedulingCalendarDelegationWebhookEvent); err == nil {
 		w.typ = "SchedulingCalendarDelegationWebhookEvent"
 		w.SchedulingCalendarDelegationWebhookEvent = valueSchedulingCalendarDelegationWebhookEvent
+		return nil
+	}
+	valueSchedulingOauthAppWebhookEvent := new(SchedulingOauthAppWebhookEvent)
+	if err := json.Unmarshal(data, &valueSchedulingOauthAppWebhookEvent); err == nil {
+		w.typ = "SchedulingOauthAppWebhookEvent"
+		w.SchedulingOauthAppWebhookEvent = valueSchedulingOauthAppWebhookEvent
 		return nil
 	}
 	return fmt.Errorf("%s cannot be deserialized as a %T", data, w)
@@ -10814,8 +12294,17 @@ func (w WebhookTestEventEvent) MarshalJSON() ([]byte, error) {
 	if w.typ == "SchedulingCalendarWebhookEvent" || w.SchedulingCalendarWebhookEvent != nil {
 		return json.Marshal(w.SchedulingCalendarWebhookEvent)
 	}
+	if w.typ == "SchedulingOutOfOfficeWebhookEvent" || w.SchedulingOutOfOfficeWebhookEvent != nil {
+		return json.Marshal(w.SchedulingOutOfOfficeWebhookEvent)
+	}
+	if w.typ == "SchedulingReassignmentWebhookEvent" || w.SchedulingReassignmentWebhookEvent != nil {
+		return json.Marshal(w.SchedulingReassignmentWebhookEvent)
+	}
 	if w.typ == "SchedulingCalendarDelegationWebhookEvent" || w.SchedulingCalendarDelegationWebhookEvent != nil {
 		return json.Marshal(w.SchedulingCalendarDelegationWebhookEvent)
+	}
+	if w.typ == "SchedulingOauthAppWebhookEvent" || w.SchedulingOauthAppWebhookEvent != nil {
+		return json.Marshal(w.SchedulingOauthAppWebhookEvent)
 	}
 	return nil, fmt.Errorf("type %T does not include a non-empty union type", w)
 }
@@ -10835,7 +12324,10 @@ type WebhookTestEventEventVisitor interface {
 	VisitFormSubmissionWebhookEvent(*FormSubmissionWebhookEvent) error
 	VisitSchedulingBookingWebhookEvent(*SchedulingBookingWebhookEvent) error
 	VisitSchedulingCalendarWebhookEvent(*SchedulingCalendarWebhookEvent) error
+	VisitSchedulingOutOfOfficeWebhookEvent(*SchedulingOutOfOfficeWebhookEvent) error
+	VisitSchedulingReassignmentWebhookEvent(*SchedulingReassignmentWebhookEvent) error
 	VisitSchedulingCalendarDelegationWebhookEvent(*SchedulingCalendarDelegationWebhookEvent) error
+	VisitSchedulingOauthAppWebhookEvent(*SchedulingOauthAppWebhookEvent) error
 }
 
 func (w *WebhookTestEventEvent) Accept(visitor WebhookTestEventEventVisitor) error {
@@ -10881,8 +12373,17 @@ func (w *WebhookTestEventEvent) Accept(visitor WebhookTestEventEventVisitor) err
 	if w.typ == "SchedulingCalendarWebhookEvent" || w.SchedulingCalendarWebhookEvent != nil {
 		return visitor.VisitSchedulingCalendarWebhookEvent(w.SchedulingCalendarWebhookEvent)
 	}
+	if w.typ == "SchedulingOutOfOfficeWebhookEvent" || w.SchedulingOutOfOfficeWebhookEvent != nil {
+		return visitor.VisitSchedulingOutOfOfficeWebhookEvent(w.SchedulingOutOfOfficeWebhookEvent)
+	}
+	if w.typ == "SchedulingReassignmentWebhookEvent" || w.SchedulingReassignmentWebhookEvent != nil {
+		return visitor.VisitSchedulingReassignmentWebhookEvent(w.SchedulingReassignmentWebhookEvent)
+	}
 	if w.typ == "SchedulingCalendarDelegationWebhookEvent" || w.SchedulingCalendarDelegationWebhookEvent != nil {
 		return visitor.VisitSchedulingCalendarDelegationWebhookEvent(w.SchedulingCalendarDelegationWebhookEvent)
+	}
+	if w.typ == "SchedulingOauthAppWebhookEvent" || w.SchedulingOauthAppWebhookEvent != nil {
+		return visitor.VisitSchedulingOauthAppWebhookEvent(w.SchedulingOauthAppWebhookEvent)
 	}
 	return fmt.Errorf("type %T does not include a non-empty union type", w)
 }
@@ -10993,6 +12494,7 @@ const (
 	CreateTestWebhookEventRequestTypeSchedulingBookingExternalConflict    CreateTestWebhookEventRequestType = "scheduling.booking.external_conflict"
 	CreateTestWebhookEventRequestTypeSchedulingBookingCalendarWriteFailed CreateTestWebhookEventRequestType = "scheduling.booking.calendar_write_failed"
 	CreateTestWebhookEventRequestTypeSchedulingBookingLocationReady       CreateTestWebhookEventRequestType = "scheduling.booking.location_ready"
+	CreateTestWebhookEventRequestTypeSchedulingBookingReassigned          CreateTestWebhookEventRequestType = "scheduling.booking.reassigned"
 	CreateTestWebhookEventRequestTypeSchedulingBookingStarted             CreateTestWebhookEventRequestType = "scheduling.booking.started"
 	CreateTestWebhookEventRequestTypeSchedulingBookingEnded               CreateTestWebhookEventRequestType = "scheduling.booking.ended"
 	CreateTestWebhookEventRequestTypeSchedulingBookingReminder            CreateTestWebhookEventRequestType = "scheduling.booking.reminder"
@@ -11001,6 +12503,14 @@ const (
 	CreateTestWebhookEventRequestTypeSchedulingCalendarDisconnected       CreateTestWebhookEventRequestType = "scheduling.calendar.disconnected"
 	CreateTestWebhookEventRequestTypeSchedulingCalendarDelegationFailing  CreateTestWebhookEventRequestType = "scheduling.calendar_delegation.failing"
 	CreateTestWebhookEventRequestTypeSchedulingCalendarDelegationRestored CreateTestWebhookEventRequestType = "scheduling.calendar_delegation.restored"
+	CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeCreated         CreateTestWebhookEventRequestType = "scheduling.out_of_office.created"
+	CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeUpdated         CreateTestWebhookEventRequestType = "scheduling.out_of_office.updated"
+	CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeDeleted         CreateTestWebhookEventRequestType = "scheduling.out_of_office.deleted"
+	CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeStarted         CreateTestWebhookEventRequestType = "scheduling.out_of_office.started"
+	CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeEnded           CreateTestWebhookEventRequestType = "scheduling.out_of_office.ended"
+	CreateTestWebhookEventRequestTypeSchedulingReassignmentCompleted      CreateTestWebhookEventRequestType = "scheduling.reassignment.completed"
+	CreateTestWebhookEventRequestTypeSchedulingOauthAppFailing            CreateTestWebhookEventRequestType = "scheduling.oauth_app.failing"
+	CreateTestWebhookEventRequestTypeSchedulingOauthAppRestored           CreateTestWebhookEventRequestType = "scheduling.oauth_app.restored"
 )
 
 func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhookEventRequestType, error) {
@@ -11171,6 +12681,8 @@ func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhook
 		return CreateTestWebhookEventRequestTypeSchedulingBookingCalendarWriteFailed, nil
 	case "scheduling.booking.location_ready":
 		return CreateTestWebhookEventRequestTypeSchedulingBookingLocationReady, nil
+	case "scheduling.booking.reassigned":
+		return CreateTestWebhookEventRequestTypeSchedulingBookingReassigned, nil
 	case "scheduling.booking.started":
 		return CreateTestWebhookEventRequestTypeSchedulingBookingStarted, nil
 	case "scheduling.booking.ended":
@@ -11187,6 +12699,22 @@ func NewCreateTestWebhookEventRequestTypeFromString(s string) (CreateTestWebhook
 		return CreateTestWebhookEventRequestTypeSchedulingCalendarDelegationFailing, nil
 	case "scheduling.calendar_delegation.restored":
 		return CreateTestWebhookEventRequestTypeSchedulingCalendarDelegationRestored, nil
+	case "scheduling.out_of_office.created":
+		return CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeCreated, nil
+	case "scheduling.out_of_office.updated":
+		return CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeUpdated, nil
+	case "scheduling.out_of_office.deleted":
+		return CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeDeleted, nil
+	case "scheduling.out_of_office.started":
+		return CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeStarted, nil
+	case "scheduling.out_of_office.ended":
+		return CreateTestWebhookEventRequestTypeSchedulingOutOfOfficeEnded, nil
+	case "scheduling.reassignment.completed":
+		return CreateTestWebhookEventRequestTypeSchedulingReassignmentCompleted, nil
+	case "scheduling.oauth_app.failing":
+		return CreateTestWebhookEventRequestTypeSchedulingOauthAppFailing, nil
+	case "scheduling.oauth_app.restored":
+		return CreateTestWebhookEventRequestTypeSchedulingOauthAppRestored, nil
 	}
 	var t CreateTestWebhookEventRequestType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

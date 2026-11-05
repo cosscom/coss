@@ -8,13 +8,17 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import (
         UpdateSchedulingSettingsRequestCalendarFailureMode,
+        UpdateSchedulingSettingsRequestHostReassignment,
         UpdateSchedulingSettingsRequestLogo,
         UpdateSchedulingSettingsRequestNotificationsValue,
+        UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "UpdateSchedulingSettingsRequestCalendarFailureMode": ".types",
+    "UpdateSchedulingSettingsRequestHostReassignment": ".types",
     "UpdateSchedulingSettingsRequestLogo": ".types",
     "UpdateSchedulingSettingsRequestNotificationsValue": ".types",
+    "UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem": ".types",
 }
 
 
@@ -41,6 +45,8 @@ def __dir__():
 
 __all__ = [
     "UpdateSchedulingSettingsRequestCalendarFailureMode",
+    "UpdateSchedulingSettingsRequestHostReassignment",
     "UpdateSchedulingSettingsRequestLogo",
     "UpdateSchedulingSettingsRequestNotificationsValue",
+    "UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem",
 ]

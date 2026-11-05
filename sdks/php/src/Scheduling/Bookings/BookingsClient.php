@@ -4,18 +4,21 @@ namespace Coss\Scheduling\Bookings;
 
 use Psr\Http\Client\ClientInterface;
 use Coss\Core\Client\RawClient;
-use Coss\Scheduling\Bookings\Requests\ListBookingsRequest;
-use Coss\Types\SchedulingBookingList;
+use Coss\Scheduling\Bookings\Requests\ReassignSchedulingBookingRequest;
+use Coss\Types\SchedulingBooking;
 use Coss\Exceptions\CossException;
 use Coss\Exceptions\CossApiException;
+use Coss\Core\Client\IdempotencyKey;
 use Coss\Core\Json\JsonApiRequest;
 use Coss\Environments;
 use Coss\Core\Client\HttpMethod;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
+use Coss\Scheduling\Bookings\Requests\ReassignCandidatesBookingsRequest;
+use Coss\Types\SchedulingReassignCandidateList;
+use Coss\Scheduling\Bookings\Requests\ListBookingsRequest;
+use Coss\Types\SchedulingBookingList;
 use Coss\Scheduling\Bookings\Requests\CreateBookingRequest;
-use Coss\Types\SchedulingBooking;
-use Coss\Core\Client\IdempotencyKey;
 use Coss\Scheduling\Bookings\Requests\RescheduleBookingRequest;
 use Coss\Scheduling\Bookings\Requests\CancelSchedulingBookingRequest;
 use Coss\Scheduling\Bookings\Requests\EventsBookingsRequest;
@@ -58,6 +61,137 @@ class BookingsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+    }
+
+    /**
+     * Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+     *
+     * Example:
+     * ```php
+     * $client->scheduling->bookings->reassign(
+     *     'book_01kd2m9a0b1c2d3e4f5g6h7j8m',
+     *     new ReassignSchedulingBookingRequest([
+     *         'changes' => [
+     *             new ReassignSchedulingBookingRequestChangesItem([
+     *                 'toHost' => 'doctor_518',
+     *             ]),
+     *         ],
+     *         'reasonCode' => ReassignSchedulingBookingRequestReasonCode::OutOfOffice->value,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param string $id The booking's id.
+     * @param ReassignSchedulingBookingRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?SchedulingBooking
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function reassign(string $id, ReassignSchedulingBookingRequest $request, ?array $options = null): ?SchedulingBooking
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        $headers = [];
+        $headers['Idempotency-Key'] ??= IdempotencyKey::generate();
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/scheduling/bookings/" . RawClient::encodePathParam($id) . "/reassign",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return SchedulingBooking::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+     *
+     * Example:
+     * ```php
+     * $client->scheduling->bookings->reassignCandidates(
+     *     'book_01kd2m9a0b1c2d3e4f5g6h7j8m',
+     *     new ReassignCandidatesBookingsRequest([]),
+     * );
+     * ```
+     *
+     * @param string $id The booking's id.
+     * @param ReassignCandidatesBookingsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?SchedulingReassignCandidateList
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function reassignCandidates(string $id, ReassignCandidatesBookingsRequest $request = new ReassignCandidatesBookingsRequest(), ?array $options = null): ?SchedulingReassignCandidateList
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $query = [];
+        if ($request->fromHost != null) {
+            $query['from_host'] = $request->fromHost;
+        }
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/scheduling/bookings/" . RawClient::encodePathParam($id) . "/reassign_candidates",
+                    method: HttpMethod::GET,
+                    query: $query,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return SchedulingReassignCandidateList::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
     }
 
     /**
@@ -709,9 +843,10 @@ class BookingsClient
      * $client->scheduling->bookings->updateLocation(
      *     'book_01kd2m9a0b1c2d3e4f5g6h7j8m',
      *     new UpdateBookingLocationRequest([
-     *         'location' => SchedulingLocation::link(new SchedulingLocationLink([
+     *         'location' => new SchedulingLocationZero([
+     *             'type' => SchedulingLocationZeroType::Link->value,
      *             'url' => 'https://meet.example.com/abc',
-     *         ])),
+     *         ]),
      *     ]),
      * );
      * ```

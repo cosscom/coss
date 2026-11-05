@@ -40,6 +40,12 @@ class SchedulingSettings extends JsonSerializableType
     public ?SchedulingSettingsLogo $logo;
 
     /**
+     * @var ?string $privacyUrl Your privacy policy, linked on a host's page beside what connecting a calendar does, once this environment has its own OAuth app and a `brand_name`.
+     */
+    #[JsonProperty('privacy_url')]
+    public ?string $privacyUrl;
+
+    /**
      * @var ?string $emailFrom Sender of booking emails, on a verified domain.
      */
     #[JsonProperty('email_from')]
@@ -50,6 +56,24 @@ class SchedulingSettings extends JsonSerializableType
      */
     #[JsonProperty('sms_from')]
     public ?string $smsFrom;
+
+    /**
+     * @var bool $nameHostInAttendeeEmails Name the new host when telling an attendee their booking has one.
+     */
+    #[JsonProperty('name_host_in_attendee_emails')]
+    public bool $nameHostInAttendeeEmails;
+
+    /**
+     * @var value-of<SchedulingSettingsHostReassignment> $hostReassignment Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+     */
+    #[JsonProperty('host_reassignment')]
+    public string $hostReassignment;
+
+    /**
+     * @var array<SchedulingSettingsOutOfOfficeReasonsItem> $outOfOfficeReasons Reasons of your own for time away, on top of the preset ones.
+     */
+    #[JsonProperty('out_of_office_reasons'), ArrayType([SchedulingSettingsOutOfOfficeReasonsItem::class])]
+    public array $outOfOfficeReasons;
 
     /**
      * @var value-of<SchedulingSettingsCalendarFailureMode> $calendarFailureMode When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
@@ -79,10 +103,14 @@ class SchedulingSettings extends JsonSerializableType
      * @param array{
      *   object: value-of<SchedulingSettingsObject>,
      *   allowedOrigins: array<string>,
+     *   nameHostInAttendeeEmails: bool,
+     *   hostReassignment: value-of<SchedulingSettingsHostReassignment>,
+     *   outOfOfficeReasons: array<SchedulingSettingsOutOfOfficeReasonsItem>,
      *   calendarFailureMode: value-of<SchedulingSettingsCalendarFailureMode>,
      *   brandName?: ?string,
      *   accentColor?: ?string,
      *   logo?: ?SchedulingSettingsLogo,
+     *   privacyUrl?: ?string,
      *   emailFrom?: ?string,
      *   smsFrom?: ?string,
      *   notifications?: ?array<string, ?SchedulingSettingsNotificationsValue>,
@@ -107,6 +135,10 @@ class SchedulingSettings extends JsonSerializableType
         if (array_key_exists('logo', $values)) {
             $this->_setField('logo');
         }
+        $this->privacyUrl = $values['privacyUrl'] ?? null;
+        if (array_key_exists('privacyUrl', $values)) {
+            $this->_setField('privacyUrl');
+        }
         $this->emailFrom = $values['emailFrom'] ?? null;
         if (array_key_exists('emailFrom', $values)) {
             $this->_setField('emailFrom');
@@ -115,6 +147,9 @@ class SchedulingSettings extends JsonSerializableType
         if (array_key_exists('smsFrom', $values)) {
             $this->_setField('smsFrom');
         }
+        $this->nameHostInAttendeeEmails = $values['nameHostInAttendeeEmails'];
+        $this->hostReassignment = $values['hostReassignment'];
+        $this->outOfOfficeReasons = $values['outOfOfficeReasons'];
         $this->calendarFailureMode = $values['calendarFailureMode'];
         $this->notifications = $values['notifications'] ?? null;
         if (array_key_exists('notifications', $values)) {

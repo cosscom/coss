@@ -12,7 +12,11 @@ import com.coss.resources.scheduling.calendardelegations.AsyncCalendarDelegation
 import com.coss.resources.scheduling.calendars.AsyncCalendarsClient;
 import com.coss.resources.scheduling.eventtypes.AsyncEventTypesClient;
 import com.coss.resources.scheduling.holds.AsyncHoldsClient;
+import com.coss.resources.scheduling.holidaycalendars.AsyncHolidayCalendarsClient;
 import com.coss.resources.scheduling.hosts.AsyncHostsClient;
+import com.coss.resources.scheduling.oauthapps.AsyncOauthAppsClient;
+import com.coss.resources.scheduling.outofoffice.AsyncOutOfOfficeClient;
+import com.coss.resources.scheduling.reassignments.AsyncReassignmentsClient;
 import com.coss.resources.scheduling.schedules.AsyncSchedulesClient;
 import com.coss.resources.scheduling.series.AsyncSeriesClient;
 import com.coss.resources.scheduling.sessions.AsyncSessionsClient;
@@ -25,6 +29,14 @@ public class AsyncSchedulingClient {
 
     protected final Supplier<AsyncHostsClient> hostsClient;
 
+    protected final Supplier<AsyncBookingsClient> bookingsClient;
+
+    protected final Supplier<AsyncReassignmentsClient> reassignmentsClient;
+
+    protected final Supplier<AsyncHolidayCalendarsClient> holidayCalendarsClient;
+
+    protected final Supplier<AsyncOutOfOfficeClient> outOfOfficeClient;
+
     protected final Supplier<AsyncSchedulesClient> schedulesClient;
 
     protected final Supplier<AsyncEventTypesClient> eventTypesClient;
@@ -32,8 +44,6 @@ public class AsyncSchedulingClient {
     protected final Supplier<AsyncSlotsClient> slotsClient;
 
     protected final Supplier<AsyncAvailabilityClient> availabilityClient;
-
-    protected final Supplier<AsyncBookingsClient> bookingsClient;
 
     protected final Supplier<AsyncHoldsClient> holdsClient;
 
@@ -45,6 +55,8 @@ public class AsyncSchedulingClient {
 
     protected final Supplier<AsyncCalendarDelegationsClient> calendarDelegationsClient;
 
+    protected final Supplier<AsyncOauthAppsClient> oauthAppsClient;
+
     protected final Supplier<AsyncSessionsClient> sessionsClient;
 
     protected final Supplier<AsyncSettingsClient> settingsClient;
@@ -52,22 +64,42 @@ public class AsyncSchedulingClient {
     public AsyncSchedulingClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.hostsClient = Suppliers.memoize(() -> new AsyncHostsClient(clientOptions));
+        this.bookingsClient = Suppliers.memoize(() -> new AsyncBookingsClient(clientOptions));
+        this.reassignmentsClient = Suppliers.memoize(() -> new AsyncReassignmentsClient(clientOptions));
+        this.holidayCalendarsClient = Suppliers.memoize(() -> new AsyncHolidayCalendarsClient(clientOptions));
+        this.outOfOfficeClient = Suppliers.memoize(() -> new AsyncOutOfOfficeClient(clientOptions));
         this.schedulesClient = Suppliers.memoize(() -> new AsyncSchedulesClient(clientOptions));
         this.eventTypesClient = Suppliers.memoize(() -> new AsyncEventTypesClient(clientOptions));
         this.slotsClient = Suppliers.memoize(() -> new AsyncSlotsClient(clientOptions));
         this.availabilityClient = Suppliers.memoize(() -> new AsyncAvailabilityClient(clientOptions));
-        this.bookingsClient = Suppliers.memoize(() -> new AsyncBookingsClient(clientOptions));
         this.holdsClient = Suppliers.memoize(() -> new AsyncHoldsClient(clientOptions));
         this.seriesClient = Suppliers.memoize(() -> new AsyncSeriesClient(clientOptions));
         this.attendeesClient = Suppliers.memoize(() -> new AsyncAttendeesClient(clientOptions));
         this.calendarsClient = Suppliers.memoize(() -> new AsyncCalendarsClient(clientOptions));
         this.calendarDelegationsClient = Suppliers.memoize(() -> new AsyncCalendarDelegationsClient(clientOptions));
+        this.oauthAppsClient = Suppliers.memoize(() -> new AsyncOauthAppsClient(clientOptions));
         this.sessionsClient = Suppliers.memoize(() -> new AsyncSessionsClient(clientOptions));
         this.settingsClient = Suppliers.memoize(() -> new AsyncSettingsClient(clientOptions));
     }
 
     public AsyncHostsClient hosts() {
         return this.hostsClient.get();
+    }
+
+    public AsyncBookingsClient bookings() {
+        return this.bookingsClient.get();
+    }
+
+    public AsyncReassignmentsClient reassignments() {
+        return this.reassignmentsClient.get();
+    }
+
+    public AsyncHolidayCalendarsClient holidayCalendars() {
+        return this.holidayCalendarsClient.get();
+    }
+
+    public AsyncOutOfOfficeClient outOfOffice() {
+        return this.outOfOfficeClient.get();
     }
 
     public AsyncSchedulesClient schedules() {
@@ -84,10 +116,6 @@ public class AsyncSchedulingClient {
 
     public AsyncAvailabilityClient availability() {
         return this.availabilityClient.get();
-    }
-
-    public AsyncBookingsClient bookings() {
-        return this.bookingsClient.get();
     }
 
     public AsyncHoldsClient holds() {
@@ -108,6 +136,10 @@ public class AsyncSchedulingClient {
 
     public AsyncCalendarDelegationsClient calendarDelegations() {
         return this.calendarDelegationsClient.get();
+    }
+
+    public AsyncOauthAppsClient oauthApps() {
+        return this.oauthAppsClient.get();
     }
 
     public AsyncSessionsClient sessions() {

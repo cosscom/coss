@@ -151,6 +151,15 @@ if typing.TYPE_CHECKING:
     )
     from .create_calendar_delegation_request_google import CreateCalendarDelegationRequestGoogle
     from .create_calendar_delegation_request_microsoft import CreateCalendarDelegationRequestMicrosoft
+    from .create_oauth_app_request import (
+        CreateOauthAppRequest,
+        CreateOauthAppRequest_Google,
+        CreateOauthAppRequest_Microsoft,
+        CreateOauthAppRequest_Zoom,
+    )
+    from .create_oauth_app_request_google import CreateOauthAppRequestGoogle
+    from .create_oauth_app_request_microsoft import CreateOauthAppRequestMicrosoft
+    from .create_oauth_app_request_zoom import CreateOauthAppRequestZoom
     from .create_series_request import CreateSeriesRequest
     from .create_series_request_answers_value import CreateSeriesRequestAnswersValue
     from .create_series_request_attributes_value import CreateSeriesRequestAttributesValue
@@ -225,8 +234,13 @@ if typing.TYPE_CHECKING:
     from .deleted_scheduling_calendar_connection_object import DeletedSchedulingCalendarConnectionObject
     from .deleted_scheduling_calendar_delegation import DeletedSchedulingCalendarDelegation
     from .deleted_scheduling_calendar_delegation_object import DeletedSchedulingCalendarDelegationObject
+    from .deleted_scheduling_holiday_calendar import DeletedSchedulingHolidayCalendar
     from .deleted_scheduling_host import DeletedSchedulingHost
     from .deleted_scheduling_host_object import DeletedSchedulingHostObject
+    from .deleted_scheduling_oauth_app import DeletedSchedulingOauthApp
+    from .deleted_scheduling_oauth_app_object import DeletedSchedulingOauthAppObject
+    from .deleted_scheduling_out_of_office import DeletedSchedulingOutOfOffice
+    from .deleted_scheduling_out_of_office_object import DeletedSchedulingOutOfOfficeObject
     from .deleted_scheduling_schedule import DeletedSchedulingSchedule
     from .deleted_scheduling_schedule_object import DeletedSchedulingScheduleObject
     from .deleted_segment import DeletedSegment
@@ -756,6 +770,16 @@ if typing.TYPE_CHECKING:
     from .scheduling_event_type_object import SchedulingEventTypeObject
     from .scheduling_event_type_status import SchedulingEventTypeStatus
     from .scheduling_guest_input import SchedulingGuestInput
+    from .scheduling_holiday_calendar import SchedulingHolidayCalendar
+    from .scheduling_holiday_calendar_existing_bookings import SchedulingHolidayCalendarExistingBookings
+    from .scheduling_holiday_calendar_host_filter_value import SchedulingHolidayCalendarHostFilterValue
+    from .scheduling_holiday_calendar_list import SchedulingHolidayCalendarList
+    from .scheduling_holiday_calendar_list_object import SchedulingHolidayCalendarListObject
+    from .scheduling_holiday_calendar_object import SchedulingHolidayCalendarObject
+    from .scheduling_holiday_calendar_source import SchedulingHolidayCalendarSource
+    from .scheduling_holiday_list import SchedulingHolidayList
+    from .scheduling_holiday_list_data_item import SchedulingHolidayListDataItem
+    from .scheduling_holiday_list_object import SchedulingHolidayListObject
     from .scheduling_host import SchedulingHost
     from .scheduling_host_attributes_value import SchedulingHostAttributesValue
     from .scheduling_host_list import SchedulingHostList
@@ -774,23 +798,77 @@ if typing.TYPE_CHECKING:
     from .scheduling_limit import SchedulingLimit
     from .scheduling_limit_period import SchedulingLimitPeriod
     from .scheduling_limit_scope import SchedulingLimitScope
-    from .scheduling_location import (
-        SchedulingLocation,
-        SchedulingLocation_GoogleMeet,
-        SchedulingLocation_InPerson,
-        SchedulingLocation_Link,
-        SchedulingLocation_MicrosoftTeams,
-        SchedulingLocation_Phone,
-        SchedulingLocation_Zoom,
-    )
-    from .scheduling_location_google_meet import SchedulingLocationGoogleMeet
-    from .scheduling_location_in_person import SchedulingLocationInPerson
-    from .scheduling_location_link import SchedulingLocationLink
-    from .scheduling_location_microsoft_teams import SchedulingLocationMicrosoftTeams
-    from .scheduling_location_phone import SchedulingLocationPhone
-    from .scheduling_location_zoom import SchedulingLocationZoom
+    from .scheduling_location import SchedulingLocation
+    from .scheduling_location_address import SchedulingLocationAddress
+    from .scheduling_location_address_type import SchedulingLocationAddressType
+    from .scheduling_location_five import SchedulingLocationFive
+    from .scheduling_location_five_type import SchedulingLocationFiveType
+    from .scheduling_location_four import SchedulingLocationFour
+    from .scheduling_location_four_type import SchedulingLocationFourType
+    from .scheduling_location_number import SchedulingLocationNumber
+    from .scheduling_location_number_type import SchedulingLocationNumberType
+    from .scheduling_location_three import SchedulingLocationThree
+    from .scheduling_location_three_type import SchedulingLocationThreeType
+    from .scheduling_location_zero import SchedulingLocationZero
+    from .scheduling_location_zero_type import SchedulingLocationZeroType
+    from .scheduling_oauth_app import SchedulingOauthApp
+    from .scheduling_oauth_app_list import SchedulingOauthAppList
+    from .scheduling_oauth_app_list_object import SchedulingOauthAppListObject
+    from .scheduling_oauth_app_object import SchedulingOauthAppObject
+    from .scheduling_oauth_app_provider import SchedulingOauthAppProvider
+    from .scheduling_oauth_app_status import SchedulingOauthAppStatus
+    from .scheduling_oauth_app_webhook_event import SchedulingOauthAppWebhookEvent
+    from .scheduling_oauth_app_webhook_event_data import SchedulingOauthAppWebhookEventData
+    from .scheduling_oauth_app_webhook_event_object import SchedulingOauthAppWebhookEventObject
+    from .scheduling_oauth_app_webhook_event_type import SchedulingOauthAppWebhookEventType
+    from .scheduling_out_of_office import SchedulingOutOfOffice
+    from .scheduling_out_of_office_all_day import SchedulingOutOfOfficeAllDay
+    from .scheduling_out_of_office_conflict import SchedulingOutOfOfficeConflict
+    from .scheduling_out_of_office_conflict_list import SchedulingOutOfOfficeConflictList
+    from .scheduling_out_of_office_conflict_list_object import SchedulingOutOfOfficeConflictListObject
+    from .scheduling_out_of_office_conflict_object import SchedulingOutOfOfficeConflictObject
+    from .scheduling_out_of_office_conflict_status import SchedulingOutOfOfficeConflictStatus
+    from .scheduling_out_of_office_existing_bookings import SchedulingOutOfOfficeExistingBookings
+    from .scheduling_out_of_office_list import SchedulingOutOfOfficeList
+    from .scheduling_out_of_office_list_object import SchedulingOutOfOfficeListObject
+    from .scheduling_out_of_office_object import SchedulingOutOfOfficeObject
+    from .scheduling_out_of_office_source import SchedulingOutOfOfficeSource
+    from .scheduling_out_of_office_webhook_event import SchedulingOutOfOfficeWebhookEvent
+    from .scheduling_out_of_office_webhook_event_data import SchedulingOutOfOfficeWebhookEventData
+    from .scheduling_out_of_office_webhook_event_object import SchedulingOutOfOfficeWebhookEventObject
+    from .scheduling_out_of_office_webhook_event_type import SchedulingOutOfOfficeWebhookEventType
     from .scheduling_question import SchedulingQuestion
     from .scheduling_question_type import SchedulingQuestionType
+    from .scheduling_reassign_candidate import SchedulingReassignCandidate
+    from .scheduling_reassign_candidate_list import SchedulingReassignCandidateList
+    from .scheduling_reassign_candidate_list_object import SchedulingReassignCandidateListObject
+    from .scheduling_reassign_candidate_object import SchedulingReassignCandidateObject
+    from .scheduling_reassignment import SchedulingReassignment
+    from .scheduling_reassignment_counts import SchedulingReassignmentCounts
+    from .scheduling_reassignment_item import SchedulingReassignmentItem
+    from .scheduling_reassignment_item_list import SchedulingReassignmentItemList
+    from .scheduling_reassignment_item_list_object import SchedulingReassignmentItemListObject
+    from .scheduling_reassignment_item_object import SchedulingReassignmentItemObject
+    from .scheduling_reassignment_item_outcome import SchedulingReassignmentItemOutcome
+    from .scheduling_reassignment_list import SchedulingReassignmentList
+    from .scheduling_reassignment_list_object import SchedulingReassignmentListObject
+    from .scheduling_reassignment_object import SchedulingReassignmentObject
+    from .scheduling_reassignment_preview import SchedulingReassignmentPreview
+    from .scheduling_reassignment_preview_items_item import SchedulingReassignmentPreviewItemsItem
+    from .scheduling_reassignment_preview_items_item_status import SchedulingReassignmentPreviewItemsItemStatus
+    from .scheduling_reassignment_preview_object import SchedulingReassignmentPreviewObject
+    from .scheduling_reassignment_reason_code import SchedulingReassignmentReasonCode
+    from .scheduling_reassignment_selection import SchedulingReassignmentSelection
+    from .scheduling_reassignment_status import SchedulingReassignmentStatus
+    from .scheduling_reassignment_strategy import SchedulingReassignmentStrategy
+    from .scheduling_reassignment_strategy_assignments_item import SchedulingReassignmentStrategyAssignmentsItem
+    from .scheduling_reassignment_strategy_otherwise import SchedulingReassignmentStrategyOtherwise
+    from .scheduling_reassignment_webhook_event import SchedulingReassignmentWebhookEvent
+    from .scheduling_reassignment_webhook_event_data import SchedulingReassignmentWebhookEventData
+    from .scheduling_reassignment_webhook_event_data_counts import SchedulingReassignmentWebhookEventDataCounts
+    from .scheduling_reassignment_webhook_event_data_status import SchedulingReassignmentWebhookEventDataStatus
+    from .scheduling_reassignment_webhook_event_object import SchedulingReassignmentWebhookEventObject
+    from .scheduling_reassignment_webhook_event_type import SchedulingReassignmentWebhookEventType
     from .scheduling_reminder import SchedulingReminder
     from .scheduling_reminder_anchor import SchedulingReminderAnchor
     from .scheduling_reminder_button import SchedulingReminderButton
@@ -821,10 +899,12 @@ if typing.TYPE_CHECKING:
     from .scheduling_session_object import SchedulingSessionObject
     from .scheduling_settings import SchedulingSettings
     from .scheduling_settings_calendar_failure_mode import SchedulingSettingsCalendarFailureMode
+    from .scheduling_settings_host_reassignment import SchedulingSettingsHostReassignment
     from .scheduling_settings_logo import SchedulingSettingsLogo
     from .scheduling_settings_logo_content_type import SchedulingSettingsLogoContentType
     from .scheduling_settings_notifications_value import SchedulingSettingsNotificationsValue
     from .scheduling_settings_object import SchedulingSettingsObject
+    from .scheduling_settings_out_of_office_reasons_item import SchedulingSettingsOutOfOfficeReasonsItem
     from .scheduling_slot import SchedulingSlot
     from .scheduling_slot_explanation import SchedulingSlotExplanation
     from .scheduling_slot_explanation_hosts_item import SchedulingSlotExplanationHostsItem
@@ -1276,6 +1356,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateCalendarDelegationRequestMicrosoft": ".create_calendar_delegation_request_microsoft",
     "CreateCalendarDelegationRequest_Google": ".create_calendar_delegation_request",
     "CreateCalendarDelegationRequest_Microsoft": ".create_calendar_delegation_request",
+    "CreateOauthAppRequest": ".create_oauth_app_request",
+    "CreateOauthAppRequestGoogle": ".create_oauth_app_request_google",
+    "CreateOauthAppRequestMicrosoft": ".create_oauth_app_request_microsoft",
+    "CreateOauthAppRequestZoom": ".create_oauth_app_request_zoom",
+    "CreateOauthAppRequest_Google": ".create_oauth_app_request",
+    "CreateOauthAppRequest_Microsoft": ".create_oauth_app_request",
+    "CreateOauthAppRequest_Zoom": ".create_oauth_app_request",
     "CreateSeriesRequest": ".create_series_request",
     "CreateSeriesRequestAnswersValue": ".create_series_request_answers_value",
     "CreateSeriesRequestAttributesValue": ".create_series_request_attributes_value",
@@ -1348,8 +1435,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "DeletedSchedulingCalendarConnectionObject": ".deleted_scheduling_calendar_connection_object",
     "DeletedSchedulingCalendarDelegation": ".deleted_scheduling_calendar_delegation",
     "DeletedSchedulingCalendarDelegationObject": ".deleted_scheduling_calendar_delegation_object",
+    "DeletedSchedulingHolidayCalendar": ".deleted_scheduling_holiday_calendar",
     "DeletedSchedulingHost": ".deleted_scheduling_host",
     "DeletedSchedulingHostObject": ".deleted_scheduling_host_object",
+    "DeletedSchedulingOauthApp": ".deleted_scheduling_oauth_app",
+    "DeletedSchedulingOauthAppObject": ".deleted_scheduling_oauth_app_object",
+    "DeletedSchedulingOutOfOffice": ".deleted_scheduling_out_of_office",
+    "DeletedSchedulingOutOfOfficeObject": ".deleted_scheduling_out_of_office_object",
     "DeletedSchedulingSchedule": ".deleted_scheduling_schedule",
     "DeletedSchedulingScheduleObject": ".deleted_scheduling_schedule_object",
     "DeletedSegment": ".deleted_segment",
@@ -1877,6 +1969,16 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SchedulingEventTypeObject": ".scheduling_event_type_object",
     "SchedulingEventTypeStatus": ".scheduling_event_type_status",
     "SchedulingGuestInput": ".scheduling_guest_input",
+    "SchedulingHolidayCalendar": ".scheduling_holiday_calendar",
+    "SchedulingHolidayCalendarExistingBookings": ".scheduling_holiday_calendar_existing_bookings",
+    "SchedulingHolidayCalendarHostFilterValue": ".scheduling_holiday_calendar_host_filter_value",
+    "SchedulingHolidayCalendarList": ".scheduling_holiday_calendar_list",
+    "SchedulingHolidayCalendarListObject": ".scheduling_holiday_calendar_list_object",
+    "SchedulingHolidayCalendarObject": ".scheduling_holiday_calendar_object",
+    "SchedulingHolidayCalendarSource": ".scheduling_holiday_calendar_source",
+    "SchedulingHolidayList": ".scheduling_holiday_list",
+    "SchedulingHolidayListDataItem": ".scheduling_holiday_list_data_item",
+    "SchedulingHolidayListObject": ".scheduling_holiday_list_object",
     "SchedulingHost": ".scheduling_host",
     "SchedulingHostAttributesValue": ".scheduling_host_attributes_value",
     "SchedulingHostList": ".scheduling_host_list",
@@ -1894,20 +1996,76 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SchedulingLimitPeriod": ".scheduling_limit_period",
     "SchedulingLimitScope": ".scheduling_limit_scope",
     "SchedulingLocation": ".scheduling_location",
-    "SchedulingLocationGoogleMeet": ".scheduling_location_google_meet",
-    "SchedulingLocationInPerson": ".scheduling_location_in_person",
-    "SchedulingLocationLink": ".scheduling_location_link",
-    "SchedulingLocationMicrosoftTeams": ".scheduling_location_microsoft_teams",
-    "SchedulingLocationPhone": ".scheduling_location_phone",
-    "SchedulingLocationZoom": ".scheduling_location_zoom",
-    "SchedulingLocation_GoogleMeet": ".scheduling_location",
-    "SchedulingLocation_InPerson": ".scheduling_location",
-    "SchedulingLocation_Link": ".scheduling_location",
-    "SchedulingLocation_MicrosoftTeams": ".scheduling_location",
-    "SchedulingLocation_Phone": ".scheduling_location",
-    "SchedulingLocation_Zoom": ".scheduling_location",
+    "SchedulingLocationAddress": ".scheduling_location_address",
+    "SchedulingLocationAddressType": ".scheduling_location_address_type",
+    "SchedulingLocationFive": ".scheduling_location_five",
+    "SchedulingLocationFiveType": ".scheduling_location_five_type",
+    "SchedulingLocationFour": ".scheduling_location_four",
+    "SchedulingLocationFourType": ".scheduling_location_four_type",
+    "SchedulingLocationNumber": ".scheduling_location_number",
+    "SchedulingLocationNumberType": ".scheduling_location_number_type",
+    "SchedulingLocationThree": ".scheduling_location_three",
+    "SchedulingLocationThreeType": ".scheduling_location_three_type",
+    "SchedulingLocationZero": ".scheduling_location_zero",
+    "SchedulingLocationZeroType": ".scheduling_location_zero_type",
+    "SchedulingOauthApp": ".scheduling_oauth_app",
+    "SchedulingOauthAppList": ".scheduling_oauth_app_list",
+    "SchedulingOauthAppListObject": ".scheduling_oauth_app_list_object",
+    "SchedulingOauthAppObject": ".scheduling_oauth_app_object",
+    "SchedulingOauthAppProvider": ".scheduling_oauth_app_provider",
+    "SchedulingOauthAppStatus": ".scheduling_oauth_app_status",
+    "SchedulingOauthAppWebhookEvent": ".scheduling_oauth_app_webhook_event",
+    "SchedulingOauthAppWebhookEventData": ".scheduling_oauth_app_webhook_event_data",
+    "SchedulingOauthAppWebhookEventObject": ".scheduling_oauth_app_webhook_event_object",
+    "SchedulingOauthAppWebhookEventType": ".scheduling_oauth_app_webhook_event_type",
+    "SchedulingOutOfOffice": ".scheduling_out_of_office",
+    "SchedulingOutOfOfficeAllDay": ".scheduling_out_of_office_all_day",
+    "SchedulingOutOfOfficeConflict": ".scheduling_out_of_office_conflict",
+    "SchedulingOutOfOfficeConflictList": ".scheduling_out_of_office_conflict_list",
+    "SchedulingOutOfOfficeConflictListObject": ".scheduling_out_of_office_conflict_list_object",
+    "SchedulingOutOfOfficeConflictObject": ".scheduling_out_of_office_conflict_object",
+    "SchedulingOutOfOfficeConflictStatus": ".scheduling_out_of_office_conflict_status",
+    "SchedulingOutOfOfficeExistingBookings": ".scheduling_out_of_office_existing_bookings",
+    "SchedulingOutOfOfficeList": ".scheduling_out_of_office_list",
+    "SchedulingOutOfOfficeListObject": ".scheduling_out_of_office_list_object",
+    "SchedulingOutOfOfficeObject": ".scheduling_out_of_office_object",
+    "SchedulingOutOfOfficeSource": ".scheduling_out_of_office_source",
+    "SchedulingOutOfOfficeWebhookEvent": ".scheduling_out_of_office_webhook_event",
+    "SchedulingOutOfOfficeWebhookEventData": ".scheduling_out_of_office_webhook_event_data",
+    "SchedulingOutOfOfficeWebhookEventObject": ".scheduling_out_of_office_webhook_event_object",
+    "SchedulingOutOfOfficeWebhookEventType": ".scheduling_out_of_office_webhook_event_type",
     "SchedulingQuestion": ".scheduling_question",
     "SchedulingQuestionType": ".scheduling_question_type",
+    "SchedulingReassignCandidate": ".scheduling_reassign_candidate",
+    "SchedulingReassignCandidateList": ".scheduling_reassign_candidate_list",
+    "SchedulingReassignCandidateListObject": ".scheduling_reassign_candidate_list_object",
+    "SchedulingReassignCandidateObject": ".scheduling_reassign_candidate_object",
+    "SchedulingReassignment": ".scheduling_reassignment",
+    "SchedulingReassignmentCounts": ".scheduling_reassignment_counts",
+    "SchedulingReassignmentItem": ".scheduling_reassignment_item",
+    "SchedulingReassignmentItemList": ".scheduling_reassignment_item_list",
+    "SchedulingReassignmentItemListObject": ".scheduling_reassignment_item_list_object",
+    "SchedulingReassignmentItemObject": ".scheduling_reassignment_item_object",
+    "SchedulingReassignmentItemOutcome": ".scheduling_reassignment_item_outcome",
+    "SchedulingReassignmentList": ".scheduling_reassignment_list",
+    "SchedulingReassignmentListObject": ".scheduling_reassignment_list_object",
+    "SchedulingReassignmentObject": ".scheduling_reassignment_object",
+    "SchedulingReassignmentPreview": ".scheduling_reassignment_preview",
+    "SchedulingReassignmentPreviewItemsItem": ".scheduling_reassignment_preview_items_item",
+    "SchedulingReassignmentPreviewItemsItemStatus": ".scheduling_reassignment_preview_items_item_status",
+    "SchedulingReassignmentPreviewObject": ".scheduling_reassignment_preview_object",
+    "SchedulingReassignmentReasonCode": ".scheduling_reassignment_reason_code",
+    "SchedulingReassignmentSelection": ".scheduling_reassignment_selection",
+    "SchedulingReassignmentStatus": ".scheduling_reassignment_status",
+    "SchedulingReassignmentStrategy": ".scheduling_reassignment_strategy",
+    "SchedulingReassignmentStrategyAssignmentsItem": ".scheduling_reassignment_strategy_assignments_item",
+    "SchedulingReassignmentStrategyOtherwise": ".scheduling_reassignment_strategy_otherwise",
+    "SchedulingReassignmentWebhookEvent": ".scheduling_reassignment_webhook_event",
+    "SchedulingReassignmentWebhookEventData": ".scheduling_reassignment_webhook_event_data",
+    "SchedulingReassignmentWebhookEventDataCounts": ".scheduling_reassignment_webhook_event_data_counts",
+    "SchedulingReassignmentWebhookEventDataStatus": ".scheduling_reassignment_webhook_event_data_status",
+    "SchedulingReassignmentWebhookEventObject": ".scheduling_reassignment_webhook_event_object",
+    "SchedulingReassignmentWebhookEventType": ".scheduling_reassignment_webhook_event_type",
     "SchedulingReminder": ".scheduling_reminder",
     "SchedulingReminderAnchor": ".scheduling_reminder_anchor",
     "SchedulingReminderButton": ".scheduling_reminder_button",
@@ -1938,10 +2096,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SchedulingSessionObject": ".scheduling_session_object",
     "SchedulingSettings": ".scheduling_settings",
     "SchedulingSettingsCalendarFailureMode": ".scheduling_settings_calendar_failure_mode",
+    "SchedulingSettingsHostReassignment": ".scheduling_settings_host_reassignment",
     "SchedulingSettingsLogo": ".scheduling_settings_logo",
     "SchedulingSettingsLogoContentType": ".scheduling_settings_logo_content_type",
     "SchedulingSettingsNotificationsValue": ".scheduling_settings_notifications_value",
     "SchedulingSettingsObject": ".scheduling_settings_object",
+    "SchedulingSettingsOutOfOfficeReasonsItem": ".scheduling_settings_out_of_office_reasons_item",
     "SchedulingSlot": ".scheduling_slot",
     "SchedulingSlotExplanation": ".scheduling_slot_explanation",
     "SchedulingSlotExplanationHostsItem": ".scheduling_slot_explanation_hosts_item",
@@ -2389,6 +2549,13 @@ __all__ = [
     "CreateCalendarDelegationRequestMicrosoft",
     "CreateCalendarDelegationRequest_Google",
     "CreateCalendarDelegationRequest_Microsoft",
+    "CreateOauthAppRequest",
+    "CreateOauthAppRequestGoogle",
+    "CreateOauthAppRequestMicrosoft",
+    "CreateOauthAppRequestZoom",
+    "CreateOauthAppRequest_Google",
+    "CreateOauthAppRequest_Microsoft",
+    "CreateOauthAppRequest_Zoom",
     "CreateSeriesRequest",
     "CreateSeriesRequestAnswersValue",
     "CreateSeriesRequestAttributesValue",
@@ -2461,8 +2628,13 @@ __all__ = [
     "DeletedSchedulingCalendarConnectionObject",
     "DeletedSchedulingCalendarDelegation",
     "DeletedSchedulingCalendarDelegationObject",
+    "DeletedSchedulingHolidayCalendar",
     "DeletedSchedulingHost",
     "DeletedSchedulingHostObject",
+    "DeletedSchedulingOauthApp",
+    "DeletedSchedulingOauthAppObject",
+    "DeletedSchedulingOutOfOffice",
+    "DeletedSchedulingOutOfOfficeObject",
     "DeletedSchedulingSchedule",
     "DeletedSchedulingScheduleObject",
     "DeletedSegment",
@@ -2990,6 +3162,16 @@ __all__ = [
     "SchedulingEventTypeObject",
     "SchedulingEventTypeStatus",
     "SchedulingGuestInput",
+    "SchedulingHolidayCalendar",
+    "SchedulingHolidayCalendarExistingBookings",
+    "SchedulingHolidayCalendarHostFilterValue",
+    "SchedulingHolidayCalendarList",
+    "SchedulingHolidayCalendarListObject",
+    "SchedulingHolidayCalendarObject",
+    "SchedulingHolidayCalendarSource",
+    "SchedulingHolidayList",
+    "SchedulingHolidayListDataItem",
+    "SchedulingHolidayListObject",
     "SchedulingHost",
     "SchedulingHostAttributesValue",
     "SchedulingHostList",
@@ -3007,20 +3189,76 @@ __all__ = [
     "SchedulingLimitPeriod",
     "SchedulingLimitScope",
     "SchedulingLocation",
-    "SchedulingLocationGoogleMeet",
-    "SchedulingLocationInPerson",
-    "SchedulingLocationLink",
-    "SchedulingLocationMicrosoftTeams",
-    "SchedulingLocationPhone",
-    "SchedulingLocationZoom",
-    "SchedulingLocation_GoogleMeet",
-    "SchedulingLocation_InPerson",
-    "SchedulingLocation_Link",
-    "SchedulingLocation_MicrosoftTeams",
-    "SchedulingLocation_Phone",
-    "SchedulingLocation_Zoom",
+    "SchedulingLocationAddress",
+    "SchedulingLocationAddressType",
+    "SchedulingLocationFive",
+    "SchedulingLocationFiveType",
+    "SchedulingLocationFour",
+    "SchedulingLocationFourType",
+    "SchedulingLocationNumber",
+    "SchedulingLocationNumberType",
+    "SchedulingLocationThree",
+    "SchedulingLocationThreeType",
+    "SchedulingLocationZero",
+    "SchedulingLocationZeroType",
+    "SchedulingOauthApp",
+    "SchedulingOauthAppList",
+    "SchedulingOauthAppListObject",
+    "SchedulingOauthAppObject",
+    "SchedulingOauthAppProvider",
+    "SchedulingOauthAppStatus",
+    "SchedulingOauthAppWebhookEvent",
+    "SchedulingOauthAppWebhookEventData",
+    "SchedulingOauthAppWebhookEventObject",
+    "SchedulingOauthAppWebhookEventType",
+    "SchedulingOutOfOffice",
+    "SchedulingOutOfOfficeAllDay",
+    "SchedulingOutOfOfficeConflict",
+    "SchedulingOutOfOfficeConflictList",
+    "SchedulingOutOfOfficeConflictListObject",
+    "SchedulingOutOfOfficeConflictObject",
+    "SchedulingOutOfOfficeConflictStatus",
+    "SchedulingOutOfOfficeExistingBookings",
+    "SchedulingOutOfOfficeList",
+    "SchedulingOutOfOfficeListObject",
+    "SchedulingOutOfOfficeObject",
+    "SchedulingOutOfOfficeSource",
+    "SchedulingOutOfOfficeWebhookEvent",
+    "SchedulingOutOfOfficeWebhookEventData",
+    "SchedulingOutOfOfficeWebhookEventObject",
+    "SchedulingOutOfOfficeWebhookEventType",
     "SchedulingQuestion",
     "SchedulingQuestionType",
+    "SchedulingReassignCandidate",
+    "SchedulingReassignCandidateList",
+    "SchedulingReassignCandidateListObject",
+    "SchedulingReassignCandidateObject",
+    "SchedulingReassignment",
+    "SchedulingReassignmentCounts",
+    "SchedulingReassignmentItem",
+    "SchedulingReassignmentItemList",
+    "SchedulingReassignmentItemListObject",
+    "SchedulingReassignmentItemObject",
+    "SchedulingReassignmentItemOutcome",
+    "SchedulingReassignmentList",
+    "SchedulingReassignmentListObject",
+    "SchedulingReassignmentObject",
+    "SchedulingReassignmentPreview",
+    "SchedulingReassignmentPreviewItemsItem",
+    "SchedulingReassignmentPreviewItemsItemStatus",
+    "SchedulingReassignmentPreviewObject",
+    "SchedulingReassignmentReasonCode",
+    "SchedulingReassignmentSelection",
+    "SchedulingReassignmentStatus",
+    "SchedulingReassignmentStrategy",
+    "SchedulingReassignmentStrategyAssignmentsItem",
+    "SchedulingReassignmentStrategyOtherwise",
+    "SchedulingReassignmentWebhookEvent",
+    "SchedulingReassignmentWebhookEventData",
+    "SchedulingReassignmentWebhookEventDataCounts",
+    "SchedulingReassignmentWebhookEventDataStatus",
+    "SchedulingReassignmentWebhookEventObject",
+    "SchedulingReassignmentWebhookEventType",
     "SchedulingReminder",
     "SchedulingReminderAnchor",
     "SchedulingReminderButton",
@@ -3051,10 +3289,12 @@ __all__ = [
     "SchedulingSessionObject",
     "SchedulingSettings",
     "SchedulingSettingsCalendarFailureMode",
+    "SchedulingSettingsHostReassignment",
     "SchedulingSettingsLogo",
     "SchedulingSettingsLogoContentType",
     "SchedulingSettingsNotificationsValue",
     "SchedulingSettingsObject",
+    "SchedulingSettingsOutOfOfficeReasonsItem",
     "SchedulingSlot",
     "SchedulingSlotExplanation",
     "SchedulingSlotExplanationHostsItem",

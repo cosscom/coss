@@ -36,6 +36,13 @@ public record UpdateSchedulingSettingsRequest
     public Optional<UpdateSchedulingSettingsRequestLogo?> Logo { get; set; }
 
     /// <summary>
+    /// Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+    /// </summary>
+    [Nullable, Optional]
+    [JsonPropertyName("privacy_url")]
+    public Optional<string?> PrivacyUrl { get; set; }
+
+    /// <summary>
     /// Sender of booking emails, on a verified domain. `null`: coss.com's own address.
     /// </summary>
     [Nullable, Optional]
@@ -55,6 +62,27 @@ public record UpdateSchedulingSettingsRequest
     [Optional]
     [JsonPropertyName("calendar_failure_mode")]
     public UpdateSchedulingSettingsRequestCalendarFailureMode? CalendarFailureMode { get; set; }
+
+    /// <summary>
+    /// Name the new host when telling an attendee their booking has one.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("name_host_in_attendee_emails")]
+    public bool? NameHostInAttendeeEmails { get; set; }
+
+    /// <summary>
+    /// Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("host_reassignment")]
+    public UpdateSchedulingSettingsRequestHostReassignment? HostReassignment { get; set; }
+
+    /// <summary>
+    /// Reasons of your own, on top of the preset ones. Hosts and managers see them.
+    /// </summary>
+    [Nullable, Optional]
+    [JsonPropertyName("out_of_office_reasons")]
+    public Optional<IEnumerable<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>?> OutOfOfficeReasons { get; set; }
 
     /// <summary>
     /// Per event (`confirmed`, `pending_approval`, `rescheduled`, `cancelled`, `declined`, `reminder`), overriding the defaults. `null` restores them.

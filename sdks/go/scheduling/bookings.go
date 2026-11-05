@@ -517,6 +517,141 @@ func (n *NotificationsBookingsRequest) SetAfter(after *string) {
 }
 
 var (
+	reassignSchedulingBookingRequestFieldID         = big.NewInt(1 << 0)
+	reassignSchedulingBookingRequestFieldChanges    = big.NewInt(1 << 1)
+	reassignSchedulingBookingRequestFieldReasonCode = big.NewInt(1 << 2)
+	reassignSchedulingBookingRequestFieldNote       = big.NewInt(1 << 3)
+	reassignSchedulingBookingRequestFieldOverrides  = big.NewInt(1 << 4)
+	reassignSchedulingBookingRequestFieldNotify     = big.NewInt(1 << 5)
+)
+
+type ReassignSchedulingBookingRequest struct {
+	// The booking's id.
+	ID string `json:"-" url:"-"`
+	// A session or a one-on-one has one. A collective can change several.
+	Changes    []*ReassignSchedulingBookingRequestChangesItem `json:"changes" url:"-"`
+	ReasonCode ReassignSchedulingBookingRequestReasonCode     `json:"reason_code" url:"-"`
+	// Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+	Note *string `json:"note,omitempty" url:"-"`
+	// Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+	Overrides []ReassignSchedulingBookingRequestOverridesItem `json:"overrides,omitempty" url:"-"`
+	Notify    *ReassignSchedulingBookingRequestNotify         `json:"notify,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (r *ReassignSchedulingBookingRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetID(id string) {
+	r.ID = id
+	r.require(reassignSchedulingBookingRequestFieldID)
+}
+
+// SetChanges sets the Changes field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetChanges(changes []*ReassignSchedulingBookingRequestChangesItem) {
+	r.Changes = changes
+	r.require(reassignSchedulingBookingRequestFieldChanges)
+}
+
+// SetReasonCode sets the ReasonCode field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetReasonCode(reasonCode ReassignSchedulingBookingRequestReasonCode) {
+	r.ReasonCode = reasonCode
+	r.require(reassignSchedulingBookingRequestFieldReasonCode)
+}
+
+// SetNote sets the Note field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetNote(note *string) {
+	r.Note = note
+	r.require(reassignSchedulingBookingRequestFieldNote)
+}
+
+// SetOverrides sets the Overrides field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetOverrides(overrides []ReassignSchedulingBookingRequestOverridesItem) {
+	r.Overrides = overrides
+	r.require(reassignSchedulingBookingRequestFieldOverrides)
+}
+
+// SetNotify sets the Notify field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequest) SetNotify(notify *ReassignSchedulingBookingRequestNotify) {
+	r.Notify = notify
+	r.require(reassignSchedulingBookingRequestFieldNotify)
+}
+
+func (r *ReassignSchedulingBookingRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler ReassignSchedulingBookingRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*r = ReassignSchedulingBookingRequest(body)
+	return nil
+}
+
+func (r *ReassignSchedulingBookingRequest) MarshalJSON() ([]byte, error) {
+	type embed ReassignSchedulingBookingRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	reassignCandidatesBookingsRequestFieldID       = big.NewInt(1 << 0)
+	reassignCandidatesBookingsRequestFieldFromHost = big.NewInt(1 << 1)
+)
+
+type ReassignCandidatesBookingsRequest struct {
+	// The booking's id.
+	ID string `json:"-" url:"-"`
+	// The host who'd leave, when it could be several.
+	FromHost *string `json:"-" url:"from_host,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (r *ReassignCandidatesBookingsRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignCandidatesBookingsRequest) SetID(id string) {
+	r.ID = id
+	r.require(reassignCandidatesBookingsRequestFieldID)
+}
+
+// SetFromHost sets the FromHost field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignCandidatesBookingsRequest) SetFromHost(fromHost *string) {
+	r.FromHost = fromHost
+	r.require(reassignCandidatesBookingsRequestFieldFromHost)
+}
+
+var (
 	rescheduleBookingRequestFieldID    = big.NewInt(1 << 0)
 	rescheduleBookingRequestFieldStart = big.NewInt(1 << 1)
 	rescheduleBookingRequestFieldHost  = big.NewInt(1 << 2)
@@ -1494,6 +1629,299 @@ func (l ListBookingsRequestStatus) Ptr() *ListBookingsRequestStatus {
 }
 
 var (
+	reassignSchedulingBookingRequestChangesItemFieldFromHost       = big.NewInt(1 << 0)
+	reassignSchedulingBookingRequestChangesItemFieldToHost         = big.NewInt(1 << 1)
+	reassignSchedulingBookingRequestChangesItemFieldAuto           = big.NewInt(1 << 2)
+	reassignSchedulingBookingRequestChangesItemFieldPreferredHosts = big.NewInt(1 << 3)
+)
+
+type ReassignSchedulingBookingRequestChangesItem struct {
+	// The host leaving, by id or uid. Needed when it could be several.
+	FromHost *string `json:"from_host,omitempty" url:"from_host,omitempty"`
+	// The host taking over, by id or uid. Or set `auto`.
+	ToHost *string `json:"to_host,omitempty" url:"to_host,omitempty"`
+	// Let coss.com pick, as a pool would: the fairest who's free and fits what the booking was routed with.
+	Auto *bool `json:"auto,omitempty" url:"auto,omitempty"`
+	// With `auto`: try these first, in order.
+	PreferredHosts []string `json:"preferred_hosts,omitempty" url:"preferred_hosts,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) GetFromHost() *string {
+	if r == nil {
+		return nil
+	}
+	return r.FromHost
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) GetToHost() *string {
+	if r == nil {
+		return nil
+	}
+	return r.ToHost
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) GetAuto() *bool {
+	if r == nil {
+		return nil
+	}
+	return r.Auto
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) GetPreferredHosts() []string {
+	if r == nil {
+		return nil
+	}
+	return r.PreferredHosts
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetFromHost sets the FromHost field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequestChangesItem) SetFromHost(fromHost *string) {
+	r.FromHost = fromHost
+	r.require(reassignSchedulingBookingRequestChangesItemFieldFromHost)
+}
+
+// SetToHost sets the ToHost field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequestChangesItem) SetToHost(toHost *string) {
+	r.ToHost = toHost
+	r.require(reassignSchedulingBookingRequestChangesItemFieldToHost)
+}
+
+// SetAuto sets the Auto field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequestChangesItem) SetAuto(auto *bool) {
+	r.Auto = auto
+	r.require(reassignSchedulingBookingRequestChangesItemFieldAuto)
+}
+
+// SetPreferredHosts sets the PreferredHosts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequestChangesItem) SetPreferredHosts(preferredHosts []string) {
+	r.PreferredHosts = preferredHosts
+	r.require(reassignSchedulingBookingRequestChangesItemFieldPreferredHosts)
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler ReassignSchedulingBookingRequestChangesItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = ReassignSchedulingBookingRequestChangesItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) MarshalJSON() ([]byte, error) {
+	type embed ReassignSchedulingBookingRequestChangesItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *ReassignSchedulingBookingRequestChangesItem) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
+}
+
+var (
+	reassignSchedulingBookingRequestNotifyFieldAttendee = big.NewInt(1 << 0)
+)
+
+type ReassignSchedulingBookingRequestNotify struct {
+	// Tell the attendee. Default: true.
+	Attendee *bool `json:"attendee,omitempty" url:"attendee,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) GetAttendee() *bool {
+	if r == nil {
+		return nil
+	}
+	return r.Attendee
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) GetExtraProperties() map[string]interface{} {
+	if r == nil {
+		return nil
+	}
+	return r.extraProperties
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) require(field *big.Int) {
+	next := new(big.Int)
+	if r.explicitFields != nil {
+		next.Set(r.explicitFields)
+	}
+	next.Or(next, field)
+	r.explicitFields = next
+}
+
+// SetAttendee sets the Attendee field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (r *ReassignSchedulingBookingRequestNotify) SetAttendee(attendee *bool) {
+	r.Attendee = attendee
+	r.require(reassignSchedulingBookingRequestNotifyFieldAttendee)
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) UnmarshalJSON(data []byte) error {
+	type unmarshaler ReassignSchedulingBookingRequestNotify
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*r = ReassignSchedulingBookingRequestNotify(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *r)
+	if err != nil {
+		return err
+	}
+	r.extraProperties = extraProperties
+	r.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) MarshalJSON() ([]byte, error) {
+	type embed ReassignSchedulingBookingRequestNotify
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*r),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, r.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (r *ReassignSchedulingBookingRequestNotify) String() string {
+	if r == nil {
+		return "<nil>"
+	}
+	if len(r.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(r.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(r); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", r)
+}
+
+type ReassignSchedulingBookingRequestOverridesItem string
+
+const (
+	ReassignSchedulingBookingRequestOverridesItemAnyHost             ReassignSchedulingBookingRequestOverridesItem = "any_host"
+	ReassignSchedulingBookingRequestOverridesItemOutOfOffice         ReassignSchedulingBookingRequestOverridesItem = "out_of_office"
+	ReassignSchedulingBookingRequestOverridesItemOutsideAvailability ReassignSchedulingBookingRequestOverridesItem = "outside_availability"
+	ReassignSchedulingBookingRequestOverridesItemHostBusy            ReassignSchedulingBookingRequestOverridesItem = "host_busy"
+	ReassignSchedulingBookingRequestOverridesItemLimitReached        ReassignSchedulingBookingRequestOverridesItem = "limit_reached"
+	ReassignSchedulingBookingRequestOverridesItemCalendarUnverified  ReassignSchedulingBookingRequestOverridesItem = "calendar_unverified"
+)
+
+func NewReassignSchedulingBookingRequestOverridesItemFromString(s string) (ReassignSchedulingBookingRequestOverridesItem, error) {
+	switch s {
+	case "any_host":
+		return ReassignSchedulingBookingRequestOverridesItemAnyHost, nil
+	case "out_of_office":
+		return ReassignSchedulingBookingRequestOverridesItemOutOfOffice, nil
+	case "outside_availability":
+		return ReassignSchedulingBookingRequestOverridesItemOutsideAvailability, nil
+	case "host_busy":
+		return ReassignSchedulingBookingRequestOverridesItemHostBusy, nil
+	case "limit_reached":
+		return ReassignSchedulingBookingRequestOverridesItemLimitReached, nil
+	case "calendar_unverified":
+		return ReassignSchedulingBookingRequestOverridesItemCalendarUnverified, nil
+	}
+	var t ReassignSchedulingBookingRequestOverridesItem
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r ReassignSchedulingBookingRequestOverridesItem) Ptr() *ReassignSchedulingBookingRequestOverridesItem {
+	return &r
+}
+
+type ReassignSchedulingBookingRequestReasonCode string
+
+const (
+	ReassignSchedulingBookingRequestReasonCodeHostUnavailable ReassignSchedulingBookingRequestReasonCode = "host_unavailable"
+	ReassignSchedulingBookingRequestReasonCodeOutOfOffice     ReassignSchedulingBookingRequestReasonCode = "out_of_office"
+	ReassignSchedulingBookingRequestReasonCodeWorkload        ReassignSchedulingBookingRequestReasonCode = "workload"
+	ReassignSchedulingBookingRequestReasonCodeCustomerRequest ReassignSchedulingBookingRequestReasonCode = "customer_request"
+	ReassignSchedulingBookingRequestReasonCodeOffboarding     ReassignSchedulingBookingRequestReasonCode = "offboarding"
+	ReassignSchedulingBookingRequestReasonCodeOther           ReassignSchedulingBookingRequestReasonCode = "other"
+)
+
+func NewReassignSchedulingBookingRequestReasonCodeFromString(s string) (ReassignSchedulingBookingRequestReasonCode, error) {
+	switch s {
+	case "host_unavailable":
+		return ReassignSchedulingBookingRequestReasonCodeHostUnavailable, nil
+	case "out_of_office":
+		return ReassignSchedulingBookingRequestReasonCodeOutOfOffice, nil
+	case "workload":
+		return ReassignSchedulingBookingRequestReasonCodeWorkload, nil
+	case "customer_request":
+		return ReassignSchedulingBookingRequestReasonCodeCustomerRequest, nil
+	case "offboarding":
+		return ReassignSchedulingBookingRequestReasonCodeOffboarding, nil
+	case "other":
+		return ReassignSchedulingBookingRequestReasonCodeOther, nil
+	}
+	var t ReassignSchedulingBookingRequestReasonCode
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (r ReassignSchedulingBookingRequestReasonCode) Ptr() *ReassignSchedulingBookingRequestReasonCode {
+	return &r
+}
+
+var (
 	updateBookingLocationRequestFieldID       = big.NewInt(1 << 0)
 	updateBookingLocationRequestFieldLocation = big.NewInt(1 << 1)
 )
@@ -1501,7 +1929,7 @@ var (
 type UpdateBookingLocationRequest struct {
 	// The booking's id.
 	ID       string                     `json:"-" url:"-"`
-	Location *cossgo.SchedulingLocation `json:"location" url:"-"`
+	Location *cossgo.SchedulingLocation `json:"location,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`

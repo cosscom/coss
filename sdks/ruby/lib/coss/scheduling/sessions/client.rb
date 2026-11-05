@@ -11,6 +11,53 @@ module Coss
           @client = client
         end
 
+        # Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's
+        # asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the
+        # `url` to their browser, or embed it with `coss/scheduling`.
+        #
+        # @param request_options [Hash]
+        # @param params [Coss::Scheduling::Sessions::Types::CreateSchedulingManagerSessionRequest]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        #
+        # @example
+        #   client.scheduling.sessions.create_for_manager(
+        #     host_filter: {
+        #       team: "cardiology"
+        #     },
+        #     expires_in: 3600
+        #   )
+        #
+        # @return [Coss::Types::SchedulingSession]
+        def create_for_manager(request_options: {}, **params)
+          params = Coss::Internal::Types::Utils.normalize_keys(params)
+          headers = { "Idempotency-Key" => Coss::Internal::IdempotencyKey.generate }
+          request = Coss::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "POST",
+            path: "v1/scheduling/manager_sessions",
+            headers: headers,
+            body: Coss::Scheduling::Sessions::Types::CreateSchedulingManagerSessionRequest.new(params).to_h,
+            request_options: request_options,
+            max_retries: 0
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Coss::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            (response.body.to_s.empty? ? nil : Coss::Types::SchedulingSession.load(response.body))
+          else
+            error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+            raise error_class.new(response.body, code: code)
+          end
+        end
+
         # Lets one host manage their own hours, calendars and locations, on coss.com's hosted page or your own UI. Send
         # the `url` to their browser, or embed it with `coss/scheduling`.
         #

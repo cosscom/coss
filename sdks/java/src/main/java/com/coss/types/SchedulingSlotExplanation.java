@@ -87,7 +87,7 @@ public final class SchedulingSlotExplanation {
     }
 
     /**
-     * @return Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.
+     * @return Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.
      */
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("reason")
@@ -181,7 +181,7 @@ public final class SchedulingSlotExplanation {
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
         /**
-         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
+         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
          */
         _FinalStage reason(OptionalNullable<String> reason);
 
@@ -307,7 +307,7 @@ public final class SchedulingSlotExplanation {
         }
 
         /**
-         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
+         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -323,7 +323,7 @@ public final class SchedulingSlotExplanation {
         }
 
         /**
-         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
+         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -337,7 +337,7 @@ public final class SchedulingSlotExplanation {
         }
 
         /**
-         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
+         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -347,7 +347,7 @@ public final class SchedulingSlotExplanation {
         }
 
         /**
-         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
+         * <p>Why it can't: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>, or <code>event_type_inactive</code> or <code>no_hosts</code>. <code>null</code> when it can. With several hosts refused, the first one's reason: see <code>hosts</code>.</p>
          */
         @java.lang.Override
         @JsonSetter(value = "reason", nulls = Nulls.SKIP)

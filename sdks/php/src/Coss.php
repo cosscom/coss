@@ -166,8 +166,8 @@ class Coss
             'Authorization' => "Bearer $apiKey",
             'X-Fern-Language' => 'PHP',
             'X-Fern-SDK-Name' => 'Coss',
-            'X-Fern-SDK-Version' => '0.3.0',
-            'User-Agent' => 'coss-php/0.3.0',
+            'X-Fern-SDK-Version' => '0.4.0',
+            'User-Agent' => 'coss-php/0.4.0',
         ];
         if ($apiVersion != null) {
             $defaultHeaders['Coss-Version'] = $apiVersion;

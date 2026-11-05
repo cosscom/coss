@@ -38,6 +38,8 @@ public final class SchedulingCalendarConnection {
 
     private final SchedulingCalendarConnectionStatus status;
 
+    private final OptionalNullable<String> oauthApp;
+
     private final OptionalNullable<String> delegation;
 
     private final List<SchedulingCalendarConnectionCalendarsItem> calendars;
@@ -53,6 +55,7 @@ public final class SchedulingCalendarConnection {
             SchedulingCalendarConnectionProvider provider,
             String account,
             SchedulingCalendarConnectionStatus status,
+            OptionalNullable<String> oauthApp,
             OptionalNullable<String> delegation,
             List<SchedulingCalendarConnectionCalendarsItem> calendars,
             String createdAt,
@@ -63,6 +66,7 @@ public final class SchedulingCalendarConnection {
         this.provider = provider;
         this.account = account;
         this.status = status;
+        this.oauthApp = oauthApp;
         this.delegation = delegation;
         this.calendars = calendars;
         this.createdAt = createdAt;
@@ -112,6 +116,18 @@ public final class SchedulingCalendarConnection {
     }
 
     /**
+     * @return Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("oauth_app")
+    public OptionalNullable<String> getOauthApp() {
+        if (oauthApp == null) {
+            return OptionalNullable.absent();
+        }
+        return oauthApp;
+    }
+
+    /**
      * @return The calendar delegation that manages this connection. It can't be disconnected or reconnected by itself.
      */
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -134,6 +150,12 @@ public final class SchedulingCalendarConnection {
     @JsonProperty("created_at")
     public String getCreatedAt() {
         return createdAt;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("oauth_app")
+    private OptionalNullable<String> _getOauthApp() {
+        return oauthApp;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -160,6 +182,7 @@ public final class SchedulingCalendarConnection {
                 && provider.equals(other.provider)
                 && account.equals(other.account)
                 && status.equals(other.status)
+                && oauthApp.equals(other.oauthApp)
                 && delegation.equals(other.delegation)
                 && calendars.equals(other.calendars)
                 && createdAt.equals(other.createdAt);
@@ -174,6 +197,7 @@ public final class SchedulingCalendarConnection {
                 this.provider,
                 this.account,
                 this.status,
+                this.oauthApp,
                 this.delegation,
                 this.calendars,
                 this.createdAt);
@@ -238,6 +262,17 @@ public final class SchedulingCalendarConnection {
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
         /**
+         * <p>Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.</p>
+         */
+        _FinalStage oauthApp(OptionalNullable<String> oauthApp);
+
+        _FinalStage oauthApp(String oauthApp);
+
+        _FinalStage oauthApp(Optional<String> oauthApp);
+
+        _FinalStage oauthApp(Nullable<String> oauthApp);
+
+        /**
          * <p>The calendar delegation that manages this connection. It can't be disconnected or reconnected by itself.</p>
          */
         _FinalStage delegation(OptionalNullable<String> delegation);
@@ -286,6 +321,8 @@ public final class SchedulingCalendarConnection {
 
         private OptionalNullable<String> delegation = OptionalNullable.absent();
 
+        private OptionalNullable<String> oauthApp = OptionalNullable.absent();
+
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
 
@@ -299,6 +336,7 @@ public final class SchedulingCalendarConnection {
             provider(other.getProvider());
             account(other.getAccount());
             status(other.getStatus());
+            oauthApp(other.getOauthApp());
             delegation(other.getDelegation());
             calendars(other.getCalendars());
             createdAt(other.getCreatedAt());
@@ -455,6 +493,56 @@ public final class SchedulingCalendarConnection {
             return this;
         }
 
+        /**
+         * <p>Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage oauthApp(Nullable<String> oauthApp) {
+            if (oauthApp.isNull()) {
+                this.oauthApp = OptionalNullable.ofNull();
+            } else if (oauthApp.isEmpty()) {
+                this.oauthApp = OptionalNullable.absent();
+            } else {
+                this.oauthApp = OptionalNullable.of(oauthApp.get());
+            }
+            return this;
+        }
+
+        /**
+         * <p>Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage oauthApp(Optional<String> oauthApp) {
+            if (oauthApp.isPresent()) {
+                this.oauthApp = OptionalNullable.of(oauthApp.get());
+            } else {
+                this.oauthApp = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        /**
+         * <p>Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage oauthApp(String oauthApp) {
+            this.oauthApp = OptionalNullable.of(oauthApp);
+            return this;
+        }
+
+        /**
+         * <p>Your own OAuth app this connection's access came through. <code>null</code>: coss.com's, or no consent was involved.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "oauth_app", nulls = Nulls.SKIP)
+        public _FinalStage oauthApp(OptionalNullable<String> oauthApp) {
+            this.oauthApp = oauthApp;
+            return this;
+        }
+
         @java.lang.Override
         public SchedulingCalendarConnection build() {
             return new SchedulingCalendarConnection(
@@ -464,6 +552,7 @@ public final class SchedulingCalendarConnection {
                     provider,
                     account,
                     status,
+                    oauthApp,
                     delegation,
                     calendars,
                     createdAt,

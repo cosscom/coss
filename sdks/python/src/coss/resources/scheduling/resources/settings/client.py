@@ -10,9 +10,13 @@ from .raw_client import AsyncRawSettingsClient, RawSettingsClient
 from .types.update_scheduling_settings_request_calendar_failure_mode import (
     UpdateSchedulingSettingsRequestCalendarFailureMode,
 )
+from .types.update_scheduling_settings_request_host_reassignment import UpdateSchedulingSettingsRequestHostReassignment
 from .types.update_scheduling_settings_request_logo import UpdateSchedulingSettingsRequestLogo
 from .types.update_scheduling_settings_request_notifications_value import (
     UpdateSchedulingSettingsRequestNotificationsValue,
+)
+from .types.update_scheduling_settings_request_out_of_office_reasons_item import (
+    UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem,
 )
 
 # this is used as the default value for optional parameters
@@ -68,9 +72,15 @@ class SettingsClient:
         brand_name: typing.Optional[str] = OMIT,
         accent_color: typing.Optional[str] = OMIT,
         logo: typing.Optional[UpdateSchedulingSettingsRequestLogo] = OMIT,
+        privacy_url: typing.Optional[str] = OMIT,
         email_from: typing.Optional[str] = OMIT,
         sms_from: typing.Optional[str] = OMIT,
         calendar_failure_mode: typing.Optional[UpdateSchedulingSettingsRequestCalendarFailureMode] = OMIT,
+        name_host_in_attendee_emails: typing.Optional[bool] = OMIT,
+        host_reassignment: typing.Optional[UpdateSchedulingSettingsRequestHostReassignment] = OMIT,
+        out_of_office_reasons: typing.Optional[
+            typing.Sequence[UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem]
+        ] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[UpdateSchedulingSettingsRequestNotificationsValue]]
         ] = OMIT,
@@ -95,6 +105,9 @@ class SettingsClient:
         logo : typing.Optional[UpdateSchedulingSettingsRequestLogo]
             Your logo, a PNG or JPEG. `null` removes it.
 
+        privacy_url : typing.Optional[str]
+            Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+
         email_from : typing.Optional[str]
             Sender of booking emails, on a verified domain. `null`: coss.com's own address.
 
@@ -103,6 +116,15 @@ class SettingsClient:
 
         calendar_failure_mode : typing.Optional[UpdateSchedulingSettingsRequestCalendarFailureMode]
             When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
+
+        name_host_in_attendee_emails : typing.Optional[bool]
+            Name the new host when telling an attendee their booking has one.
+
+        host_reassignment : typing.Optional[UpdateSchedulingSettingsRequestHostReassignment]
+            Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+
+        out_of_office_reasons : typing.Optional[typing.Sequence[UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem]]
+            Reasons of your own, on top of the preset ones. Hosts and managers see them.
 
         notifications : typing.Optional[typing.Dict[str, typing.Optional[UpdateSchedulingSettingsRequestNotificationsValue]]]
             Per event (`confirmed`, `pending_approval`, `rescheduled`, `cancelled`, `declined`, `reminder`), overriding the defaults. `null` restores them.
@@ -138,9 +160,13 @@ class SettingsClient:
             brand_name=brand_name,
             accent_color=accent_color,
             logo=logo,
+            privacy_url=privacy_url,
             email_from=email_from,
             sms_from=sms_from,
             calendar_failure_mode=calendar_failure_mode,
+            name_host_in_attendee_emails=name_host_in_attendee_emails,
+            host_reassignment=host_reassignment,
+            out_of_office_reasons=out_of_office_reasons,
             notifications=notifications,
             email_reply_to=email_reply_to,
             reminders=reminders,
@@ -206,9 +232,15 @@ class AsyncSettingsClient:
         brand_name: typing.Optional[str] = OMIT,
         accent_color: typing.Optional[str] = OMIT,
         logo: typing.Optional[UpdateSchedulingSettingsRequestLogo] = OMIT,
+        privacy_url: typing.Optional[str] = OMIT,
         email_from: typing.Optional[str] = OMIT,
         sms_from: typing.Optional[str] = OMIT,
         calendar_failure_mode: typing.Optional[UpdateSchedulingSettingsRequestCalendarFailureMode] = OMIT,
+        name_host_in_attendee_emails: typing.Optional[bool] = OMIT,
+        host_reassignment: typing.Optional[UpdateSchedulingSettingsRequestHostReassignment] = OMIT,
+        out_of_office_reasons: typing.Optional[
+            typing.Sequence[UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem]
+        ] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[UpdateSchedulingSettingsRequestNotificationsValue]]
         ] = OMIT,
@@ -233,6 +265,9 @@ class AsyncSettingsClient:
         logo : typing.Optional[UpdateSchedulingSettingsRequestLogo]
             Your logo, a PNG or JPEG. `null` removes it.
 
+        privacy_url : typing.Optional[str]
+            Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+
         email_from : typing.Optional[str]
             Sender of booking emails, on a verified domain. `null`: coss.com's own address.
 
@@ -241,6 +276,15 @@ class AsyncSettingsClient:
 
         calendar_failure_mode : typing.Optional[UpdateSchedulingSettingsRequestCalendarFailureMode]
             When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
+
+        name_host_in_attendee_emails : typing.Optional[bool]
+            Name the new host when telling an attendee their booking has one.
+
+        host_reassignment : typing.Optional[UpdateSchedulingSettingsRequestHostReassignment]
+            Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+
+        out_of_office_reasons : typing.Optional[typing.Sequence[UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem]]
+            Reasons of your own, on top of the preset ones. Hosts and managers see them.
 
         notifications : typing.Optional[typing.Dict[str, typing.Optional[UpdateSchedulingSettingsRequestNotificationsValue]]]
             Per event (`confirmed`, `pending_approval`, `rescheduled`, `cancelled`, `declined`, `reminder`), overriding the defaults. `null` restores them.
@@ -284,9 +328,13 @@ class AsyncSettingsClient:
             brand_name=brand_name,
             accent_color=accent_color,
             logo=logo,
+            privacy_url=privacy_url,
             email_from=email_from,
             sms_from=sms_from,
             calendar_failure_mode=calendar_failure_mode,
+            name_host_in_attendee_emails=name_host_in_attendee_emails,
+            host_reassignment=host_reassignment,
+            out_of_office_reasons=out_of_office_reasons,
             notifications=notifications,
             email_reply_to=email_reply_to,
             reminders=reminders,

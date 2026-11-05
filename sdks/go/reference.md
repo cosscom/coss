@@ -17781,1440 +17781,183 @@ client.Scheduling.Hosts.Update(
 </dl>
 </details>
 
-## Scheduling Schedules
-<details><summary><code>client.Scheduling.Schedules.List(Host) -> *coss.SchedulingScheduleList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-All of the host's schedules, oldest first.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.ListSchedulesRequest{
-    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-}
-client.Scheduling.Schedules.List(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `string` — The host's id or uid.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Schedules.Create(Host, request) -> *coss.SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-A host's weekly hours and date overrides, in local time. The first one is the host's default.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.CreateSchedulesRequest{
-    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    Body: &coss.UpsertScheduleRequest{
-        Name: coss.String(
-            "Clinic hours",
-        ),
-        Rules: []*coss.SchedulingWeeklyRule{
-            &coss.SchedulingWeeklyRule{
-                Days: []int{
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                },
-                Start: "09:00",
-                End: "17:00",
-            },
-        },
-        Overrides: []*coss.SchedulingScheduleOverride{
-            &coss.SchedulingScheduleOverride{
-                Date: "2027-12-24",
-                Ranges: []*coss.SchedulingScheduleOverrideRangesItem{
-                    &coss.SchedulingScheduleOverrideRangesItem{
-                        Start: "start",
-                        End: "end",
-                    },
-                },
-            },
-        },
-    },
-}
-client.Scheduling.Schedules.Create(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `string` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `*coss.UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Schedules.Get(Host, ScheduleID) -> *coss.SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-One of the host's schedules.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.GetSchedulesRequest{
-    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-}
-client.Scheduling.Schedules.Get(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `string` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleID:** `string` — The schedule's id.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Schedules.Update(Host, ScheduleID, request) -> *coss.SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.UpdateSchedulesRequest{
-    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    Body: &coss.UpsertScheduleRequest{
-        Name: coss.String(
-            "Clinic hours",
-        ),
-        Rules: []*coss.SchedulingWeeklyRule{
-            &coss.SchedulingWeeklyRule{
-                Days: []int{
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                },
-                Start: "09:00",
-                End: "17:00",
-            },
-        },
-        Overrides: []*coss.SchedulingScheduleOverride{
-            &coss.SchedulingScheduleOverride{
-                Date: "2027-12-24",
-                Ranges: []*coss.SchedulingScheduleOverrideRangesItem{
-                    &coss.SchedulingScheduleOverrideRangesItem{
-                        Start: "start",
-                        End: "end",
-                    },
-                },
-            },
-        },
-    },
-}
-client.Scheduling.Schedules.Update(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `string` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleID:** `string` — The schedule's id.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `*coss.UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Schedules.Remove(Host, ScheduleID) -> *coss.DeletedSchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Refused for the host's default schedule.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.RemoveSchedulesRequest{
-    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-}
-client.Scheduling.Schedules.Remove(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `string` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleID:** `string` — The schedule's id.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling EventTypes
-<details><summary><code>client.Scheduling.EventTypes.List() -> *coss.SchedulingEventTypeList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-The environment's event types, newest first.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.ListEventTypesRequest{}
-client.Scheduling.EventTypes.List(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**limit:** `*int` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**after:** `*string` — The last id of the previous page.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.EventTypes.Create(request) -> *coss.SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.CreateEventTypeRequest{
-    Kind: scheduling.CreateEventTypeRequestKindOneOnOne.Ptr(),
-    Title: "Initial consultation",
-    DurationMinutes: 30,
-    BufferAfterMinutes: coss.Int(
-        10,
-    ),
-    MinNoticeMinutes: coss.Int(
-        120,
-    ),
-    Hosts: []*coss.SchedulingEventTypeHostInput{
-        &coss.SchedulingEventTypeHostInput{
-            Host: "doctor_482",
-        },
-    },
-}
-client.Scheduling.EventTypes.Create(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**uid:** `*string` — Your own id for this event type, unique in the environment, accepted wherever its id is.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**kind:** `*scheduling.CreateEventTypeRequestKind` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `*string` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `string` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `int` — How long a booking lasts by default, in minutes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationOptions:** `[]int` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**stepMinutes:** `*int` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gridTimeZone:** `*string` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferBeforeMinutes:** `*int` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferAfterMinutes:** `*int` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minNoticeMinutes:** `*int` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bookingWindow:** `*coss.SchedulingBookingWindow` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `[]*coss.SchedulingLimit` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `*int` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requiresApproval:** `*bool` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approvalTTLMinutes:** `*int` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**holdTTLSeconds:** `*int` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancelNoticeMinutes:** `*int` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rescheduleNoticeMinutes:** `*int` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxGuests:** `*int` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxActiveBookingsPerAttendee:** `*int` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostCalendarDetails:** `*scheduling.CreateEventTypeRequestHostCalendarDetails` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `[]*coss.SchedulingQuestion` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `[]*coss.SchedulingLocation` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostFilter:** `map[string]*scheduling.CreateEventTypeRequestHostFilterValue` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `map[string]*scheduling.CreateEventTypeRequestNotificationsValue` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `[]*coss.SchedulingReminderInput` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `map[string]string` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `[]*coss.SchedulingEventTypeHostInput` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.EventTypes.Get(EventType) -> *coss.SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-An event type by its id or your uid.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.GetEventTypesRequest{
-    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-}
-client.Scheduling.EventTypes.Get(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `string` — The event type's id or uid.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.EventTypes.Update(EventType, request) -> *coss.SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.UpdateEventTypeRequest{
-    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    MinNoticeMinutes: coss.Int(
-        240,
-    ),
-}
-client.Scheduling.EventTypes.Update(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `string` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**uid:** `*string` — Your own id for this event type. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `*string` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `*string` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `*int` — How long a booking lasts by default, in minutes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationOptions:** `[]int` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**stepMinutes:** `*int` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gridTimeZone:** `*string` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferBeforeMinutes:** `*int` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferAfterMinutes:** `*int` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minNoticeMinutes:** `*int` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bookingWindow:** `*coss.SchedulingBookingWindow` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `[]*coss.SchedulingLimit` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `*int` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requiresApproval:** `*bool` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approvalTTLMinutes:** `*int` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**holdTTLSeconds:** `*int` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancelNoticeMinutes:** `*int` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rescheduleNoticeMinutes:** `*int` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxGuests:** `*int` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxActiveBookingsPerAttendee:** `*int` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostCalendarDetails:** `*scheduling.UpdateEventTypeRequestHostCalendarDetails` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `[]*coss.SchedulingQuestion` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `[]*coss.SchedulingLocation` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostFilter:** `map[string]*scheduling.UpdateEventTypeRequestHostFilterValue` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `map[string]*scheduling.UpdateEventTypeRequestNotificationsValue` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `[]*coss.SchedulingReminderInput` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `map[string]string` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `*scheduling.UpdateEventTypeRequestStatus` — `archived` stops new bookings, and keeps existing ones.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `[]*coss.SchedulingEventTypeHostInput` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Slots
-<details><summary><code>client.Scheduling.Slots.List(EventType) -> *coss.SchedulingSlotList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.ListSlotsRequest{
-    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    Start: "2027-01-04T15:00:00.000Z",
-    End: "2027-01-04T15:00:00.000Z",
-}
-client.Scheduling.Slots.List(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `string` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `string` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `string` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `*string` — Only this host's slots (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `*int` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `*string` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Slots.Explain(EventType) -> *coss.SchedulingSlotExplanation</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.ExplainSlotsRequest{
-    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    Start: "2027-01-04T15:00:00.000Z",
-}
-client.Scheduling.Slots.Explain(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `string` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `string` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `*string` — Only this host (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `*int` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `*string` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Availability
-<details><summary><code>client.Scheduling.Availability.Search(request) -> *coss.SchedulingAvailabilitySearchResult</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```go
-request := &scheduling.AvailabilitySearchRequest{
-    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    Start: "2027-01-04T00:00:00.000Z",
-    End: "2027-01-18T00:00:00.000Z",
-    Attributes: map[string]*scheduling.AvailabilitySearchRequestAttributesValue{
-        "licensed_in": &scheduling.AvailabilitySearchRequestAttributesValue{
-            String: "CA",
-        },
-    },
-}
-client.Scheduling.Availability.Search(
-    context.TODO(),
-    request,
-)
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `string` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `string` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `string` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `map[string]*scheduling.AvailabilitySearchRequestAttributesValue` — Only hosts matching all of these.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `[]string` — Only these hosts (ids or uids). Default: everyone the event type could offer.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slotsPerHost:** `*int` — How many of each host's soonest slots to return.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit:** `*int` — Hosts to return, soonest availability first.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## Scheduling Bookings
+<details><summary><code>client.Scheduling.Bookings.Reassign(ID, request) -> *coss.SchedulingBooking</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ReassignSchedulingBookingRequest{
+    ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Changes: []*scheduling.ReassignSchedulingBookingRequestChangesItem{
+        &scheduling.ReassignSchedulingBookingRequestChangesItem{
+            ToHost: coss.String(
+                "doctor_518",
+            ),
+        },
+    },
+    ReasonCode: scheduling.ReassignSchedulingBookingRequestReasonCodeOutOfOffice,
+}
+client.Scheduling.Bookings.Reassign(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The booking's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**changes:** `[]*scheduling.ReassignSchedulingBookingRequestChangesItem` — A session or a one-on-one has one. A collective can change several.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reasonCode:** `scheduling.ReassignSchedulingBookingRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `*string` — Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `[]scheduling.ReassignSchedulingBookingRequestOverridesItem` — Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `*scheduling.ReassignSchedulingBookingRequestNotify` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.ReassignCandidates(ID) -> *coss.SchedulingReassignCandidateList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ReassignCandidatesBookingsRequest{
+    ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.Bookings.ReassignCandidates(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The booking's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fromHost:** `*string` — The host who'd leave, when it could be several.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.Scheduling.Bookings.List() -> *coss.SchedulingBookingList</code></summary>
 <dl>
 <dd>
@@ -20062,7 +18805,8 @@ Where it happens, such as the meeting link you made after the `scheduling.bookin
 request := &scheduling.UpdateBookingLocationRequest{
     ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
     Location: &coss.SchedulingLocation{
-        Link: &coss.SchedulingLocationLink{
+        SchedulingLocationZero: &coss.SchedulingLocationZero{
+            Type: coss.SchedulingLocationZeroTypeLink,
             URL: coss.String(
                 "https://meet.example.com/abc",
             ),
@@ -20096,6 +18840,3300 @@ client.Scheduling.Bookings.UpdateLocation(
 <dd>
 
 **location:** `*coss.SchedulingLocation` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Reassignments
+<details><summary><code>client.Scheduling.Reassignments.Preview(request) -> *coss.SchedulingReassignmentPreview</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who each booking would go to, and why not when nobody can take it, without moving anything. It works down them in order, so two can't both be promised the same free hour. Change any of it and start the run with `assignments`. Covers the first 500. Things can change before you start it: the run decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.PreviewSchedulingReassignmentRequest{
+    Selection: &coss.SchedulingReassignmentSelection{
+        Host: coss.String(
+            "doctor_482",
+        ),
+        StartBefore: coss.String(
+            "2027-08-14T00:00:00.000Z",
+        ),
+    },
+    Strategy: &coss.SchedulingReassignmentStrategy{
+        PreferredHosts: []string{
+            "doctor_518",
+        },
+    },
+}
+client.Scheduling.Reassignments.Preview(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**selection:** `*coss.SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `*coss.SchedulingReassignmentStrategy` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `[]scheduling.PreviewSchedulingReassignmentRequestOverridesItem` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.List() -> *coss.SchedulingReassignmentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first, with how each is going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ListReassignmentsRequest{}
+client.Scheduling.Reassignments.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.Create(request) -> *coss.SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Moves up to 5,000 bookings in the background, each on its own, so one that can't move never holds up the rest. Nothing's ever cancelled: a booking nobody can take stays where it is, and its item says so. It answers at once: follow the run by its id, or wait for `scheduling.reassignment.completed`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateSchedulingReassignmentRequest{
+    IdempotencyKey: coss.String(
+        "welcome-user-123",
+    ),
+    Selection: &coss.SchedulingReassignmentSelection{
+        OutOfOffice: coss.String(
+            "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        ),
+    },
+    Strategy: &coss.SchedulingReassignmentStrategy{
+        PreferredHosts: []string{
+            "doctor_518",
+        },
+    },
+    ReasonCode: scheduling.CreateSchedulingReassignmentRequestReasonCodeOutOfOffice,
+}
+client.Scheduling.Reassignments.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `*string` — Makes retries safe: a repeated request with the same key and body returns the original run instead of starting another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**selection:** `*coss.SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `*coss.SchedulingReassignmentStrategy` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reasonCode:** `scheduling.CreateSchedulingReassignmentRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `*string` — Why, in your words: required with an override of someone's availability.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `[]scheduling.CreateSchedulingReassignmentRequestOverridesItem` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `*scheduling.CreateSchedulingReassignmentRequestNotify` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.Get(ID) -> *coss.SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+How it's going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetReassignmentsRequest{
+    ID: "id",
+}
+client.Scheduling.Reassignments.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The reassignment's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.Items(ID) -> *coss.SchedulingReassignmentItemList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Each booking it covers and what happened to it. A group session has one, for one of its seats. Empty until the worker's started on it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ItemsReassignmentsRequest{
+    ID: "id",
+}
+client.Scheduling.Reassignments.Items(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.Cancel(ID) -> *coss.SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Stops what hasn't happened yet. What's moved stays moved: undo it for that. Cancelling one that's finished changes nothing.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CancelReassignmentsRequest{
+    ID: "id",
+}
+client.Scheduling.Reassignments.Cancel(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The reassignment's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.Undo(ID, request) -> *coss.SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives back what a finished run moved, as a new run. A booking that's moved on since stays where it went, and a former host who's no longer free keeps it from going back, unless you pass `overrides`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UndoSchedulingReassignmentRequest{
+    ID: "id",
+    ReasonCode: scheduling.UndoSchedulingReassignmentRequestReasonCodeOther.Ptr(),
+}
+client.Scheduling.Reassignments.Undo(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reasonCode:** `*scheduling.UndoSchedulingReassignmentRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `[]scheduling.UndoSchedulingReassignmentRequestOverridesItem` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `*scheduling.UndoSchedulingReassignmentRequestNotify` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling HolidayCalendars
+<details><summary><code>client.Scheduling.HolidayCalendars.List() -> *coss.SchedulingHolidayCalendarList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+By name. A feed's URL is never shown again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Scheduling.HolidayCalendars.List(
+    context.TODO(),
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.Create(request) -> *coss.SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Applies a country's public holidays, or your own feed, to some hosts as ordinary out of office entries, kept up to date by coss.com. A host who removes one keeps it removed.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateSchedulingHolidayCalendarRequest{
+    Name: "UK team",
+    Country: coss.String(
+        "GB",
+    ),
+    HostFilter: map[string]*scheduling.CreateSchedulingHolidayCalendarRequestHostFilterValue{
+        "team": &scheduling.CreateSchedulingHolidayCalendarRequestHostFilterValue{
+            String: "london",
+        },
+    },
+}
+client.Scheduling.HolidayCalendars.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `*string` — A code from the list of holiday calendars, such as `GB`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**icsURL:** `*string` — Your own feed, https or webcal, read in live environments. Stored encrypted.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]string` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.CreateSchedulingHolidayCalendarRequestHostFilterValue` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `[]string` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `[]string` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `*scheduling.CreateSchedulingHolidayCalendarRequestExistingBookings` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.Get(ID) -> *coss.SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With when it was last read, and why not if it couldn't be.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetHolidayCalendarsRequest{
+    ID: "id",
+}
+client.Scheduling.HolidayCalendars.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.Remove(ID) -> *coss.DeletedSchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Hosts can be booked on its days again, shortly: past entries stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.RemoveHolidayCalendarsRequest{
+    ID: "id",
+}
+client.Scheduling.HolidayCalendars.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.Update(ID, request) -> *coss.SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who it applies to, who covers and what happens to bookings. Takes effect shortly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UpdateSchedulingHolidayCalendarRequest{
+    ID: "id",
+    HostFilter: map[string]*scheduling.UpdateSchedulingHolidayCalendarRequestHostFilterValue{
+        "team": &scheduling.UpdateSchedulingHolidayCalendarRequestHostFilterValue{
+            String: "london",
+        },
+    },
+}
+client.Scheduling.HolidayCalendars.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]string` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.UpdateSchedulingHolidayCalendarRequestHostFilterValue` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `[]string` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `[]string` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `*scheduling.UpdateSchedulingHolidayCalendarRequestExistingBookings` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.Holidays(ID) -> *coss.SchedulingHolidayList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's coming, with names, as last read. Empty until its first read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.HolidaysHolidayCalendarsRequest{
+    ID: "id",
+}
+client.Scheduling.HolidayCalendars.Holidays(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling OutOfOffice
+<details><summary><code>client.Scheduling.OutOfOffice.List() -> *coss.SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's entries, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ListOutOfOfficeRequest{
+    StartAfter: coss.String(
+        "2027-01-04T15:00:00.000Z",
+    ),
+    StartBefore: coss.String(
+        "2027-01-04T15:00:00.000Z",
+    ),
+}
+client.Scheduling.OutOfOffice.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `*string` — One host's entries, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startAfter:** `*string` — Entries ending after this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startBefore:** `*string` — Entries starting before this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**group:** `*string` — The entries one request made.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Create(request) -> *coss.SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks one host, a list of hosts or everyone matching some attributes as away, for part of a day or for whole dates. They aren't offered during it. Existing bookings stay as they are: list them with the entry's conflicts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateSchedulingOutOfOfficeRequest{
+    Host: coss.String(
+        "doctor_482",
+    ),
+    StartDate: coss.String(
+        "2027-08-02",
+    ),
+    EndDate: coss.String(
+        "2027-08-13",
+    ),
+    Reason: coss.String(
+        "vacation",
+    ),
+    PublicMessage: coss.String(
+        "Back on the 16th.",
+    ),
+}
+client.Scheduling.OutOfOffice.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `*string` — One host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]string` — Several hosts, by id or uid. Each gets an entry of their own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.CreateSchedulingOutOfOfficeRequestHostFilterValue` — Every active host matching these attributes right now. A host added later isn't covered.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `*string` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `*string` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `*string` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `[]string` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `*string` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `*string` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `*string` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `*bool` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `*scheduling.CreateSchedulingOutOfOfficeRequestExistingBookings` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `*scheduling.CreateSchedulingOutOfOfficeRequestReassign` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**externalID:** `*string` — Your own id for this entry, unique in the environment. Needs one host.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Get(ID) -> *coss.SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One entry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetOutOfOfficeRequest{
+    ID: "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.OutOfOffice.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Remove(ID) -> *coss.DeletedSchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The host can be booked in that time again, and any calendar event for it goes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.RemoveOutOfOfficeRequest{
+    ID: "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.OutOfOffice.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Update(ID, request) -> *coss.SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. An entry stays with its host.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UpdateSchedulingOutOfOfficeRequest{
+    ID: "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    EndDate: coss.String(
+        "2027-08-20",
+    ),
+}
+client.Scheduling.OutOfOffice.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `*string` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `*string` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `*string` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `*string` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `*string` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `*bool` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `[]string` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `*scheduling.UpdateSchedulingOutOfOfficeRequestExistingBookings` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `*scheduling.UpdateSchedulingOutOfOfficeRequestReassign` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Put(ExternalID, request) -> *coss.SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For syncing from a system of record such as an HR tool: send what it says, as often as you like, and there's one entry for it. Give every field you want to keep.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.PutSchedulingOutOfOfficeRequest{
+    ExternalID: "hr_leave_4471",
+    Host: "doctor_482",
+    StartDate: coss.String(
+        "2027-08-02",
+    ),
+    EndDate: coss.String(
+        "2027-08-13",
+    ),
+    Reason: coss.String(
+        "vacation",
+    ),
+}
+client.Scheduling.OutOfOffice.Put(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**externalID:** `string` — Your own id for the entry.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `string` — The host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `*string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `*string` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `*string` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `*string` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `[]string` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `*string` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `*string` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `*string` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `*bool` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `*scheduling.PutSchedulingOutOfOfficeRequestExistingBookings` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `*scheduling.PutSchedulingOutOfOfficeRequestReassign` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.Conflicts(ID) -> *coss.SchedulingOutOfOfficeConflictList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Live bookings of the host that fall in the entry, soonest first. Entries never change them.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ConflictsOutOfOfficeRequest{
+    ID: "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.OutOfOffice.Conflicts(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Schedules
+<details><summary><code>client.Scheduling.Schedules.List(Host) -> *coss.SchedulingScheduleList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+All of the host's schedules, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ListSchedulesRequest{
+    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.Schedules.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `string` — The host's id or uid.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Schedules.Create(Host, request) -> *coss.SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A host's weekly hours and date overrides, in local time. The first one is the host's default.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateSchedulesRequest{
+    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Body: &coss.UpsertScheduleRequest{
+        Name: coss.String(
+            "Clinic hours",
+        ),
+        Rules: []*coss.SchedulingWeeklyRule{
+            &coss.SchedulingWeeklyRule{
+                Days: []int{
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                },
+                Start: "09:00",
+                End: "17:00",
+            },
+        },
+        Overrides: []*coss.SchedulingScheduleOverride{
+            &coss.SchedulingScheduleOverride{
+                Date: "2027-12-24",
+                Ranges: []*coss.SchedulingScheduleOverrideRangesItem{
+                    &coss.SchedulingScheduleOverrideRangesItem{
+                        Start: "start",
+                        End: "end",
+                    },
+                },
+            },
+        },
+    },
+}
+client.Scheduling.Schedules.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `string` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `*coss.UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Schedules.Get(Host, ScheduleID) -> *coss.SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One of the host's schedules.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetSchedulesRequest{
+    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.Schedules.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `string` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleID:** `string` — The schedule's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Schedules.Update(Host, ScheduleID, request) -> *coss.SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UpdateSchedulesRequest{
+    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Body: &coss.UpsertScheduleRequest{
+        Name: coss.String(
+            "Clinic hours",
+        ),
+        Rules: []*coss.SchedulingWeeklyRule{
+            &coss.SchedulingWeeklyRule{
+                Days: []int{
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                },
+                Start: "09:00",
+                End: "17:00",
+            },
+        },
+        Overrides: []*coss.SchedulingScheduleOverride{
+            &coss.SchedulingScheduleOverride{
+                Date: "2027-12-24",
+                Ranges: []*coss.SchedulingScheduleOverrideRangesItem{
+                    &coss.SchedulingScheduleOverrideRangesItem{
+                        Start: "start",
+                        End: "end",
+                    },
+                },
+            },
+        },
+    },
+}
+client.Scheduling.Schedules.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `string` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleID:** `string` — The schedule's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `*coss.UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Schedules.Remove(Host, ScheduleID) -> *coss.DeletedSchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused for the host's default schedule.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.RemoveSchedulesRequest{
+    Host: "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ScheduleID: "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.Schedules.Remove(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `string` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleID:** `string` — The schedule's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling EventTypes
+<details><summary><code>client.Scheduling.EventTypes.List() -> *coss.SchedulingEventTypeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's event types, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ListEventTypesRequest{}
+client.Scheduling.EventTypes.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `*string` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.EventTypes.Create(request) -> *coss.SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateEventTypeRequest{
+    Kind: scheduling.CreateEventTypeRequestKindOneOnOne.Ptr(),
+    Title: "Initial consultation",
+    DurationMinutes: 30,
+    BufferAfterMinutes: coss.Int(
+        10,
+    ),
+    MinNoticeMinutes: coss.Int(
+        120,
+    ),
+    Hosts: []*coss.SchedulingEventTypeHostInput{
+        &coss.SchedulingEventTypeHostInput{
+            Host: "doctor_482",
+        },
+    },
+}
+client.Scheduling.EventTypes.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**uid:** `*string` — Your own id for this event type, unique in the environment, accepted wherever its id is.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**kind:** `*scheduling.CreateEventTypeRequestKind` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `*string` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `string` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `int` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationOptions:** `[]int` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**stepMinutes:** `*int` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**gridTimeZone:** `*string` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferBeforeMinutes:** `*int` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferAfterMinutes:** `*int` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**minNoticeMinutes:** `*int` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bookingWindow:** `*coss.SchedulingBookingWindow` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `[]*coss.SchedulingLimit` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `*int` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requiresApproval:** `*bool` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignmentEnabled:** `*bool` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approvalTTLMinutes:** `*int` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**holdTTLSeconds:** `*int` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancelNoticeMinutes:** `*int` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rescheduleNoticeMinutes:** `*int` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxGuests:** `*int` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxActiveBookingsPerAttendee:** `*int` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostCalendarDetails:** `*scheduling.CreateEventTypeRequestHostCalendarDetails` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `[]*coss.SchedulingQuestion` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `[]*coss.SchedulingLocation` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.CreateEventTypeRequestHostFilterValue` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `map[string]*scheduling.CreateEventTypeRequestNotificationsValue` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `[]*coss.SchedulingReminderInput` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]*coss.SchedulingEventTypeHostInput` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.EventTypes.Get(EventType) -> *coss.SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An event type by its id or your uid.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetEventTypesRequest{
+    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.EventTypes.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `string` — The event type's id or uid.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.EventTypes.Update(EventType, request) -> *coss.SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UpdateEventTypeRequest{
+    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    MinNoticeMinutes: coss.Int(
+        240,
+    ),
+}
+client.Scheduling.EventTypes.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `string` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `*string` — Your own id for this event type. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `*string` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `*string` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `*int` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationOptions:** `[]int` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**stepMinutes:** `*int` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**gridTimeZone:** `*string` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferBeforeMinutes:** `*int` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferAfterMinutes:** `*int` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**minNoticeMinutes:** `*int` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bookingWindow:** `*coss.SchedulingBookingWindow` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `[]*coss.SchedulingLimit` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `*int` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requiresApproval:** `*bool` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignmentEnabled:** `*bool` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approvalTTLMinutes:** `*int` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**holdTTLSeconds:** `*int` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancelNoticeMinutes:** `*int` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rescheduleNoticeMinutes:** `*int` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxGuests:** `*int` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxActiveBookingsPerAttendee:** `*int` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostCalendarDetails:** `*scheduling.UpdateEventTypeRequestHostCalendarDetails` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `[]*coss.SchedulingQuestion` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `[]*coss.SchedulingLocation` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.UpdateEventTypeRequestHostFilterValue` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `map[string]*scheduling.UpdateEventTypeRequestNotificationsValue` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `[]*coss.SchedulingReminderInput` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `map[string]string` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `*scheduling.UpdateEventTypeRequestStatus` — `archived` stops new bookings, and keeps existing ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]*coss.SchedulingEventTypeHostInput` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Slots
+<details><summary><code>client.Scheduling.Slots.List(EventType) -> *coss.SchedulingSlotList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ListSlotsRequest{
+    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Start: "2027-01-04T15:00:00.000Z",
+    End: "2027-01-04T15:00:00.000Z",
+}
+client.Scheduling.Slots.List(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `string` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `*string` — Only this host's slots (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `*string` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Slots.Explain(EventType) -> *coss.SchedulingSlotExplanation</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.ExplainSlotsRequest{
+    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Start: "2027-01-04T15:00:00.000Z",
+}
+client.Scheduling.Slots.Explain(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `string` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `*string` — Only this host (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `*int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `*string` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Availability
+<details><summary><code>client.Scheduling.Availability.Search(request) -> *coss.SchedulingAvailabilitySearchResult</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.AvailabilitySearchRequest{
+    EventType: "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    Start: "2027-01-04T00:00:00.000Z",
+    End: "2027-01-18T00:00:00.000Z",
+    Attributes: map[string]*scheduling.AvailabilitySearchRequestAttributesValue{
+        "licensed_in": &scheduling.AvailabilitySearchRequestAttributesValue{
+            String: "CA",
+        },
+    },
+}
+client.Scheduling.Availability.Search(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `string` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `string` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `map[string]*scheduling.AvailabilitySearchRequestAttributesValue` — Only hosts matching all of these.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `[]string` — Only these hosts (ids or uids). Default: everyone the event type could offer.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slotsPerHost:** `*int` — How many of each host's soonest slots to return.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `*int` — Hosts to return, soonest availability first.
     
 </dd>
 </dl>
@@ -21576,7 +23614,434 @@ client.Scheduling.CalendarDelegations.Verify(
 </dl>
 </details>
 
+## Scheduling OauthApps
+<details><summary><code>client.Scheduling.OauthApps.List() -> *coss.SchedulingOauthAppList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+At most one per provider, with how many connections use each.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+client.Scheduling.OauthApps.List(
+    context.TODO(),
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.Create(request) -> *coss.SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+New consents in this environment use it, so the consent screen shows your brand. Connections made before it stay on coss.com's app until their host consents again. On the Scale plan and above. Secrets are never returned.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &coss.CreateOauthAppRequest{
+    Google: &coss.CreateOauthAppRequestGoogle{
+        ClientID: "client_id",
+        ClientSecret: "client_secret",
+    },
+}
+client.Scheduling.OauthApps.Create(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `*coss.CreateOauthAppRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.Get(ID) -> *coss.SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Its status, what to register at the provider, and how many connections use it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.GetOauthAppsRequest{
+    ID: "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.OauthApps.Get(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The OAuth app's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.Delete(ID) -> *coss.DeletedSchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused while connections use it (`oauth_app_in_use`), since only it can refresh their access: disconnect them first. New consents go back to coss.com's app.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.DeleteOauthAppsRequest{
+    ID: "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+}
+client.Scheduling.OauthApps.Delete(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The OAuth app's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.Update(ID, request) -> *coss.SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A new client secret is tried on a connection before it replaces the old one, and ends an outage if it works. Its client ID can't change: a different app needs its hosts to consent again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.UpdateOauthAppRequest{
+    ID: "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ClientSecret: coss.String(
+        "GOCSPX-abcdefghijklmnopqrstuvwxyz",
+    ),
+}
+client.Scheduling.OauthApps.Update(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `string` — The OAuth app's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**clientSecret:** `*string` — A new client secret. It's tried on a connection before it replaces the old one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tenantID:** `*string` — The Directory (tenant) ID, for an app that's only for your own tenant. Leave it out for a multi-tenant app.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**webhookSecret:** `*string` — The Secret Token of your Zoom app, which signs its events at `zoom_event_url`. Never returned.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectURI:** `*string` — A page on your own domain, registered with the provider, that forwards `code` and `state` to `coss_callback_url`. Google requires this for an external app, since it has to verify the redirect's domain as yours. Leave it out to use `coss_callback_url` directly.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**completionURL:** `*string` — Where the browser lands after a consent that didn't name a `return_url`, with `coss_calendar` set to `connected`, `denied` or `invalid`. Leave it out for a plain page saying what happened.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secretExpiresAt:** `*time.Time` — When the client secret expires. Owners and admins are warned 14 days before.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Scheduling Sessions
+<details><summary><code>client.Scheduling.Sessions.CreateForManager(request) -> *coss.SchedulingSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```go
+request := &scheduling.CreateSchedulingManagerSessionRequest{
+    HostFilter: map[string]*scheduling.CreateSchedulingManagerSessionRequestHostFilterValue{
+        "team": &scheduling.CreateSchedulingManagerSessionRequestHostFilterValue{
+            String: "cardiology",
+        },
+    },
+    ExpiresIn: coss.Int(
+        3600,
+    ),
+}
+client.Scheduling.Sessions.CreateForManager(
+    context.TODO(),
+    request,
+)
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**hosts:** `[]string` — The hosts this page can reach, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `map[string]*scheduling.CreateSchedulingManagerSessionRequestHostFilterValue` — Everyone matching these attributes, asked again on every request.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `*int` — Seconds until it stops working. At most a day.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**readOnly:** `*bool` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.Scheduling.Sessions.CreateForHost(Host, request) -> *coss.SchedulingSession</code></summary>
 <dl>
 <dd>
@@ -21941,6 +24406,14 @@ client.Scheduling.Settings.Update(
 <dl>
 <dd>
 
+**privacyURL:** `*string` — Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **emailFrom:** `*string` — Sender of booking emails, on a verified domain. `null`: coss.com's own address.
     
 </dd>
@@ -21958,6 +24431,30 @@ client.Scheduling.Settings.Update(
 <dd>
 
 **calendarFailureMode:** `*scheduling.UpdateSchedulingSettingsRequestCalendarFailureMode` — When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**nameHostInAttendeeEmails:** `*bool` — Name the new host when telling an attendee their booking has one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostReassignment:** `*scheduling.UpdateSchedulingSettingsRequestHostReassignment` — Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**outOfOfficeReasons:** `[]*scheduling.UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem` — Reasons of your own, on top of the preset ones. Hosts and managers see them.
     
 </dd>
 </dl>

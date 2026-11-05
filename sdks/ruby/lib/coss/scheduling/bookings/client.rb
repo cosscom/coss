@@ -11,6 +11,102 @@ module Coss
           @client = client
         end
 
+        # Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a
+        # whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever
+        # leaves and joins is told, and the attendee unless you say not to.
+        #
+        # @param request_options [Hash]
+        # @param params [Coss::Scheduling::Bookings::Types::ReassignSchedulingBookingRequest]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        # @option params [String] :id
+        #
+        # @example
+        #   client.scheduling.bookings.reassign(
+        #     id: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        #     changes: [{
+        #       to_host: "doctor_518"
+        #     }],
+        #     reason_code: "out_of_office"
+        #   )
+        #
+        # @return [Coss::Types::SchedulingBooking]
+        def reassign(request_options: {}, **params)
+          params = Coss::Internal::Types::Utils.normalize_keys(params)
+          request_data = Coss::Scheduling::Bookings::Types::ReassignSchedulingBookingRequest.new(params).to_h
+          non_body_param_names = %w[id]
+          body = request_data.except(*non_body_param_names)
+
+          headers = { "Idempotency-Key" => Coss::Internal::IdempotencyKey.generate }
+          request = Coss::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "POST",
+            path: "v1/scheduling/bookings/#{URI.encode_uri_component(params[:id].to_s)}/reassign",
+            headers: headers,
+            body: body,
+            request_options: request_options,
+            max_retries: 0
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Coss::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            (response.body.to_s.empty? ? nil : Coss::Types::SchedulingBooking.load(response.body))
+          else
+            error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+            raise error_class.new(response.body, code: code)
+          end
+        end
+
+        # The environment's other active hosts: members of the event type first, in the order a pool would pick them,
+        # each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+        #
+        # @param request_options [Hash]
+        # @param params [Hash]
+        # @option request_options [String] :base_url
+        # @option request_options [Hash{String => Object}] :additional_headers
+        # @option request_options [Hash{String => Object}] :additional_query_parameters
+        # @option request_options [Hash{String => Object}] :additional_body_parameters
+        # @option request_options [Integer] :timeout_in_seconds
+        # @option params [String] :id
+        # @option params [String, nil] :from_host
+        #
+        # @example
+        #   client.scheduling.bookings.reassign_candidates(id: "book_01kd2m9a0b1c2d3e4f5g6h7j8m")
+        #
+        # @return [Coss::Types::SchedulingReassignCandidateList]
+        def reassign_candidates(request_options: {}, **params)
+          params = Coss::Internal::Types::Utils.normalize_keys(params)
+          query_params = {}
+          query_params["from_host"] = params[:from_host] if params.key?(:from_host)
+
+          request = Coss::Internal::JSON::Request.new(
+            base_url: request_options[:base_url],
+            method: "GET",
+            path: "v1/scheduling/bookings/#{URI.encode_uri_component(params[:id].to_s)}/reassign_candidates",
+            query: query_params,
+            request_options: request_options
+          )
+          begin
+            response = @client.send(request)
+          rescue Net::HTTPRequestTimeout
+            raise Coss::Errors::TimeoutError
+          end
+          code = response.code.to_i
+          if code.between?(200, 299)
+            (response.body.to_s.empty? ? nil : Coss::Types::SchedulingReassignCandidateList.load(response.body))
+          else
+            error_class = Coss::Errors::ResponseError.subclass_for_code(code)
+            raise error_class.new(response.body, code: code)
+          end
+        end
+
         # The environment's bookings, newest first. Answers aren't included.
         #
         # @param request_options [Hash]
@@ -475,7 +571,13 @@ module Coss
         # @option params [String] :id
         #
         # @example
-        #   client.scheduling.bookings.update_location(id: "book_01kd2m9a0b1c2d3e4f5g6h7j8m")
+        #   client.scheduling.bookings.update_location(
+        #     id: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        #     location: {
+        #       type: "link",
+        #       url: "https://meet.example.com/abc"
+        #     }
+        #   )
         #
         # @return [Coss::Types::SchedulingBooking]
         def update_location(request_options: {}, **params)

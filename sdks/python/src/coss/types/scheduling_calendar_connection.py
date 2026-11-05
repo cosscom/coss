@@ -33,6 +33,11 @@ class SchedulingCalendarConnection(UniversalBaseModel):
     `needs_reauth`: access was lost, and this host isn't offered until it's back.
     """
 
+    oauth_app: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Your own OAuth app this connection's access came through. `null`: coss.com's, or no consent was involved.
+    """
+
     delegation: typing.Optional[str] = pydantic.Field(default=None)
     """
     The calendar delegation that manages this connection. It can't be disconnected or reconnected by itself.

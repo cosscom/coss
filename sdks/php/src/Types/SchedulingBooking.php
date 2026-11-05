@@ -5,6 +5,7 @@ namespace Coss\Types;
 use Coss\Core\Json\JsonSerializableType;
 use Coss\Core\Json\JsonProperty;
 use Coss\Core\Types\ArrayType;
+use Coss\Core\Types\Union;
 
 class SchedulingBooking extends JsonSerializableType
 {
@@ -63,10 +64,17 @@ class SchedulingBooking extends JsonSerializableType
     public array $attendees;
 
     /**
-     * @var SchedulingLocation $location
+     * @var (
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null $location
      */
-    #[JsonProperty('location')]
-    public SchedulingLocation $location;
+    #[JsonProperty('location'), Union(SchedulingLocationZero::class, SchedulingLocationNumber::class, SchedulingLocationAddress::class, SchedulingLocationThree::class, SchedulingLocationFour::class, SchedulingLocationFive::class, 'null')]
+    public SchedulingLocationZero|SchedulingLocationNumber|SchedulingLocationAddress|SchedulingLocationThree|SchedulingLocationFour|SchedulingLocationFive|null $location;
 
     /**
      * @var ?string $holdExpiresAt When a `held` booking gives up its slot. `null` otherwise.
@@ -163,11 +171,18 @@ class SchedulingBooking extends JsonSerializableType
      *   end: string,
      *   hosts: array<string>,
      *   attendees: array<SchedulingBookingAttendeesItem>,
-     *   location: SchedulingLocation,
      *   calendarUnverified: bool,
      *   metadata: array<string, string>,
      *   createdAt: string,
      *   updatedAt: string,
+     *   location?: (
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null,
      *   holdExpiresAt?: ?string,
      *   approvalExpiresAt?: ?string,
      *   series?: ?string,
@@ -192,7 +207,10 @@ class SchedulingBooking extends JsonSerializableType
         $this->end = $values['end'];
         $this->hosts = $values['hosts'];
         $this->attendees = $values['attendees'];
-        $this->location = $values['location'];
+        $this->location = $values['location'] ?? null;
+        if (array_key_exists('location', $values)) {
+            $this->_setField('location');
+        }
         $this->holdExpiresAt = $values['holdExpiresAt'] ?? null;
         if (array_key_exists('holdExpiresAt', $values)) {
             $this->_setField('holdExpiresAt');

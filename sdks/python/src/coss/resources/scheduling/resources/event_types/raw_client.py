@@ -197,6 +197,7 @@ class RawEventTypesClient:
         limits: typing.Optional[typing.Sequence[SchedulingLimit]] = OMIT,
         capacity: typing.Optional[int] = OMIT,
         requires_approval: typing.Optional[bool] = OMIT,
+        reassignment_enabled: typing.Optional[bool] = OMIT,
         approval_ttl_minutes: typing.Optional[int] = OMIT,
         hold_ttl_seconds: typing.Optional[int] = OMIT,
         cancel_notice_minutes: typing.Optional[int] = OMIT,
@@ -205,7 +206,7 @@ class RawEventTypesClient:
         max_active_bookings_per_attendee: typing.Optional[int] = OMIT,
         host_calendar_details: typing.Optional[CreateEventTypeRequestHostCalendarDetails] = OMIT,
         questions: typing.Optional[typing.Sequence[SchedulingQuestion]] = OMIT,
-        locations: typing.Optional[typing.Sequence[SchedulingLocation]] = OMIT,
+        locations: typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]] = OMIT,
         host_filter: typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[CreateEventTypeRequestNotificationsValue]]
@@ -264,6 +265,9 @@ class RawEventTypesClient:
         requires_approval : typing.Optional[bool]
             Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 
+        reassignment_enabled : typing.Optional[bool]
+            Whether bookings of this event type can go to another host. Default: true.
+
         approval_ttl_minutes : typing.Optional[int]
             How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 
@@ -288,7 +292,7 @@ class RawEventTypesClient:
         questions : typing.Optional[typing.Sequence[SchedulingQuestion]]
             What attendees are asked when booking. Keys must be unique.
 
-        locations : typing.Optional[typing.Sequence[SchedulingLocation]]
+        locations : typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]]
             Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
 
         host_filter : typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]]
@@ -340,6 +344,7 @@ class RawEventTypesClient:
                 ),
                 "capacity": capacity,
                 "requires_approval": requires_approval,
+                "reassignment_enabled": reassignment_enabled,
                 "approval_ttl_minutes": approval_ttl_minutes,
                 "hold_ttl_seconds": hold_ttl_seconds,
                 "cancel_notice_minutes": cancel_notice_minutes,
@@ -351,7 +356,9 @@ class RawEventTypesClient:
                     object_=questions, annotation=typing.Sequence[SchedulingQuestion], direction="write"
                 ),
                 "locations": convert_and_respect_annotation_metadata(
-                    object_=locations, annotation=typing.Sequence[SchedulingLocation], direction="write"
+                    object_=locations,
+                    annotation=typing.Sequence[typing.Optional[SchedulingLocation]],
+                    direction="write",
                 ),
                 "host_filter": convert_and_respect_annotation_metadata(
                     object_=host_filter,
@@ -651,6 +658,7 @@ class RawEventTypesClient:
         limits: typing.Optional[typing.Sequence[SchedulingLimit]] = OMIT,
         capacity: typing.Optional[int] = OMIT,
         requires_approval: typing.Optional[bool] = OMIT,
+        reassignment_enabled: typing.Optional[bool] = OMIT,
         approval_ttl_minutes: typing.Optional[int] = OMIT,
         hold_ttl_seconds: typing.Optional[int] = OMIT,
         cancel_notice_minutes: typing.Optional[int] = OMIT,
@@ -659,7 +667,7 @@ class RawEventTypesClient:
         max_active_bookings_per_attendee: typing.Optional[int] = OMIT,
         host_calendar_details: typing.Optional[UpdateEventTypeRequestHostCalendarDetails] = OMIT,
         questions: typing.Optional[typing.Sequence[SchedulingQuestion]] = OMIT,
-        locations: typing.Optional[typing.Sequence[SchedulingLocation]] = OMIT,
+        locations: typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]] = OMIT,
         host_filter: typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[UpdateEventTypeRequestNotificationsValue]]
@@ -719,6 +727,9 @@ class RawEventTypesClient:
         requires_approval : typing.Optional[bool]
             Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 
+        reassignment_enabled : typing.Optional[bool]
+            Whether bookings of this event type can go to another host. Default: true.
+
         approval_ttl_minutes : typing.Optional[int]
             How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 
@@ -743,7 +754,7 @@ class RawEventTypesClient:
         questions : typing.Optional[typing.Sequence[SchedulingQuestion]]
             What attendees are asked when booking. Keys must be unique.
 
-        locations : typing.Optional[typing.Sequence[SchedulingLocation]]
+        locations : typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]]
             Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
 
         host_filter : typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]]
@@ -794,6 +805,7 @@ class RawEventTypesClient:
                 ),
                 "capacity": capacity,
                 "requires_approval": requires_approval,
+                "reassignment_enabled": reassignment_enabled,
                 "approval_ttl_minutes": approval_ttl_minutes,
                 "hold_ttl_seconds": hold_ttl_seconds,
                 "cancel_notice_minutes": cancel_notice_minutes,
@@ -805,7 +817,9 @@ class RawEventTypesClient:
                     object_=questions, annotation=typing.Sequence[SchedulingQuestion], direction="write"
                 ),
                 "locations": convert_and_respect_annotation_metadata(
-                    object_=locations, annotation=typing.Sequence[SchedulingLocation], direction="write"
+                    object_=locations,
+                    annotation=typing.Sequence[typing.Optional[SchedulingLocation]],
+                    direction="write",
                 ),
                 "host_filter": convert_and_respect_annotation_metadata(
                     object_=host_filter,
@@ -1120,6 +1134,7 @@ class AsyncRawEventTypesClient:
         limits: typing.Optional[typing.Sequence[SchedulingLimit]] = OMIT,
         capacity: typing.Optional[int] = OMIT,
         requires_approval: typing.Optional[bool] = OMIT,
+        reassignment_enabled: typing.Optional[bool] = OMIT,
         approval_ttl_minutes: typing.Optional[int] = OMIT,
         hold_ttl_seconds: typing.Optional[int] = OMIT,
         cancel_notice_minutes: typing.Optional[int] = OMIT,
@@ -1128,7 +1143,7 @@ class AsyncRawEventTypesClient:
         max_active_bookings_per_attendee: typing.Optional[int] = OMIT,
         host_calendar_details: typing.Optional[CreateEventTypeRequestHostCalendarDetails] = OMIT,
         questions: typing.Optional[typing.Sequence[SchedulingQuestion]] = OMIT,
-        locations: typing.Optional[typing.Sequence[SchedulingLocation]] = OMIT,
+        locations: typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]] = OMIT,
         host_filter: typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[CreateEventTypeRequestNotificationsValue]]
@@ -1187,6 +1202,9 @@ class AsyncRawEventTypesClient:
         requires_approval : typing.Optional[bool]
             Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 
+        reassignment_enabled : typing.Optional[bool]
+            Whether bookings of this event type can go to another host. Default: true.
+
         approval_ttl_minutes : typing.Optional[int]
             How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 
@@ -1211,7 +1229,7 @@ class AsyncRawEventTypesClient:
         questions : typing.Optional[typing.Sequence[SchedulingQuestion]]
             What attendees are asked when booking. Keys must be unique.
 
-        locations : typing.Optional[typing.Sequence[SchedulingLocation]]
+        locations : typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]]
             Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
 
         host_filter : typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]]
@@ -1263,6 +1281,7 @@ class AsyncRawEventTypesClient:
                 ),
                 "capacity": capacity,
                 "requires_approval": requires_approval,
+                "reassignment_enabled": reassignment_enabled,
                 "approval_ttl_minutes": approval_ttl_minutes,
                 "hold_ttl_seconds": hold_ttl_seconds,
                 "cancel_notice_minutes": cancel_notice_minutes,
@@ -1274,7 +1293,9 @@ class AsyncRawEventTypesClient:
                     object_=questions, annotation=typing.Sequence[SchedulingQuestion], direction="write"
                 ),
                 "locations": convert_and_respect_annotation_metadata(
-                    object_=locations, annotation=typing.Sequence[SchedulingLocation], direction="write"
+                    object_=locations,
+                    annotation=typing.Sequence[typing.Optional[SchedulingLocation]],
+                    direction="write",
                 ),
                 "host_filter": convert_and_respect_annotation_metadata(
                     object_=host_filter,
@@ -1574,6 +1595,7 @@ class AsyncRawEventTypesClient:
         limits: typing.Optional[typing.Sequence[SchedulingLimit]] = OMIT,
         capacity: typing.Optional[int] = OMIT,
         requires_approval: typing.Optional[bool] = OMIT,
+        reassignment_enabled: typing.Optional[bool] = OMIT,
         approval_ttl_minutes: typing.Optional[int] = OMIT,
         hold_ttl_seconds: typing.Optional[int] = OMIT,
         cancel_notice_minutes: typing.Optional[int] = OMIT,
@@ -1582,7 +1604,7 @@ class AsyncRawEventTypesClient:
         max_active_bookings_per_attendee: typing.Optional[int] = OMIT,
         host_calendar_details: typing.Optional[UpdateEventTypeRequestHostCalendarDetails] = OMIT,
         questions: typing.Optional[typing.Sequence[SchedulingQuestion]] = OMIT,
-        locations: typing.Optional[typing.Sequence[SchedulingLocation]] = OMIT,
+        locations: typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]] = OMIT,
         host_filter: typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]] = OMIT,
         notifications: typing.Optional[
             typing.Dict[str, typing.Optional[UpdateEventTypeRequestNotificationsValue]]
@@ -1642,6 +1664,9 @@ class AsyncRawEventTypesClient:
         requires_approval : typing.Optional[bool]
             Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 
+        reassignment_enabled : typing.Optional[bool]
+            Whether bookings of this event type can go to another host. Default: true.
+
         approval_ttl_minutes : typing.Optional[int]
             How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 
@@ -1666,7 +1691,7 @@ class AsyncRawEventTypesClient:
         questions : typing.Optional[typing.Sequence[SchedulingQuestion]]
             What attendees are asked when booking. Keys must be unique.
 
-        locations : typing.Optional[typing.Sequence[SchedulingLocation]]
+        locations : typing.Optional[typing.Sequence[typing.Optional[SchedulingLocation]]]
             Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
 
         host_filter : typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]]
@@ -1717,6 +1742,7 @@ class AsyncRawEventTypesClient:
                 ),
                 "capacity": capacity,
                 "requires_approval": requires_approval,
+                "reassignment_enabled": reassignment_enabled,
                 "approval_ttl_minutes": approval_ttl_minutes,
                 "hold_ttl_seconds": hold_ttl_seconds,
                 "cancel_notice_minutes": cancel_notice_minutes,
@@ -1728,7 +1754,9 @@ class AsyncRawEventTypesClient:
                     object_=questions, annotation=typing.Sequence[SchedulingQuestion], direction="write"
                 ),
                 "locations": convert_and_respect_annotation_metadata(
-                    object_=locations, annotation=typing.Sequence[SchedulingLocation], direction="write"
+                    object_=locations,
+                    annotation=typing.Sequence[typing.Optional[SchedulingLocation]],
+                    direction="write",
                 ),
                 "host_filter": convert_and_respect_annotation_metadata(
                     object_=host_filter,

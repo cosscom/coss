@@ -43,6 +43,68 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 }
 
+// Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+//
+// Example:
+//
+//	request := &scheduling.ReassignSchedulingBookingRequest{
+//	    ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+//	    Changes: []*scheduling.ReassignSchedulingBookingRequestChangesItem{
+//	        &scheduling.ReassignSchedulingBookingRequestChangesItem{
+//	            ToHost: coss.String(
+//	                "doctor_518",
+//	            ),
+//	        },
+//	    },
+//	    ReasonCode: scheduling.ReassignSchedulingBookingRequestReasonCodeOutOfOffice,
+//	}
+//	client.Scheduling.Bookings.Reassign(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) Reassign(
+	ctx context.Context,
+	request *scheduling.ReassignSchedulingBookingRequest,
+	opts ...option.RequestOption,
+) (*coss.SchedulingBooking, error) {
+	response, err := c.WithRawResponse.Reassign(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+//
+// Example:
+//
+//	request := &scheduling.ReassignCandidatesBookingsRequest{
+//	    ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+//	}
+//	client.Scheduling.Bookings.ReassignCandidates(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) ReassignCandidates(
+	ctx context.Context,
+	request *scheduling.ReassignCandidatesBookingsRequest,
+	opts ...option.RequestOption,
+) (*coss.SchedulingReassignCandidateList, error) {
+	response, err := c.WithRawResponse.ReassignCandidates(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
 // The environment's bookings, newest first. Answers aren't included.
 //
 // Example:
@@ -345,7 +407,8 @@ func (c *Client) MarkNoShow(
 //	request := &scheduling.UpdateBookingLocationRequest{
 //	    ID: "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
 //	    Location: &coss.SchedulingLocation{
-//	        Link: &coss.SchedulingLocationLink{
+//	        SchedulingLocationZero: &coss.SchedulingLocationZero{
+//	            Type: coss.SchedulingLocationZeroTypeLink,
 //	            URL: coss.String(
 //	                "https://meet.example.com/abc",
 //	            ),

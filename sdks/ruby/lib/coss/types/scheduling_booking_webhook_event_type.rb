@@ -15,6 +15,7 @@ module Coss
       SCHEDULING_BOOKING_EXTERNAL_CONFLICT = "scheduling.booking.external_conflict"
       SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED = "scheduling.booking.calendar_write_failed"
       SCHEDULING_BOOKING_LOCATION_READY = "scheduling.booking.location_ready"
+      SCHEDULING_BOOKING_REASSIGNED = "scheduling.booking.reassigned"
       SCHEDULING_BOOKING_STARTED = "scheduling.booking.started"
       SCHEDULING_BOOKING_ENDED = "scheduling.booking.ended"
       SCHEDULING_BOOKING_REMINDER = "scheduling.booking.reminder"

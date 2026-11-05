@@ -1208,6 +1208,7 @@ const (
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingExternalConflict    CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.external_conflict"
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingCalendarWriteFailed CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.calendar_write_failed"
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingLocationReady       CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.location_ready"
+	CreateWebhookListenerRequestEventTypesItemSchedulingBookingReassigned          CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.reassigned"
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingStarted             CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.started"
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingEnded               CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.ended"
 	CreateWebhookListenerRequestEventTypesItemSchedulingBookingReminder            CreateWebhookListenerRequestEventTypesItem = "scheduling.booking.reminder"
@@ -1216,6 +1217,14 @@ const (
 	CreateWebhookListenerRequestEventTypesItemSchedulingCalendarDisconnected       CreateWebhookListenerRequestEventTypesItem = "scheduling.calendar.disconnected"
 	CreateWebhookListenerRequestEventTypesItemSchedulingCalendarDelegationFailing  CreateWebhookListenerRequestEventTypesItem = "scheduling.calendar_delegation.failing"
 	CreateWebhookListenerRequestEventTypesItemSchedulingCalendarDelegationRestored CreateWebhookListenerRequestEventTypesItem = "scheduling.calendar_delegation.restored"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeCreated         CreateWebhookListenerRequestEventTypesItem = "scheduling.out_of_office.created"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeUpdated         CreateWebhookListenerRequestEventTypesItem = "scheduling.out_of_office.updated"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeDeleted         CreateWebhookListenerRequestEventTypesItem = "scheduling.out_of_office.deleted"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeStarted         CreateWebhookListenerRequestEventTypesItem = "scheduling.out_of_office.started"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeEnded           CreateWebhookListenerRequestEventTypesItem = "scheduling.out_of_office.ended"
+	CreateWebhookListenerRequestEventTypesItemSchedulingReassignmentCompleted      CreateWebhookListenerRequestEventTypesItem = "scheduling.reassignment.completed"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOauthAppFailing            CreateWebhookListenerRequestEventTypesItem = "scheduling.oauth_app.failing"
+	CreateWebhookListenerRequestEventTypesItemSchedulingOauthAppRestored           CreateWebhookListenerRequestEventTypesItem = "scheduling.oauth_app.restored"
 )
 
 func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWebhookListenerRequestEventTypesItem, error) {
@@ -1386,6 +1395,8 @@ func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookListenerRequestEventTypesItemSchedulingBookingCalendarWriteFailed, nil
 	case "scheduling.booking.location_ready":
 		return CreateWebhookListenerRequestEventTypesItemSchedulingBookingLocationReady, nil
+	case "scheduling.booking.reassigned":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingBookingReassigned, nil
 	case "scheduling.booking.started":
 		return CreateWebhookListenerRequestEventTypesItemSchedulingBookingStarted, nil
 	case "scheduling.booking.ended":
@@ -1402,6 +1413,22 @@ func NewCreateWebhookListenerRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookListenerRequestEventTypesItemSchedulingCalendarDelegationFailing, nil
 	case "scheduling.calendar_delegation.restored":
 		return CreateWebhookListenerRequestEventTypesItemSchedulingCalendarDelegationRestored, nil
+	case "scheduling.out_of_office.created":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeCreated, nil
+	case "scheduling.out_of_office.updated":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeUpdated, nil
+	case "scheduling.out_of_office.deleted":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeDeleted, nil
+	case "scheduling.out_of_office.started":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeStarted, nil
+	case "scheduling.out_of_office.ended":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOutOfOfficeEnded, nil
+	case "scheduling.reassignment.completed":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingReassignmentCompleted, nil
+	case "scheduling.oauth_app.failing":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOauthAppFailing, nil
+	case "scheduling.oauth_app.restored":
+		return CreateWebhookListenerRequestEventTypesItemSchedulingOauthAppRestored, nil
 	}
 	var t CreateWebhookListenerRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

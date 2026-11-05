@@ -7,6 +7,8 @@ use Coss\Core\Json\JsonProperty;
 use Coss\Core\Types\ArrayType;
 use Coss\Scheduling\Settings\Types\UpdateSchedulingSettingsRequestLogo;
 use Coss\Scheduling\Settings\Types\UpdateSchedulingSettingsRequestCalendarFailureMode;
+use Coss\Scheduling\Settings\Types\UpdateSchedulingSettingsRequestHostReassignment;
+use Coss\Scheduling\Settings\Types\UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem;
 use Coss\Scheduling\Settings\Types\UpdateSchedulingSettingsRequestNotificationsValue;
 use Coss\Core\Types\Union;
 use Coss\Types\SchedulingReminderInput;
@@ -38,6 +40,12 @@ class UpdateSchedulingSettingsRequest extends JsonSerializableType
     public ?UpdateSchedulingSettingsRequestLogo $logo;
 
     /**
+     * @var ?string $privacyUrl Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+     */
+    #[JsonProperty('privacy_url')]
+    public ?string $privacyUrl;
+
+    /**
      * @var ?string $emailFrom Sender of booking emails, on a verified domain. `null`: coss.com's own address.
      */
     #[JsonProperty('email_from')]
@@ -54,6 +62,24 @@ class UpdateSchedulingSettingsRequest extends JsonSerializableType
      */
     #[JsonProperty('calendar_failure_mode')]
     public ?string $calendarFailureMode;
+
+    /**
+     * @var ?bool $nameHostInAttendeeEmails Name the new host when telling an attendee their booking has one.
+     */
+    #[JsonProperty('name_host_in_attendee_emails')]
+    public ?bool $nameHostInAttendeeEmails;
+
+    /**
+     * @var ?value-of<UpdateSchedulingSettingsRequestHostReassignment> $hostReassignment Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+     */
+    #[JsonProperty('host_reassignment')]
+    public ?string $hostReassignment;
+
+    /**
+     * @var ?array<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem> $outOfOfficeReasons Reasons of your own, on top of the preset ones. Hosts and managers see them.
+     */
+    #[JsonProperty('out_of_office_reasons'), ArrayType([UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem::class])]
+    public ?array $outOfOfficeReasons;
 
     /**
      * @var ?array<string, ?UpdateSchedulingSettingsRequestNotificationsValue> $notifications Per event (`confirmed`, `pending_approval`, `rescheduled`, `cancelled`, `declined`, `reminder`), overriding the defaults. `null` restores them.
@@ -79,9 +105,13 @@ class UpdateSchedulingSettingsRequest extends JsonSerializableType
      *   brandName?: ?string,
      *   accentColor?: ?string,
      *   logo?: ?UpdateSchedulingSettingsRequestLogo,
+     *   privacyUrl?: ?string,
      *   emailFrom?: ?string,
      *   smsFrom?: ?string,
      *   calendarFailureMode?: ?value-of<UpdateSchedulingSettingsRequestCalendarFailureMode>,
+     *   nameHostInAttendeeEmails?: ?bool,
+     *   hostReassignment?: ?value-of<UpdateSchedulingSettingsRequestHostReassignment>,
+     *   outOfOfficeReasons?: ?array<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>,
      *   notifications?: ?array<string, ?UpdateSchedulingSettingsRequestNotificationsValue>,
      *   emailReplyTo?: ?string,
      *   reminders?: ?array<SchedulingReminderInput>,
@@ -106,6 +136,10 @@ class UpdateSchedulingSettingsRequest extends JsonSerializableType
         if (array_key_exists('logo', $values)) {
             $this->_setField('logo');
         }
+        $this->privacyUrl = $values['privacyUrl'] ?? null;
+        if (array_key_exists('privacyUrl', $values)) {
+            $this->_setField('privacyUrl');
+        }
         $this->emailFrom = $values['emailFrom'] ?? null;
         if (array_key_exists('emailFrom', $values)) {
             $this->_setField('emailFrom');
@@ -117,6 +151,18 @@ class UpdateSchedulingSettingsRequest extends JsonSerializableType
         $this->calendarFailureMode = $values['calendarFailureMode'] ?? null;
         if (array_key_exists('calendarFailureMode', $values)) {
             $this->_setField('calendarFailureMode');
+        }
+        $this->nameHostInAttendeeEmails = $values['nameHostInAttendeeEmails'] ?? null;
+        if (array_key_exists('nameHostInAttendeeEmails', $values)) {
+            $this->_setField('nameHostInAttendeeEmails');
+        }
+        $this->hostReassignment = $values['hostReassignment'] ?? null;
+        if (array_key_exists('hostReassignment', $values)) {
+            $this->_setField('hostReassignment');
+        }
+        $this->outOfOfficeReasons = $values['outOfOfficeReasons'] ?? null;
+        if (array_key_exists('outOfOfficeReasons', $values)) {
+            $this->_setField('outOfOfficeReasons');
         }
         $this->notifications = $values['notifications'] ?? null;
         if (array_key_exists('notifications', $values)) {

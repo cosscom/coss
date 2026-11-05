@@ -13416,6 +13416,1935 @@ await client.Scheduling.Hosts.UpdateAsync(
 </dl>
 </details>
 
+## Scheduling Bookings
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ReassignAsync</a>(ReassignSchedulingBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.ReassignAsync(
+    new ReassignSchedulingBookingRequest
+    {
+        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        Changes = new List<ReassignSchedulingBookingRequestChangesItem>()
+        {
+            new ReassignSchedulingBookingRequestChangesItem { ToHost = "doctor_518" },
+        },
+        ReasonCode = ReassignSchedulingBookingRequestReasonCode.OutOfOffice,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ReassignSchedulingBookingRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ReassignCandidatesAsync</a>(ReassignCandidatesBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignCandidateList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.ReassignCandidatesAsync(
+    new ReassignCandidatesBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ReassignCandidatesBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ListAsync</a>(ListBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's bookings, newest first. Answers aren't included.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.ListAsync(
+    new ListBookingsRequest
+    {
+        StartAfter = "2027-01-04T15:00:00.000Z",
+        StartBefore = "2027-01-04T15:00:00.000Z",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">CreateAsync</a>(CreateBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Books a slot, or joins a group session. Without a `host`, a pool chooses fairly among those free. An event type that requires approval answers with a `pending_approval` booking.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.CreateAsync(
+    new CreateBookingRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        EventType = "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        Start = "2027-01-04T15:00:00.000Z",
+        Attendee = new SchedulingAttendeeInput
+        {
+            Uid = "patient_77",
+            Name = "Sam Lee",
+            Email = "sam@example.com",
+            TimeZone = "UTC",
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateBookingRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">GetAsync</a>(GetBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A booking with its attendees and their answers.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.GetAsync(
+    new GetBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">RescheduleAsync</a>(RescheduleBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Moves it to a new time, keeping its id. The old time stays booked if the new one isn't free.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.RescheduleAsync(
+    new RescheduleBookingRequest
+    {
+        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        Start = "2027-01-05T15:00:00.000Z",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RescheduleBookingRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">CancelAsync</a>(CancelSchedulingBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Frees the time and removes the calendar event. A cancelled booking stays charged.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.CancelAsync(
+    new CancelSchedulingBookingRequest
+    {
+        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        Reason = "Feeling better",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CancelSchedulingBookingRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">EventsAsync</a>(EventsBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingEventList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's happened to a booking, oldest first, and who did it. There's no personal data in here.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.EventsAsync(
+    new EventsBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `EventsBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ApproveAsync</a>(ApproveBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Confirms a `pending_approval` booking.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.ApproveAsync(
+    new ApproveBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ApproveBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">DeclineAsync</a>(DeclineBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refuses a `pending_approval` booking and frees the time.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.DeclineAsync(
+    new DeclineBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeclineBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">NotificationsAsync</a>(NotificationsBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingNotificationList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's been queued for this booking and what became of it, newest first, including why something wasn't sent. It never says who it went to.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.NotificationsAsync(
+    new NotificationsBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `NotificationsBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">MarkNoShowAsync</a>(MarkNoShowBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Records that the attendee didn't come, once the booking has started.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.MarkNoShowAsync(
+    new MarkNoShowBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `MarkNoShowBookingsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">UpdateLocationAsync</a>(UpdateBookingLocationRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Bookings.UpdateLocationAsync(
+    new UpdateBookingLocationRequest
+    {
+        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        Location = new SchedulingLocationZero
+        {
+            Type = SchedulingLocationZeroType.Link,
+            Url = "https://meet.example.com/abc",
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateBookingLocationRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Reassignments
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">PreviewAsync</a>(PreviewSchedulingReassignmentRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignmentPreview&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who each booking would go to, and why not when nobody can take it, without moving anything. It works down them in order, so two can't both be promised the same free hour. Change any of it and start the run with `assignments`. Covers the first 500. Things can change before you start it: the run decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.PreviewAsync(
+    new PreviewSchedulingReassignmentRequest
+    {
+        Selection = new SchedulingReassignmentSelection
+        {
+            Host = "doctor_482",
+            StartBefore = "2027-08-14T00:00:00.000Z",
+        },
+        Strategy = new SchedulingReassignmentStrategy
+        {
+            PreferredHosts = new List<string>() { "doctor_518" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `PreviewSchedulingReassignmentRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">ListAsync</a>(ListReassignmentsRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignmentList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first, with how each is going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.ListAsync(new ListReassignmentsRequest());
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListReassignmentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">CreateAsync</a>(CreateSchedulingReassignmentRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignment&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Moves up to 5,000 bookings in the background, each on its own, so one that can't move never holds up the rest. Nothing's ever cancelled: a booking nobody can take stays where it is, and its item says so. It answers at once: follow the run by its id, or wait for `scheduling.reassignment.completed`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.CreateAsync(
+    new CreateSchedulingReassignmentRequest
+    {
+        IdempotencyKey = "welcome-user-123",
+        Selection = new SchedulingReassignmentSelection
+        {
+            OutOfOffice = "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        },
+        Strategy = new SchedulingReassignmentStrategy
+        {
+            PreferredHosts = new List<string>() { "doctor_518" },
+        },
+        ReasonCode = CreateSchedulingReassignmentRequestReasonCode.OutOfOffice,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSchedulingReassignmentRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">GetAsync</a>(GetReassignmentsRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignment&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+How it's going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.GetAsync(new GetReassignmentsRequest { Id = "id" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetReassignmentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">ItemsAsync</a>(ItemsReassignmentsRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignmentItemList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Each booking it covers and what happened to it. A group session has one, for one of its seats. Empty until the worker's started on it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.ItemsAsync(new ItemsReassignmentsRequest { Id = "id" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ItemsReassignmentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">CancelAsync</a>(CancelReassignmentsRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignment&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Stops what hasn't happened yet. What's moved stays moved: undo it for that. Cancelling one that's finished changes nothing.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.CancelAsync(new CancelReassignmentsRequest { Id = "id" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CancelReassignmentsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.Reassignments.<a href="/src/Coss/Scheduling/Reassignments/ReassignmentsClient.cs">UndoAsync</a>(UndoSchedulingReassignmentRequest { ... }) -> WithRawResponseTask&lt;SchedulingReassignment&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives back what a finished run moved, as a new run. A booking that's moved on since stays where it went, and a former host who's no longer free keeps it from going back, unless you pass `overrides`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Reassignments.UndoAsync(
+    new UndoSchedulingReassignmentRequest
+    {
+        Id = "id",
+        ReasonCode = UndoSchedulingReassignmentRequestReasonCode.Other,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UndoSchedulingReassignmentRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling HolidayCalendars
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;SchedulingHolidayCalendarList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+By name. A feed's URL is never shown again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.ListAsync();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">CreateAsync</a>(CreateSchedulingHolidayCalendarRequest { ... }) -> WithRawResponseTask&lt;SchedulingHolidayCalendar&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Applies a country's public holidays, or your own feed, to some hosts as ordinary out of office entries, kept up to date by coss.com. A host who removes one keeps it removed.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.CreateAsync(
+    new CreateSchedulingHolidayCalendarRequest
+    {
+        Name = "UK team",
+        Country = "GB",
+        HostFilter = new Dictionary<string, OneOf<string, IEnumerable<string>>>()
+        {
+            { "team", "london" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSchedulingHolidayCalendarRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">GetAsync</a>(GetHolidayCalendarsRequest { ... }) -> WithRawResponseTask&lt;SchedulingHolidayCalendar&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With when it was last read, and why not if it couldn't be.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.GetAsync(new GetHolidayCalendarsRequest { Id = "id" });
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetHolidayCalendarsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">RemoveAsync</a>(RemoveHolidayCalendarsRequest { ... }) -> WithRawResponseTask&lt;DeletedSchedulingHolidayCalendar&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Hosts can be booked on its days again, shortly: past entries stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.RemoveAsync(
+    new RemoveHolidayCalendarsRequest { Id = "id" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveHolidayCalendarsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">UpdateAsync</a>(UpdateSchedulingHolidayCalendarRequest { ... }) -> WithRawResponseTask&lt;SchedulingHolidayCalendar&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who it applies to, who covers and what happens to bookings. Takes effect shortly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.UpdateAsync(
+    new UpdateSchedulingHolidayCalendarRequest
+    {
+        Id = "id",
+        HostFilter = new Dictionary<string, OneOf<string, IEnumerable<string>>>()
+        {
+            { "team", "london" },
+        },
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateSchedulingHolidayCalendarRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.HolidayCalendars.<a href="/src/Coss/Scheduling/HolidayCalendars/HolidayCalendarsClient.cs">HolidaysAsync</a>(HolidaysHolidayCalendarsRequest { ... }) -> WithRawResponseTask&lt;SchedulingHolidayList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's coming, with names, as last read. Empty until its first read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.HolidayCalendars.HolidaysAsync(
+    new HolidaysHolidayCalendarsRequest { Id = "id" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `HolidaysHolidayCalendarsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling OutOfOffice
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">ListAsync</a>(ListOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOfficeList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's entries, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.ListAsync(
+    new ListOutOfOfficeRequest
+    {
+        StartAfter = "2027-01-04T15:00:00.000Z",
+        StartBefore = "2027-01-04T15:00:00.000Z",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ListOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">CreateAsync</a>(CreateSchedulingOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOfficeList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks one host, a list of hosts or everyone matching some attributes as away, for part of a day or for whole dates. They aren't offered during it. Existing bookings stay as they are: list them with the entry's conflicts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.CreateAsync(
+    new CreateSchedulingOutOfOfficeRequest
+    {
+        Host = "doctor_482",
+        StartDate = "2027-08-02",
+        EndDate = "2027-08-13",
+        Reason = "vacation",
+        PublicMessage = "Back on the 16th.",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSchedulingOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">GetAsync</a>(GetOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOffice&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One entry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.GetAsync(
+    new GetOutOfOfficeRequest { Id = "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">RemoveAsync</a>(RemoveOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;DeletedSchedulingOutOfOffice&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The host can be booked in that time again, and any calendar event for it goes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.RemoveAsync(
+    new RemoveOutOfOfficeRequest { Id = "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `RemoveOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">UpdateAsync</a>(UpdateSchedulingOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOffice&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. An entry stays with its host.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.UpdateAsync(
+    new UpdateSchedulingOutOfOfficeRequest
+    {
+        Id = "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        EndDate = "2027-08-20",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateSchedulingOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">PutAsync</a>(PutSchedulingOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOffice&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For syncing from a system of record such as an HR tool: send what it says, as often as you like, and there's one entry for it. Give every field you want to keep.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.PutAsync(
+    new PutSchedulingOutOfOfficeRequest
+    {
+        ExternalId = "hr_leave_4471",
+        Host = "doctor_482",
+        StartDate = "2027-08-02",
+        EndDate = "2027-08-13",
+        Reason = "vacation",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `PutSchedulingOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OutOfOffice.<a href="/src/Coss/Scheduling/OutOfOffice/OutOfOfficeClient.cs">ConflictsAsync</a>(ConflictsOutOfOfficeRequest { ... }) -> WithRawResponseTask&lt;SchedulingOutOfOfficeConflictList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Live bookings of the host that fall in the entry, soonest first. Entries never change them.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OutOfOffice.ConflictsAsync(
+    new ConflictsOutOfOfficeRequest { Id = "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `ConflictsOutOfOfficeRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Scheduling Schedules
 <details><summary><code>client.Scheduling.Schedules.<a href="/src/Coss/Scheduling/Schedules/SchedulesClient.cs">ListAsync</a>(ListSchedulesRequest { ... }) -> WithRawResponseTask&lt;SchedulingScheduleList&gt;</code></summary>
 <dl>
@@ -14175,655 +16104,6 @@ await client.Scheduling.Availability.SearchAsync(
 <dd>
 
 **request:** `AvailabilitySearchRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Bookings
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ListAsync</a>(ListBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingList&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-The environment's bookings, newest first. Answers aren't included.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.ListAsync(
-    new ListBookingsRequest
-    {
-        StartAfter = "2027-01-04T15:00:00.000Z",
-        StartBefore = "2027-01-04T15:00:00.000Z",
-    }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ListBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">CreateAsync</a>(CreateBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Books a slot, or joins a group session. Without a `host`, a pool chooses fairly among those free. An event type that requires approval answers with a `pending_approval` booking.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.CreateAsync(
-    new CreateBookingRequest
-    {
-        IdempotencyKey = "welcome-user-123",
-        EventType = "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-        Start = "2027-01-04T15:00:00.000Z",
-        Attendee = new SchedulingAttendeeInput
-        {
-            Uid = "patient_77",
-            Name = "Sam Lee",
-            Email = "sam@example.com",
-            TimeZone = "UTC",
-        },
-    }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `CreateBookingRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">GetAsync</a>(GetBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-A booking with its attendees and their answers.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.GetAsync(
-    new GetBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `GetBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">RescheduleAsync</a>(RescheduleBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Moves it to a new time, keeping its id. The old time stays booked if the new one isn't free.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.RescheduleAsync(
-    new RescheduleBookingRequest
-    {
-        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-        Start = "2027-01-05T15:00:00.000Z",
-    }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `RescheduleBookingRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">CancelAsync</a>(CancelSchedulingBookingRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Frees the time and removes the calendar event. A cancelled booking stays charged.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.CancelAsync(
-    new CancelSchedulingBookingRequest
-    {
-        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-        Reason = "Feeling better",
-    }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `CancelSchedulingBookingRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">EventsAsync</a>(EventsBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingEventList&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-What's happened to a booking, oldest first, and who did it. There's no personal data in here.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.EventsAsync(
-    new EventsBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `EventsBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">ApproveAsync</a>(ApproveBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Confirms a `pending_approval` booking.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.ApproveAsync(
-    new ApproveBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `ApproveBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">DeclineAsync</a>(DeclineBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Refuses a `pending_approval` booking and frees the time.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.DeclineAsync(
-    new DeclineBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `DeclineBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">NotificationsAsync</a>(NotificationsBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBookingNotificationList&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-What's been queued for this booking and what became of it, newest first, including why something wasn't sent. It never says who it went to.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.NotificationsAsync(
-    new NotificationsBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `NotificationsBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">MarkNoShowAsync</a>(MarkNoShowBookingsRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Records that the attendee didn't come, once the booking has started.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.MarkNoShowAsync(
-    new MarkNoShowBookingsRequest { Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m" }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `MarkNoShowBookingsRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.Scheduling.Bookings.<a href="/src/Coss/Scheduling/Bookings/BookingsClient.cs">UpdateLocationAsync</a>(UpdateBookingLocationRequest { ... }) -> WithRawResponseTask&lt;SchedulingBooking&gt;</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```csharp
-await client.Scheduling.Bookings.UpdateLocationAsync(
-    new UpdateBookingLocationRequest
-    {
-        Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-        Location = new SchedulingLocation(
-            new SchedulingLocation.Link(
-                new SchedulingLocationLink { Url = "https://meet.example.com/abc" }
-            )
-        ),
-    }
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**request:** `UpdateBookingLocationRequest` 
     
 </dd>
 </dl>
@@ -16034,7 +17314,346 @@ await client.Scheduling.CalendarDelegations.VerifyAsync(
 </dl>
 </details>
 
+## Scheduling OauthApps
+<details><summary><code>client.Scheduling.OauthApps.<a href="/src/Coss/Scheduling/OauthApps/OauthAppsClient.cs">ListAsync</a>() -> WithRawResponseTask&lt;SchedulingOauthAppList&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+At most one per provider, with how many connections use each.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OauthApps.ListAsync();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.<a href="/src/Coss/Scheduling/OauthApps/OauthAppsClient.cs">CreateAsync</a>(CreateOauthAppRequest { ... }) -> WithRawResponseTask&lt;SchedulingOauthApp&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+New consents in this environment use it, so the consent screen shows your brand. Connections made before it stay on coss.com's app until their host consents again. On the Scale plan and above. Secrets are never returned.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OauthApps.CreateAsync(
+    new CreateOauthAppRequest(
+        new CreateOauthAppRequest.Google(
+            new CreateOauthAppRequestGoogle
+            {
+                ClientId = "client_id",
+                ClientSecret = "client_secret",
+            }
+        )
+    )
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateOauthAppRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.<a href="/src/Coss/Scheduling/OauthApps/OauthAppsClient.cs">GetAsync</a>(GetOauthAppsRequest { ... }) -> WithRawResponseTask&lt;SchedulingOauthApp&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Its status, what to register at the provider, and how many connections use it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OauthApps.GetAsync(
+    new GetOauthAppsRequest { Id = "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `GetOauthAppsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.<a href="/src/Coss/Scheduling/OauthApps/OauthAppsClient.cs">DeleteAsync</a>(DeleteOauthAppsRequest { ... }) -> WithRawResponseTask&lt;DeletedSchedulingOauthApp&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused while connections use it (`oauth_app_in_use`), since only it can refresh their access: disconnect them first. New consents go back to coss.com's app.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OauthApps.DeleteAsync(
+    new DeleteOauthAppsRequest { Id = "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m" }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `DeleteOauthAppsRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.Scheduling.OauthApps.<a href="/src/Coss/Scheduling/OauthApps/OauthAppsClient.cs">UpdateAsync</a>(UpdateOauthAppRequest { ... }) -> WithRawResponseTask&lt;SchedulingOauthApp&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A new client secret is tried on a connection before it replaces the old one, and ends an outage if it works. Its client ID can't change: a different app needs its hosts to consent again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.OauthApps.UpdateAsync(
+    new UpdateOauthAppRequest
+    {
+        Id = "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        ClientSecret = "GOCSPX-abcdefghijklmnopqrstuvwxyz",
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UpdateOauthAppRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Scheduling Sessions
+<details><summary><code>client.Scheduling.Sessions.<a href="/src/Coss/Scheduling/Sessions/SessionsClient.cs">CreateForManagerAsync</a>(CreateSchedulingManagerSessionRequest { ... }) -> WithRawResponseTask&lt;SchedulingSession&gt;</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```csharp
+await client.Scheduling.Sessions.CreateForManagerAsync(
+    new CreateSchedulingManagerSessionRequest
+    {
+        HostFilter = new Dictionary<string, OneOf<string, IEnumerable<string>>>()
+        {
+            { "team", "cardiology" },
+        },
+        ExpiresIn = 3600,
+    }
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateSchedulingManagerSessionRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.Scheduling.Sessions.<a href="/src/Coss/Scheduling/Sessions/SessionsClient.cs">CreateForHostAsync</a>(CreateSchedulingHostSessionRequest { ... }) -> WithRawResponseTask&lt;SchedulingSession&gt;</code></summary>
 <dl>
 <dd>

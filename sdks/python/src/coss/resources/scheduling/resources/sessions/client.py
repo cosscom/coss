@@ -10,6 +10,9 @@ from .types.create_scheduling_booker_session_request_attendee import CreateSched
 from .types.create_scheduling_booker_session_request_attributes_value import (
     CreateSchedulingBookerSessionRequestAttributesValue,
 )
+from .types.create_scheduling_manager_session_request_host_filter_value import (
+    CreateSchedulingManagerSessionRequestHostFilterValue,
+)
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -29,6 +32,61 @@ class SessionsClient:
         RawSessionsClient
         """
         return self._raw_client
+
+    def create_for_manager(
+        self,
+        *,
+        hosts: typing.Optional[typing.Sequence[str]] = OMIT,
+        host_filter: typing.Optional[typing.Dict[str, CreateSchedulingManagerSessionRequestHostFilterValue]] = OMIT,
+        expires_in: typing.Optional[int] = OMIT,
+        read_only: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingSession:
+        """
+        Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+
+        Parameters
+        ----------
+        hosts : typing.Optional[typing.Sequence[str]]
+            The hosts this page can reach, by id or uid.
+
+        host_filter : typing.Optional[typing.Dict[str, CreateSchedulingManagerSessionRequestHostFilterValue]]
+            Everyone matching these attributes, asked again on every request.
+
+        expires_in : typing.Optional[int]
+            Seconds until it stops working. At most a day.
+
+        read_only : typing.Optional[bool]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingSession
+            The session.
+
+        Examples
+        --------
+        from coss import Coss
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.scheduling.sessions.create_for_manager(
+            host_filter={"team": "cardiology"},
+            expires_in=3600,
+        )
+        """
+        _response = self._raw_client.create_for_manager(
+            hosts=hosts,
+            host_filter=host_filter,
+            expires_in=expires_in,
+            read_only=read_only,
+            request_options=request_options,
+        )
+        return _response.data
 
     def create_for_host(
         self,
@@ -195,6 +253,69 @@ class AsyncSessionsClient:
         AsyncRawSessionsClient
         """
         return self._raw_client
+
+    async def create_for_manager(
+        self,
+        *,
+        hosts: typing.Optional[typing.Sequence[str]] = OMIT,
+        host_filter: typing.Optional[typing.Dict[str, CreateSchedulingManagerSessionRequestHostFilterValue]] = OMIT,
+        expires_in: typing.Optional[int] = OMIT,
+        read_only: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingSession:
+        """
+        Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+
+        Parameters
+        ----------
+        hosts : typing.Optional[typing.Sequence[str]]
+            The hosts this page can reach, by id or uid.
+
+        host_filter : typing.Optional[typing.Dict[str, CreateSchedulingManagerSessionRequestHostFilterValue]]
+            Everyone matching these attributes, asked again on every request.
+
+        expires_in : typing.Optional[int]
+            Seconds until it stops working. At most a day.
+
+        read_only : typing.Optional[bool]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingSession
+            The session.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.scheduling.sessions.create_for_manager(
+                host_filter={"team": "cardiology"},
+                expires_in=3600,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_for_manager(
+            hosts=hosts,
+            host_filter=host_filter,
+            expires_in=expires_in,
+            read_only=read_only,
+            request_options=request_options,
+        )
+        return _response.data
 
     async def create_for_host(
         self,

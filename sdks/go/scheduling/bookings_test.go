@@ -1273,6 +1273,330 @@ func TestSettersMarkExplicitNotificationsBookingsRequest(t *testing.T) {
 
 }
 
+func TestSettersReassignSchedulingBookingRequest(t *testing.T) {
+	t.Run("SetID", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueID string
+		obj.SetID(fernTestValueID)
+		assert.Equal(t, fernTestValueID, obj.ID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetChanges", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueChanges []*ReassignSchedulingBookingRequestChangesItem
+		obj.SetChanges(fernTestValueChanges)
+		assert.Equal(t, fernTestValueChanges, obj.Changes)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetReasonCode", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueReasonCode ReassignSchedulingBookingRequestReasonCode
+		obj.SetReasonCode(fernTestValueReasonCode)
+		assert.Equal(t, fernTestValueReasonCode, obj.ReasonCode)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetNote", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueNote *string
+		obj.SetNote(fernTestValueNote)
+		assert.Equal(t, fernTestValueNote, obj.Note)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetOverrides", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueOverrides []ReassignSchedulingBookingRequestOverridesItem
+		obj.SetOverrides(fernTestValueOverrides)
+		assert.Equal(t, fernTestValueOverrides, obj.Overrides)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetNotify", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueNotify *ReassignSchedulingBookingRequestNotify
+		obj.SetNotify(fernTestValueNotify)
+		assert.Equal(t, fernTestValueNotify, obj.Notify)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestSettersMarkExplicitReassignSchedulingBookingRequest(t *testing.T) {
+	t.Run("SetID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueID string
+
+		// Act
+		obj.SetID(fernTestValueID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetChanges_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueChanges []*ReassignSchedulingBookingRequestChangesItem
+
+		// Act
+		obj.SetChanges(fernTestValueChanges)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetReasonCode_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueReasonCode ReassignSchedulingBookingRequestReasonCode
+
+		// Act
+		obj.SetReasonCode(fernTestValueReasonCode)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetNote_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueNote *string
+
+		// Act
+		obj.SetNote(fernTestValueNote)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetOverrides_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueOverrides []ReassignSchedulingBookingRequestOverridesItem
+
+		// Act
+		obj.SetOverrides(fernTestValueOverrides)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetNotify_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequest{}
+		var fernTestValueNotify *ReassignSchedulingBookingRequestNotify
+
+		// Act
+		obj.SetNotify(fernTestValueNotify)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersReassignCandidatesBookingsRequest(t *testing.T) {
+	t.Run("SetID", func(t *testing.T) {
+		obj := &ReassignCandidatesBookingsRequest{}
+		var fernTestValueID string
+		obj.SetID(fernTestValueID)
+		assert.Equal(t, fernTestValueID, obj.ID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetFromHost", func(t *testing.T) {
+		obj := &ReassignCandidatesBookingsRequest{}
+		var fernTestValueFromHost *string
+		obj.SetFromHost(fernTestValueFromHost)
+		assert.Equal(t, fernTestValueFromHost, obj.FromHost)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestSettersMarkExplicitReassignCandidatesBookingsRequest(t *testing.T) {
+	t.Run("SetID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignCandidatesBookingsRequest{}
+		var fernTestValueID string
+
+		// Act
+		obj.SetID(fernTestValueID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetFromHost_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignCandidatesBookingsRequest{}
+		var fernTestValueFromHost *string
+
+		// Act
+		obj.SetFromHost(fernTestValueFromHost)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersRescheduleBookingRequest(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
 		obj := &RescheduleBookingRequest{}
@@ -2062,6 +2386,384 @@ func TestSettersMarkExplicitCreateBookingRequestLocationZoom(t *testing.T) {
 
 }
 
+func TestSettersReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("SetFromHost", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueFromHost *string
+		obj.SetFromHost(fernTestValueFromHost)
+		assert.Equal(t, fernTestValueFromHost, obj.FromHost)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetToHost", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueToHost *string
+		obj.SetToHost(fernTestValueToHost)
+		assert.Equal(t, fernTestValueToHost, obj.ToHost)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetAuto", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueAuto *bool
+		obj.SetAuto(fernTestValueAuto)
+		assert.Equal(t, fernTestValueAuto, obj.Auto)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetPreferredHosts", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValuePreferredHosts []string
+		obj.SetPreferredHosts(fernTestValuePreferredHosts)
+		assert.Equal(t, fernTestValuePreferredHosts, obj.PreferredHosts)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("GetFromHost", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var expected *string
+		obj.FromHost = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetFromHost(), "getter should return the property value")
+	})
+
+	t.Run("GetFromHost_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		obj.FromHost = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetFromHost(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetFromHost_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetFromHost() // Should return zero value
+	})
+
+	t.Run("GetToHost", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var expected *string
+		obj.ToHost = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetToHost(), "getter should return the property value")
+	})
+
+	t.Run("GetToHost_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		obj.ToHost = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetToHost(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetToHost_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetToHost() // Should return zero value
+	})
+
+	t.Run("GetAuto", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var expected *bool
+		obj.Auto = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAuto(), "getter should return the property value")
+	})
+
+	t.Run("GetAuto_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		obj.Auto = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetAuto(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetAuto_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAuto() // Should return zero value
+	})
+
+	t.Run("GetPreferredHosts", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var expected []string
+		obj.PreferredHosts = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetPreferredHosts(), "getter should return the property value")
+	})
+
+	t.Run("GetPreferredHosts_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		obj.PreferredHosts = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetPreferredHosts(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetPreferredHosts_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetPreferredHosts() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("SetFromHost_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueFromHost *string
+
+		// Act
+		obj.SetFromHost(fernTestValueFromHost)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetToHost_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueToHost *string
+
+		// Act
+		obj.SetToHost(fernTestValueToHost)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetAuto_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValueAuto *bool
+
+		// Act
+		obj.SetAuto(fernTestValueAuto)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetPreferredHosts_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		var fernTestValuePreferredHosts []string
+
+		// Act
+		obj.SetPreferredHosts(fernTestValuePreferredHosts)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("SetAttendee", func(t *testing.T) {
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		var fernTestValueAttendee *bool
+		obj.SetAttendee(fernTestValueAttendee)
+		assert.Equal(t, fernTestValueAttendee, obj.Attendee)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("GetAttendee", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		var expected *bool
+		obj.Attendee = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAttendee(), "getter should return the property value")
+	})
+
+	t.Run("GetAttendee_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		obj.Attendee = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetAttendee(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetAttendee_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestNotify
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAttendee() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("SetAttendee_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		var fernTestValueAttendee *bool
+
+		// Act
+		obj.SetAttendee(fernTestValueAttendee)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersUpdateBookingLocationRequest(t *testing.T) {
 	t.Run("SetID", func(t *testing.T) {
 		obj := &UpdateBookingLocationRequest{}
@@ -2344,6 +3046,72 @@ func TestJSONMarshalingCreateBookingRequestLocationZoom(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled ReassignSchedulingBookingRequestChangesItem
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj ReassignSchedulingBookingRequestChangesItem
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj ReassignSchedulingBookingRequestChangesItem
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &ReassignSchedulingBookingRequestNotify{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled ReassignSchedulingBookingRequestNotify
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj ReassignSchedulingBookingRequestNotify
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj ReassignSchedulingBookingRequestNotify
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestOptionalNullableRoundTripCreateBookingRequestLocationInPerson(t *testing.T) {
 	optionalNullableKeys := []string{
 		"address",
@@ -2612,6 +3380,38 @@ func TestStringCreateBookingRequestLocationZoom(t *testing.T) {
 	})
 }
 
+func TestStringReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestNotify
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestEnumListBookingsRequestStatus(t *testing.T) {
 	t.Run("NewFromString_held", func(t *testing.T) {
 		t.Parallel()
@@ -2655,6 +3455,120 @@ func TestEnumListBookingsRequestStatus(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewListBookingsRequestStatusFromString("held")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumReassignSchedulingBookingRequestOverridesItem(t *testing.T) {
+	t.Run("NewFromString_any_host", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("any_host")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("any_host"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_out_of_office", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("out_of_office")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("out_of_office"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_outside_availability", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("outside_availability")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("outside_availability"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_host_busy", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("host_busy")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("host_busy"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_limit_reached", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("limit_reached")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("limit_reached"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_calendar_unverified", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("calendar_unverified")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestOverridesItem("calendar_unverified"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewReassignSchedulingBookingRequestOverridesItemFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewReassignSchedulingBookingRequestOverridesItemFromString("any_host")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumReassignSchedulingBookingRequestReasonCode(t *testing.T) {
+	t.Run("NewFromString_host_unavailable", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("host_unavailable")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("host_unavailable"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_out_of_office", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("out_of_office")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("out_of_office"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_workload", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("workload")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("workload"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_customer_request", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("customer_request")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("customer_request"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_offboarding", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("offboarding")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("offboarding"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_other", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("other")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, ReassignSchedulingBookingRequestReasonCode("other"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewReassignSchedulingBookingRequestReasonCodeFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewReassignSchedulingBookingRequestReasonCodeFromString("host_unavailable")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)
@@ -2795,6 +3709,52 @@ func TestExtraPropertiesCreateBookingRequestLocationZoom(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *CreateBookingRequestLocationZoom
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesReassignSchedulingBookingRequestChangesItem(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &ReassignSchedulingBookingRequestChangesItem{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestChangesItem
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesReassignSchedulingBookingRequestNotify(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &ReassignSchedulingBookingRequestNotify{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *ReassignSchedulingBookingRequestNotify
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

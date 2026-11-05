@@ -34,7 +34,13 @@ module Coss
 
       member -> { Coss::Types::SchedulingCalendarWebhookEvent }
 
+      member -> { Coss::Types::SchedulingOutOfOfficeWebhookEvent }
+
+      member -> { Coss::Types::SchedulingReassignmentWebhookEvent }
+
       member -> { Coss::Types::SchedulingCalendarDelegationWebhookEvent }
+
+      member -> { Coss::Types::SchedulingOauthAppWebhookEvent }
     end
   end
 end

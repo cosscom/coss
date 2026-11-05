@@ -42,6 +42,13 @@ public record SchedulingCalendarConnection : IJsonOnDeserialized
     public required SchedulingCalendarConnectionStatus Status { get; set; }
 
     /// <summary>
+    /// Your own OAuth app this connection's access came through. `null`: coss.com's, or no consent was involved.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("oauth_app")]
+    public string? OauthApp { get; set; }
+
+    /// <summary>
     /// The calendar delegation that manages this connection. It can't be disconnected or reconnected by itself.
     /// </summary>
     [Nullable]

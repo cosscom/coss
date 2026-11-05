@@ -1561,6 +1561,7 @@ const (
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingExternalConflict    CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.external_conflict"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingCalendarWriteFailed CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.calendar_write_failed"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingLocationReady       CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.location_ready"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingReassigned          CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.reassigned"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingStarted             CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.started"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingEnded               CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.ended"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingBookingReminder            CreateWebhookEndpointRequestEventTypesItem = "scheduling.booking.reminder"
@@ -1569,6 +1570,14 @@ const (
 	CreateWebhookEndpointRequestEventTypesItemSchedulingCalendarDisconnected       CreateWebhookEndpointRequestEventTypesItem = "scheduling.calendar.disconnected"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationFailing  CreateWebhookEndpointRequestEventTypesItem = "scheduling.calendar_delegation.failing"
 	CreateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationRestored CreateWebhookEndpointRequestEventTypesItem = "scheduling.calendar_delegation.restored"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeCreated         CreateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.created"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeUpdated         CreateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.updated"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeDeleted         CreateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.deleted"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeStarted         CreateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.started"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeEnded           CreateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.ended"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingReassignmentCompleted      CreateWebhookEndpointRequestEventTypesItem = "scheduling.reassignment.completed"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOauthAppFailing            CreateWebhookEndpointRequestEventTypesItem = "scheduling.oauth_app.failing"
+	CreateWebhookEndpointRequestEventTypesItemSchedulingOauthAppRestored           CreateWebhookEndpointRequestEventTypesItem = "scheduling.oauth_app.restored"
 )
 
 func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWebhookEndpointRequestEventTypesItem, error) {
@@ -1739,6 +1748,8 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemSchedulingBookingCalendarWriteFailed, nil
 	case "scheduling.booking.location_ready":
 		return CreateWebhookEndpointRequestEventTypesItemSchedulingBookingLocationReady, nil
+	case "scheduling.booking.reassigned":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingBookingReassigned, nil
 	case "scheduling.booking.started":
 		return CreateWebhookEndpointRequestEventTypesItemSchedulingBookingStarted, nil
 	case "scheduling.booking.ended":
@@ -1755,6 +1766,22 @@ func NewCreateWebhookEndpointRequestEventTypesItemFromString(s string) (CreateWe
 		return CreateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationFailing, nil
 	case "scheduling.calendar_delegation.restored":
 		return CreateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationRestored, nil
+	case "scheduling.out_of_office.created":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeCreated, nil
+	case "scheduling.out_of_office.updated":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeUpdated, nil
+	case "scheduling.out_of_office.deleted":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeDeleted, nil
+	case "scheduling.out_of_office.started":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeStarted, nil
+	case "scheduling.out_of_office.ended":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeEnded, nil
+	case "scheduling.reassignment.completed":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingReassignmentCompleted, nil
+	case "scheduling.oauth_app.failing":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOauthAppFailing, nil
+	case "scheduling.oauth_app.restored":
+		return CreateWebhookEndpointRequestEventTypesItemSchedulingOauthAppRestored, nil
 	}
 	var t CreateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -1870,6 +1897,7 @@ const (
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingExternalConflict    UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.external_conflict"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingCalendarWriteFailed UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.calendar_write_failed"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingLocationReady       UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.location_ready"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingReassigned          UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.reassigned"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingStarted             UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.started"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingEnded               UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.ended"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingReminder            UpdateWebhookEndpointRequestEventTypesItem = "scheduling.booking.reminder"
@@ -1878,6 +1906,14 @@ const (
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingCalendarDisconnected       UpdateWebhookEndpointRequestEventTypesItem = "scheduling.calendar.disconnected"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationFailing  UpdateWebhookEndpointRequestEventTypesItem = "scheduling.calendar_delegation.failing"
 	UpdateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationRestored UpdateWebhookEndpointRequestEventTypesItem = "scheduling.calendar_delegation.restored"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeCreated         UpdateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.created"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeUpdated         UpdateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.updated"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeDeleted         UpdateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.deleted"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeStarted         UpdateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.started"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeEnded           UpdateWebhookEndpointRequestEventTypesItem = "scheduling.out_of_office.ended"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingReassignmentCompleted      UpdateWebhookEndpointRequestEventTypesItem = "scheduling.reassignment.completed"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOauthAppFailing            UpdateWebhookEndpointRequestEventTypesItem = "scheduling.oauth_app.failing"
+	UpdateWebhookEndpointRequestEventTypesItemSchedulingOauthAppRestored           UpdateWebhookEndpointRequestEventTypesItem = "scheduling.oauth_app.restored"
 )
 
 func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWebhookEndpointRequestEventTypesItem, error) {
@@ -2048,6 +2084,8 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingCalendarWriteFailed, nil
 	case "scheduling.booking.location_ready":
 		return UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingLocationReady, nil
+	case "scheduling.booking.reassigned":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingReassigned, nil
 	case "scheduling.booking.started":
 		return UpdateWebhookEndpointRequestEventTypesItemSchedulingBookingStarted, nil
 	case "scheduling.booking.ended":
@@ -2064,6 +2102,22 @@ func NewUpdateWebhookEndpointRequestEventTypesItemFromString(s string) (UpdateWe
 		return UpdateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationFailing, nil
 	case "scheduling.calendar_delegation.restored":
 		return UpdateWebhookEndpointRequestEventTypesItemSchedulingCalendarDelegationRestored, nil
+	case "scheduling.out_of_office.created":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeCreated, nil
+	case "scheduling.out_of_office.updated":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeUpdated, nil
+	case "scheduling.out_of_office.deleted":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeDeleted, nil
+	case "scheduling.out_of_office.started":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeStarted, nil
+	case "scheduling.out_of_office.ended":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOutOfOfficeEnded, nil
+	case "scheduling.reassignment.completed":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingReassignmentCompleted, nil
+	case "scheduling.oauth_app.failing":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOauthAppFailing, nil
+	case "scheduling.oauth_app.restored":
+		return UpdateWebhookEndpointRequestEventTypesItemSchedulingOauthAppRestored, nil
 	}
 	var t UpdateWebhookEndpointRequestEventTypesItem
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

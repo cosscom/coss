@@ -26,8 +26,21 @@ public class GetTest : BaseMockServerTest
                 "height": 1000000,
                 "data_url": "data_url"
               },
+              "privacy_url": "privacy_url",
               "email_from": "email_from",
               "sms_from": "sms_from",
+              "name_host_in_attendee_emails": true,
+              "host_reassignment": "off",
+              "out_of_office_reasons": [
+                {
+                  "key": "key",
+                  "label": "label"
+                },
+                {
+                  "key": "key",
+                  "label": "label"
+                }
+              ],
               "calendar_failure_mode": "hide",
               "notifications": {
                 "notifications": {
@@ -138,8 +151,17 @@ public class GetTest : BaseMockServerTest
               "brand_name": "Acme Health",
               "accent_color": null,
               "logo": null,
+              "privacy_url": null,
               "email_from": "appointments@example.com",
               "sms_from": null,
+              "name_host_in_attendee_emails": false,
+              "host_reassignment": "off",
+              "out_of_office_reasons": [
+                {
+                  "key": "key",
+                  "label": "label"
+                }
+              ],
               "calendar_failure_mode": "hide",
               "notifications": {
                 "reminder": {

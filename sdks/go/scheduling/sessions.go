@@ -196,6 +196,84 @@ func (c *CreateSchedulingHostSessionRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	createSchedulingManagerSessionRequestFieldHosts      = big.NewInt(1 << 0)
+	createSchedulingManagerSessionRequestFieldHostFilter = big.NewInt(1 << 1)
+	createSchedulingManagerSessionRequestFieldExpiresIn  = big.NewInt(1 << 2)
+	createSchedulingManagerSessionRequestFieldReadOnly   = big.NewInt(1 << 3)
+)
+
+type CreateSchedulingManagerSessionRequest struct {
+	// The hosts this page can reach, by id or uid.
+	Hosts []string `json:"hosts,omitempty" url:"-"`
+	// Everyone matching these attributes, asked again on every request.
+	HostFilter map[string]*CreateSchedulingManagerSessionRequestHostFilterValue `json:"host_filter,omitempty" url:"-"`
+	// Seconds until it stops working. At most a day.
+	ExpiresIn *int  `json:"expires_in,omitempty" url:"-"`
+	ReadOnly  *bool `json:"read_only,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (c *CreateSchedulingManagerSessionRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if c.explicitFields != nil {
+		next.Set(c.explicitFields)
+	}
+	next.Or(next, field)
+	c.explicitFields = next
+}
+
+// SetHosts sets the Hosts field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateSchedulingManagerSessionRequest) SetHosts(hosts []string) {
+	c.Hosts = hosts
+	c.require(createSchedulingManagerSessionRequestFieldHosts)
+}
+
+// SetHostFilter sets the HostFilter field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateSchedulingManagerSessionRequest) SetHostFilter(hostFilter map[string]*CreateSchedulingManagerSessionRequestHostFilterValue) {
+	c.HostFilter = hostFilter
+	c.require(createSchedulingManagerSessionRequestFieldHostFilter)
+}
+
+// SetExpiresIn sets the ExpiresIn field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateSchedulingManagerSessionRequest) SetExpiresIn(expiresIn *int) {
+	c.ExpiresIn = expiresIn
+	c.require(createSchedulingManagerSessionRequestFieldExpiresIn)
+}
+
+// SetReadOnly sets the ReadOnly field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateSchedulingManagerSessionRequest) SetReadOnly(readOnly *bool) {
+	c.ReadOnly = readOnly
+	c.require(createSchedulingManagerSessionRequestFieldReadOnly)
+}
+
+func (c *CreateSchedulingManagerSessionRequest) UnmarshalJSON(data []byte) error {
+	type unmarshaler CreateSchedulingManagerSessionRequest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*c = CreateSchedulingManagerSessionRequest(body)
+	return nil
+}
+
+func (c *CreateSchedulingManagerSessionRequest) MarshalJSON() ([]byte, error) {
+	type embed CreateSchedulingManagerSessionRequest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*c),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, c.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	createSchedulingBookerSessionRequestAttendeeFieldUID      = big.NewInt(1 << 0)
 	createSchedulingBookerSessionRequestAttendeeFieldName     = big.NewInt(1 << 1)
 	createSchedulingBookerSessionRequestAttendeeFieldEmail    = big.NewInt(1 << 2)
@@ -421,6 +499,68 @@ type CreateSchedulingBookerSessionRequestAttributesValueVisitor interface {
 }
 
 func (c *CreateSchedulingBookerSessionRequestAttributesValue) Accept(visitor CreateSchedulingBookerSessionRequestAttributesValueVisitor) error {
+	if c.typ == "String" || c.String != "" {
+		return visitor.VisitString(c.String)
+	}
+	if c.typ == "StringList" || c.StringList != nil {
+		return visitor.VisitStringList(c.StringList)
+	}
+	return fmt.Errorf("type %T does not include a non-empty union type", c)
+}
+
+type CreateSchedulingManagerSessionRequestHostFilterValue struct {
+	String     string
+	StringList []string
+
+	typ string
+}
+
+func (c *CreateSchedulingManagerSessionRequestHostFilterValue) GetString() string {
+	if c == nil {
+		return ""
+	}
+	return c.String
+}
+
+func (c *CreateSchedulingManagerSessionRequestHostFilterValue) GetStringList() []string {
+	if c == nil {
+		return nil
+	}
+	return c.StringList
+}
+
+func (c *CreateSchedulingManagerSessionRequestHostFilterValue) UnmarshalJSON(data []byte) error {
+	var valueString string
+	if err := json.Unmarshal(data, &valueString); err == nil {
+		c.typ = "String"
+		c.String = valueString
+		return nil
+	}
+	var valueStringList []string
+	if err := json.Unmarshal(data, &valueStringList); err == nil {
+		c.typ = "StringList"
+		c.StringList = valueStringList
+		return nil
+	}
+	return fmt.Errorf("%s cannot be deserialized as a %T", data, c)
+}
+
+func (c CreateSchedulingManagerSessionRequestHostFilterValue) MarshalJSON() ([]byte, error) {
+	if c.typ == "String" || c.String != "" {
+		return json.Marshal(c.String)
+	}
+	if c.typ == "StringList" || c.StringList != nil {
+		return json.Marshal(c.StringList)
+	}
+	return nil, fmt.Errorf("type %T does not include a non-empty union type", c)
+}
+
+type CreateSchedulingManagerSessionRequestHostFilterValueVisitor interface {
+	VisitString(string) error
+	VisitStringList([]string) error
+}
+
+func (c *CreateSchedulingManagerSessionRequestHostFilterValue) Accept(visitor CreateSchedulingManagerSessionRequestHostFilterValueVisitor) error {
 	if c.typ == "String" || c.String != "" {
 		return visitor.VisitString(c.String)
 	}

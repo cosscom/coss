@@ -45,7 +45,7 @@ public final class SchedulingBooking {
 
     private final List<SchedulingBookingAttendeesItem> attendees;
 
-    private final SchedulingLocation location;
+    private final OptionalNullable<SchedulingLocation> location;
 
     private final OptionalNullable<String> holdExpiresAt;
 
@@ -87,7 +87,7 @@ public final class SchedulingBooking {
             String end,
             List<String> hosts,
             List<SchedulingBookingAttendeesItem> attendees,
-            SchedulingLocation location,
+            OptionalNullable<SchedulingLocation> location,
             OptionalNullable<String> holdExpiresAt,
             OptionalNullable<String> approvalExpiresAt,
             OptionalNullable<String> series,
@@ -196,8 +196,12 @@ public final class SchedulingBooking {
         return attendees;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("location")
-    public SchedulingLocation getLocation() {
+    public OptionalNullable<SchedulingLocation> getLocation() {
+        if (location == null) {
+            return OptionalNullable.absent();
+        }
         return location;
     }
 
@@ -345,6 +349,12 @@ public final class SchedulingBooking {
     @JsonProperty("updated_at")
     public String getUpdatedAt() {
         return updatedAt;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("location")
+    private OptionalNullable<SchedulingLocation> _getLocation() {
+        return location;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -525,11 +535,7 @@ public final class SchedulingBooking {
         /**
          * <p>When the booking ends, without buffers.</p>
          */
-        LocationStage end(@NotNull String end);
-    }
-
-    public interface LocationStage {
-        CalendarUnverifiedStage location(@NotNull SchedulingLocation location);
+        CalendarUnverifiedStage end(@NotNull String end);
     }
 
     public interface CalendarUnverifiedStage {
@@ -571,6 +577,14 @@ public final class SchedulingBooking {
         _FinalStage addAttendees(SchedulingBookingAttendeesItem attendees);
 
         _FinalStage addAllAttendees(List<SchedulingBookingAttendeesItem> attendees);
+
+        _FinalStage location(OptionalNullable<SchedulingLocation> location);
+
+        _FinalStage location(SchedulingLocation location);
+
+        _FinalStage location(Optional<SchedulingLocation> location);
+
+        _FinalStage location(Nullable<SchedulingLocation> location);
 
         /**
          * <p>When a <code>held</code> booking gives up its slot. <code>null</code> otherwise.</p>
@@ -701,7 +715,6 @@ public final class SchedulingBooking {
                     TitleStage,
                     StartStage,
                     EndStage,
-                    LocationStage,
                     CalendarUnverifiedStage,
                     CreatedAtStage,
                     UpdatedAtStage,
@@ -719,8 +732,6 @@ public final class SchedulingBooking {
         private String start;
 
         private String end;
-
-        private SchedulingLocation location;
 
         private boolean calendarUnverified;
 
@@ -749,6 +760,8 @@ public final class SchedulingBooking {
         private OptionalNullable<String> approvalExpiresAt = OptionalNullable.absent();
 
         private OptionalNullable<String> holdExpiresAt = OptionalNullable.absent();
+
+        private OptionalNullable<SchedulingLocation> location = OptionalNullable.absent();
 
         private List<SchedulingBookingAttendeesItem> attendees = new ArrayList<>();
 
@@ -852,15 +865,8 @@ public final class SchedulingBooking {
          */
         @java.lang.Override
         @JsonSetter("end")
-        public LocationStage end(@NotNull String end) {
+        public CalendarUnverifiedStage end(@NotNull String end) {
             this.end = Objects.requireNonNull(end, "end must not be null");
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("location")
-        public CalendarUnverifiedStage location(@NotNull SchedulingLocation location) {
-            this.location = Objects.requireNonNull(location, "location must not be null");
             return this;
         }
 
@@ -1421,6 +1427,41 @@ public final class SchedulingBooking {
         @JsonSetter(value = "hold_expires_at", nulls = Nulls.SKIP)
         public _FinalStage holdExpiresAt(OptionalNullable<String> holdExpiresAt) {
             this.holdExpiresAt = holdExpiresAt;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage location(Nullable<SchedulingLocation> location) {
+            if (location.isNull()) {
+                this.location = OptionalNullable.ofNull();
+            } else if (location.isEmpty()) {
+                this.location = OptionalNullable.absent();
+            } else {
+                this.location = OptionalNullable.of(location.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage location(Optional<SchedulingLocation> location) {
+            if (location.isPresent()) {
+                this.location = OptionalNullable.of(location.get());
+            } else {
+                this.location = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage location(SchedulingLocation location) {
+            this.location = OptionalNullable.of(location);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "location", nulls = Nulls.SKIP)
+        public _FinalStage location(OptionalNullable<SchedulingLocation> location) {
+            this.location = location;
             return this;
         }
 

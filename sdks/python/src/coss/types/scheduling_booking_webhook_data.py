@@ -58,6 +58,16 @@ class SchedulingBookingWebhookData(UniversalBaseModel):
     `scheduling.booking.rescheduled`: when it used to start.
     """
 
+    previous_host_ids: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    On `scheduling.booking.reassigned`: who had it before.
+    """
+
+    reassignment_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    On `scheduling.booking.reassigned`: the bulk reassignment it was part of.
+    """
+
     reminder: typing.Optional[SchedulingBookingWebhookDataReminder] = pydantic.Field(default=None)
     """
     `scheduling.booking.reminder`: which reminder this is.

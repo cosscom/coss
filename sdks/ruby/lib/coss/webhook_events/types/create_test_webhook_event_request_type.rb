@@ -89,6 +89,7 @@ module Coss
         SCHEDULING_BOOKING_EXTERNAL_CONFLICT = "scheduling.booking.external_conflict"
         SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED = "scheduling.booking.calendar_write_failed"
         SCHEDULING_BOOKING_LOCATION_READY = "scheduling.booking.location_ready"
+        SCHEDULING_BOOKING_REASSIGNED = "scheduling.booking.reassigned"
         SCHEDULING_BOOKING_STARTED = "scheduling.booking.started"
         SCHEDULING_BOOKING_ENDED = "scheduling.booking.ended"
         SCHEDULING_BOOKING_REMINDER = "scheduling.booking.reminder"
@@ -97,6 +98,14 @@ module Coss
         SCHEDULING_CALENDAR_DISCONNECTED = "scheduling.calendar.disconnected"
         SCHEDULING_CALENDAR_DELEGATION_FAILING = "scheduling.calendar_delegation.failing"
         SCHEDULING_CALENDAR_DELEGATION_RESTORED = "scheduling.calendar_delegation.restored"
+        SCHEDULING_OUT_OF_OFFICE_CREATED = "scheduling.out_of_office.created"
+        SCHEDULING_OUT_OF_OFFICE_UPDATED = "scheduling.out_of_office.updated"
+        SCHEDULING_OUT_OF_OFFICE_DELETED = "scheduling.out_of_office.deleted"
+        SCHEDULING_OUT_OF_OFFICE_STARTED = "scheduling.out_of_office.started"
+        SCHEDULING_OUT_OF_OFFICE_ENDED = "scheduling.out_of_office.ended"
+        SCHEDULING_REASSIGNMENT_COMPLETED = "scheduling.reassignment.completed"
+        SCHEDULING_OAUTH_APP_FAILING = "scheduling.oauth_app.failing"
+        SCHEDULING_OAUTH_APP_RESTORED = "scheduling.oauth_app.restored"
       end
     end
   end

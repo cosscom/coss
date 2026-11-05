@@ -13,6 +13,9 @@ public final class SchedulingBookingEventActorKind {
     public static final SchedulingBookingEventActorKind HOST_SESSION =
             new SchedulingBookingEventActorKind(Value.HOST_SESSION, "host_session");
 
+    public static final SchedulingBookingEventActorKind MANAGER_SESSION =
+            new SchedulingBookingEventActorKind(Value.MANAGER_SESSION, "manager_session");
+
     public static final SchedulingBookingEventActorKind USER = new SchedulingBookingEventActorKind(Value.USER, "user");
 
     public static final SchedulingBookingEventActorKind MANAGE_SESSION =
@@ -61,6 +64,8 @@ public final class SchedulingBookingEventActorKind {
                 return visitor.visitBookerSession();
             case HOST_SESSION:
                 return visitor.visitHostSession();
+            case MANAGER_SESSION:
+                return visitor.visitManagerSession();
             case USER:
                 return visitor.visitUser();
             case MANAGE_SESSION:
@@ -82,6 +87,8 @@ public final class SchedulingBookingEventActorKind {
                 return BOOKER_SESSION;
             case "host_session":
                 return HOST_SESSION;
+            case "manager_session":
+                return MANAGER_SESSION;
             case "user":
                 return USER;
             case "manage_session":
@@ -106,6 +113,8 @@ public final class SchedulingBookingEventActorKind {
 
         MANAGE_SESSION,
 
+        MANAGER_SESSION,
+
         SYSTEM,
 
         UNKNOWN
@@ -121,6 +130,8 @@ public final class SchedulingBookingEventActorKind {
         T visitBookerSession();
 
         T visitManageSession();
+
+        T visitManagerSession();
 
         T visitSystem();
 

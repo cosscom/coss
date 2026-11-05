@@ -145,10 +145,7 @@ public class RescheduleTest : BaseMockServerTest
                   }
                 }
               ],
-              "location": {
-                "type": "link",
-                "url": "url"
-              },
+              "location": null,
               "hold_expires_at": null,
               "approval_expires_at": null,
               "series": null,

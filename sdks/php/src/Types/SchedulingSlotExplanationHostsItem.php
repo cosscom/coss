@@ -26,7 +26,7 @@ class SchedulingSlotExplanationHostsItem extends JsonSerializableType
     public bool $available;
 
     /**
-     * @var ?string $reason Why not: `not_on_grid`, `too_soon`, `outside_booking_window`, `calendar_unverified`, `outside_availability`, `host_busy`, `already_claimed`, `limit_reached` or `session_full`. `null` when they could.
+     * @var ?string $reason Why not: `not_on_grid`, `too_soon`, `outside_booking_window`, `out_of_office`, `outside_coverage`, `calendar_unverified`, `outside_availability`, `host_busy`, `already_claimed`, `limit_reached` or `session_full`. `null` when they could.
      */
     #[JsonProperty('reason')]
     public ?string $reason;

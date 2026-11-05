@@ -121,6 +121,12 @@ class SchedulingEventType extends JsonSerializableType
     public bool $requiresApproval;
 
     /**
+     * @var bool $reassignmentEnabled Whether bookings of this event type can go to another host.
+     */
+    #[JsonProperty('reassignment_enabled')]
+    public bool $reassignmentEnabled;
+
+    /**
      * @var float $approvalTtlMinutes How long a booking can wait for approval before it's declined, in minutes.
      */
     #[JsonProperty('approval_ttl_minutes')]
@@ -169,9 +175,16 @@ class SchedulingEventType extends JsonSerializableType
     public array $questions;
 
     /**
-     * @var array<SchedulingLocation> $locations Where bookings can meet. A browser only chooses among these.
+     * @var array<(
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null> $locations Where bookings can meet. A browser only chooses among these.
      */
-    #[JsonProperty('locations'), ArrayType([SchedulingLocation::class])]
+    #[JsonProperty('locations'), ArrayType([new Union(new Union(SchedulingLocationZero::class, SchedulingLocationNumber::class, SchedulingLocationAddress::class, SchedulingLocationThree::class, SchedulingLocationFour::class, SchedulingLocationFive::class), 'null')])]
     public array $locations;
 
     /**
@@ -234,6 +247,7 @@ class SchedulingEventType extends JsonSerializableType
      *   minNoticeMinutes: float,
      *   limits: array<SchedulingLimit>,
      *   requiresApproval: bool,
+     *   reassignmentEnabled: bool,
      *   approvalTtlMinutes: float,
      *   holdTtlSeconds: float,
      *   cancelNoticeMinutes: float,
@@ -241,7 +255,14 @@ class SchedulingEventType extends JsonSerializableType
      *   maxGuests: float,
      *   hostCalendarDetails: value-of<SchedulingEventTypeHostCalendarDetails>,
      *   questions: array<SchedulingQuestion>,
-     *   locations: array<SchedulingLocation>,
+     *   locations: array<(
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null>,
      *   hosts: array<SchedulingEventTypeHostsItem>,
      *   metadata: array<string, string>,
      *   createdAt: string,
@@ -299,6 +320,7 @@ class SchedulingEventType extends JsonSerializableType
             $this->_setField('capacity');
         }
         $this->requiresApproval = $values['requiresApproval'];
+        $this->reassignmentEnabled = $values['reassignmentEnabled'];
         $this->approvalTtlMinutes = $values['approvalTtlMinutes'];
         $this->holdTtlSeconds = $values['holdTtlSeconds'];
         $this->cancelNoticeMinutes = $values['cancelNoticeMinutes'];

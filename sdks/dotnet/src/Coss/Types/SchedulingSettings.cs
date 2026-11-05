@@ -42,6 +42,13 @@ public record SchedulingSettings : IJsonOnDeserialized
     public SchedulingSettingsLogo? Logo { get; set; }
 
     /// <summary>
+    /// Your privacy policy, linked on a host's page beside what connecting a calendar does, once this environment has its own OAuth app and a `brand_name`.
+    /// </summary>
+    [Nullable]
+    [JsonPropertyName("privacy_url")]
+    public string? PrivacyUrl { get; set; }
+
+    /// <summary>
     /// Sender of booking emails, on a verified domain.
     /// </summary>
     [Nullable]
@@ -54,6 +61,25 @@ public record SchedulingSettings : IJsonOnDeserialized
     [Nullable]
     [JsonPropertyName("sms_from")]
     public string? SmsFrom { get; set; }
+
+    /// <summary>
+    /// Name the new host when telling an attendee their booking has one.
+    /// </summary>
+    [JsonPropertyName("name_host_in_attendee_emails")]
+    public required bool NameHostInAttendeeEmails { get; set; }
+
+    /// <summary>
+    /// Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    /// </summary>
+    [JsonPropertyName("host_reassignment")]
+    public required SchedulingSettingsHostReassignment HostReassignment { get; set; }
+
+    /// <summary>
+    /// Reasons of your own for time away, on top of the preset ones.
+    /// </summary>
+    [JsonPropertyName("out_of_office_reasons")]
+    public IEnumerable<SchedulingSettingsOutOfOfficeReasonsItem> OutOfOfficeReasons { get; set; } =
+        new List<SchedulingSettingsOutOfOfficeReasonsItem>();
 
     /// <summary>
     /// When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.

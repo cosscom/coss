@@ -62,6 +62,8 @@ public final class UpdateEventTypeRequest {
 
     private final Optional<Boolean> requiresApproval;
 
+    private final Optional<Boolean> reassignmentEnabled;
+
     private final Optional<Integer> approvalTtlMinutes;
 
     private final Optional<Integer> holdTtlSeconds;
@@ -78,7 +80,7 @@ public final class UpdateEventTypeRequest {
 
     private final Optional<List<SchedulingQuestion>> questions;
 
-    private final Optional<List<SchedulingLocation>> locations;
+    private final Optional<List<OptionalNullable<SchedulingLocation>>> locations;
 
     private final OptionalNullable<Map<String, OptionalNullable<UpdateEventTypeRequestHostFilterValue>>> hostFilter;
 
@@ -110,6 +112,7 @@ public final class UpdateEventTypeRequest {
             Optional<List<SchedulingLimit>> limits,
             OptionalNullable<Integer> capacity,
             Optional<Boolean> requiresApproval,
+            Optional<Boolean> reassignmentEnabled,
             Optional<Integer> approvalTtlMinutes,
             Optional<Integer> holdTtlSeconds,
             Optional<Integer> cancelNoticeMinutes,
@@ -118,7 +121,7 @@ public final class UpdateEventTypeRequest {
             OptionalNullable<Integer> maxActiveBookingsPerAttendee,
             Optional<UpdateEventTypeRequestHostCalendarDetails> hostCalendarDetails,
             Optional<List<SchedulingQuestion>> questions,
-            Optional<List<SchedulingLocation>> locations,
+            Optional<List<OptionalNullable<SchedulingLocation>>> locations,
             OptionalNullable<Map<String, OptionalNullable<UpdateEventTypeRequestHostFilterValue>>> hostFilter,
             OptionalNullable<Map<String, OptionalNullable<UpdateEventTypeRequestNotificationsValue>>> notifications,
             OptionalNullable<List<SchedulingReminderInput>> reminders,
@@ -140,6 +143,7 @@ public final class UpdateEventTypeRequest {
         this.limits = limits;
         this.capacity = capacity;
         this.requiresApproval = requiresApproval;
+        this.reassignmentEnabled = reassignmentEnabled;
         this.approvalTtlMinutes = approvalTtlMinutes;
         this.holdTtlSeconds = holdTtlSeconds;
         this.cancelNoticeMinutes = cancelNoticeMinutes;
@@ -288,6 +292,14 @@ public final class UpdateEventTypeRequest {
     }
 
     /**
+     * @return Whether bookings of this event type can go to another host. Default: true.
+     */
+    @JsonProperty("reassignment_enabled")
+    public Optional<Boolean> getReassignmentEnabled() {
+        return reassignmentEnabled;
+    }
+
+    /**
      * @return How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
      */
     @JsonProperty("approval_ttl_minutes")
@@ -359,7 +371,7 @@ public final class UpdateEventTypeRequest {
      * @return Where bookings can meet. A browser only chooses among these. A <code>group</code> event type can't use <code>zoom</code>.
      */
     @JsonProperty("locations")
-    public Optional<List<SchedulingLocation>> getLocations() {
+    public Optional<List<OptionalNullable<SchedulingLocation>>> getLocations() {
         return locations;
     }
 
@@ -505,6 +517,7 @@ public final class UpdateEventTypeRequest {
                 && limits.equals(other.limits)
                 && capacity.equals(other.capacity)
                 && requiresApproval.equals(other.requiresApproval)
+                && reassignmentEnabled.equals(other.reassignmentEnabled)
                 && approvalTtlMinutes.equals(other.approvalTtlMinutes)
                 && holdTtlSeconds.equals(other.holdTtlSeconds)
                 && cancelNoticeMinutes.equals(other.cancelNoticeMinutes)
@@ -539,6 +552,7 @@ public final class UpdateEventTypeRequest {
                 this.limits,
                 this.capacity,
                 this.requiresApproval,
+                this.reassignmentEnabled,
                 this.approvalTtlMinutes,
                 this.holdTtlSeconds,
                 this.cancelNoticeMinutes,
@@ -595,6 +609,8 @@ public final class UpdateEventTypeRequest {
 
         private Optional<Boolean> requiresApproval = Optional.empty();
 
+        private Optional<Boolean> reassignmentEnabled = Optional.empty();
+
         private Optional<Integer> approvalTtlMinutes = Optional.empty();
 
         private Optional<Integer> holdTtlSeconds = Optional.empty();
@@ -611,7 +627,7 @@ public final class UpdateEventTypeRequest {
 
         private Optional<List<SchedulingQuestion>> questions = Optional.empty();
 
-        private Optional<List<SchedulingLocation>> locations = Optional.empty();
+        private Optional<List<OptionalNullable<SchedulingLocation>>> locations = Optional.empty();
 
         private OptionalNullable<Map<String, OptionalNullable<UpdateEventTypeRequestHostFilterValue>>> hostFilter =
                 OptionalNullable.absent();
@@ -647,6 +663,7 @@ public final class UpdateEventTypeRequest {
             limits(other.getLimits());
             capacity(other.getCapacity());
             requiresApproval(other.getRequiresApproval());
+            reassignmentEnabled(other.getReassignmentEnabled());
             approvalTtlMinutes(other.getApprovalTtlMinutes());
             holdTtlSeconds(other.getHoldTtlSeconds());
             cancelNoticeMinutes(other.getCancelNoticeMinutes());
@@ -959,6 +976,20 @@ public final class UpdateEventTypeRequest {
         }
 
         /**
+         * <p>Whether bookings of this event type can go to another host. Default: true.</p>
+         */
+        @JsonSetter(value = "reassignment_enabled", nulls = Nulls.SKIP)
+        public Builder reassignmentEnabled(Optional<Boolean> reassignmentEnabled) {
+            this.reassignmentEnabled = reassignmentEnabled;
+            return this;
+        }
+
+        public Builder reassignmentEnabled(Boolean reassignmentEnabled) {
+            this.reassignmentEnabled = Optional.ofNullable(reassignmentEnabled);
+            return this;
+        }
+
+        /**
          * <p>How long a booking can wait for approval before it's declined, in minutes. Default: 1440.</p>
          */
         @JsonSetter(value = "approval_ttl_minutes", nulls = Nulls.SKIP)
@@ -1094,12 +1125,12 @@ public final class UpdateEventTypeRequest {
          * <p>Where bookings can meet. A browser only chooses among these. A <code>group</code> event type can't use <code>zoom</code>.</p>
          */
         @JsonSetter(value = "locations", nulls = Nulls.SKIP)
-        public Builder locations(Optional<List<SchedulingLocation>> locations) {
+        public Builder locations(Optional<List<OptionalNullable<SchedulingLocation>>> locations) {
             this.locations = locations;
             return this;
         }
 
-        public Builder locations(List<SchedulingLocation> locations) {
+        public Builder locations(List<OptionalNullable<SchedulingLocation>> locations) {
             this.locations = Optional.ofNullable(locations);
             return this;
         }
@@ -1272,6 +1303,7 @@ public final class UpdateEventTypeRequest {
                     limits,
                     capacity,
                     requiresApproval,
+                    reassignmentEnabled,
                     approvalTtlMinutes,
                     holdTtlSeconds,
                     cancelNoticeMinutes,

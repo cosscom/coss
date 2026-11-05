@@ -22,6 +22,10 @@ public readonly record struct SchedulingBookingEventActorKind : IStringEnum
         Values.ManageSession
     );
 
+    public static readonly SchedulingBookingEventActorKind ManagerSession = new(
+        Values.ManagerSession
+    );
+
     public static readonly SchedulingBookingEventActorKind System = new(Values.System);
 
     public SchedulingBookingEventActorKind(string value)
@@ -130,6 +134,8 @@ public readonly record struct SchedulingBookingEventActorKind : IStringEnum
         public const string BookerSession = "booker_session";
 
         public const string ManageSession = "manage_session";
+
+        public const string ManagerSession = "manager_session";
 
         public const string System = "system";
     }

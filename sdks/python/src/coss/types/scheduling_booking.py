@@ -49,7 +49,7 @@ class SchedulingBooking(UniversalBaseModel):
     Who's booked: the attendee first, then any guests they added. A group session's seat is its own booking.
     """
 
-    location: SchedulingLocation
+    location: typing.Optional[SchedulingLocation] = None
     hold_expires_at: typing.Optional[str] = pydantic.Field(default=None)
     """
     When a `held` booking gives up its slot. `null` otherwise.

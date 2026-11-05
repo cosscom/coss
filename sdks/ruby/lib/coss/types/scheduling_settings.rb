@@ -13,9 +13,17 @@ module Coss
 
       field :logo, -> { Coss::Types::SchedulingSettingsLogo }, optional: false, nullable: true
 
+      field :privacy_url, -> { String }, optional: false, nullable: true
+
       field :email_from, -> { String }, optional: false, nullable: true
 
       field :sms_from, -> { String }, optional: false, nullable: true
+
+      field :name_host_in_attendee_emails, -> { Internal::Types::Boolean }, optional: false, nullable: false
+
+      field :host_reassignment, -> { Coss::Types::SchedulingSettingsHostReassignment }, optional: false, nullable: false
+
+      field :out_of_office_reasons, -> { Internal::Types::Array[Coss::Types::SchedulingSettingsOutOfOfficeReasonsItem] }, optional: false, nullable: false
 
       field :calendar_failure_mode, -> { Coss::Types::SchedulingSettingsCalendarFailureMode }, optional: false, nullable: false
 

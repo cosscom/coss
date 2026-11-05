@@ -22,6 +22,10 @@ module Coss
 
       field :previous_start, -> { String }, optional: true, nullable: false
 
+      field :previous_host_ids, -> { Internal::Types::Array[String] }, optional: true, nullable: false
+
+      field :reassignment_id, -> { String }, optional: true, nullable: false
+
       field :reminder, -> { Coss::Types::SchedulingBookingWebhookDataReminder }, optional: true, nullable: false
 
       field :occurred_at, -> { String }, optional: false, nullable: false

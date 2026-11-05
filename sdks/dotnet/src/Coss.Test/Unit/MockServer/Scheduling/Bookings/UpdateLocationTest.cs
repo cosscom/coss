@@ -15,10 +15,7 @@ public class UpdateLocationTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "location": {
-                "type": "link",
-                "url": null
-              }
+              "location": null
             }
             """;
 
@@ -103,13 +100,7 @@ public class UpdateLocationTest : BaseMockServerTest
             );
 
         var response = await Client.Scheduling.Bookings.UpdateLocationAsync(
-            new UpdateBookingLocationRequest
-            {
-                Id = "id",
-                Location = new SchedulingLocation(
-                    new SchedulingLocation.Link(new SchedulingLocationLink { Url = null })
-                ),
-            }
+            new UpdateBookingLocationRequest { Id = "id", Location = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -153,10 +144,7 @@ public class UpdateLocationTest : BaseMockServerTest
                   }
                 }
               ],
-              "location": {
-                "type": "link",
-                "url": "url"
-              },
+              "location": null,
               "hold_expires_at": null,
               "approval_expires_at": null,
               "series": null,
@@ -196,11 +184,11 @@ public class UpdateLocationTest : BaseMockServerTest
             new UpdateBookingLocationRequest
             {
                 Id = "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-                Location = new SchedulingLocation(
-                    new SchedulingLocation.Link(
-                        new SchedulingLocationLink { Url = "https://meet.example.com/abc" }
-                    )
-                ),
+                Location = new SchedulingLocationZero
+                {
+                    Type = SchedulingLocationZeroType.Link,
+                    Url = "https://meet.example.com/abc",
+                },
             }
         );
         JsonAssert.AreEqual(response, mockResponse);

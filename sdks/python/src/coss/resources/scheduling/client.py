@@ -15,7 +15,11 @@ if typing.TYPE_CHECKING:
     from .resources.calendars.client import AsyncCalendarsClient, CalendarsClient
     from .resources.event_types.client import AsyncEventTypesClient, EventTypesClient
     from .resources.holds.client import AsyncHoldsClient, HoldsClient
+    from .resources.holiday_calendars.client import AsyncHolidayCalendarsClient, HolidayCalendarsClient
     from .resources.hosts.client import AsyncHostsClient, HostsClient
+    from .resources.oauth_apps.client import AsyncOauthAppsClient, OauthAppsClient
+    from .resources.out_of_office.client import AsyncOutOfOfficeClient, OutOfOfficeClient
+    from .resources.reassignments.client import AsyncReassignmentsClient, ReassignmentsClient
     from .resources.schedules.client import AsyncSchedulesClient, SchedulesClient
     from .resources.series.client import AsyncSeriesClient, SeriesClient
     from .resources.sessions.client import AsyncSessionsClient, SessionsClient
@@ -28,16 +32,20 @@ class SchedulingClient:
         self._raw_client = RawSchedulingClient(client_wrapper=client_wrapper)
         self._client_wrapper = client_wrapper
         self._hosts: typing.Optional[HostsClient] = None
+        self._bookings: typing.Optional[BookingsClient] = None
+        self._reassignments: typing.Optional[ReassignmentsClient] = None
+        self._holiday_calendars: typing.Optional[HolidayCalendarsClient] = None
+        self._out_of_office: typing.Optional[OutOfOfficeClient] = None
         self._schedules: typing.Optional[SchedulesClient] = None
         self._event_types: typing.Optional[EventTypesClient] = None
         self._slots: typing.Optional[SlotsClient] = None
         self._availability: typing.Optional[AvailabilityClient] = None
-        self._bookings: typing.Optional[BookingsClient] = None
         self._holds: typing.Optional[HoldsClient] = None
         self._series: typing.Optional[SeriesClient] = None
         self._attendees: typing.Optional[AttendeesClient] = None
         self._calendars: typing.Optional[CalendarsClient] = None
         self._calendar_delegations: typing.Optional[CalendarDelegationsClient] = None
+        self._oauth_apps: typing.Optional[OauthAppsClient] = None
         self._sessions: typing.Optional[SessionsClient] = None
         self._settings: typing.Optional[SettingsClient] = None
 
@@ -59,6 +67,38 @@ class SchedulingClient:
 
             self._hosts = HostsClient(client_wrapper=self._client_wrapper)
         return self._hosts
+
+    @property
+    def bookings(self):
+        if self._bookings is None:
+            from .resources.bookings.client import BookingsClient  # noqa: E402
+
+            self._bookings = BookingsClient(client_wrapper=self._client_wrapper)
+        return self._bookings
+
+    @property
+    def reassignments(self):
+        if self._reassignments is None:
+            from .resources.reassignments.client import ReassignmentsClient  # noqa: E402
+
+            self._reassignments = ReassignmentsClient(client_wrapper=self._client_wrapper)
+        return self._reassignments
+
+    @property
+    def holiday_calendars(self):
+        if self._holiday_calendars is None:
+            from .resources.holiday_calendars.client import HolidayCalendarsClient  # noqa: E402
+
+            self._holiday_calendars = HolidayCalendarsClient(client_wrapper=self._client_wrapper)
+        return self._holiday_calendars
+
+    @property
+    def out_of_office(self):
+        if self._out_of_office is None:
+            from .resources.out_of_office.client import OutOfOfficeClient  # noqa: E402
+
+            self._out_of_office = OutOfOfficeClient(client_wrapper=self._client_wrapper)
+        return self._out_of_office
 
     @property
     def schedules(self):
@@ -91,14 +131,6 @@ class SchedulingClient:
 
             self._availability = AvailabilityClient(client_wrapper=self._client_wrapper)
         return self._availability
-
-    @property
-    def bookings(self):
-        if self._bookings is None:
-            from .resources.bookings.client import BookingsClient  # noqa: E402
-
-            self._bookings = BookingsClient(client_wrapper=self._client_wrapper)
-        return self._bookings
 
     @property
     def holds(self):
@@ -141,6 +173,14 @@ class SchedulingClient:
         return self._calendar_delegations
 
     @property
+    def oauth_apps(self):
+        if self._oauth_apps is None:
+            from .resources.oauth_apps.client import OauthAppsClient  # noqa: E402
+
+            self._oauth_apps = OauthAppsClient(client_wrapper=self._client_wrapper)
+        return self._oauth_apps
+
+    @property
     def sessions(self):
         if self._sessions is None:
             from .resources.sessions.client import SessionsClient  # noqa: E402
@@ -162,16 +202,20 @@ class AsyncSchedulingClient:
         self._raw_client = AsyncRawSchedulingClient(client_wrapper=client_wrapper)
         self._client_wrapper = client_wrapper
         self._hosts: typing.Optional[AsyncHostsClient] = None
+        self._bookings: typing.Optional[AsyncBookingsClient] = None
+        self._reassignments: typing.Optional[AsyncReassignmentsClient] = None
+        self._holiday_calendars: typing.Optional[AsyncHolidayCalendarsClient] = None
+        self._out_of_office: typing.Optional[AsyncOutOfOfficeClient] = None
         self._schedules: typing.Optional[AsyncSchedulesClient] = None
         self._event_types: typing.Optional[AsyncEventTypesClient] = None
         self._slots: typing.Optional[AsyncSlotsClient] = None
         self._availability: typing.Optional[AsyncAvailabilityClient] = None
-        self._bookings: typing.Optional[AsyncBookingsClient] = None
         self._holds: typing.Optional[AsyncHoldsClient] = None
         self._series: typing.Optional[AsyncSeriesClient] = None
         self._attendees: typing.Optional[AsyncAttendeesClient] = None
         self._calendars: typing.Optional[AsyncCalendarsClient] = None
         self._calendar_delegations: typing.Optional[AsyncCalendarDelegationsClient] = None
+        self._oauth_apps: typing.Optional[AsyncOauthAppsClient] = None
         self._sessions: typing.Optional[AsyncSessionsClient] = None
         self._settings: typing.Optional[AsyncSettingsClient] = None
 
@@ -193,6 +237,38 @@ class AsyncSchedulingClient:
 
             self._hosts = AsyncHostsClient(client_wrapper=self._client_wrapper)
         return self._hosts
+
+    @property
+    def bookings(self):
+        if self._bookings is None:
+            from .resources.bookings.client import AsyncBookingsClient  # noqa: E402
+
+            self._bookings = AsyncBookingsClient(client_wrapper=self._client_wrapper)
+        return self._bookings
+
+    @property
+    def reassignments(self):
+        if self._reassignments is None:
+            from .resources.reassignments.client import AsyncReassignmentsClient  # noqa: E402
+
+            self._reassignments = AsyncReassignmentsClient(client_wrapper=self._client_wrapper)
+        return self._reassignments
+
+    @property
+    def holiday_calendars(self):
+        if self._holiday_calendars is None:
+            from .resources.holiday_calendars.client import AsyncHolidayCalendarsClient  # noqa: E402
+
+            self._holiday_calendars = AsyncHolidayCalendarsClient(client_wrapper=self._client_wrapper)
+        return self._holiday_calendars
+
+    @property
+    def out_of_office(self):
+        if self._out_of_office is None:
+            from .resources.out_of_office.client import AsyncOutOfOfficeClient  # noqa: E402
+
+            self._out_of_office = AsyncOutOfOfficeClient(client_wrapper=self._client_wrapper)
+        return self._out_of_office
 
     @property
     def schedules(self):
@@ -225,14 +301,6 @@ class AsyncSchedulingClient:
 
             self._availability = AsyncAvailabilityClient(client_wrapper=self._client_wrapper)
         return self._availability
-
-    @property
-    def bookings(self):
-        if self._bookings is None:
-            from .resources.bookings.client import AsyncBookingsClient  # noqa: E402
-
-            self._bookings = AsyncBookingsClient(client_wrapper=self._client_wrapper)
-        return self._bookings
 
     @property
     def holds(self):
@@ -273,6 +341,14 @@ class AsyncSchedulingClient:
 
             self._calendar_delegations = AsyncCalendarDelegationsClient(client_wrapper=self._client_wrapper)
         return self._calendar_delegations
+
+    @property
+    def oauth_apps(self):
+        if self._oauth_apps is None:
+            from .resources.oauth_apps.client import AsyncOauthAppsClient  # noqa: E402
+
+            self._oauth_apps = AsyncOauthAppsClient(client_wrapper=self._client_wrapper)
+        return self._oauth_apps
 
     @property
     def sessions(self):

@@ -61,7 +61,13 @@ public final class WebhookTestEventEvent {
         } else if (this.type == 13) {
             return visitor.visit((SchedulingCalendarWebhookEvent) this.value);
         } else if (this.type == 14) {
+            return visitor.visit((SchedulingOutOfOfficeWebhookEvent) this.value);
+        } else if (this.type == 15) {
+            return visitor.visit((SchedulingReassignmentWebhookEvent) this.value);
+        } else if (this.type == 16) {
             return visitor.visit((SchedulingCalendarDelegationWebhookEvent) this.value);
+        } else if (this.type == 17) {
+            return visitor.visit((SchedulingOauthAppWebhookEvent) this.value);
         }
         throw new IllegalStateException("Failed to visit value. This should never happen.");
     }
@@ -142,8 +148,20 @@ public final class WebhookTestEventEvent {
         return new WebhookTestEventEvent(value, 13);
     }
 
-    public static WebhookTestEventEvent of(SchedulingCalendarDelegationWebhookEvent value) {
+    public static WebhookTestEventEvent of(SchedulingOutOfOfficeWebhookEvent value) {
         return new WebhookTestEventEvent(value, 14);
+    }
+
+    public static WebhookTestEventEvent of(SchedulingReassignmentWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 15);
+    }
+
+    public static WebhookTestEventEvent of(SchedulingCalendarDelegationWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 16);
+    }
+
+    public static WebhookTestEventEvent of(SchedulingOauthAppWebhookEvent value) {
+        return new WebhookTestEventEvent(value, 17);
     }
 
     public interface Visitor<T> {
@@ -175,7 +193,13 @@ public final class WebhookTestEventEvent {
 
         T visit(SchedulingCalendarWebhookEvent value);
 
+        T visit(SchedulingOutOfOfficeWebhookEvent value);
+
+        T visit(SchedulingReassignmentWebhookEvent value);
+
         T visit(SchedulingCalendarDelegationWebhookEvent value);
+
+        T visit(SchedulingOauthAppWebhookEvent value);
     }
 
     static final class Deserializer extends StdDeserializer<WebhookTestEventEvent> {
@@ -362,8 +386,44 @@ public final class WebhookTestEventEvent {
                     && ((Map<?, ?>) value).containsKey("type")
                     && ((Map<?, ?>) value).containsKey("data")) {
                 try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingOutOfOfficeWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingReassignmentWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
                     return of(ObjectMappers.JSON_MAPPER.convertValue(
                             value, SchedulingCalendarDelegationWebhookEvent.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?>
+                    && ((Map<?, ?>) value).containsKey("id")
+                    && ((Map<?, ?>) value).containsKey("object")
+                    && ((Map<?, ?>) value).containsKey("api_version")
+                    && ((Map<?, ?>) value).containsKey("created_at")
+                    && ((Map<?, ?>) value).containsKey("type")
+                    && ((Map<?, ?>) value).containsKey("data")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingOauthAppWebhookEvent.class));
                 } catch (RuntimeException e) {
                 }
             }

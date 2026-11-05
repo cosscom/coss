@@ -9,14 +9,20 @@ if typing.TYPE_CHECKING:
     from .update_scheduling_settings_request_calendar_failure_mode import (
         UpdateSchedulingSettingsRequestCalendarFailureMode,
     )
+    from .update_scheduling_settings_request_host_reassignment import UpdateSchedulingSettingsRequestHostReassignment
     from .update_scheduling_settings_request_logo import UpdateSchedulingSettingsRequestLogo
     from .update_scheduling_settings_request_notifications_value import (
         UpdateSchedulingSettingsRequestNotificationsValue,
     )
+    from .update_scheduling_settings_request_out_of_office_reasons_item import (
+        UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem,
+    )
 _dynamic_imports: typing.Dict[str, str] = {
     "UpdateSchedulingSettingsRequestCalendarFailureMode": ".update_scheduling_settings_request_calendar_failure_mode",
+    "UpdateSchedulingSettingsRequestHostReassignment": ".update_scheduling_settings_request_host_reassignment",
     "UpdateSchedulingSettingsRequestLogo": ".update_scheduling_settings_request_logo",
     "UpdateSchedulingSettingsRequestNotificationsValue": ".update_scheduling_settings_request_notifications_value",
+    "UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem": ".update_scheduling_settings_request_out_of_office_reasons_item",
 }
 
 
@@ -43,6 +49,8 @@ def __dir__():
 
 __all__ = [
     "UpdateSchedulingSettingsRequestCalendarFailureMode",
+    "UpdateSchedulingSettingsRequestHostReassignment",
     "UpdateSchedulingSettingsRequestLogo",
     "UpdateSchedulingSettingsRequestNotificationsValue",
+    "UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem",
 ]

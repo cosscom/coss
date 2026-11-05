@@ -5,6 +5,24 @@ namespace Coss.Scheduling;
 public partial interface IBookingsClient
 {
     /// <summary>
+    /// Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+    /// </summary>
+    WithRawResponseTask<SchedulingBooking> ReassignAsync(
+        ReassignSchedulingBookingRequest request,
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+    /// </summary>
+    WithRawResponseTask<SchedulingReassignCandidateList> ReassignCandidatesAsync(
+        ReassignCandidatesBookingsRequest request,
+        RequestOptions? options = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// The environment's bookings, newest first. Answers aren't included.
     /// </summary>
     WithRawResponseTask<SchedulingBookingList> ListAsync(

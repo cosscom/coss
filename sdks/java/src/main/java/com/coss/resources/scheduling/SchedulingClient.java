@@ -12,7 +12,11 @@ import com.coss.resources.scheduling.calendardelegations.CalendarDelegationsClie
 import com.coss.resources.scheduling.calendars.CalendarsClient;
 import com.coss.resources.scheduling.eventtypes.EventTypesClient;
 import com.coss.resources.scheduling.holds.HoldsClient;
+import com.coss.resources.scheduling.holidaycalendars.HolidayCalendarsClient;
 import com.coss.resources.scheduling.hosts.HostsClient;
+import com.coss.resources.scheduling.oauthapps.OauthAppsClient;
+import com.coss.resources.scheduling.outofoffice.OutOfOfficeClient;
+import com.coss.resources.scheduling.reassignments.ReassignmentsClient;
 import com.coss.resources.scheduling.schedules.SchedulesClient;
 import com.coss.resources.scheduling.series.SeriesClient;
 import com.coss.resources.scheduling.sessions.SessionsClient;
@@ -25,6 +29,14 @@ public class SchedulingClient {
 
     protected final Supplier<HostsClient> hostsClient;
 
+    protected final Supplier<BookingsClient> bookingsClient;
+
+    protected final Supplier<ReassignmentsClient> reassignmentsClient;
+
+    protected final Supplier<HolidayCalendarsClient> holidayCalendarsClient;
+
+    protected final Supplier<OutOfOfficeClient> outOfOfficeClient;
+
     protected final Supplier<SchedulesClient> schedulesClient;
 
     protected final Supplier<EventTypesClient> eventTypesClient;
@@ -32,8 +44,6 @@ public class SchedulingClient {
     protected final Supplier<SlotsClient> slotsClient;
 
     protected final Supplier<AvailabilityClient> availabilityClient;
-
-    protected final Supplier<BookingsClient> bookingsClient;
 
     protected final Supplier<HoldsClient> holdsClient;
 
@@ -45,6 +55,8 @@ public class SchedulingClient {
 
     protected final Supplier<CalendarDelegationsClient> calendarDelegationsClient;
 
+    protected final Supplier<OauthAppsClient> oauthAppsClient;
+
     protected final Supplier<SessionsClient> sessionsClient;
 
     protected final Supplier<SettingsClient> settingsClient;
@@ -52,22 +64,42 @@ public class SchedulingClient {
     public SchedulingClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.hostsClient = Suppliers.memoize(() -> new HostsClient(clientOptions));
+        this.bookingsClient = Suppliers.memoize(() -> new BookingsClient(clientOptions));
+        this.reassignmentsClient = Suppliers.memoize(() -> new ReassignmentsClient(clientOptions));
+        this.holidayCalendarsClient = Suppliers.memoize(() -> new HolidayCalendarsClient(clientOptions));
+        this.outOfOfficeClient = Suppliers.memoize(() -> new OutOfOfficeClient(clientOptions));
         this.schedulesClient = Suppliers.memoize(() -> new SchedulesClient(clientOptions));
         this.eventTypesClient = Suppliers.memoize(() -> new EventTypesClient(clientOptions));
         this.slotsClient = Suppliers.memoize(() -> new SlotsClient(clientOptions));
         this.availabilityClient = Suppliers.memoize(() -> new AvailabilityClient(clientOptions));
-        this.bookingsClient = Suppliers.memoize(() -> new BookingsClient(clientOptions));
         this.holdsClient = Suppliers.memoize(() -> new HoldsClient(clientOptions));
         this.seriesClient = Suppliers.memoize(() -> new SeriesClient(clientOptions));
         this.attendeesClient = Suppliers.memoize(() -> new AttendeesClient(clientOptions));
         this.calendarsClient = Suppliers.memoize(() -> new CalendarsClient(clientOptions));
         this.calendarDelegationsClient = Suppliers.memoize(() -> new CalendarDelegationsClient(clientOptions));
+        this.oauthAppsClient = Suppliers.memoize(() -> new OauthAppsClient(clientOptions));
         this.sessionsClient = Suppliers.memoize(() -> new SessionsClient(clientOptions));
         this.settingsClient = Suppliers.memoize(() -> new SettingsClient(clientOptions));
     }
 
     public HostsClient hosts() {
         return this.hostsClient.get();
+    }
+
+    public BookingsClient bookings() {
+        return this.bookingsClient.get();
+    }
+
+    public ReassignmentsClient reassignments() {
+        return this.reassignmentsClient.get();
+    }
+
+    public HolidayCalendarsClient holidayCalendars() {
+        return this.holidayCalendarsClient.get();
+    }
+
+    public OutOfOfficeClient outOfOffice() {
+        return this.outOfOfficeClient.get();
     }
 
     public SchedulesClient schedules() {
@@ -84,10 +116,6 @@ public class SchedulingClient {
 
     public AvailabilityClient availability() {
         return this.availabilityClient.get();
-    }
-
-    public BookingsClient bookings() {
-        return this.bookingsClient.get();
     }
 
     public HoldsClient holds() {
@@ -108,6 +136,10 @@ public class SchedulingClient {
 
     public CalendarDelegationsClient calendarDelegations() {
         return this.calendarDelegationsClient.get();
+    }
+
+    public OauthAppsClient oauthApps() {
+        return this.oauthAppsClient.get();
     }
 
     public SessionsClient sessions() {

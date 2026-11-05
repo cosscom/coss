@@ -3,16 +3,20 @@
 namespace Coss\Scheduling;
 
 use Coss\Scheduling\Hosts\HostsClient;
+use Coss\Scheduling\Bookings\BookingsClient;
+use Coss\Scheduling\Reassignments\ReassignmentsClient;
+use Coss\Scheduling\HolidayCalendars\HolidayCalendarsClient;
+use Coss\Scheduling\OutOfOffice\OutOfOfficeClient;
 use Coss\Scheduling\Schedules\SchedulesClient;
 use Coss\Scheduling\EventTypes\EventTypesClient;
 use Coss\Scheduling\Slots\SlotsClient;
 use Coss\Scheduling\Availability\AvailabilityClient;
-use Coss\Scheduling\Bookings\BookingsClient;
 use Coss\Scheduling\Holds\HoldsClient;
 use Coss\Scheduling\Series\SeriesClient;
 use Coss\Scheduling\Attendees\AttendeesClient;
 use Coss\Scheduling\Calendars\CalendarsClient;
 use Coss\Scheduling\CalendarDelegations\CalendarDelegationsClient;
+use Coss\Scheduling\OauthApps\OauthAppsClient;
 use Coss\Scheduling\Sessions\SessionsClient;
 use Coss\Scheduling\Settings\SettingsClient;
 use Psr\Http\Client\ClientInterface;
@@ -24,6 +28,26 @@ class SchedulingClient
      * @var HostsClient $hosts
      */
     public HostsClient $hosts;
+
+    /**
+     * @var BookingsClient $bookings
+     */
+    public BookingsClient $bookings;
+
+    /**
+     * @var ReassignmentsClient $reassignments
+     */
+    public ReassignmentsClient $reassignments;
+
+    /**
+     * @var HolidayCalendarsClient $holidayCalendars
+     */
+    public HolidayCalendarsClient $holidayCalendars;
+
+    /**
+     * @var OutOfOfficeClient $outOfOffice
+     */
+    public OutOfOfficeClient $outOfOffice;
 
     /**
      * @var SchedulesClient $schedules
@@ -44,11 +68,6 @@ class SchedulingClient
      * @var AvailabilityClient $availability
      */
     public AvailabilityClient $availability;
-
-    /**
-     * @var BookingsClient $bookings
-     */
-    public BookingsClient $bookings;
 
     /**
      * @var HoldsClient $holds
@@ -74,6 +93,11 @@ class SchedulingClient
      * @var CalendarDelegationsClient $calendarDelegations
      */
     public CalendarDelegationsClient $calendarDelegations;
+
+    /**
+     * @var OauthAppsClient $oauthApps
+     */
+    public OauthAppsClient $oauthApps;
 
     /**
      * @var SessionsClient $sessions
@@ -118,16 +142,20 @@ class SchedulingClient
         $this->client = $client;
         $this->options = $options ?? [];
         $this->hosts = new HostsClient($this->client, $this->options);
+        $this->bookings = new BookingsClient($this->client, $this->options);
+        $this->reassignments = new ReassignmentsClient($this->client, $this->options);
+        $this->holidayCalendars = new HolidayCalendarsClient($this->client, $this->options);
+        $this->outOfOffice = new OutOfOfficeClient($this->client, $this->options);
         $this->schedules = new SchedulesClient($this->client, $this->options);
         $this->eventTypes = new EventTypesClient($this->client, $this->options);
         $this->slots = new SlotsClient($this->client, $this->options);
         $this->availability = new AvailabilityClient($this->client, $this->options);
-        $this->bookings = new BookingsClient($this->client, $this->options);
         $this->holds = new HoldsClient($this->client, $this->options);
         $this->series = new SeriesClient($this->client, $this->options);
         $this->attendees = new AttendeesClient($this->client, $this->options);
         $this->calendars = new CalendarsClient($this->client, $this->options);
         $this->calendarDelegations = new CalendarDelegationsClient($this->client, $this->options);
+        $this->oauthApps = new OauthAppsClient($this->client, $this->options);
         $this->sessions = new SessionsClient($this->client, $this->options);
         $this->settings = new SettingsClient($this->client, $this->options);
     }

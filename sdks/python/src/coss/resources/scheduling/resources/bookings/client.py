@@ -11,11 +11,16 @@ from .....types.scheduling_booking_list import SchedulingBookingList
 from .....types.scheduling_booking_notification_list import SchedulingBookingNotificationList
 from .....types.scheduling_guest_input import SchedulingGuestInput
 from .....types.scheduling_location import SchedulingLocation
+from .....types.scheduling_reassign_candidate_list import SchedulingReassignCandidateList
 from .raw_client import AsyncRawBookingsClient, RawBookingsClient
 from .types.create_booking_request_answers_value import CreateBookingRequestAnswersValue
 from .types.create_booking_request_attributes_value import CreateBookingRequestAttributesValue
 from .types.create_booking_request_location import CreateBookingRequestLocation
 from .types.list_bookings_request_status import ListBookingsRequestStatus
+from .types.reassign_scheduling_booking_request_changes_item import ReassignSchedulingBookingRequestChangesItem
+from .types.reassign_scheduling_booking_request_notify import ReassignSchedulingBookingRequestNotify
+from .types.reassign_scheduling_booking_request_overrides_item import ReassignSchedulingBookingRequestOverridesItem
+from .types.reassign_scheduling_booking_request_reason_code import ReassignSchedulingBookingRequestReasonCode
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -35,6 +40,119 @@ class BookingsClient:
         RawBookingsClient
         """
         return self._raw_client
+
+    def reassign(
+        self,
+        id: str,
+        *,
+        changes: typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+        reason_code: ReassignSchedulingBookingRequestReasonCode,
+        note: typing.Optional[str] = OMIT,
+        overrides: typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]] = OMIT,
+        notify: typing.Optional[ReassignSchedulingBookingRequestNotify] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingBooking:
+        """
+        Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        changes : typing.Sequence[ReassignSchedulingBookingRequestChangesItem]
+            A session or a one-on-one has one. A collective can change several.
+
+        reason_code : ReassignSchedulingBookingRequestReasonCode
+
+        note : typing.Optional[str]
+            Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+
+        overrides : typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]]
+            Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+
+        notify : typing.Optional[ReassignSchedulingBookingRequestNotify]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingBooking
+            The booking.
+
+        Examples
+        --------
+        from coss import Coss
+        from coss.resources.scheduling.resources.bookings import (
+            ReassignSchedulingBookingRequestChangesItem,
+        )
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.scheduling.bookings.reassign(
+            id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+            changes=[
+                ReassignSchedulingBookingRequestChangesItem(
+                    to_host="doctor_518",
+                )
+            ],
+            reason_code="out_of_office",
+        )
+        """
+        _response = self._raw_client.reassign(
+            id,
+            changes=changes,
+            reason_code=reason_code,
+            note=note,
+            overrides=overrides,
+            notify=notify,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def reassign_candidates(
+        self,
+        id: str,
+        *,
+        from_host: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingReassignCandidateList:
+        """
+        The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        from_host : typing.Optional[str]
+            The host who'd leave, when it could be several.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingReassignCandidateList
+            The candidates.
+
+        Examples
+        --------
+        from coss import Coss
+
+        client = Coss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+        client.scheduling.bookings.reassign_candidates(
+            id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+        )
+        """
+        _response = self._raw_client.reassign_candidates(id, from_host=from_host, request_options=request_options)
+        return _response.data
 
     def list(
         self,
@@ -505,7 +623,11 @@ class BookingsClient:
         return _response.data
 
     def update_location(
-        self, id: str, *, location: SchedulingLocation, request_options: typing.Optional[RequestOptions] = None
+        self,
+        id: str,
+        *,
+        location: typing.Optional[SchedulingLocation] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> SchedulingBooking:
         """
         Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
@@ -515,7 +637,7 @@ class BookingsClient:
         id : str
             The booking's id.
 
-        location : SchedulingLocation
+        location : typing.Optional[SchedulingLocation]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -527,7 +649,7 @@ class BookingsClient:
 
         Examples
         --------
-        from coss import Coss, SchedulingLocation_Link
+        from coss import Coss, SchedulingLocationZero
 
         client = Coss(
             "2026-10-10",
@@ -535,7 +657,8 @@ class BookingsClient:
         )
         client.scheduling.bookings.update_location(
             id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-            location=SchedulingLocation_Link(
+            location=SchedulingLocationZero(
+                type="link",
                 url="https://meet.example.com/abc",
             ),
         )
@@ -558,6 +681,135 @@ class AsyncBookingsClient:
         AsyncRawBookingsClient
         """
         return self._raw_client
+
+    async def reassign(
+        self,
+        id: str,
+        *,
+        changes: typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+        reason_code: ReassignSchedulingBookingRequestReasonCode,
+        note: typing.Optional[str] = OMIT,
+        overrides: typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]] = OMIT,
+        notify: typing.Optional[ReassignSchedulingBookingRequestNotify] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingBooking:
+        """
+        Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        changes : typing.Sequence[ReassignSchedulingBookingRequestChangesItem]
+            A session or a one-on-one has one. A collective can change several.
+
+        reason_code : ReassignSchedulingBookingRequestReasonCode
+
+        note : typing.Optional[str]
+            Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+
+        overrides : typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]]
+            Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+
+        notify : typing.Optional[ReassignSchedulingBookingRequestNotify]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingBooking
+            The booking.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+        from coss.resources.scheduling.resources.bookings import (
+            ReassignSchedulingBookingRequestChangesItem,
+        )
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.scheduling.bookings.reassign(
+                id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+                changes=[
+                    ReassignSchedulingBookingRequestChangesItem(
+                        to_host="doctor_518",
+                    )
+                ],
+                reason_code="out_of_office",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.reassign(
+            id,
+            changes=changes,
+            reason_code=reason_code,
+            note=note,
+            overrides=overrides,
+            notify=notify,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def reassign_candidates(
+        self,
+        id: str,
+        *,
+        from_host: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SchedulingReassignCandidateList:
+        """
+        The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        from_host : typing.Optional[str]
+            The host who'd leave, when it could be several.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SchedulingReassignCandidateList
+            The candidates.
+
+        Examples
+        --------
+        import asyncio
+
+        from coss import AsyncCoss
+
+        client = AsyncCoss(
+            "2026-10-10",
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.scheduling.bookings.reassign_candidates(
+                id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.reassign_candidates(id, from_host=from_host, request_options=request_options)
+        return _response.data
 
     async def list(
         self,
@@ -1110,7 +1362,11 @@ class AsyncBookingsClient:
         return _response.data
 
     async def update_location(
-        self, id: str, *, location: SchedulingLocation, request_options: typing.Optional[RequestOptions] = None
+        self,
+        id: str,
+        *,
+        location: typing.Optional[SchedulingLocation] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> SchedulingBooking:
         """
         Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
@@ -1120,7 +1376,7 @@ class AsyncBookingsClient:
         id : str
             The booking's id.
 
-        location : SchedulingLocation
+        location : typing.Optional[SchedulingLocation]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1134,7 +1390,7 @@ class AsyncBookingsClient:
         --------
         import asyncio
 
-        from coss import AsyncCoss, SchedulingLocation_Link
+        from coss import AsyncCoss, SchedulingLocationZero
 
         client = AsyncCoss(
             "2026-10-10",
@@ -1145,7 +1401,8 @@ class AsyncBookingsClient:
         async def main() -> None:
             await client.scheduling.bookings.update_location(
                 id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-                location=SchedulingLocation_Link(
+                location=SchedulingLocationZero(
+                    type="link",
                     url="https://meet.example.com/abc",
                 ),
             )

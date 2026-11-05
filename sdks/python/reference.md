@@ -20751,1580 +20751,208 @@ client.scheduling.hosts.update(
 </dl>
 </details>
 
-## Scheduling Schedules
-<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">list</a>(...) -> SchedulingScheduleList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-All of the host's schedules, oldest first.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.schedules.list(
-    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `str` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">create</a>(...) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-A host's weekly hours and date overrides, in local time. The first one is the host's default.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss, SchedulingWeeklyRule, SchedulingScheduleOverride, SchedulingScheduleOverrideRangesItem
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.schedules.create(
-    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    name="Clinic hours",
-    rules=[
-        SchedulingWeeklyRule(
-            days=[
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            start="09:00",
-            end="17:00",
-        )
-    ],
-    overrides=[
-        SchedulingScheduleOverride(
-            date="2027-12-24",
-            ranges=[
-                SchedulingScheduleOverrideRangesItem(
-                    start="start",
-                    end="end",
-                )
-            ],
-        )
-    ],
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `str` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">get</a>(...) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-One of the host's schedules.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.schedules.get(
-    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `str` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule_id:** `str` — The schedule's id.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">update</a>(...) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss, SchedulingWeeklyRule, SchedulingScheduleOverride, SchedulingScheduleOverrideRangesItem
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.schedules.update(
-    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    name="Clinic hours",
-    rules=[
-        SchedulingWeeklyRule(
-            days=[
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            start="09:00",
-            end="17:00",
-        )
-    ],
-    overrides=[
-        SchedulingScheduleOverride(
-            date="2027-12-24",
-            ranges=[
-                SchedulingScheduleOverrideRangesItem(
-                    start="start",
-                    end="end",
-                )
-            ],
-        )
-    ],
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `str` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule_id:** `str` — The schedule's id.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">remove</a>(...) -> DeletedSchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Refused for the host's default schedule.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.schedules.remove(
-    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `str` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**schedule_id:** `str` — The schedule's id.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling EventTypes
-<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">list</a>(...) -> SchedulingEventTypeList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-The environment's event types, newest first.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.event_types.list()
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**limit:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**after:** `typing.Optional[str]` — The last id of the previous page.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">create</a>(...) -> SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss, SchedulingEventTypeHostInput
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.event_types.create(
-    kind="one_on_one",
-    title="Initial consultation",
-    duration_minutes=30,
-    buffer_after_minutes=10,
-    min_notice_minutes=120,
-    hosts=[
-        SchedulingEventTypeHostInput(
-            host="doctor_482",
-        )
-    ],
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**title:** `str` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_minutes:** `int` — How long a booking lasts by default, in minutes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**uid:** `typing.Optional[str]` — Your own id for this event type, unique in the environment, accepted wherever its id is.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**kind:** `typing.Optional[CreateEventTypeRequestKind]` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_options:** `typing.Optional[typing.List[int]]` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**step_minutes:** `typing.Optional[int]` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**grid_time_zone:** `typing.Optional[str]` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**buffer_before_minutes:** `typing.Optional[int]` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**buffer_after_minutes:** `typing.Optional[int]` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**min_notice_minutes:** `typing.Optional[int]` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**booking_window:** `typing.Optional[SchedulingBookingWindow]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `typing.Optional[typing.List[SchedulingLimit]]` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `typing.Optional[int]` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requires_approval:** `typing.Optional[bool]` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approval_ttl_minutes:** `typing.Optional[int]` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hold_ttl_seconds:** `typing.Optional[int]` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancel_notice_minutes:** `typing.Optional[int]` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reschedule_notice_minutes:** `typing.Optional[int]` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_guests:** `typing.Optional[int]` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_bookings_per_attendee:** `typing.Optional[int]` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host_calendar_details:** `typing.Optional[CreateEventTypeRequestHostCalendarDetails]` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `typing.Optional[typing.List[SchedulingQuestion]]` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `typing.Optional[typing.List[SchedulingLocation]]` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host_filter:** `typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]]` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestNotificationsValue]]]` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `typing.Optional[typing.List[SchedulingReminderInput]]` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `typing.Optional[typing.List[SchedulingEventTypeHostInput]]` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">get</a>(...) -> SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-An event type by its id or your uid.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.event_types.get(
-    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**event_type:** `str` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">update</a>(...) -> SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.event_types.update(
-    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    min_notice_minutes=240,
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**event_type:** `str` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**uid:** `typing.Optional[str]` — Your own id for this event type. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `typing.Optional[str]` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `typing.Optional[str]` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_minutes:** `typing.Optional[int]` — How long a booking lasts by default, in minutes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_options:** `typing.Optional[typing.List[int]]` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**step_minutes:** `typing.Optional[int]` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**grid_time_zone:** `typing.Optional[str]` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**buffer_before_minutes:** `typing.Optional[int]` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**buffer_after_minutes:** `typing.Optional[int]` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**min_notice_minutes:** `typing.Optional[int]` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**booking_window:** `typing.Optional[SchedulingBookingWindow]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `typing.Optional[typing.List[SchedulingLimit]]` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `typing.Optional[int]` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requires_approval:** `typing.Optional[bool]` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approval_ttl_minutes:** `typing.Optional[int]` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hold_ttl_seconds:** `typing.Optional[int]` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancel_notice_minutes:** `typing.Optional[int]` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reschedule_notice_minutes:** `typing.Optional[int]` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_guests:** `typing.Optional[int]` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**max_active_bookings_per_attendee:** `typing.Optional[int]` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host_calendar_details:** `typing.Optional[UpdateEventTypeRequestHostCalendarDetails]` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `typing.Optional[typing.List[SchedulingQuestion]]` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `typing.Optional[typing.List[SchedulingLocation]]` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host_filter:** `typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]]` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestNotificationsValue]]]` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `typing.Optional[typing.List[SchedulingReminderInput]]` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `typing.Optional[UpdateEventTypeRequestStatus]` — `archived` stops new bookings, and keeps existing ones.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `typing.Optional[typing.List[SchedulingEventTypeHostInput]]` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Slots
-<details><summary><code>client.scheduling.slots.<a href="src/coss/scheduling/slots/client.py">list</a>(...) -> SchedulingSlotList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.slots.list(
-    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    start="2027-01-04T15:00:00.000Z",
-    end="2027-01-04T15:00:00.000Z",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**event_type:** `str` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `str` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `str` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `typing.Optional[str]` — Only this host's slots (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_minutes:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[str]` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.slots.<a href="src/coss/scheduling/slots/client.py">explain</a>(...) -> SchedulingSlotExplanation</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.slots.explain(
-    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    start="2027-01-04T15:00:00.000Z",
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**event_type:** `str` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `str` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `typing.Optional[str]` — Only this host (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**duration_minutes:** `typing.Optional[int]` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[str]` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Availability
-<details><summary><code>client.scheduling.availability.<a href="src/coss/scheduling/availability/client.py">search</a>(...) -> SchedulingAvailabilitySearchResult</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```python
-from coss import Coss
-from coss.environment import CossEnvironment
-
-client = Coss(
-    api_key="<token>",
-    environment=CossEnvironment.DEFAULT,
-)
-
-client.scheduling.availability.search(
-    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    start="2027-01-04T00:00:00.000Z",
-    end="2027-01-18T00:00:00.000Z",
-    attributes={
-        "licensed_in": "CA"
-    },
-)
-
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**event_type:** `str` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `str` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `str` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `typing.Optional[typing.Dict[str, AvailabilitySearchRequestAttributesValue]]` — Only hosts matching all of these.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `typing.Optional[typing.List[str]]` — Only these hosts (ids or uids). Default: everyone the event type could offer.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slots_per_host:** `typing.Optional[int]` — How many of each host's soonest slots to return.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit:** `typing.Optional[int]` — Hosts to return, soonest availability first.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
 ## Scheduling Bookings
+<details><summary><code>client.scheduling.bookings.<a href="src/coss/scheduling/bookings/client.py">reassign</a>(...) -> SchedulingBooking</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+from coss.scheduling.bookings import ReassignSchedulingBookingRequestChangesItem
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.bookings.reassign(
+    id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    changes=[
+        ReassignSchedulingBookingRequestChangesItem(
+            to_host="doctor_518",
+        )
+    ],
+    reason_code="out_of_office",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The booking's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**changes:** `typing.List[ReassignSchedulingBookingRequestChangesItem]` — A session or a one-on-one has one. A collective can change several.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason_code:** `ReassignSchedulingBookingRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `typing.Optional[str]` — Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `typing.Optional[typing.List[ReassignSchedulingBookingRequestOverridesItem]]` — Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `typing.Optional[ReassignSchedulingBookingRequestNotify]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.bookings.<a href="src/coss/scheduling/bookings/client.py">reassign_candidates</a>(...) -> SchedulingReassignCandidateList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.bookings.reassign_candidates(
+    id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The booking's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from_host:** `typing.Optional[str]` — The host who'd leave, when it could be several.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.scheduling.bookings.<a href="src/coss/scheduling/bookings/client.py">list</a>(...) -> SchedulingBookingList</code></summary>
 <dl>
 <dd>
@@ -23285,7 +21913,7 @@ Where it happens, such as the meeting link you made after the `scheduling.bookin
 <dd>
 
 ```python
-from coss import Coss, SchedulingLocation_Link
+from coss import Coss, SchedulingLocationZero
 from coss.environment import CossEnvironment
 
 client = Coss(
@@ -23295,7 +21923,8 @@ client = Coss(
 
 client.scheduling.bookings.update_location(
     id="book_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    location=SchedulingLocation_Link(
+    location=SchedulingLocationZero(
+        type="link",
         url="https://meet.example.com/abc",
     ),
 )
@@ -23322,7 +21951,3674 @@ client.scheduling.bookings.update_location(
 <dl>
 <dd>
 
-**location:** `SchedulingLocation` 
+**location:** `typing.Optional[SchedulingLocation]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Reassignments
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">preview</a>(...) -> SchedulingReassignmentPreview</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who each booking would go to, and why not when nobody can take it, without moving anything. It works down them in order, so two can't both be promised the same free hour. Change any of it and start the run with `assignments`. Covers the first 500. Things can change before you start it: the run decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SchedulingReassignmentSelection, SchedulingReassignmentStrategy
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.preview(
+    selection=SchedulingReassignmentSelection(
+        host="doctor_482",
+        start_before="2027-08-14T00:00:00.000Z",
+    ),
+    strategy=SchedulingReassignmentStrategy(
+        preferred_hosts=[
+            "doctor_518"
+        ],
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**selection:** `SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `typing.Optional[SchedulingReassignmentStrategy]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `typing.Optional[typing.List[PreviewSchedulingReassignmentRequestOverridesItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">list</a>(...) -> SchedulingReassignmentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first, with how each is going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">create</a>(...) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Moves up to 5,000 bookings in the background, each on its own, so one that can't move never holds up the rest. Nothing's ever cancelled: a booking nobody can take stays where it is, and its item says so. It answers at once: follow the run by its id, or wait for `scheduling.reassignment.completed`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SchedulingReassignmentSelection, SchedulingReassignmentStrategy
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.create(
+    idempotency_key="welcome-user-123",
+    selection=SchedulingReassignmentSelection(
+        out_of_office="ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ),
+    strategy=SchedulingReassignmentStrategy(
+        preferred_hosts=[
+            "doctor_518"
+        ],
+    ),
+    reason_code="out_of_office",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**selection:** `SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason_code:** `CreateSchedulingReassignmentRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**idempotency_key:** `typing.Optional[str]` — Makes retries safe: a repeated request with the same key and body returns the original run instead of starting another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `typing.Optional[SchedulingReassignmentStrategy]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `typing.Optional[str]` — Why, in your words: required with an override of someone's availability.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `typing.Optional[typing.List[CreateSchedulingReassignmentRequestOverridesItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `typing.Optional[CreateSchedulingReassignmentRequestNotify]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">get</a>(...) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+How it's going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.get(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">items</a>(...) -> SchedulingReassignmentItemList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Each booking it covers and what happened to it. A group session has one, for one of its seats. Empty until the worker's started on it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.items(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">cancel</a>(...) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Stops what hasn't happened yet. What's moved stays moved: undo it for that. Cancelling one that's finished changes nothing.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.cancel(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.<a href="src/coss/scheduling/reassignments/client.py">undo</a>(...) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives back what a finished run moved, as a new run. A booking that's moved on since stays where it went, and a former host who's no longer free keeps it from going back, unless you pass `overrides`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.reassignments.undo(
+    id="id",
+    reason_code="other",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason_code:** `typing.Optional[UndoSchedulingReassignmentRequestReasonCode]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `typing.Optional[typing.List[UndoSchedulingReassignmentRequestOverridesItem]]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `typing.Optional[UndoSchedulingReassignmentRequestNotify]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling HolidayCalendars
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">list</a>() -> SchedulingHolidayCalendarList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+By name. A feed's URL is never shown again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">create</a>(...) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Applies a country's public holidays, or your own feed, to some hosts as ordinary out of office entries, kept up to date by coss.com. A host who removes one keeps it removed.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.create(
+    name="UK team",
+    country="GB",
+    host_filter={
+        "team": "london"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `typing.Optional[str]` — A code from the list of holiday calendars, such as `GB`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**ics_url:** `typing.Optional[str]` — Your own feed, https or webcal, read in live environments. Stored encrypted.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[str]]` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, CreateSchedulingHolidayCalendarRequestHostFilterValue]]` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `typing.Optional[typing.List[str]]` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `typing.Optional[typing.List[str]]` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existing_bookings:** `typing.Optional[CreateSchedulingHolidayCalendarRequestExistingBookings]` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">get</a>(...) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With when it was last read, and why not if it couldn't be.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.get(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">remove</a>(...) -> DeletedSchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Hosts can be booked on its days again, shortly: past entries stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.remove(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">update</a>(...) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who it applies to, who covers and what happens to bookings. Takes effect shortly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.update(
+    id="id",
+    host_filter={
+        "team": "london"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[str]]` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, UpdateSchedulingHolidayCalendarRequestHostFilterValue]]` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `typing.Optional[typing.List[str]]` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `typing.Optional[typing.List[str]]` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existing_bookings:** `typing.Optional[UpdateSchedulingHolidayCalendarRequestExistingBookings]` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holiday_calendars.<a href="src/coss/scheduling/holiday_calendars/client.py">holidays</a>(...) -> SchedulingHolidayList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's coming, with names, as last read. Empty until its first read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.holiday_calendars.holidays(
+    id="id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling OutOfOffice
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">list</a>(...) -> SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's entries, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.list(
+    start_after="2027-01-04T15:00:00.000Z",
+    start_before="2027-01-04T15:00:00.000Z",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `typing.Optional[str]` — One host's entries, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_after:** `typing.Optional[str]` — Entries ending after this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_before:** `typing.Optional[str]` — Entries starting before this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**group:** `typing.Optional[str]` — The entries one request made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">create</a>(...) -> SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks one host, a list of hosts or everyone matching some attributes as away, for part of a day or for whole dates. They aren't offered during it. Existing bookings stay as they are: list them with the entry's conflicts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.create(
+    host="doctor_482",
+    start_date="2027-08-02",
+    end_date="2027-08-13",
+    reason="vacation",
+    public_message="Back on the 16th.",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `typing.Optional[str]` — One host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[str]]` — Several hosts, by id or uid. Each gets an entry of their own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, CreateSchedulingOutOfOfficeRequestHostFilterValue]]` — Every active host matching these attributes right now. A host added later isn't covered.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_date:** `typing.Optional[str]` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_date:** `typing.Optional[str]` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**time_zone:** `typing.Optional[str]` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `typing.Optional[typing.List[str]]` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `typing.Optional[str]` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `typing.Optional[str]` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**public_message:** `typing.Optional[str]` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**show_on_calendar:** `typing.Optional[bool]` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existing_bookings:** `typing.Optional[CreateSchedulingOutOfOfficeRequestExistingBookings]` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `typing.Optional[CreateSchedulingOutOfOfficeRequestReassign]` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**external_id:** `typing.Optional[str]` — Your own id for this entry, unique in the environment. Needs one host.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">get</a>(...) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One entry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.get(
+    id="ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">remove</a>(...) -> DeletedSchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The host can be booked in that time again, and any calendar event for it goes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.remove(
+    id="ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">update</a>(...) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. An entry stays with its host.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.update(
+    id="ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    end_date="2027-08-20",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_date:** `typing.Optional[str]` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_date:** `typing.Optional[str]` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**time_zone:** `typing.Optional[str]` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `typing.Optional[str]` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**public_message:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**show_on_calendar:** `typing.Optional[bool]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `typing.Optional[typing.List[str]]` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existing_bookings:** `typing.Optional[UpdateSchedulingOutOfOfficeRequestExistingBookings]` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `typing.Optional[UpdateSchedulingOutOfOfficeRequestReassign]` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">put</a>(...) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For syncing from a system of record such as an HR tool: send what it says, as often as you like, and there's one entry for it. Give every field you want to keep.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.put(
+    external_id="hr_leave_4471",
+    host="doctor_482",
+    start_date="2027-08-02",
+    end_date="2027-08-13",
+    reason="vacation",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**external_id:** `str` — Your own id for the entry.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `str` — The host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `typing.Optional[str]` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start_date:** `typing.Optional[str]` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end_date:** `typing.Optional[str]` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**time_zone:** `typing.Optional[str]` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `typing.Optional[typing.List[str]]` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `typing.Optional[str]` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `typing.Optional[str]` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**public_message:** `typing.Optional[str]` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**show_on_calendar:** `typing.Optional[bool]` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existing_bookings:** `typing.Optional[PutSchedulingOutOfOfficeRequestExistingBookings]` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `typing.Optional[PutSchedulingOutOfOfficeRequestReassign]` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.out_of_office.<a href="src/coss/scheduling/out_of_office/client.py">conflicts</a>(...) -> SchedulingOutOfOfficeConflictList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Live bookings of the host that fall in the entry, soonest first. Entries never change them.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.out_of_office.conflicts(
+    id="ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Schedules
+<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">list</a>(...) -> SchedulingScheduleList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+All of the host's schedules, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.schedules.list(
+    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `str` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">create</a>(...) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A host's weekly hours and date overrides, in local time. The first one is the host's default.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SchedulingWeeklyRule, SchedulingScheduleOverride, SchedulingScheduleOverrideRangesItem
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.schedules.create(
+    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    name="Clinic hours",
+    rules=[
+        SchedulingWeeklyRule(
+            days=[
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            start="09:00",
+            end="17:00",
+        )
+    ],
+    overrides=[
+        SchedulingScheduleOverride(
+            date="2027-12-24",
+            ranges=[
+                SchedulingScheduleOverrideRangesItem(
+                    start="start",
+                    end="end",
+                )
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `str` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">get</a>(...) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One of the host's schedules.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.schedules.get(
+    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `str` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**schedule_id:** `str` — The schedule's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">update</a>(...) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SchedulingWeeklyRule, SchedulingScheduleOverride, SchedulingScheduleOverrideRangesItem
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.schedules.update(
+    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    name="Clinic hours",
+    rules=[
+        SchedulingWeeklyRule(
+            days=[
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            start="09:00",
+            end="17:00",
+        )
+    ],
+    overrides=[
+        SchedulingScheduleOverride(
+            date="2027-12-24",
+            ranges=[
+                SchedulingScheduleOverrideRangesItem(
+                    start="start",
+                    end="end",
+                )
+            ],
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `str` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**schedule_id:** `str` — The schedule's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.<a href="src/coss/scheduling/schedules/client.py">remove</a>(...) -> DeletedSchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused for the host's default schedule.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.schedules.remove(
+    host="host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    schedule_id="sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `str` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**schedule_id:** `str` — The schedule's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling EventTypes
+<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">list</a>(...) -> SchedulingEventTypeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's event types, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.event_types.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `typing.Optional[str]` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">create</a>(...) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, SchedulingEventTypeHostInput
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.event_types.create(
+    kind="one_on_one",
+    title="Initial consultation",
+    duration_minutes=30,
+    buffer_after_minutes=10,
+    min_notice_minutes=120,
+    hosts=[
+        SchedulingEventTypeHostInput(
+            host="doctor_482",
+        )
+    ],
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**title:** `str` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_minutes:** `int` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `typing.Optional[str]` — Your own id for this event type, unique in the environment, accepted wherever its id is.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**kind:** `typing.Optional[CreateEventTypeRequestKind]` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `typing.Optional[str]` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_options:** `typing.Optional[typing.List[int]]` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**step_minutes:** `typing.Optional[int]` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**grid_time_zone:** `typing.Optional[str]` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**buffer_before_minutes:** `typing.Optional[int]` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**buffer_after_minutes:** `typing.Optional[int]` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**min_notice_minutes:** `typing.Optional[int]` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**booking_window:** `typing.Optional[SchedulingBookingWindow]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `typing.Optional[typing.List[SchedulingLimit]]` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `typing.Optional[int]` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requires_approval:** `typing.Optional[bool]` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignment_enabled:** `typing.Optional[bool]` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approval_ttl_minutes:** `typing.Optional[int]` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hold_ttl_seconds:** `typing.Optional[int]` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancel_notice_minutes:** `typing.Optional[int]` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reschedule_notice_minutes:** `typing.Optional[int]` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**max_guests:** `typing.Optional[int]` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**max_active_bookings_per_attendee:** `typing.Optional[int]` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_calendar_details:** `typing.Optional[CreateEventTypeRequestHostCalendarDetails]` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `typing.Optional[typing.List[SchedulingQuestion]]` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `typing.Optional[typing.List[typing.Optional[SchedulingLocation]]]` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestHostFilterValue]]]` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `typing.Optional[typing.Dict[str, typing.Optional[CreateEventTypeRequestNotificationsValue]]]` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `typing.Optional[typing.List[SchedulingReminderInput]]` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[SchedulingEventTypeHostInput]]` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">get</a>(...) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An event type by its id or your uid.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.event_types.get(
+    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_type:** `str` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.event_types.<a href="src/coss/scheduling/event_types/client.py">update</a>(...) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.event_types.update(
+    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    min_notice_minutes=240,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_type:** `str` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `typing.Optional[str]` — Your own id for this event type. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `typing.Optional[str]` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `typing.Optional[str]` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_minutes:** `typing.Optional[int]` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_options:** `typing.Optional[typing.List[int]]` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**step_minutes:** `typing.Optional[int]` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**grid_time_zone:** `typing.Optional[str]` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**buffer_before_minutes:** `typing.Optional[int]` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**buffer_after_minutes:** `typing.Optional[int]` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**min_notice_minutes:** `typing.Optional[int]` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**booking_window:** `typing.Optional[SchedulingBookingWindow]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `typing.Optional[typing.List[SchedulingLimit]]` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `typing.Optional[int]` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requires_approval:** `typing.Optional[bool]` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignment_enabled:** `typing.Optional[bool]` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approval_ttl_minutes:** `typing.Optional[int]` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hold_ttl_seconds:** `typing.Optional[int]` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancel_notice_minutes:** `typing.Optional[int]` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reschedule_notice_minutes:** `typing.Optional[int]` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**max_guests:** `typing.Optional[int]` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**max_active_bookings_per_attendee:** `typing.Optional[int]` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_calendar_details:** `typing.Optional[UpdateEventTypeRequestHostCalendarDetails]` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `typing.Optional[typing.List[SchedulingQuestion]]` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `typing.Optional[typing.List[typing.Optional[SchedulingLocation]]]` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestHostFilterValue]]]` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `typing.Optional[typing.Dict[str, typing.Optional[UpdateEventTypeRequestNotificationsValue]]]` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `typing.Optional[typing.List[SchedulingReminderInput]]` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `typing.Optional[typing.Dict[str, str]]` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `typing.Optional[UpdateEventTypeRequestStatus]` — `archived` stops new bookings, and keeps existing ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[SchedulingEventTypeHostInput]]` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Slots
+<details><summary><code>client.scheduling.slots.<a href="src/coss/scheduling/slots/client.py">list</a>(...) -> SchedulingSlotList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.slots.list(
+    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    start="2027-01-04T15:00:00.000Z",
+    end="2027-01-04T15:00:00.000Z",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_type:** `str` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `str` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `str` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `typing.Optional[str]` — Only this host's slots (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_minutes:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `typing.Optional[str]` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.slots.<a href="src/coss/scheduling/slots/client.py">explain</a>(...) -> SchedulingSlotExplanation</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.slots.explain(
+    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    start="2027-01-04T15:00:00.000Z",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_type:** `str` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `str` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `typing.Optional[str]` — Only this host (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**duration_minutes:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `typing.Optional[str]` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Availability
+<details><summary><code>client.scheduling.availability.<a href="src/coss/scheduling/availability/client.py">search</a>(...) -> SchedulingAvailabilitySearchResult</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.availability.search(
+    event_type="evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    start="2027-01-04T00:00:00.000Z",
+    end="2027-01-18T00:00:00.000Z",
+    attributes={
+        "licensed_in": "CA"
+    },
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**event_type:** `str` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `str` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `str` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `typing.Optional[typing.Dict[str, AvailabilitySearchRequestAttributesValue]]` — Only hosts matching all of these.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[str]]` — Only these hosts (ids or uids). Default: everyone the event type could offer.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slots_per_host:** `typing.Optional[int]` — How many of each host's soonest slots to return.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — Hosts to return, soonest availability first.
     
 </dd>
 </dl>
@@ -25055,7 +27351,515 @@ client.scheduling.calendar_delegations.verify(
 </dl>
 </details>
 
+## Scheduling OauthApps
+<details><summary><code>client.scheduling.oauth_apps.<a href="src/coss/scheduling/oauth_apps/client.py">list</a>() -> SchedulingOauthAppList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+At most one per provider, with how many connections use each.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.oauth_apps.list()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauth_apps.<a href="src/coss/scheduling/oauth_apps/client.py">create</a>(...) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+New consents in this environment use it, so the consent screen shows your brand. Connections made before it stay on coss.com's app until their host consents again. On the Scale plan and above. Secrets are never returned.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss, CreateOauthAppRequest_Google
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.oauth_apps.create(
+    request=CreateOauthAppRequest_Google(
+        client_id="client_id",
+        client_secret="client_secret",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateOauthAppRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauth_apps.<a href="src/coss/scheduling/oauth_apps/client.py">get</a>(...) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Its status, what to register at the provider, and how many connections use it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.oauth_apps.get(
+    id="calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The OAuth app's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauth_apps.<a href="src/coss/scheduling/oauth_apps/client.py">delete</a>(...) -> DeletedSchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused while connections use it (`oauth_app_in_use`), since only it can refresh their access: disconnect them first. New consents go back to coss.com's app.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.oauth_apps.delete(
+    id="calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The OAuth app's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauth_apps.<a href="src/coss/scheduling/oauth_apps/client.py">update</a>(...) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A new client secret is tried on a connection before it replaces the old one, and ends an outage if it works. Its client ID can't change: a different app needs its hosts to consent again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.oauth_apps.update(
+    id="calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    client_secret="GOCSPX-abcdefghijklmnopqrstuvwxyz",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `str` — The OAuth app's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**client_secret:** `typing.Optional[str]` — A new client secret. It's tried on a connection before it replaces the old one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tenant_id:** `typing.Optional[str]` — The Directory (tenant) ID, for an app that's only for your own tenant. Leave it out for a multi-tenant app.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**webhook_secret:** `typing.Optional[str]` — The Secret Token of your Zoom app, which signs its events at `zoom_event_url`. Never returned.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirect_uri:** `typing.Optional[str]` — A page on your own domain, registered with the provider, that forwards `code` and `state` to `coss_callback_url`. Google requires this for an external app, since it has to verify the redirect's domain as yours. Leave it out to use `coss_callback_url` directly.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**completion_url:** `typing.Optional[str]` — Where the browser lands after a consent that didn't name a `return_url`, with `coss_calendar` set to `connected`, `denied` or `invalid`. Leave it out for a plain page saying what happened.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secret_expires_at:** `typing.Optional[datetime.datetime]` — When the client secret expires. Owners and admins are warned 14 days before.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Scheduling Sessions
+<details><summary><code>client.scheduling.sessions.<a href="src/coss/scheduling/sessions/client.py">create_for_manager</a>(...) -> SchedulingSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from coss import Coss
+from coss.environment import CossEnvironment
+
+client = Coss(
+    api_key="<token>",
+    environment=CossEnvironment.DEFAULT,
+)
+
+client.scheduling.sessions.create_for_manager(
+    host_filter={
+        "team": "cardiology"
+    },
+    expires_in=3600,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**hosts:** `typing.Optional[typing.List[str]]` — The hosts this page can reach, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_filter:** `typing.Optional[typing.Dict[str, CreateSchedulingManagerSessionRequestHostFilterValue]]` — Everyone matching these attributes, asked again on every request.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expires_in:** `typing.Optional[int]` — Seconds until it stops working. At most a day.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**read_only:** `typing.Optional[bool]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.scheduling.sessions.<a href="src/coss/scheduling/sessions/client.py">create_for_host</a>(...) -> SchedulingSession</code></summary>
 <dl>
 <dd>
@@ -25479,6 +28283,14 @@ client.scheduling.settings.update(
 <dl>
 <dd>
 
+**privacy_url:** `typing.Optional[str]` — Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **email_from:** `typing.Optional[str]` — Sender of booking emails, on a verified domain. `null`: coss.com's own address.
     
 </dd>
@@ -25496,6 +28308,30 @@ client.scheduling.settings.update(
 <dd>
 
 **calendar_failure_mode:** `typing.Optional[UpdateSchedulingSettingsRequestCalendarFailureMode]` — When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name_host_in_attendee_emails:** `typing.Optional[bool]` — Name the new host when telling an attendee their booking has one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host_reassignment:** `typing.Optional[UpdateSchedulingSettingsRequestHostReassignment]` — Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**out_of_office_reasons:** `typing.Optional[typing.List[UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem]]` — Reasons of your own, on top of the preset ones. Hosts and managers see them.
     
 </dd>
 </dl>

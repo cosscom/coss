@@ -24,6 +24,10 @@ if typing.TYPE_CHECKING:
     from .create_booking_request_location_phone import CreateBookingRequestLocationPhone
     from .create_booking_request_location_zoom import CreateBookingRequestLocationZoom
     from .list_bookings_request_status import ListBookingsRequestStatus
+    from .reassign_scheduling_booking_request_changes_item import ReassignSchedulingBookingRequestChangesItem
+    from .reassign_scheduling_booking_request_notify import ReassignSchedulingBookingRequestNotify
+    from .reassign_scheduling_booking_request_overrides_item import ReassignSchedulingBookingRequestOverridesItem
+    from .reassign_scheduling_booking_request_reason_code import ReassignSchedulingBookingRequestReasonCode
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateBookingRequestAnswersValue": ".create_booking_request_answers_value",
     "CreateBookingRequestAttributesValue": ".create_booking_request_attributes_value",
@@ -41,6 +45,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateBookingRequestLocation_Phone": ".create_booking_request_location",
     "CreateBookingRequestLocation_Zoom": ".create_booking_request_location",
     "ListBookingsRequestStatus": ".list_bookings_request_status",
+    "ReassignSchedulingBookingRequestChangesItem": ".reassign_scheduling_booking_request_changes_item",
+    "ReassignSchedulingBookingRequestNotify": ".reassign_scheduling_booking_request_notify",
+    "ReassignSchedulingBookingRequestOverridesItem": ".reassign_scheduling_booking_request_overrides_item",
+    "ReassignSchedulingBookingRequestReasonCode": ".reassign_scheduling_booking_request_reason_code",
 }
 
 
@@ -82,4 +90,8 @@ __all__ = [
     "CreateBookingRequestLocation_Phone",
     "CreateBookingRequestLocation_Zoom",
     "ListBookingsRequestStatus",
+    "ReassignSchedulingBookingRequestChangesItem",
+    "ReassignSchedulingBookingRequestNotify",
+    "ReassignSchedulingBookingRequestOverridesItem",
+    "ReassignSchedulingBookingRequestReasonCode",
 ]

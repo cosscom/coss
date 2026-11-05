@@ -30,7 +30,7 @@ public record SchedulingSlotExplanationHostsItem : IJsonOnDeserialized
     public required bool Available { get; set; }
 
     /// <summary>
-    /// Why not: `not_on_grid`, `too_soon`, `outside_booking_window`, `calendar_unverified`, `outside_availability`, `host_busy`, `already_claimed`, `limit_reached` or `session_full`. `null` when they could.
+    /// Why not: `not_on_grid`, `too_soon`, `outside_booking_window`, `out_of_office`, `outside_coverage`, `calendar_unverified`, `outside_availability`, `host_busy`, `already_claimed`, `limit_reached` or `session_full`. `null` when they could.
     /// </summary>
     [Nullable]
     [JsonPropertyName("reason")]

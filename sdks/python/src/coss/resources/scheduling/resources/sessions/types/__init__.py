@@ -10,9 +10,13 @@ if typing.TYPE_CHECKING:
     from .create_scheduling_booker_session_request_attributes_value import (
         CreateSchedulingBookerSessionRequestAttributesValue,
     )
+    from .create_scheduling_manager_session_request_host_filter_value import (
+        CreateSchedulingManagerSessionRequestHostFilterValue,
+    )
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateSchedulingBookerSessionRequestAttendee": ".create_scheduling_booker_session_request_attendee",
     "CreateSchedulingBookerSessionRequestAttributesValue": ".create_scheduling_booker_session_request_attributes_value",
+    "CreateSchedulingManagerSessionRequestHostFilterValue": ".create_scheduling_manager_session_request_host_filter_value",
 }
 
 
@@ -37,4 +41,8 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["CreateSchedulingBookerSessionRequestAttendee", "CreateSchedulingBookerSessionRequestAttributesValue"]
+__all__ = [
+    "CreateSchedulingBookerSessionRequestAttendee",
+    "CreateSchedulingBookerSessionRequestAttributesValue",
+    "CreateSchedulingManagerSessionRequestHostFilterValue",
+]

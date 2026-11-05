@@ -8,6 +8,7 @@ import com.coss.core.RequestOptions;
 import com.coss.resources.scheduling.sessions.requests.CreateForBookingSessionsRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingBookerSessionRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingHostSessionRequest;
+import com.coss.resources.scheduling.sessions.requests.CreateSchedulingManagerSessionRequest;
 import com.coss.types.SchedulingSession;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,6 +27,35 @@ public class AsyncSessionsClient {
      */
     public AsyncRawSessionsClient withRawResponse() {
         return this.rawClient;
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<SchedulingSession> createForManager() {
+        return this.rawClient.createForManager().thenApply(response -> response.body());
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<SchedulingSession> createForManager(RequestOptions requestOptions) {
+        return this.rawClient.createForManager(requestOptions).thenApply(response -> response.body());
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<SchedulingSession> createForManager(CreateSchedulingManagerSessionRequest request) {
+        return this.rawClient.createForManager(request).thenApply(response -> response.body());
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<SchedulingSession> createForManager(
+            CreateSchedulingManagerSessionRequest request, RequestOptions requestOptions) {
+        return this.rawClient.createForManager(request, requestOptions).thenApply(response -> response.body());
     }
 
     /**

@@ -10,6 +10,7 @@ module Coss
       HOST_SESSION = "host_session"
       BOOKER_SESSION = "booker_session"
       MANAGE_SESSION = "manage_session"
+      MANAGER_SESSION = "manager_session"
       SYSTEM = "system"
     end
   end
