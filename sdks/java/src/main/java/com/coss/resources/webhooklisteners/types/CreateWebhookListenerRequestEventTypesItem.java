@@ -7,23 +7,157 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class CreateWebhookListenerRequestEventTypesItem {
-    public static final CreateWebhookListenerRequestEventTypesItem BILLING_PLAN_CHANGED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_PLAN_CHANGED, "billing.plan_changed");
-
     public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_VOIDED =
             new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_INVOICE_VOIDED, "billing.invoice_voided");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_SENT =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_SENT, "sign_request.sent");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OAUTH_APP_RESTORED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OAUTH_APP_RESTORED, "scheduling.oauth_app.restored");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_REINSTATED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SUBACCOUNT_REINSTATED, "subaccount.reinstated");
+
+    public static final CreateWebhookListenerRequestEventTypesItem VERIFICATION_FAILED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.VERIFICATION_FAILED, "verification.failed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OUT_OF_OFFICE_DELETED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OUT_OF_OFFICE_DELETED, "scheduling.out_of_office.deleted");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_DELEGATION_RESTORED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_CALENDAR_DELEGATION_RESTORED, "scheduling.calendar_delegation.restored");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_DELIVERY_DELAYED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_DELIVERY_DELAYED, "email.delivery_delayed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BROADCAST_SENDING =
+            new CreateWebhookListenerRequestEventTypesItem(Value.BROADCAST_SENDING, "broadcast.sending");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SMS_RECEIVED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SMS_RECEIVED, "sms.received");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_FINALIZED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.BILLING_INVOICE_FINALIZED, "billing.invoice_finalized");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED, "scheduling.booking.calendar_write_failed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_DELIVERED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_DELIVERED, "email.delivered");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_PAYMENT_FAILED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.BILLING_INVOICE_PAYMENT_FAILED, "billing.invoice_payment_failed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_RESCHEDULED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_RESCHEDULED, "email.rescheduled");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_CLICKED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_CLICKED, "email.clicked");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_REPUTATION_RECOVERED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SUBACCOUNT_REPUTATION_RECOVERED, "subaccount.reputation_recovered");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BILLING_BUDGET_THRESHOLD_REACHED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.BILLING_BUDGET_THRESHOLD_REACHED, "billing.budget_threshold_reached");
+
+    public static final CreateWebhookListenerRequestEventTypesItem CONTACT_CONFIRMED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_CONFIRMED, "contact.confirmed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem CONTACT_DELETED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_DELETED, "contact.deleted");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SMS_OPTED_IN =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SMS_OPTED_IN, "sms.opted_in");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_COMPLAINED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_COMPLAINED, "email.complained");
+
+    public static final CreateWebhookListenerRequestEventTypesItem ACCOUNT_MARKETING_PAUSED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.ACCOUNT_MARKETING_PAUSED, "account.marketing_paused");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_FAILED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_FAILED, "email.failed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BROADCAST_CANCELED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.BROADCAST_CANCELED, "broadcast.canceled");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_NEEDS_REAUTH =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_CALENDAR_NEEDS_REAUTH, "scheduling.calendar.needs_reauth");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_OPENED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_OPENED, "email.opened");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_DISCONNECTED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_CALENDAR_DISCONNECTED, "scheduling.calendar.disconnected");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OAUTH_APP_FAILING =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OAUTH_APP_FAILING, "scheduling.oauth_app.failing");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_PAUSED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SUBACCOUNT_PAUSED, "subaccount.paused");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_COMPLETED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_COMPLETED, "sign_request.completed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_SCHEDULED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_SCHEDULED, "email.scheduled");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_CANCELLED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_BOOKING_CANCELLED, "scheduling.booking.cancelled");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BILLING_HOLD_LIFTED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_HOLD_LIFTED, "billing.hold_lifted");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_SUPPRESSED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_SUPPRESSED, "email.suppressed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_RECEIVED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_RECEIVED, "email.received");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OUT_OF_OFFICE_ENDED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OUT_OF_OFFICE_ENDED, "scheduling.out_of_office.ended");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_REMINDER =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_BOOKING_REMINDER, "scheduling.booking.reminder");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_REASSIGNMENT_COMPLETED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_REASSIGNMENT_COMPLETED, "scheduling.reassignment.completed");
+
+    public static final CreateWebhookListenerRequestEventTypesItem BILLING_PLAN_CHANGED =
+            new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_PLAN_CHANGED, "billing.plan_changed");
 
     public static final CreateWebhookListenerRequestEventTypesItem SMS_SUPPRESSED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_SUPPRESSED, "sms.suppressed");
 
-    public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_SENT =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_SENT, "sign_request.sent");
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OUT_OF_OFFICE_UPDATED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OUT_OF_OFFICE_UPDATED, "scheduling.out_of_office.updated");
 
     public static final CreateWebhookListenerRequestEventTypesItem EMAIL_BOUNCED =
             new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_BOUNCED, "email.bounced");
 
     public static final CreateWebhookListenerRequestEventTypesItem SMS_OPTED_OUT =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_OPTED_OUT, "sms.opted_out");
+
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OUT_OF_OFFICE_STARTED =
+            new CreateWebhookListenerRequestEventTypesItem(
+                    Value.SCHEDULING_OUT_OF_OFFICE_STARTED, "scheduling.out_of_office.started");
 
     public static final CreateWebhookListenerRequestEventTypesItem VERIFICATION_BLOCKED =
             new CreateWebhookListenerRequestEventTypesItem(Value.VERIFICATION_BLOCKED, "verification.blocked");
@@ -33,12 +167,6 @@ public final class CreateWebhookListenerRequestEventTypesItem {
 
     public static final CreateWebhookListenerRequestEventTypesItem SMS_CANCELED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_CANCELED, "sms.canceled");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_REINSTATED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SUBACCOUNT_REINSTATED, "subaccount.reinstated");
-
-    public static final CreateWebhookListenerRequestEventTypesItem VERIFICATION_FAILED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.VERIFICATION_FAILED, "verification.failed");
 
     public static final CreateWebhookListenerRequestEventTypesItem FORM_SUBMISSION_RECEIVED =
             new CreateWebhookListenerRequestEventTypesItem(Value.FORM_SUBMISSION_RECEIVED, "form.submission.received");
@@ -51,19 +179,12 @@ public final class CreateWebhookListenerRequestEventTypesItem {
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.SCHEDULING_BOOKING_LOCATION_READY, "scheduling.booking.location_ready");
 
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_DELEGATION_RESTORED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_CALENDAR_DELEGATION_RESTORED, "scheduling.calendar_delegation.restored");
-
     public static final CreateWebhookListenerRequestEventTypesItem DOMAIN_DMARC_REPORT_RECEIVED =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.DOMAIN_DMARC_REPORT_RECEIVED, "domain.dmarc_report_received");
 
     public static final CreateWebhookListenerRequestEventTypesItem CONTACT_UPDATED =
             new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_UPDATED, "contact.updated");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_DELIVERY_DELAYED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_DELIVERY_DELAYED, "email.delivery_delayed");
 
     public static final CreateWebhookListenerRequestEventTypesItem INBOX_MESSAGE_RECEIVED =
             new CreateWebhookListenerRequestEventTypesItem(Value.INBOX_MESSAGE_RECEIVED, "inbox.message.received");
@@ -72,14 +193,8 @@ public final class CreateWebhookListenerRequestEventTypesItem {
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.BILLING_BUDGET_HOLD_PLACED, "billing.budget_hold_placed");
 
-    public static final CreateWebhookListenerRequestEventTypesItem BROADCAST_SENDING =
-            new CreateWebhookListenerRequestEventTypesItem(Value.BROADCAST_SENDING, "broadcast.sending");
-
     public static final CreateWebhookListenerRequestEventTypesItem SMS_FAILED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_FAILED, "sms.failed");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SMS_RECEIVED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SMS_RECEIVED, "sms.received");
 
     public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_DELEGATION_FAILING =
             new CreateWebhookListenerRequestEventTypesItem(
@@ -96,43 +211,22 @@ public final class CreateWebhookListenerRequestEventTypesItem {
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.SCHEDULING_BOOKING_CREATED, "scheduling.booking.created");
 
-    public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_FINALIZED =
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_OUT_OF_OFFICE_CREATED =
             new CreateWebhookListenerRequestEventTypesItem(
-                    Value.BILLING_INVOICE_FINALIZED, "billing.invoice_finalized");
+                    Value.SCHEDULING_OUT_OF_OFFICE_CREATED, "scheduling.out_of_office.created");
 
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED =
+    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_REASSIGNED =
             new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED, "scheduling.booking.calendar_write_failed");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_DELIVERED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_DELIVERED, "email.delivered");
+                    Value.SCHEDULING_BOOKING_REASSIGNED, "scheduling.booking.reassigned");
 
     public static final CreateWebhookListenerRequestEventTypesItem SMS_SCHEDULED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_SCHEDULED, "sms.scheduled");
 
-    public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_PAYMENT_FAILED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.BILLING_INVOICE_PAYMENT_FAILED, "billing.invoice_payment_failed");
-
     public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_DECLINED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_DECLINED, "sign_request.declined");
 
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_RESCHEDULED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_RESCHEDULED, "email.rescheduled");
-
     public static final CreateWebhookListenerRequestEventTypesItem BROADCAST_PAUSED =
             new CreateWebhookListenerRequestEventTypesItem(Value.BROADCAST_PAUSED, "broadcast.paused");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_CLICKED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_CLICKED, "email.clicked");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_REPUTATION_RECOVERED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SUBACCOUNT_REPUTATION_RECOVERED, "subaccount.reputation_recovered");
-
-    public static final CreateWebhookListenerRequestEventTypesItem BILLING_BUDGET_THRESHOLD_REACHED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.BILLING_BUDGET_THRESHOLD_REACHED, "billing.budget_threshold_reached");
 
     public static final CreateWebhookListenerRequestEventTypesItem EMAIL_SENT =
             new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_SENT, "email.sent");
@@ -153,27 +247,15 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     public static final CreateWebhookListenerRequestEventTypesItem FORM_SUBMISSION_FLAGGED =
             new CreateWebhookListenerRequestEventTypesItem(Value.FORM_SUBMISSION_FLAGGED, "form.submission.flagged");
 
-    public static final CreateWebhookListenerRequestEventTypesItem CONTACT_CONFIRMED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_CONFIRMED, "contact.confirmed");
-
     public static final CreateWebhookListenerRequestEventTypesItem BILLING_INVOICE_PAID =
             new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_INVOICE_PAID, "billing.invoice_paid");
 
     public static final CreateWebhookListenerRequestEventTypesItem CONTACT_UNSUBSCRIBED =
             new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_UNSUBSCRIBED, "contact.unsubscribed");
 
-    public static final CreateWebhookListenerRequestEventTypesItem CONTACT_DELETED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.CONTACT_DELETED, "contact.deleted");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SMS_OPTED_IN =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SMS_OPTED_IN, "sms.opted_in");
-
     public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_CONFIRMED =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.SCHEDULING_BOOKING_CONFIRMED, "scheduling.booking.confirmed");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_COMPLAINED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_COMPLAINED, "email.complained");
 
     public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_NO_SHOW =
             new CreateWebhookListenerRequestEventTypesItem(
@@ -190,22 +272,13 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_EXPIRED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_EXPIRED, "sign_request.expired");
 
-    public static final CreateWebhookListenerRequestEventTypesItem ACCOUNT_MARKETING_PAUSED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.ACCOUNT_MARKETING_PAUSED, "account.marketing_paused");
-
     public static final CreateWebhookListenerRequestEventTypesItem ACCOUNT_REPUTATION_WARNING =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.ACCOUNT_REPUTATION_WARNING, "account.reputation_warning");
 
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_FAILED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_FAILED, "email.failed");
-
     public static final CreateWebhookListenerRequestEventTypesItem ACCOUNT_MARKETING_REINSTATED =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.ACCOUNT_MARKETING_REINSTATED, "account.marketing_reinstated");
-
-    public static final CreateWebhookListenerRequestEventTypesItem BROADCAST_CANCELED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.BROADCAST_CANCELED, "broadcast.canceled");
 
     public static final CreateWebhookListenerRequestEventTypesItem BILLING_CREDIT_GRANTED =
             new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_CREDIT_GRANTED, "billing.credit_granted");
@@ -213,10 +286,6 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     public static final CreateWebhookListenerRequestEventTypesItem BILLING_BUDGET_HOLD_LIFTED =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.BILLING_BUDGET_HOLD_LIFTED, "billing.budget_hold_lifted");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_NEEDS_REAUTH =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_CALENDAR_NEEDS_REAUTH, "scheduling.calendar.needs_reauth");
 
     public static final CreateWebhookListenerRequestEventTypesItem RISK_ASSESSMENT_REVIEWED =
             new CreateWebhookListenerRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEWED, "risk.assessment.reviewed");
@@ -231,19 +300,12 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     public static final CreateWebhookListenerRequestEventTypesItem ACCOUNT_REINSTATED =
             new CreateWebhookListenerRequestEventTypesItem(Value.ACCOUNT_REINSTATED, "account.reinstated");
 
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_OPENED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_OPENED, "email.opened");
-
     public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_SIGNER_SIGNED =
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.SIGN_REQUEST_SIGNER_SIGNED, "sign_request.signer_signed");
 
     public static final CreateWebhookListenerRequestEventTypesItem EMAIL_CANCELED =
             new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_CANCELED, "email.canceled");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_DISCONNECTED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_CALENDAR_DISCONNECTED, "scheduling.calendar.disconnected");
 
     public static final CreateWebhookListenerRequestEventTypesItem SMS_DELIVERED =
             new CreateWebhookListenerRequestEventTypesItem(Value.SMS_DELIVERED, "sms.delivered");
@@ -258,17 +320,8 @@ public final class CreateWebhookListenerRequestEventTypesItem {
             new CreateWebhookListenerRequestEventTypesItem(
                     Value.SCHEDULING_BOOKING_DECLINED, "scheduling.booking.declined");
 
-    public static final CreateWebhookListenerRequestEventTypesItem SUBACCOUNT_PAUSED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SUBACCOUNT_PAUSED, "subaccount.paused");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SIGN_REQUEST_COMPLETED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.SIGN_REQUEST_COMPLETED, "sign_request.completed");
-
     public static final CreateWebhookListenerRequestEventTypesItem RISK_ASSESSMENT_REVIEW =
             new CreateWebhookListenerRequestEventTypesItem(Value.RISK_ASSESSMENT_REVIEW, "risk.assessment.review");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_SCHEDULED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_SCHEDULED, "email.scheduled");
 
     public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_RESCHEDULED =
             new CreateWebhookListenerRequestEventTypesItem(
@@ -280,25 +333,8 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     public static final CreateWebhookListenerRequestEventTypesItem HOOK_ENDPOINT_DISABLED =
             new CreateWebhookListenerRequestEventTypesItem(Value.HOOK_ENDPOINT_DISABLED, "hook_endpoint.disabled");
 
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_CANCELLED =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_BOOKING_CANCELLED, "scheduling.booking.cancelled");
-
-    public static final CreateWebhookListenerRequestEventTypesItem BILLING_HOLD_LIFTED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_HOLD_LIFTED, "billing.hold_lifted");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_SUPPRESSED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_SUPPRESSED, "email.suppressed");
-
     public static final CreateWebhookListenerRequestEventTypesItem BILLING_HOLD_PLACED =
             new CreateWebhookListenerRequestEventTypesItem(Value.BILLING_HOLD_PLACED, "billing.hold_placed");
-
-    public static final CreateWebhookListenerRequestEventTypesItem EMAIL_RECEIVED =
-            new CreateWebhookListenerRequestEventTypesItem(Value.EMAIL_RECEIVED, "email.received");
-
-    public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_BOOKING_REMINDER =
-            new CreateWebhookListenerRequestEventTypesItem(
-                    Value.SCHEDULING_BOOKING_REMINDER, "scheduling.booking.reminder");
 
     public static final CreateWebhookListenerRequestEventTypesItem SCHEDULING_CALENDAR_CONNECTED =
             new CreateWebhookListenerRequestEventTypesItem(
@@ -343,52 +379,118 @@ public final class CreateWebhookListenerRequestEventTypesItem {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
-            case BILLING_PLAN_CHANGED:
-                return visitor.visitBillingPlanChanged();
             case BILLING_INVOICE_VOIDED:
                 return visitor.visitBillingInvoiceVoided();
-            case SMS_SUPPRESSED:
-                return visitor.visitSmsSuppressed();
             case SIGN_REQUEST_SENT:
                 return visitor.visitSignRequestSent();
+            case SCHEDULING_OAUTH_APP_RESTORED:
+                return visitor.visitSchedulingOauthAppRestored();
+            case SUBACCOUNT_REINSTATED:
+                return visitor.visitSubaccountReinstated();
+            case VERIFICATION_FAILED:
+                return visitor.visitVerificationFailed();
+            case SCHEDULING_OUT_OF_OFFICE_DELETED:
+                return visitor.visitSchedulingOutOfOfficeDeleted();
+            case SCHEDULING_CALENDAR_DELEGATION_RESTORED:
+                return visitor.visitSchedulingCalendarDelegationRestored();
+            case EMAIL_DELIVERY_DELAYED:
+                return visitor.visitEmailDeliveryDelayed();
+            case BROADCAST_SENDING:
+                return visitor.visitBroadcastSending();
+            case SMS_RECEIVED:
+                return visitor.visitSmsReceived();
+            case BILLING_INVOICE_FINALIZED:
+                return visitor.visitBillingInvoiceFinalized();
+            case SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED:
+                return visitor.visitSchedulingBookingCalendarWriteFailed();
+            case EMAIL_DELIVERED:
+                return visitor.visitEmailDelivered();
+            case BILLING_INVOICE_PAYMENT_FAILED:
+                return visitor.visitBillingInvoicePaymentFailed();
+            case EMAIL_RESCHEDULED:
+                return visitor.visitEmailRescheduled();
+            case EMAIL_CLICKED:
+                return visitor.visitEmailClicked();
+            case SUBACCOUNT_REPUTATION_RECOVERED:
+                return visitor.visitSubaccountReputationRecovered();
+            case BILLING_BUDGET_THRESHOLD_REACHED:
+                return visitor.visitBillingBudgetThresholdReached();
+            case CONTACT_CONFIRMED:
+                return visitor.visitContactConfirmed();
+            case CONTACT_DELETED:
+                return visitor.visitContactDeleted();
+            case SMS_OPTED_IN:
+                return visitor.visitSmsOptedIn();
+            case EMAIL_COMPLAINED:
+                return visitor.visitEmailComplained();
+            case ACCOUNT_MARKETING_PAUSED:
+                return visitor.visitAccountMarketingPaused();
+            case EMAIL_FAILED:
+                return visitor.visitEmailFailed();
+            case BROADCAST_CANCELED:
+                return visitor.visitBroadcastCanceled();
+            case SCHEDULING_CALENDAR_NEEDS_REAUTH:
+                return visitor.visitSchedulingCalendarNeedsReauth();
+            case EMAIL_OPENED:
+                return visitor.visitEmailOpened();
+            case SCHEDULING_CALENDAR_DISCONNECTED:
+                return visitor.visitSchedulingCalendarDisconnected();
+            case SCHEDULING_OAUTH_APP_FAILING:
+                return visitor.visitSchedulingOauthAppFailing();
+            case SUBACCOUNT_PAUSED:
+                return visitor.visitSubaccountPaused();
+            case SIGN_REQUEST_COMPLETED:
+                return visitor.visitSignRequestCompleted();
+            case EMAIL_SCHEDULED:
+                return visitor.visitEmailScheduled();
+            case SCHEDULING_BOOKING_CANCELLED:
+                return visitor.visitSchedulingBookingCancelled();
+            case BILLING_HOLD_LIFTED:
+                return visitor.visitBillingHoldLifted();
+            case EMAIL_SUPPRESSED:
+                return visitor.visitEmailSuppressed();
+            case EMAIL_RECEIVED:
+                return visitor.visitEmailReceived();
+            case SCHEDULING_OUT_OF_OFFICE_ENDED:
+                return visitor.visitSchedulingOutOfOfficeEnded();
+            case SCHEDULING_BOOKING_REMINDER:
+                return visitor.visitSchedulingBookingReminder();
+            case SCHEDULING_REASSIGNMENT_COMPLETED:
+                return visitor.visitSchedulingReassignmentCompleted();
+            case BILLING_PLAN_CHANGED:
+                return visitor.visitBillingPlanChanged();
+            case SMS_SUPPRESSED:
+                return visitor.visitSmsSuppressed();
+            case SCHEDULING_OUT_OF_OFFICE_UPDATED:
+                return visitor.visitSchedulingOutOfOfficeUpdated();
             case EMAIL_BOUNCED:
                 return visitor.visitEmailBounced();
             case SMS_OPTED_OUT:
                 return visitor.visitSmsOptedOut();
+            case SCHEDULING_OUT_OF_OFFICE_STARTED:
+                return visitor.visitSchedulingOutOfOfficeStarted();
             case VERIFICATION_BLOCKED:
                 return visitor.visitVerificationBlocked();
             case CONTACT_CREATED:
                 return visitor.visitContactCreated();
             case SMS_CANCELED:
                 return visitor.visitSmsCanceled();
-            case SUBACCOUNT_REINSTATED:
-                return visitor.visitSubaccountReinstated();
-            case VERIFICATION_FAILED:
-                return visitor.visitVerificationFailed();
             case FORM_SUBMISSION_RECEIVED:
                 return visitor.visitFormSubmissionReceived();
             case ACCOUNT_REPUTATION_RECOVERED:
                 return visitor.visitAccountReputationRecovered();
             case SCHEDULING_BOOKING_LOCATION_READY:
                 return visitor.visitSchedulingBookingLocationReady();
-            case SCHEDULING_CALENDAR_DELEGATION_RESTORED:
-                return visitor.visitSchedulingCalendarDelegationRestored();
             case DOMAIN_DMARC_REPORT_RECEIVED:
                 return visitor.visitDomainDmarcReportReceived();
             case CONTACT_UPDATED:
                 return visitor.visitContactUpdated();
-            case EMAIL_DELIVERY_DELAYED:
-                return visitor.visitEmailDeliveryDelayed();
             case INBOX_MESSAGE_RECEIVED:
                 return visitor.visitInboxMessageReceived();
             case BILLING_BUDGET_HOLD_PLACED:
                 return visitor.visitBillingBudgetHoldPlaced();
-            case BROADCAST_SENDING:
-                return visitor.visitBroadcastSending();
             case SMS_FAILED:
                 return visitor.visitSmsFailed();
-            case SMS_RECEIVED:
-                return visitor.visitSmsReceived();
             case SCHEDULING_CALENDAR_DELEGATION_FAILING:
                 return visitor.visitSchedulingCalendarDelegationFailing();
             case SUBACCOUNT_REPUTATION_WARNING:
@@ -397,28 +499,16 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return visitor.visitSmsUndelivered();
             case SCHEDULING_BOOKING_CREATED:
                 return visitor.visitSchedulingBookingCreated();
-            case BILLING_INVOICE_FINALIZED:
-                return visitor.visitBillingInvoiceFinalized();
-            case SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED:
-                return visitor.visitSchedulingBookingCalendarWriteFailed();
-            case EMAIL_DELIVERED:
-                return visitor.visitEmailDelivered();
+            case SCHEDULING_OUT_OF_OFFICE_CREATED:
+                return visitor.visitSchedulingOutOfOfficeCreated();
+            case SCHEDULING_BOOKING_REASSIGNED:
+                return visitor.visitSchedulingBookingReassigned();
             case SMS_SCHEDULED:
                 return visitor.visitSmsScheduled();
-            case BILLING_INVOICE_PAYMENT_FAILED:
-                return visitor.visitBillingInvoicePaymentFailed();
             case SIGN_REQUEST_DECLINED:
                 return visitor.visitSignRequestDeclined();
-            case EMAIL_RESCHEDULED:
-                return visitor.visitEmailRescheduled();
             case BROADCAST_PAUSED:
                 return visitor.visitBroadcastPaused();
-            case EMAIL_CLICKED:
-                return visitor.visitEmailClicked();
-            case SUBACCOUNT_REPUTATION_RECOVERED:
-                return visitor.visitSubaccountReputationRecovered();
-            case BILLING_BUDGET_THRESHOLD_REACHED:
-                return visitor.visitBillingBudgetThresholdReached();
             case EMAIL_SENT:
                 return visitor.visitEmailSent();
             case SCHEDULING_BOOKING_EXTERNAL_CONFLICT:
@@ -431,20 +521,12 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return visitor.visitVerificationApproved();
             case FORM_SUBMISSION_FLAGGED:
                 return visitor.visitFormSubmissionFlagged();
-            case CONTACT_CONFIRMED:
-                return visitor.visitContactConfirmed();
             case BILLING_INVOICE_PAID:
                 return visitor.visitBillingInvoicePaid();
             case CONTACT_UNSUBSCRIBED:
                 return visitor.visitContactUnsubscribed();
-            case CONTACT_DELETED:
-                return visitor.visitContactDeleted();
-            case SMS_OPTED_IN:
-                return visitor.visitSmsOptedIn();
             case SCHEDULING_BOOKING_CONFIRMED:
                 return visitor.visitSchedulingBookingConfirmed();
-            case EMAIL_COMPLAINED:
-                return visitor.visitEmailComplained();
             case SCHEDULING_BOOKING_NO_SHOW:
                 return visitor.visitSchedulingBookingNoShow();
             case SCHEDULING_BOOKING_STARTED:
@@ -453,22 +535,14 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return visitor.visitBillingUsageThresholdReached();
             case SIGN_REQUEST_EXPIRED:
                 return visitor.visitSignRequestExpired();
-            case ACCOUNT_MARKETING_PAUSED:
-                return visitor.visitAccountMarketingPaused();
             case ACCOUNT_REPUTATION_WARNING:
                 return visitor.visitAccountReputationWarning();
-            case EMAIL_FAILED:
-                return visitor.visitEmailFailed();
             case ACCOUNT_MARKETING_REINSTATED:
                 return visitor.visitAccountMarketingReinstated();
-            case BROADCAST_CANCELED:
-                return visitor.visitBroadcastCanceled();
             case BILLING_CREDIT_GRANTED:
                 return visitor.visitBillingCreditGranted();
             case BILLING_BUDGET_HOLD_LIFTED:
                 return visitor.visitBillingBudgetHoldLifted();
-            case SCHEDULING_CALENDAR_NEEDS_REAUTH:
-                return visitor.visitSchedulingCalendarNeedsReauth();
             case RISK_ASSESSMENT_REVIEWED:
                 return visitor.visitRiskAssessmentReviewed();
             case SMS_SENT:
@@ -477,14 +551,10 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return visitor.visitSchedulingBookingPendingApproval();
             case ACCOUNT_REINSTATED:
                 return visitor.visitAccountReinstated();
-            case EMAIL_OPENED:
-                return visitor.visitEmailOpened();
             case SIGN_REQUEST_SIGNER_SIGNED:
                 return visitor.visitSignRequestSignerSigned();
             case EMAIL_CANCELED:
                 return visitor.visitEmailCanceled();
-            case SCHEDULING_CALENDAR_DISCONNECTED:
-                return visitor.visitSchedulingCalendarDisconnected();
             case SMS_DELIVERED:
                 return visitor.visitSmsDelivered();
             case SIGN_REQUEST_VIEWED:
@@ -493,32 +563,16 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return visitor.visitEmailUnsubscribed();
             case SCHEDULING_BOOKING_DECLINED:
                 return visitor.visitSchedulingBookingDeclined();
-            case SUBACCOUNT_PAUSED:
-                return visitor.visitSubaccountPaused();
-            case SIGN_REQUEST_COMPLETED:
-                return visitor.visitSignRequestCompleted();
             case RISK_ASSESSMENT_REVIEW:
                 return visitor.visitRiskAssessmentReview();
-            case EMAIL_SCHEDULED:
-                return visitor.visitEmailScheduled();
             case SCHEDULING_BOOKING_RESCHEDULED:
                 return visitor.visitSchedulingBookingRescheduled();
             case SCHEDULING_BOOKING_ENDED:
                 return visitor.visitSchedulingBookingEnded();
             case HOOK_ENDPOINT_DISABLED:
                 return visitor.visitHookEndpointDisabled();
-            case SCHEDULING_BOOKING_CANCELLED:
-                return visitor.visitSchedulingBookingCancelled();
-            case BILLING_HOLD_LIFTED:
-                return visitor.visitBillingHoldLifted();
-            case EMAIL_SUPPRESSED:
-                return visitor.visitEmailSuppressed();
             case BILLING_HOLD_PLACED:
                 return visitor.visitBillingHoldPlaced();
-            case EMAIL_RECEIVED:
-                return visitor.visitEmailReceived();
-            case SCHEDULING_BOOKING_REMINDER:
-                return visitor.visitSchedulingBookingReminder();
             case SCHEDULING_CALENDAR_CONNECTED:
                 return visitor.visitSchedulingCalendarConnected();
             case ACCOUNT_SUSPENDED:
@@ -534,52 +588,118 @@ public final class CreateWebhookListenerRequestEventTypesItem {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static CreateWebhookListenerRequestEventTypesItem valueOf(String value) {
         switch (value) {
-            case "billing.plan_changed":
-                return BILLING_PLAN_CHANGED;
             case "billing.invoice_voided":
                 return BILLING_INVOICE_VOIDED;
-            case "sms.suppressed":
-                return SMS_SUPPRESSED;
             case "sign_request.sent":
                 return SIGN_REQUEST_SENT;
+            case "scheduling.oauth_app.restored":
+                return SCHEDULING_OAUTH_APP_RESTORED;
+            case "subaccount.reinstated":
+                return SUBACCOUNT_REINSTATED;
+            case "verification.failed":
+                return VERIFICATION_FAILED;
+            case "scheduling.out_of_office.deleted":
+                return SCHEDULING_OUT_OF_OFFICE_DELETED;
+            case "scheduling.calendar_delegation.restored":
+                return SCHEDULING_CALENDAR_DELEGATION_RESTORED;
+            case "email.delivery_delayed":
+                return EMAIL_DELIVERY_DELAYED;
+            case "broadcast.sending":
+                return BROADCAST_SENDING;
+            case "sms.received":
+                return SMS_RECEIVED;
+            case "billing.invoice_finalized":
+                return BILLING_INVOICE_FINALIZED;
+            case "scheduling.booking.calendar_write_failed":
+                return SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED;
+            case "email.delivered":
+                return EMAIL_DELIVERED;
+            case "billing.invoice_payment_failed":
+                return BILLING_INVOICE_PAYMENT_FAILED;
+            case "email.rescheduled":
+                return EMAIL_RESCHEDULED;
+            case "email.clicked":
+                return EMAIL_CLICKED;
+            case "subaccount.reputation_recovered":
+                return SUBACCOUNT_REPUTATION_RECOVERED;
+            case "billing.budget_threshold_reached":
+                return BILLING_BUDGET_THRESHOLD_REACHED;
+            case "contact.confirmed":
+                return CONTACT_CONFIRMED;
+            case "contact.deleted":
+                return CONTACT_DELETED;
+            case "sms.opted_in":
+                return SMS_OPTED_IN;
+            case "email.complained":
+                return EMAIL_COMPLAINED;
+            case "account.marketing_paused":
+                return ACCOUNT_MARKETING_PAUSED;
+            case "email.failed":
+                return EMAIL_FAILED;
+            case "broadcast.canceled":
+                return BROADCAST_CANCELED;
+            case "scheduling.calendar.needs_reauth":
+                return SCHEDULING_CALENDAR_NEEDS_REAUTH;
+            case "email.opened":
+                return EMAIL_OPENED;
+            case "scheduling.calendar.disconnected":
+                return SCHEDULING_CALENDAR_DISCONNECTED;
+            case "scheduling.oauth_app.failing":
+                return SCHEDULING_OAUTH_APP_FAILING;
+            case "subaccount.paused":
+                return SUBACCOUNT_PAUSED;
+            case "sign_request.completed":
+                return SIGN_REQUEST_COMPLETED;
+            case "email.scheduled":
+                return EMAIL_SCHEDULED;
+            case "scheduling.booking.cancelled":
+                return SCHEDULING_BOOKING_CANCELLED;
+            case "billing.hold_lifted":
+                return BILLING_HOLD_LIFTED;
+            case "email.suppressed":
+                return EMAIL_SUPPRESSED;
+            case "email.received":
+                return EMAIL_RECEIVED;
+            case "scheduling.out_of_office.ended":
+                return SCHEDULING_OUT_OF_OFFICE_ENDED;
+            case "scheduling.booking.reminder":
+                return SCHEDULING_BOOKING_REMINDER;
+            case "scheduling.reassignment.completed":
+                return SCHEDULING_REASSIGNMENT_COMPLETED;
+            case "billing.plan_changed":
+                return BILLING_PLAN_CHANGED;
+            case "sms.suppressed":
+                return SMS_SUPPRESSED;
+            case "scheduling.out_of_office.updated":
+                return SCHEDULING_OUT_OF_OFFICE_UPDATED;
             case "email.bounced":
                 return EMAIL_BOUNCED;
             case "sms.opted_out":
                 return SMS_OPTED_OUT;
+            case "scheduling.out_of_office.started":
+                return SCHEDULING_OUT_OF_OFFICE_STARTED;
             case "verification.blocked":
                 return VERIFICATION_BLOCKED;
             case "contact.created":
                 return CONTACT_CREATED;
             case "sms.canceled":
                 return SMS_CANCELED;
-            case "subaccount.reinstated":
-                return SUBACCOUNT_REINSTATED;
-            case "verification.failed":
-                return VERIFICATION_FAILED;
             case "form.submission.received":
                 return FORM_SUBMISSION_RECEIVED;
             case "account.reputation_recovered":
                 return ACCOUNT_REPUTATION_RECOVERED;
             case "scheduling.booking.location_ready":
                 return SCHEDULING_BOOKING_LOCATION_READY;
-            case "scheduling.calendar_delegation.restored":
-                return SCHEDULING_CALENDAR_DELEGATION_RESTORED;
             case "domain.dmarc_report_received":
                 return DOMAIN_DMARC_REPORT_RECEIVED;
             case "contact.updated":
                 return CONTACT_UPDATED;
-            case "email.delivery_delayed":
-                return EMAIL_DELIVERY_DELAYED;
             case "inbox.message.received":
                 return INBOX_MESSAGE_RECEIVED;
             case "billing.budget_hold_placed":
                 return BILLING_BUDGET_HOLD_PLACED;
-            case "broadcast.sending":
-                return BROADCAST_SENDING;
             case "sms.failed":
                 return SMS_FAILED;
-            case "sms.received":
-                return SMS_RECEIVED;
             case "scheduling.calendar_delegation.failing":
                 return SCHEDULING_CALENDAR_DELEGATION_FAILING;
             case "subaccount.reputation_warning":
@@ -588,28 +708,16 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return SMS_UNDELIVERED;
             case "scheduling.booking.created":
                 return SCHEDULING_BOOKING_CREATED;
-            case "billing.invoice_finalized":
-                return BILLING_INVOICE_FINALIZED;
-            case "scheduling.booking.calendar_write_failed":
-                return SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED;
-            case "email.delivered":
-                return EMAIL_DELIVERED;
+            case "scheduling.out_of_office.created":
+                return SCHEDULING_OUT_OF_OFFICE_CREATED;
+            case "scheduling.booking.reassigned":
+                return SCHEDULING_BOOKING_REASSIGNED;
             case "sms.scheduled":
                 return SMS_SCHEDULED;
-            case "billing.invoice_payment_failed":
-                return BILLING_INVOICE_PAYMENT_FAILED;
             case "sign_request.declined":
                 return SIGN_REQUEST_DECLINED;
-            case "email.rescheduled":
-                return EMAIL_RESCHEDULED;
             case "broadcast.paused":
                 return BROADCAST_PAUSED;
-            case "email.clicked":
-                return EMAIL_CLICKED;
-            case "subaccount.reputation_recovered":
-                return SUBACCOUNT_REPUTATION_RECOVERED;
-            case "billing.budget_threshold_reached":
-                return BILLING_BUDGET_THRESHOLD_REACHED;
             case "email.sent":
                 return EMAIL_SENT;
             case "scheduling.booking.external_conflict":
@@ -622,20 +730,12 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return VERIFICATION_APPROVED;
             case "form.submission.flagged":
                 return FORM_SUBMISSION_FLAGGED;
-            case "contact.confirmed":
-                return CONTACT_CONFIRMED;
             case "billing.invoice_paid":
                 return BILLING_INVOICE_PAID;
             case "contact.unsubscribed":
                 return CONTACT_UNSUBSCRIBED;
-            case "contact.deleted":
-                return CONTACT_DELETED;
-            case "sms.opted_in":
-                return SMS_OPTED_IN;
             case "scheduling.booking.confirmed":
                 return SCHEDULING_BOOKING_CONFIRMED;
-            case "email.complained":
-                return EMAIL_COMPLAINED;
             case "scheduling.booking.no_show":
                 return SCHEDULING_BOOKING_NO_SHOW;
             case "scheduling.booking.started":
@@ -644,22 +744,14 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return BILLING_USAGE_THRESHOLD_REACHED;
             case "sign_request.expired":
                 return SIGN_REQUEST_EXPIRED;
-            case "account.marketing_paused":
-                return ACCOUNT_MARKETING_PAUSED;
             case "account.reputation_warning":
                 return ACCOUNT_REPUTATION_WARNING;
-            case "email.failed":
-                return EMAIL_FAILED;
             case "account.marketing_reinstated":
                 return ACCOUNT_MARKETING_REINSTATED;
-            case "broadcast.canceled":
-                return BROADCAST_CANCELED;
             case "billing.credit_granted":
                 return BILLING_CREDIT_GRANTED;
             case "billing.budget_hold_lifted":
                 return BILLING_BUDGET_HOLD_LIFTED;
-            case "scheduling.calendar.needs_reauth":
-                return SCHEDULING_CALENDAR_NEEDS_REAUTH;
             case "risk.assessment.reviewed":
                 return RISK_ASSESSMENT_REVIEWED;
             case "sms.sent":
@@ -668,14 +760,10 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return SCHEDULING_BOOKING_PENDING_APPROVAL;
             case "account.reinstated":
                 return ACCOUNT_REINSTATED;
-            case "email.opened":
-                return EMAIL_OPENED;
             case "sign_request.signer_signed":
                 return SIGN_REQUEST_SIGNER_SIGNED;
             case "email.canceled":
                 return EMAIL_CANCELED;
-            case "scheduling.calendar.disconnected":
-                return SCHEDULING_CALENDAR_DISCONNECTED;
             case "sms.delivered":
                 return SMS_DELIVERED;
             case "sign_request.viewed":
@@ -684,32 +772,16 @@ public final class CreateWebhookListenerRequestEventTypesItem {
                 return EMAIL_UNSUBSCRIBED;
             case "scheduling.booking.declined":
                 return SCHEDULING_BOOKING_DECLINED;
-            case "subaccount.paused":
-                return SUBACCOUNT_PAUSED;
-            case "sign_request.completed":
-                return SIGN_REQUEST_COMPLETED;
             case "risk.assessment.review":
                 return RISK_ASSESSMENT_REVIEW;
-            case "email.scheduled":
-                return EMAIL_SCHEDULED;
             case "scheduling.booking.rescheduled":
                 return SCHEDULING_BOOKING_RESCHEDULED;
             case "scheduling.booking.ended":
                 return SCHEDULING_BOOKING_ENDED;
             case "hook_endpoint.disabled":
                 return HOOK_ENDPOINT_DISABLED;
-            case "scheduling.booking.cancelled":
-                return SCHEDULING_BOOKING_CANCELLED;
-            case "billing.hold_lifted":
-                return BILLING_HOLD_LIFTED;
-            case "email.suppressed":
-                return EMAIL_SUPPRESSED;
             case "billing.hold_placed":
                 return BILLING_HOLD_PLACED;
-            case "email.received":
-                return EMAIL_RECEIVED;
-            case "scheduling.booking.reminder":
-                return SCHEDULING_BOOKING_REMINDER;
             case "scheduling.calendar.connected":
                 return SCHEDULING_CALENDAR_CONNECTED;
             case "account.suspended":
@@ -888,6 +960,8 @@ public final class CreateWebhookListenerRequestEventTypesItem {
 
         SCHEDULING_BOOKING_LOCATION_READY,
 
+        SCHEDULING_BOOKING_REASSIGNED,
+
         SCHEDULING_BOOKING_STARTED,
 
         SCHEDULING_BOOKING_ENDED,
@@ -903,6 +977,22 @@ public final class CreateWebhookListenerRequestEventTypesItem {
         SCHEDULING_CALENDAR_DELEGATION_FAILING,
 
         SCHEDULING_CALENDAR_DELEGATION_RESTORED,
+
+        SCHEDULING_OUT_OF_OFFICE_CREATED,
+
+        SCHEDULING_OUT_OF_OFFICE_UPDATED,
+
+        SCHEDULING_OUT_OF_OFFICE_DELETED,
+
+        SCHEDULING_OUT_OF_OFFICE_STARTED,
+
+        SCHEDULING_OUT_OF_OFFICE_ENDED,
+
+        SCHEDULING_REASSIGNMENT_COMPLETED,
+
+        SCHEDULING_OAUTH_APP_FAILING,
+
+        SCHEDULING_OAUTH_APP_RESTORED,
 
         UNKNOWN
     }
@@ -1074,6 +1164,8 @@ public final class CreateWebhookListenerRequestEventTypesItem {
 
         T visitSchedulingBookingLocationReady();
 
+        T visitSchedulingBookingReassigned();
+
         T visitSchedulingBookingStarted();
 
         T visitSchedulingBookingEnded();
@@ -1089,6 +1181,22 @@ public final class CreateWebhookListenerRequestEventTypesItem {
         T visitSchedulingCalendarDelegationFailing();
 
         T visitSchedulingCalendarDelegationRestored();
+
+        T visitSchedulingOutOfOfficeCreated();
+
+        T visitSchedulingOutOfOfficeUpdated();
+
+        T visitSchedulingOutOfOfficeDeleted();
+
+        T visitSchedulingOutOfOfficeStarted();
+
+        T visitSchedulingOutOfOfficeEnded();
+
+        T visitSchedulingReassignmentCompleted();
+
+        T visitSchedulingOauthAppFailing();
+
+        T visitSchedulingOauthAppRestored();
 
         T visitUnknown(String unknownType);
     }

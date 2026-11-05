@@ -25,6 +25,7 @@ import com.coss.errors.UnsupportedMediaTypeError;
 import com.coss.resources.scheduling.sessions.requests.CreateForBookingSessionsRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingBookerSessionRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingHostSessionRequest;
+import com.coss.resources.scheduling.sessions.requests.CreateSchedulingManagerSessionRequest;
 import com.coss.types.Error;
 import com.coss.types.SchedulingSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +43,113 @@ public class RawSessionsClient {
 
     public RawSessionsClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CossHttpResponse<SchedulingSession> createForManager() {
+        return createForManager(CreateSchedulingManagerSessionRequest.builder().build());
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CossHttpResponse<SchedulingSession> createForManager(RequestOptions requestOptions) {
+        return createForManager(CreateSchedulingManagerSessionRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CossHttpResponse<SchedulingSession> createForManager(CreateSchedulingManagerSessionRequest request) {
+        return createForManager(request, null);
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CossHttpResponse<SchedulingSession> createForManager(
+            CreateSchedulingManagerSessionRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("v1/scheduling/manager_sessions");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(request), MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(IdempotencyUtils.withGeneratedIdempotencyKey(
+                        clientOptions.headers(requestOptions), "Idempotency-Key")))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new CossHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, SchedulingSession.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 415:
+                        throw new UnsupportedMediaTypeError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 500:
+                        throw new InternalServerError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                    case 503:
+                        throw new ServiceUnavailableError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new CossApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new CossException("Network error executing HTTP request", e);
+        }
     }
 
     /**

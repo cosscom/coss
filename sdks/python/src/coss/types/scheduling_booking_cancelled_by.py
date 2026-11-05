@@ -3,5 +3,6 @@
 import typing
 
 SchedulingBookingCancelledBy = typing.Union[
-    typing.Literal["api_key", "user", "host_session", "booker_session", "manage_session", "system"], typing.Any
+    typing.Literal["api_key", "user", "host_session", "booker_session", "manage_session", "manager_session", "system"],
+    typing.Any,
 ]

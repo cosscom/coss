@@ -97,6 +97,11 @@ class SchedulingEventType(UniversalBaseModel):
     Whether bookings start as `pending_approval`, holding the time until approved or declined.
     """
 
+    reassignment_enabled: bool = pydantic.Field()
+    """
+    Whether bookings of this event type can go to another host.
+    """
+
     approval_ttl_minutes: float = pydantic.Field()
     """
     How long a booking can wait for approval before it's declined, in minutes.
@@ -137,7 +142,7 @@ class SchedulingEventType(UniversalBaseModel):
     What attendees are asked when booking.
     """
 
-    locations: typing.List[SchedulingLocation] = pydantic.Field()
+    locations: typing.List[typing.Optional[SchedulingLocation]] = pydantic.Field()
     """
     Where bookings can meet. A browser only chooses among these.
     """

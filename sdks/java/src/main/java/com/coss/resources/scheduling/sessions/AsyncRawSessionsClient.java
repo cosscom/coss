@@ -25,6 +25,7 @@ import com.coss.errors.UnsupportedMediaTypeError;
 import com.coss.resources.scheduling.sessions.requests.CreateForBookingSessionsRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingBookerSessionRequest;
 import com.coss.resources.scheduling.sessions.requests.CreateSchedulingHostSessionRequest;
+import com.coss.resources.scheduling.sessions.requests.CreateSchedulingManagerSessionRequest;
 import com.coss.types.Error;
 import com.coss.types.SchedulingSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -46,6 +47,147 @@ public class AsyncRawSessionsClient {
 
     public AsyncRawSessionsClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<CossHttpResponse<SchedulingSession>> createForManager() {
+        return createForManager(CreateSchedulingManagerSessionRequest.builder().build());
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<CossHttpResponse<SchedulingSession>> createForManager(RequestOptions requestOptions) {
+        return createForManager(CreateSchedulingManagerSessionRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<CossHttpResponse<SchedulingSession>> createForManager(
+            CreateSchedulingManagerSessionRequest request) {
+        return createForManager(request, null);
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the <code>url</code> to their browser, or embed it with <code>coss/scheduling</code>.
+     */
+    public CompletableFuture<CossHttpResponse<SchedulingSession>> createForManager(
+            CreateSchedulingManagerSessionRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("v1/scheduling/manager_sessions");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(request), MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new CossException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(IdempotencyUtils.withGeneratedIdempotencyKey(
+                        clientOptions.headers(requestOptions), "Idempotency-Key")))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        CompletableFuture<CossHttpResponse<SchedulingSession>> future = new CompletableFuture<>();
+        client.newCall(okhttpRequest).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
+                try (ResponseBody responseBody = response.body()) {
+                    String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+                    if (response.isSuccessful()) {
+                        future.complete(new CossHttpResponse<>(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, SchedulingSession.class),
+                                response));
+                        return;
+                    }
+                    try {
+                        switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 401:
+                                future.completeExceptionally(new UnauthorizedError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 403:
+                                future.completeExceptionally(new ForbiddenError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 404:
+                                future.completeExceptionally(new NotFoundError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 415:
+                                future.completeExceptionally(new UnsupportedMediaTypeError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 422:
+                                future.completeExceptionally(new UnprocessableEntityError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 429:
+                                future.completeExceptionally(new TooManyRequestsError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 500:
+                                future.completeExceptionally(new InternalServerError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                            case 503:
+                                future.completeExceptionally(new ServiceUnavailableError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Error.class),
+                                        response));
+                                return;
+                        }
+                    } catch (JsonProcessingException ignored) {
+                        // unable to map error response, throwing generic error
+                    }
+                    Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+                    future.completeExceptionally(new CossApiException(
+                            "Error with status code " + response.code(), response.code(), errorBody, response));
+                    return;
+                } catch (JsonProcessingException e) {
+                    future.completeExceptionally(
+                            new CossException("Failed to deserialize response: " + e.getMessage(), e));
+                } catch (IOException e) {
+                    future.completeExceptionally(new CossException("Network error executing HTTP request", e));
+                }
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                future.completeExceptionally(new CossException("Network error executing HTTP request", e));
+            }
+        });
+        return future;
     }
 
     /**

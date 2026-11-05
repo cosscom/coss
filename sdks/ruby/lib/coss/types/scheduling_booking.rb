@@ -21,7 +21,7 @@ module Coss
 
       field :attendees, -> { Internal::Types::Array[Coss::Types::SchedulingBookingAttendeesItem] }, optional: false, nullable: false
 
-      field :location, -> { Coss::Types::SchedulingLocation }, optional: false, nullable: false
+      field :location, -> { Coss::Types::SchedulingLocation }, optional: false, nullable: true
 
       field :hold_expires_at, -> { String }, optional: false, nullable: true
 

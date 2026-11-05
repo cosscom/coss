@@ -17523,8 +17523,8 @@ client.scheduling().hosts().update(
 </dl>
 </details>
 
-## Scheduling Schedules
-<details><summary><code>client.scheduling.schedules.list(host) -> SchedulingScheduleList</code></summary>
+## Scheduling Bookings
+<details><summary><code>client.scheduling.bookings.reassign(id, request) -> SchedulingBooking</code></summary>
 <dl>
 <dd>
 
@@ -17536,7 +17536,7 @@ client.scheduling().hosts().update(
 <dl>
 <dd>
 
-All of the host's schedules, oldest first.
+Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
 </dd>
 </dl>
 </dd>
@@ -17551,501 +17551,17 @@ All of the host's schedules, oldest first.
 <dd>
 
 ```java
-client.scheduling().schedules().list(
-    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ListSchedulesRequest
+client.scheduling().bookings().reassign(
+    "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ReassignSchedulingBookingRequest
         .builder()
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `String` — The host's id or uid.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.create(host, request) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-A host's weekly hours and date overrides, in local time. The first one is the host's default.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().schedules().create(
-    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    CreateSchedulesRequest
-        .builder()
-        .body(
-            UpsertScheduleRequest
-                .builder()
-                .rules(
-                    Arrays.asList(
-                        SchedulingWeeklyRule
-                            .builder()
-                            .start("09:00")
-                            .end("17:00")
-                            .days(
-                                Arrays.asList(1, 2, 3, 4, 5)
-                            )
-                            .build()
-                    )
-                )
-                .name("Clinic hours")
-                .overrides(
-                    Optional.of(
-                        Arrays.asList(
-                            SchedulingScheduleOverride
-                                .builder()
-                                .date("2027-12-24")
-                                .ranges(
-                                    Arrays.asList(
-                                        SchedulingScheduleOverrideRangesItem
-                                            .builder()
-                                            .start("start")
-                                            .end("end")
-                                            .build()
-                                    )
-                                )
-                                .build()
-                        )
-                    )
-                )
-                .build()
-        )
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `String` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.get(host, scheduleId) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-One of the host's schedules.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().schedules().get(
-    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    GetSchedulesRequest
-        .builder()
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `String` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleId:** `String` — The schedule's id.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.update(host, scheduleId, request) -> SchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().schedules().update(
-    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    UpdateSchedulesRequest
-        .builder()
-        .body(
-            UpsertScheduleRequest
-                .builder()
-                .rules(
-                    Arrays.asList(
-                        SchedulingWeeklyRule
-                            .builder()
-                            .start("09:00")
-                            .end("17:00")
-                            .days(
-                                Arrays.asList(1, 2, 3, 4, 5)
-                            )
-                            .build()
-                    )
-                )
-                .name("Clinic hours")
-                .overrides(
-                    Optional.of(
-                        Arrays.asList(
-                            SchedulingScheduleOverride
-                                .builder()
-                                .date("2027-12-24")
-                                .ranges(
-                                    Arrays.asList(
-                                        SchedulingScheduleOverrideRangesItem
-                                            .builder()
-                                            .start("start")
-                                            .end("end")
-                                            .build()
-                                    )
-                                )
-                                .build()
-                        )
-                    )
-                )
-                .build()
-        )
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `String` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleId:** `String` — The schedule's id.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**request:** `UpsertScheduleRequest` 
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.schedules.remove(host, scheduleId) -> DeletedSchedulingSchedule</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Refused for the host's default schedule.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().schedules().remove(
-    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    RemoveSchedulesRequest
-        .builder()
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**host:** `String` — The host's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**scheduleId:** `String` — The schedule's id.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling EventTypes
-<details><summary><code>client.scheduling.eventTypes.list() -> SchedulingEventTypeList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-The environment's event types, newest first.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().eventTypes().list(
-    ListEventTypesRequest
-        .builder()
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**limit:** `Optional<Integer>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**after:** `Optional<String>` — The last id of the previous page.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.eventTypes.create(request) -> SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().eventTypes().create(
-    CreateEventTypeRequest
-        .builder()
-        .title("Initial consultation")
-        .durationMinutes(30)
-        .kind(CreateEventTypeRequestKind.ONE_ON_ONE)
-        .bufferAfterMinutes(10)
-        .minNoticeMinutes(120)
-        .hosts(
-            Optional.of(
-                Arrays.asList(
-                    SchedulingEventTypeHostInput
-                        .builder()
-                        .host("doctor_482")
-                        .build()
-                )
+        .reasonCode(ReassignSchedulingBookingRequestReasonCode.OUT_OF_OFFICE)
+        .changes(
+            Arrays.asList(
+                ReassignSchedulingBookingRequestChangesItem
+                    .builder()
+                    .toHost("doctor_518")
+                    .build()
             )
         )
         .build()
@@ -18064,7 +17580,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**uid:** `Optional<String>` — Your own id for this event type, unique in the environment, accepted wherever its id is.
+**id:** `String` — The booking's id.
     
 </dd>
 </dl>
@@ -18072,7 +17588,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**kind:** `Optional<CreateEventTypeRequestKind>` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
+**changes:** `List<ReassignSchedulingBookingRequestChangesItem>` — A session or a one-on-one has one. A collective can change several.
     
 </dd>
 </dl>
@@ -18080,7 +17596,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**description:** `Optional<String>` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+**reasonCode:** `ReassignSchedulingBookingRequestReasonCode` 
     
 </dd>
 </dl>
@@ -18088,7 +17604,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**title:** `String` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+**note:** `Optional<String>` — Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
     
 </dd>
 </dl>
@@ -18096,7 +17612,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**durationMinutes:** `Integer` — How long a booking lasts by default, in minutes.
+**overrides:** `Optional<List<ReassignSchedulingBookingRequestOverridesItem>>` — Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
     
 </dd>
 </dl>
@@ -18104,191 +17620,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-**durationOptions:** `Optional<List<Integer>>` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**stepMinutes:** `Optional<Integer>` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gridTimeZone:** `Optional<String>` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferBeforeMinutes:** `Optional<Integer>` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferAfterMinutes:** `Optional<Integer>` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minNoticeMinutes:** `Optional<Integer>` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bookingWindow:** `Optional<SchedulingBookingWindow>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `Optional<List<SchedulingLimit>>` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `Optional<Integer>` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requiresApproval:** `Optional<Boolean>` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approvalTtlMinutes:** `Optional<Integer>` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**holdTtlSeconds:** `Optional<Integer>` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancelNoticeMinutes:** `Optional<Integer>` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rescheduleNoticeMinutes:** `Optional<Integer>` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxGuests:** `Optional<Integer>` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxActiveBookingsPerAttendee:** `Optional<Integer>` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostCalendarDetails:** `Optional<CreateEventTypeRequestHostCalendarDetails>` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `Optional<List<SchedulingQuestion>>` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `Optional<List<SchedulingLocation>>` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostFilter:** `Optional<Map<String, Optional<CreateEventTypeRequestHostFilterValue>>>` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `Optional<Map<String, Optional<CreateEventTypeRequestNotificationsValue>>>` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `Optional<List<SchedulingReminderInput>>` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `Optional<List<SchedulingEventTypeHostInput>>` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
+**notify:** `Optional<ReassignSchedulingBookingRequestNotify>` 
     
 </dd>
 </dl>
@@ -18300,7 +17632,7 @@ client.scheduling().eventTypes().create(
 </dl>
 </details>
 
-<details><summary><code>client.scheduling.eventTypes.get(eventType) -> SchedulingEventType</code></summary>
+<details><summary><code>client.scheduling.bookings.reassignCandidates(id) -> SchedulingReassignCandidateList</code></summary>
 <dl>
 <dd>
 
@@ -18312,7 +17644,7 @@ client.scheduling().eventTypes().create(
 <dl>
 <dd>
 
-An event type by its id or your uid.
+The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
 </dd>
 </dl>
 </dd>
@@ -18327,9 +17659,9 @@ An event type by its id or your uid.
 <dd>
 
 ```java
-client.scheduling().eventTypes().get(
-    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    GetEventTypesRequest
+client.scheduling().bookings().reassignCandidates(
+    "book_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ReassignCandidatesBookingsRequest
         .builder()
         .build()
 );
@@ -18347,7 +17679,15 @@ client.scheduling().eventTypes().get(
 <dl>
 <dd>
 
-**eventType:** `String` — The event type's id or uid.
+**id:** `String` — The booking's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**fromHost:** `Optional<String>` — The host who'd leave, when it could be several.
     
 </dd>
 </dl>
@@ -18359,608 +17699,6 @@ client.scheduling().eventTypes().get(
 </dl>
 </details>
 
-<details><summary><code>client.scheduling.eventTypes.update(eventType, request) -> SchedulingEventType</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().eventTypes().update(
-    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    UpdateEventTypeRequest
-        .builder()
-        .minNoticeMinutes(240)
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `String` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**uid:** `Optional<String>` — Your own id for this event type. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**description:** `Optional<String>` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**title:** `Optional<String>` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `Optional<Integer>` — How long a booking lasts by default, in minutes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationOptions:** `Optional<List<Integer>>` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**stepMinutes:** `Optional<Integer>` — How far apart slots start. Default: the duration.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**gridTimeZone:** `Optional<String>` — The zone slots align in. Default: each host's own.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferBeforeMinutes:** `Optional<Integer>` — Minutes kept free before each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bufferAfterMinutes:** `Optional<Integer>` — Minutes kept free after each booking. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**minNoticeMinutes:** `Optional<Integer>` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**bookingWindow:** `Optional<SchedulingBookingWindow>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limits:** `Optional<List<SchedulingLimit>>` — Caps on bookings per day or week. Default: none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**capacity:** `Optional<Integer>` — Attendees per session. Required for, and only allowed on, `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**requiresApproval:** `Optional<Boolean>` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**approvalTtlMinutes:** `Optional<Integer>` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**holdTtlSeconds:** `Optional<Integer>` — How long a hold keeps its slot, in seconds. Default: 600.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**cancelNoticeMinutes:** `Optional<Integer>` — Attendees can't cancel closer to the start than this. API keys can.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**rescheduleNoticeMinutes:** `Optional<Integer>` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxGuests:** `Optional<Integer>` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**maxActiveBookingsPerAttendee:** `Optional<Integer>` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostCalendarDetails:** `Optional<UpdateEventTypeRequestHostCalendarDetails>` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**questions:** `Optional<List<SchedulingQuestion>>` — What attendees are asked when booking. Keys must be unique.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**locations:** `Optional<List<SchedulingLocation>>` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hostFilter:** `Optional<Map<String, Optional<UpdateEventTypeRequestHostFilterValue>>>` — Pool members also include active hosts matching all of these attributes.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**notifications:** `Optional<Map<String, Optional<UpdateEventTypeRequestNotificationsValue>>>` — Per event, overriding your settings for this event type.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**reminders:** `Optional<List<SchedulingReminderInput>>` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**status:** `Optional<UpdateEventTypeRequestStatus>` — `archived` stops new bookings, and keeps existing ones.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `Optional<List<SchedulingEventTypeHostInput>>` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Slots
-<details><summary><code>client.scheduling.slots.list(eventType) -> SchedulingSlotList</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().slots().list(
-    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ListSlotsRequest
-        .builder()
-        .start("2027-01-04T15:00:00.000Z")
-        .end("2027-01-04T15:00:00.000Z")
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `String` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `String` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `String` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `Optional<String>` — Only this host's slots (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `Optional<Integer>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `Optional<String>` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-<details><summary><code>client.scheduling.slots.explain(eventType) -> SchedulingSlotExplanation</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().slots().explain(
-    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
-    ExplainSlotsRequest
-        .builder()
-        .start("2027-01-04T15:00:00.000Z")
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `String` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `String` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**host:** `Optional<String>` — Only this host (id or uid).
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**durationMinutes:** `Optional<Integer>` 
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `Optional<String>` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Availability
-<details><summary><code>client.scheduling.availability.search(request) -> SchedulingAvailabilitySearchResult</code></summary>
-<dl>
-<dd>
-
-#### 📝 Description
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### 🔌 Usage
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-```java
-client.scheduling().availability().search(
-    AvailabilitySearchRequest
-        .builder()
-        .eventType("evtype_01kd2m9a0b1c2d3e4f5g6h7j8m")
-        .start("2027-01-04T00:00:00.000Z")
-        .end("2027-01-18T00:00:00.000Z")
-        .attributes(
-            new HashMap<String, AvailabilitySearchRequestAttributesValue>() {{
-                put("licensed_in", AvailabilitySearchRequestAttributesValue.of("CA"));
-            }}
-        )
-        .build()
-);
-```
-</dd>
-</dl>
-</dd>
-</dl>
-
-#### ⚙️ Parameters
-
-<dl>
-<dd>
-
-<dl>
-<dd>
-
-**eventType:** `String` — The event type's id or uid.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**start:** `String` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**end:** `String` — An ISO 8601 instant with an offset.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**attributes:** `Optional<Map<String, AvailabilitySearchRequestAttributesValue>>` — Only hosts matching all of these.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**hosts:** `Optional<List<String>>` — Only these hosts (ids or uids). Default: everyone the event type could offer.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**slotsPerHost:** `Optional<Integer>` — How many of each host's soonest slots to return.
-    
-</dd>
-</dl>
-
-<dl>
-<dd>
-
-**limit:** `Optional<Integer>` — Hosts to return, soonest availability first.
-    
-</dd>
-</dl>
-</dd>
-</dl>
-
-
-</dd>
-</dl>
-</details>
-
-## Scheduling Bookings
 <details><summary><code>client.scheduling.bookings.list() -> SchedulingBookingList</code></summary>
 <dl>
 <dd>
@@ -19789,13 +18527,16 @@ client.scheduling().bookings().updateLocation(
     UpdateBookingLocationRequest
         .builder()
         .location(
-            SchedulingLocation.link(
-                SchedulingLocationLink
-                    .builder()
-                    .url(
-                        OptionalNullable.of("https://meet.example.com/abc")
-                    )
-                    .build()
+            OptionalNullable.of(
+                SchedulingLocation.of(
+                    SchedulingLocationZero
+                        .builder()
+                        .type(SchedulingLocationZeroType.LINK)
+                        .url(
+                            OptionalNullable.of("https://meet.example.com/abc")
+                        )
+                        .build()
+                )
             )
         )
         .build()
@@ -19822,7 +18563,3269 @@ client.scheduling().bookings().updateLocation(
 <dl>
 <dd>
 
-**location:** `SchedulingLocation` 
+**location:** `Optional<SchedulingLocation>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Reassignments
+<details><summary><code>client.scheduling.reassignments.preview(request) -> SchedulingReassignmentPreview</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who each booking would go to, and why not when nobody can take it, without moving anything. It works down them in order, so two can't both be promised the same free hour. Change any of it and start the run with `assignments`. Covers the first 500. Things can change before you start it: the run decides again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().preview(
+    PreviewSchedulingReassignmentRequest
+        .builder()
+        .selection(
+            SchedulingReassignmentSelection
+                .builder()
+                .host("doctor_482")
+                .startBefore("2027-08-14T00:00:00.000Z")
+                .build()
+        )
+        .strategy(
+            SchedulingReassignmentStrategy
+                .builder()
+                .preferredHosts(
+                    Optional.of(
+                        Arrays.asList("doctor_518")
+                    )
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**selection:** `SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `Optional<SchedulingReassignmentStrategy>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `Optional<List<PreviewSchedulingReassignmentRequestOverridesItem>>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.list() -> SchedulingReassignmentList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Newest first, with how each is going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().list(
+    ListReassignmentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.create(request) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Moves up to 5,000 bookings in the background, each on its own, so one that can't move never holds up the rest. Nothing's ever cancelled: a booking nobody can take stays where it is, and its item says so. It answers at once: follow the run by its id, or wait for `scheduling.reassignment.completed`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().create(
+    CreateSchedulingReassignmentRequest
+        .builder()
+        .selection(
+            SchedulingReassignmentSelection
+                .builder()
+                .outOfOffice("ooo_01kd2m9a0b1c2d3e4f5g6h7j8m")
+                .build()
+        )
+        .reasonCode(CreateSchedulingReassignmentRequestReasonCode.OUT_OF_OFFICE)
+        .idempotencyKey("welcome-user-123")
+        .strategy(
+            SchedulingReassignmentStrategy
+                .builder()
+                .preferredHosts(
+                    Optional.of(
+                        Arrays.asList("doctor_518")
+                    )
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**idempotencyKey:** `Optional<String>` — Makes retries safe: a repeated request with the same key and body returns the original run instead of starting another, for 24 hours. 1-256 characters.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**selection:** `SchedulingReassignmentSelection` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**strategy:** `Optional<SchedulingReassignmentStrategy>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reasonCode:** `CreateSchedulingReassignmentRequestReasonCode` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `Optional<String>` — Why, in your words: required with an override of someone's availability.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `Optional<List<CreateSchedulingReassignmentRequestOverridesItem>>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `Optional<CreateSchedulingReassignmentRequestNotify>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.get(id) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+How it's going.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().get(
+    "id",
+    GetReassignmentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The reassignment's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.items(id) -> SchedulingReassignmentItemList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Each booking it covers and what happened to it. A group session has one, for one of its seats. Empty until the worker's started on it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().items(
+    "id",
+    ItemsReassignmentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.cancel(id) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Stops what hasn't happened yet. What's moved stays moved: undo it for that. Cancelling one that's finished changes nothing.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().cancel(
+    "id",
+    CancelReassignmentsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The reassignment's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.reassignments.undo(id, request) -> SchedulingReassignment</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Gives back what a finished run moved, as a new run. A booking that's moved on since stays where it went, and a former host who's no longer free keeps it from going back, unless you pass `overrides`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().reassignments().undo(
+    "id",
+    UndoSchedulingReassignmentRequest
+        .builder()
+        .reasonCode(UndoSchedulingReassignmentRequestReasonCode.OTHER)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The reassignment's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reasonCode:** `Optional<UndoSchedulingReassignmentRequestReasonCode>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**note:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**overrides:** `Optional<List<UndoSchedulingReassignmentRequestOverridesItem>>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notify:** `Optional<UndoSchedulingReassignmentRequestNotify>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling HolidayCalendars
+<details><summary><code>client.scheduling.holidayCalendars.list() -> SchedulingHolidayCalendarList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+By name. A feed's URL is never shown again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().list();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holidayCalendars.create(request) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Applies a country's public holidays, or your own feed, to some hosts as ordinary out of office entries, kept up to date by coss.com. A host who removes one keeps it removed.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().create(
+    CreateSchedulingHolidayCalendarRequest
+        .builder()
+        .name("UK team")
+        .country("GB")
+        .hostFilter(
+            new HashMap<String, CreateSchedulingHolidayCalendarRequestHostFilterValue>() {{
+                put("team", CreateSchedulingHolidayCalendarRequestHostFilterValue.of("london"));
+            }}
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**name:** `String` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**country:** `Optional<String>` — A code from the list of holiday calendars, such as `GB`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**icsUrl:** `Optional<String>` — Your own feed, https or webcal, read in live environments. Stored encrypted.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<String>>` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, CreateSchedulingHolidayCalendarRequestHostFilterValue>>` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `Optional<List<String>>` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `Optional<List<String>>` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `Optional<CreateSchedulingHolidayCalendarRequestExistingBookings>` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holidayCalendars.get(id) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+With when it was last read, and why not if it couldn't be.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().get(
+    "id",
+    GetHolidayCalendarsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holidayCalendars.remove(id) -> DeletedSchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Hosts can be booked on its days again, shortly: past entries stay.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().remove(
+    "id",
+    RemoveHolidayCalendarsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holidayCalendars.update(id, request) -> SchedulingHolidayCalendar</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Who it applies to, who covers and what happens to bookings. Takes effect shortly.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().update(
+    "id",
+    UpdateSchedulingHolidayCalendarRequest
+        .builder()
+        .hostFilter(
+            new HashMap<String, UpdateSchedulingHolidayCalendarRequestHostFilterValue>() {{
+                put("team", UpdateSchedulingHolidayCalendarRequestHostFilterValue.of("london"));
+            }}
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The holiday calendar's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**name:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<String>>` — These hosts, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, UpdateSchedulingHolidayCalendarRequestHostFilterValue>>` — Everyone matching these attributes, asked again at every sync.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**regions:** `Optional<List<String>>` — Which regional holidays apply, matched against how the calendar names them, such as `England`. Without this, all of them do; empty, only nationwide ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `Optional<List<String>>` — Who can be booked in their place on those days, by id or uid, in order.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `Optional<UpdateSchedulingHolidayCalendarRequestExistingBookings>` — What happens to bookings already on a holiday. `leave` (the default) only reports them. `reassign` moves them.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.holidayCalendars.holidays(id) -> SchedulingHolidayList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What's coming, with names, as last read. Empty until its first read.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().holidayCalendars().holidays(
+    "id",
+    HolidaysHolidayCalendarsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The holiday calendar's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling OutOfOffice
+<details><summary><code>client.scheduling.outOfOffice.list() -> SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's entries, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().list(
+    ListOutOfOfficeRequest
+        .builder()
+        .startAfter("2027-01-04T15:00:00.000Z")
+        .startBefore("2027-01-04T15:00:00.000Z")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — The last id of the previous page.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `Optional<String>` — One host's entries, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startAfter:** `Optional<String>` — Entries ending after this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startBefore:** `Optional<String>` — Entries starting before this.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**group:** `Optional<String>` — The entries one request made.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.create(request) -> SchedulingOutOfOfficeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Marks one host, a list of hosts or everyone matching some attributes as away, for part of a day or for whole dates. They aren't offered during it. Existing bookings stay as they are: list them with the entry's conflicts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().create(
+    CreateSchedulingOutOfOfficeRequest
+        .builder()
+        .host("doctor_482")
+        .startDate("2027-08-02")
+        .endDate("2027-08-13")
+        .reason("vacation")
+        .publicMessage("Back on the 16th.")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `Optional<String>` — One host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<String>>` — Several hosts, by id or uid. Each gets an entry of their own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, CreateSchedulingOutOfOfficeRequestHostFilterValue>>` — Every active host matching these attributes right now. A host added later isn't covered.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `Optional<String>` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `Optional<String>` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `Optional<String>` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `Optional<List<String>>` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `Optional<String>` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `Optional<String>` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `Optional<String>` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `Optional<Boolean>` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `Optional<CreateSchedulingOutOfOfficeRequestExistingBookings>` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `Optional<CreateSchedulingOutOfOfficeRequestReassign>` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**externalId:** `Optional<String>` — Your own id for this entry, unique in the environment. Needs one host.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.get(id) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One entry.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().get(
+    "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    GetOutOfOfficeRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.remove(id) -> DeletedSchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The host can be booked in that time again, and any calendar event for it goes.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().remove(
+    "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    RemoveOutOfOfficeRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The entry's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.update(id, request) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. An entry stays with its host.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().update(
+    "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    UpdateSchedulingOutOfOfficeRequest
+        .builder()
+        .endDate("2027-08-20")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `Optional<String>` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `Optional<String>` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `Optional<String>` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `Optional<String>` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `Optional<String>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `Optional<Boolean>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `Optional<List<String>>` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `Optional<UpdateSchedulingOutOfOfficeRequestExistingBookings>` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `Optional<UpdateSchedulingOutOfOfficeRequestReassign>` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.put(externalId, request) -> SchedulingOutOfOffice</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For syncing from a system of record such as an HR tool: send what it says, as often as you like, and there's one entry for it. Give every field you want to keep.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().put(
+    "hr_leave_4471",
+    PutSchedulingOutOfOfficeRequest
+        .builder()
+        .host("doctor_482")
+        .startDate("2027-08-02")
+        .endDate("2027-08-13")
+        .reason("vacation")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**externalId:** `String` — Your own id for the entry.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `String` — The host, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `Optional<String>` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**startDate:** `Optional<String>` — The first whole day away. Use instead of `start` and `end`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**endDate:** `Optional<String>` — The last whole day away, which is included.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timeZone:** `Optional<String>` — What the dates mean in. Default: the host's zone when this is made.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**delegates:** `Optional<List<String>>` — Who can be booked in this host's place during it, by id or uid, in the order to try them. They still have to fit how a booking's routed.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reason:** `Optional<String>` — One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notes:** `Optional<String>` — For people who manage this host. Encrypted, and never shown to a booker.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**publicMessage:** `Optional<String>` — Shown to bookers while this host is away. Can't contain a link.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**showOnCalendar:** `Optional<Boolean>` — Put a private "Out of office" event on the host's calendar. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**existingBookings:** `Optional<PutSchedulingOutOfOfficeRequestExistingBookings>` — What happens to bookings already in the way. `leave` (the default) only reports them. `reassign` moves them, and any nobody can take stay where they are.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassign:** `Optional<PutSchedulingOutOfOfficeRequestReassign>` — With `existing_bookings: reassign`: who they go to. Default: the fairest who's free.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.outOfOffice.conflicts(id) -> SchedulingOutOfOfficeConflictList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Live bookings of the host that fall in the entry, soonest first. Entries never change them.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().outOfOffice().conflicts(
+    "ooo_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ConflictsOutOfOfficeRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The entry's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Schedules
+<details><summary><code>client.scheduling.schedules.list(host) -> SchedulingScheduleList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+All of the host's schedules, oldest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().schedules().list(
+    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ListSchedulesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `String` — The host's id or uid.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.create(host, request) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A host's weekly hours and date overrides, in local time. The first one is the host's default.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().schedules().create(
+    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    CreateSchedulesRequest
+        .builder()
+        .body(
+            UpsertScheduleRequest
+                .builder()
+                .rules(
+                    Arrays.asList(
+                        SchedulingWeeklyRule
+                            .builder()
+                            .start("09:00")
+                            .end("17:00")
+                            .days(
+                                Arrays.asList(1, 2, 3, 4, 5)
+                            )
+                            .build()
+                    )
+                )
+                .name("Clinic hours")
+                .overrides(
+                    Optional.of(
+                        Arrays.asList(
+                            SchedulingScheduleOverride
+                                .builder()
+                                .date("2027-12-24")
+                                .ranges(
+                                    Arrays.asList(
+                                        SchedulingScheduleOverrideRangesItem
+                                            .builder()
+                                            .start("start")
+                                            .end("end")
+                                            .build()
+                                    )
+                                )
+                                .build()
+                        )
+                    )
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `String` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.get(host, scheduleId) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+One of the host's schedules.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().schedules().get(
+    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    GetSchedulesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `String` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleId:** `String` — The schedule's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.update(host, scheduleId, request) -> SchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Replaces its weekly rules, and its overrides when given. Existing bookings stay: a schedule only decides what's offered next.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().schedules().update(
+    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    UpdateSchedulesRequest
+        .builder()
+        .body(
+            UpsertScheduleRequest
+                .builder()
+                .rules(
+                    Arrays.asList(
+                        SchedulingWeeklyRule
+                            .builder()
+                            .start("09:00")
+                            .end("17:00")
+                            .days(
+                                Arrays.asList(1, 2, 3, 4, 5)
+                            )
+                            .build()
+                    )
+                )
+                .name("Clinic hours")
+                .overrides(
+                    Optional.of(
+                        Arrays.asList(
+                            SchedulingScheduleOverride
+                                .builder()
+                                .date("2027-12-24")
+                                .ranges(
+                                    Arrays.asList(
+                                        SchedulingScheduleOverrideRangesItem
+                                            .builder()
+                                            .start("start")
+                                            .end("end")
+                                            .build()
+                                    )
+                                )
+                                .build()
+                        )
+                    )
+                )
+                .build()
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `String` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleId:** `String` — The schedule's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request:** `UpsertScheduleRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.schedules.remove(host, scheduleId) -> DeletedSchedulingSchedule</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused for the host's default schedule.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().schedules().remove(
+    "host_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    "sched_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    RemoveSchedulesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**host:** `String` — The host's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scheduleId:** `String` — The schedule's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling EventTypes
+<details><summary><code>client.scheduling.eventTypes.list() -> SchedulingEventTypeList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+The environment's event types, newest first.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().eventTypes().list(
+    ListEventTypesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**after:** `Optional<String>` — The last id of the previous page.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.eventTypes.create(request) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+What can be booked: `one_on_one` with one host, `pool` for any free host, `collective` when every required host must be free, or `group` for a session with seats.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().eventTypes().create(
+    CreateEventTypeRequest
+        .builder()
+        .title("Initial consultation")
+        .durationMinutes(30)
+        .kind(CreateEventTypeRequestKind.ONE_ON_ONE)
+        .bufferAfterMinutes(10)
+        .minNoticeMinutes(120)
+        .hosts(
+            Optional.of(
+                Arrays.asList(
+                    SchedulingEventTypeHostInput
+                        .builder()
+                        .host("doctor_482")
+                        .build()
+                )
+            )
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**uid:** `Optional<String>` — Your own id for this event type, unique in the environment, accepted wherever its id is.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**kind:** `Optional<CreateEventTypeRequestKind>` — Who a booking needs. `one_on_one`: one host. `pool`: any one of its hosts. `collective`: every `required` host, plus at most one `member`. `group`: one host, with attendees taking seats up to `capacity`. Fixed once created.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional<String>` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `String` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `Integer` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationOptions:** `Optional<List<Integer>>` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**stepMinutes:** `Optional<Integer>` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**gridTimeZone:** `Optional<String>` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferBeforeMinutes:** `Optional<Integer>` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferAfterMinutes:** `Optional<Integer>` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**minNoticeMinutes:** `Optional<Integer>` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bookingWindow:** `Optional<SchedulingBookingWindow>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `Optional<List<SchedulingLimit>>` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `Optional<Integer>` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requiresApproval:** `Optional<Boolean>` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignmentEnabled:** `Optional<Boolean>` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approvalTtlMinutes:** `Optional<Integer>` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**holdTtlSeconds:** `Optional<Integer>` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancelNoticeMinutes:** `Optional<Integer>` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rescheduleNoticeMinutes:** `Optional<Integer>` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxGuests:** `Optional<Integer>` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxActiveBookingsPerAttendee:** `Optional<Integer>` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostCalendarDetails:** `Optional<CreateEventTypeRequestHostCalendarDetails>` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `Optional<List<SchedulingQuestion>>` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `Optional<List<Optional<SchedulingLocation>>>` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, Optional<CreateEventTypeRequestHostFilterValue>>>` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `Optional<Map<String, Optional<CreateEventTypeRequestNotificationsValue>>>` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `Optional<List<SchedulingReminderInput>>` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<SchedulingEventTypeHostInput>>` — Who can be booked. `one_on_one` and `group` take one; `collective` needs at least one `required` host.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.eventTypes.get(eventType) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+An event type by its id or your uid.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().eventTypes().get(
+    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    GetEventTypesRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `String` — The event type's id or uid.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.eventTypes.update(eventType, request) -> SchedulingEventType</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Changes what's given. Existing bookings keep what they were booked with. Set `status` to `archived` to stop new bookings.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().eventTypes().update(
+    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    UpdateEventTypeRequest
+        .builder()
+        .minNoticeMinutes(240)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `String` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**uid:** `Optional<String>` — Your own id for this event type. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**description:** `Optional<String>` — Plain text about the event type, shown on hosted booking pages and never in emails. Links, and anything shaped like a domain, must be on your organization's verified domains or their subdomains, and use `https`. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**title:** `Optional<String>` — Shown to attendees and in emails. Host calendars show it only with `host_calendar_details: full`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `Optional<Integer>` — How long a booking lasts by default, in minutes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationOptions:** `Optional<List<Integer>>` — Other lengths an attendee may choose, in minutes. Empty: only `duration_minutes`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**stepMinutes:** `Optional<Integer>` — How far apart slots start. Default: the duration.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**gridTimeZone:** `Optional<String>` — The zone slots align in. Default: each host's own.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferBeforeMinutes:** `Optional<Integer>` — Minutes kept free before each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bufferAfterMinutes:** `Optional<Integer>` — Minutes kept free after each booking. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**minNoticeMinutes:** `Optional<Integer>` — Slots starting sooner than this many minutes from now aren't offered. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bookingWindow:** `Optional<SchedulingBookingWindow>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limits:** `Optional<List<SchedulingLimit>>` — Caps on bookings per day or week. Default: none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**capacity:** `Optional<Integer>` — Attendees per session. Required for, and only allowed on, `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**requiresApproval:** `Optional<Boolean>` — Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reassignmentEnabled:** `Optional<Boolean>` — Whether bookings of this event type can go to another host. Default: true.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**approvalTtlMinutes:** `Optional<Integer>` — How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**holdTtlSeconds:** `Optional<Integer>` — How long a hold keeps its slot, in seconds. Default: 600.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**cancelNoticeMinutes:** `Optional<Integer>` — Attendees can't cancel closer to the start than this. API keys can.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**rescheduleNoticeMinutes:** `Optional<Integer>` — Attendees can't reschedule closer to the start than this. API keys can. Default: 0.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxGuests:** `Optional<Integer>` — How many people an attendee can add to a booking. Default: 0. Guests are emailed about it. Not on `group`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**maxActiveBookingsPerAttendee:** `Optional<Integer>` — How many upcoming bookings of this event type one person can have at a time, known by `uid` or email. Default: `null`, no limit. Past this, booking answers `attendee_limit_reached`. Guests don't count, and each occurrence of a series does.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostCalendarDetails:** `Optional<UpdateEventTypeRequestHostCalendarDetails>` — What hosts' calendars say about a booking. `neutral` (the default): a private event titled "Appointment". `full`: a private event with this title and the attendee's name, plus names, emails and phone numbers in its description, which go to the host's calendar provider. Never answers. Refused in HIPAA mode.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**questions:** `Optional<List<SchedulingQuestion>>` — What attendees are asked when booking. Keys must be unique.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locations:** `Optional<List<Optional<SchedulingLocation>>>` — Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, Optional<UpdateEventTypeRequestHostFilterValue>>>` — Pool members also include active hosts matching all of these attributes.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**notifications:** `Optional<Map<String, Optional<UpdateEventTypeRequestNotificationsValue>>>` — Per event, overriding your settings for this event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**reminders:** `Optional<List<SchedulingReminderInput>>` — Replaces your settings' `reminders` for this event type. `null` inherits them; an empty list means none.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**metadata:** `Optional<Map<String, String>>` — Your own key-value pairs.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**status:** `Optional<UpdateEventTypeRequestStatus>` — `archived` stops new bookings, and keeps existing ones.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<SchedulingEventTypeHostInput>>` — Replaces the assigned hosts. Removed hosts keep their existing bookings.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Slots
+<details><summary><code>client.scheduling.slots.list(eventType) -> SchedulingSlotList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Starts an attendee can book between `start` and `end` (at most 62 days), as UTC instants to show in their own time zone. A host whose calendar can't be read isn't offered.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().slots().list(
+    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ListSlotsRequest
+        .builder()
+        .start("2027-01-04T15:00:00.000Z")
+        .end("2027-01-04T15:00:00.000Z")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `String` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `String` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `String` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `Optional<String>` — Only this host's slots (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `Optional<String>` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.slots.explain(eventType) -> SchedulingSlotExplanation</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Why one start can or can't be booked right now, host by host, decided the same way a booking is. For support and debugging: it says when a host is busy, so don't show it to attendees.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().slots().explain(
+    "evtype_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    ExplainSlotsRequest
+        .builder()
+        .start("2027-01-04T15:00:00.000Z")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `String` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `String` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**host:** `Optional<String>` — Only this host (id or uid).
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**durationMinutes:** `Optional<Integer>` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `Optional<String>` — A JSON object narrowing a pool, such as `{"licensed_in":"CA"}`.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+## Scheduling Availability
+<details><summary><code>client.scheduling.availability.search(request) -> SchedulingAvailabilitySearchResult</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+For "who's free" pages: each matching host's soonest slots, soonest first, across up to 500 hosts.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().availability().search(
+    AvailabilitySearchRequest
+        .builder()
+        .eventType("evtype_01kd2m9a0b1c2d3e4f5g6h7j8m")
+        .start("2027-01-04T00:00:00.000Z")
+        .end("2027-01-18T00:00:00.000Z")
+        .attributes(
+            new HashMap<String, AvailabilitySearchRequestAttributesValue>() {{
+                put("licensed_in", AvailabilitySearchRequestAttributesValue.of("CA"));
+            }}
+        )
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**eventType:** `String` — The event type's id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**start:** `String` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**end:** `String` — An ISO 8601 instant with an offset.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**attributes:** `Optional<Map<String, AvailabilitySearchRequestAttributesValue>>` — Only hosts matching all of these.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<String>>` — Only these hosts (ids or uids). Default: everyone the event type could offer.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**slotsPerHost:** `Optional<Integer>` — How many of each host's soonest slots to return.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `Optional<Integer>` — Hosts to return, soonest availability first.
     
 </dd>
 </dl>
@@ -21284,7 +23287,423 @@ client.scheduling().calendarDelegations().verify(
 </dl>
 </details>
 
+## Scheduling OauthApps
+<details><summary><code>client.scheduling.oauthApps.list() -> SchedulingOauthAppList</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+At most one per provider, with how many connections use each.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().oauthApps().list();
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauthApps.create(request) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+New consents in this environment use it, so the consent screen shows your brand. Connections made before it stay on coss.com's app until their host consents again. On the Scale plan and above. Secrets are never returned.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().oauthApps().create(
+    CreateOauthAppRequest.google(
+        CreateOauthAppRequestGoogle
+            .builder()
+            .clientId("client_id")
+            .clientSecret("client_secret")
+            .build()
+    )
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateOauthAppRequest` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauthApps.get(id) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Its status, what to register at the provider, and how many connections use it.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().oauthApps().get(
+    "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    GetOauthAppsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The OAuth app's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauthApps.delete(id) -> DeletedSchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Refused while connections use it (`oauth_app_in_use`), since only it can refresh their access: disconnect them first. New consents go back to coss.com's app.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().oauthApps().delete(
+    "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    DeleteOauthAppsRequest
+        .builder()
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The OAuth app's id.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.scheduling.oauthApps.update(id, request) -> SchedulingOauthApp</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+A new client secret is tried on a connection before it replaces the old one, and ends an outage if it works. Its client ID can't change: a different app needs its hosts to consent again.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().oauthApps().update(
+    "calapp_01kd2m9a0b1c2d3e4f5g6h7j8m",
+    UpdateOauthAppRequest
+        .builder()
+        .clientSecret("GOCSPX-abcdefghijklmnopqrstuvwxyz")
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**id:** `String` — The OAuth app's id.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**clientSecret:** `Optional<String>` — A new client secret. It's tried on a connection before it replaces the old one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tenantId:** `Optional<String>` — The Directory (tenant) ID, for an app that's only for your own tenant. Leave it out for a multi-tenant app.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**webhookSecret:** `Optional<String>` — The Secret Token of your Zoom app, which signs its events at `zoom_event_url`. Never returned.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**redirectUri:** `Optional<String>` — A page on your own domain, registered with the provider, that forwards `code` and `state` to `coss_callback_url`. Google requires this for an external app, since it has to verify the redirect's domain as yours. Leave it out to use `coss_callback_url` directly.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**completionUrl:** `Optional<String>` — Where the browser lands after a consent that didn't name a `return_url`, with `coss_calendar` set to `connected`, `denied` or `invalid`. Leave it out for a plain page saying what happened.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**secretExpiresAt:** `Optional<OffsetDateTime>` — When the client secret expires. Owners and admins are warned 14 days before.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 ## Scheduling Sessions
+<details><summary><code>client.scheduling.sessions.createForManager(request) -> SchedulingSession</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```java
+client.scheduling().sessions().createForManager(
+    CreateSchedulingManagerSessionRequest
+        .builder()
+        .hostFilter(
+            new HashMap<String, CreateSchedulingManagerSessionRequestHostFilterValue>() {{
+                put("team", CreateSchedulingManagerSessionRequestHostFilterValue.of("cardiology"));
+            }}
+        )
+        .expiresIn(3600)
+        .build()
+);
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**hosts:** `Optional<List<String>>` — The hosts this page can reach, by id or uid.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostFilter:** `Optional<Map<String, CreateSchedulingManagerSessionRequestHostFilterValue>>` — Everyone matching these attributes, asked again on every request.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**expiresIn:** `Optional<Integer>` — Seconds until it stops working. At most a day.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**readOnly:** `Optional<Boolean>` 
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
 <details><summary><code>client.scheduling.sessions.createForHost(host, request) -> SchedulingSession</code></summary>
 <dl>
 <dd>
@@ -21640,6 +24059,14 @@ client.scheduling().settings().update(
 <dl>
 <dd>
 
+**privacyUrl:** `Optional<String>` — Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **emailFrom:** `Optional<String>` — Sender of booking emails, on a verified domain. `null`: coss.com's own address.
     
 </dd>
@@ -21657,6 +24084,30 @@ client.scheduling().settings().update(
 <dd>
 
 **calendarFailureMode:** `Optional<UpdateSchedulingSettingsRequestCalendarFailureMode>` — When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**nameHostInAttendeeEmails:** `Optional<Boolean>` — Name the new host when telling an attendee their booking has one.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**hostReassignment:** `Optional<UpdateSchedulingSettingsRequestHostReassignment>` — Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**outOfOfficeReasons:** `Optional<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>>` — Reasons of your own, on top of the preset ones. Hosts and managers see them.
     
 </dd>
 </dl>

@@ -322,6 +322,9 @@ public readonly record struct UpdateWebhookEndpointRequestEventTypesItem : IStri
     public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingBookingLocationReady =
         new(Values.SchedulingBookingLocationReady);
 
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingBookingReassigned =
+        new(Values.SchedulingBookingReassigned);
+
     public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingBookingStarted =
         new(Values.SchedulingBookingStarted);
 
@@ -346,6 +349,30 @@ public readonly record struct UpdateWebhookEndpointRequestEventTypesItem : IStri
 
     public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingCalendarDelegationRestored =
         new(Values.SchedulingCalendarDelegationRestored);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOutOfOfficeCreated =
+        new(Values.SchedulingOutOfOfficeCreated);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOutOfOfficeUpdated =
+        new(Values.SchedulingOutOfOfficeUpdated);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOutOfOfficeDeleted =
+        new(Values.SchedulingOutOfOfficeDeleted);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOutOfOfficeStarted =
+        new(Values.SchedulingOutOfOfficeStarted);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOutOfOfficeEnded =
+        new(Values.SchedulingOutOfOfficeEnded);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingReassignmentCompleted =
+        new(Values.SchedulingReassignmentCompleted);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOauthAppFailing =
+        new(Values.SchedulingOauthAppFailing);
+
+    public static readonly UpdateWebhookEndpointRequestEventTypesItem SchedulingOauthAppRestored =
+        new(Values.SchedulingOauthAppRestored);
 
     public UpdateWebhookEndpointRequestEventTypesItem(string value)
     {
@@ -619,6 +646,8 @@ public readonly record struct UpdateWebhookEndpointRequestEventTypesItem : IStri
 
         public const string SchedulingBookingLocationReady = "scheduling.booking.location_ready";
 
+        public const string SchedulingBookingReassigned = "scheduling.booking.reassigned";
+
         public const string SchedulingBookingStarted = "scheduling.booking.started";
 
         public const string SchedulingBookingEnded = "scheduling.booking.ended";
@@ -636,5 +665,21 @@ public readonly record struct UpdateWebhookEndpointRequestEventTypesItem : IStri
 
         public const string SchedulingCalendarDelegationRestored =
             "scheduling.calendar_delegation.restored";
+
+        public const string SchedulingOutOfOfficeCreated = "scheduling.out_of_office.created";
+
+        public const string SchedulingOutOfOfficeUpdated = "scheduling.out_of_office.updated";
+
+        public const string SchedulingOutOfOfficeDeleted = "scheduling.out_of_office.deleted";
+
+        public const string SchedulingOutOfOfficeStarted = "scheduling.out_of_office.started";
+
+        public const string SchedulingOutOfOfficeEnded = "scheduling.out_of_office.ended";
+
+        public const string SchedulingReassignmentCompleted = "scheduling.reassignment.completed";
+
+        public const string SchedulingOauthAppFailing = "scheduling.oauth_app.failing";
+
+        public const string SchedulingOauthAppRestored = "scheduling.oauth_app.restored";
     }
 }

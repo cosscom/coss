@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+module Coss
+  module Scheduling
+    module OutOfOffice
+      module Types
+        class PutSchedulingOutOfOfficeRequest < Internal::Types::Model
+          field :external_id, -> { String }, optional: false, nullable: false
+
+          field :host, -> { String }, optional: false, nullable: false
+
+          field :start, -> { String }, optional: true, nullable: false
+
+          field :end_, -> { String }, optional: true, nullable: false, api_name: "end"
+
+          field :start_date, -> { String }, optional: true, nullable: false
+
+          field :end_date, -> { String }, optional: true, nullable: false
+
+          field :time_zone, -> { String }, optional: true, nullable: false
+
+          field :delegates, -> { Internal::Types::Array[String] }, optional: true, nullable: false
+
+          field :reason, -> { String }, optional: true, nullable: false
+
+          field :notes, -> { String }, optional: true, nullable: false
+
+          field :public_message, -> { String }, optional: true, nullable: false
+
+          field :show_on_calendar, -> { Internal::Types::Boolean }, optional: true, nullable: false
+
+          field :existing_bookings, -> { Coss::Scheduling::OutOfOffice::Types::PutSchedulingOutOfOfficeRequestExistingBookings }, optional: true, nullable: false
+
+          field :reassign, -> { Coss::Scheduling::OutOfOffice::Types::PutSchedulingOutOfOfficeRequestReassign }, optional: true, nullable: false
+        end
+      end
+    end
+  end
+end

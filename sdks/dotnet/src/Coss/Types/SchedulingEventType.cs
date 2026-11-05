@@ -120,6 +120,12 @@ public record SchedulingEventType : IJsonOnDeserialized
     public required bool RequiresApproval { get; set; }
 
     /// <summary>
+    /// Whether bookings of this event type can go to another host.
+    /// </summary>
+    [JsonPropertyName("reassignment_enabled")]
+    public required bool ReassignmentEnabled { get; set; }
+
+    /// <summary>
     /// How long a booking can wait for approval before it's declined, in minutes.
     /// </summary>
     [JsonPropertyName("approval_ttl_minutes")]
@@ -172,7 +178,22 @@ public record SchedulingEventType : IJsonOnDeserialized
     /// Where bookings can meet. A browser only chooses among these.
     /// </summary>
     [JsonPropertyName("locations")]
-    public IEnumerable<SchedulingLocation> Locations { get; set; } = new List<SchedulingLocation>();
+    public IEnumerable<OneOf<
+        SchedulingLocationZero,
+        SchedulingLocationNumber,
+        SchedulingLocationAddress,
+        SchedulingLocationThree,
+        SchedulingLocationFour,
+        SchedulingLocationFive
+    >?> Locations { get; set; } =
+        new List<OneOf<
+            SchedulingLocationZero,
+            SchedulingLocationNumber,
+            SchedulingLocationAddress,
+            SchedulingLocationThree,
+            SchedulingLocationFour,
+            SchedulingLocationFive
+        >?>();
 
     /// <summary>
     /// Pool members also include active hosts matching all of these attributes. `null`: only `hosts`.

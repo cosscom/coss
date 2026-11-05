@@ -34,7 +34,10 @@ public record WebhookTestEvent : IJsonOnDeserialized
         FormSubmissionWebhookEvent,
         SchedulingBookingWebhookEvent,
         SchedulingCalendarWebhookEvent,
-        SchedulingCalendarDelegationWebhookEvent
+        SchedulingOutOfOfficeWebhookEvent,
+        SchedulingReassignmentWebhookEvent,
+        SchedulingCalendarDelegationWebhookEvent,
+        SchedulingOauthAppWebhookEvent
     > Event { get; set; }
 
     /// <summary>

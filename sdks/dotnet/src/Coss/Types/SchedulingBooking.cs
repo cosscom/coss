@@ -1,6 +1,7 @@
 using Coss.Core;
 using global::System.Text.Json;
 using global::System.Text.Json.Serialization;
+using OneOf;
 
 namespace Coss;
 
@@ -60,8 +61,16 @@ public record SchedulingBooking : IJsonOnDeserialized
     public IEnumerable<SchedulingBookingAttendeesItem> Attendees { get; set; } =
         new List<SchedulingBookingAttendeesItem>();
 
+    [Nullable]
     [JsonPropertyName("location")]
-    public required SchedulingLocation Location { get; set; }
+    public OneOf<
+        SchedulingLocationZero,
+        SchedulingLocationNumber,
+        SchedulingLocationAddress,
+        SchedulingLocationThree,
+        SchedulingLocationFour,
+        SchedulingLocationFive
+    >? Location { get; set; }
 
     /// <summary>
     /// When a `held` booking gives up its slot. `null` otherwise.

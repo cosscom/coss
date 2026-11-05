@@ -35,6 +35,8 @@ module Coss
 
           field :requires_approval, -> { Internal::Types::Boolean }, optional: true, nullable: false
 
+          field :reassignment_enabled, -> { Internal::Types::Boolean }, optional: true, nullable: false
+
           field :approval_ttl_minutes, -> { Integer }, optional: true, nullable: false
 
           field :hold_ttl_seconds, -> { Integer }, optional: true, nullable: false

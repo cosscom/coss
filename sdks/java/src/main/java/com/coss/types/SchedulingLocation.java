@@ -3,454 +3,154 @@
  */
 package com.coss.types;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.coss.core.ObjectMappers;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
+@JsonDeserialize(using = SchedulingLocation.Deserializer.class)
 public final class SchedulingLocation {
-    private final Value value;
+    private final Object value;
 
-    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-    private SchedulingLocation(Value value) {
+    private final int type;
+
+    private SchedulingLocation(Object value, int type) {
         this.value = value;
-    }
-
-    public <T> T visit(Visitor<T> visitor) {
-        return value.visit(visitor);
-    }
-
-    public static SchedulingLocation link(SchedulingLocationLink value) {
-        return new SchedulingLocation(new LinkValue(value));
-    }
-
-    public static SchedulingLocation phone(SchedulingLocationPhone value) {
-        return new SchedulingLocation(new PhoneValue(value));
-    }
-
-    public static SchedulingLocation inPerson(SchedulingLocationInPerson value) {
-        return new SchedulingLocation(new InPersonValue(value));
-    }
-
-    public static SchedulingLocation googleMeet(SchedulingLocationGoogleMeet value) {
-        return new SchedulingLocation(new GoogleMeetValue(value));
-    }
-
-    public static SchedulingLocation microsoftTeams(SchedulingLocationMicrosoftTeams value) {
-        return new SchedulingLocation(new MicrosoftTeamsValue(value));
-    }
-
-    public static SchedulingLocation zoom(SchedulingLocationZoom value) {
-        return new SchedulingLocation(new ZoomValue(value));
-    }
-
-    public boolean isLink() {
-        return value instanceof LinkValue;
-    }
-
-    public boolean isPhone() {
-        return value instanceof PhoneValue;
-    }
-
-    public boolean isInPerson() {
-        return value instanceof InPersonValue;
-    }
-
-    public boolean isGoogleMeet() {
-        return value instanceof GoogleMeetValue;
-    }
-
-    public boolean isMicrosoftTeams() {
-        return value instanceof MicrosoftTeamsValue;
-    }
-
-    public boolean isZoom() {
-        return value instanceof ZoomValue;
-    }
-
-    public boolean _isUnknown() {
-        return value instanceof _UnknownValue;
-    }
-
-    public Optional<SchedulingLocationLink> getLink() {
-        if (isLink()) {
-            return Optional.of(((LinkValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SchedulingLocationPhone> getPhone() {
-        if (isPhone()) {
-            return Optional.of(((PhoneValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SchedulingLocationInPerson> getInPerson() {
-        if (isInPerson()) {
-            return Optional.of(((InPersonValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SchedulingLocationGoogleMeet> getGoogleMeet() {
-        if (isGoogleMeet()) {
-            return Optional.of(((GoogleMeetValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SchedulingLocationMicrosoftTeams> getMicrosoftTeams() {
-        if (isMicrosoftTeams()) {
-            return Optional.of(((MicrosoftTeamsValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<SchedulingLocationZoom> getZoom() {
-        if (isZoom()) {
-            return Optional.of(((ZoomValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<Object> _getUnknown() {
-        if (_isUnknown()) {
-            return Optional.of(((_UnknownValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) return true;
-        return other instanceof SchedulingLocation && value.equals(((SchedulingLocation) other).value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
-    public String toString() {
-        return value.toString();
+        this.type = type;
     }
 
     @JsonValue
-    private Value getValue() {
+    public Object get() {
         return this.value;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T visit(Visitor<T> visitor) {
+        if (this.type == 0) {
+            return visitor.visit((SchedulingLocationZero) this.value);
+        } else if (this.type == 1) {
+            return visitor.visit((SchedulingLocationNumber) this.value);
+        } else if (this.type == 2) {
+            return visitor.visit((SchedulingLocationAddress) this.value);
+        } else if (this.type == 3) {
+            return visitor.visit((SchedulingLocationThree) this.value);
+        } else if (this.type == 4) {
+            return visitor.visit((SchedulingLocationFour) this.value);
+        } else if (this.type == 5) {
+            return visitor.visit((SchedulingLocationFive) this.value);
+        }
+        throw new IllegalStateException("Failed to visit value. This should never happen.");
+    }
+
+    @java.lang.Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        return other instanceof SchedulingLocation && equalTo((SchedulingLocation) other);
+    }
+
+    private boolean equalTo(SchedulingLocation other) {
+        return value.equals(other.value);
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+        return Objects.hash(this.value);
+    }
+
+    @java.lang.Override
+    public String toString() {
+        return this.value.toString();
+    }
+
+    public static SchedulingLocation of(SchedulingLocationZero value) {
+        return new SchedulingLocation(value, 0);
+    }
+
+    public static SchedulingLocation of(SchedulingLocationNumber value) {
+        return new SchedulingLocation(value, 1);
+    }
+
+    public static SchedulingLocation of(SchedulingLocationAddress value) {
+        return new SchedulingLocation(value, 2);
+    }
+
+    public static SchedulingLocation of(SchedulingLocationThree value) {
+        return new SchedulingLocation(value, 3);
+    }
+
+    public static SchedulingLocation of(SchedulingLocationFour value) {
+        return new SchedulingLocation(value, 4);
+    }
+
+    public static SchedulingLocation of(SchedulingLocationFive value) {
+        return new SchedulingLocation(value, 5);
+    }
+
     public interface Visitor<T> {
-        T visitLink(SchedulingLocationLink link);
+        T visit(SchedulingLocationZero value);
 
-        T visitPhone(SchedulingLocationPhone phone);
+        T visit(SchedulingLocationNumber value);
 
-        T visitInPerson(SchedulingLocationInPerson inPerson);
+        T visit(SchedulingLocationAddress value);
 
-        T visitGoogleMeet(SchedulingLocationGoogleMeet googleMeet);
+        T visit(SchedulingLocationThree value);
 
-        T visitMicrosoftTeams(SchedulingLocationMicrosoftTeams microsoftTeams);
+        T visit(SchedulingLocationFour value);
 
-        T visitZoom(SchedulingLocationZoom zoom);
-
-        T _visitUnknown(Object unknownType);
+        T visit(SchedulingLocationFive value);
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({
-        @JsonSubTypes.Type(LinkValue.class),
-        @JsonSubTypes.Type(PhoneValue.class),
-        @JsonSubTypes.Type(InPersonValue.class),
-        @JsonSubTypes.Type(GoogleMeetValue.class),
-        @JsonSubTypes.Type(MicrosoftTeamsValue.class),
-        @JsonSubTypes.Type(ZoomValue.class)
-    })
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    private interface Value {
-        <T> T visit(Visitor<T> visitor);
-    }
-
-    @JsonTypeName("link")
-    @JsonIgnoreProperties("type")
-    private static final class LinkValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationLink value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private LinkValue() {}
-
-        private LinkValue(SchedulingLocationLink value) {
-            this.value = value;
+    static final class Deserializer extends StdDeserializer<SchedulingLocation> {
+        Deserializer() {
+            super(SchedulingLocation.class);
         }
 
         @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitLink(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof LinkValue && equalTo((LinkValue) other);
-        }
-
-        private boolean equalTo(LinkValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("phone")
-    @JsonIgnoreProperties("type")
-    private static final class PhoneValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationPhone value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private PhoneValue() {}
-
-        private PhoneValue(SchedulingLocationPhone value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitPhone(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof PhoneValue && equalTo((PhoneValue) other);
-        }
-
-        private boolean equalTo(PhoneValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("in_person")
-    @JsonIgnoreProperties("type")
-    private static final class InPersonValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationInPerson value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private InPersonValue() {}
-
-        private InPersonValue(SchedulingLocationInPerson value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitInPerson(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof InPersonValue && equalTo((InPersonValue) other);
-        }
-
-        private boolean equalTo(InPersonValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("google_meet")
-    @JsonIgnoreProperties("type")
-    private static final class GoogleMeetValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationGoogleMeet value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private GoogleMeetValue() {}
-
-        private GoogleMeetValue(SchedulingLocationGoogleMeet value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitGoogleMeet(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof GoogleMeetValue && equalTo((GoogleMeetValue) other);
-        }
-
-        private boolean equalTo(GoogleMeetValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("microsoft_teams")
-    @JsonIgnoreProperties("type")
-    private static final class MicrosoftTeamsValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationMicrosoftTeams value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private MicrosoftTeamsValue() {}
-
-        private MicrosoftTeamsValue(SchedulingLocationMicrosoftTeams value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitMicrosoftTeams(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof MicrosoftTeamsValue && equalTo((MicrosoftTeamsValue) other);
-        }
-
-        private boolean equalTo(MicrosoftTeamsValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("zoom")
-    @JsonIgnoreProperties("type")
-    private static final class ZoomValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "type", allowSetters = true)
-        private SchedulingLocationZoom value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private ZoomValue() {}
-
-        private ZoomValue(SchedulingLocationZoom value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitZoom(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof ZoomValue && equalTo((ZoomValue) other);
-        }
-
-        private boolean equalTo(ZoomValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonIgnoreProperties("type")
-    private static final class _UnknownValue implements Value {
-        private String type;
-
-        @JsonValue
-        private Object value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private _UnknownValue(@JsonProperty("value") Object value) {}
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor._visitUnknown(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof _UnknownValue && equalTo((_UnknownValue) other);
-        }
-
-        private boolean equalTo(_UnknownValue other) {
-            return type.equals(other.type) && value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.type, this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "SchedulingLocation{" + "type: " + type + ", value: " + value + "}";
+        public SchedulingLocation deserialize(JsonParser p, DeserializationContext context) throws IOException {
+            Object value = p.readValueAs(Object.class);
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationZero.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationNumber.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationAddress.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationThree.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationFour.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            if (value instanceof Map<?, ?> && ((Map<?, ?>) value).containsKey("type")) {
+                try {
+                    return of(ObjectMappers.JSON_MAPPER.convertValue(value, SchedulingLocationFive.class));
+                } catch (RuntimeException e) {
+                }
+            }
+            throw new JsonParseException(p, "Failed to deserialize");
         }
     }
 }

@@ -71,6 +71,20 @@ public record SchedulingBookingWebhookData : IJsonOnDeserialized
     public string? PreviousStart { get; set; }
 
     /// <summary>
+    /// On `scheduling.booking.reassigned`: who had it before.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("previous_host_ids")]
+    public IEnumerable<string>? PreviousHostIds { get; set; }
+
+    /// <summary>
+    /// On `scheduling.booking.reassigned`: the bulk reassignment it was part of.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("reassignment_id")]
+    public string? ReassignmentId { get; set; }
+
+    /// <summary>
     /// `scheduling.booking.reminder`: which reminder this is.
     /// </summary>
     [Optional]

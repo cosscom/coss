@@ -112,6 +112,13 @@ public record CreateEventTypeRequest
     public bool? RequiresApproval { get; set; }
 
     /// <summary>
+    /// Whether bookings of this event type can go to another host. Default: true.
+    /// </summary>
+    [Optional]
+    [JsonPropertyName("reassignment_enabled")]
+    public bool? ReassignmentEnabled { get; set; }
+
+    /// <summary>
     /// How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
     /// </summary>
     [Optional]
@@ -172,7 +179,14 @@ public record CreateEventTypeRequest
     /// </summary>
     [Optional]
     [JsonPropertyName("locations")]
-    public IEnumerable<SchedulingLocation>? Locations { get; set; }
+    public IEnumerable<OneOf<
+        SchedulingLocationZero,
+        SchedulingLocationNumber,
+        SchedulingLocationAddress,
+        SchedulingLocationThree,
+        SchedulingLocationFour,
+        SchedulingLocationFive
+    >?>? Locations { get; set; }
 
     /// <summary>
     /// Pool members also include active hosts matching all of these attributes.

@@ -33,6 +33,29 @@ func (u UpdateSchedulingSettingsRequestCalendarFailureMode) Ptr() *UpdateSchedul
 	return &u
 }
 
+// Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+type UpdateSchedulingSettingsRequestHostReassignment string
+
+const (
+	UpdateSchedulingSettingsRequestHostReassignmentOff      UpdateSchedulingSettingsRequestHostReassignment = "off"
+	UpdateSchedulingSettingsRequestHostReassignmentEligible UpdateSchedulingSettingsRequestHostReassignment = "eligible"
+)
+
+func NewUpdateSchedulingSettingsRequestHostReassignmentFromString(s string) (UpdateSchedulingSettingsRequestHostReassignment, error) {
+	switch s {
+	case "off":
+		return UpdateSchedulingSettingsRequestHostReassignmentOff, nil
+	case "eligible":
+		return UpdateSchedulingSettingsRequestHostReassignmentEligible, nil
+	}
+	var t UpdateSchedulingSettingsRequestHostReassignment
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (u UpdateSchedulingSettingsRequestHostReassignment) Ptr() *UpdateSchedulingSettingsRequestHostReassignment {
+	return &u
+}
+
 var (
 	updateSchedulingSettingsRequestLogoFieldContent = big.NewInt(1 << 0)
 )
@@ -243,16 +266,123 @@ func (u *UpdateSchedulingSettingsRequestNotificationsValue) String() string {
 }
 
 var (
-	updateSchedulingSettingsRequestFieldAllowedOrigins      = big.NewInt(1 << 0)
-	updateSchedulingSettingsRequestFieldBrandName           = big.NewInt(1 << 1)
-	updateSchedulingSettingsRequestFieldAccentColor         = big.NewInt(1 << 2)
-	updateSchedulingSettingsRequestFieldLogo                = big.NewInt(1 << 3)
-	updateSchedulingSettingsRequestFieldEmailFrom           = big.NewInt(1 << 4)
-	updateSchedulingSettingsRequestFieldSmsFrom             = big.NewInt(1 << 5)
-	updateSchedulingSettingsRequestFieldCalendarFailureMode = big.NewInt(1 << 6)
-	updateSchedulingSettingsRequestFieldNotifications       = big.NewInt(1 << 7)
-	updateSchedulingSettingsRequestFieldEmailReplyTo        = big.NewInt(1 << 8)
-	updateSchedulingSettingsRequestFieldReminders           = big.NewInt(1 << 9)
+	updateSchedulingSettingsRequestOutOfOfficeReasonsItemFieldKey   = big.NewInt(1 << 0)
+	updateSchedulingSettingsRequestOutOfOfficeReasonsItemFieldLabel = big.NewInt(1 << 1)
+)
+
+type UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem struct {
+	// One of `unspecified`, `vacation`, `travel`, `sick`, `public_holiday`, `parental_leave`, `training` and `other`, or a key from the settings' `out_of_office_reasons`. Only people who manage this host see it: never bookers, webhooks or calendars.
+	Key   string `json:"key" url:"key"`
+	Label string `json:"label" url:"label"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) GetKey() string {
+	if u == nil {
+		return ""
+	}
+	return u.Key
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) GetLabel() string {
+	if u == nil {
+		return ""
+	}
+	return u.Label
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) GetExtraProperties() map[string]interface{} {
+	if u == nil {
+		return nil
+	}
+	return u.extraProperties
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) require(field *big.Int) {
+	next := new(big.Int)
+	if u.explicitFields != nil {
+		next.Set(u.explicitFields)
+	}
+	next.Or(next, field)
+	u.explicitFields = next
+}
+
+// SetKey sets the Key field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) SetKey(key string) {
+	u.Key = key
+	u.require(updateSchedulingSettingsRequestOutOfOfficeReasonsItemFieldKey)
+}
+
+// SetLabel sets the Label field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) SetLabel(label string) {
+	u.Label = label
+	u.require(updateSchedulingSettingsRequestOutOfOfficeReasonsItemFieldLabel)
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) UnmarshalJSON(data []byte) error {
+	type unmarshaler UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*u = UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *u)
+	if err != nil {
+		return err
+	}
+	u.extraProperties = extraProperties
+	u.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) MarshalJSON() ([]byte, error) {
+	type embed UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*u),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, u.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (u *UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) String() string {
+	if u == nil {
+		return "<nil>"
+	}
+	if len(u.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(u.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(u); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", u)
+}
+
+var (
+	updateSchedulingSettingsRequestFieldAllowedOrigins           = big.NewInt(1 << 0)
+	updateSchedulingSettingsRequestFieldBrandName                = big.NewInt(1 << 1)
+	updateSchedulingSettingsRequestFieldAccentColor              = big.NewInt(1 << 2)
+	updateSchedulingSettingsRequestFieldLogo                     = big.NewInt(1 << 3)
+	updateSchedulingSettingsRequestFieldPrivacyURL               = big.NewInt(1 << 4)
+	updateSchedulingSettingsRequestFieldEmailFrom                = big.NewInt(1 << 5)
+	updateSchedulingSettingsRequestFieldSmsFrom                  = big.NewInt(1 << 6)
+	updateSchedulingSettingsRequestFieldCalendarFailureMode      = big.NewInt(1 << 7)
+	updateSchedulingSettingsRequestFieldNameHostInAttendeeEmails = big.NewInt(1 << 8)
+	updateSchedulingSettingsRequestFieldHostReassignment         = big.NewInt(1 << 9)
+	updateSchedulingSettingsRequestFieldOutOfOfficeReasons       = big.NewInt(1 << 10)
+	updateSchedulingSettingsRequestFieldNotifications            = big.NewInt(1 << 11)
+	updateSchedulingSettingsRequestFieldEmailReplyTo             = big.NewInt(1 << 12)
+	updateSchedulingSettingsRequestFieldReminders                = big.NewInt(1 << 13)
 )
 
 type UpdateSchedulingSettingsRequest struct {
@@ -264,12 +394,20 @@ type UpdateSchedulingSettingsRequest struct {
 	AccentColor *string `json:"accent_color,omitempty" url:"-"`
 	// Your logo, a PNG or JPEG. `null` removes it.
 	Logo *UpdateSchedulingSettingsRequestLogo `json:"logo,omitempty" url:"-"`
+	// Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. `null` removes it.
+	PrivacyURL *string `json:"privacy_url,omitempty" url:"-"`
 	// Sender of booking emails, on a verified domain. `null`: coss.com's own address.
 	EmailFrom *string `json:"email_from,omitempty" url:"-"`
 	// Your approved number for SMS reminders, in E.164. `null`: no SMS is sent.
 	SmsFrom *string `json:"sms_from,omitempty" url:"-"`
 	// When a host's calendar can't be read: `hide` stops offering them, `last_known` keeps offering their last known times.
 	CalendarFailureMode *UpdateSchedulingSettingsRequestCalendarFailureMode `json:"calendar_failure_mode,omitempty" url:"-"`
+	// Name the new host when telling an attendee their booking has one.
+	NameHostInAttendeeEmails *bool `json:"name_host_in_attendee_emails,omitempty" url:"-"`
+	// Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+	HostReassignment *UpdateSchedulingSettingsRequestHostReassignment `json:"host_reassignment,omitempty" url:"-"`
+	// Reasons of your own, on top of the preset ones. Hosts and managers see them.
+	OutOfOfficeReasons []*UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem `json:"out_of_office_reasons,omitempty" url:"-"`
 	// Per event (`confirmed`, `pending_approval`, `rescheduled`, `cancelled`, `declined`, `reminder`), overriding the defaults. `null` restores them.
 	Notifications map[string]*UpdateSchedulingSettingsRequestNotificationsValue `json:"notifications,omitempty" url:"-"`
 	// Where replies go, for emails from `email_from`.
@@ -318,6 +456,13 @@ func (u *UpdateSchedulingSettingsRequest) SetLogo(logo *UpdateSchedulingSettings
 	u.require(updateSchedulingSettingsRequestFieldLogo)
 }
 
+// SetPrivacyURL sets the PrivacyURL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequest) SetPrivacyURL(privacyURL *string) {
+	u.PrivacyURL = privacyURL
+	u.require(updateSchedulingSettingsRequestFieldPrivacyURL)
+}
+
 // SetEmailFrom sets the EmailFrom field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (u *UpdateSchedulingSettingsRequest) SetEmailFrom(emailFrom *string) {
@@ -337,6 +482,27 @@ func (u *UpdateSchedulingSettingsRequest) SetSmsFrom(smsFrom *string) {
 func (u *UpdateSchedulingSettingsRequest) SetCalendarFailureMode(calendarFailureMode *UpdateSchedulingSettingsRequestCalendarFailureMode) {
 	u.CalendarFailureMode = calendarFailureMode
 	u.require(updateSchedulingSettingsRequestFieldCalendarFailureMode)
+}
+
+// SetNameHostInAttendeeEmails sets the NameHostInAttendeeEmails field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequest) SetNameHostInAttendeeEmails(nameHostInAttendeeEmails *bool) {
+	u.NameHostInAttendeeEmails = nameHostInAttendeeEmails
+	u.require(updateSchedulingSettingsRequestFieldNameHostInAttendeeEmails)
+}
+
+// SetHostReassignment sets the HostReassignment field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequest) SetHostReassignment(hostReassignment *UpdateSchedulingSettingsRequestHostReassignment) {
+	u.HostReassignment = hostReassignment
+	u.require(updateSchedulingSettingsRequestFieldHostReassignment)
+}
+
+// SetOutOfOfficeReasons sets the OutOfOfficeReasons field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateSchedulingSettingsRequest) SetOutOfOfficeReasons(outOfOfficeReasons []*UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem) {
+	u.OutOfOfficeReasons = outOfOfficeReasons
+	u.require(updateSchedulingSettingsRequestFieldOutOfOfficeReasons)
 }
 
 // SetNotifications sets the Notifications field and marks it as non-optional;

@@ -6,9 +6,11 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from .scheduling_reminder import SchedulingReminder
 from .scheduling_settings_calendar_failure_mode import SchedulingSettingsCalendarFailureMode
+from .scheduling_settings_host_reassignment import SchedulingSettingsHostReassignment
 from .scheduling_settings_logo import SchedulingSettingsLogo
 from .scheduling_settings_notifications_value import SchedulingSettingsNotificationsValue
 from .scheduling_settings_object import SchedulingSettingsObject
+from .scheduling_settings_out_of_office_reasons_item import SchedulingSettingsOutOfOfficeReasonsItem
 
 
 class SchedulingSettings(UniversalBaseModel):
@@ -33,6 +35,11 @@ class SchedulingSettings(UniversalBaseModel):
     At the top of the hosted pages, and of emails sent from `email_from`.
     """
 
+    privacy_url: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Your privacy policy, linked on a host's page beside what connecting a calendar does, once this environment has its own OAuth app and a `brand_name`.
+    """
+
     email_from: typing.Optional[str] = pydantic.Field(default=None)
     """
     Sender of booking emails, on a verified domain.
@@ -41,6 +48,21 @@ class SchedulingSettings(UniversalBaseModel):
     sms_from: typing.Optional[str] = pydantic.Field(default=None)
     """
     Your approved number for SMS reminders. Without one, no SMS is sent.
+    """
+
+    name_host_in_attendee_emails: bool = pydantic.Field()
+    """
+    Name the new host when telling an attendee their booking has one.
+    """
+
+    host_reassignment: SchedulingSettingsHostReassignment = pydantic.Field()
+    """
+    Whether hosts can give their own bookings to someone else from their page. `eligible` lets them, to anyone free who takes that event type.
+    """
+
+    out_of_office_reasons: typing.List[SchedulingSettingsOutOfOfficeReasonsItem] = pydantic.Field()
+    """
+    Reasons of your own for time away, on top of the preset ones.
     """
 
     calendar_failure_mode: SchedulingSettingsCalendarFailureMode = pydantic.Field()

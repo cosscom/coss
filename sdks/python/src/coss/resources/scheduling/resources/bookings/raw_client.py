@@ -31,10 +31,15 @@ from .....types.scheduling_booking_list import SchedulingBookingList
 from .....types.scheduling_booking_notification_list import SchedulingBookingNotificationList
 from .....types.scheduling_guest_input import SchedulingGuestInput
 from .....types.scheduling_location import SchedulingLocation
+from .....types.scheduling_reassign_candidate_list import SchedulingReassignCandidateList
 from .types.create_booking_request_answers_value import CreateBookingRequestAnswersValue
 from .types.create_booking_request_attributes_value import CreateBookingRequestAttributesValue
 from .types.create_booking_request_location import CreateBookingRequestLocation
 from .types.list_bookings_request_status import ListBookingsRequestStatus
+from .types.reassign_scheduling_booking_request_changes_item import ReassignSchedulingBookingRequestChangesItem
+from .types.reassign_scheduling_booking_request_notify import ReassignSchedulingBookingRequestNotify
+from .types.reassign_scheduling_booking_request_overrides_item import ReassignSchedulingBookingRequestOverridesItem
+from .types.reassign_scheduling_booking_request_reason_code import ReassignSchedulingBookingRequestReasonCode
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -44,6 +49,331 @@ OMIT = typing.cast(typing.Any, ...)
 class RawBookingsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
+
+    def reassign(
+        self,
+        id: str,
+        *,
+        changes: typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+        reason_code: ReassignSchedulingBookingRequestReasonCode,
+        note: typing.Optional[str] = OMIT,
+        overrides: typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]] = OMIT,
+        notify: typing.Optional[ReassignSchedulingBookingRequestNotify] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SchedulingBooking]:
+        """
+        Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        changes : typing.Sequence[ReassignSchedulingBookingRequestChangesItem]
+            A session or a one-on-one has one. A collective can change several.
+
+        reason_code : ReassignSchedulingBookingRequestReasonCode
+
+        note : typing.Optional[str]
+            Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+
+        overrides : typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]]
+            Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+
+        notify : typing.Optional[ReassignSchedulingBookingRequestNotify]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SchedulingBooking]
+            The booking.
+        """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
+        _response = self._client_wrapper.httpx_client.request(
+            f"v1/scheduling/bookings/{encode_path_param(id)}/reassign",
+            method="POST",
+            json={
+                "changes": convert_and_respect_annotation_metadata(
+                    object_=changes,
+                    annotation=typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+                    direction="write",
+                ),
+                "reason_code": reason_code,
+                "note": note,
+                "overrides": overrides,
+                "notify": convert_and_respect_annotation_metadata(
+                    object_=notify, annotation=ReassignSchedulingBookingRequestNotify, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+                "Idempotency-Key": generate_idempotency_key(),
+            },
+            request_options=_request_options_with_retries_disabled,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SchedulingBooking,
+                    parse_obj_as(
+                        type_=SchedulingBooking,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 415:
+                raise UnsupportedMediaTypeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def reassign_candidates(
+        self,
+        id: str,
+        *,
+        from_host: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SchedulingReassignCandidateList]:
+        """
+        The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        from_host : typing.Optional[str]
+            The host who'd leave, when it could be several.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SchedulingReassignCandidateList]
+            The candidates.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"v1/scheduling/bookings/{encode_path_param(id)}/reassign_candidates",
+            method="GET",
+            params={
+                "from_host": from_host,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SchedulingReassignCandidateList,
+                    parse_obj_as(
+                        type_=SchedulingReassignCandidateList,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list(
         self,
@@ -1531,7 +1861,11 @@ class RawBookingsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update_location(
-        self, id: str, *, location: SchedulingLocation, request_options: typing.Optional[RequestOptions] = None
+        self,
+        id: str,
+        *,
+        location: typing.Optional[SchedulingLocation] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[SchedulingBooking]:
         """
         Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
@@ -1541,7 +1875,7 @@ class RawBookingsClient:
         id : str
             The booking's id.
 
-        location : SchedulingLocation
+        location : typing.Optional[SchedulingLocation]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1556,7 +1890,7 @@ class RawBookingsClient:
             method="PATCH",
             json={
                 "location": convert_and_respect_annotation_metadata(
-                    object_=location, annotation=SchedulingLocation, direction="write"
+                    object_=location, annotation=typing.Optional[SchedulingLocation], direction="write"
                 ),
             },
             headers={
@@ -1687,6 +2021,331 @@ class RawBookingsClient:
 class AsyncRawBookingsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
+
+    async def reassign(
+        self,
+        id: str,
+        *,
+        changes: typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+        reason_code: ReassignSchedulingBookingRequestReasonCode,
+        note: typing.Optional[str] = OMIT,
+        overrides: typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]] = OMIT,
+        notify: typing.Optional[ReassignSchedulingBookingRequestNotify] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SchedulingBooking]:
+        """
+        Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        changes : typing.Sequence[ReassignSchedulingBookingRequestChangesItem]
+            A session or a one-on-one has one. A collective can change several.
+
+        reason_code : ReassignSchedulingBookingRequestReasonCode
+
+        note : typing.Optional[str]
+            Why, in your words: required with an override of someone's availability. Encrypted, and only in the booking's history.
+
+        overrides : typing.Optional[typing.Sequence[ReassignSchedulingBookingRequestOverridesItem]]
+            Go ahead anyway: `any_host` for someone who doesn't take this event type, and the rest for what a candidate's `reason` said. A host who already has something at this time can never be overridden.
+
+        notify : typing.Optional[ReassignSchedulingBookingRequestNotify]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SchedulingBooking]
+            The booking.
+        """
+        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
+            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
+        )
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v1/scheduling/bookings/{encode_path_param(id)}/reassign",
+            method="POST",
+            json={
+                "changes": convert_and_respect_annotation_metadata(
+                    object_=changes,
+                    annotation=typing.Sequence[ReassignSchedulingBookingRequestChangesItem],
+                    direction="write",
+                ),
+                "reason_code": reason_code,
+                "note": note,
+                "overrides": overrides,
+                "notify": convert_and_respect_annotation_metadata(
+                    object_=notify, annotation=ReassignSchedulingBookingRequestNotify, direction="write"
+                ),
+            },
+            headers={
+                "content-type": "application/json",
+                "Idempotency-Key": generate_idempotency_key(),
+            },
+            request_options=_request_options_with_retries_disabled,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SchedulingBooking,
+                    parse_obj_as(
+                        type_=SchedulingBooking,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 415:
+                raise UnsupportedMediaTypeError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def reassign_candidates(
+        self,
+        id: str,
+        *,
+        from_host: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SchedulingReassignCandidateList]:
+        """
+        The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+
+        Parameters
+        ----------
+        id : str
+            The booking's id.
+
+        from_host : typing.Optional[str]
+            The host who'd leave, when it could be several.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SchedulingReassignCandidateList]
+            The candidates.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"v1/scheduling/bookings/{encode_path_param(id)}/reassign_candidates",
+            method="GET",
+            params={
+                "from_host": from_host,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SchedulingReassignCandidateList,
+                    parse_obj_as(
+                        type_=SchedulingReassignCandidateList,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 429:
+                raise TooManyRequestsError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 503:
+                raise ServiceUnavailableError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        Error,
+                        parse_obj_as(
+                            type_=Error,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list(
         self,
@@ -3174,7 +3833,11 @@ class AsyncRawBookingsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update_location(
-        self, id: str, *, location: SchedulingLocation, request_options: typing.Optional[RequestOptions] = None
+        self,
+        id: str,
+        *,
+        location: typing.Optional[SchedulingLocation] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[SchedulingBooking]:
         """
         Where it happens, such as the meeting link you made after the `scheduling.booking.confirmed` webhook.
@@ -3184,7 +3847,7 @@ class AsyncRawBookingsClient:
         id : str
             The booking's id.
 
-        location : SchedulingLocation
+        location : typing.Optional[SchedulingLocation]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -3199,7 +3862,7 @@ class AsyncRawBookingsClient:
             method="PATCH",
             json={
                 "location": convert_and_respect_annotation_metadata(
-                    object_=location, annotation=SchedulingLocation, direction="write"
+                    object_=location, annotation=typing.Optional[SchedulingLocation], direction="write"
                 ),
             },
             headers={

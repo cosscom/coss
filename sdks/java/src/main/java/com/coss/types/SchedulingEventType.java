@@ -63,6 +63,8 @@ public final class SchedulingEventType {
 
     private final boolean requiresApproval;
 
+    private final boolean reassignmentEnabled;
+
     private final double approvalTtlMinutes;
 
     private final double holdTtlSeconds;
@@ -79,7 +81,7 @@ public final class SchedulingEventType {
 
     private final List<SchedulingQuestion> questions;
 
-    private final List<SchedulingLocation> locations;
+    private final List<OptionalNullable<SchedulingLocation>> locations;
 
     private final OptionalNullable<Map<String, OptionalNullable<SchedulingEventTypeHostFilterValue>>> hostFilter;
 
@@ -116,6 +118,7 @@ public final class SchedulingEventType {
             List<SchedulingLimit> limits,
             OptionalNullable<Double> capacity,
             boolean requiresApproval,
+            boolean reassignmentEnabled,
             double approvalTtlMinutes,
             double holdTtlSeconds,
             double cancelNoticeMinutes,
@@ -124,7 +127,7 @@ public final class SchedulingEventType {
             OptionalNullable<Double> maxActiveBookingsPerAttendee,
             SchedulingEventTypeHostCalendarDetails hostCalendarDetails,
             List<SchedulingQuestion> questions,
-            List<SchedulingLocation> locations,
+            List<OptionalNullable<SchedulingLocation>> locations,
             OptionalNullable<Map<String, OptionalNullable<SchedulingEventTypeHostFilterValue>>> hostFilter,
             OptionalNullable<Map<String, OptionalNullable<SchedulingEventTypeNotificationsValue>>> notifications,
             OptionalNullable<List<SchedulingReminder>> reminders,
@@ -151,6 +154,7 @@ public final class SchedulingEventType {
         this.limits = limits;
         this.capacity = capacity;
         this.requiresApproval = requiresApproval;
+        this.reassignmentEnabled = reassignmentEnabled;
         this.approvalTtlMinutes = approvalTtlMinutes;
         this.holdTtlSeconds = holdTtlSeconds;
         this.cancelNoticeMinutes = cancelNoticeMinutes;
@@ -326,6 +330,14 @@ public final class SchedulingEventType {
     }
 
     /**
+     * @return Whether bookings of this event type can go to another host.
+     */
+    @JsonProperty("reassignment_enabled")
+    public boolean getReassignmentEnabled() {
+        return reassignmentEnabled;
+    }
+
+    /**
      * @return How long a booking can wait for approval before it's declined, in minutes.
      */
     @JsonProperty("approval_ttl_minutes")
@@ -397,7 +409,7 @@ public final class SchedulingEventType {
      * @return Where bookings can meet. A browser only chooses among these.
      */
     @JsonProperty("locations")
-    public List<SchedulingLocation> getLocations() {
+    public List<OptionalNullable<SchedulingLocation>> getLocations() {
         return locations;
     }
 
@@ -547,6 +559,7 @@ public final class SchedulingEventType {
                 && limits.equals(other.limits)
                 && capacity.equals(other.capacity)
                 && requiresApproval == other.requiresApproval
+                && reassignmentEnabled == other.reassignmentEnabled
                 && approvalTtlMinutes == other.approvalTtlMinutes
                 && holdTtlSeconds == other.holdTtlSeconds
                 && cancelNoticeMinutes == other.cancelNoticeMinutes
@@ -586,6 +599,7 @@ public final class SchedulingEventType {
                 this.limits,
                 this.capacity,
                 this.requiresApproval,
+                this.reassignmentEnabled,
                 this.approvalTtlMinutes,
                 this.holdTtlSeconds,
                 this.cancelNoticeMinutes,
@@ -683,7 +697,14 @@ public final class SchedulingEventType {
         /**
          * <p>Whether bookings start as <code>pending_approval</code>, holding the time until approved or declined.</p>
          */
-        ApprovalTtlMinutesStage requiresApproval(boolean requiresApproval);
+        ReassignmentEnabledStage requiresApproval(boolean requiresApproval);
+    }
+
+    public interface ReassignmentEnabledStage {
+        /**
+         * <p>Whether bookings of this event type can go to another host.</p>
+         */
+        ApprovalTtlMinutesStage reassignmentEnabled(boolean reassignmentEnabled);
     }
 
     public interface ApprovalTtlMinutesStage {
@@ -836,11 +857,11 @@ public final class SchedulingEventType {
         /**
          * <p>Where bookings can meet. A browser only chooses among these.</p>
          */
-        _FinalStage locations(List<SchedulingLocation> locations);
+        _FinalStage locations(List<OptionalNullable<SchedulingLocation>> locations);
 
-        _FinalStage addLocations(SchedulingLocation locations);
+        _FinalStage addLocations(OptionalNullable<SchedulingLocation> locations);
 
-        _FinalStage addAllLocations(List<SchedulingLocation> locations);
+        _FinalStage addAllLocations(List<OptionalNullable<SchedulingLocation>> locations);
 
         /**
          * <p>Pool members also include active hosts matching all of these attributes. <code>null</code>: only <code>hosts</code>.</p>
@@ -911,6 +932,7 @@ public final class SchedulingEventType {
                     BufferAfterMinutesStage,
                     MinNoticeMinutesStage,
                     RequiresApprovalStage,
+                    ReassignmentEnabledStage,
                     ApprovalTtlMinutesStage,
                     HoldTtlSecondsStage,
                     CancelNoticeMinutesStage,
@@ -942,6 +964,8 @@ public final class SchedulingEventType {
 
         private boolean requiresApproval;
 
+        private boolean reassignmentEnabled;
+
         private double approvalTtlMinutes;
 
         private double holdTtlSeconds;
@@ -970,7 +994,7 @@ public final class SchedulingEventType {
         private OptionalNullable<Map<String, OptionalNullable<SchedulingEventTypeHostFilterValue>>> hostFilter =
                 OptionalNullable.absent();
 
-        private List<SchedulingLocation> locations = new ArrayList<>();
+        private List<OptionalNullable<SchedulingLocation>> locations = new ArrayList<>();
 
         private List<SchedulingQuestion> questions = new ArrayList<>();
 
@@ -1015,6 +1039,7 @@ public final class SchedulingEventType {
             limits(other.getLimits());
             capacity(other.getCapacity());
             requiresApproval(other.getRequiresApproval());
+            reassignmentEnabled(other.getReassignmentEnabled());
             approvalTtlMinutes(other.getApprovalTtlMinutes());
             holdTtlSeconds(other.getHoldTtlSeconds());
             cancelNoticeMinutes(other.getCancelNoticeMinutes());
@@ -1142,8 +1167,19 @@ public final class SchedulingEventType {
          */
         @java.lang.Override
         @JsonSetter("requires_approval")
-        public ApprovalTtlMinutesStage requiresApproval(boolean requiresApproval) {
+        public ReassignmentEnabledStage requiresApproval(boolean requiresApproval) {
             this.requiresApproval = requiresApproval;
+            return this;
+        }
+
+        /**
+         * <p>Whether bookings of this event type can go to another host.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        @JsonSetter("reassignment_enabled")
+        public ApprovalTtlMinutesStage reassignmentEnabled(boolean reassignmentEnabled) {
+            this.reassignmentEnabled = reassignmentEnabled;
             return this;
         }
 
@@ -1460,7 +1496,7 @@ public final class SchedulingEventType {
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
-        public _FinalStage addAllLocations(List<SchedulingLocation> locations) {
+        public _FinalStage addAllLocations(List<OptionalNullable<SchedulingLocation>> locations) {
             if (locations != null) {
                 this.locations.addAll(locations);
             }
@@ -1472,7 +1508,7 @@ public final class SchedulingEventType {
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
-        public _FinalStage addLocations(SchedulingLocation locations) {
+        public _FinalStage addLocations(OptionalNullable<SchedulingLocation> locations) {
             this.locations.add(locations);
             return this;
         }
@@ -1482,7 +1518,7 @@ public final class SchedulingEventType {
          */
         @java.lang.Override
         @JsonSetter(value = "locations", nulls = Nulls.SKIP)
-        public _FinalStage locations(List<SchedulingLocation> locations) {
+        public _FinalStage locations(List<OptionalNullable<SchedulingLocation>> locations) {
             this.locations.clear();
             if (locations != null) {
                 this.locations.addAll(locations);
@@ -1901,6 +1937,7 @@ public final class SchedulingEventType {
                     limits,
                     capacity,
                     requiresApproval,
+                    reassignmentEnabled,
                     approvalTtlMinutes,
                     holdTtlSeconds,
                     cancelNoticeMinutes,

@@ -87,6 +87,7 @@ enum CreateWebhookEndpointRequestEventTypesItem: string
     case SchedulingBookingExternalConflict = "scheduling.booking.external_conflict";
     case SchedulingBookingCalendarWriteFailed = "scheduling.booking.calendar_write_failed";
     case SchedulingBookingLocationReady = "scheduling.booking.location_ready";
+    case SchedulingBookingReassigned = "scheduling.booking.reassigned";
     case SchedulingBookingStarted = "scheduling.booking.started";
     case SchedulingBookingEnded = "scheduling.booking.ended";
     case SchedulingBookingReminder = "scheduling.booking.reminder";
@@ -95,4 +96,12 @@ enum CreateWebhookEndpointRequestEventTypesItem: string
     case SchedulingCalendarDisconnected = "scheduling.calendar.disconnected";
     case SchedulingCalendarDelegationFailing = "scheduling.calendar_delegation.failing";
     case SchedulingCalendarDelegationRestored = "scheduling.calendar_delegation.restored";
+    case SchedulingOutOfOfficeCreated = "scheduling.out_of_office.created";
+    case SchedulingOutOfOfficeUpdated = "scheduling.out_of_office.updated";
+    case SchedulingOutOfOfficeDeleted = "scheduling.out_of_office.deleted";
+    case SchedulingOutOfOfficeStarted = "scheduling.out_of_office.started";
+    case SchedulingOutOfOfficeEnded = "scheduling.out_of_office.ended";
+    case SchedulingReassignmentCompleted = "scheduling.reassignment.completed";
+    case SchedulingOauthAppFailing = "scheduling.oauth_app.failing";
+    case SchedulingOauthAppRestored = "scheduling.oauth_app.restored";
 }

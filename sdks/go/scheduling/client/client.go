@@ -14,7 +14,11 @@ import (
 	calendars "github.com/cosscom/coss-go/scheduling/calendars"
 	eventtypes "github.com/cosscom/coss-go/scheduling/eventtypes"
 	holds "github.com/cosscom/coss-go/scheduling/holds"
+	holidaycalendars "github.com/cosscom/coss-go/scheduling/holidaycalendars"
 	hosts "github.com/cosscom/coss-go/scheduling/hosts"
+	oauthapps "github.com/cosscom/coss-go/scheduling/oauthapps"
+	outofoffice "github.com/cosscom/coss-go/scheduling/outofoffice"
+	reassignments "github.com/cosscom/coss-go/scheduling/reassignments"
 	schedules "github.com/cosscom/coss-go/scheduling/schedules"
 	series "github.com/cosscom/coss-go/scheduling/series"
 	sessions "github.com/cosscom/coss-go/scheduling/sessions"
@@ -24,16 +28,20 @@ import (
 
 type Client struct {
 	Hosts               *hosts.Client
+	Bookings            *bookings.Client
+	Reassignments       *reassignments.Client
+	HolidayCalendars    *holidaycalendars.Client
+	OutOfOffice         *outofoffice.Client
 	Schedules           *schedules.Client
 	EventTypes          *eventtypes.Client
 	Slots               *slots.Client
 	Availability        *availability.Client
-	Bookings            *bookings.Client
 	Holds               *holds.Client
 	Series              *series.Client
 	Attendees           *attendees.Client
 	Calendars           *calendars.Client
 	CalendarDelegations *calendardelegations.Client
+	OauthApps           *oauthapps.Client
 	Sessions            *sessions.Client
 	Settings            *settings.Client
 
@@ -52,16 +60,20 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 	return &Client{
 		Hosts:               hosts.NewClient(options),
+		Bookings:            bookings.NewClient(options),
+		Reassignments:       reassignments.NewClient(options),
+		HolidayCalendars:    holidaycalendars.NewClient(options),
+		OutOfOffice:         outofoffice.NewClient(options),
 		Schedules:           schedules.NewClient(options),
 		EventTypes:          eventtypes.NewClient(options),
 		Slots:               slots.NewClient(options),
 		Availability:        availability.NewClient(options),
-		Bookings:            bookings.NewClient(options),
 		Holds:               holds.NewClient(options),
 		Series:              series.NewClient(options),
 		Attendees:           attendees.NewClient(options),
 		Calendars:           calendars.NewClient(options),
 		CalendarDelegations: calendardelegations.NewClient(options),
+		OauthApps:           oauthapps.NewClient(options),
 		Sessions:            sessions.NewClient(options),
 		Settings:            settings.NewClient(options),
 		options:             options,

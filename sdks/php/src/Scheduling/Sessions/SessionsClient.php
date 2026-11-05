@@ -4,7 +4,7 @@ namespace Coss\Scheduling\Sessions;
 
 use Psr\Http\Client\ClientInterface;
 use Coss\Core\Client\RawClient;
-use Coss\Scheduling\Sessions\Requests\CreateSchedulingHostSessionRequest;
+use Coss\Scheduling\Sessions\Requests\CreateSchedulingManagerSessionRequest;
 use Coss\Types\SchedulingSession;
 use Coss\Exceptions\CossException;
 use Coss\Exceptions\CossApiException;
@@ -14,6 +14,7 @@ use Coss\Environments;
 use Coss\Core\Client\HttpMethod;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
+use Coss\Scheduling\Sessions\Requests\CreateSchedulingHostSessionRequest;
 use Coss\Scheduling\Sessions\Requests\CreateSchedulingBookerSessionRequest;
 
 class SessionsClient
@@ -50,6 +51,71 @@ class SessionsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+    }
+
+    /**
+     * Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+     *
+     * Example:
+     * ```php
+     * $client->scheduling->sessions->createForManager(
+     *     new CreateSchedulingManagerSessionRequest([
+     *         'hostFilter' => [
+     *             'team' => 'cardiology',
+     *         ],
+     *         'expiresIn' => 3600,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param CreateSchedulingManagerSessionRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?SchedulingSession
+     * @throws CossException
+     * @throws CossApiException
+     */
+    public function createForManager(CreateSchedulingManagerSessionRequest $request = new CreateSchedulingManagerSessionRequest(), ?array $options = null): ?SchedulingSession
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $options['maxRetries'] = 0;
+        $headers = [];
+        $headers['Idempotency-Key'] ??= IdempotencyKey::generate();
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v1/scheduling/manager_sessions",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return SchedulingSession::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new CossException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new CossException(message: $e->getMessage(), previous: $e);
+        }
+        throw new CossApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
     }
 
     /**

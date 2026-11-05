@@ -14,6 +14,7 @@ enum SchedulingBookingWebhookEventType: string
     case SchedulingBookingExternalConflict = "scheduling.booking.external_conflict";
     case SchedulingBookingCalendarWriteFailed = "scheduling.booking.calendar_write_failed";
     case SchedulingBookingLocationReady = "scheduling.booking.location_ready";
+    case SchedulingBookingReassigned = "scheduling.booking.reassigned";
     case SchedulingBookingStarted = "scheduling.booking.started";
     case SchedulingBookingEnded = "scheduling.booking.ended";
     case SchedulingBookingReminder = "scheduling.booking.reminder";

@@ -30,6 +30,7 @@ public class ConnectTest : BaseMockServerTest
               "provider": "google",
               "account": "account",
               "status": "active",
+              "oauth_app": "oauth_app",
               "delegation": "delegation",
               "calendars": [
                 {
@@ -106,6 +107,7 @@ public class ConnectTest : BaseMockServerTest
               "provider": "google",
               "account": "ana@example.com",
               "status": "active",
+              "oauth_app": null,
               "delegation": null,
               "calendars": [
                 {

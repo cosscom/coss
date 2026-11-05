@@ -51,6 +51,7 @@ public class ListTest : BaseMockServerTest
                   ],
                   "capacity": 1.1,
                   "requires_approval": true,
+                  "reassignment_enabled": true,
                   "approval_ttl_minutes": 1.1,
                   "hold_ttl_seconds": 1.1,
                   "cancel_notice_minutes": 1.1,
@@ -224,6 +225,7 @@ public class ListTest : BaseMockServerTest
                   ],
                   "capacity": 1.1,
                   "requires_approval": true,
+                  "reassignment_enabled": true,
                   "approval_ttl_minutes": 1.1,
                   "hold_ttl_seconds": 1.1,
                   "cancel_notice_minutes": 1.1,
@@ -419,6 +421,7 @@ public class ListTest : BaseMockServerTest
                   ],
                   "capacity": null,
                   "requires_approval": false,
+                  "reassignment_enabled": true,
                   "approval_ttl_minutes": 1440,
                   "hold_ttl_seconds": 600,
                   "cancel_notice_minutes": 0,
@@ -434,9 +437,7 @@ public class ListTest : BaseMockServerTest
                     }
                   ],
                   "locations": [
-                    {
-                      "type": "link"
-                    }
+                    null
                   ],
                   "host_filter": null,
                   "notifications": null,

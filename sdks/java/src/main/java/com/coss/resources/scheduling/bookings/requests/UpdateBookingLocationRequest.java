@@ -3,7 +3,10 @@
  */
 package com.coss.resources.scheduling.bookings.requests;
 
+import com.coss.core.Nullable;
+import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
+import com.coss.core.OptionalNullable;
 import com.coss.types.SchedulingLocation;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -11,26 +14,38 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = UpdateBookingLocationRequest.Builder.class)
 public final class UpdateBookingLocationRequest {
-    private final SchedulingLocation location;
+    private final OptionalNullable<SchedulingLocation> location;
 
     private final Map<String, Object> additionalProperties;
 
-    private UpdateBookingLocationRequest(SchedulingLocation location, Map<String, Object> additionalProperties) {
+    private UpdateBookingLocationRequest(
+            OptionalNullable<SchedulingLocation> location, Map<String, Object> additionalProperties) {
         this.location = location;
         this.additionalProperties = additionalProperties;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("location")
-    public SchedulingLocation getLocation() {
+    public OptionalNullable<SchedulingLocation> getLocation() {
+        if (location == null) {
+            return OptionalNullable.absent();
+        }
+        return location;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("location")
+    private OptionalNullable<SchedulingLocation> _getLocation() {
         return location;
     }
 
@@ -59,58 +74,64 @@ public final class UpdateBookingLocationRequest {
         return ObjectMappers.stringify(this);
     }
 
-    public static LocationStage builder() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    public interface LocationStage {
-        _FinalStage location(@NotNull SchedulingLocation location);
-
-        Builder from(UpdateBookingLocationRequest other);
-    }
-
-    public interface _FinalStage {
-        UpdateBookingLocationRequest build();
-
-        _FinalStage additionalProperty(String key, Object value);
-
-        _FinalStage additionalProperties(Map<String, Object> additionalProperties);
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements LocationStage, _FinalStage {
-        private SchedulingLocation location;
+    public static final class Builder {
+        private OptionalNullable<SchedulingLocation> location = OptionalNullable.absent();
 
         @JsonAnySetter
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
-        @java.lang.Override
         public Builder from(UpdateBookingLocationRequest other) {
             location(other.getLocation());
             return this;
         }
 
-        @java.lang.Override
-        @JsonSetter("location")
-        public _FinalStage location(@NotNull SchedulingLocation location) {
-            this.location = Objects.requireNonNull(location, "location must not be null");
+        @JsonSetter(value = "location", nulls = Nulls.SKIP)
+        public Builder location(OptionalNullable<SchedulingLocation> location) {
+            this.location = location;
             return this;
         }
 
-        @java.lang.Override
+        public Builder location(SchedulingLocation location) {
+            this.location = OptionalNullable.of(location);
+            return this;
+        }
+
+        public Builder location(Optional<SchedulingLocation> location) {
+            if (location.isPresent()) {
+                this.location = OptionalNullable.of(location.get());
+            } else {
+                this.location = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        public Builder location(Nullable<SchedulingLocation> location) {
+            if (location.isNull()) {
+                this.location = OptionalNullable.ofNull();
+            } else if (location.isEmpty()) {
+                this.location = OptionalNullable.absent();
+            } else {
+                this.location = OptionalNullable.of(location.get());
+            }
+            return this;
+        }
+
         public UpdateBookingLocationRequest build() {
             return new UpdateBookingLocationRequest(location, additionalProperties);
         }
 
-        @java.lang.Override
         public Builder additionalProperty(String key, Object value) {
             this.additionalProperties.put(key, value);
             return this;
         }
 
-        @java.lang.Override
         public Builder additionalProperties(Map<String, Object> additionalProperties) {
             this.additionalProperties.putAll(additionalProperties);
             return this;

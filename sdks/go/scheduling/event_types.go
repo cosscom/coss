@@ -26,20 +26,21 @@ var (
 	createEventTypeRequestFieldLimits                       = big.NewInt(1 << 12)
 	createEventTypeRequestFieldCapacity                     = big.NewInt(1 << 13)
 	createEventTypeRequestFieldRequiresApproval             = big.NewInt(1 << 14)
-	createEventTypeRequestFieldApprovalTTLMinutes           = big.NewInt(1 << 15)
-	createEventTypeRequestFieldHoldTTLSeconds               = big.NewInt(1 << 16)
-	createEventTypeRequestFieldCancelNoticeMinutes          = big.NewInt(1 << 17)
-	createEventTypeRequestFieldRescheduleNoticeMinutes      = big.NewInt(1 << 18)
-	createEventTypeRequestFieldMaxGuests                    = big.NewInt(1 << 19)
-	createEventTypeRequestFieldMaxActiveBookingsPerAttendee = big.NewInt(1 << 20)
-	createEventTypeRequestFieldHostCalendarDetails          = big.NewInt(1 << 21)
-	createEventTypeRequestFieldQuestions                    = big.NewInt(1 << 22)
-	createEventTypeRequestFieldLocations                    = big.NewInt(1 << 23)
-	createEventTypeRequestFieldHostFilter                   = big.NewInt(1 << 24)
-	createEventTypeRequestFieldNotifications                = big.NewInt(1 << 25)
-	createEventTypeRequestFieldReminders                    = big.NewInt(1 << 26)
-	createEventTypeRequestFieldMetadata                     = big.NewInt(1 << 27)
-	createEventTypeRequestFieldHosts                        = big.NewInt(1 << 28)
+	createEventTypeRequestFieldReassignmentEnabled          = big.NewInt(1 << 15)
+	createEventTypeRequestFieldApprovalTTLMinutes           = big.NewInt(1 << 16)
+	createEventTypeRequestFieldHoldTTLSeconds               = big.NewInt(1 << 17)
+	createEventTypeRequestFieldCancelNoticeMinutes          = big.NewInt(1 << 18)
+	createEventTypeRequestFieldRescheduleNoticeMinutes      = big.NewInt(1 << 19)
+	createEventTypeRequestFieldMaxGuests                    = big.NewInt(1 << 20)
+	createEventTypeRequestFieldMaxActiveBookingsPerAttendee = big.NewInt(1 << 21)
+	createEventTypeRequestFieldHostCalendarDetails          = big.NewInt(1 << 22)
+	createEventTypeRequestFieldQuestions                    = big.NewInt(1 << 23)
+	createEventTypeRequestFieldLocations                    = big.NewInt(1 << 24)
+	createEventTypeRequestFieldHostFilter                   = big.NewInt(1 << 25)
+	createEventTypeRequestFieldNotifications                = big.NewInt(1 << 26)
+	createEventTypeRequestFieldReminders                    = big.NewInt(1 << 27)
+	createEventTypeRequestFieldMetadata                     = big.NewInt(1 << 28)
+	createEventTypeRequestFieldHosts                        = big.NewInt(1 << 29)
 )
 
 type CreateEventTypeRequest struct {
@@ -72,6 +73,8 @@ type CreateEventTypeRequest struct {
 	Capacity *int `json:"capacity,omitempty" url:"-"`
 	// Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 	RequiresApproval *bool `json:"requires_approval,omitempty" url:"-"`
+	// Whether bookings of this event type can go to another host. Default: true.
+	ReassignmentEnabled *bool `json:"reassignment_enabled,omitempty" url:"-"`
 	// How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 	ApprovalTTLMinutes *int `json:"approval_ttl_minutes,omitempty" url:"-"`
 	// How long a hold keeps its slot, in seconds. Default: 600.
@@ -217,6 +220,13 @@ func (c *CreateEventTypeRequest) SetCapacity(capacity *int) {
 func (c *CreateEventTypeRequest) SetRequiresApproval(requiresApproval *bool) {
 	c.RequiresApproval = requiresApproval
 	c.require(createEventTypeRequestFieldRequiresApproval)
+}
+
+// SetReassignmentEnabled sets the ReassignmentEnabled field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (c *CreateEventTypeRequest) SetReassignmentEnabled(reassignmentEnabled *bool) {
+	c.ReassignmentEnabled = reassignmentEnabled
+	c.require(createEventTypeRequestFieldReassignmentEnabled)
 }
 
 // SetApprovalTTLMinutes sets the ApprovalTTLMinutes field and marks it as non-optional;
@@ -877,21 +887,22 @@ var (
 	updateEventTypeRequestFieldLimits                       = big.NewInt(1 << 12)
 	updateEventTypeRequestFieldCapacity                     = big.NewInt(1 << 13)
 	updateEventTypeRequestFieldRequiresApproval             = big.NewInt(1 << 14)
-	updateEventTypeRequestFieldApprovalTTLMinutes           = big.NewInt(1 << 15)
-	updateEventTypeRequestFieldHoldTTLSeconds               = big.NewInt(1 << 16)
-	updateEventTypeRequestFieldCancelNoticeMinutes          = big.NewInt(1 << 17)
-	updateEventTypeRequestFieldRescheduleNoticeMinutes      = big.NewInt(1 << 18)
-	updateEventTypeRequestFieldMaxGuests                    = big.NewInt(1 << 19)
-	updateEventTypeRequestFieldMaxActiveBookingsPerAttendee = big.NewInt(1 << 20)
-	updateEventTypeRequestFieldHostCalendarDetails          = big.NewInt(1 << 21)
-	updateEventTypeRequestFieldQuestions                    = big.NewInt(1 << 22)
-	updateEventTypeRequestFieldLocations                    = big.NewInt(1 << 23)
-	updateEventTypeRequestFieldHostFilter                   = big.NewInt(1 << 24)
-	updateEventTypeRequestFieldNotifications                = big.NewInt(1 << 25)
-	updateEventTypeRequestFieldReminders                    = big.NewInt(1 << 26)
-	updateEventTypeRequestFieldMetadata                     = big.NewInt(1 << 27)
-	updateEventTypeRequestFieldStatus                       = big.NewInt(1 << 28)
-	updateEventTypeRequestFieldHosts                        = big.NewInt(1 << 29)
+	updateEventTypeRequestFieldReassignmentEnabled          = big.NewInt(1 << 15)
+	updateEventTypeRequestFieldApprovalTTLMinutes           = big.NewInt(1 << 16)
+	updateEventTypeRequestFieldHoldTTLSeconds               = big.NewInt(1 << 17)
+	updateEventTypeRequestFieldCancelNoticeMinutes          = big.NewInt(1 << 18)
+	updateEventTypeRequestFieldRescheduleNoticeMinutes      = big.NewInt(1 << 19)
+	updateEventTypeRequestFieldMaxGuests                    = big.NewInt(1 << 20)
+	updateEventTypeRequestFieldMaxActiveBookingsPerAttendee = big.NewInt(1 << 21)
+	updateEventTypeRequestFieldHostCalendarDetails          = big.NewInt(1 << 22)
+	updateEventTypeRequestFieldQuestions                    = big.NewInt(1 << 23)
+	updateEventTypeRequestFieldLocations                    = big.NewInt(1 << 24)
+	updateEventTypeRequestFieldHostFilter                   = big.NewInt(1 << 25)
+	updateEventTypeRequestFieldNotifications                = big.NewInt(1 << 26)
+	updateEventTypeRequestFieldReminders                    = big.NewInt(1 << 27)
+	updateEventTypeRequestFieldMetadata                     = big.NewInt(1 << 28)
+	updateEventTypeRequestFieldStatus                       = big.NewInt(1 << 29)
+	updateEventTypeRequestFieldHosts                        = big.NewInt(1 << 30)
 )
 
 type UpdateEventTypeRequest struct {
@@ -924,6 +935,8 @@ type UpdateEventTypeRequest struct {
 	Capacity *int `json:"capacity,omitempty" url:"-"`
 	// Bookings start as `pending_approval`, holding the time until approved or declined. Default: `false`.
 	RequiresApproval *bool `json:"requires_approval,omitempty" url:"-"`
+	// Whether bookings of this event type can go to another host. Default: true.
+	ReassignmentEnabled *bool `json:"reassignment_enabled,omitempty" url:"-"`
 	// How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
 	ApprovalTTLMinutes *int `json:"approval_ttl_minutes,omitempty" url:"-"`
 	// How long a hold keeps its slot, in seconds. Default: 600.
@@ -1071,6 +1084,13 @@ func (u *UpdateEventTypeRequest) SetCapacity(capacity *int) {
 func (u *UpdateEventTypeRequest) SetRequiresApproval(requiresApproval *bool) {
 	u.RequiresApproval = requiresApproval
 	u.require(updateEventTypeRequestFieldRequiresApproval)
+}
+
+// SetReassignmentEnabled sets the ReassignmentEnabled field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UpdateEventTypeRequest) SetReassignmentEnabled(reassignmentEnabled *bool) {
+	u.ReassignmentEnabled = reassignmentEnabled
+	u.require(updateEventTypeRequestFieldReassignmentEnabled)
 }
 
 // SetApprovalTTLMinutes sets the ApprovalTTLMinutes field and marks it as non-optional;

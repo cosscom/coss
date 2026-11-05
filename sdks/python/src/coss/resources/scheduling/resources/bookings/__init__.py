@@ -23,6 +23,10 @@ if typing.TYPE_CHECKING:
         CreateBookingRequestLocation_Phone,
         CreateBookingRequestLocation_Zoom,
         ListBookingsRequestStatus,
+        ReassignSchedulingBookingRequestChangesItem,
+        ReassignSchedulingBookingRequestNotify,
+        ReassignSchedulingBookingRequestOverridesItem,
+        ReassignSchedulingBookingRequestReasonCode,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateBookingRequestAnswersValue": ".types",
@@ -41,6 +45,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateBookingRequestLocation_Phone": ".types",
     "CreateBookingRequestLocation_Zoom": ".types",
     "ListBookingsRequestStatus": ".types",
+    "ReassignSchedulingBookingRequestChangesItem": ".types",
+    "ReassignSchedulingBookingRequestNotify": ".types",
+    "ReassignSchedulingBookingRequestOverridesItem": ".types",
+    "ReassignSchedulingBookingRequestReasonCode": ".types",
 }
 
 
@@ -82,4 +90,8 @@ __all__ = [
     "CreateBookingRequestLocation_Phone",
     "CreateBookingRequestLocation_Zoom",
     "ListBookingsRequestStatus",
+    "ReassignSchedulingBookingRequestChangesItem",
+    "ReassignSchedulingBookingRequestNotify",
+    "ReassignSchedulingBookingRequestOverridesItem",
+    "ReassignSchedulingBookingRequestReasonCode",
 ]

@@ -8,8 +8,10 @@ import com.coss.core.NullableNonemptyFilter;
 import com.coss.core.ObjectMappers;
 import com.coss.core.OptionalNullable;
 import com.coss.resources.scheduling.settings.types.UpdateSchedulingSettingsRequestCalendarFailureMode;
+import com.coss.resources.scheduling.settings.types.UpdateSchedulingSettingsRequestHostReassignment;
 import com.coss.resources.scheduling.settings.types.UpdateSchedulingSettingsRequestLogo;
 import com.coss.resources.scheduling.settings.types.UpdateSchedulingSettingsRequestNotificationsValue;
+import com.coss.resources.scheduling.settings.types.UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem;
 import com.coss.types.SchedulingReminderInput;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -36,11 +38,19 @@ public final class UpdateSchedulingSettingsRequest {
 
     private final OptionalNullable<UpdateSchedulingSettingsRequestLogo> logo;
 
+    private final OptionalNullable<String> privacyUrl;
+
     private final OptionalNullable<String> emailFrom;
 
     private final OptionalNullable<String> smsFrom;
 
     private final Optional<UpdateSchedulingSettingsRequestCalendarFailureMode> calendarFailureMode;
+
+    private final Optional<Boolean> nameHostInAttendeeEmails;
+
+    private final Optional<UpdateSchedulingSettingsRequestHostReassignment> hostReassignment;
+
+    private final OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons;
 
     private final OptionalNullable<Map<String, OptionalNullable<UpdateSchedulingSettingsRequestNotificationsValue>>>
             notifications;
@@ -56,9 +66,13 @@ public final class UpdateSchedulingSettingsRequest {
             OptionalNullable<String> brandName,
             OptionalNullable<String> accentColor,
             OptionalNullable<UpdateSchedulingSettingsRequestLogo> logo,
+            OptionalNullable<String> privacyUrl,
             OptionalNullable<String> emailFrom,
             OptionalNullable<String> smsFrom,
             Optional<UpdateSchedulingSettingsRequestCalendarFailureMode> calendarFailureMode,
+            Optional<Boolean> nameHostInAttendeeEmails,
+            Optional<UpdateSchedulingSettingsRequestHostReassignment> hostReassignment,
+            OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons,
             OptionalNullable<Map<String, OptionalNullable<UpdateSchedulingSettingsRequestNotificationsValue>>>
                     notifications,
             OptionalNullable<String> emailReplyTo,
@@ -68,9 +82,13 @@ public final class UpdateSchedulingSettingsRequest {
         this.brandName = brandName;
         this.accentColor = accentColor;
         this.logo = logo;
+        this.privacyUrl = privacyUrl;
         this.emailFrom = emailFrom;
         this.smsFrom = smsFrom;
         this.calendarFailureMode = calendarFailureMode;
+        this.nameHostInAttendeeEmails = nameHostInAttendeeEmails;
+        this.hostReassignment = hostReassignment;
+        this.outOfOfficeReasons = outOfOfficeReasons;
         this.notifications = notifications;
         this.emailReplyTo = emailReplyTo;
         this.reminders = reminders;
@@ -122,6 +140,18 @@ public final class UpdateSchedulingSettingsRequest {
     }
 
     /**
+     * @return Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. <code>null</code> removes it.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privacy_url")
+    public OptionalNullable<String> getPrivacyUrl() {
+        if (privacyUrl == null) {
+            return OptionalNullable.absent();
+        }
+        return privacyUrl;
+    }
+
+    /**
      * @return Sender of booking emails, on a verified domain. <code>null</code>: coss.com's own address.
      */
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -151,6 +181,34 @@ public final class UpdateSchedulingSettingsRequest {
     @JsonProperty("calendar_failure_mode")
     public Optional<UpdateSchedulingSettingsRequestCalendarFailureMode> getCalendarFailureMode() {
         return calendarFailureMode;
+    }
+
+    /**
+     * @return Name the new host when telling an attendee their booking has one.
+     */
+    @JsonProperty("name_host_in_attendee_emails")
+    public Optional<Boolean> getNameHostInAttendeeEmails() {
+        return nameHostInAttendeeEmails;
+    }
+
+    /**
+     * @return Whether hosts can give their own bookings to someone else from their page. <code>eligible</code> lets them, to anyone free who takes that event type.
+     */
+    @JsonProperty("host_reassignment")
+    public Optional<UpdateSchedulingSettingsRequestHostReassignment> getHostReassignment() {
+        return hostReassignment;
+    }
+
+    /**
+     * @return Reasons of your own, on top of the preset ones. Hosts and managers see them.
+     */
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("out_of_office_reasons")
+    public OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> getOutOfOfficeReasons() {
+        if (outOfOfficeReasons == null) {
+            return OptionalNullable.absent();
+        }
+        return outOfOfficeReasons;
     }
 
     /**
@@ -209,6 +267,12 @@ public final class UpdateSchedulingSettingsRequest {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("privacy_url")
+    private OptionalNullable<String> _getPrivacyUrl() {
+        return privacyUrl;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("email_from")
     private OptionalNullable<String> _getEmailFrom() {
         return emailFrom;
@@ -218,6 +282,12 @@ public final class UpdateSchedulingSettingsRequest {
     @JsonProperty("sms_from")
     private OptionalNullable<String> _getSmsFrom() {
         return smsFrom;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("out_of_office_reasons")
+    private OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> _getOutOfOfficeReasons() {
+        return outOfOfficeReasons;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -255,9 +325,13 @@ public final class UpdateSchedulingSettingsRequest {
                 && brandName.equals(other.brandName)
                 && accentColor.equals(other.accentColor)
                 && logo.equals(other.logo)
+                && privacyUrl.equals(other.privacyUrl)
                 && emailFrom.equals(other.emailFrom)
                 && smsFrom.equals(other.smsFrom)
                 && calendarFailureMode.equals(other.calendarFailureMode)
+                && nameHostInAttendeeEmails.equals(other.nameHostInAttendeeEmails)
+                && hostReassignment.equals(other.hostReassignment)
+                && outOfOfficeReasons.equals(other.outOfOfficeReasons)
                 && notifications.equals(other.notifications)
                 && emailReplyTo.equals(other.emailReplyTo)
                 && reminders.equals(other.reminders);
@@ -270,9 +344,13 @@ public final class UpdateSchedulingSettingsRequest {
                 this.brandName,
                 this.accentColor,
                 this.logo,
+                this.privacyUrl,
                 this.emailFrom,
                 this.smsFrom,
                 this.calendarFailureMode,
+                this.nameHostInAttendeeEmails,
+                this.hostReassignment,
+                this.outOfOfficeReasons,
                 this.notifications,
                 this.emailReplyTo,
                 this.reminders);
@@ -297,11 +375,20 @@ public final class UpdateSchedulingSettingsRequest {
 
         private OptionalNullable<UpdateSchedulingSettingsRequestLogo> logo = OptionalNullable.absent();
 
+        private OptionalNullable<String> privacyUrl = OptionalNullable.absent();
+
         private OptionalNullable<String> emailFrom = OptionalNullable.absent();
 
         private OptionalNullable<String> smsFrom = OptionalNullable.absent();
 
         private Optional<UpdateSchedulingSettingsRequestCalendarFailureMode> calendarFailureMode = Optional.empty();
+
+        private Optional<Boolean> nameHostInAttendeeEmails = Optional.empty();
+
+        private Optional<UpdateSchedulingSettingsRequestHostReassignment> hostReassignment = Optional.empty();
+
+        private OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons =
+                OptionalNullable.absent();
 
         private OptionalNullable<Map<String, OptionalNullable<UpdateSchedulingSettingsRequestNotificationsValue>>>
                 notifications = OptionalNullable.absent();
@@ -320,9 +407,13 @@ public final class UpdateSchedulingSettingsRequest {
             brandName(other.getBrandName());
             accentColor(other.getAccentColor());
             logo(other.getLogo());
+            privacyUrl(other.getPrivacyUrl());
             emailFrom(other.getEmailFrom());
             smsFrom(other.getSmsFrom());
             calendarFailureMode(other.getCalendarFailureMode());
+            nameHostInAttendeeEmails(other.getNameHostInAttendeeEmails());
+            hostReassignment(other.getHostReassignment());
+            outOfOfficeReasons(other.getOutOfOfficeReasons());
             notifications(other.getNotifications());
             emailReplyTo(other.getEmailReplyTo());
             reminders(other.getReminders());
@@ -446,6 +537,40 @@ public final class UpdateSchedulingSettingsRequest {
         }
 
         /**
+         * <p>Your privacy policy, as an https URL, for hosts connecting a calendar through your own OAuth app. <code>null</code> removes it.</p>
+         */
+        @JsonSetter(value = "privacy_url", nulls = Nulls.SKIP)
+        public Builder privacyUrl(OptionalNullable<String> privacyUrl) {
+            this.privacyUrl = privacyUrl;
+            return this;
+        }
+
+        public Builder privacyUrl(String privacyUrl) {
+            this.privacyUrl = OptionalNullable.of(privacyUrl);
+            return this;
+        }
+
+        public Builder privacyUrl(Optional<String> privacyUrl) {
+            if (privacyUrl.isPresent()) {
+                this.privacyUrl = OptionalNullable.of(privacyUrl.get());
+            } else {
+                this.privacyUrl = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        public Builder privacyUrl(Nullable<String> privacyUrl) {
+            if (privacyUrl.isNull()) {
+                this.privacyUrl = OptionalNullable.ofNull();
+            } else if (privacyUrl.isEmpty()) {
+                this.privacyUrl = OptionalNullable.absent();
+            } else {
+                this.privacyUrl = OptionalNullable.of(privacyUrl.get());
+            }
+            return this;
+        }
+
+        /**
          * <p>Sender of booking emails, on a verified domain. <code>null</code>: coss.com's own address.</p>
          */
         @JsonSetter(value = "email_from", nulls = Nulls.SKIP)
@@ -525,6 +650,72 @@ public final class UpdateSchedulingSettingsRequest {
 
         public Builder calendarFailureMode(UpdateSchedulingSettingsRequestCalendarFailureMode calendarFailureMode) {
             this.calendarFailureMode = Optional.ofNullable(calendarFailureMode);
+            return this;
+        }
+
+        /**
+         * <p>Name the new host when telling an attendee their booking has one.</p>
+         */
+        @JsonSetter(value = "name_host_in_attendee_emails", nulls = Nulls.SKIP)
+        public Builder nameHostInAttendeeEmails(Optional<Boolean> nameHostInAttendeeEmails) {
+            this.nameHostInAttendeeEmails = nameHostInAttendeeEmails;
+            return this;
+        }
+
+        public Builder nameHostInAttendeeEmails(Boolean nameHostInAttendeeEmails) {
+            this.nameHostInAttendeeEmails = Optional.ofNullable(nameHostInAttendeeEmails);
+            return this;
+        }
+
+        /**
+         * <p>Whether hosts can give their own bookings to someone else from their page. <code>eligible</code> lets them, to anyone free who takes that event type.</p>
+         */
+        @JsonSetter(value = "host_reassignment", nulls = Nulls.SKIP)
+        public Builder hostReassignment(Optional<UpdateSchedulingSettingsRequestHostReassignment> hostReassignment) {
+            this.hostReassignment = hostReassignment;
+            return this;
+        }
+
+        public Builder hostReassignment(UpdateSchedulingSettingsRequestHostReassignment hostReassignment) {
+            this.hostReassignment = Optional.ofNullable(hostReassignment);
+            return this;
+        }
+
+        /**
+         * <p>Reasons of your own, on top of the preset ones. Hosts and managers see them.</p>
+         */
+        @JsonSetter(value = "out_of_office_reasons", nulls = Nulls.SKIP)
+        public Builder outOfOfficeReasons(
+                OptionalNullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons) {
+            this.outOfOfficeReasons = outOfOfficeReasons;
+            return this;
+        }
+
+        public Builder outOfOfficeReasons(
+                List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem> outOfOfficeReasons) {
+            this.outOfOfficeReasons = OptionalNullable.of(outOfOfficeReasons);
+            return this;
+        }
+
+        public Builder outOfOfficeReasons(
+                Optional<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons) {
+            if (outOfOfficeReasons.isPresent()) {
+                this.outOfOfficeReasons = OptionalNullable.of(outOfOfficeReasons.get());
+            } else {
+                this.outOfOfficeReasons = OptionalNullable.absent();
+            }
+            return this;
+        }
+
+        public Builder outOfOfficeReasons(
+                Nullable<List<UpdateSchedulingSettingsRequestOutOfOfficeReasonsItem>> outOfOfficeReasons) {
+            if (outOfOfficeReasons.isNull()) {
+                this.outOfOfficeReasons = OptionalNullable.ofNull();
+            } else if (outOfOfficeReasons.isEmpty()) {
+                this.outOfOfficeReasons = OptionalNullable.absent();
+            } else {
+                this.outOfOfficeReasons = OptionalNullable.of(outOfOfficeReasons.get());
+            }
             return this;
         }
 
@@ -643,9 +834,13 @@ public final class UpdateSchedulingSettingsRequest {
                     brandName,
                     accentColor,
                     logo,
+                    privacyUrl,
                     emailFrom,
                     smsFrom,
                     calendarFailureMode,
+                    nameHostInAttendeeEmails,
+                    hostReassignment,
+                    outOfOfficeReasons,
                     notifications,
                     emailReplyTo,
                     reminders,

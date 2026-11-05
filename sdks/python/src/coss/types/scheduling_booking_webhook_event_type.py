@@ -14,6 +14,7 @@ SchedulingBookingWebhookEventType = typing.Union[
         "scheduling.booking.external_conflict",
         "scheduling.booking.calendar_write_failed",
         "scheduling.booking.location_ready",
+        "scheduling.booking.reassigned",
         "scheduling.booking.started",
         "scheduling.booking.ended",
         "scheduling.booking.reminder",

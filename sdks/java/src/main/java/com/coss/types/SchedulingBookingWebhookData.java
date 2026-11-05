@@ -44,6 +44,10 @@ public final class SchedulingBookingWebhookData {
 
     private final Optional<String> previousStart;
 
+    private final Optional<List<String>> previousHostIds;
+
+    private final Optional<String> reassignmentId;
+
     private final Optional<SchedulingBookingWebhookDataReminder> reminder;
 
     private final String occurredAt;
@@ -60,6 +64,8 @@ public final class SchedulingBookingWebhookData {
             List<String> attendeeUids,
             OptionalNullable<String> seriesId,
             Optional<String> previousStart,
+            Optional<List<String>> previousHostIds,
+            Optional<String> reassignmentId,
             Optional<SchedulingBookingWebhookDataReminder> reminder,
             String occurredAt,
             Map<String, Object> additionalProperties) {
@@ -72,6 +78,8 @@ public final class SchedulingBookingWebhookData {
         this.attendeeUids = attendeeUids;
         this.seriesId = seriesId;
         this.previousStart = previousStart;
+        this.previousHostIds = previousHostIds;
+        this.reassignmentId = reassignmentId;
         this.reminder = reminder;
         this.occurredAt = occurredAt;
         this.additionalProperties = additionalProperties;
@@ -154,6 +162,22 @@ public final class SchedulingBookingWebhookData {
     }
 
     /**
+     * @return On <code>scheduling.booking.reassigned</code>: who had it before.
+     */
+    @JsonProperty("previous_host_ids")
+    public Optional<List<String>> getPreviousHostIds() {
+        return previousHostIds;
+    }
+
+    /**
+     * @return On <code>scheduling.booking.reassigned</code>: the bulk reassignment it was part of.
+     */
+    @JsonProperty("reassignment_id")
+    public Optional<String> getReassignmentId() {
+        return reassignmentId;
+    }
+
+    /**
      * @return <code>scheduling.booking.reminder</code>: which reminder this is.
      */
     @JsonProperty("reminder")
@@ -196,6 +220,8 @@ public final class SchedulingBookingWebhookData {
                 && attendeeUids.equals(other.attendeeUids)
                 && seriesId.equals(other.seriesId)
                 && previousStart.equals(other.previousStart)
+                && previousHostIds.equals(other.previousHostIds)
+                && reassignmentId.equals(other.reassignmentId)
                 && reminder.equals(other.reminder)
                 && occurredAt.equals(other.occurredAt);
     }
@@ -212,6 +238,8 @@ public final class SchedulingBookingWebhookData {
                 this.attendeeUids,
                 this.seriesId,
                 this.previousStart,
+                this.previousHostIds,
+                this.reassignmentId,
                 this.reminder,
                 this.occurredAt);
     }
@@ -313,6 +341,20 @@ public final class SchedulingBookingWebhookData {
         _FinalStage previousStart(String previousStart);
 
         /**
+         * <p>On <code>scheduling.booking.reassigned</code>: who had it before.</p>
+         */
+        _FinalStage previousHostIds(Optional<List<String>> previousHostIds);
+
+        _FinalStage previousHostIds(List<String> previousHostIds);
+
+        /**
+         * <p>On <code>scheduling.booking.reassigned</code>: the bulk reassignment it was part of.</p>
+         */
+        _FinalStage reassignmentId(Optional<String> reassignmentId);
+
+        _FinalStage reassignmentId(String reassignmentId);
+
+        /**
          * <p><code>scheduling.booking.reminder</code>: which reminder this is.</p>
          */
         _FinalStage reminder(Optional<SchedulingBookingWebhookDataReminder> reminder);
@@ -343,6 +385,10 @@ public final class SchedulingBookingWebhookData {
 
         private Optional<SchedulingBookingWebhookDataReminder> reminder = Optional.empty();
 
+        private Optional<String> reassignmentId = Optional.empty();
+
+        private Optional<List<String>> previousHostIds = Optional.empty();
+
         private Optional<String> previousStart = Optional.empty();
 
         private OptionalNullable<String> seriesId = OptionalNullable.absent();
@@ -367,6 +413,8 @@ public final class SchedulingBookingWebhookData {
             attendeeUids(other.getAttendeeUids());
             seriesId(other.getSeriesId());
             previousStart(other.getPreviousStart());
+            previousHostIds(other.getPreviousHostIds());
+            reassignmentId(other.getReassignmentId());
             reminder(other.getReminder());
             occurredAt(other.getOccurredAt());
             return this;
@@ -455,6 +503,46 @@ public final class SchedulingBookingWebhookData {
         @JsonSetter(value = "reminder", nulls = Nulls.SKIP)
         public _FinalStage reminder(Optional<SchedulingBookingWebhookDataReminder> reminder) {
             this.reminder = reminder;
+            return this;
+        }
+
+        /**
+         * <p>On <code>scheduling.booking.reassigned</code>: the bulk reassignment it was part of.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage reassignmentId(String reassignmentId) {
+            this.reassignmentId = Optional.ofNullable(reassignmentId);
+            return this;
+        }
+
+        /**
+         * <p>On <code>scheduling.booking.reassigned</code>: the bulk reassignment it was part of.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "reassignment_id", nulls = Nulls.SKIP)
+        public _FinalStage reassignmentId(Optional<String> reassignmentId) {
+            this.reassignmentId = reassignmentId;
+            return this;
+        }
+
+        /**
+         * <p>On <code>scheduling.booking.reassigned</code>: who had it before.</p>
+         * @return Reference to {@code this} so that method calls can be chained together.
+         */
+        @java.lang.Override
+        public _FinalStage previousHostIds(List<String> previousHostIds) {
+            this.previousHostIds = Optional.ofNullable(previousHostIds);
+            return this;
+        }
+
+        /**
+         * <p>On <code>scheduling.booking.reassigned</code>: who had it before.</p>
+         */
+        @java.lang.Override
+        @JsonSetter(value = "previous_host_ids", nulls = Nulls.SKIP)
+        public _FinalStage previousHostIds(Optional<List<String>> previousHostIds) {
+            this.previousHostIds = previousHostIds;
             return this;
         }
 
@@ -610,6 +698,8 @@ public final class SchedulingBookingWebhookData {
                     attendeeUids,
                     seriesId,
                     previousStart,
+                    previousHostIds,
+                    reassignmentId,
                     reminder,
                     occurredAt,
                     additionalProperties);

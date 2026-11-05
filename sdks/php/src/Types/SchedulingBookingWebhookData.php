@@ -66,6 +66,18 @@ class SchedulingBookingWebhookData extends JsonSerializableType
     public ?string $previousStart;
 
     /**
+     * @var ?array<string> $previousHostIds On `scheduling.booking.reassigned`: who had it before.
+     */
+    #[JsonProperty('previous_host_ids'), ArrayType(['string'])]
+    public ?array $previousHostIds;
+
+    /**
+     * @var ?string $reassignmentId On `scheduling.booking.reassigned`: the bulk reassignment it was part of.
+     */
+    #[JsonProperty('reassignment_id')]
+    public ?string $reassignmentId;
+
+    /**
      * @var ?SchedulingBookingWebhookDataReminder $reminder `scheduling.booking.reminder`: which reminder this is.
      */
     #[JsonProperty('reminder')]
@@ -89,6 +101,8 @@ class SchedulingBookingWebhookData extends JsonSerializableType
      *   occurredAt: string,
      *   seriesId?: ?string,
      *   previousStart?: ?string,
+     *   previousHostIds?: ?array<string>,
+     *   reassignmentId?: ?string,
      *   reminder?: ?SchedulingBookingWebhookDataReminder,
      * } $values
      */
@@ -109,6 +123,14 @@ class SchedulingBookingWebhookData extends JsonSerializableType
         $this->previousStart = $values['previousStart'] ?? null;
         if (array_key_exists('previousStart', $values)) {
             $this->_setField('previousStart');
+        }
+        $this->previousHostIds = $values['previousHostIds'] ?? null;
+        if (array_key_exists('previousHostIds', $values)) {
+            $this->_setField('previousHostIds');
+        }
+        $this->reassignmentId = $values['reassignmentId'] ?? null;
+        if (array_key_exists('reassignmentId', $values)) {
+            $this->_setField('reassignmentId');
         }
         $this->reminder = $values['reminder'] ?? null;
         if (array_key_exists('reminder', $values)) {

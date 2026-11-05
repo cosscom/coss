@@ -15,6 +15,8 @@ module Coss
 
       field :status, -> { Coss::Types::SchedulingCalendarConnectionStatus }, optional: false, nullable: false
 
+      field :oauth_app, -> { String }, optional: false, nullable: true
+
       field :delegation, -> { String }, optional: false, nullable: true
 
       field :calendars, -> { Internal::Types::Array[Coss::Types::SchedulingCalendarConnectionCalendarsItem] }, optional: false, nullable: false

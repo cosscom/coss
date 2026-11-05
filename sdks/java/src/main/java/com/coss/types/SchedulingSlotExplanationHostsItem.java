@@ -76,7 +76,7 @@ public final class SchedulingSlotExplanationHostsItem {
     }
 
     /**
-     * @return Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.
+     * @return Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.
      */
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("reason")
@@ -176,7 +176,7 @@ public final class SchedulingSlotExplanationHostsItem {
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
         /**
-         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
+         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
          */
         _FinalStage reason(OptionalNullable<String> reason);
 
@@ -309,7 +309,7 @@ public final class SchedulingSlotExplanationHostsItem {
         }
 
         /**
-         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
+         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -325,7 +325,7 @@ public final class SchedulingSlotExplanationHostsItem {
         }
 
         /**
-         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
+         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -339,7 +339,7 @@ public final class SchedulingSlotExplanationHostsItem {
         }
 
         /**
-         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
+         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
          * @return Reference to {@code this} so that method calls can be chained together.
          */
         @java.lang.Override
@@ -349,7 +349,7 @@ public final class SchedulingSlotExplanationHostsItem {
         }
 
         /**
-         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
+         * <p>Why not: <code>not_on_grid</code>, <code>too_soon</code>, <code>outside_booking_window</code>, <code>out_of_office</code>, <code>outside_coverage</code>, <code>calendar_unverified</code>, <code>outside_availability</code>, <code>host_busy</code>, <code>already_claimed</code>, <code>limit_reached</code> or <code>session_full</code>. <code>null</code> when they could.</p>
          */
         @java.lang.Override
         @JsonSetter(value = "reason", nulls = Nulls.SKIP)

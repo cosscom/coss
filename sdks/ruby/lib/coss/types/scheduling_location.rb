@@ -8,19 +8,17 @@ module Coss
     class SchedulingLocation < Internal::Types::Model
       extend Coss::Internal::Types::Union
 
-      discriminant :type
+      member -> { Coss::Types::SchedulingLocationZero }
 
-      member -> { Coss::Types::SchedulingLocationLink }, key: "LINK"
+      member -> { Coss::Types::SchedulingLocationNumber }
 
-      member -> { Coss::Types::SchedulingLocationPhone }, key: "PHONE"
+      member -> { Coss::Types::SchedulingLocationAddress }
 
-      member -> { Coss::Types::SchedulingLocationInPerson }, key: "IN_PERSON"
+      member -> { Coss::Types::SchedulingLocationThree }
 
-      member -> { Coss::Types::SchedulingLocationGoogleMeet }, key: "GOOGLE_MEET"
+      member -> { Coss::Types::SchedulingLocationFour }
 
-      member -> { Coss::Types::SchedulingLocationMicrosoftTeams }, key: "MICROSOFT_TEAMS"
-
-      member -> { Coss::Types::SchedulingLocationZoom }, key: "ZOOM"
+      member -> { Coss::Types::SchedulingLocationFive }
     end
   end
 end

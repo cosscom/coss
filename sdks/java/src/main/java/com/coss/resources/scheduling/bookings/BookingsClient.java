@@ -14,12 +14,15 @@ import com.coss.resources.scheduling.bookings.requests.GetBookingsRequest;
 import com.coss.resources.scheduling.bookings.requests.ListBookingsRequest;
 import com.coss.resources.scheduling.bookings.requests.MarkNoShowBookingsRequest;
 import com.coss.resources.scheduling.bookings.requests.NotificationsBookingsRequest;
+import com.coss.resources.scheduling.bookings.requests.ReassignCandidatesBookingsRequest;
+import com.coss.resources.scheduling.bookings.requests.ReassignSchedulingBookingRequest;
 import com.coss.resources.scheduling.bookings.requests.RescheduleBookingRequest;
 import com.coss.resources.scheduling.bookings.requests.UpdateBookingLocationRequest;
 import com.coss.types.SchedulingBooking;
 import com.coss.types.SchedulingBookingEventList;
 import com.coss.types.SchedulingBookingList;
 import com.coss.types.SchedulingBookingNotificationList;
+import com.coss.types.SchedulingReassignCandidateList;
 
 public class BookingsClient {
     protected final ClientOptions clientOptions;
@@ -36,6 +39,50 @@ public class BookingsClient {
      */
     public RawBookingsClient withRawResponse() {
         return this.rawClient;
+    }
+
+    /**
+     * Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+     */
+    public SchedulingBooking reassign(String id, ReassignSchedulingBookingRequest request) {
+        return this.rawClient.reassign(id, request).body();
+    }
+
+    /**
+     * Gives a booking to another host, keeping its id and time. Works for every kind: a group session moves as a whole, from any of its seats, and one that's already started changes for the record, with nobody told. Whoever leaves and joins is told, and the attendee unless you say not to.
+     */
+    public SchedulingBooking reassign(
+            String id, ReassignSchedulingBookingRequest request, RequestOptions requestOptions) {
+        return this.rawClient.reassign(id, request, requestOptions).body();
+    }
+
+    /**
+     * The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+     */
+    public SchedulingReassignCandidateList reassignCandidates(String id) {
+        return this.rawClient.reassignCandidates(id).body();
+    }
+
+    /**
+     * The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+     */
+    public SchedulingReassignCandidateList reassignCandidates(String id, RequestOptions requestOptions) {
+        return this.rawClient.reassignCandidates(id, requestOptions).body();
+    }
+
+    /**
+     * The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+     */
+    public SchedulingReassignCandidateList reassignCandidates(String id, ReassignCandidatesBookingsRequest request) {
+        return this.rawClient.reassignCandidates(id, request).body();
+    }
+
+    /**
+     * The environment's other active hosts: members of the event type first, in the order a pool would pick them, each saying whether they're free and why not. Things can change before you ask: reassigning decides again.
+     */
+    public SchedulingReassignCandidateList reassignCandidates(
+            String id, ReassignCandidatesBookingsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.reassignCandidates(id, request, requestOptions).body();
     }
 
     /**

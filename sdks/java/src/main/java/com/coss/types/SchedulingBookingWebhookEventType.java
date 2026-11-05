@@ -16,6 +16,9 @@ public final class SchedulingBookingWebhookEventType {
     public static final SchedulingBookingWebhookEventType SCHEDULING_BOOKING_DECLINED =
             new SchedulingBookingWebhookEventType(Value.SCHEDULING_BOOKING_DECLINED, "scheduling.booking.declined");
 
+    public static final SchedulingBookingWebhookEventType SCHEDULING_BOOKING_REASSIGNED =
+            new SchedulingBookingWebhookEventType(Value.SCHEDULING_BOOKING_REASSIGNED, "scheduling.booking.reassigned");
+
     public static final SchedulingBookingWebhookEventType SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED =
             new SchedulingBookingWebhookEventType(
                     Value.SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED, "scheduling.booking.calendar_write_failed");
@@ -90,6 +93,8 @@ public final class SchedulingBookingWebhookEventType {
                 return visitor.visitSchedulingBookingStarted();
             case SCHEDULING_BOOKING_DECLINED:
                 return visitor.visitSchedulingBookingDeclined();
+            case SCHEDULING_BOOKING_REASSIGNED:
+                return visitor.visitSchedulingBookingReassigned();
             case SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED:
                 return visitor.visitSchedulingBookingCalendarWriteFailed();
             case SCHEDULING_BOOKING_RESCHEDULED:
@@ -125,6 +130,8 @@ public final class SchedulingBookingWebhookEventType {
                 return SCHEDULING_BOOKING_STARTED;
             case "scheduling.booking.declined":
                 return SCHEDULING_BOOKING_DECLINED;
+            case "scheduling.booking.reassigned":
+                return SCHEDULING_BOOKING_REASSIGNED;
             case "scheduling.booking.calendar_write_failed":
                 return SCHEDULING_BOOKING_CALENDAR_WRITE_FAILED;
             case "scheduling.booking.rescheduled":
@@ -171,6 +178,8 @@ public final class SchedulingBookingWebhookEventType {
 
         SCHEDULING_BOOKING_LOCATION_READY,
 
+        SCHEDULING_BOOKING_REASSIGNED,
+
         SCHEDULING_BOOKING_STARTED,
 
         SCHEDULING_BOOKING_ENDED,
@@ -200,6 +209,8 @@ public final class SchedulingBookingWebhookEventType {
         T visitSchedulingBookingCalendarWriteFailed();
 
         T visitSchedulingBookingLocationReady();
+
+        T visitSchedulingBookingReassigned();
 
         T visitSchedulingBookingStarted();
 

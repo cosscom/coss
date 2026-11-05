@@ -11,7 +11,12 @@ use Coss\Core\Types\Union;
 use Coss\Types\SchedulingLimit;
 use Coss\Scheduling\EventTypes\Types\UpdateEventTypeRequestHostCalendarDetails;
 use Coss\Types\SchedulingQuestion;
-use Coss\Types\SchedulingLocation;
+use Coss\Types\SchedulingLocationZero;
+use Coss\Types\SchedulingLocationNumber;
+use Coss\Types\SchedulingLocationAddress;
+use Coss\Types\SchedulingLocationThree;
+use Coss\Types\SchedulingLocationFour;
+use Coss\Types\SchedulingLocationFive;
 use Coss\Scheduling\EventTypes\Types\UpdateEventTypeRequestNotificationsValue;
 use Coss\Types\SchedulingReminderInput;
 use Coss\Scheduling\EventTypes\Types\UpdateEventTypeRequestStatus;
@@ -107,6 +112,12 @@ class UpdateEventTypeRequest extends JsonSerializableType
     public ?bool $requiresApproval;
 
     /**
+     * @var ?bool $reassignmentEnabled Whether bookings of this event type can go to another host. Default: true.
+     */
+    #[JsonProperty('reassignment_enabled')]
+    public ?bool $reassignmentEnabled;
+
+    /**
      * @var ?int $approvalTtlMinutes How long a booking can wait for approval before it's declined, in minutes. Default: 1440.
      */
     #[JsonProperty('approval_ttl_minutes')]
@@ -155,9 +166,16 @@ class UpdateEventTypeRequest extends JsonSerializableType
     public ?array $questions;
 
     /**
-     * @var ?array<SchedulingLocation> $locations Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
+     * @var ?array<(
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null> $locations Where bookings can meet. A browser only chooses among these. A `group` event type can't use `zoom`.
      */
-    #[JsonProperty('locations'), ArrayType([SchedulingLocation::class])]
+    #[JsonProperty('locations'), ArrayType([new Union(new Union(SchedulingLocationZero::class, SchedulingLocationNumber::class, SchedulingLocationAddress::class, SchedulingLocationThree::class, SchedulingLocationFour::class, SchedulingLocationFive::class), 'null')])]
     public ?array $locations;
 
     /**
@@ -218,6 +236,7 @@ class UpdateEventTypeRequest extends JsonSerializableType
      *   limits?: ?array<SchedulingLimit>,
      *   capacity?: ?int,
      *   requiresApproval?: ?bool,
+     *   reassignmentEnabled?: ?bool,
      *   approvalTtlMinutes?: ?int,
      *   holdTtlSeconds?: ?int,
      *   cancelNoticeMinutes?: ?int,
@@ -226,7 +245,14 @@ class UpdateEventTypeRequest extends JsonSerializableType
      *   maxActiveBookingsPerAttendee?: ?int,
      *   hostCalendarDetails?: ?value-of<UpdateEventTypeRequestHostCalendarDetails>,
      *   questions?: ?array<SchedulingQuestion>,
-     *   locations?: ?array<SchedulingLocation>,
+     *   locations?: ?array<(
+     *    SchedulingLocationZero
+     *   |SchedulingLocationNumber
+     *   |SchedulingLocationAddress
+     *   |SchedulingLocationThree
+     *   |SchedulingLocationFour
+     *   |SchedulingLocationFive
+     * )|null>,
      *   hostFilter?: ?array<string, (
      *    string
      *   |array<string>
@@ -296,6 +322,10 @@ class UpdateEventTypeRequest extends JsonSerializableType
         $this->requiresApproval = $values['requiresApproval'] ?? null;
         if (array_key_exists('requiresApproval', $values)) {
             $this->_setField('requiresApproval');
+        }
+        $this->reassignmentEnabled = $values['reassignmentEnabled'] ?? null;
+        if (array_key_exists('reassignmentEnabled', $values)) {
+            $this->_setField('reassignmentEnabled');
         }
         $this->approvalTtlMinutes = $values['approvalTtlMinutes'] ?? null;
         if (array_key_exists('approvalTtlMinutes', $values)) {

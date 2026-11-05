@@ -1,6 +1,7 @@
 using Coss;
 using Coss.Core;
 using global::System.Text.Json.Serialization;
+using OneOf;
 
 namespace Coss.Scheduling;
 
@@ -13,8 +14,16 @@ public record UpdateBookingLocationRequest
     [JsonIgnore]
     public required string Id { get; set; }
 
+    [Nullable]
     [JsonPropertyName("location")]
-    public required SchedulingLocation Location { get; set; }
+    public OneOf<
+        SchedulingLocationZero,
+        SchedulingLocationNumber,
+        SchedulingLocationAddress,
+        SchedulingLocationThree,
+        SchedulingLocationFour,
+        SchedulingLocationFive
+    >? Location { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

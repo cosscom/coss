@@ -267,9 +267,7 @@ public class CreateTest : BaseMockServerTest
                       "locale": null
                     }
                   ],
-                  "location": {
-                    "type": "link"
-                  },
+                  "location": null,
                   "hold_expires_at": null,
                   "approval_expires_at": null,
                   "series": null,

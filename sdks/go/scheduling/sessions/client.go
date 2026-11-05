@@ -43,6 +43,40 @@ func NewClient(options *core.RequestOptions) *Client {
 	}
 }
 
+// Lets a team lead manage cover for the hosts you name, or those matching an attribute filter whenever it's asked: time off, bookings that need someone else, and moving them. It never sees attendees' details. Send the `url` to their browser, or embed it with `coss/scheduling`.
+//
+// Example:
+//
+//	request := &scheduling.CreateSchedulingManagerSessionRequest{
+//	    HostFilter: map[string]*scheduling.CreateSchedulingManagerSessionRequestHostFilterValue{
+//	        "team": &scheduling.CreateSchedulingManagerSessionRequestHostFilterValue{
+//	            String: "cardiology",
+//	        },
+//	    },
+//	    ExpiresIn: coss.Int(
+//	        3600,
+//	    ),
+//	}
+//	client.Scheduling.Sessions.CreateForManager(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) CreateForManager(
+	ctx context.Context,
+	request *scheduling.CreateSchedulingManagerSessionRequest,
+	opts ...option.RequestOption,
+) (*coss.SchedulingSession, error) {
+	response, err := c.WithRawResponse.CreateForManager(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
 // Lets one host manage their own hours, calendars and locations, on coss.com's hosted page or your own UI. Send the `url` to their browser, or embed it with `coss/scheduling`.
 //
 // Example:

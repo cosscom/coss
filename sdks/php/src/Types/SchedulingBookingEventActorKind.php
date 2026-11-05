@@ -9,5 +9,6 @@ enum SchedulingBookingEventActorKind: string
     case HostSession = "host_session";
     case BookerSession = "booker_session";
     case ManageSession = "manage_session";
+    case ManagerSession = "manager_session";
     case System = "system";
 }

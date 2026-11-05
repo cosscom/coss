@@ -13,6 +13,9 @@ public final class SchedulingBookingCancelledBy {
     public static final SchedulingBookingCancelledBy HOST_SESSION =
             new SchedulingBookingCancelledBy(Value.HOST_SESSION, "host_session");
 
+    public static final SchedulingBookingCancelledBy MANAGER_SESSION =
+            new SchedulingBookingCancelledBy(Value.MANAGER_SESSION, "manager_session");
+
     public static final SchedulingBookingCancelledBy USER = new SchedulingBookingCancelledBy(Value.USER, "user");
 
     public static final SchedulingBookingCancelledBy MANAGE_SESSION =
@@ -60,6 +63,8 @@ public final class SchedulingBookingCancelledBy {
                 return visitor.visitBookerSession();
             case HOST_SESSION:
                 return visitor.visitHostSession();
+            case MANAGER_SESSION:
+                return visitor.visitManagerSession();
             case USER:
                 return visitor.visitUser();
             case MANAGE_SESSION:
@@ -81,6 +86,8 @@ public final class SchedulingBookingCancelledBy {
                 return BOOKER_SESSION;
             case "host_session":
                 return HOST_SESSION;
+            case "manager_session":
+                return MANAGER_SESSION;
             case "user":
                 return USER;
             case "manage_session":
@@ -105,6 +112,8 @@ public final class SchedulingBookingCancelledBy {
 
         MANAGE_SESSION,
 
+        MANAGER_SESSION,
+
         SYSTEM,
 
         UNKNOWN
@@ -120,6 +129,8 @@ public final class SchedulingBookingCancelledBy {
         T visitBookerSession();
 
         T visitManageSession();
+
+        T visitManagerSession();
 
         T visitSystem();
 

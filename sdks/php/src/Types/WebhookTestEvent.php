@@ -30,11 +30,14 @@ class WebhookTestEvent extends JsonSerializableType
      *   |FormSubmissionWebhookEvent
      *   |SchedulingBookingWebhookEvent
      *   |SchedulingCalendarWebhookEvent
+     *   |SchedulingOutOfOfficeWebhookEvent
+     *   |SchedulingReassignmentWebhookEvent
      *   |SchedulingCalendarDelegationWebhookEvent
+     *   |SchedulingOauthAppWebhookEvent
      * ) $event The event, as an endpoint on the request's API version receives it. Its `webhook-id` header is `event.id`.
      */
-    #[JsonProperty('event'), Union(EmailWebhookEvent::class, ReceivedEmailWebhookEvent::class, HookEndpointWebhookEvent::class, RiskWebhookEvent::class, ContactWebhookEvent::class, BroadcastWebhookEvent::class, InboxMessageReceivedWebhookEvent::class, SmsWebhookEvent::class, ReceivedSmsWebhookEvent::class, SignRequestWebhookEvent::class, VerificationWebhookEvent::class, FormSubmissionWebhookEvent::class, SchedulingBookingWebhookEvent::class, SchedulingCalendarWebhookEvent::class, SchedulingCalendarDelegationWebhookEvent::class)]
-    public EmailWebhookEvent|ReceivedEmailWebhookEvent|HookEndpointWebhookEvent|RiskWebhookEvent|ContactWebhookEvent|BroadcastWebhookEvent|InboxMessageReceivedWebhookEvent|SmsWebhookEvent|ReceivedSmsWebhookEvent|SignRequestWebhookEvent|VerificationWebhookEvent|FormSubmissionWebhookEvent|SchedulingBookingWebhookEvent|SchedulingCalendarWebhookEvent|SchedulingCalendarDelegationWebhookEvent $event;
+    #[JsonProperty('event'), Union(EmailWebhookEvent::class, ReceivedEmailWebhookEvent::class, HookEndpointWebhookEvent::class, RiskWebhookEvent::class, ContactWebhookEvent::class, BroadcastWebhookEvent::class, InboxMessageReceivedWebhookEvent::class, SmsWebhookEvent::class, ReceivedSmsWebhookEvent::class, SignRequestWebhookEvent::class, VerificationWebhookEvent::class, FormSubmissionWebhookEvent::class, SchedulingBookingWebhookEvent::class, SchedulingCalendarWebhookEvent::class, SchedulingOutOfOfficeWebhookEvent::class, SchedulingReassignmentWebhookEvent::class, SchedulingCalendarDelegationWebhookEvent::class, SchedulingOauthAppWebhookEvent::class)]
+    public EmailWebhookEvent|ReceivedEmailWebhookEvent|HookEndpointWebhookEvent|RiskWebhookEvent|ContactWebhookEvent|BroadcastWebhookEvent|InboxMessageReceivedWebhookEvent|SmsWebhookEvent|ReceivedSmsWebhookEvent|SignRequestWebhookEvent|VerificationWebhookEvent|FormSubmissionWebhookEvent|SchedulingBookingWebhookEvent|SchedulingCalendarWebhookEvent|SchedulingOutOfOfficeWebhookEvent|SchedulingReassignmentWebhookEvent|SchedulingCalendarDelegationWebhookEvent|SchedulingOauthAppWebhookEvent $event;
 
     /**
      * @var int $endpoints Enabled endpoints of the environment subscribed to the type, each sent it once.
@@ -66,7 +69,10 @@ class WebhookTestEvent extends JsonSerializableType
      *   |FormSubmissionWebhookEvent
      *   |SchedulingBookingWebhookEvent
      *   |SchedulingCalendarWebhookEvent
+     *   |SchedulingOutOfOfficeWebhookEvent
+     *   |SchedulingReassignmentWebhookEvent
      *   |SchedulingCalendarDelegationWebhookEvent
+     *   |SchedulingOauthAppWebhookEvent
      * ),
      *   endpoints: int,
      *   listeners: int,

@@ -45,6 +45,12 @@ class SchedulingCalendarConnection extends JsonSerializableType
     public string $status;
 
     /**
+     * @var ?string $oauthApp Your own OAuth app this connection's access came through. `null`: coss.com's, or no consent was involved.
+     */
+    #[JsonProperty('oauth_app')]
+    public ?string $oauthApp;
+
+    /**
      * @var ?string $delegation The calendar delegation that manages this connection. It can't be disconnected or reconnected by itself.
      */
     #[JsonProperty('delegation')]
@@ -72,6 +78,7 @@ class SchedulingCalendarConnection extends JsonSerializableType
      *   status: value-of<SchedulingCalendarConnectionStatus>,
      *   calendars: array<SchedulingCalendarConnectionCalendarsItem>,
      *   createdAt: string,
+     *   oauthApp?: ?string,
      *   delegation?: ?string,
      * } $values
      */
@@ -84,6 +91,10 @@ class SchedulingCalendarConnection extends JsonSerializableType
         $this->provider = $values['provider'];
         $this->account = $values['account'];
         $this->status = $values['status'];
+        $this->oauthApp = $values['oauthApp'] ?? null;
+        if (array_key_exists('oauthApp', $values)) {
+            $this->_setField('oauthApp');
+        }
         $this->delegation = $values['delegation'] ?? null;
         if (array_key_exists('delegation', $values)) {
             $this->_setField('delegation');

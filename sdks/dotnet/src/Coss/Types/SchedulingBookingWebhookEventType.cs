@@ -48,6 +48,10 @@ public readonly record struct SchedulingBookingWebhookEventType : IStringEnum
         Values.SchedulingBookingLocationReady
     );
 
+    public static readonly SchedulingBookingWebhookEventType SchedulingBookingReassigned = new(
+        Values.SchedulingBookingReassigned
+    );
+
     public static readonly SchedulingBookingWebhookEventType SchedulingBookingStarted = new(
         Values.SchedulingBookingStarted
     );
@@ -179,6 +183,8 @@ public readonly record struct SchedulingBookingWebhookEventType : IStringEnum
             "scheduling.booking.calendar_write_failed";
 
         public const string SchedulingBookingLocationReady = "scheduling.booking.location_ready";
+
+        public const string SchedulingBookingReassigned = "scheduling.booking.reassigned";
 
         public const string SchedulingBookingStarted = "scheduling.booking.started";
 

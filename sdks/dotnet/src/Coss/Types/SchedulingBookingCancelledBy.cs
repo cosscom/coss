@@ -18,6 +18,8 @@ public readonly record struct SchedulingBookingCancelledBy : IStringEnum
 
     public static readonly SchedulingBookingCancelledBy ManageSession = new(Values.ManageSession);
 
+    public static readonly SchedulingBookingCancelledBy ManagerSession = new(Values.ManagerSession);
+
     public static readonly SchedulingBookingCancelledBy System = new(Values.System);
 
     public SchedulingBookingCancelledBy(string value)
@@ -126,6 +128,8 @@ public readonly record struct SchedulingBookingCancelledBy : IStringEnum
         public const string BookerSession = "booker_session";
 
         public const string ManageSession = "manage_session";
+
+        public const string ManagerSession = "manager_session";
 
         public const string System = "system";
     }
