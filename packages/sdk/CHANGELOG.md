@@ -1,5 +1,17 @@
 # coss
 
+## 0.13.0
+
+### Minor Changes
+
+- a3bb0d7: Name who covers while a scheduling host is away: `delegates` on `coss.scheduling.outOfOffice` entries can be booked in their place, inside the same event type, keeping to how a booking's routed. The MCP server's `create_scheduling_out_of_office` takes `delegates` and `existing_bookings`.
+- 4ddea4e: Holiday calendars for scheduling: `coss.scheduling.holidayCalendars` applies a country's public holidays, or your own feed, to some hosts as out of office entries, kept up to date by coss.com. A host who removes a day keeps it removed.
+- fab9a95: Team pages for scheduling: `coss.scheduling.sessions.createForManager` gives a team lead a hosted, embeddable page (`mountTeamPortal` in `coss/scheduling`) for the hosts you name or everyone matching some attributes, showing who's away and what needs cover, and moving it. `host_reassignment` in settings lets hosts give away their own bookings.
+- e7a9087: Scheduling's own OAuth apps: `coss.scheduling.oauthApps` connects hosts' calendars through your own Google, Microsoft or Zoom app, so the consent screen shows your brand. Calendar connections gain `oauth_app`, settings gain `privacy_url`, and there are `scheduling.oauth_app.failing` and `.restored` webhooks. `coss open scheduling-oauth-apps` opens its dashboard page.
+- 152e25e: Add `coss.scheduling.outOfOffice`: mark hosts as away, for part of a day or whole dates, one at a time or many together. They stop being offered, existing bookings stay and are listed as conflicts, and `scheduling.out_of_office.*` webhooks say when it's created, changed, starts and ends.
+- 867d240: Reassign scheduling bookings: `coss.scheduling.bookings.reassign` gives any kind of booking to another host, keeping its id and time, and `reassignCandidates` says who could take it and why not. Adds a `scheduling.booking.reassigned` webhook with `previous_host_ids`, `reassignment_enabled` on event types and `name_host_in_attendee_emails` in settings. The MCP server gets reassign and out of office tools, and the CLI `coss scheduling reassign`, `candidates` and `ooo`.
+- 7970389: Move many scheduling bookings at once: `coss.scheduling.reassignments` previews who each would go to, runs it in the background with an outcome per booking, and can cancel and undo. Out of office entries take `existing_bookings: "reassign"` to start one. Adds a `scheduling.reassignment.completed` webhook. The MCP server gets preview, create, get, cancel and undo tools, and the CLI `coss scheduling reassign-many`, `reassignments` and `reassignment`.
+
 ## 0.12.0
 
 ### Minor Changes
