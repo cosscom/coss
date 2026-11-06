@@ -1,5 +1,25 @@
 # coss-mcp
 
+## 0.8.0
+
+### Minor Changes
+
+- a3bb0d7: Name who covers while a scheduling host is away: `delegates` on `coss.scheduling.outOfOffice` entries can be booked in their place, inside the same event type, keeping to how a booking's routed. The MCP server's `create_scheduling_out_of_office` takes `delegates` and `existing_bookings`.
+- The MCP server's `create_scheduling_session` can make a team lead's page with `manager_hosts`, and `coss open` knows the out of office, holidays and reassignments pages.
+- 867d240: Reassign scheduling bookings: `coss.scheduling.bookings.reassign` gives any kind of booking to another host, keeping its id and time, and `reassignCandidates` says who could take it and why not. Adds a `scheduling.booking.reassigned` webhook with `previous_host_ids`, `reassignment_enabled` on event types and `name_host_in_attendee_emails` in settings. The MCP server gets reassign and out of office tools, and the CLI `coss scheduling reassign`, `candidates` and `ooo`.
+- 7970389: Move many scheduling bookings at once: `coss.scheduling.reassignments` previews who each would go to, runs it in the background with an outcome per booking, and can cancel and undo. Out of office entries take `existing_bookings: "reassign"` to start one. Adds a `scheduling.reassignment.completed` webhook. The MCP server gets preview, create, get, cancel and undo tools, and the CLI `coss scheduling reassign-many`, `reassignments` and `reassignment`.
+
+### Patch Changes
+
+- Updated dependencies [a3bb0d7]
+- Updated dependencies [4ddea4e]
+- Updated dependencies [fab9a95]
+- Updated dependencies [e7a9087]
+- Updated dependencies [152e25e]
+- Updated dependencies [867d240]
+- Updated dependencies [7970389]
+  - coss@0.13.0
+
 ## 0.7.0
 
 ### Minor Changes
